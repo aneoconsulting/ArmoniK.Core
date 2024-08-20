@@ -12,10 +12,7 @@ resource "docker_container" "ingress" {
   }
 
   log_driver = var.log_driver.name
-
-  log_opts = {
-    fluentd-address = var.submitter.id == "" ? var.log_driver.address : var.log_driver.address
-  }
+  log_opts   = var.log_driver.log_opts
 
   ports {
     internal = var.tls ? 8443 : 8080

@@ -1,9 +1,16 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 as base
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 as base-linux
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
+RUN mkdir /cache /local_storage && chown armonikuser: /cache /local_storage
+USER armonikuser
+ENTRYPOINT [ "dotnet" ]
+
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows
+ENTRYPOINT ["C:\\Program Files\\dotnet\\dotnet.exe"]
 
 FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG VERSION=1.0.0.0
 ARG TARGETARCH
+ARG TARGETOS
 
 WORKDIR /src
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"%\\\", \\\"\$D/\\\"]"
@@ -24,13 +31,13 @@ COPY ["Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj
 COPY ["Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj", "Control/Submitter/src/"]
 COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 
-RUN dotnet restore -a $TARGETARCH "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj"
-RUN dotnet restore -a $TARGETARCH "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj"
-RUN dotnet restore -a $TARGETARCH "Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj"
-RUN dotnet restore -a $TARGETARCH "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj"
-RUN dotnet restore -a $TARGETARCH "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
-RUN dotnet restore -a $TARGETARCH "Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj"
-RUN dotnet restore -a $TARGETARCH "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
 
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"\$D\\\", \\\"\$D\\\"]"
 COPY ["Adaptors/Amqp/src", "Adaptors/Amqp/src"]
@@ -51,27 +58,28 @@ COPY ["Control/Submitter/src", "Control/Submitter/src"]
 COPY ["Utils/src", "Utils/src"]
 
 WORKDIR /src/Adaptors/PubSub/src
-RUN dotnet publish "ArmoniK.Core.Adapters.PubSub.csproj" -a $TARGETARCH --no-restore -o /app/publish/pubsub /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish "ArmoniK.Core.Adapters.PubSub.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/pubsub /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Adaptors/Amqp/src
-RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -a $TARGETARCH --no-restore -o /app/publish/amqp /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/amqp /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Adaptors/RabbitMQ/src
-RUN dotnet publish "ArmoniK.Core.Adapters.RabbitMQ.csproj" -a $TARGETARCH --no-restore -o /app/publish/rabbit /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish "ArmoniK.Core.Adapters.RabbitMQ.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/rabbit /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Compute/PollingAgent/src
-RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -a $TARGETARCH --no-restore -o /app/publish/polling_agent /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/polling_agent /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Control/Metrics/src
-RUN dotnet publish "ArmoniK.Core.Control.Metrics.csproj" -a $TARGETARCH --no-restore -o /app/publish/metrics /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish "ArmoniK.Core.Control.Metrics.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/metrics /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Control/PartitionMetrics/src
-RUN dotnet publish "ArmoniK.Core.Control.PartitionMetrics.csproj" -a $TARGETARCH --no-restore -o /app/publish/partition_metrics /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish "ArmoniK.Core.Control.PartitionMetrics.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/partition_metrics /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Control/Submitter/src
-RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a $TARGETARCH --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
-FROM base as polling_agent
+
+FROM base-${TARGETOS} as polling_agent
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -80,38 +88,28 @@ WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
 WORKDIR /app
 COPY --from=build /app/publish/polling_agent .
-RUN mkdir /cache /local_storage && chown armonikuser: /cache /local_storage
-USER armonikuser
-
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
+CMD ["ArmoniK.Core.Compute.PollingAgent.dll"]
 
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Compute.PollingAgent.dll"]
 
-
-FROM base as metrics
+FROM base-${TARGETOS} as metrics
 WORKDIR /app
 COPY --from=build /app/publish/metrics .
-USER armonikuser
-
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
+CMD ["ArmoniK.Core.Control.Metrics.dll"]
 
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Metrics.dll"]
 
-
-FROM base as partition_metrics
+FROM base-${TARGETOS} as partition_metrics
 WORKDIR /app
 COPY --from=build /app/publish/partition_metrics .
-USER armonikuser
-
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
+CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.PartitionMetrics.dll"]
 
-
-FROM base as submitter
+FROM base-${TARGETOS} as submitter
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -120,11 +118,7 @@ WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
 WORKDIR /app
 COPY --from=build /app/publish/submitter .
-RUN mkdir /local_storage && chown armonikuser: /local_storage
-USER armonikuser
-
 ENV ASPNETCORE_URLS http://+:1080, http://+:1081
 EXPOSE 1080
 EXPOSE 1081
-
-ENTRYPOINT ["dotnet", "ArmoniK.Core.Control.Submitter.dll"]
+CMD ["ArmoniK.Core.Control.Submitter.dll"]

@@ -96,7 +96,7 @@ jobs:
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
 
     - name: Build
-      run: just tag=$VERSION platform=linux/arm64,linux/amd64 load=false push=true ${{ matrix.type }}
+      run: just tag=$VERSION platform=linux/arm64,linux/amd64,windows/amd64 load=false push=true ${{ matrix.type }}
 
 
   publish-nuget:

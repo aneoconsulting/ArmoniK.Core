@@ -216,7 +216,7 @@ jobs:
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         type:
           - build-core
@@ -245,7 +245,7 @@ jobs:
 
     - name: Build
       run: |
-        just tag=$VERSION platform=linux/arm64,linux/amd64 load=false push=true ${{ matrix.type }}
+        just tag=$VERSION platform=linux/arm64,linux/amd64,windows/amd64 load=false push=true ${{ matrix.type }}
 
 
   testStreamDC:
@@ -311,7 +311,7 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -484,7 +484,7 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}.json.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-monitor.tar.gz
 
       - name: Collect docker container logs
@@ -506,6 +506,121 @@ jobs:
           bash tools/export_mongodb.sh
           tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.queue }}-${{ matrix.object }}-${{ matrix.log-level }}-database.tar.gz
 
+  testWindowsDocker:
+    needs:
+      - versionning
+      - images
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: windows-latest
+    name: Docker Windows
+    steps:
+      - name: Checkout
+        uses: actions/checkout@a5ac7e51b41094c92402da3b24376905380afc29 # v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - name: Setup Terraform
+        run: choco install terraform mongodb-shell 7zip just
+
+      - name: Setup AWS cli
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Deploy Core
+        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq091 deploy
+        shell: powershell
+
+      - name: Run HtcMock test 100 tasks 1 level
+        timeout-minutes: 3
+        shell: powershell
+        run: |
+          docker run --net armonik_network --rm `
+            -e HtcMock__NTasks=100 `
+            -e HtcMock__TotalCalculationTime=00:00:00.100 `
+            -e HtcMock__DataSize=1 `
+            -e HtcMock__MemorySize=1 `
+            -e HtcMock__SubTasksLevels=1 `
+            -e HtcMock__Partition=TestPartition0 `
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 `
+            dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
+
+      - name: Run HtcMock test 100 tasks 4 levels
+        timeout-minutes: 3
+        shell: powershell
+        run: |
+          docker run --net armonik_network --rm `
+            -e HtcMock__NTasks=100 `
+            -e HtcMock__TotalCalculationTime=00:00:00.100 `
+            -e HtcMock__DataSize=1 `
+            -e HtcMock__MemorySize=1 `
+            -e HtcMock__SubTasksLevels=4 `
+            -e HtcMock__Partition=TestPartition0 `
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 `
+            dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
+
+      - name: Run HtcMock test 100 tasks 4 levels with retries
+        timeout-minutes: 3
+        shell: powershell
+        run: |
+          docker run --net armonik_network --rm `
+            -e HtcMock__NTasks=100 `
+            -e HtcMock__TotalCalculationTime=00:00:00.100 `
+            -e HtcMock__DataSize=1 `
+            -e HtcMock__MemorySize=1 `
+            -e HtcMock__SubTasksLevels=4 `
+            -e HtcMock__Partition=TestPartition0 `
+            -e HtcMock__TaskRpcException=a `
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 `
+            dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
+
+      - name: Run HtcMock test 1000 tasks 1 level
+        timeout-minutes: 3
+        shell: powershell
+        run: |
+          docker run --net armonik_network --rm `
+            -e HtcMock__NTasks=1000 `
+            -e HtcMock__TotalCalculationTime=00:00:00.100 `
+            -e HtcMock__DataSize=1 `
+            -e HtcMock__MemorySize=1 `
+            -e HtcMock__SubTasksLevels=1 `
+            -e HtcMock__Partition=TestPartition0 `
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 `
+            dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
+
+      - name: Run HtcMock test 1000 tasks 4 levels
+        timeout-minutes: 3
+        shell: powershell
+        run: |
+          docker run --net armonik_network --rm `
+            -e HtcMock__NTasks=1000 `
+            -e HtcMock__TotalCalculationTime=00:00:00.100 `
+            -e HtcMock__DataSize=1 `
+            -e HtcMock__MemorySize=1 `
+            -e HtcMock__SubTasksLevels=4 `
+            -e HtcMock__Partition=TestPartition0 `
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 `
+            dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
+
+      - name: Collect docker container logs
+        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+        if: always()
+        with:
+          dest: 'container-logs'
+          shell: powershell
+      - name: Zip docker container logs
+        if: always()
+        run: 7z a logs.7z container-logs
+      - name: Upload docker container logs
+        if: always()
+        run: aws s3 cp logs.7z s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-container-logs.7z
+      - name: Upload armonik logs
+        if: always()
+        run: docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-armonik-logs.json.gz
 
   testConnectivity:
     needs:
@@ -567,7 +682,7 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
         if: always()
@@ -620,7 +735,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Run Bench test tasks - many tasks (400)
         timeout-minutes: 3
@@ -677,7 +791,7 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -729,7 +843,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 build-deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Build client
         run: |
@@ -749,7 +862,7 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -802,7 +915,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 3
@@ -816,14 +928,13 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Show logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultPartition-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -874,7 +985,6 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
             just tag=${VERSION} object=redis deploy
           sleep 10
-          ls -la terraform/logs/*.json
 
       - name: Run HtcMock test
         timeout-minutes: 3
@@ -888,7 +998,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Health Check Test when database is down
         timeout-minutes: 10
@@ -911,7 +1020,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Health Check Test when queue is down
         timeout-minutes: 10
@@ -934,7 +1042,6 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Health Check Test when object is down
         timeout-minutes: 10
@@ -957,14 +1064,13 @@ jobs:
             -e HtcMock__SubTasksLevels=3 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
-          ls -la terraform/logs/*.json
 
       - name: Show logs
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -czf - terraform/logs/armonik-logs.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -998,6 +1104,7 @@ jobs:
       - runCrash
       - healthCheckTest
       - testConnectivity
+      - testWindowsDocker
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK
