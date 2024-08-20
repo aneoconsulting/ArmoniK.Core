@@ -25,6 +25,25 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Queue to send <see cref="TaskHandler" />
+///   from a single producer to a consumer.
+/// </summary>
+/// <remarks>
+///   <para>
+///     When a producer writes a task handler,
+///     it will wait for a consumer to read the task handler.
+///   </para>
+///   <para>
+///     If the producer successfully writes to the queue,
+///     the consumer is guaranteed to have successfully read from the queue.
+///   </para>
+///   <para>
+///     If the producer fails to write to the queue,
+///     the consumer is guaranteed to not have read
+///     the poduced the task handler.
+///   </para>
+/// </remarks>
 public abstract class TaskQueueBase
 {
   private readonly Queue<Exception> exceptions_ = new();
@@ -38,7 +57,7 @@ public abstract class TaskQueueBase
   /// <summary>
   ///   Create an instance
   /// </summary>
-  public TaskQueueBase()
+  protected TaskQueueBase()
   {
     readerSem_ = new SemaphoreSlim(0);
     writerSem_ = new SemaphoreSlim(0);
@@ -47,14 +66,18 @@ public abstract class TaskQueueBase
   /// <summary>
   ///   Put a handler in the queue
   /// </summary>
-  /// <param name="handler">the handler to insert</param>
+  /// <param name="handler">The handler to insert</param>
+  /// <param name="timeout">Maximum time to wait for a consumer</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
+  /// <exception cref="ChannelClosedException">The consumer has been closed</exception>
+  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken" /> has been triggered</exception>
+  /// <exception cref="TimeoutException">No consumer arrived in the allotted time</exception>
   public async Task WriteAsync(TaskHandler       handler,
                                TimeSpan          timeout,
-                               CancellationToken cancellationToken)
+                               CancellationToken cancellationToken = default)
   {
     if (writerClosed_)
     {
@@ -103,12 +126,16 @@ public abstract class TaskQueueBase
   /// <summary>
   ///   Retrieve an handler
   /// </summary>
+  /// <param name="timeout">Maximum time to wait for a producer</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
+  /// <exception cref="ChannelClosedException">The producer has been closed</exception>
+  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken" /> has been triggered</exception>
+  /// <exception cref="TimeoutException">No producer has written a handler in the allotted time</exception>
   public async Task<TaskHandler> ReadAsync(TimeSpan          timeout,
-                                           CancellationToken cancellationToken)
+                                           CancellationToken cancellationToken = default)
   {
     if (readerClosed_)
     {
@@ -143,7 +170,7 @@ public abstract class TaskQueueBase
   }
 
   /// <summary>
-  ///   Close Queue
+  ///   Close reader end of the Queue
   /// </summary>
   public void CloseReader()
   {
@@ -153,7 +180,7 @@ public abstract class TaskQueueBase
   }
 
   /// <summary>
-  ///   Close Queue
+  ///   Close writer end of the Queue
   /// </summary>
   public void CloseWriter()
   {
