@@ -118,137 +118,134 @@ public class RendezvousChannelTest
                                     15,
                                     45)]
                             int wait,
-                            [Values] bool isReader)
+                            [Values] bool isReader,
+                            [Values] bool useCancellation)
   {
     var queue = new RendezvousChannel<int>();
 
-    var times = new TimeSpan[2];
-    var tcs   = new TaskCompletionSource();
-    var reader = Task.Run(async () =>
-                          {
-                            var sw = Stopwatch.StartNew();
-                            try
-                            {
-                              if (!isReader)
-                              {
-                                await tcs.Task.ConfigureAwait(false);
-                                await Task.Delay(TimeSpan.FromMilliseconds(wait))
-                                          .ConfigureAwait(false);
-                              }
+    var       tcs = new TaskCompletionSource();
+    using var cts = new CancellationTokenSource();
 
-                              var read = queue.ReadAsync(isReader
-                                                           ? TimeSpan.FromMilliseconds(timeout)
-                                                           : TimeSpan.Zero);
+    var readerTask = RunWithStopWatch(async () =>
+                                      {
+                                        Task<int> read;
 
-                              if (isReader)
-                              {
-                                // Ensure write occurs after read has started
-                                tcs.SetResult();
-                              }
+                                        if (!isReader)
+                                        {
+                                          await tcs.Task.ConfigureAwait(false);
+                                          await Task.Delay(TimeSpan.FromMilliseconds(wait),
+                                                           CancellationToken.None)
+                                                    .ConfigureAwait(false);
+                                          read = queue.ReadAsync(TimeSpan.Zero,
+                                                                 CancellationToken.None);
+                                        }
+                                        else
+                                        {
+                                          if (useCancellation)
+                                          {
+                                            cts.CancelAfter(timeout);
+                                            read = queue.ReadAsync(System.Threading.Timeout.InfiniteTimeSpan,
+                                                                   cts.Token);
+                                          }
+                                          else
+                                          {
+                                            read = queue.ReadAsync(TimeSpan.FromMilliseconds(timeout),
+                                                                   CancellationToken.None);
+                                          }
 
-                              var x = await read.ConfigureAwait(false);
+                                          // Ensure write occurs after read has started
+                                          tcs.SetResult();
+                                        }
 
-                              queue.CloseReader();
+                                        var x = await read.ConfigureAwait(false);
 
-                              return x;
-                            }
-                            finally
-                            {
-                              sw.Stop();
-                              times[0] = sw.Elapsed;
-                            }
-                          });
-    var writer = Task.Run(async () =>
-                          {
-                            var sw = Stopwatch.StartNew();
-                            try
-                            {
-                              if (isReader)
-                              {
-                                await tcs.Task.ConfigureAwait(false);
-                                await Task.Delay(TimeSpan.FromMilliseconds(wait))
-                                          .ConfigureAwait(false);
-                              }
+                                        queue.CloseReader();
 
-                              var write = queue.WriteAsync(3,
-                                                           !isReader
-                                                             ? TimeSpan.FromMilliseconds(timeout)
-                                                             : TimeSpan.Zero);
+                                        return x;
+                                      });
+    var writerTask = RunWithStopWatch(async () =>
+                                      {
+                                        Task write;
 
-                              if (!isReader)
-                              {
-                                // Ensure read occurs after write has started
-                                tcs.SetResult();
-                              }
+                                        if (isReader)
+                                        {
+                                          await tcs.Task.ConfigureAwait(false);
+                                          await Task.Delay(TimeSpan.FromMilliseconds(wait),
+                                                           CancellationToken.None)
+                                                    .ConfigureAwait(false);
+                                          write = queue.WriteAsync(3,
+                                                                   TimeSpan.Zero,
+                                                                   CancellationToken.None);
+                                        }
+                                        else
+                                        {
+                                          if (useCancellation)
+                                          {
+                                            cts.CancelAfter(timeout);
+                                            write = queue.WriteAsync(3,
+                                                                     System.Threading.Timeout.InfiniteTimeSpan,
+                                                                     cts.Token);
+                                          }
+                                          else
+                                          {
+                                            write = queue.WriteAsync(3,
+                                                                     TimeSpan.FromMilliseconds(timeout),
+                                                                     CancellationToken.None);
+                                          }
 
-                              await write.ConfigureAwait(true);
-                              queue.CloseWriter();
-                            }
-                            finally
-                            {
-                              sw.Stop();
-                              times[1] = sw.Elapsed;
-                            }
-                          });
+                                          // Ensure read occurs after write has started
+                                          tcs.SetResult();
+                                        }
 
-    try
-    {
-      await Task.WhenAll(reader,
-                         writer)
-                .ConfigureAwait(false);
-    }
-    catch
-    {
-    }
+                                        await write.ConfigureAwait(true);
+                                        queue.CloseWriter();
 
-    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {times[0].TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {times[1].TotalMilliseconds,-7} ms");
+                                        return new ValueTuple();
+                                      });
+
+    var reader = await readerTask.ConfigureAwait(false);
+    var writer = await writerTask.ConfigureAwait(false);
+
+    var readExceptionType = isReader && useCancellation
+                              ? typeof(OperationCanceledException)
+                              : typeof(TimeoutException);
+    var writeExceptionType = !isReader && useCancellation
+                               ? typeof(OperationCanceledException)
+                               : typeof(TimeoutException);
+
+    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {reader.duration.TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {writer.duration.TotalMilliseconds,-7} ms");
 
     switch (timeout - wait)
     {
       case < 0:
-        Assert.That(() => reader,
-                    Throws.InstanceOf<TimeoutException>());
-        Assert.That(() => writer,
-                    Throws.InstanceOf<TimeoutException>());
+        Assert.That(() => reader.task,
+                    Throws.InstanceOf(readExceptionType));
+        Assert.That(() => writer.task,
+                    Throws.InstanceOf(writeExceptionType));
         break;
       case > 0:
-        Assert.That(() => reader,
+        Assert.That(() => reader.task,
                     Throws.Nothing);
-        Assert.That(() => writer,
+        Assert.That(() => writer.task,
                     Throws.Nothing);
-        Assert.That(await reader.ConfigureAwait(false),
+        Assert.That(await reader.task.ConfigureAwait(false),
                     Is.EqualTo(3));
         break;
       default:
-        Exception? readException  = null;
-        Exception? writeException = null;
-        try
-        {
-          await reader.ConfigureAwait(false);
-        }
-        catch (Exception? e)
-        {
-          readException = e;
-        }
-
-        try
-        {
-          await writer.ConfigureAwait(false);
-        }
-        catch (Exception? e)
-        {
-          writeException = e;
-        }
+        var readException = await WaitException(reader.task)
+                              .ConfigureAwait(false);
+        var writeException = await WaitException(writer.task)
+                               .ConfigureAwait(false);
 
         // Ensure that either both succeed or both fail
         Assert.That(writeException,
                     readException is null
                       ? Is.Null
-                      : Is.InstanceOf<TimeoutException>());
+                      : Is.InstanceOf(writeExceptionType));
         Assert.That(readException,
                     writeException is null
                       ? Is.Null
-                      : Is.InstanceOf<TimeoutException>());
+                      : Is.InstanceOf(readExceptionType));
         break;
     }
   }
@@ -265,90 +262,89 @@ public class RendezvousChannelTest
                                          15,
                                          45)]
                                  int wait,
-                                 [Values] bool isReader)
+                                 [Values] bool isReader,
+                                 [Values] bool useCancellation)
   {
-    var queue = new RendezvousChannel<int>();
+    var       queue = new RendezvousChannel<int>();
+    using var cts   = new CancellationTokenSource();
 
-    var times = new TimeSpan[2];
-    var reader = Task.Run(async () =>
-                          {
-                            var sw = Stopwatch.StartNew();
-                            try
-                            {
-                              if (!isReader)
-                              {
-                                await Task.Delay(TimeSpan.FromMilliseconds(wait))
-                                          .ConfigureAwait(false);
-                                queue.CloseReader();
-                              }
-                              else
-                              {
-                                await queue.ReadAsync(TimeSpan.FromMilliseconds(timeout))
-                                           .ConfigureAwait(false);
-                              }
-                            }
-                            catch (ChannelClosedException)
-                            {
-                              queue.CloseReader();
-                              throw;
-                            }
-                            finally
-                            {
-                              sw.Stop();
-                              times[0] = sw.Elapsed;
-                            }
-                          });
-    var writer = Task.Run(async () =>
-                          {
-                            var sw = Stopwatch.StartNew();
-                            try
-                            {
-                              if (isReader)
-                              {
-                                await Task.Delay(TimeSpan.FromMilliseconds(wait))
-                                          .ConfigureAwait(false);
-                                queue.CloseWriter();
-                              }
-                              else
-                              {
-                                await queue.WriteAsync(3,
-                                                       TimeSpan.FromMilliseconds(timeout))
-                                           .ConfigureAwait(false);
-                              }
-                            }
-                            catch (ChannelClosedException)
-                            {
-                              queue.CloseWriter();
-                              throw;
-                            }
-                            finally
-                            {
-                              sw.Stop();
-                              times[1] = sw.Elapsed;
-                            }
-                          });
+    var readerTask = RunWithStopWatch(async () =>
+                                      {
+                                        if (!isReader)
+                                        {
+                                          await Task.Delay(TimeSpan.FromMilliseconds(wait),
+                                                           CancellationToken.None)
+                                                    .ConfigureAwait(false);
+                                          queue.CloseReader();
+                                        }
+                                        else
+                                        {
+                                          if (useCancellation)
+                                          {
+                                            cts.CancelAfter(timeout);
+                                            await queue.ReadAsync(System.Threading.Timeout.InfiniteTimeSpan,
+                                                                  cts.Token)
+                                                       .ConfigureAwait(false);
+                                          }
+                                          else
+                                          {
+                                            await queue.ReadAsync(TimeSpan.FromMilliseconds(timeout),
+                                                                  CancellationToken.None)
+                                                       .ConfigureAwait(false);
+                                          }
+                                        }
 
-    try
-    {
-      await Task.WhenAll(reader,
-                         writer)
-                .ConfigureAwait(false);
-    }
-    catch
-    {
-    }
+                                        return new ValueTuple();
+                                      });
+    var writerTask = RunWithStopWatch(async () =>
+                                      {
+                                        if (isReader)
+                                        {
+                                          await Task.Delay(TimeSpan.FromMilliseconds(wait),
+                                                           CancellationToken.None)
+                                                    .ConfigureAwait(false);
+                                          queue.CloseWriter();
+                                        }
+                                        else
+                                        {
+                                          if (useCancellation)
+                                          {
+                                            cts.CancelAfter(timeout);
+                                            await queue.WriteAsync(3,
+                                                                   System.Threading.Timeout.InfiniteTimeSpan,
+                                                                   cts.Token)
+                                                       .ConfigureAwait(false);
+                                          }
+                                          else
+                                          {
+                                            await queue.WriteAsync(3,
+                                                                   TimeSpan.FromMilliseconds(timeout),
+                                                                   CancellationToken.None)
+                                                       .ConfigureAwait(false);
+                                          }
+                                        }
 
-    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {times[0].TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {times[1].TotalMilliseconds,-7} ms");
+                                        return new ValueTuple();
+                                      });
+
+    var reader = await readerTask.ConfigureAwait(false);
+    var writer = await writerTask.ConfigureAwait(false);
+
+    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {reader.duration.TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {writer.duration.TotalMilliseconds,-7} ms");
 
     var task = isReader
-                 ? reader
-                 : writer;
+                 ? reader.task
+                 : writer.task;
+
+    var exceptionType = useCancellation
+                          ? typeof(OperationCanceledException)
+                          : typeof(TimeoutException);
 
     switch (timeout - wait)
     {
       case < 0:
         Assert.That(() => task,
-                    Throws.InstanceOf<TimeoutException>());
+                    Throws.InstanceOf(exceptionType));
         break;
       case > 0:
         Assert.That(() => task,
@@ -357,7 +353,7 @@ public class RendezvousChannelTest
       default:
         Assert.That(() => task,
                     Throws.InstanceOf<ChannelClosedException>()
-                          .Or.InstanceOf<TimeoutException>());
+                          .Or.InstanceOf(exceptionType));
         break;
     }
   }
@@ -411,5 +407,37 @@ public class RendezvousChannelTest
     queue.CloseWriter();
 
     return nbWritten;
+  }
+
+  private static Task<(Task<T> task, TimeSpan duration)> RunWithStopWatch<T>(Func<Task<T>> f)
+    => Task.Run(async () =>
+                {
+                  var sw   = Stopwatch.StartNew();
+                  var task = f();
+                  try
+                  {
+                    await task.ConfigureAwait(false);
+                  }
+                  catch
+                  {
+                    // ignored
+                  }
+
+                  sw.Stop();
+
+                  return (task, sw.Elapsed);
+                });
+
+  private static async Task<Exception?> WaitException(Task task)
+  {
+    try
+    {
+      await task.ConfigureAwait(false);
+      return null;
+    }
+    catch (Exception e)
+    {
+      return e;
+    }
   }
 }
