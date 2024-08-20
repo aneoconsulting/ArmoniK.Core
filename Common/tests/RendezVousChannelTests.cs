@@ -16,43 +16,35 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Pollster;
-using ArmoniK.Core.Common.Tests.Helpers;
-
-using Microsoft.Extensions.Hosting.Internal;
-using Microsoft.Extensions.Logging.Abstractions;
+using ArmoniK.Core.Common.Utils;
 
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
 
-[TestFixture(TestOf = typeof(TaskQueueBase))]
-public class TaskQueueTest
+[TestFixture(TestOf = typeof(RendezVousChannel<>))]
+public class RendezVousChannelTest
 {
-  private sealed class TaskQueue : TaskQueueBase;
-
-
   [Test]
   [Timeout(1000)]
-  [Repeat(1000)]
-  public async Task Pouet([Values(0,
-                                  1,
-                                  2,
-                                  3)]
-                          int nbRead,
-                          [Values(0,
-                                  1,
-                                  2,
-                                  3)]
-                          int nbWrite)
+  [Repeat(10000)]
+  public async Task WriteShouldWork([Values(0,
+                                            1,
+                                            2,
+                                            3)]
+                                    int nbRead,
+                                    [Values(0,
+                                            1,
+                                            2,
+                                            3)]
+                                    int nbWrite)
   {
-    var queue = new TaskQueue();
+    var queue = new RendezVousChannel<int>();
 
     var reader = ReadAsync(queue,
                            nbRead)
@@ -75,58 +67,39 @@ public class TaskQueueTest
                 Has.Count.EqualTo(n));
     Assert.That(written,
                 Is.EqualTo(n));
+    Assert.That(read,
+                Is.EqualTo(Enumerable.Range(0,
+                                            n)
+                                     .ToList()));
   }
 
-  private static TaskHandler CreateTaskHandler(string podId)
-    => new(new SimpleSessionTable(),
-           new SimpleTaskTable(),
-           new SimpleResultTable(),
-           new SimpleSubmitter(),
-           new DataPrefetcher(new SimpleObjectStorage(),
-                              null,
-                              NullLogger<DataPrefetcher>.Instance),
-           new SimpleWorkerStreamHandler(),
-           new SimpleQueueMessageHandler(),
-           new HelperTaskProcessingChecker(),
-           podId,
-           "",
-           new ActivitySource(""),
-           new SimpleAgentHandler(),
-           NullLogger.Instance,
-           new Injection.Options.Pollster(),
-           () =>
-           {
-           },
-           new ApplicationLifetime(NullLogger<ApplicationLifetime>.Instance),
-           null!);
-
-  private static async IAsyncEnumerable<TaskHandler> ReadAsync(TaskQueue queue,
-                                                               int       closeAfter)
+  private static async IAsyncEnumerable<int> ReadAsync(RendezVousChannel<int> queue,
+                                                       int                    closeAfter)
   {
     var nbRead = 0;
     while (nbRead < closeAfter)
     {
-      TaskHandler taskHandler;
+      int x;
       try
       {
-        taskHandler = await queue.ReadAsync(Timeout.InfiniteTimeSpan,
-                                            CancellationToken.None)
-                                 .ConfigureAwait(false);
+        x = await queue.ReadAsync(Timeout.InfiniteTimeSpan,
+                                  CancellationToken.None)
+                       .ConfigureAwait(false);
       }
       catch (ChannelClosedException)
       {
         break;
       }
 
-      yield return taskHandler;
+      yield return x;
       nbRead++;
     }
 
     queue.CloseReader();
   }
 
-  private static async Task<int> WriteAsync(TaskQueue queue,
-                                            int       closeAfter)
+  private static async Task<int> WriteAsync(RendezVousChannel<int> queue,
+                                            int                    closeAfter)
   {
     var nbWritten = 0;
 
@@ -134,7 +107,7 @@ public class TaskQueueTest
     {
       try
       {
-        await queue.WriteAsync(CreateTaskHandler(nbWritten.ToString()),
+        await queue.WriteAsync(nbWritten,
                                Timeout.InfiniteTimeSpan,
                                CancellationToken.None)
                    .ConfigureAwait(false);

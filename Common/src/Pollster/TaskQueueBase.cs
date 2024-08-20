@@ -17,11 +17,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Threading;
-using System.Threading.Channels;
-using System.Threading.Tasks;
+
+using ArmoniK.Core.Common.Utils;
 
 namespace ArmoniK.Core.Common.Pollster;
 
@@ -44,151 +42,9 @@ namespace ArmoniK.Core.Common.Pollster;
 ///     the poduced the task handler.
 ///   </para>
 /// </remarks>
-public abstract class TaskQueueBase
+public abstract class TaskQueueBase : RendezVousChannel<TaskHandler>
 {
   private readonly Queue<Exception> exceptions_ = new();
-
-  private readonly SemaphoreSlim readerSem_;
-  private readonly SemaphoreSlim writerSem_;
-  private          bool          readerClosed_;
-  private          TaskHandler?  taskHandler_;
-  private          bool          writerClosed_;
-
-  /// <summary>
-  ///   Create an instance
-  /// </summary>
-  protected TaskQueueBase()
-  {
-    readerSem_ = new SemaphoreSlim(0);
-    writerSem_ = new SemaphoreSlim(0);
-  }
-
-  /// <summary>
-  ///   Put a handler in the queue
-  /// </summary>
-  /// <param name="handler">The handler to insert</param>
-  /// <param name="timeout">Maximum time to wait for a consumer</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  /// <exception cref="ChannelClosedException">The consumer has been closed</exception>
-  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken" /> has been triggered</exception>
-  /// <exception cref="TimeoutException">No consumer arrived in the allotted time</exception>
-  public async Task WriteAsync(TaskHandler       handler,
-                               TimeSpan          timeout,
-                               CancellationToken cancellationToken = default)
-  {
-    if (writerClosed_)
-    {
-      throw new ChannelClosedException("Writer has been closed");
-    }
-
-    taskHandler_ = handler;
-
-    readerSem_.Release();
-
-    try
-    {
-      if (!await writerSem_.WaitAsync(timeout,
-                                      cancellationToken)
-                           .ConfigureAwait(false))
-      {
-        throw new TimeoutException("No consumer in the allotted time");
-      }
-    }
-    catch
-    {
-      // Try to acquire the reader semaphore to reset the task handler
-      // If the acquire fails, it means the reader has acquired it after all
-      if (await readerSem_.WaitAsync(0,
-                                     CancellationToken.None)
-                          .ConfigureAwait(false))
-      {
-        // Writer semaphore will be released soon, if not already released
-        await writerSem_.WaitAsync(CancellationToken.None)
-                        .ConfigureAwait(false);
-        taskHandler_ = null;
-        throw;
-      }
-    }
-
-    if (readerClosed_)
-    {
-      writerSem_.Release();
-      throw new ChannelClosedException("Reader has been closed");
-    }
-
-    // Acknowledge that write is complete
-    readerSem_.Release();
-  }
-
-  /// <summary>
-  ///   Retrieve an handler
-  /// </summary>
-  /// <param name="timeout">Maximum time to wait for a producer</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  /// <exception cref="ChannelClosedException">The producer has been closed</exception>
-  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken" /> has been triggered</exception>
-  /// <exception cref="TimeoutException">No producer has written a handler in the allotted time</exception>
-  public async Task<TaskHandler> ReadAsync(TimeSpan          timeout,
-                                           CancellationToken cancellationToken = default)
-  {
-    if (readerClosed_)
-    {
-      throw new ChannelClosedException("Reader has been closed");
-    }
-
-    if (!await readerSem_.WaitAsync(timeout,
-                                    cancellationToken)
-                         .ConfigureAwait(false))
-    {
-      throw new TimeoutException("No producer in the allotted time");
-    }
-
-    var handler = taskHandler_!;
-    taskHandler_ = null;
-
-    if (writerClosed_)
-    {
-      readerSem_.Release();
-      throw new ChannelClosedException("Writer has been closed");
-    }
-
-    writerSem_.Release();
-
-    // Without this wait, the reader thread could close the channel before
-    // the writer being notified that a read has occured.
-    // Reader semaphore will be released soon, if not already released
-    await readerSem_.WaitAsync(CancellationToken.None)
-                    .ConfigureAwait(false);
-
-    return handler;
-  }
-
-  /// <summary>
-  ///   Close reader end of the Queue
-  /// </summary>
-  public void CloseReader()
-  {
-    Debug.Assert(!readerClosed_);
-    readerClosed_ = true;
-    writerSem_.Release();
-  }
-
-  /// <summary>
-  ///   Close writer end of the Queue
-  /// </summary>
-  public void CloseWriter()
-  {
-    Debug.Assert(!writerClosed_);
-    writerClosed_ = true;
-    readerSem_.Release();
-  }
-
 
   /// <summary>
   ///   Add an exception in the internal exception list
