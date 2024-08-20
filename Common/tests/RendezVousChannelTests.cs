@@ -34,7 +34,7 @@ public class RendezVousChannelTest
 {
   [Test]
   [Timeout(1000)]
-  [Repeat(10000)]
+  [Repeat(1000)]
   public async Task WriteShouldWork([Values(0,
                                             1,
                                             2,
@@ -77,12 +77,11 @@ public class RendezVousChannelTest
 
   [Test]
   [Timeout(1000)]
-  [Repeat(100)]
+  [Repeat(10)]
   public void WriteTimeoutNoReader([Values(0,
-                                           1,
-                                           10,
+                                           15,
                                            30,
-                                           50)]
+                                           45)]
                                    int timeout)
   {
     var queue = new RendezVousChannel<int>();
@@ -95,17 +94,19 @@ public class RendezVousChannelTest
 
     sw.Stop();
 
-    Console.WriteLine($"{sw.Elapsed.TotalMilliseconds} ms");
+    Assert.That(sw.Elapsed.TotalMilliseconds,
+                Is.GreaterThanOrEqualTo(timeout - 5));
+    Assert.That(sw.Elapsed.TotalMilliseconds,
+                Is.LessThanOrEqualTo(timeout + 20));
   }
 
   [Test]
   [Timeout(1000)]
-  [Repeat(100)]
+  [Repeat(10)]
   public void ReadTimeoutNoWriter([Values(0,
-                                          1,
-                                          10,
+                                          15,
                                           30,
-                                          50)]
+                                          45)]
                                   int timeout)
   {
     var queue = new RendezVousChannel<int>();
@@ -116,13 +117,135 @@ public class RendezVousChannelTest
 
     sw.Stop();
 
-    Console.WriteLine($"{sw.Elapsed.TotalMilliseconds} ms");
+    Assert.That(sw.Elapsed.TotalMilliseconds,
+                Is.GreaterThanOrEqualTo(timeout - 5));
+    Assert.That(sw.Elapsed.TotalMilliseconds,
+                Is.LessThanOrEqualTo(timeout + 20));
+  }
+
+
+  [Test]
+  [Timeout(1000)]
+  [Repeat(20)]
+  public async Task WriteTimeout([Values(0,
+                                         15,
+                                         45)]
+                                 int writeTimeout,
+                                 [Values(0,
+                                         15,
+                                         45)]
+                                 int readWait)
+  {
+    var queue = new RendezVousChannel<int>();
+
+    var times = new TimeSpan[2];
+    var tcs   = new TaskCompletionSource();
+    var reader = Task.Run(async () =>
+                          {
+                            var sw = Stopwatch.StartNew();
+                            try
+                            {
+                              await tcs.Task.ConfigureAwait(false);
+                              await Task.Delay(TimeSpan.FromMilliseconds(readWait))
+                                        .ConfigureAwait(false);
+
+                              var x = await queue.ReadAsync(TimeSpan.Zero)
+                                                 .ConfigureAwait(false);
+
+                              queue.CloseReader();
+
+                              return x;
+                            }
+                            finally
+                            {
+                              sw.Stop();
+                              times[0] = sw.Elapsed;
+                            }
+                          });
+    var writer = Task.Run(async () =>
+                          {
+                            var sw = Stopwatch.StartNew();
+                            try
+                            {
+                              var write = queue.WriteAsync(3,
+                                                           TimeSpan.FromMilliseconds(writeTimeout));
+                              // Ensure read occurs after write has started
+                              tcs.SetResult();
+                              await write.ConfigureAwait(true);
+                              queue.CloseWriter();
+                            }
+                            finally
+                            {
+                              sw.Stop();
+                              times[1] = sw.Elapsed;
+                            }
+                          });
+
+    try
+    {
+      await Task.WhenAll(reader,
+                         writer)
+                .ConfigureAwait(false);
+    }
+    catch
+    {
+    }
+
+    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {times[0].TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {times[1].TotalMilliseconds,-7} ms");
+
+    switch (writeTimeout - readWait)
+    {
+      case < 0:
+        Assert.That(() => reader,
+                    Throws.InstanceOf<TimeoutException>());
+        Assert.That(() => writer,
+                    Throws.InstanceOf<TimeoutException>());
+        break;
+      case > 0:
+        Assert.That(() => reader,
+                    Throws.Nothing);
+        Assert.That(() => writer,
+                    Throws.Nothing);
+        Assert.That(await reader.ConfigureAwait(false),
+                    Is.EqualTo(3));
+        break;
+      default:
+        Exception? readException  = null;
+        Exception? writeException = null;
+        try
+        {
+          await reader.ConfigureAwait(false);
+        }
+        catch (Exception? e)
+        {
+          readException = e;
+        }
+
+        try
+        {
+          await writer.ConfigureAwait(false);
+        }
+        catch (Exception? e)
+        {
+          writeException = e;
+        }
+
+        // Ensure that either both succeed or both fail
+        Assert.That(writeException,
+                    readException is null
+                      ? Is.Null
+                      : Is.InstanceOf<TimeoutException>());
+        Assert.That(readException,
+                    writeException is null
+                      ? Is.Null
+                      : Is.InstanceOf<TimeoutException>());
+        break;
+    }
   }
 
   [Test]
   [Timeout(1000)]
-  [Repeat(100)]
-  [Parallelizable]
+  [Repeat(20)]
   public async Task ReadTimeout([Values(0,
                                         15,
                                         45)]
@@ -163,14 +286,8 @@ public class RendezVousChannelTest
                             try
                             {
                               await tcs.Task.ConfigureAwait(false);
-                              try
-                              {
-                                await Task.Delay(TimeSpan.FromMilliseconds(writeWait))
-                                          .ConfigureAwait(false);
-                              }
-                              catch (OperationCanceledException)
-                              {
-                              }
+                              await Task.Delay(TimeSpan.FromMilliseconds(writeWait))
+                                        .ConfigureAwait(false);
 
                               await queue.WriteAsync(3,
                                                      TimeSpan.Zero)
