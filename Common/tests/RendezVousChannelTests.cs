@@ -15,7 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -71,6 +73,177 @@ public class RendezVousChannelTest
                 Is.EqualTo(Enumerable.Range(0,
                                             n)
                                      .ToList()));
+  }
+
+  [Test]
+  [Timeout(1000)]
+  [Repeat(100)]
+  public void WriteTimeoutNoReader([Values(0,
+                                           1,
+                                           10,
+                                           30,
+                                           50)]
+                                   int timeout)
+  {
+    var queue = new RendezVousChannel<int>();
+
+    var sw = Stopwatch.StartNew();
+
+    Assert.That(() => queue.WriteAsync(0,
+                                       TimeSpan.FromMilliseconds(timeout)),
+                Throws.InstanceOf<TimeoutException>());
+
+    sw.Stop();
+
+    Console.WriteLine($"{sw.Elapsed.TotalMilliseconds} ms");
+  }
+
+  [Test]
+  [Timeout(1000)]
+  [Repeat(100)]
+  public void ReadTimeoutNoWriter([Values(0,
+                                          1,
+                                          10,
+                                          30,
+                                          50)]
+                                  int timeout)
+  {
+    var queue = new RendezVousChannel<int>();
+    var sw    = Stopwatch.StartNew();
+
+    Assert.That(() => queue.ReadAsync(TimeSpan.FromMilliseconds(timeout)),
+                Throws.InstanceOf<TimeoutException>());
+
+    sw.Stop();
+
+    Console.WriteLine($"{sw.Elapsed.TotalMilliseconds} ms");
+  }
+
+  [Test]
+  [Timeout(1000)]
+  [Repeat(100)]
+  [Parallelizable]
+  public async Task ReadTimeout([Values(0,
+                                        15,
+                                        45)]
+                                int readTimeout,
+                                [Values(0,
+                                        15,
+                                        45)]
+                                int writeWait)
+  {
+    var queue = new RendezVousChannel<int>();
+
+    var times = new TimeSpan[2];
+    var tcs   = new TaskCompletionSource();
+    var reader = Task.Run(async () =>
+                          {
+                            var sw = Stopwatch.StartNew();
+                            try
+                            {
+                              var read = queue.ReadAsync(TimeSpan.FromMilliseconds(readTimeout));
+
+                              // Ensure write occurs after reading has started
+                              tcs.SetResult();
+
+                              var x = await read.ConfigureAwait(true);
+                              queue.CloseReader();
+
+                              return x;
+                            }
+                            finally
+                            {
+                              sw.Stop();
+                              times[0] = sw.Elapsed;
+                            }
+                          });
+    var writer = Task.Run(async () =>
+                          {
+                            var sw = Stopwatch.StartNew();
+                            try
+                            {
+                              await tcs.Task.ConfigureAwait(false);
+                              try
+                              {
+                                await Task.Delay(TimeSpan.FromMilliseconds(writeWait))
+                                          .ConfigureAwait(false);
+                              }
+                              catch (OperationCanceledException)
+                              {
+                              }
+
+                              await queue.WriteAsync(3,
+                                                     TimeSpan.Zero)
+                                         .ConfigureAwait(true);
+                              queue.CloseWriter();
+                            }
+                            finally
+                            {
+                              sw.Stop();
+                              times[1] = sw.Elapsed;
+                            }
+                          });
+
+    try
+    {
+      await Task.WhenAll(reader,
+                         writer)
+                .ConfigureAwait(false);
+    }
+    catch
+    {
+    }
+
+    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {times[0].TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {times[1].TotalMilliseconds,-7} ms");
+
+    switch (readTimeout - writeWait)
+    {
+      case < 0:
+        Assert.That(() => reader,
+                    Throws.InstanceOf<TimeoutException>());
+        Assert.That(() => writer,
+                    Throws.InstanceOf<TimeoutException>());
+        break;
+      case > 0:
+        Assert.That(() => reader,
+                    Throws.Nothing);
+        Assert.That(() => writer,
+                    Throws.Nothing);
+        Assert.That(await reader.ConfigureAwait(false),
+                    Is.EqualTo(3));
+        break;
+      default:
+        Exception? readException  = null;
+        Exception? writeException = null;
+        try
+        {
+          await reader.ConfigureAwait(false);
+        }
+        catch (Exception? e)
+        {
+          readException = e;
+        }
+
+        try
+        {
+          await writer.ConfigureAwait(false);
+        }
+        catch (Exception? e)
+        {
+          writeException = e;
+        }
+
+        // Ensure that either both succeed or both fail
+        Assert.That(writeException,
+                    readException is null
+                      ? Is.Null
+                      : Is.InstanceOf<TimeoutException>());
+        Assert.That(readException,
+                    writeException is null
+                      ? Is.Null
+                      : Is.InstanceOf<TimeoutException>());
+        break;
+    }
   }
 
   private static async IAsyncEnumerable<int> ReadAsync(RendezVousChannel<int> queue,

@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -47,9 +46,7 @@ public class RendezVousChannel<T>
 {
   private readonly SemaphoreSlim readerSem_;
   private readonly SemaphoreSlim writerSem_;
-  private          bool          readerClosed_;
   private          T?            value_;
-  private          bool          writerClosed_;
 
   /// <summary>
   ///   Create an instance
@@ -59,6 +56,16 @@ public class RendezVousChannel<T>
     readerSem_ = new SemaphoreSlim(0);
     writerSem_ = new SemaphoreSlim(0);
   }
+
+  /// <summary>
+  ///   Whether the Reader has closed
+  /// </summary>
+  public bool IsReaderClosed { get; private set; }
+
+  /// <summary>
+  ///   Whether the Writer has closed
+  /// </summary>
+  public bool IsWriterClosed { get; private set; }
 
   /// <summary>
   ///   Send a value to the consumer
@@ -76,7 +83,7 @@ public class RendezVousChannel<T>
                                TimeSpan          timeout,
                                CancellationToken cancellationToken = default)
   {
-    if (writerClosed_)
+    if (IsWriterClosed)
     {
       throw new ChannelClosedException("Writer has been closed");
     }
@@ -102,15 +109,16 @@ public class RendezVousChannel<T>
                                      CancellationToken.None)
                           .ConfigureAwait(false))
       {
-        // Writer semaphore will be released soon, if not already released
-        await writerSem_.WaitAsync(CancellationToken.None)
-                        .ConfigureAwait(false);
         value_ = default;
         throw;
       }
+
+      // Writer semaphore will be released soon, if not already released
+      await writerSem_.WaitAsync(CancellationToken.None)
+                      .ConfigureAwait(false);
     }
 
-    if (readerClosed_)
+    if (IsReaderClosed)
     {
       writerSem_.Release();
       throw new ChannelClosedException("Reader has been closed");
@@ -134,7 +142,7 @@ public class RendezVousChannel<T>
   public async Task<T> ReadAsync(TimeSpan          timeout,
                                  CancellationToken cancellationToken = default)
   {
-    if (readerClosed_)
+    if (IsReaderClosed)
     {
       throw new ChannelClosedException("Reader has been closed");
     }
@@ -149,7 +157,7 @@ public class RendezVousChannel<T>
     var value = value_!;
     value_ = default;
 
-    if (writerClosed_)
+    if (IsWriterClosed)
     {
       readerSem_.Release();
       throw new ChannelClosedException("Writer has been closed");
@@ -171,8 +179,7 @@ public class RendezVousChannel<T>
   /// </summary>
   public void CloseReader()
   {
-    Debug.Assert(!readerClosed_);
-    readerClosed_ = true;
+    IsReaderClosed = true;
     writerSem_.Release();
   }
 
@@ -181,8 +188,7 @@ public class RendezVousChannel<T>
   /// </summary>
   public void CloseWriter()
   {
-    Debug.Assert(!writerClosed_);
-    writerClosed_ = true;
+    IsWriterClosed = true;
     readerSem_.Release();
   }
 }
