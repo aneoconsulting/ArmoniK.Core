@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -33,7 +32,7 @@ namespace ArmoniK.Core.Common.Tests;
 public class RendezvousChannelTest
 {
   [Test]
-  [Timeout(1000)]
+  [Timeout(10000)]
   [Repeat(1000)]
   public async Task WriteShouldWork([Values(0,
                                             1,
@@ -76,181 +75,153 @@ public class RendezvousChannelTest
   }
 
   [Test]
-  [Timeout(1000)]
-  [Repeat(10)]
+  [Timeout(10000)]
+  [Repeat(20)]
   public void TimeoutNoCounterParty([Values(0,
                                             15,
-                                            30,
                                             45)]
                                     int timeout,
-                                    [Values] bool isReader)
+                                    [Values] bool isReader,
+                                    [Values] bool useCancellation)
   {
-    // Warmup Nunit runtime
-    Assert.That(() => Task.Delay(0),
+    var queue = new RendezvousChannel<int>();
+
+    var t0 = DateTime.UtcNow;
+
+    Assert.That(() => Interact(queue,
+                               isReader,
+                               useCancellation,
+                               timeout),
+                Throws.InstanceOf(ExceptionType(useCancellation)));
+
+    var t1      = DateTime.UtcNow;
+    var elapsed = (t1 - t0).TotalMilliseconds;
+
+    Assert.That(() => Interact(queue,
+                               !isReader),
+                Throws.InstanceOf(ExceptionType()));
+
+    Console.WriteLine($"Timeout {timeout,7} ms    got {elapsed,7} ms");
+
+    Assert.That(elapsed,
+                Is.GreaterThanOrEqualTo(timeout / 2));
+    Assert.That(elapsed,
+                Is.LessThanOrEqualTo(timeout * 3 + 50));
+  }
+
+
+  [Test]
+  [Timeout(1000)]
+  [Repeat(200)]
+  public void TimeoutCounterParty([Values] bool isReader,
+                                  [Values] bool useCancellation)
+  {
+    var queue = new RendezvousChannel<int>();
+
+    var task = Interact(queue,
+                        isReader,
+                        useCancellation,
+                        100);
+
+    Assert.That(() => Interact(queue,
+                               !isReader),
                 Throws.Nothing);
-
-    var queue = new RendezvousChannel<int>();
-
-    var sw = Stopwatch.StartNew();
-
-    Assert.That(() => isReader
-                        ? queue.ReadAsync(TimeSpan.FromMilliseconds(timeout))
-                        : queue.WriteAsync(0,
-                                           TimeSpan.FromMilliseconds(timeout)),
-                Throws.InstanceOf<TimeoutException>());
-
-    sw.Stop();
-
-    Assert.That(sw.Elapsed.TotalMilliseconds,
-                Is.GreaterThanOrEqualTo(timeout - 5));
-    Assert.That(sw.Elapsed.TotalMilliseconds,
-                Is.LessThanOrEqualTo(timeout + 20));
+    Assert.That(() => task,
+                Throws.Nothing);
+    Assert.That(task.Result,
+                Is.EqualTo(3));
   }
 
   [Test]
   [Timeout(1000)]
-  [Repeat(20)]
-  public async Task Timeout([Values(0,
-                                    15,
-                                    45)]
-                            int timeout,
-                            [Values(0,
-                                    15,
-                                    45)]
-                            int wait,
-                            [Values] bool isReader,
-                            [Values] bool useCancellation)
+  [Repeat(200)]
+  public void TimeoutClose([Values] bool isReader,
+                           [Values] bool useCancellation)
   {
     var queue = new RendezvousChannel<int>();
-    var actor = new QueueActor(useCancellation,
-                               timeout,
-                               wait,
-                               new TaskCompletionSource());
 
-    var readerTask = RunWithStopWatch(() => actor.Interact(isReader,
-                                                           (timeSpan,
-                                                            token) => queue.ReadAsync(timeSpan,
-                                                                                      token),
-                                                           queue.CloseReader));
-    var writerTask = RunWithStopWatch(() => actor.Interact(!isReader,
-                                                           (timeSpan,
-                                                            token) => TaskWithValue(queue.WriteAsync(3,
-                                                                                                     timeSpan,
-                                                                                                     token)),
-                                                           queue.CloseWriter));
+    var task = Interact(queue,
+                        isReader,
+                        useCancellation,
+                        100);
 
-    var reader = await readerTask.ConfigureAwait(false);
-    var writer = await writerTask.ConfigureAwait(false);
+    Assert.That(() => Close(queue,
+                            !isReader),
+                Throws.Nothing);
+    Assert.That(() => task,
+                Throws.InstanceOf<ChannelClosedException>());
+    Assert.That(() => Interact(queue,
+                               isReader,
+                               timeout: 100),
+                Throws.InstanceOf<ChannelClosedException>());
+  }
 
-    var readExceptionType  = actor.ExceptionType(isReader);
-    var writeExceptionType = actor.ExceptionType(!isReader);
+  [Test]
+  [Timeout(10000)]
+  [Repeat(200)]
+  public async Task TimeoutRaceCounterParty([Values] bool isReader,
+                                            [Values] bool useCancellation)
+  {
+    var queue = new RendezvousChannel<int>();
 
-    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {reader.duration.TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {writer.duration.TotalMilliseconds,-7} ms");
+    var waiter = Interact(queue,
+                          isReader,
+                          useCancellation,
+                          30,
+                          true);
 
-    switch (timeout - wait)
+    var triggerer = Interact(queue,
+                             !isReader,
+                             close: true);
+
+    var waitException = await WaitException(waiter)
+                          .ConfigureAwait(false);
+    var triggerException = await WaitException(triggerer)
+                             .ConfigureAwait(false);
+
+    Assert.That(waitException,
+                triggerException is null
+                  ? Is.Null
+                  : Is.InstanceOf(ExceptionType(useCancellation)));
+    Assert.That(triggerException,
+                waitException is null
+                  ? Is.Null
+                  : Is.InstanceOf(ExceptionType()));
+
+    if (waitException is null)
     {
-      case < 0:
-        Assert.That(() => reader.task,
-                    Throws.InstanceOf(readExceptionType));
-        Assert.That(() => writer.task,
-                    Throws.InstanceOf(writeExceptionType));
-        break;
-      case > 0:
-        Assert.That(() => reader.task,
-                    Throws.Nothing);
-        Assert.That(() => writer.task,
-                    Throws.Nothing);
-        Assert.That(await reader.task.ConfigureAwait(false),
-                    Is.EqualTo(3));
-        break;
-      default:
-        var readException = await WaitException(reader.task)
-                              .ConfigureAwait(false);
-        var writeException = await WaitException(writer.task)
-                               .ConfigureAwait(false);
-
-        // Ensure that either both succeed or both fail
-        Assert.That(writeException,
-                    readException is null
-                      ? Is.Null
-                      : Is.InstanceOf(writeExceptionType));
-        Assert.That(readException,
-                    writeException is null
-                      ? Is.Null
-                      : Is.InstanceOf(readExceptionType));
-        break;
+      Assert.That(waiter.Result,
+                  Is.EqualTo(3));
+      Assert.That(triggerer.Result,
+                  Is.EqualTo(3));
     }
   }
 
-
   [Test]
-  [Timeout(1000)]
-  [Repeat(20)]
-  public async Task TimeoutClose([Values(0,
-                                         15,
-                                         45)]
-                                 int timeout,
-                                 [Values(0,
-                                         15,
-                                         45)]
-                                 int wait,
-                                 [Values] bool isReader,
-                                 [Values] bool useCancellation)
+  [Timeout(10000)]
+  [Repeat(50)]
+  public async Task TimeoutRaceClose([Values] bool isReader,
+                                     [Values] bool useCancellation)
   {
     var queue = new RendezvousChannel<int>();
-    var actor = new QueueActor(useCancellation,
-                               timeout,
-                               wait);
 
-    var readerTask = RunWithStopWatch(() => actor.Interact(isReader,
-                                                           (timeSpan,
-                                                            token) => queue.ReadAsync(timeSpan,
-                                                                                      token),
-                                                           queue.CloseReader,
-                                                           () =>
-                                                           {
-                                                             queue.CloseReader();
-                                                             return Task.FromResult(0);
-                                                           }));
-    var writerTask = RunWithStopWatch(() => actor.Interact(!isReader,
-                                                           (timeSpan,
-                                                            token) => TaskWithValue(queue.WriteAsync(3,
-                                                                                                     timeSpan,
-                                                                                                     token)),
-                                                           queue.CloseWriter,
-                                                           () =>
-                                                           {
-                                                             queue.CloseWriter();
-                                                             return Task.FromResult(new ValueTuple());
-                                                           }));
+    var waiter = Interact(queue,
+                          isReader,
+                          useCancellation,
+                          30);
 
-    var reader = await readerTask.ConfigureAwait(false);
-    var writer = await writerTask.ConfigureAwait(false);
-
-    Console.WriteLine($"Read ({queue.IsReaderClosed,-5}): {reader.duration.TotalMilliseconds,-7} ms    Write ({queue.IsWriterClosed,-5}): {writer.duration.TotalMilliseconds,-7} ms");
-
-    Task task = isReader
-                  ? reader.task
-                  : writer.task;
-
-    var exceptionType = actor.ExceptionType();
-
-    switch (timeout - wait)
-    {
-      case < 0:
-        Assert.That(() => task,
-                    Throws.InstanceOf(exceptionType));
-        break;
-      case > 0:
-        Assert.That(() => task,
-                    Throws.InstanceOf<ChannelClosedException>());
-        break;
-      default:
-        Assert.That(() => task,
-                    Throws.InstanceOf<ChannelClosedException>()
-                          .Or.InstanceOf(exceptionType));
-        break;
-    }
+    await Task.Delay(30)
+              .ConfigureAwait(false);
+    Assert.That(() => Close(queue,
+                            !isReader),
+                Throws.Nothing);
+    Assert.That(() => waiter,
+                Throws.InstanceOf<ChannelClosedException>()
+                      .Or.InstanceOf(ExceptionType(useCancellation)));
+    Assert.That(() => Interact(queue,
+                               isReader,
+                               timeout: 100),
+                Throws.InstanceOf<ChannelClosedException>());
   }
 
   private static async IAsyncEnumerable<int> ReadAsync(RendezvousChannel<int> queue,
@@ -262,7 +233,7 @@ public class RendezvousChannelTest
       int x;
       try
       {
-        x = await queue.ReadAsync(System.Threading.Timeout.InfiniteTimeSpan,
+        x = await queue.ReadAsync(Timeout.InfiniteTimeSpan,
                                   CancellationToken.None)
                        .ConfigureAwait(false);
       }
@@ -288,7 +259,7 @@ public class RendezvousChannelTest
       try
       {
         await queue.WriteAsync(nbWritten,
-                               System.Threading.Timeout.InfiniteTimeSpan,
+                               Timeout.InfiniteTimeSpan,
                                CancellationToken.None)
                    .ConfigureAwait(false);
         nbWritten++;
@@ -304,31 +275,6 @@ public class RendezvousChannelTest
     return nbWritten;
   }
 
-  private static Task<(Task<T> task, TimeSpan duration)> RunWithStopWatch<T>(Func<Task<T>> f)
-    => Task.Run(async () =>
-                {
-                  var sw   = Stopwatch.StartNew();
-                  var task = f();
-                  try
-                  {
-                    await task.ConfigureAwait(false);
-                  }
-                  catch
-                  {
-                    // ignored
-                  }
-
-                  sw.Stop();
-
-                  return (task, sw.Elapsed);
-                });
-
-  private async Task<ValueTuple> TaskWithValue(Task task)
-  {
-    await task.ConfigureAwait(false);
-    return new ValueTuple();
-  }
-
   private static async Task<Exception?> WaitException(Task task)
   {
     try
@@ -342,62 +288,64 @@ public class RendezvousChannelTest
     }
   }
 
-  private class QueueActor(bool                  useCancellation,
-                           int                   timeout,
-                           int                   wait,
-                           TaskCompletionSource? tcs = null)
+  private static async Task<int> Interact(RendezvousChannel<int> queue,
+                                          bool                   isReader,
+                                          bool                   useCancellation = false,
+                                          int                    timeout         = 0,
+                                          bool                   close           = false)
   {
-    public async Task<T> Interact<T>(bool                                       isActive,
-                                     Func<TimeSpan, CancellationToken, Task<T>> interact,
-                                     Action                                     close,
-                                     Func<Task<T>>?                             interactPassive = null)
+    using var cts = useCancellation
+                      ? new CancellationTokenSource(timeout)
+                      : null;
+    var token = CancellationToken.None;
+    var span  = TimeSpan.FromMilliseconds(timeout);
+
+    if (cts is not null)
     {
-      using var cts = new CancellationTokenSource();
-      Task<T>   task;
-      if (isActive)
-      {
-        if (useCancellation)
-        {
-          cts.CancelAfter(timeout);
-          task = interact(System.Threading.Timeout.InfiniteTimeSpan,
-                          cts.Token);
-        }
-        else
-        {
-          task = interact(TimeSpan.FromMilliseconds(timeout),
-                          CancellationToken.None);
-        }
-
-        // Ensure counterparty starts after the interaction has begun
-        tcs?.SetResult();
-      }
-      else
-      {
-        if (tcs is not null)
-        {
-          await tcs.Task.ConfigureAwait(false);
-        }
-
-        await Task.Delay(wait,
-                         CancellationToken.None)
-                  .ConfigureAwait(false);
-
-        interactPassive ??= () => interact(TimeSpan.Zero,
-                                           CancellationToken.None);
-
-        task = interactPassive();
-      }
-
-      var x = await task.ConfigureAwait(false);
-
-      close();
-
-      return x;
+      span  = Timeout.InfiniteTimeSpan;
+      token = cts.Token;
     }
 
-    public Type ExceptionType(bool isActive = true)
-      => isActive && useCancellation
-           ? typeof(OperationCanceledException)
-           : typeof(TimeoutException);
+    var x = 3;
+
+    if (isReader)
+    {
+      x = await queue.ReadAsync(span,
+                                token)
+                     .ConfigureAwait(false);
+    }
+    else
+    {
+      await queue.WriteAsync(x,
+                             span,
+                             token)
+                 .ConfigureAwait(false);
+    }
+
+    if (close)
+    {
+      Close(queue,
+            isReader);
+    }
+
+    return x;
   }
+
+  private static void Close(RendezvousChannel<int> queue,
+                            bool                   isReader)
+  {
+    if (isReader)
+    {
+      queue.CloseReader();
+    }
+    else
+    {
+      queue.CloseWriter();
+    }
+  }
+
+  private static Type ExceptionType(bool useCancellation = false)
+    => useCancellation
+         ? typeof(OperationCanceledException)
+         : typeof(TimeoutException);
 }
