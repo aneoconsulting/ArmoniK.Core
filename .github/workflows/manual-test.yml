@@ -1,0 +1,150 @@
+name: Manual Integration Test
+
+on:
+  workflow_dispatch:
+    inputs:
+      filter:
+        description: 'Filter for tests'
+        default: ''
+        type: string
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        projects:
+          - Common/tests
+          - Adaptors/MongoDB/tests
+          - Adaptors/Memory/tests
+          - Adaptors/S3/tests
+        os:
+          - ubuntu-latest
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - name: Install AWSCLI (the one in the Github runner does not work)
+        run: |
+          pip install awscli
+
+      - name: Setup just
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Minio Server UP
+        if: ${{ matrix.projects }} == "Adaptors/S3/tests"
+        run: |
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just object=minio deployTargetObject
+
+      - name: Run tests
+        run: |
+          MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+            dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - ${{ matrix.os }} ${{ matrix.projects }}
+          path: ${{ matrix.projects }}/TestResults/test-results.trx
+          reporter: dotnet-trx
+      - name: Upload monitor profile
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz
+
+  testsQueueProtos:
+    strategy:
+      matrix:
+        queue:
+          - activemq
+          - rabbitmq
+        projects:
+          - Adaptors/Amqp/tests
+        os:
+          - ubuntu-latest
+        include:
+          - queue: rabbitmq091
+            projects: Adaptors/RabbitMQ/tests
+            os: ubuntu-latest
+      fail-fast: false
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - name: Install AWSCLI (the one in the Github runner does not work)
+        run: |
+          pip install awscli
+
+      - name: Setup just
+        run: |
+          sudo snap install --edge --classic just
+
+      - name: Set up queue
+        run: |
+          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+            just queue=${{ matrix.queue }} deployTargetQueue
+
+      - name: Run tests
+        run: |
+          MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+            dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
+          path: ${{ matrix.projects }}/TestResults/test-results.trx
+          reporter: dotnet-trx
+      - name: Upload monitor profile
+        if: always()
+        run: |
+          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz
+
+  testsWinOnly:
+    strategy:
+      matrix:
+        projects:
+          - Adaptors/Redis/tests
+          - Common/tests
+          - Adaptors/MongoDB/tests
+          - Adaptors/Memory/tests
+      fail-fast: false
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
+
+      - name: Run tests
+        shell: bash
+        run: |
+          cd ${{ matrix.projects }}
+          dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+
+      - name: Test Report
+        uses: dorny/test-reporter@v1
+        if: success() || failure()
+        with:
+          name: Test - windows ${{ matrix.projects }}
+          path: ${{ matrix.projects }}/TestResults/test-results.trx
+          reporter: dotnet-trx
