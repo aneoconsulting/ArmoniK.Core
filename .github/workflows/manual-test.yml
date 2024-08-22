@@ -39,7 +39,7 @@ jobs:
       - name: Minio Server UP
         if: ${{ matrix.projects }} == "Adaptors/S3/tests"
         run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just object=minio deployTargetObject
 
       - name: Run tests
@@ -97,7 +97,7 @@ jobs:
 
       - name: Set up queue
         run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just queue=${{ matrix.queue }} deployTargetQueue
 
       - name: Run tests
