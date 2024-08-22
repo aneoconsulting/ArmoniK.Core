@@ -1,4 +1,4 @@
-name: Manual Integration Test
+name: Manual Test
 
 on:
   workflow_dispatch:
@@ -46,6 +46,8 @@ jobs:
         run: |
           MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
             dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+        env:
+          filter: ${{ inputs.filter }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -102,6 +104,8 @@ jobs:
         run: |
           MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
             dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+        env:
+          filter: ${{ inputs.filter }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -140,6 +144,8 @@ jobs:
         run: |
           cd ${{ matrix.projects }}
           dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+        env:
+          filter: ${{ inputs.filter }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
