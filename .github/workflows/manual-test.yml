@@ -1,4 +1,4 @@
-name: Manual Integration Test
+name: Manual Test
 
 on:
   workflow_dispatch:
@@ -39,13 +39,15 @@ jobs:
       - name: Minio Server UP
         if: ${{ matrix.projects }} == "Adaptors/S3/tests"
         run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just object=minio deployTargetObject
 
       - name: Run tests
         run: |
           MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
             dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+        env:
+          filter: ${{ inputs.filter }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -95,13 +97,15 @@ jobs:
 
       - name: Set up queue
         run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just queue=${{ matrix.queue }} deployTargetQueue
 
       - name: Run tests
         run: |
           MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
             dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+        env:
+          filter: ${{ inputs.filter }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
@@ -140,6 +144,8 @@ jobs:
         run: |
           cd ${{ matrix.projects }}
           dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
+        env:
+          filter: ${{ inputs.filter }}
 
       - name: Test Report
         uses: dorny/test-reporter@v1
