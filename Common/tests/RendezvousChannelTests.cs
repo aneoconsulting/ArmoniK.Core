@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Channels;
@@ -76,37 +77,57 @@ public class RendezvousChannelTest
 
   [Test]
   [Timeout(10000)]
+  public async Task TimeoutDuration([Values] bool isReader,
+                                    [Values] bool useCancellation)
+  {
+    var timeout = 15;
+    var queue   = new RendezvousChannel<int>();
+    var times   = new double[100];
+    var t0      = Stopwatch.GetTimestamp();
+
+    for (var i = 0; i < times.Length; ++i)
+    {
+      await WaitException(Interact(queue,
+                                   isReader,
+                                   useCancellation,
+                                   timeout))
+        .ConfigureAwait(false);
+
+      var t1 = Stopwatch.GetTimestamp();
+      times[i] = (t1 - t0) * 1000.0 / Stopwatch.Frequency;
+      t0       = t1;
+    }
+
+    Array.Sort(times);
+
+    var mean = times.Skip(5)
+                    .Take(times.Length - 10)
+                    .Average();
+
+    Console.WriteLine($"Expected: {timeout}  Mean: {mean:F}  Raw: {string.Join(", ", times)}");
+
+    Assert.That(mean,
+                Is.GreaterThanOrEqualTo(timeout - 5));
+    Assert.That(mean,
+                Is.LessThanOrEqualTo(timeout + 5));
+  }
+
+  [Test]
+  [Timeout(10000)]
   [Repeat(20)]
-  public void TimeoutNoCounterParty([Values(0,
-                                            15,
-                                            45)]
-                                    int timeout,
-                                    [Values] bool isReader,
+  public void TimeoutNoCounterParty([Values] bool isReader,
                                     [Values] bool useCancellation)
   {
     var queue = new RendezvousChannel<int>();
 
-    var t0 = DateTime.UtcNow;
-
     Assert.That(() => Interact(queue,
                                isReader,
                                useCancellation,
-                               timeout),
+                               5),
                 Throws.InstanceOf(ExceptionType(useCancellation)));
-
-    var t1      = DateTime.UtcNow;
-    var elapsed = (t1 - t0).TotalMilliseconds;
-
     Assert.That(() => Interact(queue,
                                !isReader),
                 Throws.InstanceOf(ExceptionType()));
-
-    Console.WriteLine($"Timeout {timeout,7} ms    got {elapsed,7} ms");
-
-    Assert.That(elapsed,
-                Is.GreaterThanOrEqualTo(timeout / 2));
-    Assert.That(elapsed,
-                Is.LessThanOrEqualTo(timeout * 3 + 50));
   }
 
 
@@ -167,9 +188,11 @@ public class RendezvousChannelTest
     var waiter = Interact(queue,
                           isReader,
                           useCancellation,
-                          30,
+                          15,
                           true);
 
+    await Task.Delay(15)
+              .ConfigureAwait(false);
     var triggerer = Interact(queue,
                              !isReader,
                              close: true);
@@ -199,7 +222,7 @@ public class RendezvousChannelTest
 
   [Test]
   [Timeout(10000)]
-  [Repeat(50)]
+  [Repeat(200)]
   public async Task TimeoutRaceClose([Values] bool isReader,
                                      [Values] bool useCancellation)
   {
@@ -208,9 +231,9 @@ public class RendezvousChannelTest
     var waiter = Interact(queue,
                           isReader,
                           useCancellation,
-                          30);
+                          15);
 
-    await Task.Delay(30)
+    await Task.Delay(15)
               .ConfigureAwait(false);
     Assert.That(() => Close(queue,
                             !isReader),
