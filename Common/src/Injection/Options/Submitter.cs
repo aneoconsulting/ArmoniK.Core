@@ -37,4 +37,11 @@ public class Submitter
   ///   Negative values disable the check
   /// </summary>
   public int MaxErrorAllowed { get; set; } = 5;
+
+
+  /// <summary>
+  ///   Toggle payload suppression after the task is successful
+  ///   default: false
+  /// </summary>
+  public bool DeletePayload { get; set; } = false;
 }

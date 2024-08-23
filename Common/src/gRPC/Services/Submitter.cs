@@ -521,17 +521,21 @@ public class Submitter : ISubmitter
                         .ConfigureAwait(false);
 
 
-        //Discard value is used to remove warnings CS4014 !!
-        _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
-                                                                                  {
-                                                                                    taskData.TaskId,
-                                                                                  },
-                                                                                  CancellationToken.None)
-                                                                  .ConfigureAwait(false),
-                                  cancellationToken);
+        if (submitterOptions_.DeletePayload)
+        {
+          //Discard value is used to remove warnings CS4014 !!
+          _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
+                                                                                    {
+                                                                                      taskData.TaskId,
+                                                                                    },
+                                                                                    CancellationToken.None)
+                                                                    .ConfigureAwait(false),
+                                    cancellationToken);
 
-        logger_.LogInformation("Remove input payload of {task}",
-                               taskData.TaskId);
+          logger_.LogInformation("Remove input payload of {task}",
+                                 taskData.TaskId);
+        }
+
         break;
       case OutputStatus.Error:
         // TODO FIXME: nothing will resubmit the task if there is a crash there
