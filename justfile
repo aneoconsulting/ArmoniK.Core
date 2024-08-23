@@ -1,8 +1,8 @@
-# Enable positional args
-set positional-arguments
-
 # Enable bash output
 set shell := ["bash", "-exc"]
+
+# use powershell on windows
+set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 # Default values for the deployment
 tag          := "0.0.0.0-local"
@@ -16,19 +16,35 @@ partitions   := "2"
 platform     := ""
 push         := "false"
 load         := "true"
+ingress      := "true"
+prometheus   := "true"
+grafana      := "true"
+seq          := "true"
 
 # Export them as terraform environment variables
-export TF_VAR_core_tag        := tag
-export TF_VAR_use_local_image := local_images
-export TF_VAR_serilog         := '{ loggin_level = "' + log_level + '" }'
-export TF_VAR_num_replicas    := replicas
-export TF_VAR_num_partitions  := partitions
+export TF_VAR_core_tag          := tag
+export TF_VAR_use_local_image   := local_images
+export TF_VAR_serilog           := '{ loggin_level = "' + log_level + '" }'
+export TF_VAR_num_replicas      := replicas
+export TF_VAR_num_partitions    := partitions
+export TF_VAR_enable_grafana    := grafana
+export TF_VAR_enable_seq        := seq
+export TF_VAR_enable_prometheus := prometheus
+
 
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
-  '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
+  if os_family() == "windows" {
+    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12" }'
+  } else {
+    '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
+  }
 } else if queue == "rabbitmq091" {
-  '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
+  if os_family() == "windows" {
+    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12", protocol = "amqp0_9_1" }'
+  } else {
+    '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
+  }
 } else if queue == "artemis" {
   '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
 } else if queue == "activemq" {
@@ -40,13 +56,15 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 }
 
 # Sets the object storage
-export TF_VAR_object_storage := if object == "redis" {
-  '{ name = "redis", image = "redis:bullseye" }'
+object_storage := if object == "redis" {
+  '{ name = "redis", image = "redis:bullseye" '
 } else if object == "minio" {
-  '{ name = "minio", image = "quay.io/minio/minio" }'
+  '{ name = "minio", image = "quay.io/minio/minio" '
 } else {
-  '{ name = "local", image = "" }'
+  '{ name = "local", image = "" '
 }
+
+export TF_VAR_object_storage := object_storage + if os_family() == "windows" { ', "local_storage_path" : "c:/local_storage" }' } else {  '}' }
 
 # Defines worker and environment variables for deployment
 image_worker := if worker == "stream" {
@@ -93,9 +111,32 @@ export BENCH_CLIENT_IMAGE          := image_client_bench + ":" + tag
 export CRASHINGWORKER_CLIENT_IMAGE := image_client_crashingworker + ":" + tag
 
 export TF_VAR_submitter                       := '{ image = "' + image_submitter + '" }'
-export TF_VAR_compute_plane                   := '{ polling_agent = { image = "' + image_polling_agent + '" }, worker = {}}'
 export TF_VAR_armonik_metrics_image           := image_metrics
 export TF_VAR_armonik_partition_metrics_image := image_partition_metrics
+
+export TF_VAR_ingress:= if ingress == "false" {
+  '{"configs": {} }'
+} else {
+  '{}'
+}
+
+export TF_VAR_log_driver_image:= if os_family() == "windows" {
+  "fluent/fluent-bit:windows-2022-3.1.4"
+} else {
+  "fluent/fluent-bit:latest"
+}
+
+export TF_VAR_mongodb_params:= if os_family() == "windows" {
+  '{"windows": "true"}'
+} else {
+  '{}'
+}
+
+export TF_VAR_compute_plane:= if os_family() == "windows" {
+  '{ "polling_agent" : { "image" : "' + image_polling_agent + '", "shared_socket" : "c:/cache", "shared_data" : "c:/cache" }, "worker" = {}}'
+} else {
+  '{ "polling_agent" : { "image" : "' + image_polling_agent + '" }, "worker" = {}}'
+}
 
 # List recipes and their usage
 @default:
@@ -152,31 +193,31 @@ env:
 
 # Call terraform init
 init:
-  terraform -chdir=./terraform init -upgrade
+  terraform -chdir=terraform init -upgrade
 
 # Validate deployment
 validate:
-  terraform -chdir=./terraform validate
+  terraform -chdir=terraform validate
 
 # Invoke terraform console
 console:
-  terraform -chdir=./terraform console
+  terraform -chdir=terraform console
 
 # Plan ArmoniK Core deployment
 plan: (init)
-  terraform -chdir=./terraform plan -out=/dev/null
+  terraform -chdir=terraform plan
 
 # Deploy ArmoniK Core
 deploy: (init)
-  terraform -chdir=./terraform apply -auto-approve
+  terraform -chdir=terraform apply -auto-approve
 
 # Deploy target: object standalone
 deployTargetObject: (init)
-  terraform -chdir=./terraform apply -target="module.object_{{object}}" -auto-approve
+  terraform -chdir=terraform apply -target="module.object_{{object}}" -auto-approve
 
 # Destroy target: queue standalone
 destroyTargetObject:
-  terraform -chdir=./terraform destroy -target="module.object_{{object}}" -auto-approve
+  terraform -chdir=terraform destroy -target="module.object_{{object}}" -auto-approve
 
 # Deploy target: queue standalone
 deployTargetQueue: (init)
@@ -185,7 +226,7 @@ deployTargetQueue: (init)
   if [ {{queue}} = "rabbitmq091" ]; then
     which_module="module.queue_rabbitmq"
   fi
-  terraform -chdir=./terraform apply -target="${which_module}" -auto-approve
+  terraform -chdir=terraform apply -target="${which_module}" -auto-approve
 
 # Destroy target: queue standalone
 destroyTargetQueue:
@@ -194,11 +235,11 @@ destroyTargetQueue:
   if [ {{queue}} = "rabbitmq091" ]; then
     which_module="module.queue_rabbitmq"
   fi
-  terraform -chdir=./terraform destroy -target="${which_module}" -auto-approve
+  terraform -chdir=terraform destroy -target="${which_module}" -auto-approve
 
 # Destroy ArmoniK Core
 destroy:
-  terraform -chdir=./terraform destroy -auto-approve
+  terraform -chdir=terraform destroy -auto-approve
 
 # Custom docker generic rule
 container *args:

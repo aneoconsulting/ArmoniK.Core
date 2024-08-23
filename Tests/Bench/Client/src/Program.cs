@@ -469,6 +469,14 @@ internal static class Program
 
     var taskCreated = Stopwatch.GetTimestamp();
 
+
+    if (benchOptions.ExitAfterSubmission)
+    {
+      logger.LogInformation("Tasks submitted in {Submitted}s",
+                            TimeSpan.FromTicks((taskCreated - sessionCreated) / 100));
+      return;
+    }
+
     await channelPool.WithInstanceAsync(async channel => await new Events.EventsClient(channel).WaitForResultsAsync(createSessionReply.SessionId,
                                                                                                                     results,
                                                                                                                     CancellationToken.None)
@@ -478,60 +486,63 @@ internal static class Program
 
     var resultsAvailable = Stopwatch.GetTimestamp();
 
-    var countRes = 0;
-
-    await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
-                                  async resultId =>
-                                  {
-                                    for (var i = 0; i < benchOptions.MaxRetries; i++)
-                                    {
-                                      await using var channel = await channelPool.GetAsync(CancellationToken.None)
-                                                                                 .ConfigureAwait(false);
-                                      try
-                                      {
-                                        var client = new Results.ResultsClient(channel);
-
-                                        var result = await client.DownloadResultData(createSessionReply.SessionId,
-                                                                                     resultId,
-                                                                                     CancellationToken.None)
-                                                                 .ConfigureAwait(false);
-
-                                        // A good a way to process results would be to process them individually as soon as they are
-                                        // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
-                                        // be careful to not overload your memory. If you need to retrieve a lot of results to apply
-                                        // post-processing on, consider doing so with sub-tasking so that the client-side application
-                                        // has to do less work.
-
-                                        if (result.Length != benchOptions.ResultSize * 1024)
-                                        {
-                                          logger.LogInformation("Received length {received}, expected length {expected}",
-                                                                result.Length,
-                                                                benchOptions.ResultSize * 1024);
-                                          throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
-                                        }
-
-                                        Interlocked.Increment(ref countRes);
-                                        // If successful, return
-                                        return;
-                                      }
-                                      catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
-                                      {
-                                        logger.LogWarning(e,
-                                                          "Error during result retrieving, retrying to get {resultId}",
-                                                          resultId);
-                                      }
-                                    }
-
-                                    // in this case, retries are all made so we need to tell that it did not work
-                                    throw new InvalidOperationException("Too many retries");
-                                  })
-                 .ConfigureAwait(false);
-
-    logger.LogInformation("Results retrieved {number}",
-                          countRes);
-    if (countRes != results.Count)
+    if (benchOptions.DownloadResults)
     {
-      throw new InvalidOperationException("All results were not retrieved");
+      var countRes = 0;
+
+      await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
+                                    async resultId =>
+                                    {
+                                      for (var i = 0; i < benchOptions.MaxRetries; i++)
+                                      {
+                                        await using var channel = await channelPool.GetAsync(CancellationToken.None)
+                                                                                   .ConfigureAwait(false);
+                                        try
+                                        {
+                                          var client = new Results.ResultsClient(channel);
+
+                                          var result = await client.DownloadResultData(createSessionReply.SessionId,
+                                                                                       resultId,
+                                                                                       CancellationToken.None)
+                                                                   .ConfigureAwait(false);
+
+                                          // A good a way to process results would be to process them individually as soon as they are
+                                          // retrieved. They may be stored in a ConcurrentBag or a ConcurrentDictionary but you need to
+                                          // be careful to not overload your memory. If you need to retrieve a lot of results to apply
+                                          // post-processing on, consider doing so with sub-tasking so that the client-side application
+                                          // has to do less work.
+
+                                          if (result.Length != benchOptions.ResultSize * 1024)
+                                          {
+                                            logger.LogInformation("Received length {received}, expected length {expected}",
+                                                                  result.Length,
+                                                                  benchOptions.ResultSize * 1024);
+                                            throw new InvalidOperationException("The result size from the task should have the same size as the one specified");
+                                          }
+
+                                          Interlocked.Increment(ref countRes);
+                                          // If successful, return
+                                          return;
+                                        }
+                                        catch (RpcException e) when (e.StatusCode == StatusCode.Unavailable)
+                                        {
+                                          logger.LogWarning(e,
+                                                            "Error during result retrieving, retrying to get {resultId}",
+                                                            resultId);
+                                        }
+                                      }
+
+                                      // in this case, retries are all made so we need to tell that it did not work
+                                      throw new InvalidOperationException("Too many retries");
+                                    })
+                   .ConfigureAwait(false);
+
+      logger.LogInformation("Results retrieved {number}",
+                            countRes);
+      if (countRes != results.Count)
+      {
+        throw new InvalidOperationException("All results were not retrieved");
+      }
     }
 
     var resultsReceived = Stopwatch.GetTimestamp();

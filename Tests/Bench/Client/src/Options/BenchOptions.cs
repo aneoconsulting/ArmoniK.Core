@@ -104,6 +104,17 @@ public class BenchOptions
   public bool PurgeData { get; set; } = true;
 
   /// <summary>
+  ///   Download results and check all results are properly retrieved
+  /// </summary>
+  public bool DownloadResults { get; set; } = true;
+
+  /// <summary>
+  ///   Exit program after tasks are submitted
+  ///   default : false
+  /// </summary>
+  public bool ExitAfterSubmission { get; set; }
+
+  /// <summary>
   ///   Dictionary to put into task options
   /// </summary>
   public Dictionary<string, string> Options { get; set; } = new();
