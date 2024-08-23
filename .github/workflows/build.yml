@@ -65,6 +65,16 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just object=minio deployTargetObject
 
+    - name: Dotnet Restore
+      run: |
+        MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+          dotnet restore
+
+    - name: Dotnet Build
+      run: |
+        MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+          dotnet build
+
     - name: Run tests
       run: |
           MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
@@ -121,6 +131,16 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just queue=${{ matrix.queue }} deployTargetQueue
 
+    - name: Dotnet Restore
+      run: |
+        MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+          dotnet restore
+
+    - name: Dotnet Build
+      run: |
+        MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+          dotnet build
+
     - name: Run tests
       run: |
         MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
@@ -157,6 +177,16 @@ jobs:
       with:
         ref: ${{ github.ref }}
         submodules: true
+
+    - name: Dotnet Restore
+      run: |
+        cd ${{ matrix.projects }}
+        dotnet restore
+
+    - name: Dotnet Build
+      run: |
+        cd ${{ matrix.projects }}
+        dotnet build
 
     - name: Run tests
       run: |
@@ -289,6 +319,16 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
           sleep 10
+
+      - name: Dotnet Restore
+        run: |
+          MONITOR_PREFIX="monitor/restore/" MONITOR_CD=./Tests/Stream/Client/ tools/retry.sh -w 60 -- tools/monitor.sh \
+            dotnet restore
+
+      - name: Dotnet Build
+        run: |
+          MONITOR_PREFIX="monitor/build/" MONITOR_CD=./Tests/Stream/Client/ tools/monitor.sh \
+            dotnet build
 
       - name: Run Stream Test
         timeout-minutes: 4
@@ -665,6 +705,12 @@ jobs:
          sudo cp terraform/generated/ingress_tls/server/ca.crt /usr/local/share/ca-certificates/ca_tls.crt
          sudo cp terraform/generated/ingress_mtls/server/ca.crt /usr/local/share/ca-certificates/ca_mtls.crt
          sudo update-ca-certificates
+
+      - name: Dotnet Restore
+        run: dotnet restore Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj
+
+      - name: Dotnet Build
+        run: dotnet build Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj
 
       - name: Run connection test
         run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0

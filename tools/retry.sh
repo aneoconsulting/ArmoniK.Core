@@ -1,4 +1,4 @@
-﻿#! /bin/sh
+#! /bin/sh
 
 prgm="$0"
 retries=3
