@@ -49,7 +49,8 @@ public class RunningTaskProcessor : BackgroundService
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
-    await using var close = new Deferrer(postProcessingTaskQueue_.Close);
+    await using var closeWriter = new Deferrer(postProcessingTaskQueue_.CloseWriter);
+    await using var closeReader = new Deferrer(runningTaskQueue_.CloseReader);
 
     logger_.LogDebug("Start running task processing service");
     while (!token_.IsCancellationRequested)
@@ -61,7 +62,8 @@ public class RunningTaskProcessor : BackgroundService
           runningTaskQueue_.AddException(exception);
         }
 
-        var taskHandler = await runningTaskQueue_.ReadAsync(token_)
+        var taskHandler = await runningTaskQueue_.ReadAsync(Timeout.InfiniteTimeSpan,
+                                                            token_)
                                                  .ConfigureAwait(false);
         await using var taskHandlerDispose = new Deferrer(taskHandler);
 
@@ -73,6 +75,7 @@ public class RunningTaskProcessor : BackgroundService
         await taskHandler.ExecuteTask()
                          .ConfigureAwait(false);
         await postProcessingTaskQueue_.WriteAsync(taskHandler,
+                                                  Timeout.InfiniteTimeSpan,
                                                   token_)
                                       .ConfigureAwait(false);
 
