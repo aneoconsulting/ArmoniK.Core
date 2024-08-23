@@ -42,6 +42,16 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just object=minio deployTargetObject
 
+      - name: Dotnet Restore
+        run: |
+          MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+            dotnet restore
+
+      - name: Dotnet Build
+        run: |
+          MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+            dotnet build
+
       - name: Run tests
         run: |
           MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
@@ -100,6 +110,16 @@ jobs:
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just queue=${{ matrix.queue }} deployTargetQueue
 
+      - name: Dotnet Restore
+        run: |
+          MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+            dotnet restore
+
+      - name: Dotnet Build
+        run: |
+          MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+            dotnet build
+
       - name: Run tests
         run: |
           MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
@@ -138,6 +158,16 @@ jobs:
         with:
           ref: ${{ github.ref }}
           submodules: true
+
+      - name: Dotnet Restore
+        run: |
+          cd ${{ matrix.projects }}
+          dotnet restore
+
+      - name: Dotnet Build
+        run: |
+          cd ${{ matrix.projects }}
+          dotnet build
 
       - name: Run tests
         shell: bash
