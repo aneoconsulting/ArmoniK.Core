@@ -190,7 +190,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public async Task StopCancelledTask()
+  public async Task<bool> StopCancelledTask()
   {
     using var measure = functionExecutionMetrics_.CountAndTime();
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
@@ -214,8 +214,12 @@ public sealed class TaskHandler : IAsyncDisposable
         messageHandler_.Status = QueueMessageStatus.Cancelled;
         await ReleaseTaskHandler()
           .ConfigureAwait(false);
+
+        return true;
       }
     }
+
+    return false;
   }
 
   /// <summary>
@@ -765,6 +769,23 @@ public sealed class TaskHandler : IAsyncDisposable
       logger_.LogWarning(e,
                          "Task already in a final state, removing it from the queue");
       throw;
+    }
+    // If an ArmoniKException is thrown, check if this was because
+    // the task has been canceled. Use standard error management otherwise.
+    catch (ArmoniKException e)
+    {
+      if (await StopCancelledTask()
+            .ConfigureAwait(false))
+      {
+        earlyCts_.Token.ThrowIfCancellationRequested();
+      }
+      else
+      {
+        await HandleErrorRequeueAsync(e,
+                                      taskData_,
+                                      earlyCts_.Token)
+          .ConfigureAwait(false);
+      }
     }
     catch (Exception e)
     {

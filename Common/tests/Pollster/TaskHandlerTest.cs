@@ -1542,7 +1542,7 @@ public class TaskHandlerTest
   }
 
   [Test]
-  public async Task CancelLongTaskShouldSucceed()
+  public async Task CancelLongTaskShouldSucceed([Values] bool before)
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -1573,7 +1573,9 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
 
-    var exec = testServiceProvider.TaskHandler.ExecuteTask();
+    var exec = before
+                 ? testServiceProvider.TaskHandler.ExecuteTask()
+                 : Task.CompletedTask;
 
     // Cancel task for test
 
@@ -1586,6 +1588,11 @@ public class TaskHandlerTest
                                                         },
                                                         CancellationToken.None)
                              .ConfigureAwait(false);
+
+    if (!before)
+    {
+      exec = testServiceProvider.TaskHandler.ExecuteTask();
+    }
 
     await Task.Delay(TimeSpan.FromMilliseconds(200))
               .ConfigureAwait(false);
@@ -1600,7 +1607,8 @@ public class TaskHandlerTest
     await testServiceProvider.TaskHandler.StopCancelledTask()
                              .ConfigureAwait(false);
 
-    Assert.ThrowsAsync<TaskCanceledException>(() => exec);
+    Assert.That(() => exec,
+                Throws.InstanceOf<OperationCanceledException>());
 
     Assert.AreEqual(TaskStatus.Cancelling,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskId)
