@@ -267,6 +267,17 @@ internal static class Program
                                                                    return await client.CreateSessionAsync(req);
                                                                  })
                                               .ConfigureAwait(false);
+
+    if (benchOptions.PauseSessionDuringSubmission)
+    {
+      await channelPool.WithInstanceAsync(channel => new Sessions.SessionsClient(channel).PauseSessionAsync(new PauseSessionRequest
+                                                                                                            {
+                                                                                                              SessionId = createSessionReply.SessionId,
+                                                                                                            }),
+                                          CancellationToken.None)
+                       .ConfigureAwait(false);
+    }
+
     var sessionCreated = Stopwatch.GetTimestamp();
     logger.LogInformation("Session Id : {sessionId}",
                           createSessionReply.SessionId);
@@ -469,6 +480,15 @@ internal static class Program
 
     var taskCreated = Stopwatch.GetTimestamp();
 
+    if (benchOptions.PauseSessionDuringSubmission)
+    {
+      await channelPool.WithInstanceAsync(channel => new Sessions.SessionsClient(channel).ResumeSessionAsync(new ResumeSessionRequest
+                                                                                                             {
+                                                                                                               SessionId = createSessionReply.SessionId,
+                                                                                                             }),
+                                          CancellationToken.None)
+                       .ConfigureAwait(false);
+    }
 
     if (benchOptions.ExitAfterSubmission)
     {
