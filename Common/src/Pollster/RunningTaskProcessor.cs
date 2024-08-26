@@ -61,7 +61,7 @@ public class RunningTaskProcessor : BackgroundService
         try
         {
           taskHandler = await runningTaskQueue_.ReadAsync(Timeout.InfiniteTimeSpan,
-                                                          exceptionManager_.LateCancellationToken)
+                                                          exceptionManager_.EarlyCancellationToken)
                                                .ConfigureAwait(false);
         }
         catch (OperationCanceledException)
