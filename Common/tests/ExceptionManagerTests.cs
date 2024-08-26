@@ -364,6 +364,39 @@ public class ExceptionManagerTests
   }
 
   [Test]
+  [Timeout(10000)]
+  public async Task ConcurrentError()
+  {
+    var maxError = 10000;
+
+    using var em = new ExceptionManager(lifetime_,
+                                        loggerFactory_.CreateLogger<ExceptionManager>(),
+                                        new ExceptionManager.Options(MaxError: maxError));
+
+    await Enumerable.Range(0,
+                           maxError)
+                    .ParallelForEach(new ParallelTaskOptions(-1),
+                                     i =>
+                                     {
+                                       em.RecordError(NullLogger.Instance,
+                                                      new ApplicationException(),
+                                                      i.ToString());
+                                       return Task.CompletedTask;
+                                     })
+                    .ConfigureAwait(false);
+
+    Assert.That(em.Failed,
+                Is.False);
+
+    em.RecordError(null,
+                   new ApplicationException(),
+                   "Fail");
+
+    Assert.That(em.Failed,
+                Is.True);
+  }
+
+  [Test]
   [Timeout(1000)]
   [Sequential]
   public async Task Success([Values(1,
