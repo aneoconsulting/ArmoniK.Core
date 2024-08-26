@@ -27,6 +27,12 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Utils;
 
+/// <summary>
+///   Manage exceptions at the whole application level.
+///   If too many exceptions are thrown, the application is stopped.
+///   When the application is stopped, a grace delay is in place to let
+///   all the running services to stop properly.
+/// </summary>
 public class ExceptionManager : IDisposable
 {
   private readonly IHostApplicationLifetime applicationLifetime_;
@@ -44,6 +50,12 @@ public class ExceptionManager : IDisposable
   private readonly int      maxError_;
   private          int      nbError_;
 
+  /// <summary>
+  ///   Build an ExceptionManager
+  /// </summary>
+  /// <param name="applicationLifetime">The lifetime of the application</param>
+  /// <param name="logger">The logger for the ExceptionManager</param>
+  /// <param name="options">Options for the ExceptionManager</param>
   public ExceptionManager(IHostApplicationLifetime   applicationLifetime,
                           ILogger<ExceptionManager>? logger  = null,
                           Options?                   options = null)
@@ -83,14 +95,25 @@ public class ExceptionManager : IDisposable
     logger_   = logger;
   }
 
+  /// <summary>
+  ///   CancellationToken that is triggered as soon as the application is stopped,
+  ///   or too many errors were thrown
+  /// </summary>
   public CancellationToken EarlyCancellationToken
     => earlyCts_.Token;
 
+  /// <summary>
+  ///   CancellationToken that is triggered after a grace delay
+  /// </summary>
   public CancellationToken LateCancellationToken
     => lateCts_.Token;
 
+  /// <summary>
+  ///   Whether there were too many errors
+  /// </summary>
   public bool Failed { get; private set; }
 
+  /// <inheritdoc />
   public void Dispose()
   {
     foreach (var disposable in disposables_)
@@ -105,6 +128,22 @@ public class ExceptionManager : IDisposable
     lateCts_.Cancel();
   }
 
+  /// <summary>
+  ///   Record an error at the application level
+  /// </summary>
+  /// <param name="logger">Logger used to log the error</param>
+  /// <param name="e">Exception to log, if any</param>
+  /// <param name="message">Message to log</param>
+  /// <param name="args">Arguments for the log message</param>
+  /// <remarks>
+  ///   <para>
+  ///     If <paramref name="logger" /> is null, the logger of <code>this</code> is used.
+  ///   </para>
+  ///   <para>
+  ///     If the maximum number of errors is reached, it will trigger the <see cref="EarlyCancellationToken" />,
+  ///     and make the following errors logged as Warnings instead of Errors.
+  ///   </para>
+  /// </remarks>
   public void RecordError(ILogger?                              logger,
                           Exception?                            e,
                           [StructuredMessageTemplate] string    message,
@@ -121,7 +160,7 @@ public class ExceptionManager : IDisposable
                                           maxError_);
       Action<ILogger, Exception?, string, object?[]> log = nbError <= maxError_ + 1
                                                              ? LoggerExtensions.LogError
-                                                             : LoggerExtensions.LogDebug;
+                                                             : LoggerExtensions.LogWarning;
 
       log.Invoke(logger,
                  e,
@@ -137,6 +176,21 @@ public class ExceptionManager : IDisposable
     }
   }
 
+  /// <summary>
+  ///   Record a fatal error at the application level and trigger <see cref="EarlyCancellationToken" />
+  /// </summary>
+  /// <param name="logger">Logger used to log the error</param>
+  /// <param name="e">Exception to log, if any</param>
+  /// <param name="message">Message to log</param>
+  /// <param name="args">Arguments for the log message</param>
+  /// <remarks>
+  ///   <para>
+  ///     If <paramref name="logger" /> is null, the logger of <code>this</code> is used.
+  ///   </para>
+  ///   <para>
+  ///     Following errors are logged as Warnings instead of Errors
+  ///   </para>
+  /// </remarks>
   public void FatalError(ILogger?                              logger,
                          Exception?                            e,
                          [StructuredMessageTemplate] string    message,
@@ -152,7 +206,7 @@ public class ExceptionManager : IDisposable
       using var scope = logger.BeginScope("Fatal Exception");
       Action<ILogger, Exception?, string, object?[]> log = nbError <= maxError_
                                                              ? LoggerExtensions.LogCritical
-                                                             : LoggerExtensions.LogDebug;
+                                                             : LoggerExtensions.LogWarning;
 
       log.Invoke(logger,
                  e,
@@ -164,6 +218,18 @@ public class ExceptionManager : IDisposable
     earlyCts_.Cancel();
   }
 
+  /// <summary>
+  ///   Decrease the number of recorded errors to indicate that the application is behaving correctly.
+  /// </summary>
+  /// <param name="logger">Logger used to log the success</param>
+  /// <remarks>
+  ///   <para>
+  ///     If <paramref name="logger" /> is null, the logger of <code>this</code> is used.
+  ///   </para>
+  ///   <para>
+  ///     If the ExceptionManager is already in Failed state, this call does nothing.
+  ///   </para>
+  /// </remarks>
   public void RecordSuccess(ILogger? logger = null)
   {
     logger ??= logger_;
@@ -189,6 +255,21 @@ public class ExceptionManager : IDisposable
                      maxError_);
   }
 
+  /// <summary>
+  ///   Stop the Application without any error
+  /// </summary>
+  /// <param name="logger">Logger used to log the success</param>
+  /// <param name="message">Message to be logged</param>
+  /// <param name="args">Arguments for the log message</param>
+  /// <remarks>
+  ///   <para>
+  ///     If <paramref name="logger" /> is null, the logger of <code>this</code> is used.
+  ///   </para>
+  ///   <para>
+  ///     The only difference with stopping the application directly is the log message.
+  ///     Using this function indicates the reason of the shutdown, instead of indicating an external shutdown.
+  ///   </para>
+  /// </remarks>
   public void Stop(ILogger?                              logger,
                    [StructuredMessageTemplate] string    message,
                    params                      object?[] args)
@@ -213,6 +294,14 @@ public class ExceptionManager : IDisposable
                            args);
   }
 
+  /// <summary>
+  ///   Options for the ExceptionManger
+  /// </summary>
+  /// <param name="GraceDelay">
+  ///   Delay between the <see cref="ExceptionManager.EarlyCancellationToken" /> and the
+  ///   <see cref="ExceptionManager.LateCancellationToken" />
+  /// </param>
+  /// <param name="MaxError">Maximum number of allowed errors</param>
   public record Options(TimeSpan GraceDelay = default,
                         int?     MaxError   = null);
 }
