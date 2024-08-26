@@ -49,7 +49,7 @@ public class ExceptionManager : IDisposable
   {
     options      ??= new Options();
     disposables_ =   new List<IDisposable>();
-    earlyCts_    =   CancellationTokenSource.CreateLinkedTokenSource(applicationLifetime.ApplicationStopping);
+    earlyCts_    =   new CancellationTokenSource();
     lateCts_     =   earlyCts_;
 
     disposables_.Add(applicationLifetime.ApplicationStopping.Register(() =>
@@ -57,6 +57,7 @@ public class ExceptionManager : IDisposable
                                                                         if (!earlyCts_.IsCancellationRequested)
                                                                         {
                                                                           logger_?.LogInformation("Application shut down has been triggered externally");
+                                                                          earlyCts_.Cancel();
                                                                         }
                                                                       }));
 
@@ -116,7 +117,7 @@ public class ExceptionManager : IDisposable
       using var scope = logger.BeginScope("Exception #{NbError}/{MaxError}",
                                           nbError,
                                           maxError_);
-      Action<ILogger, Exception?, string, object?[]> log = nbError <= maxError_
+      Action<ILogger, Exception?, string, object?[]> log = nbError <= maxError_ + 1
                                                              ? LoggerExtensions.LogError
                                                              : LoggerExtensions.LogDebug;
 
@@ -126,7 +127,7 @@ public class ExceptionManager : IDisposable
                  args);
     }
 
-    if (nbError == maxError_)
+    if (nbError == maxError_ + 1)
     {
       logger_?.LogCritical("Stop Application after too many errors");
       Failed = true;
@@ -167,15 +168,20 @@ public class ExceptionManager : IDisposable
     int previousNbError;
     do
     {
+      if (nbError == 0 || nbError > maxError_)
+      {
+        return;
+      }
+
       previousNbError = nbError;
       nbError = Interlocked.CompareExchange(ref nbError_,
-                                            nbError == 0
-                                              ? 0
-                                              : nbError - 1,
+                                            nbError - 1,
                                             previousNbError);
     } while (nbError != previousNbError);
 
-    logger_?.LogTrace("Success has been recorded, decrementing number of errors");
+    logger_?.LogTrace("Success has been recorded, decrementing number of errors: {NbError}/{MaxError}",
+                      nbError - 1,
+                      maxError_);
   }
 
   public record Options(TimeSpan GraceDelay = default,
