@@ -407,16 +407,18 @@ public class Pollster : IInitializable
                                         "Error while processing the messages from the queue");
         }
       }
+
+      exceptionManager_.Stop(logger_,
+                             "End of Pollster main loop: Stop the application");
     }
     catch (Exception e)
     {
       exceptionManager_.FatalError(logger_,
                                    e,
-                                   "Error in pollster");
+                                   "Error in pollster: Stop the application");
     }
     finally
     {
-      logger_.LogWarning("End of Pollster main loop");
       runningTaskQueue_.CloseWriter();
       endLoopReached_ = true;
     }

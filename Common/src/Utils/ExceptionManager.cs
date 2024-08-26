@@ -29,7 +29,8 @@ namespace ArmoniK.Core.Common.Utils;
 
 public class ExceptionManager : IDisposable
 {
-  private readonly IList<IDisposable> disposables_;
+  private readonly IHostApplicationLifetime applicationLifetime_;
+  private readonly IList<IDisposable>       disposables_;
 
   [SuppressMessage("Usage",
                    "CA2213: Disposable fields must be disposed")]
@@ -47,10 +48,11 @@ public class ExceptionManager : IDisposable
                           ILogger<ExceptionManager>? logger  = null,
                           Options?                   options = null)
   {
-    options      ??= new Options();
-    disposables_ =   new List<IDisposable>();
-    earlyCts_    =   new CancellationTokenSource();
-    lateCts_     =   earlyCts_;
+    options              ??= new Options();
+    applicationLifetime_ =   applicationLifetime;
+    disposables_         =   new List<IDisposable>();
+    earlyCts_            =   new CancellationTokenSource();
+    lateCts_             =   earlyCts_;
 
     disposables_.Add(applicationLifetime.ApplicationStopping.Register(() =>
                                                                       {
@@ -69,10 +71,10 @@ public class ExceptionManager : IDisposable
 
     disposables_.Add(lateCts_.Token.Register(() =>
                                              {
-                                               if (!applicationLifetime.ApplicationStopped.IsCancellationRequested)
+                                               if (!applicationLifetime_.ApplicationStopped.IsCancellationRequested)
                                                {
                                                  logger_?.LogInformation("Grace delay has expired");
-                                                 applicationLifetime.StopApplication();
+                                                 applicationLifetime_.StopApplication();
                                                }
                                              }));
 
@@ -162,8 +164,10 @@ public class ExceptionManager : IDisposable
     earlyCts_.Cancel();
   }
 
-  public void RecordSuccess()
+  public void RecordSuccess(ILogger? logger = null)
   {
+    logger ??= logger_;
+
     var nbError = nbError_;
     int previousNbError;
     do
@@ -179,9 +183,34 @@ public class ExceptionManager : IDisposable
                                             previousNbError);
     } while (nbError != previousNbError);
 
-    logger_?.LogTrace("Success has been recorded, decrementing number of errors: {NbError}/{MaxError}",
-                      nbError - 1,
-                      maxError_);
+
+    logger?.LogTrace("Success has been recorded, decrementing number of errors: {NbError}/{MaxError}",
+                     nbError - 1,
+                     maxError_);
+  }
+
+  public void Stop(ILogger?                              logger,
+                   [StructuredMessageTemplate] string    message,
+                   params                      object?[] args)
+  {
+    if (applicationLifetime_.ApplicationStopping.IsCancellationRequested)
+    {
+      return;
+    }
+
+    logger ??= logger_;
+
+    earlyCts_.Cancel();
+    applicationLifetime_.StopApplication();
+
+    if (string.IsNullOrWhiteSpace(message))
+    {
+      message = "Application shutdown has been triggered internally";
+    }
+
+    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+    logger?.LogInformation(message,
+                           args);
   }
 
   public record Options(TimeSpan GraceDelay = default,

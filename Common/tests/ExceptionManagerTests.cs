@@ -262,7 +262,7 @@ public class ExceptionManagerTests
                                       2)]
                               int nbFatal)
   {
-    var logger = loggerFactory_.CreateLogger(nameof(ErrorStop));
+    var logger = loggerFactory_.CreateLogger(nameof(FatalStop));
     var events = new ConcurrentQueue<int>();
     using var em = new ExceptionManager(lifetime_,
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
@@ -308,6 +308,53 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.True);
+
+    lifetime_.NotifyStopped();
+
+    Assert.That(events,
+                Is.EqualTo(Enumerable.Range(0,
+                                            5)));
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task Stop()
+  {
+    var logger = loggerFactory_.CreateLogger(nameof(Stop));
+    var events = new ConcurrentQueue<int>();
+    using var em = new ExceptionManager(lifetime_,
+                                        loggerFactory_.CreateLogger<ExceptionManager>(),
+                                        new ExceptionManager.Options(TimeSpan.FromSeconds(15)));
+
+    Assert.That(em.EarlyCancellationToken,
+                Is.Not.EqualTo(em.LateCancellationToken));
+
+    await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
+    await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
+    await using var d2 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(2));
+    await using var d3 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(3));
+    await using var d4 = em.LateCancellationToken.Register(() => events.Enqueue(4));
+
+    lifetime_.NotifyStarted();
+
+    await Task.Delay(10)
+              .ConfigureAwait(false);
+
+    em.Stop(logger,
+            "");
+
+    try
+    {
+      await lifetime_.ApplicationStopping.AsTask()
+                     .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // ignore
+    }
+
+    Assert.That(em.Failed,
+                Is.False);
 
     lifetime_.NotifyStopped();
 

@@ -68,7 +68,7 @@ public class PostProcessor : BackgroundService
 
         // Task processing has been successful.
         // Decrement number of recorded errors.
-        exceptionManager_.RecordSuccess();
+        exceptionManager_.RecordSuccess(logger_);
       }
       catch (ChannelClosedException)
       {
