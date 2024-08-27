@@ -170,7 +170,7 @@ internal class IntegrationGrpcSubmitterServiceTest
       => Task.FromException<ICollection<TaskCreationRequest>>(new T());
 
     public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
-                                     string                           sessionId,
+                                     SessionData                      sessionData,
                                      string                           parentTaskId,
                                      CancellationToken                cancellationToken)
       => Task.FromException(new T());
@@ -189,6 +189,7 @@ internal class IntegrationGrpcSubmitterServiceTest
       => Task.FromException<Count>(new T());
 
     public Task CompleteTaskAsync(TaskData          taskData,
+                                  SessionData       sessionData,
                                   bool              resubmit,
                                   Output            output,
                                   CancellationToken cancellationToken = default)
@@ -226,7 +227,7 @@ internal class IntegrationGrpcSubmitterServiceTest
       => throw new T();
 
     public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
-                                     string                           sessionId,
+                                     SessionData                      sessionData,
                                      string                           parentTaskId,
                                      CancellationToken                cancellationToken)
       => throw new T();
@@ -245,6 +246,7 @@ internal class IntegrationGrpcSubmitterServiceTest
       => throw new T();
 
     public Task CompleteTaskAsync(TaskData          taskData,
+                                  SessionData       sessionData,
                                   bool              resubmit,
                                   Output            output,
                                   CancellationToken cancellationToken = default)

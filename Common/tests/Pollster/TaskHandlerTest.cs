@@ -266,8 +266,12 @@ public class TaskHandlerTest
                                                                    CancellationToken.None)
                                             .ConfigureAwait(false);
 
+    var sessionData = await testServiceProvider.SessionTable.GetSessionAsync(sessionId,
+                                                                             CancellationToken.None)
+                                               .ConfigureAwait(false);
+
     await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
-                                                             sessionId,
+                                                             sessionData,
                                                              sessionId,
                                                              CancellationToken.None)
                              .ConfigureAwait(false);
@@ -289,6 +293,7 @@ public class TaskHandlerTest
                                                  .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.CompleteTaskAsync(taskErrorData,
+                                                          sessionData,
                                                           false,
                                                           new Output(OutputStatus.Error,
                                                                      "Created for testing tasks in error"))
@@ -299,6 +304,7 @@ public class TaskHandlerTest
                                                    .ConfigureAwait(false);
 
     await testServiceProvider.Submitter.CompleteTaskAsync(taskRetriedData,
+                                                          sessionData,
                                                           true,
                                                           new Output(OutputStatus.Error,
                                                                      "Created for testing tasks in error"))

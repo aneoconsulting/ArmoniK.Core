@@ -271,6 +271,10 @@ public sealed class TaskHandler : IAsyncDisposable
 
       logger_.LogDebug("Handling the task status ({status})",
                        taskData_.Status);
+
+      sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
+                                                         CancellationToken.None)
+                                        .ConfigureAwait(false);
       switch (taskData_.Status)
       {
         case TaskStatus.Cancelling:
@@ -354,6 +358,7 @@ public sealed class TaskHandler : IAsyncDisposable
             messageHandler_.Status = QueueMessageStatus.Cancelled;
 
             await submitter_.CompleteTaskAsync(taskData_,
+                                               sessionData_,
                                                true,
                                                new Output(OutputStatus.Error,
                                                           $"Other pod seems to have released task while keeping {taskData_.Status} status, resubmitting task"),
@@ -399,6 +404,7 @@ public sealed class TaskHandler : IAsyncDisposable
                 logger_.LogDebug("Resubmitting task {task} on another pod",
                                  taskData_.TaskId);
                 await submitter_.CompleteTaskAsync(taskData_,
+                                                   sessionData_,
                                                    true,
                                                    new Output(OutputStatus.Error,
                                                               "Other pod seems to have crashed, resubmitting task"),
@@ -439,9 +445,6 @@ public sealed class TaskHandler : IAsyncDisposable
           throw new ArgumentException(nameof(taskData_));
       }
 
-      sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
-                                                         CancellationToken.None)
-                                        .ConfigureAwait(false);
       if (sessionData_.Status is SessionStatus.Cancelled or SessionStatus.Deleted or SessionStatus.Closed or SessionStatus.Purged &&
           taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
       {
@@ -554,6 +557,7 @@ public sealed class TaskHandler : IAsyncDisposable
             logger_.LogDebug("Resubmitting task {task} on another pod",
                              taskData_.TaskId);
             await submitter_.CompleteTaskAsync(taskData_,
+                                               sessionData_,
                                                true,
                                                new Output(OutputStatus.Error,
                                                           "Other pod seems to have crashed, resubmitting task"),
@@ -851,6 +855,11 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(taskData_) + " is null.");
     }
 
+    if (sessionData_ is null)
+    {
+      throw new NullReferenceException(nameof(sessionData_) + " is null.");
+    }
+
     if (agent_ is null)
     {
       throw new NullReferenceException(nameof(agent_) + " is null.");
@@ -884,6 +893,7 @@ public sealed class TaskHandler : IAsyncDisposable
       }
 
       await submitter_.CompleteTaskAsync(taskData_,
+                                         sessionData_,
                                          false,
                                          output_,
                                          CancellationToken.None)
@@ -943,6 +953,11 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(agent_) + " is null.");
     }
 
+    if (sessionData_ is null)
+    {
+      throw new NullReferenceException(nameof(sessionData_) + " is null.");
+    }
+
     if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
@@ -990,6 +1005,7 @@ public sealed class TaskHandler : IAsyncDisposable
                            : "cancelling task");
 
         await submitter_.CompleteTaskAsync(taskData,
+                                           sessionData_,
                                            resubmit,
                                            new Output(OutputStatus.Error,
                                                       e.Message),

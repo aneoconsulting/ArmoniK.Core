@@ -463,7 +463,7 @@ public class GrpcTasksService : Task.TasksBase
                                                      resultTable_,
                                                      pushQueueStorage_,
                                                      creationRequests,
-                                                     request.SessionId,
+                                                     sessionData,
                                                      request.SessionId,
                                                      logger_,
                                                      context.CancellationToken)

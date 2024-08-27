@@ -136,6 +136,7 @@ public class AgentTest
     public readonly  MyPushQueueStorage   QueueStorage;
     public readonly  IResultTable         ResultTable;
     public readonly  string               Session;
+    private readonly SessionData          sessionData;
     public readonly  ISessionTable        SessionTable;
     public readonly  ISubmitter           Submitter;
     public readonly  TaskData             TaskData;
@@ -166,9 +167,9 @@ public class AgentTest
                                                  CancellationToken.None)
                             .Result;
 
-      var sessionData = SessionTable.GetSessionAsync(Session,
-                                                     CancellationToken.None)
-                                    .Result;
+      sessionData = SessionTable.GetSessionAsync(Session,
+                                                 CancellationToken.None)
+                                .Result;
 
       ResultTable.Create(new[]
                          {
@@ -237,7 +238,7 @@ public class AgentTest
                                   .Result;
 
       Submitter.FinalizeTaskCreation(createdTasks,
-                                     Session,
+                                     sessionData,
                                      Session,
                                      CancellationToken.None)
                .Wait();
@@ -289,7 +290,7 @@ public class AgentTest
                                            .TaskId;
 
       Submitter.FinalizeTaskCreation(createdTasks2,
-                                     Session,
+                                     sessionData,
                                      Session,
                                      CancellationToken.None)
                .Wait();

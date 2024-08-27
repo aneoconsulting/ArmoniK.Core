@@ -115,7 +115,7 @@ public sealed class Agent : IAgent
     logger_.LogDebug("Finalize child task creation");
 
     await submitter_.FinalizeTaskCreation(createdTasks_,
-                                          sessionData_.SessionId,
+                                          sessionData_,
                                           taskData_.TaskId,
                                           cancellationToken)
                     .ConfigureAwait(false);
@@ -132,7 +132,7 @@ public sealed class Agent : IAgent
     await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
                                                   resultTable_,
                                                   pushQueueStorage_,
-                                                  sessionData_.SessionId,
+                                                  sessionData_,
                                                   sentResults_.Keys,
                                                   logger_,
                                                   cancellationToken)

@@ -199,7 +199,7 @@ public static class TaskLifeCycleHelper
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
   /// <param name="taskRequests">Tasks requests to finalize</param>
-  /// <param name="sessionId">Session Id of the completed results</param>
+  /// <param name="sessionData">Session data of the completed results</param>
   /// <param name="parentTaskId">Id of the tasks that creates the tasks</param>
   /// <param name="logger">Logger used to produce logs</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -210,7 +210,7 @@ public static class TaskLifeCycleHelper
                                                 IResultTable                     resultTable,
                                                 IPushQueueStorage                pushQueueStorage,
                                                 ICollection<TaskCreationRequest> taskRequests,
-                                                string                           sessionId,
+                                                SessionData                      sessionData,
                                                 string                           parentTaskId,
                                                 ILogger                          logger,
                                                 CancellationToken                cancellationToken)
@@ -223,12 +223,12 @@ public static class TaskLifeCycleHelper
     var prepareTaskDependencies = PrepareTaskDependencies(taskTable,
                                                           resultTable,
                                                           taskRequests,
-                                                          sessionId,
+                                                          sessionData.SessionId,
                                                           logger,
                                                           cancellationToken);
 
     // Transfer ownership while dependencies are in preparation
-    if (!parentTaskId.Equals(sessionId))
+    if (!parentTaskId.Equals(sessionData.SessionId))
     {
       var parentExpectedOutputKeys = (await taskTable.ReadTaskAsync(parentTaskId,
                                                                     data => data.ExpectedOutputIds,
@@ -245,6 +245,7 @@ public static class TaskLifeCycleHelper
 
     await EnqueueReadyTasks(taskTable,
                             pushQueueStorage,
+                            sessionData,
                             await prepareTaskDependencies.ConfigureAwait(false),
                             cancellationToken)
       .ConfigureAwait(false);
@@ -373,7 +374,7 @@ public static class TaskLifeCycleHelper
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
-  /// <param name="sessionId">Session Id of the completed results</param>
+  /// <param name="sessionData">Session data of the completed results</param>
   /// <param name="results">Collection of completed results</param>
   /// <param name="logger">Logger used to produce logs</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -383,7 +384,7 @@ public static class TaskLifeCycleHelper
   public static async Task ResolveDependencies(ITaskTable          taskTable,
                                                IResultTable        resultTable,
                                                IPushQueueStorage   pushQueueStorage,
-                                               string              sessionId,
+                                               SessionData         sessionData,
                                                ICollection<string> results,
                                                ILogger             logger,
                                                CancellationToken   cancellationToken)
@@ -391,7 +392,7 @@ public static class TaskLifeCycleHelper
     logger.LogDebug("Submit tasks which new data are available");
 
     // Get all tasks that depend on the results that were completed by the given results (removing duplicates)
-    var dependentTasks = await resultTable.GetResults(sessionId,
+    var dependentTasks = await resultTable.GetResults(sessionData.SessionId,
                                                       results,
                                                       cancellationToken)
                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
@@ -431,6 +432,7 @@ public static class TaskLifeCycleHelper
 
     await EnqueueReadyTasks(taskTable,
                             pushQueueStorage,
+                            sessionData,
                             readyTasks,
                             cancellationToken)
       .ConfigureAwait(false);
@@ -441,6 +443,7 @@ public static class TaskLifeCycleHelper
   /// </summary>
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
+  /// <param name="sessionData"></param>
   /// <param name="messages">Messages to enqueue</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
@@ -448,6 +451,7 @@ public static class TaskLifeCycleHelper
   /// </returns>
   private static async Task EnqueueReadyTasks(ITaskTable               taskTable,
                                               IPushQueueStorage        pushQueueStorage,
+                                              SessionData              sessionData,
                                               ICollection<MessageData> messages,
                                               CancellationToken        cancellationToken)
   {
@@ -456,12 +460,15 @@ public static class TaskLifeCycleHelper
       return;
     }
 
-    foreach (var group in messages.GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority)))
+    if (sessionData.Status != SessionStatus.Paused)
     {
-      await pushQueueStorage.PushMessagesAsync(group,
-                                               group.Key.PartitionId,
-                                               cancellationToken)
-                            .ConfigureAwait(false);
+      foreach (var group in messages.GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority)))
+      {
+        await pushQueueStorage.PushMessagesAsync(group,
+                                                 group.Key.PartitionId,
+                                                 cancellationToken)
+                              .ConfigureAwait(false);
+      }
     }
 
     await taskTable.FinalizeTaskCreation(messages.Select(task => task.TaskId)

@@ -92,7 +92,7 @@ public class SimpleSubmitter : ISubmitter
                          .ConfigureAwait(false);
 
   public Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
-                                   string                           sessionId,
+                                   SessionData                      sessionData,
                                    string                           parentTaskId,
                                    CancellationToken                cancellationToken)
     => Task.CompletedTask;
@@ -113,6 +113,13 @@ public class SimpleSubmitter : ISubmitter
                                        CancellationToken cancellationToken)
     => Task.FromResult(DefaultCount);
 
+  public Task CompleteTaskAsync(TaskData          taskData,
+                                SessionData       sessionData,
+                                bool              resubmit,
+                                Output            output,
+                                CancellationToken cancellationToken = default)
+    => Task.CompletedTask;
+
   public Task<AvailabilityReply> WaitForAvailabilityAsync(ResultRequest     request,
                                                           CancellationToken contextCancellationToken)
     => Task.FromResult(new AvailabilityReply
@@ -125,11 +132,5 @@ public class SimpleSubmitter : ISubmitter
                         string                                 key,
                         IAsyncEnumerable<ReadOnlyMemory<byte>> chunks,
                         CancellationToken                      cancellationToken)
-    => Task.CompletedTask;
-
-  public Task CompleteTaskAsync(TaskData          taskData,
-                                bool              resubmit,
-                                Output            output,
-                                CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 }

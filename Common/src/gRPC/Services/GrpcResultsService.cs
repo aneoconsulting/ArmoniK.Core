@@ -52,10 +52,12 @@ public class GrpcResultsService : Results.ResultsBase
   private readonly IObjectStorage                               objectStorage_;
   private readonly IPushQueueStorage                            pushQueueStorage_;
   private readonly IResultTable                                 resultTable_;
+  private readonly ISessionTable                                sessionTable_;
   private readonly ITaskTable                                   taskTable_;
 
   public GrpcResultsService(IResultTable                                 resultTable,
                             ITaskTable                                   taskTable,
+                            ISessionTable                                sessionTable,
                             IObjectStorage                               objectStorage,
                             IPushQueueStorage                            pushQueueStorage,
                             FunctionExecutionMetrics<GrpcResultsService> meter,
@@ -64,6 +66,7 @@ public class GrpcResultsService : Results.ResultsBase
     logger_           = logger;
     resultTable_      = resultTable;
     taskTable_        = taskTable;
+    sessionTable_     = sessionTable;
     objectStorage_    = objectStorage;
     pushQueueStorage_ = pushQueueStorage;
     meter_            = meter;
@@ -303,6 +306,8 @@ public class GrpcResultsService : Results.ResultsBase
     }
 
     var id = current.Id;
+    var sessionTask = sessionTable_.GetSessionAsync(id.SessionId,
+                                                    context.CancellationToken);
 
     long size = 0;
 
@@ -316,6 +321,8 @@ public class GrpcResultsService : Results.ResultsBase
                                           context.CancellationToken)
                         .ConfigureAwait(false);
 
+    var sessionData = await sessionTask.ConfigureAwait(false);
+
     try
     {
       var resultData = await resultTable_.CompleteResult(id.SessionId,
@@ -327,7 +334,7 @@ public class GrpcResultsService : Results.ResultsBase
       await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
                                                     resultTable_,
                                                     pushQueueStorage_,
-                                                    id.SessionId,
+                                                    sessionData,
                                                     new[]
                                                     {
                                                       id.ResultId,
