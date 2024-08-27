@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,7 +81,7 @@ public class WatchToGrpcTests
   public async Task MultipleWatchShouldSucceed(int nTries)
   {
     var cts      = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-    var list     = new List<EventSubscriptionResponse>();
+    var list     = new ConcurrentBag<EventSubscriptionResponse>();
     var taskList = new List<Task>();
 
     for (var i = 0; i < nTries; i++)
