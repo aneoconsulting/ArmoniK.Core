@@ -43,6 +43,7 @@ namespace ArmoniK.Core.Common.Storage;
 ///   responsibility to produce
 /// </param>
 /// <param name="InitialTaskId">Task id before retry</param>
+/// <param name="CreatedBy">Task id of the parent</param>
 /// <param name="RetryOfIds">List of previous tasks ids before the current retry</param>
 /// <param name="Status">Current status of the task</param>
 /// <param name="StatusMessage">Message associated to the status</param>
@@ -74,6 +75,7 @@ public record TaskData(string        SessionId,
                        IDictionary<string, bool> RemainingDataDependencies,
                        IList<string>             ExpectedOutputIds,
                        string                    InitialTaskId,
+                       string                    CreatedBy,
                        IList<string>             RetryOfIds,
                        TaskStatus                Status,
                        string                    StatusMessage,
@@ -118,6 +120,7 @@ public record TaskData(string        SessionId,
                   string        ownerPodId,
                   string        ownerPodName,
                   string        payloadId,
+                  string        createdBy,
                   IList<string> parentTaskIds,
                   IList<string> dataDependencies,
                   IList<string> expectedOutputIds,
@@ -140,6 +143,7 @@ public record TaskData(string        SessionId,
                                          _ => true),
            expectedOutputIds,
            taskId,
+           createdBy,
            retryOfIds,
            status,
            "",

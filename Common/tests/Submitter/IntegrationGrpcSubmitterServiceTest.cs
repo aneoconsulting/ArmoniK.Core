@@ -309,6 +309,7 @@ internal class IntegrationGrpcSubmitterServiceTest
                   nameof(TestCasesOutputResultDataNotFoundInternal))]
   [TestCaseSource(typeof(IntegrationGrpcSubmitterServiceTest),
                   nameof(TestCasesOutputResultNotFoundInternal))]
+  [Timeout(10000)]
   public async Task<StatusCode?> CancelSessionThrowsException(ISubmitter submitter)
   {
     helper_ = new GrpcSubmitterServiceHelper(submitter);

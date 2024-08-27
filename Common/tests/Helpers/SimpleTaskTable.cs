@@ -41,6 +41,7 @@ public class SimpleTaskTable : ITaskTable
   public const           string      TaskId      = "MyTaskId";
   public const           string      PartitionId = "MyPartitionId";
   public const           string      PodName     = "MyPodName";
+  public const           string      CreatedBy   = "CreatedBy";
   public static readonly TaskOptions TaskOptions;
 
   static SimpleTaskTable()
@@ -78,6 +79,7 @@ public class SimpleTaskTable : ITaskTable
                                                     OwnerPodId,
                                                     PodName,
                                                     PayloadId,
+                                                    CreatedBy,
                                                     new List<string>(),
                                                     new List<string>(),
                                                     new List<string>
@@ -133,6 +135,7 @@ public class SimpleTaskTable : ITaskTable
                                                                                 OwnerPodId,
                                                                                 PodName,
                                                                                 PayloadId,
+                                                                                CreatedBy,
                                                                                 new List<string>(),
                                                                                 new List<string>(),
                                                                                 new List<string>
@@ -150,26 +153,27 @@ public class SimpleTaskTable : ITaskTable
                                                Expression<Func<TaskData, T>>    selector,
                                                CancellationToken                cancellationToken = default)
     => new List<TaskData>
-       {
-         new(SessionId,
-             TaskId,
-             OwnerPodId,
-             PodName,
-             PayloadId,
-             new List<string>(),
-             new List<string>(),
-             new List<string>
-             {
-               OutputId,
-             },
-             new List<string>(),
-             TaskStatus.Completed,
-             TaskOptions,
-             new Output(OutputStatus.Success,
-                        "")),
-       }.Where(filter.Compile())
-        .Select(selector.Compile())
-        .ToAsyncEnumerable();
+      {
+        new(SessionId,
+            TaskId,
+            OwnerPodId,
+            PodName,
+            PayloadId,
+            CreatedBy,
+            new List<string>(),
+            new List<string>(),
+            new List<string>
+            {
+              OutputId,
+            },
+            new List<string>(),
+            TaskStatus.Completed,
+            TaskOptions,
+            new Output(OutputStatus.Success,
+                       "")),
+      }.Where(filter.Compile())
+       .Select(selector.Compile())
+       .ToAsyncEnumerable();
 
   public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>> filter,
                                     UpdateDefinition<TaskData>       updates,
@@ -205,6 +209,7 @@ public class SimpleTaskTable : ITaskTable
                                                OwnerPodId,
                                                PodName,
                                                PayloadId,
+                                               CreatedBy,
                                                new List<string>(),
                                                new List<string>(),
                                                new List<string>

@@ -297,6 +297,7 @@ public class WatchToGrpcTests
                                                            "",
                                                            "",
                                                            "PayloadId",
+                                                           "CreatedBy",
                                                            new[]
                                                            {
                                                              "parent1",
@@ -323,6 +324,7 @@ public class WatchToGrpcTests
                                                             "OwnerPodId",
                                                             "OwnerPodName",
                                                             "PayloadId",
+                                                            "CreatedBy",
                                                             new[]
                                                             {
                                                               "parent1",
@@ -346,6 +348,7 @@ public class WatchToGrpcTests
                                                        "OwnerPodId",
                                                        "OwnerPodName",
                                                        "PayloadId",
+                                                       "CreatedBy",
                                                        new[]
                                                        {
                                                          "parent1",
@@ -369,6 +372,7 @@ public class WatchToGrpcTests
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",
@@ -392,6 +396,7 @@ public class WatchToGrpcTests
                                                      "OwnerPodId",
                                                      "OwnerPodName",
                                                      "PayloadId",
+                                                     "CreatedBy",
                                                      new[]
                                                      {
                                                        "parent1",
@@ -416,6 +421,7 @@ public class WatchToGrpcTests
                                                     "OwnerPodId",
                                                     "OwnerPodName",
                                                     "PayloadId",
+                                                    "CreatedBy",
                                                     new[]
                                                     {
                                                       "parent1",

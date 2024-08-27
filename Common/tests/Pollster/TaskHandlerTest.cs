@@ -449,6 +449,7 @@ public class TaskHandlerTest
                                   new Dictionary<string, bool>(),
                                   new List<string>(),
                                   "init",
+                                  "createdby",
                                   new List<string>(),
                                   TaskStatus.Creating,
                                   "",
@@ -773,6 +774,7 @@ public class TaskHandlerTest
                                           new Dictionary<string, bool>(),
                                           new List<string>(),
                                           "taskId",
+                                          "createdby",
                                           new List<string>(),
                                           TaskStatus.Submitted,
                                           "",
@@ -863,6 +865,7 @@ public class TaskHandlerTest
                           new Dictionary<string, bool>(),
                           new List<string>(),
                           "taskId",
+                          "createdby",
                           new List<string>(),
                           TaskStatus.Dispatched,
                           "",
@@ -959,10 +962,10 @@ public class TaskHandlerTest
                        cancellationToken)
                 .ConfigureAwait(false);
       var enumerable = new[]
-                       {
-                         sessionData_!,
-                       }.Select(selector.Compile())
-                        .ToAsyncEnumerable();
+        {
+          sessionData_!,
+        }.Select(selector.Compile())
+         .ToAsyncEnumerable();
 
       await foreach (var d in enumerable.ConfigureAwait(false))
       {

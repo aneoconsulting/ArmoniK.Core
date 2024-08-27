@@ -80,6 +80,7 @@ public class DataPrefetcherTest
     const string podId        = "PodId";
     const string podName      = "PodName";
     const string payloadId    = "PayloadId";
+    const string createdBy    = "CreatedBy";
     var sharedFolder = Path.Combine(Path.GetTempPath(),
                                     "data");
     var internalFolder = Path.Combine(Path.GetTempPath(),
@@ -93,6 +94,7 @@ public class DataPrefetcherTest
                                                         podId,
                                                         podName,
                                                         payloadId,
+                                                        createdBy,
                                                         new[]
                                                         {
                                                           parentTaskId,
@@ -160,6 +162,7 @@ public class DataPrefetcherTest
     const string podId        = "PodId";
     const string podName      = "PodName";
     const string payloadId    = "PayloadId";
+    const string createdBy    = "CreatedBy";
     var sharedFolder = Path.Combine(Path.GetTempPath(),
                                     "data");
     var internalFolder = Path.Combine(Path.GetTempPath(),
@@ -173,6 +176,7 @@ public class DataPrefetcherTest
                                                         podId,
                                                         podName,
                                                         payloadId,
+                                                        createdBy,
                                                         new[]
                                                         {
                                                           parentTaskId,

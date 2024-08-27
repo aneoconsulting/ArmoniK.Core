@@ -56,6 +56,7 @@ public class ToApplicationFilterTest
                                             "OwnerPodId",
                                             "OwnerPodName",
                                             "PayloadId",
+                                            "CreatedBy",
                                             new[]
                                             {
                                               "parent1",

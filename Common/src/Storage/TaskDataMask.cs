@@ -93,6 +93,8 @@ public class TaskDataMask
         return data => data.ExpectedOutputIds.Count;
       case TaskDataFields.InitialTaskId:
         return data => data.InitialTaskId;
+      case TaskDataFields.CreatedBy:
+        return data => data.CreatedBy;
       case TaskDataFields.RetryOfIds:
         return data => data.RetryOfIds;
       case TaskDataFields.RetryOfIdsCount:
@@ -213,6 +215,8 @@ public class TaskDataMask
         return data => data.ReceivedToEndDuration;
       case TaskDataFields.FetchedDate:
         return data => data.FetchedDate;
+      case TaskDataFields.CreatedBy:
+        return data => data.CreatedBy;
       default:
         throw new ArgumentOutOfRangeException(nameof(field),
                                               field,

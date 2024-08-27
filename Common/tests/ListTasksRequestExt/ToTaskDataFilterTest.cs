@@ -64,6 +64,7 @@ public class ToTaskDataFilterTest
                                             new Dictionary<string, bool>(),
                                             new List<string>(),
                                             "InitialTaskId",
+                                            "CreatedBy",
                                             new List<string>(),
                                             TaskStatus.Completed,
                                             "StatusMessage",
@@ -214,6 +215,10 @@ public class ToTaskDataFilterTest
     yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.PayloadId,
                                                                        FilterStringOperator.Equal,
                                                                        "BadPayloadId"));
+
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.CreatedBy,
+                                                                      FilterStringOperator.Equal,
+                                                                      "CreatedBy"));
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
                                                                       FilterStatusOperator.Equal,

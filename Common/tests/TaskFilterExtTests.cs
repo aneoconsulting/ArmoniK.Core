@@ -45,22 +45,23 @@ internal class TaskFilterExtTests
   public void ShouldRecognizeSession()
   {
     var func = new TaskFilter
-               {
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "Session",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "Session",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("Session",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -86,22 +87,23 @@ internal class TaskFilterExtTests
   public void ShouldRejectOtherSession()
   {
     var func = new TaskFilter
-               {
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "Session",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "Session",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("OtherSession",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -127,23 +129,23 @@ internal class TaskFilterExtTests
   public void ShouldRecognizeStatus()
   {
     var func = new TaskFilter
-               {
-                 Included = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile(true);
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile(true);
 
 
     var model = new TaskData("SessionId",
@@ -151,6 +153,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -176,29 +179,30 @@ internal class TaskFilterExtTests
   public void ShouldExcludeStatus()
   {
     var func = new TaskFilter
-               {
-                 Excluded = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Excluded = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -224,30 +228,31 @@ internal class TaskFilterExtTests
   public void ShouldRecognizeMultipleStatus()
   {
     var func = new TaskFilter
-               {
-                 Included = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                                Api.gRPC.V1.TaskStatus.Cancelled,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                       Api.gRPC.V1.TaskStatus.Cancelled,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -273,30 +278,31 @@ internal class TaskFilterExtTests
   public void ShouldExcludeMultipleStatus()
   {
     var func = new TaskFilter
-               {
-                 Excluded = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                                Api.gRPC.V1.TaskStatus.Cancelled,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Excluded = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                       Api.gRPC.V1.TaskStatus.Cancelled,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -322,29 +328,30 @@ internal class TaskFilterExtTests
   public void ShouldRejectOtherStatus()
   {
     var func = new TaskFilter
-               {
-                 Included = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("SessionId",
                              "Task",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -370,29 +377,30 @@ internal class TaskFilterExtTests
   public void ShouldIncludeOtherStatus()
   {
     var func = new TaskFilter
-               {
-                 Excluded = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Excluded = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -418,30 +426,31 @@ internal class TaskFilterExtTests
   public void ShouldRejectOtherMultipleStatus()
   {
     var func = new TaskFilter
-               {
-                 Included = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                                Api.gRPC.V1.TaskStatus.Cancelling,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Included = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                       Api.gRPC.V1.TaskStatus.Cancelling,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -467,30 +476,31 @@ internal class TaskFilterExtTests
   public void ShouldIncludeOtherMultipleStatus()
   {
     var func = new TaskFilter
-               {
-                 Excluded = new TaskFilter.Types.StatusesRequest
-                            {
-                              Statuses =
-                              {
-                                Api.gRPC.V1.TaskStatus.Completed,
-                                Api.gRPC.V1.TaskStatus.Cancelling,
-                              },
-                            },
-                 Session = new TaskFilter.Types.IdsRequest
-                           {
-                             Ids =
-                             {
-                               "SessionId",
-                             },
-                           },
-               }.ToFilterExpression()
-                .Compile();
+      {
+        Excluded = new TaskFilter.Types.StatusesRequest
+                   {
+                     Statuses =
+                     {
+                       Api.gRPC.V1.TaskStatus.Completed,
+                       Api.gRPC.V1.TaskStatus.Cancelling,
+                     },
+                   },
+        Session = new TaskFilter.Types.IdsRequest
+                  {
+                    Ids =
+                    {
+                      "SessionId",
+                    },
+                  },
+      }.ToFilterExpression()
+       .Compile();
 
     var model = new TaskData("SessionId",
                              "TaskCompletedId",
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -516,16 +526,16 @@ internal class TaskFilterExtTests
   public void ShouldRecognizeTask()
   {
     var func = new TaskFilter
+      {
+        Task = new TaskFilter.Types.IdsRequest
                {
-                 Task = new TaskFilter.Types.IdsRequest
-                        {
-                          Ids =
-                          {
-                            "Task",
-                          },
-                        },
-               }.ToFilterExpression()
-                .Compile();
+                 Ids =
+                 {
+                   "Task",
+                 },
+               },
+      }.ToFilterExpression()
+       .Compile();
 
 
     var model = new TaskData("SessionId",
@@ -533,6 +543,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -558,17 +569,17 @@ internal class TaskFilterExtTests
   public void ShouldRecognizeMultipleTask()
   {
     var func = new TaskFilter
+      {
+        Task = new TaskFilter.Types.IdsRequest
                {
-                 Task = new TaskFilter.Types.IdsRequest
-                        {
-                          Ids =
-                          {
-                            "Task",
-                            "Task2",
-                          },
-                        },
-               }.ToFilterExpression()
-                .Compile();
+                 Ids =
+                 {
+                   "Task",
+                   "Task2",
+                 },
+               },
+      }.ToFilterExpression()
+       .Compile();
 
 
     var model = new TaskData("SessionId",
@@ -576,6 +587,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -601,16 +613,16 @@ internal class TaskFilterExtTests
   public void ShouldRejectOtherTask()
   {
     var func = new TaskFilter
+      {
+        Task = new TaskFilter.Types.IdsRequest
                {
-                 Task = new TaskFilter.Types.IdsRequest
-                        {
-                          Ids =
-                          {
-                            "Task",
-                          },
-                        },
-               }.ToFilterExpression()
-                .Compile();
+                 Ids =
+                 {
+                   "Task",
+                 },
+               },
+      }.ToFilterExpression()
+       .Compile();
 
 
     var model = new TaskData("SessionId",
@@ -618,6 +630,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -643,17 +656,17 @@ internal class TaskFilterExtTests
   public void ShouldRejectOtherMultipleTask()
   {
     var func = new TaskFilter
+      {
+        Task = new TaskFilter.Types.IdsRequest
                {
-                 Task = new TaskFilter.Types.IdsRequest
-                        {
-                          Ids =
-                          {
-                            "Task",
-                            "Task2",
-                          },
-                        },
-               }.ToFilterExpression()
-                .Compile();
+                 Ids =
+                 {
+                   "Task",
+                   "Task2",
+                 },
+               },
+      }.ToFilterExpression()
+       .Compile();
 
 
     var model = new TaskData("SessionId",
@@ -661,6 +674,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",

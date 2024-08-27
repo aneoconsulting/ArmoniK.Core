@@ -58,6 +58,8 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.InitialTaskId))
                                                   .SetIsRequired(true);
+                                                cm.MapProperty(nameof(TaskData.CreatedBy))
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.RetryOfIds))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(TaskData.Status))
@@ -103,6 +105,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                                                                                     model.RemainingDataDependencies,
                                                                                     model.ExpectedOutputIds,
                                                                                     model.InitialTaskId,
+                                                                                    model.CreatedBy,
                                                                                     model.RetryOfIds,
                                                                                     model.Status,
                                                                                     model.StatusMessage,

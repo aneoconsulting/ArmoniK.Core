@@ -148,6 +148,7 @@ internal class BsonSerializerTest
                              "output1",
                            },
                            "taskId",
+                           "createdBy",
                            new List<string>
                            {
                              "retry1",
