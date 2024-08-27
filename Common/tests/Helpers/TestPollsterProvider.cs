@@ -18,8 +18,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
@@ -31,6 +33,7 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
@@ -49,19 +52,25 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollsterProvider : IDisposable
 {
-  private const           string                   DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource           ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
-  private readonly        WebApplication           app_;
-  private readonly        IMongoClient             client_;
-  private readonly        TimeSpan?                graceDelay_;
-  private readonly        IObjectStorage           objectStorage_;
-  public readonly         IPartitionTable          PartitionTable;
-  public readonly         Common.Pollster.Pollster Pollster;
-  public readonly         IResultTable             ResultTable;
-  private readonly        IMongoRunner             runner_;
-  private readonly        ISessionTable            sessionTable_;
-  public readonly         ISubmitter               Submitter;
-  public readonly         ITaskTable               TaskTable;
+  private const           string         DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
+  private readonly        WebApplication app_;
+  private readonly        IMongoClient   client_;
+
+  [SuppressMessage("Usage",
+                   "CA2213: Disposable fields must be disposed")]
+  public readonly ExceptionManager ExceptionManager;
+
+  private readonly TimeSpan?                graceDelay_;
+  public readonly  IHostApplicationLifetime Lifetime;
+  private readonly IObjectStorage           objectStorage_;
+  public readonly  IPartitionTable          PartitionTable;
+  public readonly  Common.Pollster.Pollster Pollster;
+  public readonly  IResultTable             ResultTable;
+  private readonly IMongoRunner             runner_;
+  private readonly ISessionTable            sessionTable_;
+  public readonly  ISubmitter               Submitter;
+  public readonly  ITaskTable               TaskTable;
 
 
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
@@ -155,11 +164,15 @@ public class TestPollsterProvider : IDisposable
            .AddHostedService<PostProcessor>()
            .AddSingleton<RunningTaskQueue>()
            .AddSingleton<PostProcessingTaskQueue>()
-           .AddSingleton<GraceDelayCancellationSource>()
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
+           .AddSingleton(sp => new ExceptionManager.Options(sp.GetRequiredService<Injection.Options.Pollster>()
+                                                              .GraceDelay,
+                                                            sp.GetRequiredService<Injection.Options.Pollster>()
+                                                              .MaxErrorAllowed))
+           .AddSingleton<ExceptionManager>()
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
@@ -173,13 +186,15 @@ public class TestPollsterProvider : IDisposable
     app_ = builder.Build();
     app_.Start();
 
-    ResultTable    = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
-    sessionTable_  = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
-    Pollster       = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
-    objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
+    ResultTable      = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable        = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable   = app_.Services.GetRequiredService<IPartitionTable>();
+    sessionTable_    = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter        = app_.Services.GetRequiredService<ISubmitter>();
+    Pollster         = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
+    objectStorage_   = app_.Services.GetRequiredService<IObjectStorage>();
+    ExceptionManager = app_.Services.GetRequiredService<ExceptionManager>();
+    Lifetime         = app_.Lifetime;
 
     ResultTable.Init(CancellationToken.None)
                .Wait();
@@ -201,4 +216,14 @@ public class TestPollsterProvider : IDisposable
     runner_?.Dispose();
     GC.SuppressFinalize(this);
   }
+
+  public Task StopApplicationAfter(TimeSpan delay = default)
+    => Task.Run(async () =>
+                {
+                  await Task.Delay(delay,
+                                   ExceptionManager.EarlyCancellationToken)
+                            .ConfigureAwait(false);
+
+                  Lifetime.StopApplication();
+                });
 }

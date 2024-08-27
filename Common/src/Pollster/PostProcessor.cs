@@ -16,12 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Hosting;
@@ -31,29 +31,29 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class PostProcessor : BackgroundService
 {
+  private readonly ExceptionManager        exceptionManager_;
   private readonly ILogger<PostProcessor>  logger_;
   private readonly PostProcessingTaskQueue postProcessingTaskQueue_;
-  private readonly CancellationToken       token_;
 
-  public PostProcessor(PostProcessingTaskQueue      postProcessingTaskQueue,
-                       GraceDelayCancellationSource graceDelayCancellationSource,
-                       ILogger<PostProcessor>       logger)
+  public PostProcessor(PostProcessingTaskQueue postProcessingTaskQueue,
+                       ExceptionManager        exceptionManager,
+                       ILogger<PostProcessor>  logger)
   {
     postProcessingTaskQueue_ = postProcessingTaskQueue;
     logger_                  = logger;
-    token_                   = graceDelayCancellationSource.DelayedCancellationTokenSource.Token;
+    exceptionManager_        = exceptionManager;
   }
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     await using var closeReader = new Deferrer(postProcessingTaskQueue_.CloseReader);
 
-    while (!token_.IsCancellationRequested)
+    while (!exceptionManager_.LateCancellationToken.IsCancellationRequested)
     {
       try
       {
         var taskHandler = await postProcessingTaskQueue_.ReadAsync(Timeout.InfiniteTimeSpan,
-                                                                   token_)
+                                                                   exceptionManager_.LateCancellationToken)
                                                         .ConfigureAwait(false);
         await using var taskHandlerDispose = new Deferrer(taskHandler);
 
@@ -65,17 +65,24 @@ public class PostProcessor : BackgroundService
 
         await taskHandler.PostProcessing()
                          .ConfigureAwait(false);
+
+        // Task processing has been successful.
+        // Decrement number of recorded errors.
+        exceptionManager_.RecordSuccess(logger_);
       }
       catch (ChannelClosedException)
       {
         break;
       }
+      catch (OperationCanceledException) when (exceptionManager_.LateCancellationToken.IsCancellationRequested)
+      {
+        break;
+      }
       catch (Exception e)
       {
-        logger_.LogWarning(e,
-                           "Error during task post processing");
-        postProcessingTaskQueue_.AddException(ExceptionDispatchInfo.Capture(e)
-                                                                   .SourceException);
+        exceptionManager_.RecordError(logger_,
+                                      e,
+                                      "Error during task post processing");
       }
     }
 

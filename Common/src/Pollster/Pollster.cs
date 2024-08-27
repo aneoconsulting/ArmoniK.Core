@@ -35,12 +35,12 @@ using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -50,7 +50,7 @@ public class Pollster : IInitializable
   private readonly ActivitySource                            activitySource_;
   private readonly IAgentHandler                             agentHandler_;
   private readonly DataPrefetcher                            dataPrefetcher_;
-  private readonly IHostApplicationLifetime                  lifeTime_;
+  private readonly ExceptionManager                          exceptionManager_;
   private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
   private readonly int                                       messageBatchSize_;
@@ -77,7 +77,7 @@ public class Pollster : IInitializable
                   DataPrefetcher             dataPrefetcher,
                   ComputePlane               options,
                   Injection.Options.Pollster pollsterOptions,
-                  IHostApplicationLifetime   lifeTime,
+                  ExceptionManager           exceptionManager,
                   ActivitySource             activitySource,
                   ILogger<Pollster>          logger,
                   ILoggerFactory             loggerFactory,
@@ -103,7 +103,7 @@ public class Pollster : IInitializable
     loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;
     pullQueueStorage_      = pullQueueStorage;
-    lifeTime_              = lifeTime;
+    exceptionManager_      = exceptionManager;
     dataPrefetcher_        = dataPrefetcher;
     pollsterOptions_       = pollsterOptions;
     messageBatchSize_      = options.MessageBatchSize;
@@ -119,7 +119,6 @@ public class Pollster : IInitializable
     meterHolder_           = meterHolder;
     ownerPodId_            = identifier.OwnerPodId;
     ownerPodName_          = identifier.OwnerPodName;
-    Failed                 = false;
 
     var started = DateTime.UtcNow;
     meterHolder_.Meter.CreateObservableCounter("uptime",
@@ -158,12 +157,6 @@ public class Pollster : IInitializable
 
   public ICollection<string> TaskProcessing
     => taskProcessingDict_.Keys;
-
-  /// <summary>
-  ///   Is true when the MainLoop exited with an error
-  ///   Used in Unit tests
-  /// </summary>
-  public bool Failed { get; private set; }
 
   public async Task Init(CancellationToken cancellationToken)
     => await Task.WhenAll(pullQueueStorage_.Init(cancellationToken),
@@ -258,53 +251,24 @@ public class Pollster : IInitializable
     }
   }
 
-  public async Task MainLoop(CancellationToken cancellationToken)
+  public async Task MainLoop()
   {
-    using var cts = CancellationTokenSource.CreateLinkedTokenSource(lifeTime_.ApplicationStopping,
-                                                                    cancellationToken);
-
-    var recordedErrors = new Queue<Exception>();
-
-    void RecordError(Exception e)
-    {
-      // This exception should stop pollster
-      if (e is RpcException rpcException && TaskHandler.IsStatusFatal(rpcException.StatusCode))
-      {
-        e.RethrowWithStacktrace();
-      }
-
-      if (pollsterOptions_.MaxErrorAllowed < 0)
-      {
-        return;
-      }
-
-      recordedErrors.Enqueue(e);
-
-      if (recordedErrors.Count <= pollsterOptions_.MaxErrorAllowed)
-      {
-        return;
-      }
-
-      logger_.LogError("Too many consecutive errors in MainLoop. Stopping processing");
-      healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Too many consecutive errors in MainLoop");
-      cts.Cancel();
-
-      throw new TooManyException(recordedErrors.ToArray());
-    }
-
     try
     {
-      await Init(cts.Token)
+      await Init(exceptionManager_.EarlyCancellationToken)
         .ConfigureAwait(false);
 
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
-      while (!cts.Token.IsCancellationRequested)
+      while (!exceptionManager_.EarlyCancellationToken.IsCancellationRequested)
       {
         if (healthCheckFailedResult_ is not null)
         {
-          logger_.LogWarning("Health Check failed thus no more tasks will be executed");
-          await cts.CancelAsync()
-                   .ConfigureAwait(false);
+          var hcr = healthCheckFailedResult_.Value;
+          exceptionManager_.FatalError(logger_,
+                                       hcr.Exception,
+                                       "Health Check failed with status {Status} thus no more tasks will be executed:\n{Description}",
+                                       hcr.Status,
+                                       hcr.Description);
           return;
         }
 
@@ -315,23 +279,29 @@ public class Pollster : IInitializable
         try
         {
           await using var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
-                                                                         cts.Token)
-                                                      .GetAsyncEnumerator(cts.Token);
+                                                                         exceptionManager_.EarlyCancellationToken)
+                                                      .GetAsyncEnumerator(exceptionManager_.EarlyCancellationToken);
 
           // `messagesDispose` is guaranteed to be disposed *before* `messages` because it is defined _after_
           await using var messagesDispose = new Deferrer([SuppressMessage("ReSharper",
                                                                           "AccessToDisposedClosure")]
                                                          async () =>
                                                          {
-                                                           // This catch is used to properly dispose every message when the pollster should stop due to
+                                                           // This deferrer is used to properly dispose every message when the pollster should stop due to
                                                            // too many errors or fatal error (broken worker, for instance)
                                                            // Messages may not be all disposed in case the DisposeAsync method throws an exception
                                                            // whereas it should not (good practices encourage to avoid this behavior)
-                                                           logger_.LogDebug("Start of queue messages disposition");
+                                                           var first = true;
 
                                                            while (await messages.MoveNextAsync()
                                                                                 .ConfigureAwait(false))
                                                            {
+                                                             if (first)
+                                                             {
+                                                               logger_.LogDebug("Start of queue messages disposition");
+                                                               first = false;
+                                                             }
+
                                                              await messages.Current.DisposeIgnoreErrorAsync(logger_)
                                                                            .ConfigureAwait(false);
                                                            }
@@ -350,12 +320,6 @@ public class Pollster : IInitializable
                                                             ("ownerPodId", ownerPodId_));
 
             taskHandlerLogger.LogDebug("Start a new Task to process the messageHandler");
-
-            // Propagate back the errors from the runningTaskProcessor
-            while (runningTaskQueue_.RemoveException(out var exception))
-            {
-              RecordError(exception);
-            }
 
             var taskHandler = new TaskHandler(sessionTable_,
                                               taskTable_,
@@ -377,7 +341,7 @@ public class Pollster : IInitializable
                                                                               out var _);
                                                 pipeliningCounter_.Add(-1);
                                               },
-                                              lifeTime_,
+                                              exceptionManager_,
                                               new FunctionExecutionMetrics<TaskHandler>(meterHolder_));
             pipeliningCounter_.Add(1);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
@@ -410,22 +374,18 @@ public class Pollster : IInitializable
 
               await runningTaskQueue_.WriteAsync(taskHandler,
                                                  pollsterOptions_.TimeoutBeforeNextAcquisition,
-                                                 cts.Token)
+                                                 exceptionManager_.EarlyCancellationToken)
                                      .ConfigureAwait(false);
 
               // TaskHandler has been successfully sent to the next stage of the pipeline
               // So remove the automatic dispose of the TaskHandler
               taskHandlerDispose.Reset();
-
-              // If the task was successful, we can remove a failure
-              if (recordedErrors.Count > 0)
-              {
-                recordedErrors.Dequeue();
-              }
             }
             catch (Exception e)
             {
-              RecordError(e);
+              exceptionManager_.RecordError(logger_,
+                                            e,
+                                            "Error during Task Pre-Processing");
             }
           }
         }
@@ -434,37 +394,33 @@ public class Pollster : IInitializable
           // This exception should stop pollster
           healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Worker unavailable",
                                                                  e);
-          await cts.CancelAsync()
-                   .ConfigureAwait(false);
-          throw;
-        }
-        catch (TooManyException)
-        {
-          // This exception should not be caught here
-          throw;
+
+          exceptionManager_.FatalError(logger_,
+                                       e,
+                                       "Worker unavailable");
+          break;
         }
         catch (Exception e)
         {
-          logger_.LogError(e,
-                           "Error while processing the messages from the queue");
-          RecordError(e);
+          exceptionManager_.RecordError(logger_,
+                                        e,
+                                        "Error while processing the messages from the queue");
         }
       }
+
+      exceptionManager_.Stop(logger_,
+                             "End of Pollster main loop: Stop the application");
     }
     catch (Exception e)
     {
-      Failed = true;
-      logger_.LogCritical(e,
-                          "Error in pollster");
+      exceptionManager_.FatalError(logger_,
+                                   e,
+                                   "Error in pollster: Stop the application");
     }
     finally
     {
-      logger_.LogWarning("End of Pollster main loop");
       runningTaskQueue_.CloseWriter();
       endLoopReached_ = true;
-      lifeTime_.StopApplication();
     }
   }
-
-  private sealed class TooManyException(Exception[] inner) : AggregateException(inner);
 }

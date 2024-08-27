@@ -15,10 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-
 using ArmoniK.Core.Common.Utils;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -42,32 +38,4 @@ namespace ArmoniK.Core.Common.Pollster;
 ///     the poduced the task handler.
 ///   </para>
 /// </remarks>
-public abstract class TaskQueueBase : RendezvousChannel<TaskHandler>
-{
-  private readonly Queue<Exception> exceptions_ = new();
-
-  /// <summary>
-  ///   Add an exception in the internal exception list
-  /// </summary>
-  /// <param name="e">the exception to add</param>
-  public void AddException(Exception e)
-    => exceptions_.Enqueue(e);
-
-  /// <summary>
-  ///   Get and remove an exception from the internal list of exception
-  /// </summary>
-  /// <param name="e">the exception to return</param>
-  /// <returns>
-  ///   Whether there is an exception in the internal list
-  /// </returns>
-  public bool RemoveException([MaybeNullWhen(false)] out Exception e)
-  {
-    var r = exceptions_.Count > 0;
-
-    e = r
-          ? exceptions_.Dequeue()
-          : null;
-
-    return r;
-  }
-}
+public abstract class TaskQueueBase : RendezvousChannel<TaskHandler>;

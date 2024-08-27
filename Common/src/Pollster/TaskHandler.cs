@@ -35,7 +35,6 @@ using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
@@ -48,25 +47,22 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly ActivityContext                       activityContext_;
   private readonly ActivitySource                        activitySource_;
   private readonly IAgentHandler                         agentHandler_;
-  private readonly CancellationTokenSource               cancellationTokenSource_;
   private readonly DataPrefetcher                        dataPrefetcher_;
   private readonly TimeSpan                              delayBeforeAcquisition_;
+  private readonly CancellationTokenSource               earlyCts_;
   private readonly string                                folder_;
   private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
-  private readonly GraceDelayCancellationSource          gdcs_;
+  private readonly CancellationTokenSource               lateCts_;
   private readonly ILogger                               logger_;
   private readonly IQueueMessageHandler                  messageHandler_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
-  private readonly CancellationTokenRegistration         registration_;
-  private readonly CancellationTokenRegistration         registration2_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
   private readonly ISubmitter                            submitter_;
   private readonly ITaskProcessingChecker                taskProcessingChecker_;
   private readonly ITaskTable                            taskTable_;
   private readonly string                                token_;
-  private readonly CancellationTokenSource               workerConnectionCts_;
   private readonly IWorkerStreamHandler                  workerStreamHandler_;
   private          IAgent?                               agent_;
   private          DateTime?                             fetchedDate_;
@@ -90,7 +86,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      ILogger                               logger,
                      Injection.Options.Pollster            pollsterOptions,
                      Action                                onDispose,
-                     IHostApplicationLifetime              lifetime,
+                     ExceptionManager                      exceptionManager,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics)
   {
     sessionTable_             = sessionTable;
@@ -132,14 +128,8 @@ public sealed class TaskHandler : IAsyncDisposable
     Directory.CreateDirectory(folder_);
     delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
 
-    gdcs_ = new GraceDelayCancellationSource(lifetime,
-                                             pollsterOptions);
-    workerConnectionCts_     = gdcs_.DelayedCancellationTokenSource;
-    cancellationTokenSource_ = gdcs_.LifetimeCancellationTokenSource;
-
-    registration_ = cancellationTokenSource_.Token.Register(() => logger_.LogWarning("Cancellation triggered, waiting {waitingTime} before cancelling task",
-                                                                                     pollsterOptions.GraceDelay));
-    registration2_ = workerConnectionCts_.Token.Register(() => logger_.LogWarning("Cancellation triggered, start to properly cancel task"));
+    earlyCts_ = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.EarlyCancellationToken);
+    lateCts_  = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.LateCancellationToken);
   }
 
   /// <summary>
@@ -162,11 +152,6 @@ public sealed class TaskHandler : IAsyncDisposable
     await ReleaseTaskHandler()
       .ConfigureAwait(false);
 
-    await registration_.DisposeAsync()
-                       .ConfigureAwait(false);
-    await registration2_.DisposeAsync()
-                        .ConfigureAwait(false);
-    gdcs_.Dispose();
     agent_?.Dispose();
     try
     {
@@ -178,6 +163,8 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     activity_?.Dispose();
+    lateCts_.Dispose();
+    earlyCts_.Dispose();
   }
 
   /// <summary>
@@ -203,7 +190,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public async Task StopCancelledTask()
+  public async Task<bool> StopCancelledTask()
   {
     using var measure = functionExecutionMetrics_.CountAndTime();
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
@@ -217,16 +204,22 @@ public sealed class TaskHandler : IAsyncDisposable
       if (taskData_.Status is TaskStatus.Cancelling)
       {
         logger_.LogWarning("Task has been cancelled, trigger cancellation from exterior.");
-        await cancellationTokenSource_.CancelAsync()
-                                      .ConfigureAwait(false);
+        await earlyCts_.CancelAsync()
+                       .ConfigureAwait(false);
+        await lateCts_.CancelAsync()
+                      .ConfigureAwait(false);
 
         // Upon cancellation, dispose the messageHandler to remove the message from the queue, and call onDispose
         // Calling the TaskHandler dispose is not possible here as the cancellationTokenSource is still in use
         messageHandler_.Status = QueueMessageStatus.Cancelled;
         await ReleaseTaskHandler()
           .ConfigureAwait(false);
+
+        return true;
       }
     }
+
+    return false;
   }
 
   /// <summary>
@@ -260,7 +253,7 @@ public sealed class TaskHandler : IAsyncDisposable
       logger_.LogInformation("Start task acquisition with {status}",
                              taskData_.Status);
 
-      if (cancellationTokenSource_.IsCancellationRequested)
+      if (earlyCts_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
         logger_.LogDebug("Task data read but execution cancellation requested");
@@ -491,7 +484,7 @@ public sealed class TaskHandler : IAsyncDisposable
         return AcquisitionStatus.SessionPaused;
       }
 
-      if (cancellationTokenSource_.IsCancellationRequested)
+      if (earlyCts_.IsCancellationRequested)
       {
         messageHandler_.Status = QueueMessageStatus.Postponed;
         logger_.LogDebug("Session running but execution cancellation requested");
@@ -509,7 +502,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                CancellationToken.None)
                                   .ConfigureAwait(false);
 
-      if (cancellationTokenSource_.IsCancellationRequested)
+      if (earlyCts_.IsCancellationRequested)
       {
         logger_.LogDebug("Task acquired but execution cancellation requested");
         await ReleaseAndPostponeTask()
@@ -614,7 +607,7 @@ public sealed class TaskHandler : IAsyncDisposable
         return AcquisitionStatus.AcquisitionFailedProcessingHere;
       }
 
-      if (cancellationTokenSource_.IsCancellationRequested)
+      if (earlyCts_.IsCancellationRequested)
       {
         logger_.LogDebug("Task preconditions ok but execution cancellation requested");
         await ReleaseAndPostponeTask()
@@ -703,7 +696,7 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       await dataPrefetcher_.PrefetchDataAsync(taskData_,
                                               folder_,
-                                              cancellationTokenSource_.Token)
+                                              earlyCts_.Token)
                            .ConfigureAwait(false);
       fetchedDate_ = DateTime.UtcNow;
     }
@@ -711,7 +704,7 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       await HandleErrorRequeueAsync(e,
                                     taskData_,
-                                    cancellationTokenSource_.Token)
+                                    earlyCts_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -751,7 +744,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                          sessionData_,
                                          taskData_,
                                          folder_,
-                                         cancellationTokenSource_.Token)
+                                         earlyCts_.Token)
                                   .ConfigureAwait(false);
 
 
@@ -777,11 +770,28 @@ public sealed class TaskHandler : IAsyncDisposable
                          "Task already in a final state, removing it from the queue");
       throw;
     }
+    // If an ArmoniKException is thrown, check if this was because
+    // the task has been canceled. Use standard error management otherwise.
+    catch (ArmoniKException e)
+    {
+      if (await StopCancelledTask()
+            .ConfigureAwait(false))
+      {
+        earlyCts_.Token.ThrowIfCancellationRequested();
+      }
+      else
+      {
+        await HandleErrorRequeueAsync(e,
+                                      taskData_,
+                                      earlyCts_.Token)
+          .ConfigureAwait(false);
+      }
+    }
     catch (Exception e)
     {
       await HandleErrorRequeueAsync(e,
                                     taskData_,
-                                    cancellationTokenSource_.Token)
+                                    earlyCts_.Token)
         .ConfigureAwait(false);
     }
 
@@ -795,7 +805,7 @@ public sealed class TaskHandler : IAsyncDisposable
         output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
                                                                  token_,
                                                                  folder_,
-                                                                 workerConnectionCts_.Token)
+                                                                 lateCts_.Token)
                                             .ConfigureAwait(false);
       }
 
@@ -807,7 +817,7 @@ public sealed class TaskHandler : IAsyncDisposable
       activity?.AddEvent(new ActivityEvent("End request"));
 
       logger_.LogDebug("Stop agent server");
-      await agentHandler_.Stop(workerConnectionCts_.Token)
+      await agentHandler_.Stop(lateCts_.Token)
                          .ConfigureAwait(false);
       activity?.AddEvent(new ActivityEvent("Stopped Handler"));
     }
@@ -819,7 +829,7 @@ public sealed class TaskHandler : IAsyncDisposable
                   };
       await HandleErrorTaskExecutionAsync(e,
                                           taskData_,
-                                          cancellationTokenSource_.Token)
+                                          earlyCts_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -884,7 +894,7 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       await HandleErrorResubmitAsync(e,
                                      taskData_,
-                                     cancellationTokenSource_.Token)
+                                     earlyCts_.Token)
         .ConfigureAwait(false);
     }
 

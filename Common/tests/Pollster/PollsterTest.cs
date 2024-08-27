@@ -179,6 +179,7 @@ public class PollsterTest
 
 
   [Test]
+  [Timeout(15000)]
   public void InitializePollster()
   {
     var mockStreamHandler    = new Mock<IWorkerStreamHandler>();
@@ -272,6 +273,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(15000)]
   public async Task InitShouldSucceed()
   {
     var mockAgentHandler = new Mock<IAgentHandler>();
@@ -307,6 +309,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(10000)]
   public async Task InitShouldFail()
   {
     var mockAgentHandler = new Mock<IAgentHandler>();
@@ -362,14 +365,13 @@ public class PollsterTest
                                               .ConfigureAwait(false)).Status);
 
     // This test that we return from the mainloop after the health check is unhealthy
-    var cancellationTokenSource = new CancellationTokenSource(TimeSpan.FromSeconds(10));
-    await testServiceProvider.Pollster.MainLoop(cancellationTokenSource.Token)
+    await testServiceProvider.Pollster.MainLoop()
                              .ConfigureAwait(false);
-    Assert.False(testServiceProvider.Pollster.Failed);
-    Assert.IsFalse(cancellationTokenSource.IsCancellationRequested);
+    Assert.True(testServiceProvider.ExceptionManager.Failed);
   }
 
   [Test]
+  [Timeout(10000)]
   public async Task RunThenCancelPollster()
   {
     var mockStreamHandler    = new Mock<IWorkerStreamHandler>();
@@ -396,10 +398,10 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(105));
+    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMicroseconds(105));
 
-    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
-    Assert.True(source.Token.IsCancellationRequested);
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
+    Assert.DoesNotThrowAsync(() => stop);
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
   }
@@ -435,6 +437,7 @@ public class PollsterTest
 
 
   [Test]
+  [Timeout(10000)]
   public async Task ExecuteTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -464,11 +467,11 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(1000));
+    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(1));
 
-    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
-    Assert.False(testServiceProvider.Pollster.Failed);
-    Assert.True(source.Token.IsCancellationRequested);
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
+    Assert.DoesNotThrowAsync(() => stop);
+    Assert.False(testServiceProvider.ExceptionManager.Failed);
 
     Assert.AreEqual(TaskStatus.Completed,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
@@ -477,6 +480,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(10000)]
   public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -507,11 +511,11 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMilliseconds(300));
 
-    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
-    Assert.False(testServiceProvider.Pollster.Failed);
-    Assert.True(source.Token.IsCancellationRequested);
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
+    Assert.DoesNotThrowAsync(() => stop);
+    Assert.False(testServiceProvider.ExceptionManager.Failed);
 
     // wait to exceed grace delay and see that task is properly resubmitted
     await Task.Delay(TimeSpan.FromMilliseconds(200),
@@ -525,6 +529,7 @@ public class PollsterTest
   }
 
   [Test]
+  [Timeout(30000)]
   public async Task CancelLongTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -554,9 +559,9 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(5));
 
-    var mainLoopTask = testServiceProvider.Pollster.MainLoop(source.Token);
+    var mainLoopTask = testServiceProvider.Pollster.MainLoop();
 
     await Task.Delay(TimeSpan.FromMilliseconds(200),
                      CancellationToken.None)
@@ -577,8 +582,8 @@ public class PollsterTest
                              .ConfigureAwait(false);
 
     Assert.DoesNotThrowAsync(() => mainLoopTask);
-    Assert.False(testServiceProvider.Pollster.Failed);
-    Assert.True(source.Token.IsCancellationRequested);
+    Assert.DoesNotThrowAsync(() => stop);
+    Assert.False(testServiceProvider.ExceptionManager.Failed);
 
     Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                   CancellationToken.None)
@@ -643,6 +648,7 @@ public class PollsterTest
 
   [Test]
   [TestCaseSource(nameof(ExecuteTooManyErrorShouldFailTestCase))]
+  [Timeout(10000)]
   public async Task ExecuteTooManyErrorShouldFail(Mock<IWorkerStreamHandler> mockStreamHandler,
                                                   Mock<IPullQueueStorage>    mockPullQueueStorage,
                                                   Mock<IAgentHandler>        mockAgentHandler)
@@ -656,18 +662,19 @@ public class PollsterTest
     await pollster.Init(CancellationToken.None)
                   .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(10));
 
-
-    Assert.DoesNotThrowAsync(() => pollster.MainLoop(source.Token));
-    Assert.True(pollster.Failed);
-    Assert.False(source.Token.IsCancellationRequested);
+    Assert.DoesNotThrowAsync(() => pollster.MainLoop());
+    Assert.That(() => stop,
+                Throws.InstanceOf<OperationCanceledException>());
+    Assert.True(testServiceProvider.ExceptionManager.Failed);
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
   }
 
 
   [Test]
+  [Timeout(10000)]
   public async Task UnavailableWorkerShouldFail()
   {
     var mockPullQueueStorage = new SimplePullQueueStorageChannel();
@@ -704,9 +711,10 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var source = new CancellationTokenSource(TimeSpan.FromMilliseconds(300));
+    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMilliseconds(300));
 
-    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop(source.Token));
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
+    Assert.DoesNotThrowAsync(() => stop);
 
     Assert.AreEqual(TaskStatus.Submitted,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,

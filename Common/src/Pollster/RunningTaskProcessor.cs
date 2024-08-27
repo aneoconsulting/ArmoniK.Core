@@ -16,12 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Hosting;
@@ -31,20 +31,20 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public class RunningTaskProcessor : BackgroundService
 {
+  private readonly ExceptionManager              exceptionManager_;
   private readonly ILogger<RunningTaskProcessor> logger_;
   private readonly PostProcessingTaskQueue       postProcessingTaskQueue_;
   private readonly RunningTaskQueue              runningTaskQueue_;
-  private readonly CancellationToken             token_;
 
   public RunningTaskProcessor(RunningTaskQueue              runningTaskQueue,
                               PostProcessingTaskQueue       postProcessingTaskQueue,
-                              GraceDelayCancellationSource  graceDelayCancellationSource,
+                              ExceptionManager              exceptionManager,
                               ILogger<RunningTaskProcessor> logger)
   {
     runningTaskQueue_        = runningTaskQueue;
     postProcessingTaskQueue_ = postProcessingTaskQueue;
     logger_                  = logger;
-    token_                   = graceDelayCancellationSource.DelayedCancellationTokenSource.Token;
+    exceptionManager_        = exceptionManager;
   }
 
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -53,18 +53,22 @@ public class RunningTaskProcessor : BackgroundService
     await using var closeReader = new Deferrer(runningTaskQueue_.CloseReader);
 
     logger_.LogDebug("Start running task processing service");
-    while (!token_.IsCancellationRequested)
+    while (!exceptionManager_.EarlyCancellationToken.IsCancellationRequested)
     {
       try
       {
-        while (postProcessingTaskQueue_.RemoveException(out var exception))
+        TaskHandler taskHandler;
+        try
         {
-          runningTaskQueue_.AddException(exception);
+          taskHandler = await runningTaskQueue_.ReadAsync(Timeout.InfiniteTimeSpan,
+                                                          exceptionManager_.EarlyCancellationToken)
+                                               .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+          break;
         }
 
-        var taskHandler = await runningTaskQueue_.ReadAsync(Timeout.InfiniteTimeSpan,
-                                                            token_)
-                                                 .ConfigureAwait(false);
         await using var taskHandlerDispose = new Deferrer(taskHandler);
 
         var taskInfo = taskHandler.GetAcquiredTaskInfo();
@@ -76,7 +80,7 @@ public class RunningTaskProcessor : BackgroundService
                          .ConfigureAwait(false);
         await postProcessingTaskQueue_.WriteAsync(taskHandler,
                                                   Timeout.InfiniteTimeSpan,
-                                                  token_)
+                                                  exceptionManager_.LateCancellationToken)
                                       .ConfigureAwait(false);
 
         taskHandlerDispose.Reset();
@@ -87,10 +91,9 @@ public class RunningTaskProcessor : BackgroundService
       }
       catch (Exception e)
       {
-        logger_.LogWarning(e,
-                           "Error while executing task");
-        runningTaskQueue_.AddException(ExceptionDispatchInfo.Capture(e)
-                                                            .SourceException);
+        exceptionManager_.RecordError(logger_,
+                                      e,
+                                      "Error while executing task");
       }
     }
 

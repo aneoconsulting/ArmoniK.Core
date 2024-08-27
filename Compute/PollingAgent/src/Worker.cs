@@ -32,5 +32,5 @@ public class Worker : BackgroundService
     => pollster_ = pollster;
 
   protected override Task ExecuteAsync(CancellationToken stoppingToken)
-    => pollster_.MainLoop(stoppingToken);
+    => pollster_.MainLoop();
 }
