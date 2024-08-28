@@ -176,6 +176,7 @@ public static class EnumFieldExt
        {
          ResultRawEnumField.SessionId   => result => result.SessionId,
          ResultRawEnumField.Name        => result => result.Name,
+         ResultRawEnumField.CreatedBy   => result => result.CreatedBy,
          ResultRawEnumField.OwnerTaskId => result => result.OwnerTaskId,
          ResultRawEnumField.Status      => result => result.Status,
          ResultRawEnumField.CreatedAt   => result => result.CreationDate,

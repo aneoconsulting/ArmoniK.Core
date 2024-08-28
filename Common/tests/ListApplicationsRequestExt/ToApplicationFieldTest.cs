@@ -99,22 +99,22 @@ public class ToApplicationFieldTest
                                               object?             expected)
   {
     var func = new ListApplicationsRequest
-      {
-        Filters = new Filters(),
-        Sort = new ListApplicationsRequest.Types.Sort
                {
-                 Fields =
-                 {
-                   new ApplicationField
-                   {
-                     ApplicationField_ = field,
-                   },
-                 },
-                 Direction = SortDirection.Asc,
-               },
-      }.Sort.Fields.Single()
-       .ToField()
-       .Compile();
+                 Filters = new Filters(),
+                 Sort = new ListApplicationsRequest.Types.Sort
+                        {
+                          Fields =
+                          {
+                            new ApplicationField
+                            {
+                              ApplicationField_ = field,
+                            },
+                          },
+                          Direction = SortDirection.Asc,
+                        },
+               }.Sort.Fields.Single()
+                .ToField()
+                .Compile();
 
     Assert.AreEqual(expected,
                     func.Invoke(taskData_));

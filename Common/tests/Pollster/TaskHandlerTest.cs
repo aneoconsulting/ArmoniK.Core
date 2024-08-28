@@ -136,6 +136,7 @@ public class TaskHandlerTest
                                                               "ExpectedOutput0",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -143,6 +144,7 @@ public class TaskHandlerTest
                                                               Array.Empty<byte>()),
                                                    new Result(sessionId,
                                                               "DataDep",
+                                                              "",
                                                               "",
                                                               "",
                                                               ResultStatus.Created,
@@ -154,6 +156,7 @@ public class TaskHandlerTest
                                                               "ExpectedOutput1",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -161,6 +164,7 @@ public class TaskHandlerTest
                                                               Array.Empty<byte>()),
                                                    new Result(sessionId,
                                                               "ExpectedOutput2",
+                                                              "",
                                                               "",
                                                               "",
                                                               ResultStatus.Created,
@@ -172,6 +176,7 @@ public class TaskHandlerTest
                                                               "ExpectedOutput3",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -181,6 +186,7 @@ public class TaskHandlerTest
                                                               "taskId",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -188,6 +194,7 @@ public class TaskHandlerTest
                                                               Array.Empty<byte>()),
                                                    new Result(sessionId,
                                                               "payload",
+                                                              "",
                                                               "",
                                                               "",
                                                               ResultStatus.Created,
@@ -962,10 +969,10 @@ public class TaskHandlerTest
                        cancellationToken)
                 .ConfigureAwait(false);
       var enumerable = new[]
-        {
-          sessionData_!,
-        }.Select(selector.Compile())
-         .ToAsyncEnumerable();
+                       {
+                         sessionData_!,
+                       }.Select(selector.Compile())
+                        .ToAsyncEnumerable();
 
       await foreach (var d in enumerable.ConfigureAwait(false))
       {

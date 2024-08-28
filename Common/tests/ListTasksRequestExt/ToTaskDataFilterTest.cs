@@ -219,6 +219,9 @@ public class ToTaskDataFilterTest
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.CreatedBy,
                                                                       FilterStringOperator.Equal,
                                                                       "CreatedBy"));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.CreatedBy,
+                                                                       FilterStringOperator.Equal,
+                                                                       "BadCreatedBy"));
 
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterStatus(TaskSummaryEnumField.Status,
                                                                       FilterStatusOperator.Equal,

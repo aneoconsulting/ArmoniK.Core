@@ -43,7 +43,7 @@ namespace ArmoniK.Core.Common.Storage;
 ///   responsibility to produce
 /// </param>
 /// <param name="InitialTaskId">Task id before retry</param>
-/// <param name="CreatedBy">Task id of the parent</param>
+/// <param name="CreatedBy">Id of the task that created this task.</param>
 /// <param name="RetryOfIds">List of previous tasks ids before the current retry</param>
 /// <param name="Status">Current status of the task</param>
 /// <param name="StatusMessage">Message associated to the status</param>
@@ -102,6 +102,7 @@ public record TaskData(string        SessionId,
   /// <param name="ownerPodId">Identifier of the polling agent running the task</param>
   /// <param name="ownerPodName">Hostname of the polling agent running the task</param>
   /// <param name="payloadId">Unique identifier of the payload in input of the task</param>
+  /// <param name="createdBy">Id of the task that created this task.</param>
   /// <param name="parentTaskIds">
   ///   Unique identifiers of the tasks that submitted the current task up to the session id which
   ///   represents a submission from the client

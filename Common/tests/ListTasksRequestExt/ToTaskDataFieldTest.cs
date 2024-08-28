@@ -184,41 +184,41 @@ public class ToTaskDataFieldTest
                                               object?   expected)
   {
     var func = new ListTasksRequest
-      {
-        Filters = new Filters
-                  {
-                    Or =
-                    {
-                      new FiltersAnd
-                      {
-                        And =
-                        {
-                          new FilterField
-                          {
-                            Field = new TaskField
-                                    {
-                                      TaskSummaryField = new TaskSummaryField
-                                                         {
-                                                           Field = TaskSummaryEnumField.SessionId,
-                                                         },
-                                    },
-                            FilterString = new FilterString
-                                           {
-                                             Value    = "SessionId",
-                                             Operator = FilterStringOperator.Equal,
-                                           },
-                          },
-                        },
-                      },
-                    },
-                  },
-        Sort = new ListTasksRequest.Types.Sort
                {
-                 Direction = SortDirection.Asc,
-                 Field     = field,
-               },
-      }.Sort.ToField()
-       .Compile();
+                 Filters = new Filters
+                           {
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
+                                                    {
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
+                                                    },
+                                   },
+                                 },
+                               },
+                             },
+                           },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = SortDirection.Asc,
+                          Field     = field,
+                        },
+               }.Sort.ToField()
+                .Compile();
 
     Assert.AreEqual(expected,
                     func.Invoke(TaskData));
@@ -228,47 +228,47 @@ public class ToTaskDataFieldTest
   public void KeyNotFoundShouldFail()
   {
     var func = new ListTasksRequest
-      {
-        Filters = new Filters
-                  {
-                    Or =
-                    {
-                      new FiltersAnd
-                      {
-                        And =
-                        {
-                          new FilterField
-                          {
-                            Field = new TaskField
-                                    {
-                                      TaskSummaryField = new TaskSummaryField
-                                                         {
-                                                           Field = TaskSummaryEnumField.SessionId,
-                                                         },
-                                    },
-                            FilterString = new FilterString
-                                           {
-                                             Value    = "SessionId",
-                                             Operator = FilterStringOperator.Equal,
-                                           },
-                          },
-                        },
-                      },
-                    },
-                  },
-        Sort = new ListTasksRequest.Types.Sort
                {
-                 Direction = SortDirection.Asc,
-                 Field = new TaskField
-                         {
-                           TaskOptionGenericField = new TaskOptionGenericField
+                 Filters = new Filters
+                           {
+                             Or =
+                             {
+                               new FiltersAnd
+                               {
+                                 And =
+                                 {
+                                   new FilterField
+                                   {
+                                     Field = new TaskField
+                                             {
+                                               TaskSummaryField = new TaskSummaryField
+                                                                  {
+                                                                    Field = TaskSummaryEnumField.SessionId,
+                                                                  },
+                                             },
+                                     FilterString = new FilterString
                                                     {
-                                                      Field = "NotExistingKey",
+                                                      Value    = "SessionId",
+                                                      Operator = FilterStringOperator.Equal,
                                                     },
-                         },
-               },
-      }.Sort.ToField()
-       .Compile();
+                                   },
+                                 },
+                               },
+                             },
+                           },
+                 Sort = new ListTasksRequest.Types.Sort
+                        {
+                          Direction = SortDirection.Asc,
+                          Field = new TaskField
+                                  {
+                                    TaskOptionGenericField = new TaskOptionGenericField
+                                                             {
+                                                               Field = "NotExistingKey",
+                                                             },
+                                  },
+                        },
+               }.Sort.ToField()
+                .Compile();
 
     Assert.Throws<KeyNotFoundException>(() => func.Invoke(TaskData));
   }

@@ -153,27 +153,27 @@ public class SimpleTaskTable : ITaskTable
                                                Expression<Func<TaskData, T>>    selector,
                                                CancellationToken                cancellationToken = default)
     => new List<TaskData>
-      {
-        new(SessionId,
-            TaskId,
-            OwnerPodId,
-            PodName,
-            PayloadId,
-            CreatedBy,
-            new List<string>(),
-            new List<string>(),
-            new List<string>
-            {
-              OutputId,
-            },
-            new List<string>(),
-            TaskStatus.Completed,
-            TaskOptions,
-            new Output(OutputStatus.Success,
-                       "")),
-      }.Where(filter.Compile())
-       .Select(selector.Compile())
-       .ToAsyncEnumerable();
+       {
+         new(SessionId,
+             TaskId,
+             OwnerPodId,
+             PodName,
+             PayloadId,
+             CreatedBy,
+             new List<string>(),
+             new List<string>(),
+             new List<string>
+             {
+               OutputId,
+             },
+             new List<string>(),
+             TaskStatus.Completed,
+             TaskOptions,
+             new Output(OutputStatus.Success,
+                        "")),
+       }.Where(filter.Compile())
+        .Select(selector.Compile())
+        .ToAsyncEnumerable();
 
   public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>> filter,
                                     UpdateDefinition<TaskData>       updates,

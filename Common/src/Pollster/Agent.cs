@@ -291,6 +291,7 @@ public sealed class Agent : IAgent
                                           return new Result(rc.request.SessionId,
                                                             resultId,
                                                             rc.request.Name,
+                                                            taskData_.TaskId,
                                                             "",
                                                             ResultStatus.Created,
                                                             new List<string>(),
@@ -372,6 +373,7 @@ public sealed class Agent : IAgent
                                                    Guid.NewGuid()
                                                        .ToString(),
                                                    rc.Name,
+                                                   taskData_.TaskId,
                                                    "",
                                                    ResultStatus.Created,
                                                    new List<string>(),

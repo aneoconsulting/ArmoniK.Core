@@ -25,6 +25,7 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="SessionId">Id of the session that produces and consumes this data</param>
 /// <param name="ResultId">Unique Id of the result</param>
 /// <param name="Name">Name to reference and access this result</param>
+/// <param name="CreatedBy">Id of the task that created this result.</param>
 /// <param name="OwnerTaskId">Id of the task that is responsible of generating this result.</param>
 /// <param name="Status">Status of the result (can be Created, Completed or Aborted)</param>
 /// <param name="DependentTasks">List of tasks that depend on this result.</param>
@@ -34,6 +35,7 @@ namespace ArmoniK.Core.Common.Storage;
 public record Result(string       SessionId,
                      string       ResultId,
                      string       Name,
+                     string       CreatedBy,
                      string       OwnerTaskId,
                      ResultStatus Status,
                      List<string> DependentTasks,

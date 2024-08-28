@@ -242,6 +242,7 @@ public class SubmitterTests
                                           ExpectedOutput1,
                                           "",
                                           "",
+                                          "",
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
@@ -251,6 +252,7 @@ public class SubmitterTests
                                           ExpectedOutput2,
                                           "",
                                           "",
+                                          "",
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
@@ -258,6 +260,7 @@ public class SubmitterTests
                                           Array.Empty<byte>()),
                                new Result(sessionId,
                                           ExpectedOutput6,
+                                          "",
                                           "",
                                           "",
                                           ResultStatus.Created,
@@ -360,6 +363,7 @@ public class SubmitterTests
                              {
                                new Result(sessionId,
                                           ExpectedOutput3,
+                                          "",
                                           "",
                                           "",
                                           ResultStatus.Created,
@@ -824,12 +828,16 @@ public class SubmitterTests
                     .ConfigureAwait(false);
 
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[0].TypeCase);
+                    writer.Messages[0]
+                          .TypeCase);
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[1].TypeCase);
+                    writer.Messages[1]
+                          .TypeCase);
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[2].TypeCase);
-    Assert.IsTrue(writer.Messages[2].Result.DataComplete);
+                    writer.Messages[2]
+                          .TypeCase);
+    Assert.IsTrue(writer.Messages[2]
+                        .Result.DataComplete);
   }
 
   [Test]
@@ -949,6 +957,7 @@ public class SubmitterTests
                                             ExpectedOutput4,
                                             "",
                                             "",
+                                            "",
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
@@ -956,6 +965,7 @@ public class SubmitterTests
                                             Array.Empty<byte>()),
                                  new Result(sessionId,
                                             ExpectedOutput5,
+                                            "",
                                             "",
                                             "",
                                             ResultStatus.Created,
@@ -1054,6 +1064,7 @@ public class SubmitterTests
                                             ExpectedOutput4,
                                             "",
                                             "",
+                                            "",
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
@@ -1094,6 +1105,11 @@ public class SubmitterTests
 
     Assert.AreEqual(string.Empty,
                     taskData.CreatedBy);
+    var resultData = await resultTable_!.GetResult(taskData.PayloadId)
+                                        .ConfigureAwait(false);
+
+    Assert.AreEqual(string.Empty,
+                    resultData.CreatedBy);
   }
 
 
@@ -1110,6 +1126,7 @@ public class SubmitterTests
                                {
                                  new Result(sessionId,
                                             ExpectedOutput4,
+                                            "",
                                             "",
                                             "",
                                             ResultStatus.Created,
@@ -1151,5 +1168,11 @@ public class SubmitterTests
 
     Assert.AreEqual(taskSubmitted,
                     taskData.CreatedBy);
+
+    var resultData = await resultTable_!.GetResult(taskData.PayloadId)
+                                        .ConfigureAwait(false);
+
+    Assert.AreEqual(taskSubmitted,
+                    resultData.CreatedBy);
   }
 }

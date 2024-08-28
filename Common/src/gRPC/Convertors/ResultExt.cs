@@ -38,6 +38,7 @@ public static class ResultExt
          Status      = result.Status.ToGrpcStatus(),
          CreatedAt   = Timestamp.FromDateTime(result.CreationDate),
          Name        = result.Name,
+         CreatedBy   = result.CreatedBy,
          OwnerTaskId = result.OwnerTaskId,
          ResultId    = result.ResultId,
          Size        = result.Size,
