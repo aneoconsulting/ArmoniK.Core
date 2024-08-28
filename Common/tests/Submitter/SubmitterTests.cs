@@ -26,7 +26,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
@@ -119,6 +118,8 @@ public class SubmitterTests
 
     var services = new ServiceCollection();
 
+    pushQueueStorage_ = new SimplePushQueueStorage();
+
     services.AddMongoStorages(configuration,
                               logger)
             .AddSingleton(ActivitySource)
@@ -127,7 +128,7 @@ public class SubmitterTests
             .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
             .AddOption<Injection.Options.Submitter>(configuration,
                                                     Injection.Options.Submitter.SettingSection)
-            .AddSingleton<IPushQueueStorage, PushQueueStorage>();
+            .AddSingleton<IPushQueueStorage>(pushQueueStorage_);
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {
@@ -201,6 +202,8 @@ public class SubmitterTests
                                                                  Priority    = 1,
                                                                  PartitionId = "part1",
                                                                };
+
+  private SimplePushQueueStorage pushQueueStorage_;
 
   private static async Task<(SessionData session, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                             IPartitionTable   partitionTable,
@@ -633,6 +636,101 @@ public class SubmitterTests
     Assert.AreEqual(requests.Single()
                             .TaskId,
                     result.Single());
+  }
+
+  [Test]
+  public async Task CreateTaskPausedSessionShouldSucceed([Values] bool pause)
+  {
+    var _ = await InitSubmitter(submitter_!,
+                                partitionTable_!,
+                                resultTable_!,
+                                sessionTable_!,
+                                CancellationToken.None)
+              .ConfigureAwait(false);
+    pushQueueStorage_.Messages.Clear();
+
+    var sessionId = (await submitter_!.CreateSession(new List<string>
+                                                     {
+                                                       "part1",
+                                                     },
+                                                     DefaultTaskOptionsPart1.ToTaskOptions(),
+                                                     CancellationToken.None)
+                                      .ConfigureAwait(false)).SessionId;
+
+    if (pause)
+    {
+      await sessionTable_!.PauseSessionAsync(sessionId)
+                          .ConfigureAwait(false);
+    }
+
+    var sessionData = await sessionTable_!.GetSessionAsync(sessionId)
+                                          .ConfigureAwait(false);
+
+    var requests = await submitter_!.CreateTasks(sessionData.SessionId,
+                                                 sessionData.SessionId,
+                                                 DefaultTaskOptionsPart1.ToTaskOptions(),
+                                                 new List<TaskRequest>
+                                                 {
+                                                   new(new[]
+                                                       {
+                                                         ExpectedOutput2,
+                                                       },
+                                                       new List<string>(),
+                                                       new List<ReadOnlyMemory<byte>>
+                                                       {
+                                                         new(Encoding.ASCII.GetBytes("AAAA")),
+                                                       }.ToAsyncEnumerable()),
+                                                 }.ToAsyncEnumerable(),
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+    await submitter_.FinalizeTaskCreation(requests,
+                                          sessionData,
+                                          sessionData.SessionId,
+                                          CancellationToken.None)
+                    .ConfigureAwait(false);
+
+    if (pause)
+    {
+      Assert.AreEqual(0,
+                      pushQueueStorage_.Messages.Count);
+      await TaskLifeCycleHelper.ResumeAsync(taskTable_!,
+                                            sessionTable_!,
+                                            pushQueueStorage_,
+                                            sessionData.SessionId)
+                               .ConfigureAwait(false);
+    }
+
+    Assert.AreEqual(1,
+                    pushQueueStorage_.Messages.Count);
+  }
+
+  [Test]
+  public async Task CreateTaskWithoutSessionShouldThrow()
+  {
+    var _ = await InitSubmitter(submitter_!,
+                                partitionTable_!,
+                                resultTable_!,
+                                sessionTable_!,
+                                CancellationToken.None)
+              .ConfigureAwait(false);
+
+    Assert.ThrowsAsync<SessionNotFoundException>(() => submitter_!.CreateTasks("invalidSession",
+                                                                               "parenttaskid",
+                                                                               null,
+                                                                               new List<TaskRequest>
+                                                                               {
+                                                                                 new(new[]
+                                                                                     {
+                                                                                       ExpectedOutput2,
+                                                                                     },
+                                                                                     new List<string>(),
+                                                                                     new List<ReadOnlyMemory<byte>>
+                                                                                     {
+                                                                                       new(Encoding.ASCII.GetBytes("AAAA")),
+                                                                                     }.ToAsyncEnumerable()),
+                                                                               }.ToAsyncEnumerable(),
+                                                                               CancellationToken.None));
   }
 
   [Test]

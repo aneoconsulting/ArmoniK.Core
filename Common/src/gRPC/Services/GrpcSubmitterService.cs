@@ -243,6 +243,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                     },
              };
     }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while creating tasks");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session not found"));
+    }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
@@ -328,6 +335,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                       },
                                     },
              };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while creating tasks");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session not found"));
     }
     catch (ArmoniKException e)
     {
