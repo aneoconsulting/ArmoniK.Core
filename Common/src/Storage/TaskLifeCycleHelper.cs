@@ -123,11 +123,11 @@ public static class TaskLifeCycleHelper
                                        CancellationToken                cancellationToken)
   {
     var parentTaskIds = new List<string>();
-    var createdBy     = parentTaskId;
+    var createdBy     = string.Empty;
 
     if (!parentTaskId.Equals(sessionId))
     {
-      createdBy = string.Empty;
+      createdBy = parentTaskId;
       var res = await taskTable.GetParentTaskIds(parentTaskId,
                                                  cancellationToken)
                                .ConfigureAwait(false);

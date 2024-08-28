@@ -1037,4 +1037,119 @@ public class SubmitterTests
     Assert.AreEqual("One of the input data is aborted.",
                     taskData.Output.Error);
   }
+
+
+  [Test]
+  public async Task CreatedByShouldBeEmpty()
+  {
+    var (sessionId, _, _) = await InitSubmitter(submitter_!,
+                                                partitionTable_!,
+                                                resultTable_!,
+                                                CancellationToken.None)
+                              .ConfigureAwait(false);
+
+    await resultTable_!.Create(new[]
+                               {
+                                 new Result(sessionId,
+                                            ExpectedOutput4,
+                                            "",
+                                            "",
+                                            ResultStatus.Created,
+                                            new List<string>(),
+                                            DateTime.UtcNow,
+                                            0,
+                                            Array.Empty<byte>()),
+                               },
+                               CancellationToken.None)
+                       .ConfigureAwait(false);
+
+    var requests = await submitter_!.CreateTasks(sessionId,
+                                                 sessionId,
+                                                 DefaultTaskOptionsPart1.ToTaskOptions(),
+                                                 new List<TaskRequest>
+                                                 {
+                                                   new(new[]
+                                                       {
+                                                         ExpectedOutput4,
+                                                       },
+                                                       new List<string>(),
+                                                       new List<ReadOnlyMemory<byte>>
+                                                       {
+                                                         new(Encoding.ASCII.GetBytes("AAAA")),
+                                                       }.ToAsyncEnumerable()),
+                                                 }.ToAsyncEnumerable(),
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+
+    var task = requests.Single()
+                       .TaskId;
+
+    var taskData = await taskTable_!.ReadTaskAsync(task,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskData.Status);
+
+    Assert.AreEqual(string.Empty,
+                    taskData.CreatedBy);
+  }
+
+
+  [Test]
+  public async Task CreatedByShouldBeFilled()
+  {
+    var (sessionId, _, taskSubmitted) = await InitSubmitter(submitter_!,
+                                                            partitionTable_!,
+                                                            resultTable_!,
+                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+    await resultTable_!.Create(new[]
+                               {
+                                 new Result(sessionId,
+                                            ExpectedOutput4,
+                                            "",
+                                            "",
+                                            ResultStatus.Created,
+                                            new List<string>(),
+                                            DateTime.UtcNow,
+                                            0,
+                                            Array.Empty<byte>()),
+                               },
+                               CancellationToken.None)
+                       .ConfigureAwait(false);
+
+    var requests = await submitter_!.CreateTasks(sessionId,
+                                                 taskSubmitted,
+                                                 DefaultTaskOptionsPart1.ToTaskOptions(),
+                                                 new List<TaskRequest>
+                                                 {
+                                                   new(new[]
+                                                       {
+                                                         ExpectedOutput4,
+                                                       },
+                                                       new List<string>(),
+                                                       new List<ReadOnlyMemory<byte>>
+                                                       {
+                                                         new(Encoding.ASCII.GetBytes("AAAA")),
+                                                       }.ToAsyncEnumerable()),
+                                                 }.ToAsyncEnumerable(),
+                                                 CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+    var task = requests.Single()
+                       .TaskId;
+
+    var taskData = await taskTable_!.ReadTaskAsync(task,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskData.Status);
+
+    Assert.AreEqual(taskSubmitted,
+                    taskData.CreatedBy);
+  }
 }
