@@ -321,10 +321,10 @@ public class GrpcResultsService : Results.ResultsBase
                                           context.CancellationToken)
                         .ConfigureAwait(false);
 
-    var sessionData = await sessionTask.ConfigureAwait(false);
-
     try
     {
+      var sessionData = await sessionTask.ConfigureAwait(false);
+
       var resultData = await resultTable_.CompleteResult(id.SessionId,
                                                          id.ResultId,
                                                          size,
@@ -355,6 +355,13 @@ public class GrpcResultsService : Results.ResultsBase
                          "Error while downloading results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result data not found"));
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while downloading results");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Session associated to the result was not found"));
     }
   }
 

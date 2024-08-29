@@ -456,7 +456,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
-                                                    testServiceProvider.sessionTable_,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -501,7 +501,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
-                                                    testServiceProvider.sessionTable_,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -550,7 +550,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
-                                                    testServiceProvider.sessionTable_,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -703,7 +703,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
-                                                    testServiceProvider.sessionTable_,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
