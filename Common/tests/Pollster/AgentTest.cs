@@ -136,7 +136,6 @@ public class AgentTest
     public readonly  MyPushQueueStorage   QueueStorage;
     public readonly  IResultTable         ResultTable;
     public readonly  string               Session;
-    private readonly SessionData          sessionData_;
     public readonly  ISessionTable        SessionTable;
     public readonly  ISubmitter           Submitter;
     public readonly  TaskData             TaskData;
@@ -167,13 +166,13 @@ public class AgentTest
                                                  CancellationToken.None)
                             .Result;
 
-      sessionData_ = SessionTable.GetSessionAsync(Session,
-                                                  CancellationToken.None)
-                                 .Result;
+      var sessionData = SessionTable.GetSessionAsync(Session,
+                                                     CancellationToken.None)
+                                    .Result;
 
       ResultTable.Create(new[]
                          {
-                           new Result(sessionData_.SessionId,
+                           new Result(sessionData.SessionId,
                                       DataDependency1,
                                       "",
                                       "",
@@ -182,7 +181,7 @@ public class AgentTest
                                       DateTime.UtcNow,
                                       0,
                                       Array.Empty<byte>()),
-                           new Result(sessionData_.SessionId,
+                           new Result(sessionData.SessionId,
                                       DataDependency2,
                                       "",
                                       "",
@@ -238,7 +237,7 @@ public class AgentTest
                                   .Result;
 
       Submitter.FinalizeTaskCreation(createdTasks,
-                                     sessionData_,
+                                     sessionData,
                                      Session,
                                      CancellationToken.None)
                .Wait();
@@ -290,7 +289,7 @@ public class AgentTest
                                            .TaskId;
 
       Submitter.FinalizeTaskCreation(createdTasks2,
-                                     sessionData_,
+                                     sessionData,
                                      Session,
                                      CancellationToken.None)
                .Wait();
@@ -303,7 +302,7 @@ public class AgentTest
                         QueueStorage,
                         ResultTable,
                         TaskTable,
-                        sessionData_,
+                        sessionData,
                         TaskData,
                         Folder,
                         Token,
