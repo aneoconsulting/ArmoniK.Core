@@ -235,7 +235,7 @@ jobs:
         dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
 
     - name: Push the package
-      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg --skip-duplicate -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
 
   images:
