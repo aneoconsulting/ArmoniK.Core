@@ -255,4 +255,22 @@ public static class ResultTableExtensions
                                     cancellationToken)
                         .ToListAsync(cancellationToken)
                         .ConfigureAwait(false);
+
+  /// <summary>
+  ///   Set the result status to <see cref="ResultStatus.DeletedData" />
+  /// </summary>
+  /// <param name="resultTable">Interface to manage results</param>
+  /// <param name="resultId">Id of the result to update</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task MarkAsDeleted(this IResultTable resultTable,
+                                         string            resultId,
+                                         CancellationToken cancellationToken = default)
+    => await resultTable.UpdateOneResult(resultId,
+                                         new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                            ResultStatus.DeletedData),
+                                         cancellationToken)
+                        .ConfigureAwait(false);
 }
