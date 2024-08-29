@@ -76,18 +76,18 @@ public class ToResultFieldTest
                                               object?        expected)
   {
     var func = new ListResultsRequest
-      {
-        Filters = new Filters(),
-        Sort = new ListResultsRequest.Types.Sort
                {
-                 Field = new ResultField
-                         {
-                           ResultRawField = field,
-                         },
-                 Direction = SortDirection.Asc,
-               },
-      }.Sort.ToField()
-       .Compile();
+                 Filters = new Filters(),
+                 Sort = new ListResultsRequest.Types.Sort
+                        {
+                          Field = new ResultField
+                                  {
+                                    ResultRawField = field,
+                                  },
+                          Direction = SortDirection.Asc,
+                        },
+               }.Sort.ToField()
+                .Compile();
 
     Assert.AreEqual(expected,
                     func.Invoke(Result));
