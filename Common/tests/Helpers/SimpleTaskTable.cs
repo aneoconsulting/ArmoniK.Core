@@ -41,6 +41,7 @@ public class SimpleTaskTable : ITaskTable
   public const           string      TaskId      = "MyTaskId";
   public const           string      PartitionId = "MyPartitionId";
   public const           string      PodName     = "MyPodName";
+  public const           string      CreatedBy   = "CreatedBy";
   public static readonly TaskOptions TaskOptions;
 
   static SimpleTaskTable()
@@ -78,6 +79,7 @@ public class SimpleTaskTable : ITaskTable
                                                     OwnerPodId,
                                                     PodName,
                                                     PayloadId,
+                                                    CreatedBy,
                                                     new List<string>(),
                                                     new List<string>(),
                                                     new List<string>
@@ -133,6 +135,7 @@ public class SimpleTaskTable : ITaskTable
                                                                                 OwnerPodId,
                                                                                 PodName,
                                                                                 PayloadId,
+                                                                                CreatedBy,
                                                                                 new List<string>(),
                                                                                 new List<string>(),
                                                                                 new List<string>
@@ -156,6 +159,7 @@ public class SimpleTaskTable : ITaskTable
              OwnerPodId,
              PodName,
              PayloadId,
+             CreatedBy,
              new List<string>(),
              new List<string>(),
              new List<string>
@@ -205,6 +209,7 @@ public class SimpleTaskTable : ITaskTable
                                                OwnerPodId,
                                                PodName,
                                                PayloadId,
+                                               CreatedBy,
                                                new List<string>(),
                                                new List<string>(),
                                                new List<string>

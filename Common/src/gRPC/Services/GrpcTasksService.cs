@@ -99,6 +99,7 @@ public class GrpcTasksService : Task.TasksBase
                                            TaskDataFields.EndDate,
                                            TaskDataFields.FetchedDate,
                                            TaskDataFields.ProcessedDate,
+                                           TaskDataFields.CreatedBy,
                                          },
                                          new List<TaskOptionsFields>());
 
@@ -130,6 +131,7 @@ public class GrpcTasksService : Task.TasksBase
                                           TaskDataFields.EndDate,
                                           TaskDataFields.FetchedDate,
                                           TaskDataFields.ProcessedDate,
+                                          TaskDataFields.CreatedBy,
                                         },
                                         new List<TaskOptionsFields>());
   }

@@ -53,6 +53,7 @@ public class ToApplicationFieldTest
                                             "OwnerPodId",
                                             "OwnerPodName",
                                             "PayloadId",
+                                            "CreatedBy",
                                             new[]
                                             {
                                               "parent1",

@@ -61,6 +61,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -102,6 +103,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -151,6 +153,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -199,6 +202,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -248,6 +252,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -297,6 +302,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -345,6 +351,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -393,6 +400,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -442,6 +450,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -491,6 +500,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -533,6 +543,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -576,6 +587,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -618,6 +630,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -661,6 +674,7 @@ internal class TaskFilterExtTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",

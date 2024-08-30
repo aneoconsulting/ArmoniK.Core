@@ -36,6 +36,7 @@ public class ToResultFilterTest
   private readonly Result result_ = new("SessionId",
                                         "ResultId",
                                         "Name",
+                                        "CreatedBy",
                                         "OwnerTaskId",
                                         ResultStatus.Created,
                                         new List<string>(),
@@ -114,6 +115,13 @@ public class ToResultFilterTest
     yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.Name,
                                                                            FilterStringOperator.Equal,
                                                                            "BadName"));
+
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.CreatedBy,
+                                                                          FilterStringOperator.Equal,
+                                                                          "CreatedBy"));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.CreatedBy,
+                                                                           FilterStringOperator.Equal,
+                                                                           "BadCreatedBy"));
 
     yield return CaseTrue(ListResultsHelper.CreateListResultsFilterString(ResultRawEnumField.OwnerTaskId,
                                                                           FilterStringOperator.Equal,

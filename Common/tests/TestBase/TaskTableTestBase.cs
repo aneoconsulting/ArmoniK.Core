@@ -95,6 +95,7 @@ public class TaskTableTestBase
                                                      "",
                                                      "",
                                                      "PayloadId",
+                                                     "CreatedBy",
                                                      new[]
                                                      {
                                                        "parent1",
@@ -121,6 +122,7 @@ public class TaskTableTestBase
                                                      "OwnerPodId",
                                                      "OwnerPodName",
                                                      "PayloadId",
+                                                     "CreatedBy",
                                                      new[]
                                                      {
                                                        "parent1",
@@ -149,6 +151,7 @@ public class TaskTableTestBase
                                                     "OwnerPodId",
                                                     "OwnerPodName",
                                                     "PayloadId",
+                                                    "CreatedBy",
                                                     new[]
                                                     {
                                                       "parent1",
@@ -172,6 +175,7 @@ public class TaskTableTestBase
                                                       "OwnerPodId",
                                                       "OwnerPodName",
                                                       "PayloadId",
+                                                      "CreatedBy",
                                                       new[]
                                                       {
                                                         "parent1",
@@ -195,6 +199,7 @@ public class TaskTableTestBase
                                                        "OwnerPodId",
                                                        "OwnerPodName",
                                                        "PayloadId",
+                                                       "CreatedBy",
                                                        new[]
                                                        {
                                                          "parent1",
@@ -218,6 +223,7 @@ public class TaskTableTestBase
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",
@@ -241,6 +247,7 @@ public class TaskTableTestBase
                                                 "OwnerPodId",
                                                 "OwnerPodName",
                                                 "PayloadId",
+                                                "CreatedBy",
                                                 new[]
                                                 {
                                                   "parent1",
@@ -1127,6 +1134,7 @@ public class TaskTableTestBase
                                                   "owner",
                                                   "owner",
                                                   "payload",
+                                                  "createdBy",
                                                   new List<string>(),
                                                   new List<string>(),
                                                   new List<string>(),
@@ -1430,6 +1438,7 @@ public class TaskTableTestBase
                                    "owner",
                                    "ownerpodname",
                                    "payload",
+                                   "createdby",
                                    new List<string>(),
                                    new List<string>(),
                                    new List<string>(),
@@ -1899,6 +1908,13 @@ public class TaskTableTestBase
                                                                        FilterStringOperator.Equal,
                                                                        "BadPayloadId"));
 
+    yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.CreatedBy,
+                                                                      FilterStringOperator.Equal,
+                                                                      "CreatedBy"));
+    yield return CaseFalse(ListTasksHelper.CreateListTasksFilterString(TaskSummaryEnumField.CreatedBy,
+                                                                       FilterStringOperator.Equal,
+                                                                       "BadCreatedBy"));
+
     yield return CaseTrue(ListTasksHelper.CreateListTasksFilterString("key1",
                                                                       FilterStringOperator.Equal,
                                                                       "val1"));
@@ -1958,6 +1974,7 @@ public class TaskTableTestBase
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",
@@ -2067,6 +2084,7 @@ public class TaskTableTestBase
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",
@@ -2126,6 +2144,7 @@ public class TaskTableTestBase
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",

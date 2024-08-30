@@ -79,6 +79,7 @@ internal class BsonSerializerTest
     var rdm = new Result("sessionId",
                          "ResultId",
                          "Name",
+                         "CreatedBy",
                          "OwnerTaskId",
                          ResultStatus.Completed,
                          new List<string>
@@ -148,6 +149,7 @@ internal class BsonSerializerTest
                              "output1",
                            },
                            "taskId",
+                           "createdBy",
                            new List<string>
                            {
                              "retry1",

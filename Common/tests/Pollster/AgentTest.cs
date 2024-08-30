@@ -176,6 +176,7 @@ public class AgentTest
                                       DataDependency1,
                                       "",
                                       "",
+                                      "",
                                       ResultStatus.Completed,
                                       new List<string>(),
                                       DateTime.UtcNow,
@@ -183,6 +184,7 @@ public class AgentTest
                                       Array.Empty<byte>()),
                            new Result(sessionData.SessionId,
                                       DataDependency2,
+                                      "",
                                       "",
                                       "",
                                       ResultStatus.Completed,
@@ -194,6 +196,7 @@ public class AgentTest
                                       ExpectedOutput1,
                                       "",
                                       "",
+                                      "",
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
@@ -201,6 +204,7 @@ public class AgentTest
                                       Array.Empty<byte>()),
                            new Result(Session,
                                       ExpectedOutput2,
+                                      "",
                                       "",
                                       "",
                                       ResultStatus.Created,
@@ -651,6 +655,8 @@ public class AgentTest
                       resultMetadata.Name);
       Assert.AreEqual(ResultStatus.Created,
                       resultMetadata.Status);
+      Assert.AreEqual(holder.TaskData.TaskId,
+                      resultMetadata.CreatedBy);
 
       var bytes = (await holder.ObjectStorage.GetValuesAsync(result.ResultId)
                                .ToListAsync()
@@ -771,11 +777,16 @@ public class AgentTest
                            .ResultId,
                     reply.Single()
                          .PayloadId);
+    Assert.AreEqual(holder.TaskData.TaskId,
+                    payload.Single()
+                           .CreatedBy);
     foreach (var eokResult in eok)
     {
       Assert.Contains(eokResult.ResultId,
                       reply.Single()
                            .ExpectedOutputKeys.ToList());
+      Assert.AreEqual(holder.TaskData.TaskId,
+                      eokResult.CreatedBy);
     }
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)

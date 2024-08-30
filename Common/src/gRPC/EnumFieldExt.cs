@@ -61,6 +61,7 @@ public static class EnumFieldExt
          TaskSummaryEnumField.PayloadId               => data => data.PayloadId,
          TaskSummaryEnumField.OwnerPodId              => data => data.OwnerPodId,
          TaskSummaryEnumField.InitialTaskId           => data => data.InitialTaskId,
+         TaskSummaryEnumField.CreatedBy               => data => data.CreatedBy,
          TaskSummaryEnumField.Status                  => data => data.Status,
          TaskSummaryEnumField.CreatedAt               => data => data.CreationDate,
          TaskSummaryEnumField.SubmittedAt             => data => data.SubmittedDate,
@@ -175,6 +176,7 @@ public static class EnumFieldExt
        {
          ResultRawEnumField.SessionId   => result => result.SessionId,
          ResultRawEnumField.Name        => result => result.Name,
+         ResultRawEnumField.CreatedBy   => result => result.CreatedBy,
          ResultRawEnumField.OwnerTaskId => result => result.OwnerTaskId,
          ResultRawEnumField.Status      => result => result.Status,
          ResultRawEnumField.CreatedAt   => result => result.CreationDate,

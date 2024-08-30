@@ -181,6 +181,7 @@ public class WatchToGrpcTests
                                new Result("SessionId",
                                           "ResultIsAvailable",
                                           "",
+                                          "CreatedBy",
                                           "OwnerId",
                                           ResultStatus.Completed,
                                           new List<string>(),
@@ -193,6 +194,7 @@ public class WatchToGrpcTests
                                new Result("SessionId",
                                           "ResultIsNotAvailable",
                                           "",
+                                          "CreatedBy",
                                           "OwnerId",
                                           ResultStatus.Aborted,
                                           new List<string>(),
@@ -205,6 +207,7 @@ public class WatchToGrpcTests
                                new Result("SessionId",
                                           "ResultIsCreated",
                                           "",
+                                          "CreatedBy",
                                           "OwnerId",
                                           ResultStatus.Created,
                                           new List<string>(),
@@ -217,6 +220,7 @@ public class WatchToGrpcTests
                                new Result("SessionId",
                                           "ResultIsCreated2",
                                           "",
+                                          "CreatedBy",
                                           "OwnerId",
                                           ResultStatus.Created,
                                           new List<string>(),
@@ -229,6 +233,7 @@ public class WatchToGrpcTests
                                new Result("SessionId",
                                           "ResultIsCompletedWithDependents",
                                           "",
+                                          "CreatedBy",
                                           "OwnerId",
                                           ResultStatus.Completed,
                                           new List<string>
@@ -297,6 +302,7 @@ public class WatchToGrpcTests
                                                            "",
                                                            "",
                                                            "PayloadId",
+                                                           "CreatedBy",
                                                            new[]
                                                            {
                                                              "parent1",
@@ -323,6 +329,7 @@ public class WatchToGrpcTests
                                                             "OwnerPodId",
                                                             "OwnerPodName",
                                                             "PayloadId",
+                                                            "CreatedBy",
                                                             new[]
                                                             {
                                                               "parent1",
@@ -346,6 +353,7 @@ public class WatchToGrpcTests
                                                        "OwnerPodId",
                                                        "OwnerPodName",
                                                        "PayloadId",
+                                                       "CreatedBy",
                                                        new[]
                                                        {
                                                          "parent1",
@@ -369,6 +377,7 @@ public class WatchToGrpcTests
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",
@@ -392,6 +401,7 @@ public class WatchToGrpcTests
                                                      "OwnerPodId",
                                                      "OwnerPodName",
                                                      "PayloadId",
+                                                     "CreatedBy",
                                                      new[]
                                                      {
                                                        "parent1",
@@ -416,6 +426,7 @@ public class WatchToGrpcTests
                                                     "OwnerPodId",
                                                     "OwnerPodName",
                                                     "PayloadId",
+                                                    "CreatedBy",
                                                     new[]
                                                     {
                                                       "parent1",

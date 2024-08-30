@@ -39,6 +39,8 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Name))
                                                 .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.CreatedBy))
+                                                .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.OwnerTaskId))
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Status))
@@ -57,6 +59,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                               cm.MapCreator(model => new Result(model.SessionId,
                                                                                 model.ResultId,
                                                                                 model.Name,
+                                                                                model.CreatedBy,
                                                                                 model.OwnerTaskId,
                                                                                 model.Status,
                                                                                 model.DependentTasks,

@@ -496,6 +496,7 @@ public static class TaskTableExtensions
                                    taskData.RemainingDataDependencies,
                                    taskData.ExpectedOutputIds,
                                    taskData.InitialTaskId,
+                                   taskData.TaskId,
                                    newTaskRetryOfIds,
                                    TaskStatus.Creating,
                                    "",

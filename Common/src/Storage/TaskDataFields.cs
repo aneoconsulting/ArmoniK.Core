@@ -46,6 +46,9 @@ public enum TaskDataFields
   /// <inheritdoc cref="TaskDataHolder.InitialTaskId" />
   InitialTaskId,
 
+  /// <inheritdoc cref="TaskDataHolder.CreatedBy" />
+  CreatedBy,
+
   /// <inheritdoc cref="TaskDataHolder.RetryOfIds" />
   RetryOfIds,
 

@@ -475,6 +475,9 @@ public class Submitter : ISubmitter
                                             size) => new Result(sessionId,
                                                                 request.PayloadId,
                                                                 "",
+                                                                parentTaskId.Equals(sessionId)
+                                                                  ? ""
+                                                                  : parentTaskId,
                                                                 parentTaskId,
                                                                 ResultStatus.Completed,
                                                                 new List<string>(),

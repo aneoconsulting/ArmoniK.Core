@@ -46,6 +46,9 @@ public record TaskDataHolder
   /// <inheritdoc cref="TaskData.InitialTaskId" />
   public string InitialTaskId { get; set; } = string.Empty;
 
+  /// <inheritdoc cref="TaskData.CreatedBy" />
+  public string CreatedBy { get; set; } = string.Empty;
+
   /// <inheritdoc cref="TaskData.StatusMessage" />
   public string StatusMessage { get; set; } = string.Empty;
 

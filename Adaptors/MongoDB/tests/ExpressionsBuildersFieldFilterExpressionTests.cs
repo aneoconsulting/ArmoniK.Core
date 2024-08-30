@@ -56,6 +56,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -92,6 +93,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -129,6 +131,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -166,6 +169,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -203,6 +207,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -240,6 +245,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -277,6 +283,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -315,6 +322,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -351,6 +359,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -388,6 +397,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -425,6 +435,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -463,6 +474,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -499,6 +511,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -536,6 +549,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -573,6 +587,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -611,6 +626,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -647,6 +663,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -684,6 +701,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -721,6 +739,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",
@@ -759,6 +778,7 @@ internal class ExpressionsBuildersFieldFilterExpressionTests
                              "OwnerPodId",
                              "OwnerPodName",
                              "PayloadId",
+                             "CreatedBy",
                              new[]
                              {
                                "parent1",

@@ -93,6 +93,7 @@ public class TaskWatcherTestBase
                                                            "",
                                                            "",
                                                            "PayloadId",
+                                                           "CreatedBy",
                                                            new[]
                                                            {
                                                              "parent1",
@@ -119,6 +120,7 @@ public class TaskWatcherTestBase
                                                      "OwnerPodId",
                                                      "OwnerPodName",
                                                      "PayloadId",
+                                                     "CreatedBy",
                                                      new[]
                                                      {
                                                        "parent1",
@@ -143,6 +145,7 @@ public class TaskWatcherTestBase
                                                     "OwnerPodId",
                                                     "OwnerPodName",
                                                     "PayloadId",
+                                                    "CreatedBy",
                                                     new[]
                                                     {
                                                       "parent1",
@@ -166,6 +169,7 @@ public class TaskWatcherTestBase
                                                             "OwnerPodId",
                                                             "OwnerPodName",
                                                             "PayloadId",
+                                                            "CreatedBy",
                                                             new[]
                                                             {
                                                               "parent1",
@@ -189,6 +193,7 @@ public class TaskWatcherTestBase
                                                        "OwnerPodId",
                                                        "OwnerPodName",
                                                        "PayloadId",
+                                                       "CreatedBy",
                                                        new[]
                                                        {
                                                          "parent1",
@@ -212,6 +217,7 @@ public class TaskWatcherTestBase
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",
@@ -235,6 +241,7 @@ public class TaskWatcherTestBase
                                                             "OwnerPodId",
                                                             "OwnerPodName",
                                                             "PayloadId",
+                                                            "CreatedBy",
                                                             new[]
                                                             {
                                                               "parent1",
@@ -259,6 +266,7 @@ public class TaskWatcherTestBase
                                                             "OwnerPodId",
                                                             "OwnerPodName",
                                                             "PayloadId",
+                                                            "CreatedBy",
                                                             new[]
                                                             {
                                                               "parent2",

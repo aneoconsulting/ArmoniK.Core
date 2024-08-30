@@ -33,6 +33,7 @@ public class ToResultFieldTest
   private static readonly Result Result = new("SessionId",
                                               "ResultId",
                                               "Name",
+                                              "CreatedBy",
                                               "OwnerTaskId",
                                               ResultStatus.Created,
                                               new List<string>(),
@@ -49,6 +50,8 @@ public class ToResultFieldTest
                       Result.CreationDate);
     yield return Case(ResultRawEnumField.Name,
                       Result.Name);
+    yield return Case(ResultRawEnumField.CreatedBy,
+                      Result.CreatedBy);
     yield return Case(ResultRawEnumField.OwnerTaskId,
                       Result.OwnerTaskId);
     yield return Case(ResultRawEnumField.ResultId,

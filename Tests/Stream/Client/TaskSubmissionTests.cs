@@ -28,6 +28,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Common;
 using ArmoniK.Utils;
@@ -41,6 +42,9 @@ using Microsoft.Extensions.Configuration;
 
 using NUnit.Framework;
 
+using FilterField = ArmoniK.Api.gRPC.V1.Tasks.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Tasks.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Tasks.FiltersAnd;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Extensions.Common.StreamWrapper.Tests.Client;
@@ -164,6 +168,17 @@ internal class TaskSubmissionTests
                       TaskStatus.Dispatched,
                       TaskStatus.Processing,
                     });
+    Assert.AreEqual(string.Empty,
+                    taskData.Task.CreatedBy);
+
+    var resultData = await resultsClient.GetResultAsync(new GetResultRequest
+                                                        {
+                                                          ResultId = taskData.Task.PayloadId,
+                                                        })
+                                        .ConfigureAwait(false);
+
+    Assert.AreEqual(string.Empty,
+                    resultData.Result.CreatedBy);
 
     var eventClient = new Events.EventsClient(channel_);
     await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
@@ -325,5 +340,204 @@ internal class TaskSubmissionTests
     Assert.AreEqual(9,
                     BitConverter.ToInt32(TestPayload.Deserialize(data)
                                                     ?.DataBytes));
+  }
+
+
+  [Test]
+  public async Task CreatedByShouldBeFilled()
+  {
+    var sessionClient = new Sessions.SessionsClient(channel_);
+    var createSessionReply = await sessionClient.CreateSessionAsync(new CreateSessionRequest
+                                                                    {
+                                                                      DefaultTaskOption = new TaskOptions
+                                                                                          {
+                                                                                            Priority    = 1,
+                                                                                            MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(2)),
+                                                                                            MaxRetries  = 2,
+                                                                                            PartitionId = partition_,
+                                                                                          },
+                                                                      PartitionIds =
+                                                                      {
+                                                                        partition_,
+                                                                      },
+                                                                    });
+
+    var resultsClient = new Results.ResultsClient(channel_);
+
+    var results = await resultsClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                 {
+                                                                   SessionId = createSessionReply.SessionId,
+                                                                   Results =
+                                                                   {
+                                                                     new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                     {
+                                                                       Name = "MyResult",
+                                                                     },
+                                                                   },
+                                                                 });
+
+    var payload = new TestPayload
+                  {
+                    Type      = TestPayload.TaskType.Transfer,
+                    DataBytes = BitConverter.GetBytes(3),
+                    ResultKey = results.Results.Single()
+                                       .ResultId,
+                  };
+    var payloads = await resultsClient.CreateResultsAsync(new CreateResultsRequest
+                                                          {
+                                                            SessionId = createSessionReply.SessionId,
+                                                            Results =
+                                                            {
+                                                              new CreateResultsRequest.Types.ResultCreate
+                                                              {
+                                                                Name = "MyPayload",
+                                                                Data = UnsafeByteOperations.UnsafeWrap(payload.Serialize()),
+                                                              },
+                                                            },
+                                                          });
+
+
+    var tasksClient = new Tasks.TasksClient(channel_);
+
+    var tasks = await tasksClient.SubmitTasksAsync(new SubmitTasksRequest
+                                                   {
+                                                     SessionId = createSessionReply.SessionId,
+                                                     TaskCreations =
+                                                     {
+                                                       new SubmitTasksRequest.Types.TaskCreation
+                                                       {
+                                                         ExpectedOutputKeys =
+                                                         {
+                                                           results.Results.Select(r => r.ResultId),
+                                                         },
+                                                         PayloadId = payloads.Results.Single()
+                                                                             .ResultId,
+                                                       },
+                                                     },
+                                                   })
+                                 .ConfigureAwait(false);
+
+
+    var eventClient = new Events.EventsClient(channel_);
+    await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
+                                          results.Results.ViewSelect(result => result.ResultId),
+                                          CancellationToken.None)
+                     .ConfigureAwait(false);
+
+    var taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
+                                                  {
+                                                    TaskId = tasks.TaskInfos.Single()
+                                                                  .TaskId,
+                                                  })
+                                    .ConfigureAwait(false);
+
+    Assert.AreEqual(string.Empty,
+                    taskData.Task.CreatedBy);
+
+    var resultData = await resultsClient.GetResultAsync(new GetResultRequest
+                                                        {
+                                                          ResultId = taskData.Task.PayloadId,
+                                                        })
+                                        .ConfigureAwait(false);
+
+    Assert.AreEqual(string.Empty,
+                    resultData.Result.CreatedBy);
+
+    Assert.AreEqual(TaskStatus.Completed,
+                    taskData.Task.Status);
+
+    var taskCount = (await tasksClient.ListTasksAsync(new ListTasksRequest
+                                                      {
+                                                        Filters = new Filters
+                                                                  {
+                                                                    Or =
+                                                                    {
+                                                                      new FiltersAnd
+                                                                      {
+                                                                        And =
+                                                                        {
+                                                                          new FilterField
+                                                                          {
+                                                                            FilterString = new FilterString
+                                                                                           {
+                                                                                             Operator = FilterStringOperator.Equal,
+                                                                                             Value    = taskData.Task.Id,
+                                                                                           },
+                                                                            Field = new TaskField
+                                                                                    {
+                                                                                      TaskSummaryField = new TaskSummaryField
+                                                                                                         {
+                                                                                                           Field = TaskSummaryEnumField.CreatedBy,
+                                                                                                         },
+                                                                                    },
+                                                                          },
+                                                                        },
+                                                                      },
+                                                                    },
+                                                                  },
+                                                        Sort = new ListTasksRequest.Types.Sort(new ListTasksRequest.Types.Sort
+                                                                                               {
+                                                                                                 Field = new TaskField
+                                                                                                         {
+                                                                                                           TaskSummaryField = new TaskSummaryField
+                                                                                                                              {
+                                                                                                                                Field = TaskSummaryEnumField.TaskId,
+                                                                                                                              },
+                                                                                                         },
+                                                                                                 Direction = SortDirection.Asc,
+                                                                                               }),
+                                                        PageSize = 1,
+                                                        Page     = 0,
+                                                      })).Total;
+
+    Assert.AreEqual(1,
+                    taskCount);
+
+    var resultCount = (await resultsClient.ListResultsAsync(new ListResultsRequest
+                                                            {
+                                                              Filters = new Api.gRPC.V1.Results.Filters
+                                                                        {
+                                                                          Or =
+                                                                          {
+                                                                            new Api.gRPC.V1.Results.FiltersAnd
+                                                                            {
+                                                                              And =
+                                                                              {
+                                                                                new Api.gRPC.V1.Results.FilterField
+                                                                                {
+                                                                                  FilterString = new FilterString
+                                                                                                 {
+                                                                                                   Operator = FilterStringOperator.Equal,
+                                                                                                   Value    = taskData.Task.Id,
+                                                                                                 },
+                                                                                  Field = new ResultField
+                                                                                          {
+                                                                                            ResultRawField = new ResultRawField
+                                                                                                             {
+                                                                                                               Field = ResultRawEnumField.CreatedBy,
+                                                                                                             },
+                                                                                          },
+                                                                                },
+                                                                              },
+                                                                            },
+                                                                          },
+                                                                        },
+                                                              Sort = new ListResultsRequest.Types.Sort
+                                                                     {
+                                                                       Field = new ResultField
+                                                                               {
+                                                                                 ResultRawField = new ResultRawField
+                                                                                                  {
+                                                                                                    Field = ResultRawEnumField.ResultId,
+                                                                                                  },
+                                                                               },
+                                                                       Direction = SortDirection.Asc,
+                                                                     },
+                                                              Page     = 0,
+                                                              PageSize = 1,
+                                                            })).Total;
+
+    Assert.AreEqual(1,
+                    resultCount);
   }
 }

@@ -59,6 +59,7 @@ public class ToTaskDataFieldTest
                                                   "OwnerPodId",
                                                   "OwnerPodName",
                                                   "PayloadId",
+                                                  "CreatedBy",
                                                   new[]
                                                   {
                                                     "parent1",
@@ -114,6 +115,8 @@ public class ToTaskDataFieldTest
                              TaskData.OwnerPodId);
     yield return CaseSummary(TaskSummaryEnumField.InitialTaskId,
                              TaskData.InitialTaskId);
+    yield return CaseSummary(TaskSummaryEnumField.CreatedBy,
+                             TaskData.CreatedBy);
     yield return CaseSummary(TaskSummaryEnumField.SubmittedAt,
                              TaskData.SubmittedDate);
     yield return CaseSummary(TaskSummaryEnumField.PodTtl,

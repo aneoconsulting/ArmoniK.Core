@@ -24,7 +24,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Client" Version="3.19.0" />
+    <PackageReference Include="ArmoniK.Api.Client" Version="3.20.0-edge.18.3daa69e" />
     <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
