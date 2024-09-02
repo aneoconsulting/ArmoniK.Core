@@ -1170,15 +1170,16 @@ public class SubmitterTests
   [Test]
   public async Task CreatedByShouldBeEmpty()
   {
-    var (sessionId, _, _) = await InitSubmitter(submitter_!,
-                                                partitionTable_!,
-                                                resultTable_!,
-                                                CancellationToken.None)
-                              .ConfigureAwait(false);
+    var (session, _, _) = await InitSubmitter(submitter_!,
+                                              partitionTable_!,
+                                              resultTable_!,
+                                              sessionTable_!,
+                                              CancellationToken.None)
+                            .ConfigureAwait(false);
 
     await resultTable_!.Create(new[]
                                {
-                                 new Result(sessionId,
+                                 new Result(session.SessionId,
                                             ExpectedOutput4,
                                             "",
                                             "",
@@ -1192,8 +1193,8 @@ public class SubmitterTests
                                CancellationToken.None)
                        .ConfigureAwait(false);
 
-    var requests = await submitter_!.CreateTasks(sessionId,
-                                                 sessionId,
+    var requests = await submitter_!.CreateTasks(session.SessionId,
+                                                 session.SessionId,
                                                  DefaultTaskOptionsPart1.ToTaskOptions(),
                                                  new List<TaskRequest>
                                                  {
@@ -1234,15 +1235,16 @@ public class SubmitterTests
   [Test]
   public async Task CreatedByShouldBeFilled()
   {
-    var (sessionId, _, taskSubmitted) = await InitSubmitter(submitter_!,
-                                                            partitionTable_!,
-                                                            resultTable_!,
-                                                            CancellationToken.None)
-                                          .ConfigureAwait(false);
+    var (session, _, taskSubmitted) = await InitSubmitter(submitter_!,
+                                                          partitionTable_!,
+                                                          resultTable_!,
+                                                          sessionTable_!,
+                                                          CancellationToken.None)
+                                        .ConfigureAwait(false);
 
     await resultTable_!.Create(new[]
                                {
-                                 new Result(sessionId,
+                                 new Result(session.SessionId,
                                             ExpectedOutput4,
                                             "",
                                             "",
@@ -1256,7 +1258,7 @@ public class SubmitterTests
                                CancellationToken.None)
                        .ConfigureAwait(false);
 
-    var requests = await submitter_!.CreateTasks(sessionId,
+    var requests = await submitter_!.CreateTasks(session.SessionId,
                                                  taskSubmitted,
                                                  DefaultTaskOptionsPart1.ToTaskOptions(),
                                                  new List<TaskRequest>
