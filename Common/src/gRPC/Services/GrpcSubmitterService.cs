@@ -203,6 +203,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   {
     try
     {
+      var sessionTask = sessionTable_.GetSessionAsync(request.SessionId);
+
       var requests = await submitter_.CreateTasks(request.SessionId,
                                                   request.SessionId,
                                                   request.TaskOptions.ToTaskOptions(),
@@ -216,8 +218,10 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                   context.CancellationToken)
                                      .ConfigureAwait(false);
 
+      var sessionData = await sessionTask.ConfigureAwait(false);
+
       await submitter_.FinalizeTaskCreation(requests,
-                                            request.SessionId,
+                                            sessionData,
                                             request.SessionId,
                                             context.CancellationToken)
                       .ConfigureAwait(false);
@@ -238,6 +242,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                       },
                                     },
              };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while creating tasks");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session not found"));
     }
     catch (ArmoniKException e)
     {
@@ -284,6 +295,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                "First message in stream must be of type InitRequest");
       }
 
+      var sessionTask = sessionTable_.GetSessionAsync(first.InitRequest.SessionId);
       var requests = await submitter_.CreateTasks(first.InitRequest.SessionId,
                                                   first.InitRequest.SessionId,
                                                   first.InitRequest.TaskOptions.ToNullableTaskOptions(),
@@ -291,8 +303,9 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                   context.CancellationToken)
                                      .ConfigureAwait(false);
 
+      var sessionData = await sessionTask.ConfigureAwait(false);
       await submitter_.FinalizeTaskCreation(requests,
-                                            first.InitRequest.SessionId,
+                                            sessionData,
                                             first.InitRequest.SessionId,
                                             context.CancellationToken)
                       .ConfigureAwait(false);
@@ -322,6 +335,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                       },
                                     },
              };
+    }
+    catch (SessionNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while creating tasks");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "Session not found"));
     }
     catch (ArmoniKException e)
     {

@@ -62,6 +62,7 @@ public class PollsterTest
   private static async Task<(string sessionId, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                          IPartitionTable   partitionTable,
                                                                                                          IResultTable      resultTable,
+                                                                                                         ISessionTable     sessionTable,
                                                                                                          CancellationToken token)
   {
     var defaultTaskOptions = new TaskOptions(new Dictionary<string, string>(),
@@ -170,8 +171,12 @@ public class PollsterTest
     var taskSubmitted = requests.First()
                                 .TaskId;
 
+    var sessionData = await sessionTable.GetSessionAsync(sessionId,
+                                                         CancellationToken.None)
+                                        .ConfigureAwait(false);
+
     await submitter.FinalizeTaskCreation(requests,
-                                         sessionId,
+                                         sessionData,
                                          sessionId,
                                          CancellationToken.None)
                    .ConfigureAwait(false);
@@ -453,6 +458,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -497,6 +503,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -545,6 +552,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 
@@ -697,6 +705,7 @@ public class PollsterTest
     var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
                                                     testServiceProvider.PartitionTable,
                                                     testServiceProvider.ResultTable,
+                                                    testServiceProvider.SessionTable,
                                                     CancellationToken.None)
                                   .ConfigureAwait(false);
 

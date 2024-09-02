@@ -112,21 +112,6 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
-                                         string                           sessionId,
-                                         string                           parentTaskId,
-                                         CancellationToken                cancellationToken)
-    => await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
-                                                      resultTable_,
-                                                      pushQueueStorage_,
-                                                      requests.ToList(),
-                                                      sessionId,
-                                                      parentTaskId,
-                                                      logger_,
-                                                      cancellationToken)
-                                .ConfigureAwait(false);
-
-  /// <inheritdoc />
   public async Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
                                                       TaskOptions       defaultTaskOptions,
                                                       CancellationToken cancellationToken)
@@ -502,6 +487,7 @@ public class Submitter : ISubmitter
 
   /// <inheritdoc />
   public async Task CompleteTaskAsync(TaskData          taskData,
+                                      SessionData       sessionData,
                                       bool              resubmit,
                                       Output            output,
                                       CancellationToken cancellationToken = default)
@@ -573,7 +559,7 @@ public class Submitter : ISubmitter
                                            taskData.ExpectedOutputIds,
                                            taskData.DataDependencies),
                                      },
-                                     taskData.SessionId,
+                                     sessionData,
                                      taskData.TaskId,
                                      cancellationToken)
             .ConfigureAwait(false);
@@ -634,4 +620,19 @@ public class Submitter : ISubmitter
         throw new ArgumentOutOfRangeException();
     }
   }
+
+  /// <inheritdoc />
+  public async Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
+                                         SessionData                      sessionData,
+                                         string                           parentTaskId,
+                                         CancellationToken                cancellationToken)
+    => await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
+                                                      resultTable_,
+                                                      pushQueueStorage_,
+                                                      requests.ToList(),
+                                                      sessionData,
+                                                      parentTaskId,
+                                                      logger_,
+                                                      cancellationToken)
+                                .ConfigureAwait(false);
 }

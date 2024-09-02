@@ -51,7 +51,7 @@ public interface ISubmitter
                                                      CancellationToken             cancellationToken);
 
   Task FinalizeTaskCreation(IEnumerable<TaskCreationRequest> requests,
-                            string                           sessionId,
+                            SessionData                      sessionData,
                             string                           parentTaskId,
                             CancellationToken                cancellationToken);
 
@@ -66,6 +66,7 @@ public interface ISubmitter
                                 CancellationToken cancellationToken);
 
   Task CompleteTaskAsync(TaskData          taskData,
+                         SessionData       sessionData,
                          bool              resubmit,
                          Output            output,
                          CancellationToken cancellationToken = default);

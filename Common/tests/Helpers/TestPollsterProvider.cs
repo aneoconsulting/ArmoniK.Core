@@ -68,7 +68,7 @@ public class TestPollsterProvider : IDisposable
   public readonly  Common.Pollster.Pollster Pollster;
   public readonly  IResultTable             ResultTable;
   private readonly IMongoRunner             runner_;
-  private readonly ISessionTable            sessionTable_;
+  public readonly  ISessionTable            SessionTable;
   public readonly  ISubmitter               Submitter;
   public readonly  ITaskTable               TaskTable;
 
@@ -189,7 +189,7 @@ public class TestPollsterProvider : IDisposable
     ResultTable      = app_.Services.GetRequiredService<IResultTable>();
     TaskTable        = app_.Services.GetRequiredService<ITaskTable>();
     PartitionTable   = app_.Services.GetRequiredService<IPartitionTable>();
-    sessionTable_    = app_.Services.GetRequiredService<ISessionTable>();
+    SessionTable     = app_.Services.GetRequiredService<ISessionTable>();
     Submitter        = app_.Services.GetRequiredService<ISubmitter>();
     Pollster         = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
     objectStorage_   = app_.Services.GetRequiredService<IObjectStorage>();
@@ -204,8 +204,8 @@ public class TestPollsterProvider : IDisposable
                   .Wait();
     PartitionTable.Init(CancellationToken.None)
                   .Wait();
-    sessionTable_.Init(CancellationToken.None)
-                 .Wait();
+    SessionTable.Init(CancellationToken.None)
+                .Wait();
   }
 
   public void Dispose()

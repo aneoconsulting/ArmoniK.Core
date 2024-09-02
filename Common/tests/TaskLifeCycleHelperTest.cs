@@ -193,7 +193,7 @@ public class TaskLifeCycleHelperTest
                                   .Result;
 
       Submitter.FinalizeTaskCreation(createdTasks,
-                                     Session,
+                                     sessionData,
                                      Session,
                                      CancellationToken.None)
                .Wait();
@@ -233,7 +233,7 @@ public class TaskLifeCycleHelperTest
                                    .Result;
 
       Submitter.FinalizeTaskCreation(createdTasks2,
-                                     Session,
+                                     sessionData,
                                      Session,
                                      CancellationToken.None)
                .Wait();

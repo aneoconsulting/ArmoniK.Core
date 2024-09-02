@@ -45,6 +45,7 @@ using NUnit.Framework;
 using Empty = ArmoniK.Api.gRPC.V1.Empty;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
+using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
@@ -899,9 +900,21 @@ public class GrpcSubmitterServiceTests
                  .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
                                                      .AsICollection()));
 
+    var mockSessionTable = new Mock<ISessionTable>();
+    mockSessionTable.Setup(table => table.FindSessionsAsync(It.IsAny<Expression<Func<SessionData, bool>>>(),
+                                                            It.IsAny<Expression<Func<SessionData, SessionData>>>(),
+                                                            CancellationToken.None))
+                    .Returns(new List<SessionData>
+                             {
+                               new("SessionId",
+                                   SessionStatus.Running,
+                                   new List<string>(),
+                                   new Base.DataStructures.TaskOptions()),
+                             }.ToAsyncEnumerable);
+
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
-                                           mockSessionTable_.Object,
+                                           mockSessionTable.Object,
                                            mockResultTable_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
@@ -1052,9 +1065,21 @@ public class GrpcSubmitterServiceTests
                  .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
                                                      .AsICollection()));
 
+    var mockSessionTable = new Mock<ISessionTable>();
+    mockSessionTable.Setup(table => table.FindSessionsAsync(It.IsAny<Expression<Func<SessionData, bool>>>(),
+                                                            It.IsAny<Expression<Func<SessionData, SessionData>>>(),
+                                                            CancellationToken.None))
+                    .Returns(new List<SessionData>
+                             {
+                               new("SessionId",
+                                   SessionStatus.Running,
+                                   new List<string>(),
+                                   new Base.DataStructures.TaskOptions()),
+                             }.ToAsyncEnumerable);
+
     var service = new GrpcSubmitterService(mockSubmitter.Object,
                                            mockTaskTable_.Object,
-                                           mockSessionTable_.Object,
+                                           mockSessionTable.Object,
                                            mockResultTable_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
