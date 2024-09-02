@@ -79,6 +79,7 @@ public class TaskTableTestBase
                                    taskSubmittedData_,
                                    taskFailedData_,
                                    taskSession2_,
+                                   taskPausedData_,
                                  })
                     .ConfigureAwait(false);
   }
@@ -116,6 +117,33 @@ public class TaskTableTestBase
                                                      },
                                                      new Output(OutputStatus.Error,
                                                                 ""));
+
+  private readonly TaskData taskPausedData_ = new("SessionId",
+                                                  "TaskPausedId",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  new[]
+                                                  {
+                                                    "parent1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "dependency1",
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  Options with
+                                                  {
+                                                    PartitionId = "part2",
+                                                  },
+                                                  new Output(OutputStatus.Error,
+                                                             ""));
 
   private readonly TaskData taskCompletedData_ = new("SessionId",
                                                      "TaskCompletedId",
@@ -562,7 +590,7 @@ public class TaskTableTestBase
                       result[0]);
       Assert.AreEqual(new PartitionTaskStatusCount("part2",
                                                    TaskStatus.Submitted,
-                                                   1),
+                                                   2),
                       result[1]);
       Assert.AreEqual(new PartitionTaskStatusCount("part1",
                                                    TaskStatus.Completed,
@@ -914,7 +942,7 @@ public class TaskTableTestBase
                      result.ReceptionDate);
 
       var resultRelease = await TaskTable!.ReleaseTask(taskSubmitted,
-                                                       CancellationToken.None)
+                                                       cancellationToken: CancellationToken.None)
                                           .ConfigureAwait(false);
       Assert.AreEqual("TaskSubmittedId",
                       resultRelease.TaskId);
@@ -1033,7 +1061,7 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public async Task FinalizeTaskCreationShouldSucceed()
+  public async Task FinalizeTaskCreationShouldSucceed([Values] bool paused)
   {
     if (RunTests)
     {
@@ -1041,11 +1069,19 @@ public class TaskTableTestBase
                                                          {
                                                            "TaskCreatingId",
                                                          },
+                                                         paused,
                                                          CancellationToken.None)
                                    .ConfigureAwait(false);
 
       Assert.AreEqual(1,
                       result);
+      var taskData = await TaskTable!.ReadTaskAsync("TaskCreatingId",
+                                                    CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.AreEqual(paused
+                        ? TaskStatus.Paused
+                        : TaskStatus.Submitted,
+                      taskData.Status);
     }
   }
 
@@ -1058,6 +1094,7 @@ public class TaskTableTestBase
                                                          {
                                                            "TaskFailedId",
                                                          },
+                                                         false,
                                                          CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -1579,7 +1616,7 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(6,
+      Assert.AreEqual(7,
                       totalCount);
     }
   }
@@ -1601,7 +1638,7 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(6,
+      Assert.AreEqual(7,
                       totalCount);
     }
   }
@@ -1751,7 +1788,7 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(6,
+      Assert.AreEqual(7,
                       totalCount);
     }
   }
@@ -2059,9 +2096,9 @@ public class TaskTableTestBase
                                            .ToListAsync()
                                            .ConfigureAwait(false);
 
-      Assert.AreEqual(6,
+      Assert.AreEqual(7,
                       cancelledTasks.Count);
-      Assert.AreEqual(6,
+      Assert.AreEqual(7,
                       cancelledTasks.SelectMany(list => list)
                                     .Count(s => s == "dependency1"));
     }

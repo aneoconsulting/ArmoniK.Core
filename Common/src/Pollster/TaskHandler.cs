@@ -309,10 +309,18 @@ public sealed class TaskHandler : IAsyncDisposable
           logger_.LogInformation("Task was already completed");
           messageHandler_.Status = QueueMessageStatus.Processed;
           return AcquisitionStatus.TaskIsProcessed;
+        case TaskStatus.Paused:
+          logger_.LogInformation("Task was paused; remove it from queue");
+          messageHandler_.Status = QueueMessageStatus.Processed;
+          return AcquisitionStatus.TaskIsPaused;
         case TaskStatus.Creating:
           logger_.LogInformation("Task is still creating");
           messageHandler_.Status = QueueMessageStatus.Postponed;
           return AcquisitionStatus.TaskIsCreating;
+        case TaskStatus.Pending:
+          logger_.LogInformation("Task is still missing dependencies; task is postponed");
+          messageHandler_.Status = QueueMessageStatus.Postponed;
+          return AcquisitionStatus.TaskIsPending;
         case TaskStatus.Submitted:
           break;
         case TaskStatus.Dispatched:
@@ -652,7 +660,7 @@ public sealed class TaskHandler : IAsyncDisposable
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="NullReferenceException">wrong order of execution</exception>
-  public async Task ReleaseAndPostponeTask()
+  public async Task ReleaseAndPostponeTask(bool paused = false)
   {
     if (taskData_ is null)
     {
@@ -660,13 +668,16 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     await taskTable_.ReleaseTask(taskData_,
+                                 paused,
                                  CancellationToken.None)
                     .ConfigureAwait(false);
 
     // Propagate submitted status to TaskHandler
     taskData_ = taskData_ with
                 {
-                  Status = TaskStatus.Submitted,
+                  Status = paused
+                             ? TaskStatus.Paused
+                             : TaskStatus.Submitted,
                 };
 
     messageHandler_.Status = QueueMessageStatus.Postponed;
@@ -766,12 +777,11 @@ public sealed class TaskHandler : IAsyncDisposable
                                  CancellationToken.None)
                       .ConfigureAwait(false);
     }
-    // this catch may have to be removed
-    catch (TaskAlreadyInFinalStateException e)
+    catch (TaskPausedException)
     {
-      messageHandler_.Status = QueueMessageStatus.Processed;
-      logger_.LogWarning(e,
-                         "Task already in a final state, removing it from the queue");
+      logger_.LogDebug("Task was paused and will be removed from queue");
+      await ReleaseAndPostponeTask(true)
+        .ConfigureAwait(false);
       throw;
     }
     // If an ArmoniKException is thrown, check if this was because

@@ -21,6 +21,7 @@ using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
@@ -86,6 +87,10 @@ public class RunningTaskProcessor : BackgroundService
         taskHandlerDispose.Reset();
       }
       catch (ChannelClosedException)
+      {
+        break;
+      }
+      catch (TaskPausedException)
       {
         break;
       }

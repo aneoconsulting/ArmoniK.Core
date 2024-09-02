@@ -137,4 +137,14 @@ public enum AcquisitionStatus
   ///   Task not acquired because task metadata are not found in database
   /// </summary>
   TaskNotFound,
+
+  /// <summary>
+  ///   Task is paused but still in the queue
+  /// </summary>
+  TaskIsPaused,
+
+  /// <summary>
+  ///   Task is missing dependencies but happens to be in the queue
+  /// </summary>
+  TaskIsPending,
 }

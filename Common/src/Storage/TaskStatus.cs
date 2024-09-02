@@ -57,4 +57,10 @@ public enum TaskStatus
 
   /// <summary>Task is retried.</summary>
   Retried,
+
+  /// <summary>Task is waiting for its dependencies before becoming executable.</summary>
+  Pending,
+
+  /// <summary>Task is paused and will not be executed until session is resumed.</summary>
+  Paused,
 }

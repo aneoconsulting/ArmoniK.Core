@@ -251,11 +251,15 @@ public class GrpcSessionsService : Sessions.SessionsBase
     using var measure = meter_.CountAndTime();
     try
     {
+      var session = await TaskLifeCycleHelper.PauseAsync(taskTable_,
+                                                         sessionTable_,
+                                                         request.SessionId,
+                                                         context.CancellationToken)
+                                             .ConfigureAwait(false);
+
       return new PauseSessionResponse
              {
-               Session = (await sessionTable_.PauseSessionAsync(request.SessionId,
-                                                                context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+               Session = session.ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)

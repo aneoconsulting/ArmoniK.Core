@@ -446,7 +446,7 @@ public static class TaskLifeCycleHelper
   /// </summary>
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
-  /// <param name="sessionData"></param>
+  /// <param name="sessionData">Data of the session in which the tasks are enqueued</param>
   /// <param name="messages">Messages to enqueue</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
@@ -476,10 +476,22 @@ public static class TaskLifeCycleHelper
 
     await taskTable.FinalizeTaskCreation(messages.Select(task => task.TaskId)
                                                  .AsICollection(),
+                                         sessionData.Status == SessionStatus.Paused,
                                          cancellationToken)
                    .ConfigureAwait(false);
   }
 
+  /// <summary>
+  ///   Resume session and its paused tasks
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="sessionTable">Interface to manage session states</param>
+  /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
+  /// <param name="sessionId">Id of the session to resume</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The updated data of the session
+  /// </returns>
   public static async Task<SessionData> ResumeAsync(ITaskTable        taskTable,
                                                     ISessionTable     sessionTable,
                                                     IPushQueueStorage pushQueueStorage,
@@ -490,7 +502,8 @@ public static class TaskLifeCycleHelper
                                                         cancellationToken)
                                     .ConfigureAwait(false);
 
-    await foreach (var grouping in taskTable.FindTasksAsync(data => data.SessionId == sessionId && data.Status == TaskStatus.Submitted,
+    var tasks = new List<string>();
+    await foreach (var grouping in taskTable.FindTasksAsync(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused,
                                                             data => new MessageData(data.TaskId,
                                                                                     data.SessionId,
                                                                                     data.Options),
@@ -504,8 +517,48 @@ public static class TaskLifeCycleHelper
                                                grouping.Key.PartitionId,
                                                cancellationToken)
                             .ConfigureAwait(false);
+      tasks.AddRange(await grouping.Select(data => data.TaskId)
+                                   .ToListAsync(cancellationToken)
+                                   .ConfigureAwait(false));
     }
 
+    await tasks.Chunk(200)
+               .ParallelForEach(strings => taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused &&
+                                                                             strings.Contains(data.TaskId),
+                                                                     new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                                                          TaskStatus.Submitted),
+                                                                     cancellationToken))
+               .ConfigureAwait(false);
+
     return session;
+  }
+
+
+  /// <summary>
+  ///   Pause session and its paused tasks
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="sessionTable">Interface to manage session states</param>
+  /// <param name="sessionId">Id of the session to pause</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The updated data of the session
+  /// </returns>
+  public static async Task<SessionData> PauseAsync(ITaskTable        taskTable,
+                                                   ISessionTable     sessionTable,
+                                                   string            sessionId,
+                                                   CancellationToken cancellationToken = default)
+
+  {
+    var sessionData = await sessionTable.PauseSessionAsync(sessionId,
+                                                           cancellationToken)
+                                        .ConfigureAwait(false);
+
+    await taskTable.UpdateManyTasks(data => (data.Status == TaskStatus.Submitted || data.Status == TaskStatus.Dispatched) && data.SessionId == sessionId,
+                                    new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                         TaskStatus.Paused),
+                                    cancellationToken)
+                   .ConfigureAwait(false);
+    return sessionData;
   }
 }

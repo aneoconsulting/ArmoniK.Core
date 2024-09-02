@@ -664,8 +664,10 @@ public class SubmitterTests
 
     if (pause)
     {
-      await sessionTable_!.PauseSessionAsync(sessionId)
-                          .ConfigureAwait(false);
+      await TaskLifeCycleHelper.PauseAsync(taskTable_!,
+                                           sessionTable_!,
+                                           sessionId)
+                               .ConfigureAwait(false);
     }
 
     var sessionData = await sessionTable_!.GetSessionAsync(sessionId)
@@ -689,11 +691,27 @@ public class SubmitterTests
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
 
+    var taskId = requests.Select(request => request.TaskId)
+                         .Single();
+    var taskData = await taskTable_!.ReadTaskAsync(taskId)
+                                    .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskData.Status);
+
     await submitter_.FinalizeTaskCreation(requests,
                                           sessionData,
                                           sessionData.SessionId,
                                           CancellationToken.None)
                     .ConfigureAwait(false);
+
+    taskData = await taskTable_!.ReadTaskAsync(taskId)
+                                .ConfigureAwait(false);
+
+    Assert.AreEqual(pause
+                      ? TaskStatus.Paused
+                      : TaskStatus.Submitted,
+                    taskData.Status);
 
     if (pause)
     {
@@ -705,6 +723,12 @@ public class SubmitterTests
                                             sessionData.SessionId)
                                .ConfigureAwait(false);
     }
+
+    taskData = await taskTable_!.ReadTaskAsync(taskId)
+                                .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Submitted,
+                    taskData.Status);
 
     Assert.AreEqual(1,
                     pushQueueStorage_.Messages.Count);
