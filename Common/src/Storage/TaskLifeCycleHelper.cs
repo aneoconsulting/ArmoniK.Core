@@ -120,7 +120,7 @@ public static class TaskLifeCycleHelper
                                        string                           parentTaskId,
                                        ICollection<TaskCreationRequest> taskCreationRequests,
                                        ILogger                          logger,
-                                       CancellationToken                cancellationToken)
+                                       CancellationToken                cancellationToken = default)
   {
     var parentTaskIds = new List<string>();
     var createdBy     = string.Empty;
@@ -216,7 +216,7 @@ public static class TaskLifeCycleHelper
                                                 SessionData                      sessionData,
                                                 string                           parentTaskId,
                                                 ILogger                          logger,
-                                                CancellationToken                cancellationToken)
+                                                CancellationToken                cancellationToken = default)
   {
     if (!taskRequests.Any())
     {
@@ -246,10 +246,19 @@ public static class TaskLifeCycleHelper
                        .ConfigureAwait(false);
     }
 
+    var readyTask = await prepareTaskDependencies.ConfigureAwait(false);
+    await taskRequests.Select(request => request.TaskId)
+                      .Chunk(100)
+                      .ParallelForEach(strings => taskTable.UpdateManyTasks(data => data.Status == TaskStatus.Creating && strings.Contains(data.TaskId),
+                                                                            new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                                                                 TaskStatus.Pending),
+                                                                            cancellationToken))
+                      .ConfigureAwait(false);
+
     await EnqueueReadyTasks(taskTable,
                             pushQueueStorage,
                             sessionData,
-                            await prepareTaskDependencies.ConfigureAwait(false),
+                            readyTask,
                             cancellationToken)
       .ConfigureAwait(false);
   }
@@ -390,7 +399,7 @@ public static class TaskLifeCycleHelper
                                                SessionData         sessionData,
                                                ICollection<string> results,
                                                ILogger             logger,
-                                               CancellationToken   cancellationToken)
+                                               CancellationToken   cancellationToken = default)
   {
     logger.LogDebug("Submit tasks which new data are available");
 
@@ -424,7 +433,7 @@ public static class TaskLifeCycleHelper
     // Find all tasks whose dependencies are now complete in order to start them.
     // Multiple agents can see the same task as ready and will try to start it multiple times.
     // This is benign as it will be handled during dequeue with message deduplication.
-    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Creating &&
+    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Pending &&
                                                             data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
                                                     data => new MessageData(data.TaskId,
                                                                             data.SessionId,

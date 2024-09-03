@@ -905,15 +905,8 @@ public class AgentTest
                                                     CancellationToken.None)
                            .ConfigureAwait(false);
 
+    Assert.IsEmpty(taskData.RemainingDataDependencies);
     Assert.AreEqual(TaskStatus.Submitted,
                     taskData.Status);
-
-    /*
-     *
-     * TODO : payload availability is not checked before putting the task in submitted status
-     * 1/ We need to check the availability
-     * 2/ We need to write a test that upload the data for the payload afer task finalization and check that the task status changes from creating to submitted
-     *
-     */
   }
 }

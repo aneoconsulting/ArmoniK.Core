@@ -1148,7 +1148,7 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.TaskIsCreating,
+    Assert.AreEqual(AcquisitionStatus.TaskIsPending,
                     acquired);
   }
 
