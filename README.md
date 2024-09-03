@@ -18,6 +18,42 @@ ArmoniK.Core provides services for submitting computational tasks, keeping track
 
 More detailed information on the inner working of ArmoniK.Core is available [here](https://aneoconsulting.github.io/ArmoniK.Core/).
 
+## Features availability
+
+As this repository is open-source and we follow trunk based development, all features will be integrated into main, in multiple small steps.
+Breaking changes will be limited as much as possible or gated behind feature flags.
+If breaking changes should happen, they will be documented in the releases.
+Therefore, features in development or testing that cannot fit within a branch and need to be integrated into main will be marked as preview so that users know that these features are still in development and subject to changes.
+
+### General availability
+
+This section will list the features and plugins that are generally available, highly curated and for which support is available.
+
+- Queue plugins
+  - RabbitMQ
+  - AMQP
+  - PubSub
+- Storage plugins
+  - Local
+  - Redis
+  - S3
+- Database plugins
+  - MongoDB
+
+### Preview
+
+This section will list features and plugins that are available on main but still in development. Their API should be stable enough for advanced users who want to test them before GA. Breaking changes will be notified in the release notes. Any feedback or issue encountered with these features are welcome !
+
+- Queue plugins
+  - SQS
+
+### Beta (Internal preview)
+
+This section will list features and plugins in active development. They are not stable enough and breaking changes may occur without any notice. Breaking changes will not always be documented. Before they are moved to the "Preview" stage, issues might be closed with the minimal messages "Under Active Development".
+
+- Partitionning
+  - Partition metrics exporter
+
 ## Installation
 
 ArmoniK.Core can be installed only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
