@@ -49,7 +49,7 @@ This section will list features and plugins that are available on main but still
 
 ### Beta (Internal preview)
 
-This section will list features and plugins in active development. They are not stable enough and breaking changes may occur without any notice. Breaking changes will not always be documented. Before they are moved to the "Preview" stage, issues might be closed with the minimal messages "Under Active Development".
+This section will list features and plugins in active development. They are not stable enough and breaking changes may occur without any notice. Breaking changes will not always be documented. They can be used by the community for testing purposes. Before to be moved to the "Preview" stage, issues might be closed with the minimal messages "Under Active Development".
 
 - Partitionning
   - Partition metrics exporter
