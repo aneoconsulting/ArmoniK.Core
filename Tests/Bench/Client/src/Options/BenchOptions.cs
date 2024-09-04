@@ -115,6 +115,12 @@ public class BenchOptions
   public bool ExitAfterSubmission { get; set; }
 
   /// <summary>
+  ///   Pause session during task submission and resume it when all tasks are submitted
+  ///   default : false
+  /// </summary>
+  public bool PauseSessionDuringSubmission { get; set; }
+
+  /// <summary>
   ///   Dictionary to put into task options
   /// </summary>
   public Dictionary<string, string> Options { get; set; } = new();
