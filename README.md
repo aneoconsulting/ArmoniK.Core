@@ -54,6 +54,12 @@ This section will list features and plugins in active development. They are not 
 - Partitionning
   - Partition metrics exporter
 
+### Deprecated
+
+This section will list the deprecated features and plugins. Features are flagged as deprecated then they will be removed in the future. They will not be modified anymore and kept as-is until deletion.
+
+- gRPC service called `Submitter`.
+
 ## Installation
 
 ArmoniK.Core can be installed only on Linux machines. For Windows users, it is possible to do it on [WSL2](https://learn.microsoft.com/en-us/windows/wsl/about).
