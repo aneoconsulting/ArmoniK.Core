@@ -142,11 +142,17 @@ public static class ServiceCollectionExt
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
-      var localTrustStore       = new X509Store(StoreName.Root);
+      var localTrustStore = new X509Store(StoreName.Root,
+                                          StoreLocation.LocalMachine);
+      logger.LogInformation("local trust store {localTrustStore}",
+                            localTrustStore);
       var certificateCollection = new X509Certificate2Collection();
+
       try
       {
         certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
+        logger.LogInformation("certificate collection {certificateCollection}",
+                              certificateCollection);
         localTrustStore.Open(OpenFlags.ReadWrite);
         localTrustStore.AddRange(certificateCollection);
         logger.LogTrace("Imported mongodb certificate from file {path}",
