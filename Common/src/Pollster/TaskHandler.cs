@@ -1008,7 +1008,9 @@ public sealed class TaskHandler : IAsyncDisposable
                                            sessionData_,
                                            resubmit,
                                            new Output(OutputStatus.Error,
-                                                      e.Message),
+                                                      isWorkerDown
+                                                        ? $"Worker associated to scheduling agent {ownerPodName_} is down with error: \n{e.Message}"
+                                                        : e.Message),
                                            CancellationToken.None)
                         .ConfigureAwait(false);
 
