@@ -512,7 +512,6 @@ public static class TaskLifeCycleHelper
                                                         cancellationToken)
                                     .ConfigureAwait(false);
 
-    var tasks = new List<string>();
     await foreach (var grouping in taskTable.FindTasksAsync(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused,
                                                             data => new MessageData(data.TaskId,
                                                                                     data.SessionId,
@@ -522,21 +521,21 @@ public static class TaskLifeCycleHelper
                                             .WithCancellation(cancellationToken)
                                             .ConfigureAwait(false))
     {
-      await pushQueueStorage.PushMessagesAsync(await grouping.ToListAsync(cancellationToken)
-                                                             .ConfigureAwait(false),
+      var tasks = await grouping.ToListAsync(cancellationToken)
+                                .ConfigureAwait(false);
+
+      var taskIds = tasks.Select(task => task.TaskId)
+                         .AsICollection();
+      await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && taskIds.Contains(data.TaskId),
+                                      new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                           TaskStatus.Submitted),
+                                      cancellationToken)
+                     .ConfigureAwait(false);
+      await pushQueueStorage.PushMessagesAsync(tasks,
                                                grouping.Key.PartitionId,
                                                cancellationToken)
                             .ConfigureAwait(false);
-      tasks.AddRange(await grouping.Select(data => data.TaskId)
-                                   .ToListAsync(cancellationToken)
-                                   .ConfigureAwait(false));
     }
-
-    await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && tasks.Contains(data.TaskId),
-                                    new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                         TaskStatus.Submitted),
-                                    cancellationToken)
-                   .ConfigureAwait(false);
 
     return session;
   }
