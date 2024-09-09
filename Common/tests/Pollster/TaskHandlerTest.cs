@@ -1371,7 +1371,7 @@ public class TaskHandlerTest
 
     Assert.AreEqual(TaskStatus.Paused,
                     taskData.Status);
-    Assert.AreEqual(QueueMessageStatus.Postponed,
+    Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);
   }
 

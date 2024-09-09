@@ -681,7 +681,9 @@ public sealed class TaskHandler : IAsyncDisposable
                              : TaskStatus.Submitted,
                 };
 
-    messageHandler_.Status = QueueMessageStatus.Postponed;
+    messageHandler_.Status = paused
+                               ? QueueMessageStatus.Processed
+                               : QueueMessageStatus.Postponed;
   }
 
   /// <summary>
