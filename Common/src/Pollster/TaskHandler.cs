@@ -656,6 +656,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <summary>
   ///   Release task from the current agent and set message to <see cref="QueueMessageStatus.Postponed" />
   /// </summary>
+  /// <param name="paused">If task should be paused</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
