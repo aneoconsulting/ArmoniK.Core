@@ -247,13 +247,14 @@ public static class TaskLifeCycleHelper
     }
 
     var readyTask = await prepareTaskDependencies.ConfigureAwait(false);
-    await taskRequests.Select(request => request.TaskId)
-                      .Chunk(100)
-                      .ParallelForEach(strings => taskTable.UpdateManyTasks(data => data.Status == TaskStatus.Creating && strings.Contains(data.TaskId),
-                                                                            new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                                                                 TaskStatus.Pending),
-                                                                            cancellationToken))
-                      .ConfigureAwait(false);
+    var taskIds = taskRequests.Select(request => request.TaskId)
+                              .AsICollection();
+
+    await taskTable.UpdateManyTasks(data => data.Status == TaskStatus.Creating && taskIds.Contains(data.TaskId),
+                                    new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                         TaskStatus.Pending),
+                                    cancellationToken)
+                   .ConfigureAwait(false);
 
     await EnqueueReadyTasks(taskTable,
                             pushQueueStorage,
@@ -531,13 +532,11 @@ public static class TaskLifeCycleHelper
                                    .ConfigureAwait(false));
     }
 
-    await tasks.Chunk(200)
-               .ParallelForEach(strings => taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused &&
-                                                                             strings.Contains(data.TaskId),
-                                                                     new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                                                          TaskStatus.Submitted),
-                                                                     cancellationToken))
-               .ConfigureAwait(false);
+    await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && tasks.Contains(data.TaskId),
+                                    new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                         TaskStatus.Submitted),
+                                    cancellationToken)
+                   .ConfigureAwait(false);
 
     return session;
   }
