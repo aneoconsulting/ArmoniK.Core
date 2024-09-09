@@ -285,7 +285,7 @@ internal class TaskSubmissionTests
     Assert.Contains(taskData.Task.Status,
                     new List<TaskStatus>
                     {
-                      TaskStatus.Creating,
+                      TaskStatus.Pending,
                     });
 
     var uploadStream = resultsClient.UploadResultData();

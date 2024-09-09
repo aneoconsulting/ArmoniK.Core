@@ -337,17 +337,21 @@ public static class TaskTableExtensions
   /// </summary>
   /// <param name="taskTable">Interface to manage tasks lifecycle</param>
   /// <param name="taskIds">Task ids whose creation will be finalized</param>
+  /// <param name="paused">If the tasks should be paused (usually because the session is paused)</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The number of tagged tasks by the function
   /// </returns>
   public static async Task<long> FinalizeTaskCreation(this ITaskTable     taskTable,
                                                       ICollection<string> taskIds,
+                                                      bool                paused            = false,
                                                       CancellationToken   cancellationToken = default)
   {
-    var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Creating,
+    var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Pending,
                                               new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
-                                                                                   TaskStatus.Submitted)
+                                                                                   paused
+                                                                                     ? TaskStatus.Paused
+                                                                                     : TaskStatus.Submitted)
                                                                               .Set(tdm => tdm.SubmittedDate,
                                                                                    DateTime.UtcNow),
                                               cancellationToken)
@@ -609,12 +613,14 @@ public static class TaskTableExtensions
   /// </remarks>
   /// <param name="taskTable">Interface to manage tasks lifecycle</param>
   /// <param name="taskData">Metadata of the task to release</param>
+  /// <param name="paused">If task should be paused</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Metadata of the task we try to release
   /// </returns>
   public static async Task<TaskData> ReleaseTask(this ITaskTable   taskTable,
                                                  TaskData          taskData,
+                                                 bool              paused            = false,
                                                  CancellationToken cancellationToken = default)
   {
     var res = await taskTable.UpdateOneTask(taskData.TaskId,
@@ -628,7 +634,9 @@ public static class TaskTableExtensions
                                                                             .Set(data => data.AcquisitionDate,
                                                                                  null)
                                                                             .Set(data => data.Status,
-                                                                                 TaskStatus.Submitted),
+                                                                                 paused
+                                                                                   ? TaskStatus.Paused
+                                                                                   : TaskStatus.Submitted),
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
 
@@ -709,6 +717,11 @@ public static class TaskTableExtensions
                                                      data => data.Status,
                                                      cancellationToken)
                                       .ConfigureAwait(false);
+
+      if (taskStatus == TaskStatus.Paused)
+      {
+        throw new TaskPausedException($"Task was paused instead of {TaskStatus.Dispatched}");
+      }
 
       throw new ArmoniKException($"Fail to start task because task was not acquired - {taskStatus} to {TaskStatus.Processing}");
     }

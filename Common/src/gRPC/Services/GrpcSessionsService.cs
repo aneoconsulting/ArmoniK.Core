@@ -35,6 +35,8 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
+
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
@@ -251,11 +253,15 @@ public class GrpcSessionsService : Sessions.SessionsBase
     using var measure = meter_.CountAndTime();
     try
     {
+      var session = await TaskLifeCycleHelper.PauseAsync(taskTable_,
+                                                         sessionTable_,
+                                                         request.SessionId,
+                                                         context.CancellationToken)
+                                             .ConfigureAwait(false);
+
       return new PauseSessionResponse
              {
-               Session = (await sessionTable_.PauseSessionAsync(request.SessionId,
-                                                                context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+               Session = session.ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)
@@ -518,6 +524,10 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       logger_.LogWarning(e,
                          "Error while getting session");
+      await taskTable_.UpdateManyTasks(data => data.SessionId == request.SessionId && data.Status == TaskStatus.Submitted,
+                                       new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                            TaskStatus.Paused))
+                      .ConfigureAwait(false);
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
@@ -525,6 +535,10 @@ public class GrpcSessionsService : Sessions.SessionsBase
     {
       logger_.LogWarning(e,
                          "Error while getting session");
+      await taskTable_.UpdateManyTasks(data => data.SessionId == request.SessionId && data.Status == TaskStatus.Submitted,
+                                       new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                            TaskStatus.Paused))
+                      .ConfigureAwait(false);
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

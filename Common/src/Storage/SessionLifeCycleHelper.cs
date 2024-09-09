@@ -48,7 +48,7 @@ public static class SessionLifeCycleHelper
                                                  IList<string>     partitionIds,
                                                  TaskOptions       defaultTaskOptions,
                                                  string            defaultPartition,
-                                                 CancellationToken cancellationToken)
+                                                 CancellationToken cancellationToken = default)
   {
     if (!partitionIds.Any())
     {

@@ -33,12 +33,14 @@ using ArmoniK.Core.Common.Tests.Helpers;
 using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests;
 
@@ -47,33 +49,11 @@ public class TaskLifeCycleHelperTest
 {
   private class Holder : IDisposable
   {
-    private const string Partition       = "PartitionId";
+    public const  string Partition       = "PartitionId";
     private const string ExpectedOutput1 = "ExpectedOutput1";
     private const string ExpectedOutput2 = "ExpectedOutput2";
     private const string DataDependency1 = "DataDependency1";
     private const string DataDependency2 = "DataDependency2";
-
-    private static readonly TaskOptions Options = new()
-                                                  {
-                                                    ApplicationName      = "applicationName",
-                                                    ApplicationNamespace = "applicationNamespace",
-                                                    ApplicationVersion   = "applicationVersion",
-                                                    ApplicationService   = "applicationService",
-                                                    EngineType           = "engineType",
-                                                    PartitionId          = Partition,
-                                                    MaxDuration          = Duration.FromTimeSpan(TimeSpan.FromMinutes(10)),
-                                                    MaxRetries           = 5,
-                                                    Priority             = 1,
-                                                    Options =
-                                                    {
-                                                      {
-                                                        "key1", "val1"
-                                                      },
-                                                      {
-                                                        "key2", "val2"
-                                                      },
-                                                    },
-                                                  };
 
     private static readonly Injection.Options.Submitter SubmitterOptions = new()
                                                                            {
@@ -82,8 +62,32 @@ public class TaskLifeCycleHelperTest
                                                                            };
 
 
-    public readonly  string                        Folder;
-    public readonly  IObjectStorage                ObjectStorage;
+    public readonly string         Folder;
+    public readonly IObjectStorage ObjectStorage;
+
+    public readonly TaskOptions Options = new()
+                                          {
+                                            ApplicationName      = "applicationName",
+                                            ApplicationNamespace = "applicationNamespace",
+                                            ApplicationVersion   = "applicationVersion",
+                                            ApplicationService   = "applicationService",
+                                            EngineType           = "engineType",
+                                            PartitionId          = Partition,
+                                            MaxDuration          = Duration.FromTimeSpan(TimeSpan.FromMinutes(10)),
+                                            MaxRetries           = 5,
+                                            Priority             = 1,
+                                            Options =
+                                            {
+                                              {
+                                                "key1", "val1"
+                                              },
+                                              {
+                                                "key2", "val2"
+                                              },
+                                            },
+                                          };
+
+    public readonly  IPartitionTable               PartitionTable;
     private readonly TestDatabaseProvider          prov_;
     public readonly  IPullQueueStorage             PullQueueStorage;
     public readonly  IPushQueueStorage             PushQueueStorage;
@@ -104,11 +108,24 @@ public class TaskLifeCycleHelperTest
                                                                .AddSingleton(PushQueueStorage)
                                                                .AddSingleton(PullQueueStorage));
 
-      ResultTable   = prov_.GetRequiredService<IResultTable>();
-      TaskTable     = prov_.GetRequiredService<ITaskTable>();
-      ObjectStorage = prov_.GetRequiredService<IObjectStorage>();
-      SessionTable  = prov_.GetRequiredService<ISessionTable>();
-      Submitter     = prov_.GetRequiredService<ISubmitter>();
+      ResultTable    = prov_.GetRequiredService<IResultTable>();
+      TaskTable      = prov_.GetRequiredService<ITaskTable>();
+      ObjectStorage  = prov_.GetRequiredService<IObjectStorage>();
+      SessionTable   = prov_.GetRequiredService<ISessionTable>();
+      PartitionTable = prov_.GetRequiredService<IPartitionTable>();
+      Submitter      = prov_.GetRequiredService<ISubmitter>();
+
+      PartitionTable.CreatePartitionsAsync(new List<PartitionData>
+                                           {
+                                             new(Partition,
+                                                 new List<string>(),
+                                                 1,
+                                                 1,
+                                                 1,
+                                                 1,
+                                                 null),
+                                           })
+                    .Wait();
 
       Session = SessionTable.SetSessionDataAsync(new[]
                                                  {
@@ -249,8 +266,10 @@ public class TaskLifeCycleHelperTest
   {
     using var holder = new Holder();
 
-    await holder.SessionTable.PauseSessionAsync(holder.Session)
-                .ConfigureAwait(false);
+    await TaskLifeCycleHelper.PauseAsync(holder.TaskTable,
+                                         holder.SessionTable,
+                                         holder.Session)
+                             .ConfigureAwait(false);
 
     var session = await holder.SessionTable.GetSessionAsync(holder.Session)
                               .ConfigureAwait(false);
@@ -276,5 +295,192 @@ public class TaskLifeCycleHelperTest
                 Is.EqualTo(SessionStatus.Running));
     Assert.That(holder.QueueStorage.Channel.Reader.Count,
                 Is.EqualTo(1));
+  }
+
+
+  [Test]
+  public async Task TaskSubmissionShouldSucceed()
+  {
+    using var holder = new Holder();
+
+    var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
+                                                               holder.PartitionTable,
+                                                               new List<string>
+                                                               {
+                                                                 Holder.Partition,
+                                                               },
+                                                               holder.Options.ToTaskOptions(),
+                                                               Holder.Partition)
+                                                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+    var results = new List<Result>
+                  {
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Payload",
+                        "",
+                        "",
+                        ResultStatus.Completed,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>()),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "DataDependency1",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>()),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "DataDependency2",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>()),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Output",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>()),
+                  };
+
+    await holder.ResultTable.Create(results)
+                .ConfigureAwait(false);
+
+    var tasks = new List<TaskCreationRequest>
+                {
+                  new(Guid.NewGuid()
+                          .ToString(),
+                      results[0]
+                        .ResultId,
+                      holder.Options.ToTaskOptions(),
+                      new List<string>
+                      {
+                        results[3]
+                          .ResultId,
+                      },
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                        results[2]
+                          .ResultId,
+                      }),
+                };
+
+    var taskId = tasks.Single()
+                      .TaskId;
+
+    await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                          holder.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          tasks,
+                                          NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                               .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskData.Status);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                   holder.ResultTable,
+                                                   holder.PushQueueStorage,
+                                                   tasks,
+                                                   sessionData,
+                                                   sessionId,
+                                                   NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                           .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Pending,
+                    taskData.Status);
+    Assert.AreEqual(2,
+                    taskData.RemainingDataDependencies.Count);
+
+
+    // complete first data dependency
+    await holder.ResultTable.CompleteResult(sessionId,
+                                            results[1]
+                                              .ResultId,
+                                            10)
+                .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
+                                                  holder.ResultTable,
+                                                  holder.PushQueueStorage,
+                                                  sessionData,
+                                                  new List<string>
+                                                  {
+                                                    results[1]
+                                                      .ResultId,
+                                                  },
+                                                  NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                           .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Pending,
+                    taskData.Status);
+    Assert.AreEqual(1,
+                    taskData.RemainingDataDependencies.Count);
+
+
+    // complete second data dependency
+    await holder.ResultTable.CompleteResult(sessionId,
+                                            results[2]
+                                              .ResultId,
+                                            10)
+                .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
+                                                  holder.ResultTable,
+                                                  holder.PushQueueStorage,
+                                                  sessionData,
+                                                  new List<string>
+                                                  {
+                                                    results[2]
+                                                      .ResultId,
+                                                  },
+                                                  NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                           .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Submitted,
+                    taskData.Status);
+    Assert.IsEmpty(taskData.RemainingDataDependencies);
+    holder.QueueStorage.Channel.Writer.Complete();
+    Assert.AreEqual(1,
+                    (await holder.QueueStorage.Channel.Reader.ReadAllAsync()
+                                 .ToListAsync()
+                                 .ConfigureAwait(false)).Select(handler => handler.TaskId)
+                                                        .Count(s => s == taskId));
   }
 }

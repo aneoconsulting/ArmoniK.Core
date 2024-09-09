@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -665,6 +666,25 @@ public class TaskHandlerTest
                                                                         TaskStatus.Submitted,
                                                                         QueueMessageStatus.Processed))
                                          .SetArgDisplayNames("Submitted task with same owner");
+
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Paused,
+                                    },
+                                    true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsPaused,
+                                                                        TaskStatus.Paused,
+                                                                        QueueMessageStatus.Processed))
+                                         .SetArgDisplayNames("Paused task");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Pending,
+                                    },
+                                    true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsPending,
+                                                                        TaskStatus.Pending,
+                                                                        QueueMessageStatus.Postponed))
+                                         .SetArgDisplayNames("Pending task");
     }
   }
 
@@ -1128,7 +1148,7 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.TaskIsCreating,
+    Assert.AreEqual(AcquisitionStatus.TaskIsPending,
                     acquired);
   }
 
@@ -1300,6 +1320,57 @@ public class TaskHandlerTest
     Assert.Greater(taskData.CreationToEndDuration,
                    taskData.ProcessingToEndDuration);
 
+    Assert.AreEqual(QueueMessageStatus.Processed,
+                    sqmh.Status);
+  }
+
+  [Test]
+  public async Task PauseSessionBeforeExecutionShouldSucceed()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh = new SimpleWorkerStreamHandler();
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                agentHandler,
+                                                                sqmh);
+
+    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                         .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.PauseAsync(testServiceProvider.TaskTable,
+                                         testServiceProvider.SessionTable,
+                                         sessionId)
+                             .ConfigureAwait(false);
+
+    Assert.ThrowsAsync<TaskPausedException>(testServiceProvider.TaskHandler.ExecuteTask);
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
+    Assert.AreEqual(TaskStatus.Paused,
+                    taskData.Status);
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);
   }
