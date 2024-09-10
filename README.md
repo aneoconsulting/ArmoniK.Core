@@ -25,10 +25,11 @@ Breaking changes will be limited as much as possible or gated behind feature fla
 If breaking changes should happen, they will be documented in the releases.
 Therefore, features in development or testing that cannot fit within a branch and need to be integrated into main will be marked as preview so that users know that these features are still in development and subject to changes.
 
-**General availability:** The APIs, plugins and features that are generally available are highly curated and for which support is available.
+**General availability (GA):** The APIs, plugins and features are thoroughly tested and support is available.
 **Preview:** The APIs, plugins and features that are available on main but still in development. Their API should be stable enough for advanced users who want to test them before GA. Breaking changes should be minimal and will be notified in the release notes. Any feedback or issue encountered with these features are welcome !
-**Beta (Internal preview):** The APIs, plugins and features in active development. They are not stable enough and breaking changes may occur without any notice. Breaking changes will not always be documented. They can be used by the community for testing purposes. Before to be moved to the "Preview" stage, issues might be closed with the minimal messages "Under Active Development".
+**Beta (Internal preview):** The APIs, plugins and features in active development. They are not stable enough and breaking changes may occur without any notice. Breaking changes will not always be documented. They can be used by the community for testing purposes. Before being  moved to the "Preview" stage, issues might be closed with the minimal messages "Under Active Development".
 **Deprecated:** The deprecated APIs, plugins and features. Features are flagged for future removal. Only production critical bug fixes will be considered.
+**Work in progress (WIP):** The APIs, plugins and features are not fully implemented and may have some missing parts.
 
 | Plugins  | Type           | Description                                   | Status  |
 |----------|----------------|-----------------------------------------------|---------|
@@ -44,22 +45,22 @@ Therefore, features in development or testing that cannot fit within a branch an
 | APIs                          | Description                                                                         | Status     |
 |-------------------------------|-------------------------------------------------------------------------------------|------------|
 | Agent.CreateTask              | Streamed RPC to submit payloads and tasks from the worker                           | Deprecated |
-| Agent.Get*Data                | RPC to get special Results                                                          | Beta       |
+| Agent.Get*Data                | RPC to get special Results                                                          | WIP        |
 | Agent.*                       | Service to submit created results, create new results and new tasks from the worker | GA         |
 | Applications.ListApplications | RPC to list applications                                                            | GA         |
 | Authentication.GetCurrentUser | RPC to retrieve the current logged-in user                                          | GA         |
-| Events.GetEvents              | Streamed RPC to subscribe to events happening on tasks and results during execution | GA         |
+| Events.GetEvents              | Streamed RPC to subscribe to task and result events during execution                | GA         |
 | HealthChecks.CheckHealth      | RPC to get an overview of the cluster health                                        | GA         |
 | Partitions.ListPartitions     | RPC to list partitions                                                              | GA         |
 | Partitions.GetPartition       | RPC to get partition information                                                    | GA         |
-| Partition metrics exporter    | Metrics exporter to expose metrics on partition instance sharing                    | Beta       |
-| Results.WatchResults          | Bi-directionnal RPC to subscribe to events on Results                               | Beta       |
+| Partition metrics exporter    | Metrics exporter to expose partition metrics on shared resources                    | Beta       |
+| Results.WatchResults          | Bi-directionnal RPC to subscribe to events on Results                               | WIP        |
 | Results.*                     | Service to create, download, list and upload results                                | GA         |
 | Sessions.*                    | Service to create, list, cancel, pause, resume, close etc sessions                  | GA         |
-| Submitter.*                   | Old streamed service to create tasks and payloads altogether                        | Deprecated |
+| Submitter.*                   | Deprecated streamed service to create tasks and payloads altogether                 | Deprecated |
 | Tasks.*                       | Service to submit, list and cancel tasks                                            | GA         |
-| Versions.*                    | Service to retrieve                                                                 | GA         |
-| Worker.*                      | Service implemeted by users that consumes the tasks scheduled by ArmoniK            | GA         |
+| Versions.*                    | Service to retrieve versions                                                        | GA         |
+| Worker.*                      | Service implemented by users that consumes the tasks scheduled by ArmoniK           | GA         |
 
 | Docker Image Platform | Status  |
 |-----------------------|---------|
