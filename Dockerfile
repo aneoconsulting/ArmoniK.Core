@@ -23,6 +23,7 @@ COPY ["Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj", "Adaptors/R
 COPY ["Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj", "Adaptors/PubSub/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj", "Adaptors/S3/src/"]
+COPY ["Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj", "Adaptors/SQS/src/"]
 COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 COPY ["Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj", "Compute/PollingAgent/src/"]
@@ -38,6 +39,7 @@ RUN dotnet restore -a "${TARGETARCH}" "Control/Submitter/src/ArmoniK.Core.Contro
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
 
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"\$D\\\", \\\"\$D\\\"]"
 COPY ["Adaptors/Amqp/src", "Adaptors/Amqp/src"]
@@ -49,6 +51,7 @@ COPY ["Adaptors/RabbitMQ/src", "Adaptors/RabbitMQ/src"]
 COPY ["Adaptors/PubSub/src", "Adaptors/PubSub/src"]
 COPY ["Adaptors/Redis/src", "Adaptors/Redis/src"]
 COPY ["Adaptors/S3/src", "Adaptors/S3/src"]
+COPY ["Adaptors/SQS/src", "Adaptors/SQS/src"]
 COPY ["Base/src", "Base/src"]
 COPY ["Common/src", "Common/src"]
 COPY ["Compute/PollingAgent/src", "Compute/PollingAgent/src"]
@@ -56,6 +59,9 @@ COPY ["Control/Metrics/src", "Control/Metrics/src"]
 COPY ["Control/PartitionMetrics/src", "Control/PartitionMetrics/src"]
 COPY ["Control/Submitter/src", "Control/Submitter/src"]
 COPY ["Utils/src", "Utils/src"]
+
+WORKDIR /src/Adaptors/SQS/src
+RUN dotnet publish "ArmoniK.Core.Adapters.SQS.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/sqs /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Adaptors/PubSub/src
 RUN dotnet publish "ArmoniK.Core.Adapters.PubSub.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/pubsub /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
@@ -80,6 +86,8 @@ RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --
 
 
 FROM base-${TARGETOS} as polling_agent
+WORKDIR /adapters/queue/sqs
+COPY --from=build /app/publish/sqs .
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -110,6 +118,8 @@ CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
 FROM base-${TARGETOS} as submitter
+WORKDIR /adapters/queue/sqs
+COPY --from=build /app/publish/sqs .
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp

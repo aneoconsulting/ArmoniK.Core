@@ -14,7 +14,7 @@ locals {
     "ASPNETCORE_ENVIRONMENT"                                                                 = "${var.aspnet_core_env}"
   }
   worker   = merge(var.compute_plane.worker, { image = var.worker_image })
-  queue    = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_none))
+  queue    = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_none))
   database = module.database
   object   = one(concat(module.object_redis, module.object_minio, module.object_local))
   env_maps = concat([

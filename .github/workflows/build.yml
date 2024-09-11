@@ -388,6 +388,7 @@ jobs:
           - rabbitmq
           - rabbitmq091
           - pubsub
+          - sqs
         object:
           - redis
           - minio
