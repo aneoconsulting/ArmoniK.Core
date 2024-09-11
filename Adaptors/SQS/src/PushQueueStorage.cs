@@ -71,7 +71,8 @@ internal class PushQueueStorage : IPushQueueStorage
 
     await messages.Select(data => new SendMessageBatchRequestEntry
                                   {
-                                    Id          = data.TaskId,
+                                    Id = Guid.NewGuid()
+                                             .ToString(),
                                     MessageBody = data.TaskId,
                                   })
                   .Chunk(10)
