@@ -11,7 +11,7 @@ output "generated_env_vars" {
     "MongoDB__ReplicaSet"                    = "${var.mongodb_params.replica_set_name}"
     "MongoDB__Tls"                           = "true"
     "MongoDB__AllowInsecureTls"              = "true"
-    "MongoDB__CAFile"                        = "/mongo-certificate/ca.pem"
+    "MongoDB__CAFile"                        = "/cert/ca.pem"
     "MongoDB__ServerSelectionTimeout"        = "00:00:20"
   }
 
@@ -20,6 +20,6 @@ output "generated_env_vars" {
 
 output "core_mounts" {
   value = {
-    "/mongo-certificate/ca.pem" = local_sensitive_file.ca.filename
+    "/cert/ca.pem" = local_sensitive_file.ca.filename
   }
 }

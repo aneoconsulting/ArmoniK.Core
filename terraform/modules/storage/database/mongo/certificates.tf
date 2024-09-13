@@ -40,7 +40,7 @@ resource "tls_cert_request" "mongodb_cert_request" {
     # organization = "127.0.0.1"
   }
   ip_addresses = ["127.0.0.1"]
-  dns_names    = [var.mongodb_params.database_name, "localhost"]
+  dns_names    = [var.mongodb_params.database_name]
 }
 
 resource "tls_locally_signed_cert" "mongodb_certificate" {

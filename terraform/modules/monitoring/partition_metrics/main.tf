@@ -21,7 +21,7 @@ resource "docker_container" "partition_metrics" {
     external = var.exposed_port
   }
 
-  dynamic "upload" {
+    dynamic "upload" {
     for_each = var.mounts
     content {
       source = upload.value
