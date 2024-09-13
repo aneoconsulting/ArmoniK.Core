@@ -7,7 +7,7 @@ resource "docker_container" "database" {
   name  = var.mongodb_params.database_name
   image = docker_image.database.image_id
 
-  command = ["mongod", "--bind_ip_all", "--replSet", var.mongodb_params.replica_set_name]
+  command = ["mongod", "--bind_ip_all", "--replSet", var.mongodb_params.replica_set_name, "--tlsMode=requireTLS", "--tlsDisabledProtocols=TLS1_0", "--tlsCertificateKeyFile=/cert/key.pem", "--tlsCAFile=/cert/ca.pem", "--tlsAllowConnectionsWithoutCertificates"]
 
   networks_advanced {
     name = var.network
@@ -23,11 +23,20 @@ resource "docker_container" "database" {
   dynamic "healthcheck" {
     for_each = var.mongodb_params.windows ? [] : [1]
     content {
-      test     = ["CMD", "mongosh", "--quiet", "--eval", "db.runCommand('ping').ok"]
+      test     = ["CMD", "mongosh", "--quiet", "--tls", "--tlsCAFile", "/cert/ca.pem", "--eval", "db.runCommand('ping').ok"]
       interval = "3s"
       retries  = "2"
-      timeout  = "2s"
+      timeout  = "3s"
     }
+  }
+  upload {
+    file    = "/cert/key.pem"
+    content = local.server_key
+  }
+
+  upload {
+    file    = "/cert/ca.pem"
+    content = tls_locally_signed_cert.mongodb_certificate.ca_cert_pem
   }
 }
 
@@ -37,9 +46,9 @@ resource "time_sleep" "wait" {
 }
 
 locals {
-  linux_run = "docker run --net ${var.network} ${docker_image.database.image_id} mongosh mongodb://${docker_container.database.name}:27017/${var.mongodb_params.database_name}"
+  linux_run = "docker exec ${docker_container.database.name} mongosh mongodb://127.0.0.1:27017/${var.mongodb_params.database_name} --tls --tlsCAFile /cert/ca.pem"
   // mongosh is not installed in windows docker images so we need it to be installed locally
-  windows_run = "mongosh.exe mongodb://localhost:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name}"
+  windows_run = "mongosh.exe mongodb://localhost:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name} --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
   prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
 }
 
