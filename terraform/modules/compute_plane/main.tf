@@ -74,5 +74,13 @@ resource "docker_container" "polling_agent" {
     }
   }
 
+  dynamic "upload" {
+    for_each = var.mounts
+    content {
+      source = upload.value
+      file   = upload.key
+    }
+  }
+
   depends_on = [docker_container.worker]
 }

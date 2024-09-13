@@ -18,6 +18,10 @@ variable "generated_env_vars" {
   type = map(string)
 }
 
+variable "mounts" {
+  type = map(string)
+}
+
 variable "volumes" {
   type = map(string)
 }
