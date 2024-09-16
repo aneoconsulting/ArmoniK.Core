@@ -28,6 +28,7 @@ using ArmoniK.Core.Adapters.Redis;
 using ArmoniK.Core.Adapters.S3;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
@@ -242,6 +243,7 @@ public static class Program
       var resultTable          = app.Services.GetRequiredService<IResultTable>();
       var partitionTable       = app.Services.GetRequiredService<IPartitionTable>();
       var sessionTable         = app.Services.GetRequiredService<ISessionTable>();
+      var authTable            = app.Services.GetRequiredService<IAuthenticationTable>();
       var taskObjectFactory    = objectStorage.Init(CancellationToken.None);
       var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
 
@@ -253,6 +255,8 @@ public static class Program
                           .ConfigureAwait(false);
       await sessionTable.Init(CancellationToken.None)
                         .ConfigureAwait(false);
+      await authTable.Init(CancellationToken.None)
+                     .ConfigureAwait(false);
 
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
