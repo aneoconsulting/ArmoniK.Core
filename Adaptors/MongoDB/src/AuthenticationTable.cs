@@ -150,8 +150,17 @@ public class AuthenticationTable : IAuthenticationTable
       await sessionProvider_.Init(cancellationToken)
                             .ConfigureAwait(false);
       sessionProvider_.Get();
+
+      await userCollectionProvider_.Init(cancellationToken)
+                                   .ConfigureAwait(false);
       userCollectionProvider_.Get();
+
+      await roleCollectionProvider_.Init(cancellationToken)
+                                   .ConfigureAwait(false);
       roleCollectionProvider_.Get();
+
+      await authCollectionProvider_.Init(cancellationToken)
+                                   .ConfigureAwait(false);
       authCollectionProvider_.Get();
       isInitialized_ = true;
     }
