@@ -72,6 +72,11 @@ public class Heart
     {
       ae.Handle(exception => exception is not OperationCanceledException);
     }
+    finally
+    {
+      stoppedHeartCts_?.Dispose();
+      stoppedHeartCts_ = null;
+    }
   }
 
   /// <summary>
