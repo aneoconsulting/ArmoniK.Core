@@ -312,10 +312,6 @@ jobs:
         image: "${{ matrix.image }}:${{ needs.versionning.outputs.version }}"
         sarif-file: sarif.output.json
         summary: true
-        platform: |
-          linux/arm64
-          linux/amd64
-          windows/amd64
     - name: print sarif file
       run: cat sarif.output.json
 
