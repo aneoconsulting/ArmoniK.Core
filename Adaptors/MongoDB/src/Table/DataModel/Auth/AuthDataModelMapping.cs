@@ -77,4 +77,8 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                                              indexModels)
                     .ConfigureAwait(false);
   }
+
+  public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
+                                   Options.MongoDB      options)
+    => Task.CompletedTask;
 }

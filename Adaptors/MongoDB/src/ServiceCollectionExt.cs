@@ -184,6 +184,11 @@ public static class ServiceCollectionExt
                                        mongoOptions.DatabaseName);
     }
 
+    if (!string.IsNullOrEmpty(mongoOptions.AuthSource))
+    {
+      connectionString = $"{connectionString}?authSource={mongoOptions.AuthSource}";
+    }
+
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
     settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
     settings.UseTls                 = mongoOptions.Tls;

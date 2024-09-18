@@ -60,6 +60,11 @@ public class MongoDB
 
   public QueueStorage QueueStorage { get; set; } = new();
 
-  public int      MaxConnectionPoolSize  { get; set; } = 500;
+  public int MaxConnectionPoolSize { get; set; } = 500;
+
   public TimeSpan ServerSelectionTimeout { get; set; } = TimeSpan.FromMinutes(2);
+
+  public bool Sharding { get; set; }
+
+  public string AuthSource { get; set; } = "";
 }
