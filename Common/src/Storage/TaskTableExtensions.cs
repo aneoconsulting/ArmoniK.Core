@@ -484,7 +484,7 @@ public static class TaskTableExtensions
                                              TaskData          taskData,
                                              CancellationToken cancellationToken = default)
   {
-    var newTaskId = taskData.InitialTaskId + $"###{taskData.RetryOfIds.Count + 1}";
+    var newTaskId = taskData.RetryId();
 
     var newTaskRetryOfIds = new List<string>(taskData.RetryOfIds)
                             {

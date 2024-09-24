@@ -22,7 +22,6 @@ using System.IO;
 using System.Threading;
 
 using ArmoniK.Api.Common.Options;
-using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -50,19 +49,22 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestTaskHandlerProvider : IDisposable
 {
-  private const           string          DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication  app_;
-  private readonly        IMongoClient    client_;
-  private readonly        LoggerFactory   loggerFactory_;
-  private readonly        IObjectStorage  objectStorage_;
-  public readonly         IPartitionTable PartitionTable;
-  public readonly         IResultTable    ResultTable;
-  private readonly        IMongoRunner    runner_;
-  public readonly         ISessionTable   SessionTable;
-  public readonly         ISubmitter      Submitter;
-  public readonly         TaskHandler     TaskHandler;
-  public readonly         ITaskTable      TaskTable;
+  private const           string            DatabaseName   = "ArmoniK_TestDB";
+  private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication    app_;
+  private readonly        IMongoClient      client_;
+  public readonly         ILogger           Logger;
+  private readonly        LoggerFactory     loggerFactory_;
+  private readonly        IObjectStorage    objectStorage_;
+  public readonly         IPartitionTable   PartitionTable;
+  public readonly         IPushQueueStorage PushQueueStorage;
+  public readonly         IResultTable      ResultTable;
+  private readonly        IMongoRunner      runner_;
+  public readonly         ISessionTable     SessionTable;
+  public readonly         ISubmitter        Submitter;
+  public readonly         TaskHandler       TaskHandler;
+  public readonly         ITaskTable        TaskTable;
+
 
   public IHostApplicationLifetime Lifetime;
 
@@ -139,6 +141,7 @@ public class TestTaskHandlerProvider : IDisposable
 
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
+    Logger = loggerFactory_.CreateLogger("root");
 
     var builder = WebApplication.CreateBuilder();
 
@@ -155,7 +158,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                    Injection.Options.Submitter.SettingSection)
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddSingleton<IPushQueueStorage, PushQueueStorage>()
+           .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
            .AddSingleton<ExceptionManager.Options>()
@@ -206,14 +209,15 @@ public class TestTaskHandlerProvider : IDisposable
 
     app_ = builder.Build();
 
-    ResultTable    = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable      = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable = app_.Services.GetRequiredService<IPartitionTable>();
-    SessionTable   = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter      = app_.Services.GetRequiredService<ISubmitter>();
-    TaskHandler    = app_.Services.GetRequiredService<TaskHandler>();
-    Lifetime       = app_.Services.GetRequiredService<IHostApplicationLifetime>();
-    objectStorage_ = app_.Services.GetRequiredService<IObjectStorage>();
+    ResultTable      = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable        = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable   = app_.Services.GetRequiredService<IPartitionTable>();
+    SessionTable     = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter        = app_.Services.GetRequiredService<ISubmitter>();
+    TaskHandler      = app_.Services.GetRequiredService<TaskHandler>();
+    Lifetime         = app_.Services.GetRequiredService<IHostApplicationLifetime>();
+    objectStorage_   = app_.Services.GetRequiredService<IObjectStorage>();
+    PushQueueStorage = app_.Services.GetRequiredService<IPushQueueStorage>();
 
     ResultTable.Init(CancellationToken.None)
                .Wait();

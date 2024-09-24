@@ -78,7 +78,7 @@ public class PushQueueStorage : IPushQueueStorage
       if (!id2Handlers_.TryAdd(messageHandler.TaskId!,
                                messageHandler))
       {
-        throw new InvalidOperationException("Duplicate messageId found.");
+        throw new InvalidOperationException($"Duplicate messageId: {messageHandler.TaskId} found.");
       }
     }
 

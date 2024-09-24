@@ -75,9 +75,17 @@ public class TaskTable : ITaskTable
 
     var taskCollection = taskCollectionProvider_.Get();
 
-    await taskCollection.InsertManyAsync(tasks.Select(taskData => taskData),
-                                         cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
+    try
+    {
+      await taskCollection.InsertManyAsync(tasks.Select(taskData => taskData),
+                                           cancellationToken: cancellationToken)
+                          .ConfigureAwait(false);
+    }
+    catch (MongoBulkWriteException<TaskData> e)
+    {
+      throw new TaskAlreadyExistsException("Task already exists",
+                                           e);
+    }
   }
 
   /// <inheritdoc />

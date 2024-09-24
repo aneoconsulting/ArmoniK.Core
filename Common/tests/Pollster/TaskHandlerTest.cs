@@ -321,6 +321,191 @@ public class TaskHandlerTest
     return (taskId, taskUnresolvedDepId, taskErrorId, taskRetriedId, sessionId);
   }
 
+  private static async Task InitRetry(TestTaskHandlerProvider testServiceProvider,
+                                      string                  sessionId)
+  {
+    var sessionData = await testServiceProvider.SessionTable.GetSessionAsync(sessionId,
+                                                                             CancellationToken.None)
+                                               .ConfigureAwait(false);
+
+    var options = new TaskOptions(new Dictionary<string, string>(),
+                                  TimeSpan.FromSeconds(1),
+                                  5,
+                                  1,
+                                  "part1",
+                                  "",
+                                  "",
+                                  "",
+                                  "",
+                                  "");
+
+    var results = new List<Result>
+                  {
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Payload1",
+                        "",
+                        "",
+                        ResultStatus.Completed,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>()),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Result1",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>()),
+                  };
+
+    await testServiceProvider.ResultTable.Create(results)
+                             .ConfigureAwait(false);
+
+    var tasks = new List<TaskCreationRequest>
+                {
+                  new("TaskRetry2",
+                      results[0]
+                        .ResultId,
+                      options,
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                      },
+                      new List<string>()),
+                  new("TaskRetry2+Creating",
+                      results[0]
+                        .ResultId,
+                      options,
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                      },
+                      new List<string>()),
+                  new("TaskRetry2+Submitted",
+                      results[0]
+                        .ResultId,
+                      options,
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                      },
+                      new List<string>()),
+                  new("TaskRetry2+NotFound",
+                      results[0]
+                        .ResultId,
+                      options,
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                      },
+                      new List<string>()),
+                };
+
+    await TaskLifeCycleHelper.CreateTasks(testServiceProvider.TaskTable,
+                                          testServiceProvider.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          tasks,
+                                          testServiceProvider.Logger)
+                             .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(testServiceProvider.TaskTable,
+                                                   testServiceProvider.ResultTable,
+                                                   testServiceProvider.PushQueueStorage,
+                                                   tasks,
+                                                   sessionData,
+                                                   sessionId,
+                                                   testServiceProvider.Logger)
+                             .ConfigureAwait(false);
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2")
+                                            .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
+                                                          "Error for test : retried")
+                             .ConfigureAwait(false);
+
+    var newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
+                                             .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(testServiceProvider.TaskTable,
+                                                   testServiceProvider.ResultTable,
+                                                   testServiceProvider.PushQueueStorage,
+                                                   new List<TaskCreationRequest>
+                                                   {
+                                                     new(newTaskId,
+                                                         taskData.PayloadId,
+                                                         taskData.Options,
+                                                         taskData.ExpectedOutputIds,
+                                                         taskData.DataDependencies),
+                                                   },
+                                                   sessionData,
+                                                   taskData.TaskId,
+                                                   testServiceProvider.Logger)
+                             .ConfigureAwait(false);
+
+    var retryData = await testServiceProvider.TaskTable.ReadTaskAsync(newTaskId)
+                                             .ConfigureAwait(false);
+    await testServiceProvider.TaskTable.AcquireTask(retryData)
+                             .ConfigureAwait(false);
+
+    taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+Submitted")
+                                        .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
+                                                          "Error for test : submitted")
+                             .ConfigureAwait(false);
+
+    newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
+                                         .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(testServiceProvider.TaskTable,
+                                                   testServiceProvider.ResultTable,
+                                                   testServiceProvider.PushQueueStorage,
+                                                   new List<TaskCreationRequest>
+                                                   {
+                                                     new(newTaskId,
+                                                         taskData.PayloadId,
+                                                         taskData.Options,
+                                                         taskData.ExpectedOutputIds,
+                                                         taskData.DataDependencies),
+                                                   },
+                                                   sessionData,
+                                                   taskData.TaskId,
+                                                   testServiceProvider.Logger)
+                             .ConfigureAwait(false);
+
+
+    taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+Creating")
+                                        .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
+                                                          "Error for test : creating")
+                             .ConfigureAwait(false);
+
+    newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
+                                         .ConfigureAwait(false);
+
+
+    taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+NotFound")
+                                        .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
+                                                          "Error for test : not found")
+                             .ConfigureAwait(false);
+  }
+
   [Test]
   public async Task AcquireCancelingTaskShouldFail()
   {
@@ -585,15 +770,6 @@ public class TaskHandlerTest
                                                                         QueueMessageStatus.Processed))
                                          .SetArgDisplayNames("Processing task same agent");
 
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Retried,
-                                    },
-                                    true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetried,
-                                                                        TaskStatus.Retried,
-                                                                        QueueMessageStatus.Poisonous))
-                                         .SetArgDisplayNames("Retried task");
-
       // 12 is already tested
 
       yield return new TestCaseData(taskData with
@@ -746,6 +922,88 @@ public class TaskHandlerTest
     Assert.AreEqual(dbStatus,
                     testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
                                        .TaskStatus);
+
+    return new AcquireTaskReturn(acquired,
+                                 dbStatus,
+                                 sqmh.Status);
+  }
+
+
+  public static IEnumerable TestCaseAcquireRetriedTask
+  {
+    get
+    {
+      yield return new TestCaseData("TaskRetry2").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetried,
+                                                                                TaskStatus.Retried,
+                                                                                QueueMessageStatus.Poisonous));
+      yield return new TestCaseData("TaskRetry2+Creating").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsCreating,
+                                                                                         TaskStatus.Retried,
+                                                                                         QueueMessageStatus.Poisonous));
+      yield return new TestCaseData("TaskRetry2+Submitted").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted,
+                                                                                          TaskStatus.Retried,
+                                                                                          QueueMessageStatus.Poisonous));
+      yield return new TestCaseData("TaskRetry2+NotFound").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
+                                                                                         TaskStatus.Retried,
+                                                                                         QueueMessageStatus.Poisonous));
+    }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(TestCaseAcquireRetriedTask))]
+  public async Task<AcquireTaskReturn> AcquireRetriedShouldFail(string taskId)
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+                 TaskId = taskId,
+               };
+
+    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
+
+    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
+                                                                mockAgentHandler.Object,
+                                                                sqmh);
+
+    var (_, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                    .ConfigureAwait(false);
+
+    await InitRetry(testServiceProvider,
+                    sessionId)
+      .ConfigureAwait(false);
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
+                                            .ConfigureAwait(false);
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(taskData.TaskId,
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskId);
+
+    var dbStatus = await testServiceProvider.TaskTable.FindTasksAsync(t => t.TaskId == taskData.TaskId,
+                                                                      t => t.Status,
+                                                                      CancellationToken.None)
+                                            .SingleAsync(CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(dbStatus,
+                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                       .TaskStatus);
+
+    var retryData = await testServiceProvider.TaskTable.ReadTaskAsync(taskData.RetryId())
+                                             .ConfigureAwait(false);
+
+    Assert.Contains(retryData.Status,
+                    new List<TaskStatus>
+                    {
+                      TaskStatus.Dispatched,
+                      TaskStatus.Submitted,
+                    });
 
     return new AcquireTaskReturn(acquired,
                                  dbStatus,

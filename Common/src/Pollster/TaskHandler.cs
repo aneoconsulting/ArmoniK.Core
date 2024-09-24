@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -445,6 +446,79 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Retried:
           logger_.LogInformation("Task is in retry ; retry task should be executed");
           messageHandler_.Status = QueueMessageStatus.Poisonous;
+          var retryId = taskData_.RetryId();
+
+          try
+          {
+            var retryData = await taskTable_.ReadTaskAsync(retryId,
+                                                           lateCts_.Token)
+                                            .ConfigureAwait(false);
+            if (retryData.Status is TaskStatus.Creating or TaskStatus.Submitted)
+            {
+              logger_.LogWarning("Retried task {task} is in {status}; trying to finalize task creation",
+                                 retryId,
+                                 retryData.Status);
+              await submitter_.FinalizeTaskCreation(new List<TaskCreationRequest>
+                                                    {
+                                                      new(retryId,
+                                                          retryData.PayloadId,
+                                                          retryData.Options,
+                                                          retryData.ExpectedOutputIds,
+                                                          retryData.DataDependencies),
+                                                    },
+                                                    sessionData_,
+                                                    taskData_.TaskId,
+                                                    CancellationToken.None)
+                              .ConfigureAwait(false);
+              return retryData.Status == TaskStatus.Submitted
+                       ? AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted
+                       : AcquisitionStatus.TaskIsRetriedAndRetryIsCreating;
+            }
+          }
+          catch (TaskNotFoundException)
+          {
+            logger_.LogWarning("Retried task {task} was not found in the database; resubmit it",
+                               retryId);
+
+            try
+            {
+              await taskTable_.RetryTask(taskData_,
+                                         CancellationToken.None)
+                              .ConfigureAwait(false);
+            }
+            catch (TaskAlreadyExistsException)
+            {
+              logger_.LogWarning("Retried task {task} already exists; finalize creation if needed",
+                                 retryId);
+            }
+            finally
+            {
+              var retryData = await taskTable_.ReadTaskAsync(retryId,
+                                                             lateCts_.Token)
+                                              .ConfigureAwait(false);
+              if (retryData.Status is TaskStatus.Creating or TaskStatus.Submitted)
+              {
+                logger_.LogWarning("Retried task {task} is in {status}; trying to finalize task creation",
+                                   retryId,
+                                   retryData.Status);
+                await submitter_.FinalizeTaskCreation(new List<TaskCreationRequest>
+                                                      {
+                                                        new(retryId,
+                                                            retryData.PayloadId,
+                                                            retryData.Options,
+                                                            retryData.ExpectedOutputIds,
+                                                            retryData.DataDependencies),
+                                                      },
+                                                      sessionData_,
+                                                      taskData_.TaskId,
+                                                      CancellationToken.None)
+                                .ConfigureAwait(false);
+              }
+            }
+
+            return AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound;
+          }
+
           return AcquisitionStatus.TaskIsRetried;
         case TaskStatus.Unspecified:
         default:
