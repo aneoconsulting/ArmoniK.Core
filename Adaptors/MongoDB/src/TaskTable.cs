@@ -81,7 +81,7 @@ public class TaskTable : ITaskTable
                                            cancellationToken: cancellationToken)
                           .ConfigureAwait(false);
     }
-    catch (MongoBulkWriteException<TaskData> e)
+    catch (MongoBulkWriteException<TaskData> e) when (e.WriteErrors.All(error => error.Category == ServerErrorCategory.DuplicateKey))
     {
       throw new TaskAlreadyExistsException("Task already exists",
                                            e);
