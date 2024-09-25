@@ -499,19 +499,13 @@ public sealed class TaskHandler : IAsyncDisposable
                             .ConfigureAwait(false);
           }
 
-          switch ((taskNotFound, taskExists, retryData.Status))
-          {
-            case (false, false, TaskStatus.Submitted):
-              return AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted;
-            case (false, false, TaskStatus.Creating):
-              return AcquisitionStatus.TaskIsRetriedAndRetryIsCreating;
-            case (true, false, TaskStatus.Submitted):
-              return AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound;
-            case (true, false, TaskStatus.Creating):
-              return AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound;
-            default:
-              return AcquisitionStatus.TaskIsRetried;
-          }
+          return (taskNotFound, taskExists, retryData.Status) switch
+                 {
+                   (false, false, TaskStatus.Submitted)                       => AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted,
+                   (false, false, TaskStatus.Creating)                        => AcquisitionStatus.TaskIsRetriedAndRetryIsCreating,
+                   (true, false, TaskStatus.Submitted or TaskStatus.Creating) => AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
+                   _                                                          => AcquisitionStatus.TaskIsRetried,
+                 };
 
         case TaskStatus.Unspecified:
         default:
