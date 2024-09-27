@@ -204,4 +204,14 @@ public record TaskData(string        SessionId,
            taskData.Options.ApplicationNamespace,
            taskData.Options.ApplicationVersion,
            taskData.Options.ApplicationService);
+
+  /// <summary>
+  ///   Compute the Id of the new task if this task should be retried
+  ///   Should be deterministic as it can be called several time
+  /// </summary>
+  /// <returns>
+  ///   Id of the retried task
+  /// </returns>
+  public string RetryId()
+    => InitialTaskId + $"###{RetryOfIds.Count + 1}";
 }

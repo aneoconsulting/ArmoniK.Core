@@ -1847,6 +1847,18 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public void CreateSameTaskShouldThrow()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<TaskAlreadyExistsException>(() => TaskTable!.CreateTasks(new[]
+                                                                                  {
+                                                                                    taskCompletedData_,
+                                                                                  }));
+    }
+  }
+
+  [Test]
   public async Task ListTaskEmptyResultShouldSucceed()
   {
     if (RunTests)

@@ -64,7 +64,7 @@ public class TaskTable : ITaskTable
       if (!taskId2TaskData_.TryAdd(taskData.TaskId,
                                    taskData))
       {
-        throw new ArmoniKException($"Tasks '{taskData.TaskId}' already exists");
+        throw new TaskAlreadyExistsException($"Tasks '{taskData.TaskId}' already exists");
       }
 
       var session = session2TaskIds_.GetOrAdd(taskData.SessionId,
