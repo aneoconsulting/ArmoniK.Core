@@ -92,4 +92,10 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                              indexModels)
                     .ConfigureAwait(false);
   }
+
+  public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
+                                         Options.MongoDB      options)
+    => await sessionHandle.shardCollection(options,
+                                           CollectionName)
+                          .ConfigureAwait(false);
 }

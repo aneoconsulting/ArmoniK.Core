@@ -28,4 +28,7 @@ public interface IMongoDataModelMapping<T>
   Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
                               IMongoCollection<T>  collection,
                               Options.MongoDB      options);
+
+  Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
+                            Options.MongoDB      options);
 }

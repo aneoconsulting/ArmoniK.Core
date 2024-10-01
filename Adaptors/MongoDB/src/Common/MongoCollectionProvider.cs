@@ -167,9 +167,34 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
     }
 
+    if (options.Sharding)
+    {
+      for (var indexRetry = 1; indexRetry < options.MaxRetries; indexRetry++)
+      {
+        lastException = null;
+        try
+        {
+          await model.ShardCollectionAsync(session,
+                                           options)
+                     .ConfigureAwait(false);
+          break;
+        }
+        catch (Exception ex)
+        {
+          lastException = ex;
+          logger.LogDebug(ex,
+                          "Retrying to shard {CollectionName} collection",
+                          model.CollectionName);
+          await Task.Delay(1000 * indexRetry,
+                           cancellationToken)
+                    .ConfigureAwait(false);
+        }
+      }
+    }
+
     if (lastException is not null)
     {
-      throw new TimeoutException($"Init Indexes for {model.CollectionName}: Max retries reached",
+      throw new TimeoutException($"Init Index or shard for {model.CollectionName}: Max retries reached",
                                  lastException);
     }
 

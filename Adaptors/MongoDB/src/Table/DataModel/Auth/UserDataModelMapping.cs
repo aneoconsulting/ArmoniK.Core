@@ -73,4 +73,8 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
                                              indexModels)
                     .ConfigureAwait(false);
   }
+
+  public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
+                                   Options.MongoDB      options)
+    => Task.CompletedTask;
 }
