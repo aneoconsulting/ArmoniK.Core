@@ -21,7 +21,10 @@ using System.Diagnostics;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
 
@@ -77,6 +80,9 @@ internal class IndexTest
                               logger);
     services.AddSingleton(ActivitySource);
     services.AddTransient(_ => client_);
+    services.AddInitializedOption<InitServices>(configuration,
+                                                InitServices.SettingSection);
+    services.AddSingleton<InitDatabase>();
     services.AddLogging();
 
     provider_ = services.BuildServiceProvider(new ServiceProviderOptions
