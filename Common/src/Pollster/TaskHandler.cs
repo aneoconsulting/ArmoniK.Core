@@ -1022,10 +1022,6 @@ public sealed class TaskHandler : IAsyncDisposable
                                               CancellationToken cancellationToken)
   {
     using var measure = functionExecutionMetrics_.CountAndTime();
-    if (agent_ is null)
-    {
-      throw new NullReferenceException(nameof(agent_) + " is null.");
-    }
 
     if (sessionData_ is null)
     {
@@ -1094,8 +1090,11 @@ public sealed class TaskHandler : IAsyncDisposable
                                    : QueueMessageStatus.Processed;
       }
 
-      await agent_.CancelChildTasks(CancellationToken.None)
-                  .ConfigureAwait(false);
+      if (agent_ is not null)
+      {
+        await agent_.CancelChildTasks(CancellationToken.None)
+                    .ConfigureAwait(false);
+      }
     }
 
     // Rethrow enable the recording of the error by the Pollster Main loop
