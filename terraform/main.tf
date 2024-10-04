@@ -32,7 +32,6 @@ module "database" {
   image          = var.database_image
   network        = docker_network.armonik.id
   mongodb_params = var.mongodb_params
-  partition_list = local.partition_list
 }
 
 module "object_redis" {
@@ -115,6 +114,7 @@ module "submitter" {
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
   volumes            = local.volumes
+  container_init     = var.container_init
 }
 
 module "compute_plane" {
@@ -129,6 +129,7 @@ module "compute_plane" {
   volumes            = local.volumes
   network            = docker_network.armonik.id
   log_driver         = module.fluenbit.log_driver
+  container_init     = var.container_init
 }
 
 module "metrics_exporter" {
@@ -138,6 +139,7 @@ module "metrics_exporter" {
   network            = docker_network.armonik.id
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
+  container_init     = var.container_init
 }
 
 module "partition_metrics_exporter" {
@@ -148,6 +150,7 @@ module "partition_metrics_exporter" {
   generated_env_vars = local.environment
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
+  container_init     = var.container_init
 }
 
 module "ingress" {

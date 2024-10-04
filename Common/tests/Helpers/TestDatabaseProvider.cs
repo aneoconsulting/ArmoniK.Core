@@ -25,7 +25,10 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
 
@@ -138,6 +141,9 @@ public class TestDatabaseProvider : IDisposable
            .AddClientSubmitterAuthenticationStorage(builder.Configuration)
            .AddClientSubmitterAuthServices(builder.Configuration,
                                            out _)
+           .AddInitializedOption<InitServices>(builder.Configuration,
+                                               InitServices.SettingSection)
+           .AddSingleton<InitDatabase>()
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
            .AddSingleton(loggerProvider.CreateLogger("root"))
