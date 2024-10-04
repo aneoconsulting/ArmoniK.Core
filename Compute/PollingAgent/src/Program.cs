@@ -30,6 +30,10 @@ using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
+<<<<<<< HEAD
+=======
+using ArmoniK.Core.Common.Injection.Options.Database;
+>>>>>>> 548873fd (feat: add static init for instances of Partition and Authentication)
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -109,6 +113,9 @@ public static class Program
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)
+             .AddInitializedOption<InitServices>(builder.Configuration,
+                                                 InitServices.SettingSection)
+             .AddSingleton<InitDatabase>()
              .AddSingleton(pollsterOptions)
              .AddSingleton(new ExceptionManager.Options(pollsterOptions.GraceDelay,
                                                         pollsterOptions.MaxErrorAllowed))

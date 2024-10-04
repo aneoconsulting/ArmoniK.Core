@@ -15,9 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
 
 using MongoDB.Bson.Serialization;
@@ -91,7 +93,21 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
                     .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                    Options.MongoDB      options)
     => Task.CompletedTask;
+
+  /// <inheritdoc />
+  public async Task InitializeCollectionAsync(IClientSessionHandle            sessionHandle,
+                                              IMongoCollection<PartitionData> collection,
+                                              InitDatabase                    initDatabase)
+  {
+    if (initDatabase.Partitions.Any())
+    {
+      await collection.InsertManyAsync(sessionHandle,
+                                       initDatabase.Partitions)
+                      .ConfigureAwait(false);
+    }
+  }
 }

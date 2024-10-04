@@ -29,6 +29,8 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.gRPC.Validators;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;

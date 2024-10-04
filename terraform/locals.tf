@@ -13,23 +13,31 @@ locals {
     "Serilog__MinimumLevel__Override__ArmoniK.Core.Common.Auth.Authentication.Authenticator" = "${var.serilog.loggin_level_routing}",
     "ASPNETCORE_ENVIRONMENT"                                                                 = "${var.aspnet_core_env}"
   }
+<<<<<<< HEAD
   worker   = merge(var.compute_plane.worker, { image = var.worker_image })
   queue    = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_none))
   database = module.database
   object   = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed))
+=======
+  worker             = merge(var.compute_plane.worker, { image = var.worker_image })
+  queue              = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_none))
+  database           = module.database
+  object             = one(concat(module.object_redis, module.object_minio, module.object_local))
+  partition_env_vars = { for i in local.partitions : "InitServices__Partitioning__Partitions__${i}" => jsonencode(merge(var.partition_data, { PartitionId = "${var.partition_data.PartitionId}${i}" })) }
+>>>>>>> 548873fd (feat: add static init for instances of Partition and Authentication)
   env_maps = concat([
     local.queue.generated_env_vars,
     local.object.generated_env_vars,
     local.database.generated_env_vars,
     local.logging_env_vars,
-    var.custom_env_vars
+    var.custom_env_vars,
+    local.partition_env_vars
   ], module.tracing[*].generated_env_vars)
   mounts              = merge(local.database.core_mounts, local.object.core_mounts, local.queue.core_mounts)
   environment         = merge(local.env_maps...)
   volumes             = local.object.volumes
   submitter           = merge(var.submitter, { tag = var.core_tag })
   compute_plane       = merge(var.compute_plane, { tag = var.core_tag }, { worker = local.worker })
-  partition_list      = { for i in local.partitions : i => merge(var.partition_data, { _id = "${var.partition_data._id}${i}" }) }
   polling_agent_names = toset([for v in module.compute_plane : v.polling_agent_name])
 }
 resource "local_file" "queue_env" {

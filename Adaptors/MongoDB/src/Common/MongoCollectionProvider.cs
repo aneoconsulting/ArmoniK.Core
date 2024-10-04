@@ -16,12 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common;
+using ArmoniK.Core.Common.Injection.Options.Database;
 
 using JetBrains.Annotations;
 
@@ -40,6 +42,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   private IMongoCollection<TData>? mongoCollection_;
 
   public MongoCollectionProvider(Options.MongoDB                  options,
+                                 InitDatabase                     initDatabase,
                                  SessionProvider                  sessionProvider,
                                  IMongoDatabase                   mongoDatabase,
                                  ILogger<IMongoCollection<TData>> logger,
@@ -52,6 +55,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     }
 
     Initialization = InitializeAsync(options,
+                                     initDatabase,
                                      sessionProvider,
                                      mongoDatabase,
                                      logger,
@@ -89,6 +93,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   }
 
   private static async Task<IMongoCollection<TData>> InitializeAsync(Options.MongoDB                  options,
+                                                                     InitDatabase                     initDatabase,
                                                                      SessionProvider                  sessionProvider,
                                                                      IMongoDatabase                   mongoDatabase,
                                                                      ILogger<IMongoCollection<TData>> logger,
@@ -97,46 +102,54 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     var        model         = new TModelMapping();
     Exception? lastException = null;
 
-    for (var collectionRetry = 1; collectionRetry < options.MaxRetries; collectionRetry++)
+    if (initDatabase.Init)
     {
-      lastException = null;
-      try
+      for (var collectionRetry = 1; collectionRetry < options.MaxRetries; collectionRetry++)
       {
-        await mongoDatabase.CreateCollectionAsync(model.CollectionName,
-                                                  null,
-                                                  cancellationToken)
-                           .ConfigureAwait(false);
-        break;
+        lastException = null;
+        try
+        {
+          await mongoDatabase.CreateCollectionAsync(model.CollectionName,
+                                                    null,
+                                                    cancellationToken)
+                             .ConfigureAwait(false);
+          break;
+        }
+        catch (MongoCommandException ex) when (ex.CodeName == "NamespaceExists")
+        {
+          logger.LogDebug(ex,
+                          "Use already existing instance of Collection {CollectionName}",
+                          model.CollectionName);
+          break;
+        }
+        catch (Exception ex)
+        {
+          lastException = ex;
+          logger.LogDebug(ex,
+                          "Retrying to create Collection {CollectionName}",
+                          model.CollectionName);
+          await Task.Delay(1000 * collectionRetry,
+                           cancellationToken)
+                    .ConfigureAwait(false);
+        }
       }
-      catch (MongoCommandException ex) when (ex.CodeName == "NamespaceExists")
-      {
-        logger.LogDebug(ex,
-                        "Use already existing instance of Collection {CollectionName}",
-                        model.CollectionName);
-        break;
-      }
-      catch (Exception ex)
-      {
-        lastException = ex;
-        logger.LogDebug(ex,
-                        "Retrying to create Collection {CollectionName}",
-                        model.CollectionName);
-        await Task.Delay(1000 * collectionRetry,
-                         cancellationToken)
-                  .ConfigureAwait(false);
-      }
-    }
 
-    if (lastException is not null)
-    {
-      throw new TimeoutException($"Create {model.CollectionName}: Max retries reached",
-                                 lastException);
+      if (lastException is not null)
+      {
+        throw new TimeoutException($"Create {model.CollectionName}: Max retries reached",
+                                   lastException);
+      }
     }
 
     var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
     await sessionProvider.Init(cancellationToken)
                          .ConfigureAwait(false);
     var session = sessionProvider.Get();
+
+    if (!initDatabase.Init)
+    {
+      return output;
+    }
 
     for (var indexRetry = 1; indexRetry < options.MaxRetries; indexRetry++)
     {
@@ -193,9 +206,39 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
     }
 
+    for (var indexRetry = 1; indexRetry < options.MaxRetries; indexRetry++)
+    {
+      lastException = null;
+      try
+      {
+        await model.InitializeCollectionAsync(session,
+                                              output,
+                                              initDatabase)
+                   .ConfigureAwait(false);
+        break;
+      }
+      catch (MongoBulkWriteException<TData> e) when (e.WriteErrors.All(error => error.Category == ServerErrorCategory.DuplicateKey))
+      {
+        logger.LogDebug(e,
+                        "Values were already present within the collection {CollectionName}",
+                        model.CollectionName);
+        break;
+      }
+      catch (Exception ex)
+      {
+        lastException = ex;
+        logger.LogDebug(ex,
+                        "Retrying to initialize {CollectionName} collection",
+                        model.CollectionName);
+        await Task.Delay(1000 * indexRetry,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
+    }
+
     if (lastException is not null)
     {
-      throw new TimeoutException($"Init Index or shard for {model.CollectionName}: Max retries reached",
+      throw new TimeoutException($"Init for {model.CollectionName}: Max retries reached",
                                  lastException);
     }
 

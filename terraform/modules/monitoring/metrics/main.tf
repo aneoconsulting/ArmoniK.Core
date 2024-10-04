@@ -11,7 +11,7 @@ resource "docker_container" "metrics" {
     name = var.network
   }
 
-  env = local.gen_env
+  env = concat(local.gen_env, local.init_env)
 
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts

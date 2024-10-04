@@ -16,10 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Injection.Options.Database;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -74,7 +76,21 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
                     .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                    Options.MongoDB      options)
     => Task.CompletedTask;
+
+  /// <inheritdoc />
+  public async Task InitializeCollectionAsync(IClientSessionHandle       sessionHandle,
+                                              IMongoCollection<UserData> collection,
+                                              InitDatabase               initDatabase)
+  {
+    if (initDatabase.Users.Any())
+    {
+      await collection.InsertManyAsync(sessionHandle,
+                                       initDatabase.Users)
+                      .ConfigureAwait(false);
+    }
+  }
 }

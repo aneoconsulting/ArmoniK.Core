@@ -25,6 +25,8 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -38,6 +40,16 @@ public class AuthenticationTableTestBase
   [SetUp]
   public async Task SetUp()
   {
+    Environment.SetEnvironmentVariable(CertificatePath.Replace(":",
+                                                               "__") + "__0",
+                                       CertEnv.ToJson());
+    Environment.SetEnvironmentVariable(UserPath.Replace(":",
+                                                        "__") + "__0",
+                                       UserEnv.ToJson());
+    Environment.SetEnvironmentVariable(RolePath.Replace(":",
+                                                        "__") + "__0",
+                                       RoleEnv.ToJson());
+
     GetAuthSource();
 
     if (!RunTests || CheckForSkipSetup())
@@ -62,6 +74,37 @@ public class AuthenticationTableTestBase
     var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
     return category is "SkipSetUp";
   }
+
+  private static readonly Certificate CertEnv = new()
+                                                {
+                                                  Fingerprint = "FingerprintEnv",
+                                                  CN          = "CNEnv",
+                                                  User        = "UserEnv",
+                                                };
+
+
+  private static readonly User UserEnv = new()
+                                         {
+                                           Name = "UserEnv",
+                                           Roles = new List<string>
+                                                   {
+                                                     "RoleEnv",
+                                                   },
+                                         };
+
+
+  private static readonly Role RoleEnv = new()
+                                         {
+                                           Name = "RoleEnv",
+                                           Permissions = new List<string>
+                                                         {
+                                                           "PermEnv",
+                                                         },
+                                         };
+
+  private const string CertificatePath = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.UserCertificates)}";
+  private const string UserPath        = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.Users)}";
+  private const string RolePath        = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.Roles)}";
 
   static AuthenticationTableTestBase()
   {
@@ -377,6 +420,9 @@ public class AuthenticationTableTestBase
             false)]
   [TestCase("User2",
             "Role1",
+            true)]
+  [TestCase("UserEnv",
+            "RoleEnv",
             true)]
   [TestCase("User2",
             "RoleDontExist",
