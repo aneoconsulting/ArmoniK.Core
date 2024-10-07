@@ -96,15 +96,19 @@ public class TaskTable : ITaskTable
     using var activity = activitySource_.StartActivity($"{nameof(ReadTaskAsync)}");
     activity?.SetTag("ReadTaskId",
                      taskId);
-    var sessionHandle  = sessionProvider_.Get();
     var taskCollection = taskCollectionProvider_.Get();
 
     try
     {
-      return await taskCollection.Find(tdm => tdm.TaskId == taskId)
-                                 .Project(selector)
-                                 .SingleAsync(cancellationToken)
-                                 .ConfigureAwait(false);
+      var task = await taskCollection.Find(tdm => tdm.TaskId == taskId)
+                                     .Project(selector)
+                                     .SingleAsync(cancellationToken)
+                                     .ConfigureAwait(false);
+      Logger.LogDebug("Read {id} matching {condition} returns {task}",
+                      taskId,
+                      selector,
+                      task);
+      return task;
     }
     catch (InvalidOperationException)
     {
@@ -194,8 +198,8 @@ public class TaskTable : ITaskTable
 
     if (res.DeletedCount > 0)
     {
-      Logger.LogInformation("Deleted Tasks from {sessionId}",
-                            sessionId);
+      Logger.LogDebug("Deleted Tasks from {sessionId}",
+                      sessionId);
     }
   }
 
@@ -272,6 +276,12 @@ public class TaskTable : ITaskTable
                                                       cancellationToken: cancellationToken)
                                      .ConfigureAwait(false);
 
+    Logger.LogDebug("Update tasks matching {condition} and {@updates}; {modifiedCount} tasks modified and {matchedCount} tasks matched",
+                    filter,
+                    updates,
+                    result.ModifiedCount,
+                    result.MatchedCount);
+
     return result.MatchedCount;
   }
 
@@ -304,6 +314,9 @@ public class TaskTable : ITaskTable
                                                            },
                                                            cancellationToken)
                                            .ConfigureAwait(false);
+
+    Logger.LogDebug("Bulk update tasks matching {@updates}",
+                    bulkUpdates);
 
     return updateResult.MatchedCount;
   }
@@ -408,10 +421,10 @@ public class TaskTable : ITaskTable
                                                           cancellationToken)
                                    .ConfigureAwait(false);
 
-    Logger.LogInformation("Update {task} with {condition} and {@updates}",
-                          taskId,
-                          filter,
-                          updates);
+    Logger.LogDebug("Update {task} matching {condition} and {@updates}",
+                    taskId,
+                    filter,
+                    updates);
 
     return task;
   }
