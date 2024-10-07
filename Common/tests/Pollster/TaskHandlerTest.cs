@@ -1582,6 +1582,77 @@ public class TaskHandlerTest
                     sqmh.Status);
   }
 
+  private class ObjectStorageThrowNotFound : IObjectStorage
+  {
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
+
+    public Task Init(CancellationToken cancellationToken)
+      => Task.CompletedTask;
+
+    public Task<long> AddOrUpdateAsync(string                                 key,
+                                       IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                       CancellationToken                      cancellationToken = default)
+      => Task.FromResult<long>(42);
+
+    public IAsyncEnumerable<byte[]> GetValuesAsync(string            key,
+                                                   CancellationToken cancellationToken = default)
+      => throw new ObjectDataNotFoundException();
+
+    public Task TryDeleteAsync(IEnumerable<string> keys,
+                               CancellationToken   cancellationToken = default)
+      => Task.CompletedTask;
+
+    public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+  }
+
+  [Test]
+  public async Task PreprocessingShouldThrow()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh = new SimpleWorkerStreamHandler();
+
+    var agentHandler = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                agentHandler,
+                                                                sqmh,
+                                                                objectStorage: new ObjectStorageThrowNotFound());
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+    Assert.ThrowsAsync<ObjectDataNotFoundException>(() => testServiceProvider.TaskHandler.PreProcessing());
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
+    Assert.AreEqual(TaskStatus.Error,
+                    taskData.Status);
+
+    Assert.AreEqual(QueueMessageStatus.Processed,
+                    sqmh.Status);
+  }
+
   [Test]
   public async Task PauseSessionBeforeExecutionShouldSucceed()
   {

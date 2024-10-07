@@ -75,6 +75,7 @@ public class TestTaskHandlerProvider : IDisposable
                                  ITaskTable?             inputTaskTable        = null,
                                  ISessionTable?          inputSessionTable     = null,
                                  ITaskProcessingChecker? taskProcessingChecker = null,
+                                 IObjectStorage?         objectStorage         = null,
                                  TimeSpan?               graceDelay            = null)
   {
     var logger = NullLogger.Instance;
@@ -202,6 +203,11 @@ public class TestTaskHandlerProvider : IDisposable
     if (inputSessionTable is not null)
     {
       builder.Services.AddSingleton(inputSessionTable);
+    }
+
+    if (objectStorage is not null)
+    {
+      builder.Services.AddSingleton(objectStorage);
     }
 
     var computePlanOptions = builder.Configuration.GetRequiredValue<ComputePlane>(ComputePlane.SettingSection);
