@@ -93,6 +93,13 @@ public class WatchToGrpc
                                   : resultsFilters.ToResultFilter()
                                                   .ExpressionAnd(data => data.SessionId == sessionId);
 
+    logger_.LogDebug("Filter events {events}",
+                     events);
+    logger_.LogDebug("Task {taskFilter}",
+                     internalTasksFilter);
+    logger_.LogDebug("Result {resultFilter}",
+                     internalResultsFilter);
+
     using var scope = logger_.BeginPropertyScope(("sessionId", sessionId));
 
     if (!events.Any() || events.Contains(EventsEnum.NewTask))
