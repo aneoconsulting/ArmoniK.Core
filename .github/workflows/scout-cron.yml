@@ -13,6 +13,8 @@ jobs:
     - name: List last releases
       id: releases
       run: echo "releases:$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
+      env:
+        GH_TOKEN: ${{ github.token }}
 
   scout:
     runs-on: ubuntu-latest
