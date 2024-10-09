@@ -72,12 +72,16 @@ public class InitDatabase
                                                     role.Permissions.ToArray()))
                         .AsICollection();
 
+    var roleDic = Roles.ToDictionary(data => data.RoleName,
+                                     data => data.RoleId);
+
     Users = initServices.Authentication.Users.Select(User.FromJson)
                         .OrderBy(user => user.Name)
                         .Select((user,
                                  i) => new UserData(i.ToString(),
                                                     user.Name,
-                                                    user.Roles.ToArray()))
+                                                    user.Roles.Select(roleName => roleDic[roleName])
+                                                        .ToArray()))
                         .AsICollection();
 
     var userDic = Users.ToDictionary(data => data.Username,
