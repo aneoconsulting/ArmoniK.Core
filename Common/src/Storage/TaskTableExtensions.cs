@@ -58,32 +58,26 @@ public static class TaskTableExtensions
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public static async Task SetTaskCanceledAsync(this ITaskTable   taskTable,
-                                                TaskData          taskData,
-                                                CancellationToken cancellationToken = default)
-  {
-    await taskTable.UpdateOneTask(taskData.TaskId,
-                                  new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                       new Output(Error: "",
-                                                                                  Status: OutputStatus.Error))
-                                                                  .Set(data => data.Status,
-                                                                       TaskStatus.Cancelled)
-                                                                  .Set(tdm => tdm.EndDate,
-                                                                       taskData.EndDate)
-                                                                  .Set(tdm => tdm.ProcessedDate,
-                                                                       taskData.ProcessedDate)
-                                                                  .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                       taskData.ReceivedToEndDuration)
-                                                                  .Set(tdm => tdm.CreationToEndDuration,
-                                                                       taskData.CreationToEndDuration)
-                                                                  .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                       taskData.ProcessingToEndDuration),
-                                  cancellationToken)
-                   .ConfigureAwait(false);
-    taskTable.Logger.LogDebug("Update {task} to {status}",
-                              taskData.TaskId,
-                              TaskStatus.Cancelled);
-  }
+  public static Task SetTaskCanceledAsync(this ITaskTable   taskTable,
+                                          TaskData          taskData,
+                                          CancellationToken cancellationToken = default)
+    => taskTable.UpdateOneTask(taskData.TaskId,
+                               new UpdateDefinition<TaskData>().Set(data => data.Output,
+                                                                    new Output(Error: "",
+                                                                               Status: OutputStatus.Error))
+                                                               .Set(data => data.Status,
+                                                                    TaskStatus.Cancelled)
+                                                               .Set(tdm => tdm.EndDate,
+                                                                    taskData.EndDate)
+                                                               .Set(tdm => tdm.ProcessedDate,
+                                                                    taskData.ProcessedDate)
+                                                               .Set(tdm => tdm.ReceivedToEndDuration,
+                                                                    taskData.ReceivedToEndDuration)
+                                                               .Set(tdm => tdm.CreationToEndDuration,
+                                                                    taskData.CreationToEndDuration)
+                                                               .Set(tdm => tdm.ProcessingToEndDuration,
+                                                                    taskData.ProcessingToEndDuration),
+                               cancellationToken);
 
   /// <summary>
   ///   Tag a task as errored and populate its output with an
@@ -128,10 +122,6 @@ public static class TaskTableExtensions
                                              cancellationToken)
                               .ConfigureAwait(false);
 
-    taskTable.Logger.LogDebug("Update {task} to {status}",
-                              taskData.TaskId,
-                              TaskStatus.Error);
-
     return task.Status != TaskStatus.Error;
   }
 
@@ -152,32 +142,26 @@ public static class TaskTableExtensions
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public static async Task SetTaskSuccessAsync(this ITaskTable   taskTable,
-                                               TaskData          taskData,
-                                               CancellationToken cancellationToken = default)
-  {
-    await taskTable.UpdateOneTask(taskData.TaskId,
-                                  new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                       new Output(Error: "",
-                                                                                  Status: OutputStatus.Success))
-                                                                  .Set(data => data.Status,
-                                                                       TaskStatus.Completed)
-                                                                  .Set(tdm => tdm.EndDate,
-                                                                       taskData.EndDate)
-                                                                  .Set(tdm => tdm.ProcessedDate,
-                                                                       taskData.ProcessedDate)
-                                                                  .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                       taskData.ReceivedToEndDuration)
-                                                                  .Set(tdm => tdm.CreationToEndDuration,
-                                                                       taskData.CreationToEndDuration)
-                                                                  .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                       taskData.ProcessingToEndDuration),
-                                  cancellationToken)
-                   .ConfigureAwait(false);
-    taskTable.Logger.LogDebug("Update {task} to {status}",
-                              taskData.TaskId,
-                              TaskStatus.Completed);
-  }
+  public static Task SetTaskSuccessAsync(this ITaskTable   taskTable,
+                                         TaskData          taskData,
+                                         CancellationToken cancellationToken = default)
+    => taskTable.UpdateOneTask(taskData.TaskId,
+                               new UpdateDefinition<TaskData>().Set(data => data.Output,
+                                                                    new Output(Error: "",
+                                                                               Status: OutputStatus.Success))
+                                                               .Set(data => data.Status,
+                                                                    TaskStatus.Completed)
+                                                               .Set(tdm => tdm.EndDate,
+                                                                    taskData.EndDate)
+                                                               .Set(tdm => tdm.ProcessedDate,
+                                                                    taskData.ProcessedDate)
+                                                               .Set(tdm => tdm.ReceivedToEndDuration,
+                                                                    taskData.ReceivedToEndDuration)
+                                                               .Set(tdm => tdm.CreationToEndDuration,
+                                                                    taskData.CreationToEndDuration)
+                                                               .Set(tdm => tdm.ProcessingToEndDuration,
+                                                                    taskData.ProcessingToEndDuration),
+                               cancellationToken);
 
 
   /// <summary>
@@ -221,10 +205,6 @@ public static class TaskTableExtensions
                                                                                   taskData.ProcessingToEndDuration),
                                              cancellationToken)
                               .ConfigureAwait(false);
-
-    taskTable.Logger.LogDebug("Update {task} to {status}",
-                              taskData.TaskId,
-                              TaskStatus.Retried);
 
     return task.Status != TaskStatus.Retried;
   }
@@ -270,10 +250,6 @@ public static class TaskTableExtensions
                                              cancellationToken)
                               .ConfigureAwait(false);
 
-    taskTable.Logger.LogDebug("Update {task} to {status}",
-                              taskData.TaskId,
-                              TaskStatus.Timeout);
-
     return task.Status != TaskStatus.Timeout;
   }
 
@@ -289,18 +265,13 @@ public static class TaskTableExtensions
   public static async Task CancelSessionAsync(this ITaskTable   taskTable,
                                               string            sessionId,
                                               CancellationToken cancellationToken = default)
-  {
-    await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && !FinalStatus.Contains(data.Status),
-                                    new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
-                                                                         TaskStatus.Cancelling)
-                                                                    .Set(tdm => tdm.EndDate,
-                                                                         DateTime.UtcNow),
-                                    cancellationToken)
-                   .ConfigureAwait(false);
-
-    taskTable.Logger.LogInformation("Cancel {session}",
-                                    sessionId);
-  }
+    => await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && !FinalStatus.Contains(data.Status),
+                                       new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
+                                                                            TaskStatus.Cancelling)
+                                                                       .Set(tdm => tdm.EndDate,
+                                                                            DateTime.UtcNow),
+                                       cancellationToken)
+                      .ConfigureAwait(false);
 
 
   /// <summary>
@@ -325,9 +296,6 @@ public static class TaskTableExtensions
                                                                                    DateTime.UtcNow),
                                               cancellationToken)
                              .ConfigureAwait(false);
-
-    taskTable.Logger.LogInformation("Cancel {tasks}",
-                                    taskIds);
 
     return res;
   }
@@ -357,9 +325,13 @@ public static class TaskTableExtensions
                                               cancellationToken)
                              .ConfigureAwait(false);
 
-    taskTable.Logger.LogDebug("Update {tasks} to {status}",
-                              taskIds,
-                              TaskStatus.Submitted);
+    if (res != taskIds.Count)
+    {
+      taskTable.Logger.LogWarning("Mismatch between {modified} and {expected} for {tasks} during Finalize task creation",
+                                  res,
+                                  taskIds.Count,
+                                  taskIds);
+    }
 
     return res;
   }
@@ -373,18 +345,12 @@ public static class TaskTableExtensions
   /// <returns>
   ///   Task metadata of the retrieved task
   /// </returns>
-  public static async Task<TaskData> ReadTaskAsync(this ITaskTable   taskTable,
-                                                   string            taskId,
-                                                   CancellationToken cancellationToken = default)
-  {
-    var task = await taskTable.ReadTaskAsync(taskId,
-                                             Identity,
-                                             cancellationToken)
-                              .ConfigureAwait(false);
-    taskTable.Logger.LogDebug("Read {task}",
-                              task);
-    return task;
-  }
+  public static Task<TaskData> ReadTaskAsync(this ITaskTable   taskTable,
+                                             string            taskId,
+                                             CancellationToken cancellationToken = default)
+    => taskTable.ReadTaskAsync(taskId,
+                               Identity,
+                               cancellationToken);
 
 
   /// <summary>
@@ -463,13 +429,12 @@ public static class TaskTableExtensions
   /// <returns>
   ///   The parent's ids
   /// </returns>
-  public static async Task<IEnumerable<string>> GetParentTaskIds(this ITaskTable   taskTable,
-                                                                 string            taskId,
-                                                                 CancellationToken cancellationToken = default)
-    => await taskTable.ReadTaskAsync(taskId,
-                                     data => data.ParentTaskIds,
-                                     cancellationToken)
-                      .ConfigureAwait(false);
+  public static Task<IList<string>> GetParentTaskIds(this ITaskTable   taskTable,
+                                                     string            taskId,
+                                                     CancellationToken cancellationToken = default)
+    => taskTable.ReadTaskAsync(taskId,
+                               data => data.ParentTaskIds,
+                               cancellationToken);
 
   /// <summary>
   ///   Retry a task identified by its meta data
@@ -640,21 +605,6 @@ public static class TaskTableExtensions
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
 
-    taskTable.Logger.LogInformation("Released task {task} on {podName}",
-                                    taskData.TaskId,
-                                    taskData.OwnerPodId);
-
-    taskTable.Logger.LogDebug("Released task {taskData}",
-                              res);
-
-    if (taskTable.Logger.IsEnabled(LogLevel.Debug) && res is null)
-    {
-      taskTable.Logger.LogDebug("Released task (old) {taskData}",
-                                await taskTable.ReadTaskAsync(taskData.TaskId,
-                                                              cancellationToken)
-                                               .ConfigureAwait(false));
-    }
-
     return res ?? await taskTable.ReadTaskAsync(taskData.TaskId,
                                                 cancellationToken)
                                  .ConfigureAwait(false);
@@ -706,10 +656,6 @@ public static class TaskTableExtensions
                                                                                  TaskStatus.Processing),
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
-
-    taskTable.Logger.LogInformation("Start task {taskId} and update to status {status}",
-                                    taskData.TaskId,
-                                    TaskStatus.Processing);
 
     if (res is null)
     {
