@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
+using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
 
@@ -103,7 +105,8 @@ internal class MongoDatabaseProvider : IDisposable
                                                 };
 
     var configuration = new ConfigurationManager();
-    configuration.AddInMemoryCollection(minimalConfig);
+    configuration.AddInMemoryCollection(minimalConfig)
+                 .AddEnvironmentVariables();
 
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddMongoStorages(configuration,
@@ -111,6 +114,9 @@ internal class MongoDatabaseProvider : IDisposable
     serviceCollection.AddClientSubmitterAuthenticationStorage(configuration);
     serviceCollection.AddSingleton(ActivitySource);
     serviceCollection.AddTransient<IMongoClient>(_ => client);
+    serviceCollection.AddInitializedOption<InitServices>(configuration,
+                                                         InitServices.SettingSection);
+    serviceCollection.AddSingleton<InitDatabase>();
 
     serviceCollection.AddLogging(builder => builder.AddSerilog(loggerSerilog));
     serviceConfigurator?.Invoke(serviceCollection);
