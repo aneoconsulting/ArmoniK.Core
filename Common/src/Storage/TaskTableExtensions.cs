@@ -605,9 +605,6 @@ public static class TaskTableExtensions
                                             cancellationToken: cancellationToken)
                              .ConfigureAwait(false);
 
-    taskTable.Logger.LogDebug("Released task {taskData}",
-                              res);
-
     return res ?? await taskTable.ReadTaskAsync(taskData.TaskId,
                                                 cancellationToken)
                                  .ConfigureAwait(false);

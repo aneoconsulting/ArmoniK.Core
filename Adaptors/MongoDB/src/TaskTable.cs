@@ -421,10 +421,11 @@ public class TaskTable : ITaskTable
                                                           cancellationToken)
                                    .ConfigureAwait(false);
 
-    Logger.LogDebug("Update {task} matching {condition} and {@updates}",
+    Logger.LogDebug("Update {task} matching {condition} and {@updates}; got {data}",
                     taskId,
                     filter,
-                    updates);
+                    updates,
+                    task);
 
     return task;
   }
