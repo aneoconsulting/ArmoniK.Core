@@ -48,6 +48,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
+using NUnit.Framework;
+
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollsterProvider : IDisposable
@@ -226,4 +228,17 @@ public class TestPollsterProvider : IDisposable
 
                   Lifetime.StopApplication();
                 });
+
+  public void AssertFailAfterError(int nbError = 1)
+  {
+    for (var i = 0; i < nbError; i++)
+    {
+      Assert.False(ExceptionManager.Failed);
+      ExceptionManager.RecordError(null,
+                                   null,
+                                   "Dummy Error");
+    }
+
+    Assert.True(ExceptionManager.Failed);
+  }
 }

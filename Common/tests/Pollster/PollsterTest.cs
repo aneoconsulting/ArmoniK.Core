@@ -313,6 +313,8 @@ public class PollsterTest
     Assert.AreEqual(HealthStatus.Healthy,
                     (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
                                               .ConfigureAwait(false)).Status);
+
+    testServiceProvider.AssertFailAfterError(6);
   }
 
   [Test]
@@ -411,6 +413,8 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => stop);
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
+
+    testServiceProvider.AssertFailAfterError(6);
   }
 
   public class WaitWorkerStreamHandler : IWorkerStreamHandler
@@ -479,12 +483,13 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
-    Assert.False(testServiceProvider.ExceptionManager.Failed);
 
     Assert.AreEqual(TaskStatus.Completed,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                       CancellationToken.None)
                                              .ConfigureAwait(false));
+
+    testServiceProvider.AssertFailAfterError(6);
   }
 
   [Test]
@@ -535,6 +540,8 @@ public class PollsterTest
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                       CancellationToken.None)
                                              .ConfigureAwait(false));
+
+    testServiceProvider.AssertFailAfterError(5);
   }
 
   [Test]
@@ -593,7 +600,6 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => mainLoopTask);
     Assert.DoesNotThrowAsync(() => stop);
-    Assert.False(testServiceProvider.ExceptionManager.Failed);
 
     Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                   CancellationToken.None)
@@ -603,6 +609,8 @@ public class PollsterTest
 
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
+
+    testServiceProvider.AssertFailAfterError(5);
   }
 
   public static IEnumerable ExecuteTooManyErrorShouldFailTestCase
@@ -733,5 +741,7 @@ public class PollsterTest
                                              .ConfigureAwait(false));
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
+
+    testServiceProvider.AssertFailAfterError(5);
   }
 }
