@@ -40,8 +40,7 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
       BsonClassMap.RegisterClassMap<RoleData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(RoleData.RoleId))
-                                                  .SetIsRequired(true)
-                                                  .SetSerializer(IdSerializer.Instance);
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(RoleData.RoleName))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(RoleData.Permissions))
