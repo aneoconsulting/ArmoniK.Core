@@ -17,7 +17,6 @@
 
 using System;
 
-using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Tests.TestBase;
 
@@ -44,8 +43,6 @@ public class AuthenticationTableTest : AuthenticationTableTestBase
       BsonClassMap.RegisterClassMap<UserAuthenticationResult>(cm =>
                                                               {
                                                                 cm.MapIdProperty(nameof(UserAuthenticationResult.Id))
-                                                                  .SetSerializer(IdSerializer.Instance)
-                                                                  .SetShouldSerializeMethod(_ => true)
                                                                   .SetIsRequired(true);
                                                                 cm.MapProperty(nameof(UserAuthenticationResult.Username))
                                                                   .SetIsRequired(true);
