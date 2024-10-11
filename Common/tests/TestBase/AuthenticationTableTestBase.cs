@@ -35,12 +35,7 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 [TestFixture]
 public class AuthenticationTableTestBase
 {
-  private static bool CheckForSkipSetup()
-  {
-    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
-    return category is "SkipSetUp";
-  }
-
+  [SetUp]
   public async Task SetUp()
   {
     GetAuthSource();
@@ -58,8 +53,15 @@ public class AuthenticationTableTestBase
     AuthenticationTable!.AddCertificates(Auths);
   }
 
+  [TearDown]
   public virtual void TearDown()
     => RunTests = false;
+
+  private static bool CheckForSkipSetup()
+  {
+    var category = TestContext.CurrentContext.Test.Properties.Get("Category") as string;
+    return category is "SkipSetUp";
+  }
 
   static AuthenticationTableTestBase()
   {
@@ -200,6 +202,7 @@ public class AuthenticationTableTestBase
   }
 
   [Test]
+  [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
   {
     if (RunTests)
