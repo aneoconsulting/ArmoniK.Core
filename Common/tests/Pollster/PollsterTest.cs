@@ -588,8 +588,7 @@ public class PollsterTest
     var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(2));
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
-    Assert.That(() => stop,
-                Throws.InstanceOf<OperationCanceledException>());
+    Assert.DoesNotThrowAsync(() => stop);
 
     Assert.AreEqual(TaskStatus.Submitted,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted2,
