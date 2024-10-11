@@ -372,14 +372,22 @@ public class Pollster : IInitializable
               await taskHandler.PreProcessing()
                                .ConfigureAwait(false);
 
-              await runningTaskQueue_.WriteAsync(taskHandler,
-                                                 pollsterOptions_.TimeoutBeforeNextAcquisition,
-                                                 exceptionManager_.EarlyCancellationToken)
-                                     .ConfigureAwait(false);
+              try
+              {
+                await runningTaskQueue_.WriteAsync(taskHandler,
+                                                   pollsterOptions_.TimeoutBeforeNextAcquisition,
+                                                   exceptionManager_.EarlyCancellationToken)
+                                       .ConfigureAwait(false);
 
-              // TaskHandler has been successfully sent to the next stage of the pipeline
-              // So remove the automatic dispose of the TaskHandler
-              taskHandlerDispose.Reset();
+                // TaskHandler has been successfully sent to the next stage of the pipeline
+                // So remove the automatic dispose of the TaskHandler
+                taskHandlerDispose.Reset();
+              }
+              catch (TimeoutException)
+              {
+                await taskHandler.ReleaseAndPostponeTask()
+                                 .ConfigureAwait(false);
+              }
             }
             catch (Exception e)
             {

@@ -48,6 +48,8 @@ using Microsoft.Extensions.Logging.Abstractions;
 using MongoDB.Bson;
 using MongoDB.Driver;
 
+using NUnit.Framework;
+
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollsterProvider : IDisposable
@@ -76,7 +78,9 @@ public class TestPollsterProvider : IDisposable
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
                               IAgentHandler        agentHandler,
                               IPullQueueStorage    pullQueueStorage,
-                              TimeSpan?            graceDelay = null)
+                              TimeSpan?            graceDelay     = null,
+                              TimeSpan?            acquireTimeout = null,
+                              int                  maxError       = 5)
   {
     graceDelay_ = graceDelay;
     var logger = NullLogger.Instance;
@@ -127,6 +131,17 @@ public class TestPollsterProvider : IDisposable
                                                                                                                                                         .ToString()
                                                                                                                                                       : graceDelay
                                                                                                                                                         .ToString()
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.TimeoutBeforeNextAcquisition)}",
+                                                    acquireTimeout is null
+                                                      ? TimeSpan.FromSeconds(10)
+                                                                .ToString()
+                                                      : acquireTimeout.ToString()
+                                                  },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.MaxErrorAllowed)}",
+                                                    maxError.ToString()
                                                   },
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.SharedCacheFolder)}",
@@ -226,4 +241,24 @@ public class TestPollsterProvider : IDisposable
 
                   Lifetime.StopApplication();
                 });
+
+  public void AssertFailAfterError(int nbError = 1)
+  {
+    for (var i = 0; i < nbError; i++)
+    {
+      if (ExceptionManager.Failed)
+      {
+        Assert.Fail($"ExceptionManager failed after {i} errors while it was expected to failed after {nbError}");
+      }
+
+      ExceptionManager.RecordError(null,
+                                   null,
+                                   "Dummy Error");
+    }
+
+    if (!ExceptionManager.Failed)
+    {
+      Assert.Fail($"ExceptionManager did not failed while it was expected to failed after {nbError}");
+    }
+  }
 }

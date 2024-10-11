@@ -313,6 +313,8 @@ public class PollsterTest
     Assert.AreEqual(HealthStatus.Healthy,
                     (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
                                               .ConfigureAwait(false)).Status);
+
+    testServiceProvider.AssertFailAfterError(6);
   }
 
   [Test]
@@ -411,6 +413,8 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => stop);
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
+
+    testServiceProvider.AssertFailAfterError(6);
   }
 
   public class WaitWorkerStreamHandler : IWorkerStreamHandler
@@ -479,12 +483,119 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
-    Assert.False(testServiceProvider.ExceptionManager.Failed);
 
     Assert.AreEqual(TaskStatus.Completed,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                       CancellationToken.None)
                                              .ConfigureAwait(false));
+
+    testServiceProvider.AssertFailAfterError(6);
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task ExecuteTaskTimeoutAcquire()
+  {
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(1000);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage,
+                                                             TimeSpan.FromMilliseconds(100),
+                                                             TimeSpan.FromMilliseconds(100),
+                                                             0);
+
+    var (sessionId, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                            testServiceProvider.PartitionTable,
+                                                            testServiceProvider.ResultTable,
+                                                            testServiceProvider.SessionTable,
+                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
+
+    var expectedOutput3 = "ExpectedOutput3";
+    await testServiceProvider.ResultTable.Create(new[]
+                                                 {
+                                                   new Result(sessionId,
+                                                              expectedOutput3,
+                                                              "",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              0,
+                                                              Array.Empty<byte>()),
+                                                 },
+                                                 CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var requests = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                   sessionId,
+                                                                   new TaskOptions(),
+                                                                   new List<TaskRequest>
+                                                                   {
+                                                                     new(new[]
+                                                                         {
+                                                                           expectedOutput3,
+                                                                         },
+                                                                         new List<string>(),
+                                                                         new List<ReadOnlyMemory<byte>>
+                                                                         {
+                                                                           new(Encoding.ASCII.GetBytes("AAAA")),
+                                                                         }.ToAsyncEnumerable()),
+                                                                   }.ToAsyncEnumerable(),
+                                                                   CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    var sessionData = await testServiceProvider.SessionTable.GetSessionAsync(sessionId,
+                                                                             CancellationToken.None)
+                                               .ConfigureAwait(false);
+
+    await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
+                                                             sessionData,
+                                                             sessionId,
+                                                             CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var taskSubmitted2 = requests.First()
+                                 .TaskId;
+
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted2,
+                                                         })
+                              .ConfigureAwait(false);
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(2));
+
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
+    Assert.DoesNotThrowAsync(() => stop);
+
+    Assert.AreEqual(TaskStatus.Submitted,
+                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted2,
+                                                                      CancellationToken.None)
+                                             .ConfigureAwait(false));
+
+    testServiceProvider.AssertFailAfterError();
   }
 
   [Test]
@@ -535,6 +646,8 @@ public class PollsterTest
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                       CancellationToken.None)
                                              .ConfigureAwait(false));
+
+    testServiceProvider.AssertFailAfterError(5);
   }
 
   [Test]
@@ -593,7 +706,6 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => mainLoopTask);
     Assert.DoesNotThrowAsync(() => stop);
-    Assert.False(testServiceProvider.ExceptionManager.Failed);
 
     Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                   CancellationToken.None)
@@ -603,6 +715,8 @@ public class PollsterTest
 
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
+
+    testServiceProvider.AssertFailAfterError(5);
   }
 
   public static IEnumerable ExecuteTooManyErrorShouldFailTestCase
@@ -733,5 +847,7 @@ public class PollsterTest
                                              .ConfigureAwait(false));
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
+
+    testServiceProvider.AssertFailAfterError(5);
   }
 }
