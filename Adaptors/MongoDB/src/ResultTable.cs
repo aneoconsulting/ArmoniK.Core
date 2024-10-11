@@ -146,10 +146,11 @@ public class ResultTable : IResultTable
                                                                                     int                               pageSize,
                                                                                     CancellationToken                 cancellationToken = default)
   {
-    using var _                = Logger.LogFunction();
-    using var activity         = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
-    var       sessionHandle    = sessionProvider_.Get();
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var _             = Logger.LogFunction();
+    using var activity      = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
+    var       sessionHandle = sessionProvider_.Get();
+    var resultCollection = resultCollectionProvider_.Get()
+                                                    .WithReadPreference(ReadPreference.SecondaryPreferred);
 
 
     var resultList = Task.FromResult(new List<Result>());
