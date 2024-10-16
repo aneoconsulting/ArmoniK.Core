@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -67,10 +66,10 @@ public class InitDatabase
 
     Roles = initServices.Authentication.Roles.Select(Role.FromJson)
                         .OrderBy(role => role.Name)
-                        .Select(role => new RoleData(Guid.NewGuid()
-                                                         .ToString(),
-                                                     role.Name,
-                                                     role.Permissions.ToArray()))
+                        .Select((role,
+                                 i) => new RoleData(i,
+                                                    role.Name,
+                                                    role.Permissions.ToArray()))
                         .AsICollection();
 
     var roleDic = Roles.ToDictionary(data => data.RoleName,
@@ -78,11 +77,11 @@ public class InitDatabase
 
     Users = initServices.Authentication.Users.Select(User.FromJson)
                         .OrderBy(user => user.Name)
-                        .Select(user => new UserData(Guid.NewGuid()
-                                                         .ToString(),
-                                                     user.Name,
-                                                     user.Roles.Select(roleName => roleDic[roleName])
-                                                         .ToArray()))
+                        .Select((user,
+                                 i) => new UserData(i,
+                                                    user.Name,
+                                                    user.Roles.Select(roleName => roleDic[roleName])
+                                                        .ToArray()))
                         .AsICollection();
 
     var userDic = Users.ToDictionary(data => data.Username,
@@ -90,11 +89,11 @@ public class InitDatabase
 
     Auths = initServices.Authentication.UserCertificates.Select(Certificate.FromJson)
                         .OrderBy(certificate => (certificate.Fingerprint, certificate.CN))
-                        .Select(certificate => new AuthData(Guid.NewGuid()
-                                                                .ToString(),
-                                                            userDic[certificate.User],
-                                                            certificate.CN,
-                                                            certificate.Fingerprint))
+                        .Select((certificate,
+                                 i) => new AuthData(i,
+                                                    userDic[certificate.User],
+                                                    certificate.CN,
+                                                    certificate.Fingerprint))
                         .AsICollection();
 
     Partitions = initServices.Partitioning.Partitions.Select(Partition.FromJson)
