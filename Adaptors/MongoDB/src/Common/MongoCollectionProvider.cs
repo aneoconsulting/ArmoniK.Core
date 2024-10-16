@@ -125,9 +125,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
         catch (Exception ex)
         {
           lastException = ex;
-          logger.LogDebug(ex,
-                          "Retrying to create Collection {CollectionName}",
-                          model.CollectionName);
+          logger.LogWarning(ex,
+                            "Retrying to create Collection {CollectionName}",
+                            model.CollectionName);
           await Task.Delay(1000 * collectionRetry,
                            cancellationToken)
                     .ConfigureAwait(false);
@@ -172,9 +172,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       catch (Exception ex)
       {
         lastException = ex;
-        logger.LogDebug(ex,
-                        "Retrying to Initialize indexes for {CollectionName} collection",
-                        model.CollectionName);
+        logger.LogWarning(ex,
+                          "Retrying to Initialize indexes for {CollectionName} collection",
+                          model.CollectionName);
         await Task.Delay(1000 * indexRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
@@ -196,9 +196,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
         catch (Exception ex)
         {
           lastException = ex;
-          logger.LogDebug(ex,
-                          "Retrying to shard {CollectionName} collection",
-                          model.CollectionName);
+          logger.LogWarning(ex,
+                            "Retrying to shard {CollectionName} collection",
+                            model.CollectionName);
           await Task.Delay(1000 * indexRetry,
                            cancellationToken)
                     .ConfigureAwait(false);
@@ -219,17 +219,17 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
       catch (MongoBulkWriteException<TData> e) when (e.WriteErrors.All(error => error.Category == ServerErrorCategory.DuplicateKey))
       {
-        logger.LogDebug(e,
-                        "Values were already present within the collection {CollectionName}",
-                        model.CollectionName);
+        logger.LogWarning(e,
+                          "Values were already present within the collection {CollectionName}",
+                          model.CollectionName);
         break;
       }
       catch (Exception ex)
       {
         lastException = ex;
-        logger.LogDebug(ex,
-                        "Retrying to initialize {CollectionName} collection",
-                        model.CollectionName);
+        logger.LogWarning(ex,
+                          "Retrying to initialize {CollectionName} collection",
+                          model.CollectionName);
         await Task.Delay(1000 * indexRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
