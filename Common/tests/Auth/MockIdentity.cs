@@ -27,7 +27,7 @@ public class MockIdentity : UserIdentity
 {
   public readonly IEnumerable<MockCertificate> Certificates;
 
-  public MockIdentity(string                       userId,
+  public MockIdentity(int                          userId,
                       string                       username,
                       IEnumerable<MockCertificate> certificates,
                       IEnumerable<string>          roles,

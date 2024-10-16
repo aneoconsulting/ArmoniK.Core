@@ -109,7 +109,7 @@ public class AuthenticationTableTestBase
   {
     Roles = new List<RoleData>
             {
-              new("RoleId1",
+              new(11,
                   "Role1",
                   new[]
                   {
@@ -117,7 +117,7 @@ public class AuthenticationTableTestBase
                     "category1:name2",
                     "category2:name3",
                   }),
-              new("RoleId2",
+              new(12,
                   "Role2",
                   new[]
                   {
@@ -125,7 +125,7 @@ public class AuthenticationTableTestBase
                     "category1:name2:" + PermissionScope.AllUsersScope,
                     "category2:name4",
                   }),
-              new("RoleId3",
+              new(13,
                   "Role3",
                   new[]
                   {
@@ -133,20 +133,20 @@ public class AuthenticationTableTestBase
                     "category4:name2",
                     "category5:name3",
                   }),
-              new("RoleId4",
+              new(14,
                   "Role4",
                   Array.Empty<string>()),
             };
     Users = new List<UserData>
             {
-              new("UserId1",
+              new(21,
                   "User1",
                   new[]
                   {
                     Roles[0]
                       .RoleId,
                   }),
-              new("UserId2",
+              new(22,
                   "User2",
                   new[]
                   {
@@ -155,7 +155,7 @@ public class AuthenticationTableTestBase
                     Roles[1]
                       .RoleId,
                   }),
-              new("UserId3",
+              new(23,
                   "User3",
                   new[]
                   {
@@ -164,60 +164,60 @@ public class AuthenticationTableTestBase
                     Roles[2]
                       .RoleId,
                   }),
-              new("UserId4",
+              new(24,
                   "User4",
                   new[]
                   {
                     Roles[0]
                       .RoleId,
-                    "RoleIdDontExist",
+                    1000, // this one should not exist
                   }),
-              new("UserId5",
+              new(25,
                   "User5",
-                  Array.Empty<string>()),
+                  Array.Empty<int>()),
             };
     Auths = new List<AuthData>
             {
-              new("AuthId1",
+              new(31,
                   Users[0]
                     .UserId,
                   "CNUser1",
                   "Fingerprint1"),
-              new("AuthId2",
+              new(32,
                   Users[1]
                     .UserId,
                   "CNUser2",
                   "Fingerprint2"),
-              new("AuthId3",
+              new(33,
                   Users[1]
                     .UserId,
                   "CNUser3",
                   "Fingerprint3"),
-              new("AuthId4",
+              new(34,
                   Users[2]
                     .UserId,
                   "CNUser4",
                   "Fingerprint4"),
-              new("AuthId5",
+              new(35,
                   Users[3]
                     .UserId,
                   "CNUser5",
                   "Fingerprint5"),
-              new("AuthId6",
-                  "UserIdDontExist",
+              new(36,
+                  1000, // this user should not exist
                   "CNUser6",
                   "Fingerprint6"),
-              new("AuthId7",
+              new(37,
                   Users[1]
                     .UserId,
                   "CNUser2",
                   "Fingerprint7"),
-              new("AuthId8",
+              new(38,
                   Users[2]
                     .UserId,
                   "CNUserCommon",
                   null),
-              new("AuthId9",
+              new(39,
                   Users[3]
                     .UserId,
                   "CNUser2",
@@ -362,8 +362,8 @@ public class AuthenticationTableTestBase
                     ident.Username);
   }
 
-  [TestCase("UserIdDontExist")]
-  public void GetIdentityFromIdShouldFail(string id)
+  [TestCase(1000)]
+  public void GetIdentityFromIdShouldFail(int id)
   {
     if (!RunTests)
     {
