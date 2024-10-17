@@ -11,6 +11,7 @@ jobs:
     outputs:
       releases: ${{ steps.releases.outputs.releases }}
     steps:
+    - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
     - name: List last releases
       id: releases
       run: echo "releases:$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
@@ -36,7 +37,6 @@ jobs:
           - dockerhubaneo/armonik_core_bench_test_client
         version: ${{ fromJSON(needs.releases.outputs.releases) }}
     steps:
-    - uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
     - name: Login to Docker Hub
       uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
       with:
