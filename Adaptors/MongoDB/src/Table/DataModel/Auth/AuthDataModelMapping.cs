@@ -15,10 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Injection.Options.Database;
 
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -38,11 +40,9 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
       BsonClassMap.RegisterClassMap<AuthData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(AuthData.AuthId))
-                                                  .SetIsRequired(true)
-                                                  .SetSerializer(IdSerializer.Instance);
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(AuthData.UserId))
-                                                  .SetIsRequired(true)
-                                                  .SetSerializer(IdSerializer.Instance);
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(AuthData.Cn))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(AuthData.Fingerprint))
@@ -78,7 +78,21 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                     .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                    Options.MongoDB      options)
     => Task.CompletedTask;
+
+  /// <inheritdoc />
+  public async Task InitializeCollectionAsync(IClientSessionHandle       sessionHandle,
+                                              IMongoCollection<AuthData> collection,
+                                              InitDatabase               initDatabase)
+  {
+    if (initDatabase.Auths.Any())
+    {
+      await collection.InsertManyAsync(sessionHandle,
+                                       initDatabase.Auths)
+                      .ConfigureAwait(false);
+    }
+  }
 }
