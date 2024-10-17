@@ -2151,8 +2151,8 @@ public class TaskTableTestBase
     {
       var taskId = Guid.NewGuid()
                        .ToString();
-      var dd1 = "dependency.1";
-      var dd2 = "dependency.2";
+      var dd1 = "dependency1";
+      var dd2 = "dependency2";
 
       await TaskTable!.CreateTasks(new[]
                                    {

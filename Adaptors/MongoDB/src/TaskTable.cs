@@ -370,11 +370,11 @@ public class TaskTable : ITaskTable
     }
 
 
-    var key0   = TaskData.EscapeKey(deps.Current);
+    var key0   = deps.Current;
     var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
     while (deps.MoveNext())
     {
-      var key = TaskData.EscapeKey(deps.Current);
+      var key = deps.Current;
       update = update.Unset(data => data.RemainingDataDependencies[key]);
     }
 
