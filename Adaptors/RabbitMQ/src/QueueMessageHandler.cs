@@ -27,10 +27,10 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly BasicGetResult basicGetResult_;
-  private readonly IModel         channel_;
+  private readonly BasicGetResult    basicGetResult_;
+  private readonly IConnectionRabbit channel_;
 
-  public QueueMessageHandler(IModel            channel,
+  public QueueMessageHandler(IConnectionRabbit channel,
                              BasicGetResult    basicGetResult,
                              string            taskId,
                              CancellationToken cancellationToken)
@@ -58,8 +58,11 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public DateTime ReceptionDateTime { get; init; }
 
-  public ValueTask DisposeAsync()
+  public async ValueTask DisposeAsync()
   {
+    var connection = await channel_.GetConnectionAsync(CancellationToken.None)
+                                   .ConfigureAwait(false);
+
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
@@ -68,22 +71,22 @@ public class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Waiting:
         /* Negative acknowledging this message will send it
          to the retry exchange, see PullQueueStorage.cs */
-        channel_.BasicNack(basicGetResult_.DeliveryTag,
-                           false,
-                           true);
+        connection.BasicNack(basicGetResult_.DeliveryTag,
+                             false,
+                             true);
         break;
 
 
       case QueueMessageStatus.Cancelled:
       case QueueMessageStatus.Processed:
-        channel_.BasicAck(basicGetResult_.DeliveryTag,
-                          false);
+        connection.BasicAck(basicGetResult_.DeliveryTag,
+                            false);
         break;
 
       case QueueMessageStatus.Poisonous:
-        channel_.BasicNack(basicGetResult_.DeliveryTag,
-                           false,
-                           false);
+        connection.BasicNack(basicGetResult_.DeliveryTag,
+                             false,
+                             false);
         break;
 
       default:
@@ -93,7 +96,5 @@ public class QueueMessageHandler : IQueueMessageHandler
     }
 
     GC.SuppressFinalize(this);
-
-    return ValueTask.CompletedTask;
   }
 }

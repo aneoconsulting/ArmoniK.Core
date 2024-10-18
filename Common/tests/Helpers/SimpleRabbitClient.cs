@@ -32,15 +32,15 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 public class SimpleRabbitClient : IConnectionRabbit
 {
   private readonly ILoggerFactory loggerFactory_;
-  private          IConnection?   connection_;
+
+  private IModel?      channel_;
+  private IConnection? connection_;
 
   public SimpleRabbitClient()
   {
     loggerFactory_ = new LoggerFactory();
     loggerFactory_.AddProvider(new ConsoleForwardingLoggerProvider());
   }
-
-  public IModel? Channel { get; private set; }
 
   public void Dispose()
   {
@@ -49,9 +49,17 @@ public class SimpleRabbitClient : IConnectionRabbit
       connection_.Close();
     }
 
+    if (channel_ is not null && channel_.IsOpen)
+    {
+      channel_.Close();
+    }
+
     loggerFactory_.Dispose();
     GC.SuppressFinalize(this);
   }
+
+  public Task<IModel> GetConnectionAsync(CancellationToken cancellationToken = default)
+    => Task.FromResult(channel_!);
 
   public Task Init(CancellationToken cancellation)
   {
@@ -62,13 +70,13 @@ public class SimpleRabbitClient : IConnectionRabbit
                             };
 
     connection_ = connectionFactory.CreateConnection();
-    Channel     = connection_!.CreateModel();
+    channel_    = connection_!.CreateModel();
 
     return Task.CompletedTask;
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(connection_ is not null && connection_.IsOpen && Channel is not null && Channel.IsOpen
+    => Task.FromResult(connection_ is not null && connection_.IsOpen && channel_ is not null && channel_.IsOpen
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
 }

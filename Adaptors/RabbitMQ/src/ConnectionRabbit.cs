@@ -37,27 +37,30 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 [UsedImplicitly]
 public class ConnectionRabbit : IConnectionRabbit
 {
-  private readonly AsyncLazy                 connectionTask_;
-  private readonly ILogger<ConnectionRabbit> logger_;
-
-  private readonly Amqp options_;
-
-  private bool isInitialized_;
+  private readonly ExecutionSingleizer<IModel> connectionSingleizer_ = new();
+  private readonly ConnectionFactory           factory_;
+  private readonly ILogger<ConnectionRabbit>   logger_;
+  private readonly Amqp                        options_;
+  private          bool                        isInitialized_;
+  private          IModel?                     model_;
 
   public ConnectionRabbit(Amqp                      options,
                           ILogger<ConnectionRabbit> logger)
   {
-    logger_         = logger;
-    options_        = options;
-    connectionTask_ = new AsyncLazy(() => InitTask(this));
+    logger_  = logger;
+    options_ = options;
+    factory_ = new ConnectionFactory
+               {
+                 UserName               = options.User,
+                 Password               = options.Password,
+                 HostName               = options.Host,
+                 Port                   = options.Port,
+                 DispatchConsumersAsync = true,
+               };
   }
 
-  private IConnection? Connection { get; set; }
-
-  public IModel? Channel { get; private set; }
-
-  public async Task Init(CancellationToken cancellationToken = default)
-    => await connectionTask_;
+  public Task Init(CancellationToken cancellationToken = default)
+    => GetConnectionAsync(cancellationToken);
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
@@ -65,7 +68,7 @@ public class ConnectionRabbit : IConnectionRabbit
          HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
                                                                                  ? HealthCheckResult.Healthy()
                                                                                  : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized.")),
-         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && Connection is not null && Connection.IsOpen && Channel is not null && Channel.IsOpen
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && model_ is not null && model_.IsOpen
                                                       ? HealthCheckResult.Healthy()
                                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} not initialized or connection dropped.")),
          _ => throw new ArgumentOutOfRangeException(nameof(tag),
@@ -77,33 +80,52 @@ public class ConnectionRabbit : IConnectionRabbit
   {
     if (isInitialized_)
     {
-      Channel!.Close();
-      Connection!.Close();
-
-      Channel.Dispose();
-      Connection.Dispose();
+      model_!.Close();
+      model_!.Dispose();
     }
+
+    connectionSingleizer_.Dispose();
 
     GC.SuppressFinalize(this);
   }
 
-  private async Task InitTask(ConnectionRabbit  conn,
-                              CancellationToken cancellationToken = default)
+
+  public async Task<IModel> GetConnectionAsync(CancellationToken cancellationToken = default)
   {
-    var factory = new ConnectionFactory
-                  {
-                    UserName               = conn.options_.User,
-                    Password               = conn.options_.Password,
-                    HostName               = conn.options_.Host,
-                    Port                   = conn.options_.Port,
-                    DispatchConsumersAsync = true,
-                  };
+    if (model_ is not null && !model_.IsClosed)
+    {
+      return model_;
+    }
 
+    return await connectionSingleizer_.Call(async token =>
+                                            {
+                                              // this is needed to resolve TOCTOU problem
+                                              if (model_ is not null && !model_.IsClosed)
+                                              {
+                                                return model_;
+                                              }
 
-    if (options_.Scheme.Equals("AMQPS"))
+                                              var conn = await CreateConnection(options_,
+                                                                                factory_,
+                                                                                logger_,
+                                                                                token)
+                                                           .ConfigureAwait(false);
+                                              model_ = conn;
+                                              return conn;
+                                            },
+                                            cancellationToken)
+                                      .ConfigureAwait(false);
+  }
+
+  private static async Task<IModel> CreateConnection(Amqp              options,
+                                                     ConnectionFactory factory,
+                                                     ILogger           logger,
+                                                     CancellationToken cancellationToken = default)
+  {
+    if (options.Scheme.Equals("AMQPS"))
     {
       factory.Ssl.Enabled    = true;
-      factory.Ssl.ServerName = conn.options_.Host;
+      factory.Ssl.ServerName = options.Host;
       factory.Ssl.CertificateValidationCallback = delegate(object           _,
                                                            X509Certificate? _,
                                                            X509Chain?       _,
@@ -111,51 +133,46 @@ public class ConnectionRabbit : IConnectionRabbit
                                                   {
                                                     switch (errors)
                                                     {
-                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when conn.options_.AllowHostMismatch:
+                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
                                                       case SslPolicyErrors.None:
                                                         return true;
                                                       default:
-                                                        logger_.LogError("SSL error : {error}",
-                                                                         errors);
+                                                        logger.LogError("SSL error : {error}",
+                                                                        errors);
                                                         return false;
                                                     }
                                                   };
     }
 
     var retry = 0;
-    for (; retry < conn.options_.MaxRetries; retry++)
+    for (; retry < options.MaxRetries; retry++)
     {
       try
       {
-        conn.Connection = factory.CreateConnection();
-        conn.Connection.ConnectionShutdown += (_,
-                                               ea) => OnShutDown(ea,
-                                                                 "Connection",
-                                                                 logger_);
+        var connection = factory.CreateConnection();
+        connection.ConnectionShutdown += (_,
+                                          ea) => OnShutDown(ea,
+                                                            "Connection",
+                                                            logger);
 
-        Channel = conn.Connection.CreateModel();
-        Channel.ModelShutdown += (_,
-                                  ea) => OnShutDown(ea,
-                                                    "Channel",
-                                                    logger_);
-        break;
+        var model = connection.CreateModel();
+        model.ModelShutdown += (_,
+                                ea) => OnShutDown(ea,
+                                                  "Channel",
+                                                  logger);
+        return model;
       }
       catch (Exception ex)
       {
-        logger_.LogInformation(ex,
-                               "Retrying to create connection");
+        logger.LogInformation(ex,
+                              "Retrying to create connection");
         await Task.Delay(1000 * retry,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
     }
 
-    if (retry == conn.options_.MaxRetries)
-    {
-      throw new TimeoutException($"{nameof(conn.options_.MaxRetries)} reached");
-    }
-
-    conn.isInitialized_ = true;
+    throw new TimeoutException($"{nameof(options.MaxRetries)} reached");
   }
 
   private static void OnShutDown(ShutdownEventArgs ea,

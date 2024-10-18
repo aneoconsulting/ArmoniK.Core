@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 
@@ -25,5 +27,5 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public interface IConnectionRabbit : IInitializable, IDisposable
 {
-  public IModel? Channel { get; }
+  Task<IModel> GetConnectionAsync(CancellationToken cancellationToken = default);
 }
