@@ -13,13 +13,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Grpc.Core.Api" Version="2.62.0">
+    <PackageReference Include="Grpc.Core.Api" Version="2.66.0">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Grpc.Net.Client" Version="2.62.0">
+    <PackageReference Include="Grpc.Net.Client" Version="2.66.0">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Grpc.Net.Common" Version="2.62.0">
+    <PackageReference Include="Grpc.Net.Common" Version="2.66.0">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="JetBrains.Annotations" Version="2024.2.0">
@@ -40,8 +40,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Google.Protobuf" Version="3.26.1" />
-    <PackageReference Include="Google.Cloud.PubSub.V1" Version="3.12.0" />
+    <PackageReference Include="Google.Protobuf" Version="3.28.2" />
+    <PackageReference Include="Google.Cloud.PubSub.V1" Version="3.18.0" />
   </ItemGroup>
 
   <ItemGroup>
