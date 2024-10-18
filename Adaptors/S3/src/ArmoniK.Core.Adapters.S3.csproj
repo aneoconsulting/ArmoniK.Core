@@ -11,8 +11,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.307.20" />
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.300.80" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.405" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.400.36" />
   </ItemGroup>
 
   <ItemGroup>
