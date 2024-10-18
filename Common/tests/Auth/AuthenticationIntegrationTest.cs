@@ -422,7 +422,7 @@ public class AuthenticationIntegrationTest
     {
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationIdHeader,
                   (int)impersonate < 0
-                    ? "1000"
+                    ? "404"
                     : Identities[(int)impersonate]
                       .UserId.ToString());
     }

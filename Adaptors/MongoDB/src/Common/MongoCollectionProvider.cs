@@ -219,9 +219,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
       catch (MongoBulkWriteException<TData> e) when (e.WriteErrors.All(error => error.Category == ServerErrorCategory.DuplicateKey))
       {
-        logger.LogWarning(e,
-                          "Values were already present within the collection {CollectionName}",
-                          model.CollectionName);
+        logger.LogDebug(e,
+                        "Values were already present within the collection {CollectionName}",
+                        model.CollectionName);
         break;
       }
       catch (Exception ex)
