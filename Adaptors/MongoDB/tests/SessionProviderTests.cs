@@ -23,6 +23,9 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
+using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
 
@@ -88,6 +91,9 @@ public class SessionProviderTests
                               logger);
     services.AddSingleton(ActivitySource);
     services.AddTransient<IMongoClient>(_ => client_);
+    services.AddInitializedOption<InitServices>(configuration,
+                                                InitServices.SettingSection);
+    services.AddSingleton<InitDatabase>();
     services.AddLogging();
 
     provider_ = services.BuildServiceProvider(new ServiceProviderOptions
