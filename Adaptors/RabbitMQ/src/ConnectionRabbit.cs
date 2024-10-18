@@ -38,6 +38,7 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 public class ConnectionRabbit : IConnectionRabbit
 {
   private readonly ExecutionSingleizer<IModel> connectionSingleizer_ = new();
+  private readonly ConnectionFactory           factory_;
   private readonly ILogger<ConnectionRabbit>   logger_;
   private readonly Amqp                        options_;
   private          bool                        isInitialized_;
@@ -48,6 +49,14 @@ public class ConnectionRabbit : IConnectionRabbit
   {
     logger_  = logger;
     options_ = options;
+    factory_ = new ConnectionFactory
+               {
+                 UserName               = options.User,
+                 Password               = options.Password,
+                 HostName               = options.Host,
+                 Port                   = options.Port,
+                 DispatchConsumersAsync = true,
+               };
   }
 
   public Task Init(CancellationToken cancellationToken = default)
@@ -97,6 +106,7 @@ public class ConnectionRabbit : IConnectionRabbit
                                               }
 
                                               var conn = await CreateConnection(options_,
+                                                                                factory_,
                                                                                 logger_,
                                                                                 token)
                                                            .ConfigureAwait(false);
@@ -108,19 +118,10 @@ public class ConnectionRabbit : IConnectionRabbit
   }
 
   private static async Task<IModel> CreateConnection(Amqp              options,
+                                                     ConnectionFactory factory,
                                                      ILogger           logger,
                                                      CancellationToken cancellationToken = default)
   {
-    var factory = new ConnectionFactory
-                  {
-                    UserName               = options.User,
-                    Password               = options.Password,
-                    HostName               = options.Host,
-                    Port                   = options.Port,
-                    DispatchConsumersAsync = true,
-                  };
-
-
     if (options.Scheme.Equals("AMQPS"))
     {
       factory.Ssl.Enabled    = true;

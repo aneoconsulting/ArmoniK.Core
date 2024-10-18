@@ -90,25 +90,27 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                       },
                     };
 
-    (await ConnectionRabbit.GetConnectionAsync(cancellationToken)
-                           .ConfigureAwait(false)).QueueDeclare(partitionId,
-                                                                false, /* to survive broker restart */
-                                                                false, /* used by multiple connections */
-                                                                false, /* not deleted when last consumer unsubscribes (if it has had one) */
-                                                                queueArgs);
+    var connection = await ConnectionRabbit.GetConnectionAsync(CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+    connection.QueueDeclare(partitionId,
+                            false, /* to survive broker restart */
+                            false, /* used by multiple connections */
+                            false, /* not deleted when last consumer unsubscribes (if it has had one) */
+                            queueArgs);
 
     foreach (var msg in messages)
     {
-      var basicProperties = (await ConnectionRabbit.GetConnectionAsync(cancellationToken)
-                                                   .ConfigureAwait(false)).CreateBasicProperties();
+      connection = await ConnectionRabbit.GetConnectionAsync(CancellationToken.None)
+                                         .ConfigureAwait(false);
+      var basicProperties = connection.CreateBasicProperties();
       basicProperties.Priority = Convert.ToByte(priority);
       basicProperties.MessageId = Guid.NewGuid()
                                       .ToString();
-      (await ConnectionRabbit.GetConnectionAsync(cancellationToken)
-                             .ConfigureAwait(false)).BasicPublish("",
-                                                                  partitionId,
-                                                                  basicProperties,
-                                                                  Encoding.UTF8.GetBytes(msg.TaskId));
+      connection.BasicPublish("",
+                              partitionId,
+                              basicProperties,
+                              Encoding.UTF8.GetBytes(msg.TaskId));
     }
   }
 }

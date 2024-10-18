@@ -69,12 +69,15 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                       },
                     };
 
-    (await ConnectionRabbit.GetConnectionAsync(cancellationToken)
-                           .ConfigureAwait(false)).QueueDeclare(Options!.PartitionId,
-                                                                false, /* to survive broker restart */
-                                                                false, /* used by multiple connections */
-                                                                false, /* not deleted when last consumer unsubscribes (if it has had one) */
-                                                                queueArgs);
+    var connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
+                                           .ConfigureAwait(false);
+
+    connection.QueueDeclare(Options!.PartitionId,
+                            false, /* to survive broker restart */
+                            false, /* used by multiple connections */
+                            false, /* not deleted when last consumer unsubscribes (if it has had one) */
+                            queueArgs);
+
     IsInitialized = true;
   }
 
@@ -92,9 +95,11 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     {
       cancellationToken.ThrowIfCancellationRequested();
 
-      var message = (await ConnectionRabbit.GetConnectionAsync(cancellationToken)
-                                           .ConfigureAwait(false)).BasicGet(Options.PartitionId,
-                                                                            false);
+      var connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
+                                             .ConfigureAwait(false);
+
+      var message = connection.BasicGet(Options.PartitionId,
+                                        false);
 
       if (message is null)
       {

@@ -60,6 +60,9 @@ public class QueueMessageHandler : IQueueMessageHandler
 
   public async ValueTask DisposeAsync()
   {
+    var connection = await channel_.GetConnectionAsync(CancellationToken.None)
+                                   .ConfigureAwait(false);
+
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
@@ -68,25 +71,22 @@ public class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Waiting:
         /* Negative acknowledging this message will send it
          to the retry exchange, see PullQueueStorage.cs */
-        (await channel_.GetConnectionAsync(CancellationToken)
-                       .ConfigureAwait(false)).BasicNack(basicGetResult_.DeliveryTag,
-                                                         false,
-                                                         true);
+        connection.BasicNack(basicGetResult_.DeliveryTag,
+                             false,
+                             true);
         break;
 
 
       case QueueMessageStatus.Cancelled:
       case QueueMessageStatus.Processed:
-        (await channel_.GetConnectionAsync(CancellationToken)
-                       .ConfigureAwait(false)).BasicAck(basicGetResult_.DeliveryTag,
-                                                        false);
+        connection.BasicAck(basicGetResult_.DeliveryTag,
+                            false);
         break;
 
       case QueueMessageStatus.Poisonous:
-        (await channel_.GetConnectionAsync(CancellationToken)
-                       .ConfigureAwait(false)).BasicNack(basicGetResult_.DeliveryTag,
-                                                         false,
-                                                         false);
+        connection.BasicNack(basicGetResult_.DeliveryTag,
+                             false,
+                             false);
         break;
 
       default:
