@@ -21,9 +21,8 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
 
-using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -93,10 +92,8 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_.Confidential()));
+    var objectStorageFullName = $"{objectStorageName_}{key}";
+
     try
     {
       await s3Client_.GetObjectAsync(options_.BucketName,
@@ -167,10 +164,6 @@ public class ObjectStorage : IObjectStorage
                  .ConfigureAwait(false);
 
   /// <inheritdoc />
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
-
-  /// <inheritdoc />
   public async Task<long> AddOrUpdateAsync(string                                 key,
                                            IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                            CancellationToken                      cancellationToken = default)
@@ -180,10 +173,8 @@ public class ObjectStorage : IObjectStorage
     {
       0,
     };
-    var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_.Confidential()));
+    var objectStorageFullName = $"{objectStorageName_}{key}";
+
     logger_.LogDebug("Upload object");
     var initRequest = new InitiateMultipartUploadRequest
                       {
@@ -240,10 +231,8 @@ public class ObjectStorage : IObjectStorage
   private async Task TryDeleteAsync(string            key,
                                     CancellationToken cancellationToken = default)
   {
-    var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_.Confidential()));
+    var objectStorageFullName = $"{objectStorageName_}{key}";
+
     var objectDeleteRequest = new DeleteObjectRequest
                               {
                                 BucketName = options_.BucketName,

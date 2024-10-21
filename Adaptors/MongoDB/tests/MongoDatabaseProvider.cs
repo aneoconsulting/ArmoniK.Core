@@ -83,9 +83,6 @@ internal class MongoDatabaseProvider : IDisposable
                                                     $"{Components.SettingSection}:{nameof(Components.TableStorage)}", "ArmoniK.Adapters.MongoDB.TableStorage"
                                                   },
                                                   {
-                                                    $"{Components.SettingSection}:{nameof(Components.ObjectStorage)}", "ArmoniK.Adapters.MongoDB.ObjectStorage"
-                                                  },
-                                                  {
                                                     $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
                                                     "ArmoniK.Adapters.MongoDB.AuthenticationTable"
                                                   },
