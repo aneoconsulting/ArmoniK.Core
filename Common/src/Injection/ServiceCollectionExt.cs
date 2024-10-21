@@ -80,35 +80,37 @@ public static class ServiceCollectionExt
     return services;
   }
 
-  public static IServiceCollection AddQueue(this IServiceCollection services,
-                                            ConfigurationManager    configuration,
-                                            ILogger                 logger)
+  public static IServiceCollection AddAdapter(this IServiceCollection services,
+                                              ConfigurationManager    configuration,
+                                              string                  storage,
+                                              ILogger                 logger)
   {
-    var queueSettings = configuration.GetRequiredValue<AdapterSettings>($"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}");
+    var settings = configuration.GetRequiredValue<AdapterSettings>($"{Components.SettingSection}:{storage}");
 
-    logger.LogInformation("Queue settings for loading adapter {@queueSettings}",
-                          queueSettings);
+    logger.LogInformation("{storage} settings for loading adapter {@settings}",
+                          storage,
+                          settings);
     logger.LogDebug("{path}",
-                    queueSettings.AdapterAbsolutePath);
+                    settings.AdapterAbsolutePath);
     logger.LogDebug("{class}",
-                    queueSettings.ClassName);
+                    settings.ClassName);
 
-    if (string.IsNullOrEmpty(queueSettings.AdapterAbsolutePath))
+    if (string.IsNullOrEmpty(settings.AdapterAbsolutePath))
     {
-      throw new InvalidOperationException($"{nameof(queueSettings.AdapterAbsolutePath)} should not be null or empty.");
+      throw new InvalidOperationException($"{nameof(settings.AdapterAbsolutePath)} should not be null or empty.");
     }
 
-    if (string.IsNullOrEmpty(queueSettings.ClassName))
+    if (string.IsNullOrEmpty(settings.ClassName))
     {
-      throw new InvalidOperationException($"{nameof(queueSettings.ClassName)} should not be null or empty.");
+      throw new InvalidOperationException($"{nameof(settings.ClassName)} should not be null or empty.");
     }
 
-    var ctx      = new AdapterLoadContext(queueSettings.AdapterAbsolutePath);
-    var assembly = ctx.LoadFromAssemblyName(AssemblyName.GetAssemblyName(queueSettings.AdapterAbsolutePath));
+    var ctx      = new AdapterLoadContext(settings.AdapterAbsolutePath);
+    var assembly = ctx.LoadFromAssemblyName(AssemblyName.GetAssemblyName(settings.AdapterAbsolutePath));
     logger.LogInformation("Loaded assembly {assemblyName}",
                           assembly.FullName);
 
-    var type = assembly.GetType(queueSettings.ClassName,
+    var type = assembly.GetType(settings.ClassName,
                                 true,
                                 true);
 
