@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 
 using Destructurama;
 
@@ -43,8 +44,8 @@ public class LoggerInit
                                                     .WriteTo.Console(new CompactJsonFormatter())
                                                     .Enrich.FromLogContext()
                                                     .Enrich.WithProperty("CoreVersion",
-                                                                         typeof(LoggerInit).Assembly.GetName()
-                                                                                           .Version?.ToString() ?? "Unknown")
+                                                                         FileVersionInfo.GetVersionInfo(typeof(LoggerInit).Assembly.Location)
+                                                                                        .ProductVersion ?? "Unknown")
                                                     .Enrich.WithProperty("InstanceId",
                                                                          instanceId)
                                                     .Destructure.UsingAttributes()
