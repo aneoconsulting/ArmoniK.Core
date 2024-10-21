@@ -52,11 +52,4 @@ public class SimpleObjectStorage : IObjectStorage
   public Task TryDeleteAsync(IEnumerable<string> keys,
                              CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
-
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => new List<string>
-       {
-         "key1",
-         "key2",
-       }.ToAsyncEnumerable();
 }

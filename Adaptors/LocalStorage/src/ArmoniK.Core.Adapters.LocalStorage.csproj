@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
     <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64</RuntimeIdentifiers>
@@ -10,10 +10,18 @@
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <IsPackable>true</IsPackable>
     <Nullable>enable</Nullable>
+    <EnableDynamicLoading>true</EnableDynamicLoading>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
+    <ProjectReference Include="..\..\..\Utils\src\ArmoniK.Core.Utils.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Base\src\ArmoniK.Core.Base.csproj">
+      <Private>false</Private>
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </ProjectReference>
   </ItemGroup>
 
   <ItemGroup>

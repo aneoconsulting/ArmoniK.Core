@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 

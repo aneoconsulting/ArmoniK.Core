@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
 using ArmoniK.Core.Common.Utils;
@@ -35,12 +37,25 @@ public class ObjectStorageTests : ObjectStorageTestBase
     RunTests      = false;
   }
 
+  private static readonly string SolutionRoot =
+    Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(typeof(ObjectStorageTests)
+                                                                                                                                                .Assembly
+                                                                                                                                                .Location))))) ??
+                                  string.Empty));
+
+  private static readonly string S3Path =
+    $"{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.S3.dll";
+
+
   protected override void GetObjectStorageInstance()
   {
     Dictionary<string, string?> minimalConfig = new()
                                                 {
                                                   {
-                                                    "Components:ObjectStorage", "ArmoniK.Adapters.S3.ObjectStorage"
+                                                    "Components:ObjectStorageAdaptorSettings:ClassName", "ArmoniK.Core.Adapters.S3.ObjectBuilder"
+                                                  },
+                                                  {
+                                                    "Components:ObjectStorageAdaptorSettings:AdapterAbsolutePath", $"{SolutionRoot}{S3Path}"
                                                   },
                                                   {
                                                     "S3:BucketName", "miniobucket"
@@ -66,10 +81,9 @@ public class ObjectStorageTests : ObjectStorageTestBase
     services.AddLogging();
     var logger = new LoggerInit(configuration);
 
-    services.AddS3(configuration,
-                   logger.GetLogger());
-
-    services.AddSingleton<IObjectStorage, ObjectStorage>();
+    services.AddAdapter(configuration,
+                        nameof(Components.ObjectStorageAdaptorSettings),
+                        logger.GetLogger());
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {

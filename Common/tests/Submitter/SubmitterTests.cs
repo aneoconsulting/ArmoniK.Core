@@ -95,10 +95,6 @@ public class SubmitterTests
                                                     "00:00:10"
                                                   },
                                                   {
-                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                    "14000"
-                                                  },
-                                                  {
                                                     $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                   },
                                                   {

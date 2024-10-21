@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -22,7 +22,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Base.Exceptions;
 
 using Grpc.Core;
 

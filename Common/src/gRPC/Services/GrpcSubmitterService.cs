@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;

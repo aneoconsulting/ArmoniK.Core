@@ -54,9 +54,6 @@ public class ObjectStorageTests : ObjectStorageTestBase
     Dictionary<string, string?> minimalConfig = new()
                                                 {
                                                   {
-                                                    "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
-                                                  },
-                                                  {
                                                     "Redis:MaxRetry", "5"
                                                   },
                                                 };

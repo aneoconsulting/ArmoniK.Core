@@ -15,8 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Api.Common.Utils;
-using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
@@ -28,26 +27,21 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.LocalStorage;
 
-public static class ServiceCollectionExt
+/// <summary>
+///   Class for building RabbitMQ object and Queue interfaces through Dependency Injection
+/// </summary>
+[PublicAPI]
+public class ObjectBuilder : IDependencyInjectionBuildable
 {
+  /// <inheritdoc />
   [PublicAPI]
-  public static IServiceCollection AddLocalStorage(this IServiceCollection serviceCollection,
-                                                   ConfigurationManager    configuration,
-                                                   ILogger                 logger)
+  public void Build(IServiceCollection   serviceCollection,
+                    ConfigurationManager configuration,
+                    ILogger              logger)
   {
-    var components = configuration.GetSection(Components.SettingSection);
-
-    if (components["ObjectStorage"] != "ArmoniK.Adapters.LocalStorage.ObjectStorage")
-    {
-      return serviceCollection;
-    }
-
     serviceCollection.AddOption(configuration,
                                 Options.LocalStorage.SettingSection,
                                 out Options.LocalStorage storageOptions);
-
-    using var _ = logger.BeginNamedScope("Object Local configuration",
-                                         ("Path", storageOptions.Path));
 
     logger.LogDebug("setup local storage");
 
@@ -55,7 +49,5 @@ public static class ServiceCollectionExt
                                                                   sp => new ObjectStorage(storageOptions.Path,
                                                                                           storageOptions.ChunkSize,
                                                                                           sp.GetRequiredService<ILogger<ObjectStorage>>()));
-
-    return serviceCollection;
   }
 }

@@ -15,32 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.TestBase;
+using System;
 
-using Microsoft.Extensions.DependencyInjection;
+namespace ArmoniK.Core.Base.Exceptions;
 
-using NUnit.Framework;
-
-namespace ArmoniK.Core.Adapters.MongoDB.Tests;
-
-[TestFixture]
-public class ObjectStorageTests : ObjectStorageTestBase
+[Serializable]
+public class ObjectDataNotFoundException : ArmoniKException
 {
-  public override void TearDown()
+  public ObjectDataNotFoundException()
   {
-    ObjectStorage = null;
-    tableProvider_?.Dispose();
-    RunTests = false;
   }
 
-  private MongoDatabaseProvider? tableProvider_;
-
-  protected override void GetObjectStorageInstance()
+  public ObjectDataNotFoundException(string message)
+    : base(message)
   {
-    tableProvider_ = new MongoDatabaseProvider(serviceConfigurator: collection => collection.AddSingleton<IObjectStorage, ObjectStorage>());
-    var provider = tableProvider_.GetServiceProvider();
-    ObjectStorage = provider.GetRequiredService<IObjectStorage>();
-    RunTests      = true;
+  }
+
+  public ObjectDataNotFoundException(string    message,
+                                     Exception innerException)
+    : base(message,
+           innerException)
+  {
   }
 }

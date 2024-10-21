@@ -22,9 +22,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -91,9 +90,8 @@ public class ObjectStorage : IObjectStorage
                                            IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                            CancellationToken                      cancellationToken = default)
   {
-    long      size           = 0;
-    var       storageNameKey = objectStorageName_ + key;
-    using var _              = logger_.LogFunction(storageNameKey);
+    long size           = 0;
+    var  storageNameKey = objectStorageName_ + key;
 
     var idx      = 0;
     var taskList = new List<Task>();
@@ -119,7 +117,6 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
     var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
                   .ConfigureAwait(false);
 
@@ -151,14 +148,9 @@ public class ObjectStorage : IObjectStorage
                                                         cancellationToken))
                  .ConfigureAwait(false);
 
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
-
   private async Task TryDeleteAsync(string            key,
                                     CancellationToken cancellationToken = default)
   {
-    using var _ = logger_.LogFunction(objectStorageName_ + key);
     var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
                   .ConfigureAwait(false);
 
