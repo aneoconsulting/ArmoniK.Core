@@ -21,7 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Base.Exceptions;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -69,13 +69,4 @@ public interface IObjectStorage : IInitializable
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
   Task TryDeleteAsync(IEnumerable<string> keys,
                       CancellationToken   cancellationToken = default);
-
-  /// <summary>
-  ///   List data in the Object Storage
-  /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The keys representing data found in the Object Storage
-  /// </returns>
-  IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default);
 }

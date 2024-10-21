@@ -22,9 +22,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -102,7 +101,6 @@ public class ObjectStorage : IObjectStorage
     var filename = Path.Combine(path_,
                                 key);
 
-    using var _ = logger_.LogFunction(filename);
 
     // Write to temporary file
     await using var file = File.Open(filename,
@@ -144,8 +142,6 @@ public class ObjectStorage : IObjectStorage
   {
     var filename = Path.Combine(path_,
                                 key);
-
-    using var _ = logger_.LogFunction(filename);
 
     if (!File.Exists(filename))
     {
@@ -198,17 +194,11 @@ public class ObjectStorage : IObjectStorage
     }
   }
 
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
-
   public Task<bool> TryDeleteAsync(string            key,
                                    CancellationToken cancellationToken = default)
   {
     var filename = Path.Combine(path_,
                                 key);
-
-    using var _ = logger_.LogFunction(filename);
 
     File.Delete(filename);
 
