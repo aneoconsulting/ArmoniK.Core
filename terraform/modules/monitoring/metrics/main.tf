@@ -20,4 +20,13 @@ resource "docker_container" "metrics" {
     internal = 1080
     external = var.exposed_port
   }
+
+  wait = true
+  healthcheck {
+    test         = ["CMD", "/healthchecker/ArmoniK.Core.HealthChecker.exe"]
+    interval     = "5s"
+    timeout      = "3s"
+    start_period = "20s"
+    retries      = 5
+  }
 }
