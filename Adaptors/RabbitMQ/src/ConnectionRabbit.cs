@@ -41,7 +41,6 @@ public class ConnectionRabbit : IConnectionRabbit
   private readonly ConnectionFactory           factory_;
   private readonly ILogger<ConnectionRabbit>   logger_;
   private readonly Amqp                        options_;
-  private          bool                        isInitialized_;
   private          IModel?                     model_;
 
   public ConnectionRabbit(Amqp                      options,
@@ -65,10 +64,10 @@ public class ConnectionRabbit : IConnectionRabbit
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
        {
-         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+         HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(model_ is not null
                                                                                  ? HealthCheckResult.Healthy()
                                                                                  : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} is not yet initialized.")),
-         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && model_ is not null && model_.IsOpen
+         HealthCheckTag.Liveness => Task.FromResult(model_ is not null && model_.IsOpen
                                                       ? HealthCheckResult.Healthy()
                                                       : HealthCheckResult.Unhealthy($"{nameof(ConnectionRabbit)} not initialized or connection dropped.")),
          _ => throw new ArgumentOutOfRangeException(nameof(tag),
@@ -78,11 +77,8 @@ public class ConnectionRabbit : IConnectionRabbit
 
   public void Dispose()
   {
-    if (isInitialized_)
-    {
-      model_!.Close();
-      model_!.Dispose();
-    }
+    model_?.Close();
+    model_?.Dispose();
 
     connectionSingleizer_.Dispose();
 
