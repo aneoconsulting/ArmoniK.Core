@@ -37,7 +37,7 @@ resource "docker_container" "submitter" {
 
   wait = true
   healthcheck {
-    test         = ["CMD", "/healthchecker/ArmoniK.Core.HealthChecker.exe", "http://localhost:1081/liveness"]
+    test         = ["CMD", "/healthchecker/ArmoniK.Core.HealthChecker.exe", "http://127.0.0.1:1081/liveness"]
     interval     = "5s"
     timeout      = "3s"
     start_period = "20s"

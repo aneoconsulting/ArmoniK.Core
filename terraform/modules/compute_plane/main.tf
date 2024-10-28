@@ -76,7 +76,7 @@ resource "docker_container" "polling_agent" {
   }
 
   healthcheck {
-    test         = ["CMD", "/healthchecker/ArmoniK.Core.HealthChecker.exe"]
+    test         = ["CMD", "/healthchecker/ArmoniK.Core.HealthChecker.exe", "http://127.0.0.1:1080/liveness"]
     interval     = "5s"
     timeout      = "3s"
     start_period = "20s"
