@@ -15,35 +15,31 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Stream.Worker;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public class SimpleWorkerStreamHandler : IWorkerStreamHandler
+public class WrapperAgentHandler : IAgentHandler
 {
-  public Output Output = new(OutputStatus.Success,
-                             "");
+  private readonly IAgent agent_;
 
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
+  public WrapperAgentHandler(IAgent agent)
+    => agent_ = agent;
 
-  public Task Init(CancellationToken cancellationToken)
+  public Task Stop(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public void Dispose()
-    => GC.SuppressFinalize(this);
-
-  public Task<Output> StartTaskProcessing(TaskData          taskData,
-                                          string            token,
-                                          string            dataFolder,
-                                          CancellationToken cancellationToken)
-    => Task.FromResult(Output);
+  public Task<IAgent> Start(string            token,
+                            ILogger           logger,
+                            SessionData       sessionData,
+                            TaskData          taskData,
+                            string            folder,
+                            CancellationToken cancellationToken)
+    => Task.FromResult(agent_);
 }
