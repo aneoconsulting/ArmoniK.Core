@@ -707,12 +707,21 @@ public sealed class TaskHandler : IAsyncDisposable
   ///   The metadata of the task
   /// </returns>
   public TaskInfo GetAcquiredTaskInfo()
+    => GetAcquiredTaskInfoOrNull() ?? throw new ArmoniKException("TaskData should not be null after successful acquisition");
+
+  /// <summary>
+  ///   Get the meta data of the acquired task
+  /// </summary>
+  /// <returns>
+  ///   The metadata of the task or null
+  /// </returns>
+  public TaskInfo? GetAcquiredTaskInfoOrNull()
     => taskData_ is not null
          ? new TaskInfo(taskData_.SessionId,
                         taskData_.TaskId,
                         messageHandler_.MessageId,
                         taskData_.Status)
-         : throw new ArmoniKException("TaskData should not be null after successful acquisition");
+         : null;
 
   /// <summary>
   ///   Release task from the current agent and set message to <see cref="QueueMessageStatus.Postponed" />

@@ -43,6 +43,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 public class Pollster : IInitializable
@@ -170,12 +172,7 @@ public class Pollster : IInitializable
 
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
-    if (healthCheckFailedResult_ is not null)
-    {
-      return healthCheckFailedResult_ ?? HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
-    }
-
-    if (endLoopReached_)
+    if (endLoopReached_ && taskProcessingDict_.IsEmpty)
     {
       return HealthCheckResult.Unhealthy("End of main loop reached, no more tasks will be executed.");
     }
@@ -234,6 +231,12 @@ public class Pollster : IInitializable
       healthCheckFailedResult_ = result;
     }
 
+    if (tag == HealthCheckTag.Liveness && taskProcessingDict_.Any(pair => pair.Value.GetAcquiredTaskInfoOrNull()
+                                                                              ?.TaskStatus is not null and not TaskStatus.Dispatched))
+    {
+      return HealthCheckResult.Healthy();
+    }
+
     if (tag == HealthCheckTag.Readiness && taskProcessingDict_.IsEmpty)
     {
       return HealthCheckResult.Unhealthy("No tasks to process");
@@ -264,11 +267,10 @@ public class Pollster : IInitializable
         if (healthCheckFailedResult_ is not null)
         {
           var hcr = healthCheckFailedResult_.Value;
-          exceptionManager_.FatalError(logger_,
-                                       hcr.Exception,
-                                       "Health Check failed with status {Status} thus no more tasks will be executed:\n{Description}",
-                                       hcr.Status,
-                                       hcr.Description);
+          logger_.LogError(hcr.Exception,
+                           "Health Check failed with status {Status} thus no more tasks will be acquired (tasks already acquired will be executed to completion if possible):\n{Description}",
+                           hcr.Status,
+                           hcr.Description);
           return;
         }
 
