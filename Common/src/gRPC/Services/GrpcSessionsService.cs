@@ -81,11 +81,18 @@ public class GrpcSessionsService : Sessions.SessionsBase
     using var measure = meter_.CountAndTime();
     try
     {
+      var tasks = taskTable_.CancelSessionAsync(request.SessionId,
+                                                context.CancellationToken);
+      var results = resultTable_.AbortSessionResults(request.SessionId,
+                                                     context.CancellationToken);
+      var sessions = sessionTable_.CancelSessionAsync(request.SessionId,
+                                                      context.CancellationToken);
+
+      await tasks.ConfigureAwait(false);
+      await results.ConfigureAwait(false);
       return new CancelSessionResponse
              {
-               Session = (await sessionTable_.CancelSessionAsync(request.SessionId,
-                                                                 context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+               Session = (await sessions.ConfigureAwait(false)).ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)
