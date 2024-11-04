@@ -55,6 +55,29 @@ public static class ResultTableExtensions
                                 ownerTaskId);
   }
 
+  /// <summary>
+  ///   Abort the results of the given session
+  /// </summary>
+  /// <param name="resultTable">Interface to manage results</param>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task AbortSessionResults(this IResultTable resultTable,
+                                               string            sessionId,
+                                               CancellationToken cancellationToken = default)
+  {
+    await resultTable.UpdateManyResults(result => result.SessionId == sessionId && result.Status == ResultStatus.Created,
+                                        new UpdateDefinition<Result>().Set(data => data.Status,
+                                                                           ResultStatus.Aborted),
+                                        cancellationToken)
+                     .ConfigureAwait(false);
+
+    resultTable.Logger.LogDebug("Abort results from {session}",
+                                sessionId);
+  }
+
 
   /// <summary>
   ///   Updates in bulk results
