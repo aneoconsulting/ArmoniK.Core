@@ -210,21 +210,6 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task CancelChildTasks(CancellationToken cancellationToken)
-  {
-    if (createdTasks_.Any())
-    {
-      await taskTable_.CancelTaskAsync(createdTasks_.Select(request => request.TaskId)
-                                                    .AsICollection(),
-                                       cancellationToken)
-                      .ConfigureAwait(false);
-    }
-
-    logger_.LogDebug("Cancel {n} child tasks created by this task",
-                     createdTasks_.Count);
-  }
-
-  /// <inheritdoc />
   public async Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
                                                                   TaskOptions?                       taskOptions,
                                                                   string                             sessionId,

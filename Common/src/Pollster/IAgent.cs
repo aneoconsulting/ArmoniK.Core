@@ -145,13 +145,4 @@ public interface IAgent : IDisposable
   Task<ICollection<string>> NotifyResultData(string              token,
                                              ICollection<string> resultIds,
                                              CancellationToken   cancellationToken);
-
-  /// <summary>
-  ///   Cancel child tasks created by the current task in processing
-  /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  Task CancelChildTasks(CancellationToken cancellationToken);
 }

@@ -960,11 +960,6 @@ public sealed class TaskHandler : IAsyncDisposable
         await agent_.FinalizeTaskCreation(CancellationToken.None)
                     .ConfigureAwait(false);
       }
-      else
-      {
-        await agent_.CancelChildTasks(CancellationToken.None)
-                    .ConfigureAwait(false);
-      }
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          sessionData_,
@@ -1088,12 +1083,6 @@ public sealed class TaskHandler : IAsyncDisposable
         messageHandler_.Status = resubmit
                                    ? QueueMessageStatus.Cancelled
                                    : QueueMessageStatus.Processed;
-      }
-
-      if (agent_ is not null)
-      {
-        await agent_.CancelChildTasks(CancellationToken.None)
-                    .ConfigureAwait(false);
       }
     }
 

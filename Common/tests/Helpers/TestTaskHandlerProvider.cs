@@ -247,4 +247,8 @@ public class TestTaskHandlerProvider : IDisposable
                .Wait();
     GC.SuppressFinalize(this);
   }
+
+  public T GetRequiredService<T>()
+    where T : notnull
+    => app_.Services.GetRequiredService<T>();
 }
