@@ -223,6 +223,9 @@ public static class TaskLifeCycleHelper
       return;
     }
 
+    logger.LogDebug("Tasks to finalize : {@TaskRequests}",
+                    taskRequests);
+
     var prepareTaskDependencies = PrepareTaskDependencies(taskTable,
                                                           resultTable,
                                                           taskRequests,
@@ -260,6 +263,7 @@ public static class TaskLifeCycleHelper
                             pushQueueStorage,
                             sessionData,
                             readyTask,
+                            logger,
                             cancellationToken)
       .ConfigureAwait(false);
   }
@@ -447,6 +451,7 @@ public static class TaskLifeCycleHelper
                             pushQueueStorage,
                             sessionData,
                             readyTasks,
+                            logger,
                             cancellationToken)
       .ConfigureAwait(false);
   }
@@ -466,6 +471,7 @@ public static class TaskLifeCycleHelper
                                               IPushQueueStorage        pushQueueStorage,
                                               SessionData              sessionData,
                                               ICollection<MessageData> messages,
+                                              ILogger                  logger,
                                               CancellationToken        cancellationToken)
   {
     if (!messages.Any())
@@ -482,6 +488,9 @@ public static class TaskLifeCycleHelper
                                                  cancellationToken)
                               .ConfigureAwait(false);
       }
+
+      logger.LogDebug("Pushed messages : {@Messages}",
+                      messages);
     }
 
     await taskTable.FinalizeTaskCreation(messages.Select(task => task.TaskId)
