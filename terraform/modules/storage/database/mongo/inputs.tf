@@ -18,7 +18,3 @@ variable "mongodb_params" {
     windows                  = bool
   })
 }
-
-variable "partition_list" {
-  type = map(any)
-}
