@@ -176,6 +176,7 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<RunningTaskQueue>()
            .AddSingleton<PostProcessingTaskQueue>()
            .AddSingleton<Common.Pollster.Pollster>()
+           .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)

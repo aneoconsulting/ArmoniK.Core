@@ -113,6 +113,7 @@ public class TestPollingAgentProvider : IDisposable
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<DataPrefetcher>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
+           .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton(workerStreamHandler);
 
     var computePlanOptions = builder.Configuration.GetRequiredValue<ComputePlane>(ComputePlane.SettingSection);

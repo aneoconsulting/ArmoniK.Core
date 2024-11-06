@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.Threading;
 
 using ArmoniK.Api.Common.Options;
+using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -136,6 +137,7 @@ public class TestDatabaseProvider : IDisposable
                                            out _)
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
+           .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);
