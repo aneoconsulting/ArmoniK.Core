@@ -20,12 +20,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -55,23 +59,6 @@ public class DataPrefetcherTest
   [Test]
   public async Task EmptyPayloadAndOneDependency()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
-                                                  CancellationToken.None))
-                     .Returns((string            _,
-                               CancellationToken _) => new List<byte[]>
-                                                       {
-                                                         Convert.FromBase64String("1111"),
-                                                         Convert.FromBase64String("2222"),
-                                                         Convert.FromBase64String("3333"),
-                                                         Convert.FromBase64String("4444"),
-                                                       }.ToAsyncEnumerable());
-    var loggerFactory = new LoggerFactory();
-
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            activitySource_,
-                                            loggerFactory.CreateLogger<DataPrefetcher>());
-
     const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId       = "TaskId";
@@ -81,6 +68,54 @@ public class DataPrefetcherTest
     const string podName      = "PodName";
     const string payloadId    = "PayloadId";
     const string createdBy    = "CreatedBy";
+
+    var mockObjectStorage = new Mock<IObjectStorage>();
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<byte[]>(),
+                                                  CancellationToken.None))
+                     .Returns((byte[]            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
+    var mockResultTable = new Mock<IResultTable>();
+    mockResultTable.Setup(x => x.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
+                                            It.IsAny<Expression<Func<Result, Result>>>(),
+                                            CancellationToken.None))
+                   .Returns(new List<Result>
+                            {
+                              new(sessionId,
+                                  dependency1,
+                                  "",
+                                  "",
+                                  "",
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.UtcNow,
+                                  100,
+                                  Encoding.UTF8.GetBytes(dependency1)),
+                              new(sessionId,
+                                  payloadId,
+                                  "",
+                                  "",
+                                  "",
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.UtcNow,
+                                  100,
+                                  Encoding.UTF8.GetBytes(payloadId)),
+                            }.ToAsyncEnumerable());
+
+    var loggerFactory = new LoggerFactory();
+
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+                                            mockResultTable.Object,
+                                            activitySource_,
+                                            loggerFactory.CreateLogger<DataPrefetcher>());
+
+
     var sharedFolder = Path.Combine(Path.GetTempPath(),
                                     "data");
     var internalFolder = Path.Combine(Path.GetTempPath(),
@@ -135,24 +170,6 @@ public class DataPrefetcherTest
   [Test]
   public async Task EmptyPayloadAndNoDependenciesStateMachine()
   {
-    var mockObjectStorage = new Mock<IObjectStorage>();
-    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<string>(),
-                                                  CancellationToken.None))
-                     .Returns((string            _,
-                               CancellationToken _) => new List<byte[]>
-                                                       {
-                                                         Convert.FromBase64String("1111"),
-                                                         Convert.FromBase64String("2222"),
-                                                         Convert.FromBase64String("3333"),
-                                                         Convert.FromBase64String("4444"),
-                                                       }.ToAsyncEnumerable());
-
-    var loggerFactory = new LoggerFactory();
-
-    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            activitySource_,
-                                            loggerFactory.CreateLogger<DataPrefetcher>());
-
     const string sessionId    = "SessionId";
     const string parentTaskId = "ParentTaskId";
     const string taskId       = "TaskId";
@@ -163,6 +180,66 @@ public class DataPrefetcherTest
     const string podName      = "PodName";
     const string payloadId    = "PayloadId";
     const string createdBy    = "CreatedBy";
+
+
+    var mockObjectStorage = new Mock<IObjectStorage>();
+    mockObjectStorage.Setup(x => x.GetValuesAsync(It.IsAny<byte[]>(),
+                                                  CancellationToken.None))
+                     .Returns((byte[]            _,
+                               CancellationToken _) => new List<byte[]>
+                                                       {
+                                                         Convert.FromBase64String("1111"),
+                                                         Convert.FromBase64String("2222"),
+                                                         Convert.FromBase64String("3333"),
+                                                         Convert.FromBase64String("4444"),
+                                                       }.ToAsyncEnumerable());
+
+    var mockResultTable = new Mock<IResultTable>();
+    mockResultTable.Setup(x => x.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
+                                            It.IsAny<Expression<Func<Result, Result>>>(),
+                                            CancellationToken.None))
+                   .Returns(new List<Result>
+                            {
+                              new(sessionId,
+                                  dependency1,
+                                  "",
+                                  "",
+                                  "",
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.UtcNow,
+                                  100,
+                                  Encoding.UTF8.GetBytes(dependency1)),
+                              new(sessionId,
+                                  dependency2,
+                                  "",
+                                  "",
+                                  "",
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.UtcNow,
+                                  100,
+                                  Encoding.UTF8.GetBytes(dependency2)),
+                              new(sessionId,
+                                  payloadId,
+                                  "",
+                                  "",
+                                  "",
+                                  ResultStatus.Completed,
+                                  new List<string>(),
+                                  DateTime.UtcNow,
+                                  100,
+                                  Encoding.UTF8.GetBytes(payloadId)),
+                            }.ToAsyncEnumerable());
+
+    var loggerFactory = new LoggerFactory();
+
+    var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+                                            mockResultTable.Object,
+                                            activitySource_,
+                                            loggerFactory.CreateLogger<DataPrefetcher>());
+
+
     var sharedFolder = Path.Combine(Path.GetTempPath(),
                                     "data");
     var internalFolder = Path.Combine(Path.GetTempPath(),
@@ -219,6 +296,7 @@ public class DataPrefetcherTest
     var loggerFactory     = new LoggerFactory();
 
     var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
+                                            new SimpleResultTable(),
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 

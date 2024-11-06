@@ -22,8 +22,8 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -37,19 +37,18 @@ public class SimpleObjectStorage : IObjectStorage
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
-  public Task<long> AddOrUpdateAsync(string                                 key,
-                                     IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                     CancellationToken                      cancellationToken = default)
-    => Task.FromResult((long)0);
+  public Task TryDeleteAsync(IEnumerable<byte[]> ids,
+                             CancellationToken   cancellationToken = default)
+    => Task.CompletedTask;
 
-  public IAsyncEnumerable<byte[]> GetValuesAsync(string            key,
+  public Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                       CancellationToken                      cancellationToken = default)
+    => Task.FromResult((Encoding.UTF8.GetBytes("id"), (long)0));
+
+  public IAsyncEnumerable<byte[]> GetValuesAsync(byte[]            id,
                                                  CancellationToken cancellationToken = default)
     => new List<byte[]>
        {
-         Encoding.UTF8.GetBytes(key),
+         id,
        }.ToAsyncEnumerable();
-
-  public Task TryDeleteAsync(IEnumerable<string> keys,
-                             CancellationToken   cancellationToken = default)
-    => Task.CompletedTask;
 }

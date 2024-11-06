@@ -22,9 +22,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
-using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -93,13 +93,13 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async Task<long> AddOrUpdateAsync(string                                 key,
-                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                           CancellationToken                      cancellationToken = default)
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                             CancellationToken                      cancellationToken = default)
   {
+    var  id   = Guid.NewGuid();
     long size = 0;
     var filename = Path.Combine(path_,
-                                key);
+                                id.ToString());
 
 
     // Write to temporary file
@@ -133,13 +133,15 @@ public class ObjectStorage : IObjectStorage
     await file.FlushAsync(cancellationToken)
               .ConfigureAwait(false);
 
-    return size;
+    return (id.ToByteArray(), size);
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    var key = new Guid(id).ToString();
+
     var filename = Path.Combine(path_,
                                 key);
 
@@ -183,11 +185,12 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task TryDeleteAsync(IEnumerable<string> keys,
+  public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
                                    CancellationToken   cancellationToken = default)
   {
-    foreach (var key in keys)
+    foreach (var id in ids)
     {
+      var key = new Guid(id).ToString();
       await TryDeleteAsync(key,
                            cancellationToken)
         .ConfigureAwait(false);

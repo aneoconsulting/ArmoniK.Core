@@ -196,7 +196,7 @@ public class Submitter : ISubmitter
       }
     }
 
-    await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
+    await foreach (var chunk in objectStorage_.GetValuesAsync(result.OpaqueId,
                                                               cancellationToken)
                                               .ConfigureAwait(false))
     {
@@ -394,15 +394,15 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
 
-    var size = await objectStorage_.AddOrUpdateAsync(key,
-                                                     chunks,
-                                                     cancellationToken)
-                                   .ConfigureAwait(false);
+    var (id, size) = await objectStorage_.AddOrUpdateAsync(chunks,
+                                                           cancellationToken)
+                                         .ConfigureAwait(false);
 
     await resultTable_.SetResult(sessionId,
                                  ownerTaskId,
                                  key,
                                  size,
+                                 id,
                                  cancellationToken)
                       .ConfigureAwait(false);
   }
@@ -432,7 +432,7 @@ public class Submitter : ISubmitter
                                                         ("PartitionId", options.PartitionId));
 
     var requests           = new List<TaskCreationRequest>();
-    var payloadUploadTasks = new List<Task<long>>();
+    var payloadUploadTasks = new List<Task<(byte[] id, long size)>>();
 
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken)
                                                   .ConfigureAwait(false))
@@ -447,8 +447,7 @@ public class Submitter : ISubmitter
                                            options,
                                            taskRequest.ExpectedOutputKeys.ToList(),
                                            taskRequest.DataDependencies.ToList()));
-      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(payloadId,
-                                                             taskRequest.PayloadChunks,
+      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(taskRequest.PayloadChunks,
                                                              cancellationToken));
     }
 
@@ -457,18 +456,18 @@ public class Submitter : ISubmitter
 
     await resultTable_.Create(requests.Zip(payloadSizes,
                                            (request,
-                                            size) => new Result(sessionId,
-                                                                request.PayloadId,
-                                                                "",
-                                                                parentTaskId.Equals(sessionId)
-                                                                  ? ""
-                                                                  : parentTaskId,
-                                                                parentTaskId,
-                                                                ResultStatus.Completed,
-                                                                new List<string>(),
-                                                                DateTime.UtcNow,
-                                                                size,
-                                                                Array.Empty<byte>()))
+                                            r) => new Result(sessionId,
+                                                             request.PayloadId,
+                                                             "",
+                                                             parentTaskId.Equals(sessionId)
+                                                               ? ""
+                                                               : parentTaskId,
+                                                             parentTaskId,
+                                                             ResultStatus.Completed,
+                                                             new List<string>(),
+                                                             DateTime.UtcNow,
+                                                             r.size,
+                                                             r.id))
                                       .AsICollection(),
                               cancellationToken)
                       .ConfigureAwait(false);
@@ -513,12 +512,20 @@ public class Submitter : ISubmitter
         if (submitterOptions_.DeletePayload)
         {
           //Discard value is used to remove warnings CS4014 !!
-          _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
-                                                                                    {
-                                                                                      taskData.PayloadId,
-                                                                                    },
-                                                                                    CancellationToken.None)
-                                                                    .ConfigureAwait(false),
+          _ = Task.Factory.StartNew(async () =>
+                                    {
+                                      var opaqueId = (await resultTable_.GetResult(taskData.PayloadId,
+                                                                                   CancellationToken.None)
+                                                                        .ConfigureAwait(false)).OpaqueId;
+
+
+                                      await objectStorage_.TryDeleteAsync(new[]
+                                                                          {
+                                                                            opaqueId,
+                                                                          },
+                                                                          CancellationToken.None)
+                                                          .ConfigureAwait(false);
+                                    },
                                     cancellationToken);
 
           await resultTable_.MarkAsDeleted(taskData.PayloadId,
@@ -609,12 +616,20 @@ public class Submitter : ISubmitter
                         .ConfigureAwait(false);
 
         //Discard value is used to remove warnings CS4014 !!
-        _ = Task.Factory.StartNew(async () => await objectStorage_.TryDeleteAsync(new[]
-                                                                                  {
-                                                                                    taskData.TaskId,
-                                                                                  },
-                                                                                  CancellationToken.None)
-                                                                  .ConfigureAwait(false),
+        _ = Task.Factory.StartNew(async () =>
+                                  {
+                                    var opaqueId = (await resultTable_.GetResult(taskData.PayloadId,
+                                                                                 CancellationToken.None)
+                                                                      .ConfigureAwait(false)).OpaqueId;
+
+
+                                    await objectStorage_.TryDeleteAsync(new[]
+                                                                        {
+                                                                          opaqueId,
+                                                                        },
+                                                                        CancellationToken.None)
+                                                        .ConfigureAwait(false);
+                                  },
                                   cancellationToken);
 
         logger_.LogInformation("Remove input payload of {task}",

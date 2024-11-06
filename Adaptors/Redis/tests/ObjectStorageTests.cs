@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Tests.TestBase;
 using ArmoniK.Core.Utils;
 
