@@ -30,6 +30,7 @@ COPY ["Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj", "Comp
 COPY ["Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj", "Control/Metrics/src/"]
 COPY ["Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj", "Control/PartitionMetrics/src/"]
 COPY ["Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj", "Control/Submitter/src/"]
+COPY ["HealthChecker/src/ArmoniK.Core.HealthChecker.csproj", "HealthChecker/src/"]
 COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 
 RUN dotnet restore -a "${TARGETARCH}" "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj"
@@ -40,6 +41,7 @@ RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.A
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "HealthChecker/src/ArmoniK.Core.HealthChecker.csproj"
 
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"\$D\\\", \\\"\$D\\\"]"
 COPY ["Adaptors/Amqp/src", "Adaptors/Amqp/src"]
@@ -58,6 +60,7 @@ COPY ["Compute/PollingAgent/src", "Compute/PollingAgent/src"]
 COPY ["Control/Metrics/src", "Control/Metrics/src"]
 COPY ["Control/PartitionMetrics/src", "Control/PartitionMetrics/src"]
 COPY ["Control/Submitter/src", "Control/Submitter/src"]
+COPY ["HealthChecker/src", "HealthChecker/src"]
 COPY ["Utils/src", "Utils/src"]
 
 WORKDIR /src/Adaptors/SQS/src
@@ -84,6 +87,9 @@ RUN dotnet publish "ArmoniK.Core.Control.PartitionMetrics.csproj" -a "${TARGETAR
 WORKDIR /src/Control/Submitter/src
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
+WORKDIR /src/HealthChecker/src
+RUN dotnet publish "ArmoniK.Core.HealthChecker.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/healthchecker -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN [ -e /app/publish/healthchecker/ArmoniK.Core.HealthChecker.exe ] || mv /app/publish/healthchecker/ArmoniK.Core.HealthChecker /app/publish/healthchecker/ArmoniK.Core.HealthChecker.exe
 
 FROM base-${TARGETOS} as polling_agent
 WORKDIR /adapters/queue/sqs
@@ -94,6 +100,8 @@ WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
+WORKDIR /healthchecker
+COPY --from=build /app/publish/healthchecker .
 WORKDIR /app
 COPY --from=build /app/publish/polling_agent .
 ENV ASPNETCORE_URLS http://+:1080
@@ -102,6 +110,8 @@ CMD ["ArmoniK.Core.Compute.PollingAgent.dll"]
 
 
 FROM base-${TARGETOS} as metrics
+WORKDIR /healthchecker
+COPY --from=build /app/publish/healthchecker .
 WORKDIR /app
 COPY --from=build /app/publish/metrics .
 ENV ASPNETCORE_URLS http://+:1080
@@ -110,6 +120,8 @@ CMD ["ArmoniK.Core.Control.Metrics.dll"]
 
 
 FROM base-${TARGETOS} as partition_metrics
+WORKDIR /healthchecker
+COPY --from=build /app/publish/healthchecker .
 WORKDIR /app
 COPY --from=build /app/publish/partition_metrics .
 ENV ASPNETCORE_URLS http://+:1080
@@ -126,6 +138,8 @@ WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
+WORKDIR /healthchecker
+COPY --from=build /app/publish/healthchecker .
 WORKDIR /app
 COPY --from=build /app/publish/submitter .
 ENV ASPNETCORE_URLS http://+:1080, http://+:1081

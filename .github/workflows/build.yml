@@ -614,6 +614,10 @@ jobs:
         run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq091 deploy
         shell: powershell
 
+      - name: Show health status
+        if: always()
+        run: docker inspect armonik.compute.pollingagent0 | jq .[].State.Health
+
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
         shell: powershell

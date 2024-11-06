@@ -64,6 +64,7 @@ resource "docker_container" "polling_agent" {
   }
 
   restart = "unless-stopped"
+  wait    = true
 
   dynamic "mounts" {
     for_each = var.volumes
@@ -72,6 +73,14 @@ resource "docker_container" "polling_agent" {
       target = mounts.value
       source = mounts.key
     }
+  }
+
+  healthcheck {
+    test         = ["CMD", "/healthchecker/ArmoniK.Core.HealthChecker.exe", "http://127.0.0.1:1080/liveness"]
+    interval     = "5s"
+    timeout      = "3s"
+    start_period = "20s"
+    retries      = 5
   }
 
   depends_on = [docker_container.worker]
