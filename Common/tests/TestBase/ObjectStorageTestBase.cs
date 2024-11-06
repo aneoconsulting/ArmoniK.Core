@@ -22,9 +22,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
-using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -55,25 +55,22 @@ public class ObjectStorageTestBase
                           Encoding.ASCII.GetBytes("CCCC"),
                           Encoding.ASCII.GetBytes("DDDD"),
                         };
-    await ObjectStorage!.AddOrUpdateAsync("dataKey1",
-                                          dataBytesList.ToAsyncEnumerable())
-                        .ConfigureAwait(false);
+    datakey1_ = (await ObjectStorage!.AddOrUpdateAsync(dataBytesList.ToAsyncEnumerable())
+                                     .ConfigureAwait(false)).id;
 
     dataBytesList = new List<ReadOnlyMemory<byte>>
                     {
                       Encoding.ASCII.GetBytes("AAAABBBB"),
                     };
-    await ObjectStorage.AddOrUpdateAsync("dataKey2",
-                                         dataBytesList.ToAsyncEnumerable())
-                       .ConfigureAwait(false);
+    datakey2_ = (await ObjectStorage.AddOrUpdateAsync(dataBytesList.ToAsyncEnumerable())
+                                    .ConfigureAwait(false)).id;
 
     dataBytesList = new List<ReadOnlyMemory<byte>>
                     {
                       Array.Empty<byte>(),
                     };
-    await ObjectStorage.AddOrUpdateAsync("dataKeyEmpty",
-                                         dataBytesList.ToAsyncEnumerable())
-                       .ConfigureAwait(false);
+    datakeyEmpty_ = (await ObjectStorage.AddOrUpdateAsync(dataBytesList.ToAsyncEnumerable())
+                                        .ConfigureAwait(false)).id;
   }
 
   [TearDown]
@@ -94,7 +91,10 @@ public class ObjectStorageTestBase
 
   /* Boolean to control that tests are executed in
    * an instance of this class */
-  protected bool RunTests;
+  protected bool    RunTests;
+  private   byte[]? datakey1_;
+  private   byte[]? datakey2_;
+  private   byte[]? datakeyEmpty_;
 
   /* Function be override so it returns the suitable instance
    * of TaskTable to the corresponding interface implementation */
@@ -138,11 +138,10 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var size = await ObjectStorage!.AddOrUpdateAsync("dataKeyNoChunk",
-                                                       AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
-                                     .ConfigureAwait(false);
+      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
+                                           .ConfigureAwait(false);
       var data = new List<byte>();
-      await foreach (var chunk in ObjectStorage!.GetValuesAsync("dataKeyNoChunk")
+      await foreach (var chunk in ObjectStorage!.GetValuesAsync(id)
                                                 .ConfigureAwait(false))
       {
         data.AddRange(chunk);
@@ -174,13 +173,12 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var size = await ObjectStorage!.AddOrUpdateAsync("dataKeyTest",
-                                                       inputChunks.ToAsyncEnumerable()
-                                                                  .Select(s => (ReadOnlyMemory<byte>)Encoding.ASCII.GetBytes(s)))
-                                     .ConfigureAwait(false);
+      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(inputChunks.ToAsyncEnumerable()
+                                                                        .Select(s => (ReadOnlyMemory<byte>)Encoding.ASCII.GetBytes(s)))
+                                           .ConfigureAwait(false);
 
       var data = new List<byte>();
-      await foreach (var chunk in ObjectStorage!.GetValuesAsync("dataKeyTest")
+      await foreach (var chunk in ObjectStorage!.GetValuesAsync(id)
                                                 .ConfigureAwait(false))
       {
         data.AddRange(chunk);
@@ -201,7 +199,8 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage!.GetValuesAsync("dataKeyNotExist");
+      var res = ObjectStorage!.GetValuesAsync(Guid.NewGuid()
+                                                  .ToByteArray());
       Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await res.FirstAsync()
                                                                            .ConfigureAwait(false));
     }
@@ -212,7 +211,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res  = ObjectStorage!.GetValuesAsync("dataKey2");
+      var res  = ObjectStorage!.GetValuesAsync(datakey2_!);
       var data = new List<byte>();
       foreach (var item in await res.ToListAsync()
                                     .ConfigureAwait(false))
@@ -231,7 +230,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = ObjectStorage!.GetValuesAsync("dataKey1");
+      var res = ObjectStorage!.GetValuesAsync(datakey1_!);
       // var data = await res.AggregateAsync((bytes1, bytes2) => bytes1.Concat(bytes2).ToArray());
       var data = new List<byte>();
       foreach (var item in await res.ToListAsync()
@@ -251,7 +250,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var res = await ObjectStorage!.GetValuesAsync("dataKeyEmpty")
+      var res = await ObjectStorage!.GetValuesAsync(datakeyEmpty_!)
                                     .ToListAsync()
                                     .ConfigureAwait(false);
       Console.WriteLine(res.Count);
@@ -281,11 +280,10 @@ public class ObjectStorageTestBase
                          Encoding.ASCII.GetBytes("Data 4"),
                        };
 
-      await ObjectStorage!.AddOrUpdateAsync("dataKey",
-                                            listChunks.ToAsyncEnumerable())
-                          .ConfigureAwait(false);
+      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(listChunks.ToAsyncEnumerable())
+                                           .ConfigureAwait(false);
 
-      var res = await ObjectStorage!.GetValuesAsync("dataKey")
+      var res = await ObjectStorage!.GetValuesAsync(id)
                                     .ToListAsync()
                                     .ConfigureAwait(false);
       Assert.AreEqual(string.Join("",
@@ -295,11 +293,11 @@ public class ObjectStorageTestBase
 
       await ObjectStorage!.TryDeleteAsync(new[]
                                           {
-                                            "dataKey",
+                                            id,
                                           })
                           .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await ObjectStorage!.GetValuesAsync("dataKey")
+      Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await ObjectStorage!.GetValuesAsync(id)
                                                                                       .FirstAsync()
                                                                                       .ConfigureAwait(false));
     }
@@ -319,19 +317,18 @@ public class ObjectStorageTestBase
                          Encoding.ASCII.GetBytes("Data 4"),
                        };
 
-      await ObjectStorage!.AddOrUpdateAsync("dataKey",
-                                            listChunks.ToAsyncEnumerable())
-                          .ConfigureAwait(false);
+      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(listChunks.ToAsyncEnumerable())
+                                           .ConfigureAwait(false);
 
       await ObjectStorage!.TryDeleteAsync(new[]
                                           {
-                                            "dataKey",
+                                            id,
                                           })
                           .ConfigureAwait(false);
 
       await ObjectStorage!.TryDeleteAsync(new[]
                                           {
-                                            "dataKey",
+                                            id,
                                           })
                           .ConfigureAwait(false);
     }

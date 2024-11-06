@@ -18,7 +18,6 @@
 using Amazon.S3;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;

@@ -22,9 +22,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -49,11 +49,12 @@ public class ObjectStorage : IObjectStorage
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
 
-  public async Task<long> AddOrUpdateAsync(string                                 key,
-                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                           CancellationToken                      cancellationToken = default)
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                             CancellationToken                      cancellationToken = default)
   {
     var array = new List<byte>();
+
+    var id = Guid.NewGuid();
 
     await foreach (var val in valueChunks.WithCancellation(cancellationToken)
                                          .ConfigureAwait(false))
@@ -61,16 +62,17 @@ public class ObjectStorage : IObjectStorage
       array.AddRange(val.ToArray());
     }
 
-    store_[key] = array.ToArray();
+    store_[id.ToString()] = array.ToArray();
 
-    return array.Count;
+    return (id.ToByteArray(), array.Count);
   }
 
 #pragma warning disable CS1998
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string key,
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[] id,
 #pragma warning restore CS1998
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    var key = new Guid(id).ToString();
     if (!store_.TryGetValue(key,
                             out var value))
     {
@@ -83,11 +85,13 @@ public class ObjectStorage : IObjectStorage
     }
   }
 
-  public Task TryDeleteAsync(IEnumerable<string> keys,
+  public Task TryDeleteAsync(IEnumerable<byte[]> ids,
                              CancellationToken   cancellationToken = default)
   {
-    foreach (var key in keys)
+    foreach (var id in ids)
     {
+      var key = new Guid(id).ToString();
+
       store_.TryRemove(key,
                        out _);
     }

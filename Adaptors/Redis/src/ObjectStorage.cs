@@ -22,9 +22,9 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -86,12 +86,12 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async Task<long> AddOrUpdateAsync(string                                 key,
-                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                           CancellationToken                      cancellationToken = default)
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                             CancellationToken                      cancellationToken = default)
   {
+    var  id             = Guid.NewGuid();
     long size           = 0;
-    var  storageNameKey = objectStorageName_ + key;
+    var  storageNameKey = objectStorageName_ + id;
 
     var idx      = 0;
     var taskList = new List<Task>();
@@ -110,13 +110,14 @@ public class ObjectStorage : IObjectStorage
     await taskList.WhenAll()
                   .ConfigureAwait(false);
 
-    return size;
+    return (id.ToByteArray(), size);
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    var key = new Guid(id);
     var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
                   .ConfigureAwait(false);
 
@@ -142,11 +143,11 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task TryDeleteAsync(IEnumerable<string> keys,
+  public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
                                    CancellationToken   cancellationToken = default)
-    => await keys.ParallelForEach(key => TryDeleteAsync(key,
-                                                        cancellationToken))
-                 .ConfigureAwait(false);
+    => await ids.ParallelForEach(key => TryDeleteAsync(new Guid(key).ToString(),
+                                                       cancellationToken))
+                .ConfigureAwait(false);
 
   private async Task TryDeleteAsync(string            key,
                                     CancellationToken cancellationToken = default)

@@ -15,8 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,6 +41,7 @@ public class DataPrefetcher : IInitializable
   private readonly ActivitySource?         activitySource_;
   private readonly ILogger<DataPrefetcher> logger_;
   private readonly IObjectStorage          objectStorage_;
+  private readonly IResultTable            resultTable_;
 
   private bool isInitialized_;
 
@@ -46,13 +49,16 @@ public class DataPrefetcher : IInitializable
   ///   Create data prefetcher for tasks
   /// </summary>
   /// <param name="objectStorage">Interface to manage data</param>
+  /// <param name="resultTable">Interface to manage results metadata</param>
   /// <param name="activitySource">Activity source for tracing</param>
   /// <param name="logger">Logger used to print logs</param>
   public DataPrefetcher(IObjectStorage          objectStorage,
+                        IResultTable            resultTable,
                         ActivitySource?         activitySource,
                         ILogger<DataPrefetcher> logger)
   {
     objectStorage_  = objectStorage;
+    resultTable_    = resultTable;
     logger_         = logger;
     activitySource_ = activitySource;
   }
@@ -93,28 +99,27 @@ public class DataPrefetcher : IInitializable
 
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
-
-    await using (var fs = new FileStream(Path.Combine(folder,
-                                                      taskData.PayloadId),
-                                         FileMode.OpenOrCreate))
-    {
-      await using var w = new BinaryWriter(fs);
-      await foreach (var chunk in objectStorage_.GetValuesAsync(taskData.PayloadId,
-                                                                cancellationToken)
-                                                .ConfigureAwait(false))
-      {
-        w.Write(chunk);
-      }
-    }
+    var dependencies = new List<string>
+                       {
+                         taskData.PayloadId,
+                       };
+    dependencies.AddRange(taskData.DataDependencies);
 
 
-    foreach (var dataDependency in taskData.DataDependencies)
+    var ids = await resultTable_.GetResults(taskData.SessionId,
+                                            dependencies,
+                                            cancellationToken)
+                                .Select(r => (r.ResultId, r.OpaqueId))
+                                .ToListAsync(cancellationToken)
+                                .ConfigureAwait(false);
+
+    foreach (var (resultId, opaqueId) in ids)
     {
       await using var fs = new FileStream(Path.Combine(folder,
-                                                       dataDependency),
+                                                       resultId),
                                           FileMode.OpenOrCreate);
       await using var w = new BinaryWriter(fs);
-      await foreach (var chunk in objectStorage_.GetValuesAsync(dataDependency,
+      await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
                                                                 cancellationToken)
                                                 .ConfigureAwait(false))
       {

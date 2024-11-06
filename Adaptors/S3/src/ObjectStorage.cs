@@ -27,9 +27,9 @@ using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -95,9 +95,10 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    var key                   = new Guid(id);
     var objectStorageFullName = $"{objectStorageName_}{key}";
 
     try
@@ -163,23 +164,16 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task TryDeleteAsync(IEnumerable<string> keys,
-                                   CancellationToken   cancellationToken = default)
-    => await keys.ParallelForEach(key => TryDeleteAsync(key,
-                                                        cancellationToken))
-                 .ConfigureAwait(false);
-
-  /// <inheritdoc />
-  public async Task<long> AddOrUpdateAsync(string                                 key,
-                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                           CancellationToken                      cancellationToken = default)
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                             CancellationToken                      cancellationToken = default)
 
   {
     long[] sizeBox =
     {
       0,
     };
-    var objectStorageFullName = $"{objectStorageName_}{key}";
+    var id                    = Guid.NewGuid();
+    var objectStorageFullName = $"{objectStorageName_}{id.ToString()}";
 
     logger_.LogDebug("Upload object");
     var initRequest = new InitiateMultipartUploadRequest
@@ -231,8 +225,15 @@ public class ObjectStorage : IObjectStorage
       throw;
     }
 
-    return sizeBox[0];
+    return (id.ToByteArray(), sizeBox[0]);
   }
+
+  /// <inheritdoc />
+  public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
+                                   CancellationToken   cancellationToken = default)
+    => await ids.ParallelForEach(key => TryDeleteAsync(new Guid(key).ToString(),
+                                                       cancellationToken))
+                .ConfigureAwait(false);
 
   private async Task TryDeleteAsync(string            key,
                                     CancellationToken cancellationToken = default)

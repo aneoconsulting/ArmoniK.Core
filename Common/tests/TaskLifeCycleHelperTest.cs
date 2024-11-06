@@ -427,7 +427,8 @@ public class TaskLifeCycleHelperTest
     await holder.ResultTable.CompleteResult(sessionId,
                                             results[1]
                                               .ResultId,
-                                            10)
+                                            10,
+                                            Encoding.UTF8.GetBytes("first data dependency"))
                 .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
@@ -455,7 +456,8 @@ public class TaskLifeCycleHelperTest
     await holder.ResultTable.CompleteResult(sessionId,
                                             results[2]
                                               .ResultId,
-                                            10)
+                                            10,
+                                            Encoding.UTF8.GetBytes("second data dependency"))
                 .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
@@ -613,12 +615,14 @@ public class TaskLifeCycleHelperTest
     await holder.ResultTable.CompleteResult(sessionId,
                                             results[1]
                                               .ResultId,
-                                            10)
+                                            10,
+                                            Encoding.UTF8.GetBytes("first data dependency"))
                 .ConfigureAwait(false);
     await holder.ResultTable.CompleteResult(sessionId,
                                             results[2]
                                               .ResultId,
-                                            10)
+                                            10,
+                                            Encoding.UTF8.GetBytes("second data dependency"))
                 .ConfigureAwait(false);
     await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
                                                   holder.ResultTable,

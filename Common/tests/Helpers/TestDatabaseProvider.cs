@@ -24,6 +24,7 @@ using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
