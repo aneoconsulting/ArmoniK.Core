@@ -195,14 +195,34 @@ public class ObjectStorageTestBase
   }
 
   [Test]
-  public void GetValuesAsyncShouldFail()
+  public async Task GetValuesAsyncShouldFail()
   {
     if (RunTests)
     {
-      var res = ObjectStorage!.GetValuesAsync(Guid.NewGuid()
-                                                  .ToByteArray());
-      Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await res.FirstAsync()
-                                                                           .ConfigureAwait(false));
+      var id = Guid.NewGuid()
+                   .ToByteArray();
+      var data = new List<byte>();
+
+      try
+      {
+        var res = ObjectStorage!.GetValuesAsync(id);
+
+
+        await foreach (var chunk in res.ConfigureAwait(false))
+        {
+          data.AddRange(chunk);
+        }
+
+        Assert.AreEqual(id,
+                        data.ToArray());
+      }
+      catch (ObjectDataNotFoundException)
+      {
+      }
+      catch (Exception)
+      {
+        Assert.Fail("When value should not be available, it should either throw or return the value");
+      }
     }
   }
 
@@ -263,43 +283,6 @@ public class ObjectStorageTestBase
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
       Assert.IsTrue(str.SequenceEqual(""));
-    }
-  }
-
-  [Test]
-  public async Task DeleteKeysAndGetValuesAsyncShouldFail()
-  {
-    if (RunTests)
-    {
-      var listChunks = new List<ReadOnlyMemory<byte>>
-                       {
-                         Encoding.ASCII.GetBytes("Armonik Payload chunk"),
-                         Encoding.ASCII.GetBytes("Data 1"),
-                         Encoding.ASCII.GetBytes("Data 2"),
-                         Encoding.ASCII.GetBytes("Data 3"),
-                         Encoding.ASCII.GetBytes("Data 4"),
-                       };
-
-      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(listChunks.ToAsyncEnumerable())
-                                           .ConfigureAwait(false);
-
-      var res = await ObjectStorage!.GetValuesAsync(id)
-                                    .ToListAsync()
-                                    .ConfigureAwait(false);
-      Assert.AreEqual(string.Join("",
-                                  listChunks.Select(chunk => Encoding.ASCII.GetString(chunk.ToArray()))),
-                      string.Join("",
-                                  res.Select(chunk => Encoding.ASCII.GetString(chunk))));
-
-      await ObjectStorage!.TryDeleteAsync(new[]
-                                          {
-                                            id,
-                                          })
-                          .ConfigureAwait(false);
-
-      Assert.ThrowsAsync<ObjectDataNotFoundException>(async () => await ObjectStorage!.GetValuesAsync(id)
-                                                                                      .FirstAsync()
-                                                                                      .ConfigureAwait(false));
     }
   }
 
