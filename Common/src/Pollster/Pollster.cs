@@ -383,10 +383,15 @@ public class Pollster : IInitializable
                 // So remove the automatic dispose of the TaskHandler
                 taskHandlerDispose.Reset();
               }
-              catch (TimeoutException)
+              catch (Exception e)
               {
                 await taskHandler.ReleaseAndPostponeTask()
                                  .ConfigureAwait(false);
+
+                if (e is not (TimeoutException or OperationCanceledException))
+                {
+                  throw;
+                }
               }
             }
             catch (Exception e)
