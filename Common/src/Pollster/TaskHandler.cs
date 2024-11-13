@@ -480,7 +480,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                         .ConfigureAwait(false);
           }
 
-          if (retryData.Status is TaskStatus.Creating or TaskStatus.Submitted)
+          if (retryData.Status is TaskStatus.Creating or TaskStatus.Pending or TaskStatus.Submitted)
           {
             logger_.LogWarning("Retried task {task} is in {status}; trying to finalize task creation",
                                retryId,
@@ -498,11 +498,18 @@ public sealed class TaskHandler : IAsyncDisposable
                                                   CancellationToken.None)
                             .ConfigureAwait(false);
           }
+          else
+          {
+            logger_.LogInformation("Retried task {task} is in {status}; nothing done",
+                                   retryId,
+                                   retryData.Status);
+          }
 
           return (taskNotFound, taskExists, retryData.Status) switch
                  {
                    (false, false, TaskStatus.Submitted)                       => AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted,
                    (false, false, TaskStatus.Creating)                        => AcquisitionStatus.TaskIsRetriedAndRetryIsCreating,
+                   (false, false, TaskStatus.Pending)                         => AcquisitionStatus.TaskIsRetriedAndRetryIsPending,
                    (true, false, TaskStatus.Submitted or TaskStatus.Creating) => AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
                    _                                                          => AcquisitionStatus.TaskIsRetried,
                  };

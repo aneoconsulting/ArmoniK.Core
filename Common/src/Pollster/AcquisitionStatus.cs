@@ -98,6 +98,15 @@ public enum AcquisitionStatus
   /// </summary>
   TaskIsRetriedAndRetryIsSubmitted,
 
+
+  /// <summary>
+  ///   Task not acquired because its status is <see cref="TaskStatus.Retried" />. Moreover, the retried task is
+  ///   <see cref="TaskStatus.Pending" />
+  ///   Reinsertion in the queue may be required.
+  /// </summary>
+  TaskIsRetriedAndRetryIsPending,
+
+
   /// <summary>
   ///   Task not acquired because its status is <see cref="TaskStatus.Processing" /> but the other pod does not seem to be
   ///   processing it
