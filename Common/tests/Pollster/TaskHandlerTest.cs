@@ -415,6 +415,16 @@ public class TaskHandlerTest
                           .ResultId,
                       },
                       new List<string>()),
+                  new("TaskRetry2+Pending",
+                      results[0]
+                        .ResultId,
+                      options,
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                      },
+                      new List<string>()),
                 };
 
     await TaskLifeCycleHelper.CreateTasks(testServiceProvider.TaskTable,
@@ -508,6 +518,23 @@ public class TaskHandlerTest
 
     await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
                                                           "Error for test : not found")
+                             .ConfigureAwait(false);
+
+
+    taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+Pending")
+                                        .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
+                                                          "Error for test : pending")
+                             .ConfigureAwait(false);
+
+    newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
+                                         .ConfigureAwait(false);
+
+    await testServiceProvider.TaskTable.UpdateOneTask(newTaskId,
+                                                      null,
+                                                      new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                                           TaskStatus.Pending))
                              .ConfigureAwait(false);
   }
 
@@ -950,6 +977,9 @@ public class TaskHandlerTest
       yield return new TestCaseData("TaskRetry2+NotFound").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
                                                                                          TaskStatus.Retried,
                                                                                          QueueMessageStatus.Poisonous));
+      yield return new TestCaseData("TaskRetry2+Pending").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsPending,
+                                                                                        TaskStatus.Retried,
+                                                                                        QueueMessageStatus.Poisonous));
     }
   }
 
