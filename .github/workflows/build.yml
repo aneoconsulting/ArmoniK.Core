@@ -614,6 +614,11 @@ jobs:
         run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq091 deploy
         shell: powershell
 
+      - name: Pull image
+        run: docker pull dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
+        timeout-minutes: 10
+        shell: powershell
+
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
         shell: powershell
