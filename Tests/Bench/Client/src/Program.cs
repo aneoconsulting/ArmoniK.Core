@@ -611,6 +611,13 @@ internal static class Program
 
     var countFinished = Stopwatch.GetTimestamp();
 
+    await channelPool.WithInstanceAsync(channel => new Sessions.SessionsClient(channel).CloseSessionAsync(new CloseSessionRequest
+                                                                                                          {
+                                                                                                            SessionId = createSessionReply.SessionId,
+                                                                                                          }),
+                                        CancellationToken.None)
+                     .ConfigureAwait(false);
+
     var stats = new ExecutionStats
                 {
                   ElapsedTime          = TimeSpan.FromTicks((resultsReceived  - start)            / 100),
