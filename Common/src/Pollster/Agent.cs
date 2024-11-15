@@ -265,12 +265,19 @@ public sealed class Agent : IAgent
   {
     ThrowIfInvalidToken(token);
 
-    var local = new Dictionary<string, (byte[] id, long size)>();
-
     var results = await requests.Select(async rc =>
                                         {
-                                          var resultId = Guid.NewGuid()
-                                                             .ToString();
+                                          var result = new Result(rc.request.SessionId,
+                                                                  Guid.NewGuid()
+                                                                      .ToString(),
+                                                                  rc.request.Name,
+                                                                  taskData_.TaskId,
+                                                                  "",
+                                                                  ResultStatus.Created,
+                                                                  new List<string>(),
+                                                                  DateTime.UtcNow,
+                                                                  0,
+                                                                  Array.Empty<byte>());
 
                                           var add = await objectStorage_.AddOrUpdateAsync(new List<ReadOnlyMemory<byte>>
                                                                                           {
@@ -279,34 +286,24 @@ public sealed class Agent : IAgent
                                                                                           cancellationToken)
                                                                         .ConfigureAwait(false);
 
-                                          local.Add(resultId,
-                                                    add);
-
-                                          return new Result(rc.request.SessionId,
-                                                            resultId,
-                                                            rc.request.Name,
-                                                            taskData_.TaskId,
-                                                            "",
-                                                            ResultStatus.Created,
-                                                            new List<string>(),
-                                                            DateTime.UtcNow,
-                                                            0,
-                                                            Array.Empty<byte>());
+                                          return (result, add);
                                         })
                                 .WhenAll()
                                 .ConfigureAwait(false);
 
-    await resultTable_.Create(results,
+    await resultTable_.Create(results.Select(tuple => tuple.result)
+                                     .AsICollection(),
                               cancellationToken)
                       .ConfigureAwait(false);
 
-    foreach (var result in local)
+    foreach (var result in results)
     {
-      sentResults_.Add(result.Key,
-                       result.Value);
+      sentResults_.Add(result.result.ResultId,
+                       result.add);
     }
 
-    return results;
+    return results.Select(tuple => tuple.result)
+                  .AsICollection();
   }
 
   /// <inheritdoc />

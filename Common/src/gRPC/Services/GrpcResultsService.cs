@@ -223,11 +223,10 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
     try
     {
-      var opaqueIds = await resultTable_.GetResults(request.SessionId,
-                                                    request.ResultId,
+      var opaqueIds = await resultTable_.GetResults(result => request.ResultId.Contains(result.ResultId),
+                                                    result => result.OpaqueId,
                                                     context.CancellationToken)
-                                        .Select(result => result.OpaqueId)
-                                        .ToListAsync()
+                                        .ToListAsync(context.CancellationToken)
                                         .ConfigureAwait(false);
 
       await objectStorage_.TryDeleteAsync(opaqueIds,

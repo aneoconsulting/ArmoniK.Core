@@ -18,7 +18,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -106,20 +105,20 @@ public class DataPrefetcher : IInitializable
     dependencies.AddRange(taskData.DataDependencies);
 
 
-    var ids = await resultTable_.GetResults(taskData.SessionId,
-                                            dependencies,
-                                            cancellationToken)
-                                .Select(r => (r.ResultId, r.OpaqueId))
-                                .ToListAsync(cancellationToken)
-                                .ConfigureAwait(false);
-
-    foreach (var (resultId, opaqueId) in ids)
+    await foreach (var id in resultTable_.GetResults(data => dependencies.Contains(data.ResultId),
+                                                     r => new
+                                                          {
+                                                            r.ResultId,
+                                                            r.OpaqueId,
+                                                          },
+                                                     cancellationToken)
+                                         .ConfigureAwait(false))
     {
       await using var fs = new FileStream(Path.Combine(folder,
-                                                       resultId),
+                                                       id.ResultId),
                                           FileMode.OpenOrCreate);
       await using var w = new BinaryWriter(fs);
-      await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
+      await foreach (var chunk in objectStorage_.GetValuesAsync(id.OpaqueId,
                                                                 cancellationToken)
                                                 .ConfigureAwait(false))
       {
