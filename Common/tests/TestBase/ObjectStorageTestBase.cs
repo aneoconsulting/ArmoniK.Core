@@ -55,21 +55,33 @@ public class ObjectStorageTestBase
                           Encoding.ASCII.GetBytes("CCCC"),
                           Encoding.ASCII.GetBytes("DDDD"),
                         };
-    datakey1_ = (await ObjectStorage!.AddOrUpdateAsync(dataBytesList.ToAsyncEnumerable())
+    datakey1_ = (await ObjectStorage!.AddOrUpdateAsync(new ObjectData
+                                                       {
+                                                         ResultId = string.Empty,
+                                                       },
+                                                       dataBytesList.ToAsyncEnumerable())
                                      .ConfigureAwait(false)).id;
 
     dataBytesList = new List<ReadOnlyMemory<byte>>
                     {
                       Encoding.ASCII.GetBytes("AAAABBBB"),
                     };
-    datakey2_ = (await ObjectStorage.AddOrUpdateAsync(dataBytesList.ToAsyncEnumerable())
+    datakey2_ = (await ObjectStorage.AddOrUpdateAsync(new ObjectData
+                                                      {
+                                                        ResultId = string.Empty,
+                                                      },
+                                                      dataBytesList.ToAsyncEnumerable())
                                     .ConfigureAwait(false)).id;
 
     dataBytesList = new List<ReadOnlyMemory<byte>>
                     {
                       Array.Empty<byte>(),
                     };
-    datakeyEmpty_ = (await ObjectStorage.AddOrUpdateAsync(dataBytesList.ToAsyncEnumerable())
+    datakeyEmpty_ = (await ObjectStorage.AddOrUpdateAsync(new ObjectData
+                                                          {
+                                                            ResultId = string.Empty,
+                                                          },
+                                                          dataBytesList.ToAsyncEnumerable())
                                         .ConfigureAwait(false)).id;
   }
 
@@ -138,7 +150,11 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
+      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(new ObjectData
+                                                             {
+                                                               ResultId = string.Empty,
+                                                             },
+                                                             AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
                                            .ConfigureAwait(false);
       var data = new List<byte>();
       await foreach (var chunk in ObjectStorage!.GetValuesAsync(id)
@@ -173,7 +189,11 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(inputChunks.ToAsyncEnumerable()
+      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(new ObjectData
+                                                             {
+                                                               ResultId = string.Empty,
+                                                             },
+                                                             inputChunks.ToAsyncEnumerable()
                                                                         .Select(s => (ReadOnlyMemory<byte>)Encoding.ASCII.GetBytes(s)))
                                            .ConfigureAwait(false);
 
@@ -300,7 +320,11 @@ public class ObjectStorageTestBase
                          Encoding.ASCII.GetBytes("Data 4"),
                        };
 
-      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(listChunks.ToAsyncEnumerable())
+      var (id, size) = await ObjectStorage!.AddOrUpdateAsync(new ObjectData
+                                                             {
+                                                               ResultId = string.Empty,
+                                                             },
+                                                             listChunks.ToAsyncEnumerable())
                                            .ConfigureAwait(false);
 
       await ObjectStorage!.TryDeleteAsync(new[]

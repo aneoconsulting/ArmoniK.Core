@@ -58,7 +58,8 @@ public class ObjectStorage : IObjectStorage
                          : HealthCheckResult.Unhealthy("Object storage not initialized yet."));
 
   /// <inheritdoc />
-  public async Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
+                                                             IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
     var array = new List<byte>();

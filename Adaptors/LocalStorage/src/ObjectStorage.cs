@@ -93,7 +93,8 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
+                                                             IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
     var  id   = Guid.NewGuid();

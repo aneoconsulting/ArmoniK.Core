@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 
 namespace ArmoniK.Core.Base;
@@ -43,7 +44,8 @@ public interface IObjectStorage : IInitializable
   ///   Opaque ID will be used to refer to the object. The implementation of this interface should generate it.
   /// </remarks>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+  Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             data,
+                                                IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                 CancellationToken                      cancellationToken = default);
 
   /// <summary>

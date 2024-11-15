@@ -605,12 +605,16 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    var (id, size) = await holder.ObjectStorage.AddOrUpdateAsync(new List<byte[]>
+    var (id, size) = await holder.ObjectStorage.AddOrUpdateAsync(new ObjectData
                                                                  {
-                                                                   Encoding.ASCII.GetBytes("Data1"),
-                                                                   Encoding.ASCII.GetBytes("Data2"),
-                                                                 }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
-                                                                  .ToAsyncEnumerable(),
+                                                                   ResultId = "",
+                                                                 },
+                                                                 new List<byte[]>
+                                                                   {
+                                                                     Encoding.ASCII.GetBytes("Data1"),
+                                                                     Encoding.ASCII.GetBytes("Data2"),
+                                                                   }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                                    .ToAsyncEnumerable(),
                                                                  CancellationToken.None)
                                  .ConfigureAwait(false);
 

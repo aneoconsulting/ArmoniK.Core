@@ -27,6 +27,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
@@ -394,7 +395,11 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(SetResult)}");
 
-    var (id, size) = await objectStorage_.AddOrUpdateAsync(chunks,
+    var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                           {
+                                                             ResultId = key,
+                                                           },
+                                                           chunks,
                                                            cancellationToken)
                                          .ConfigureAwait(false);
 
@@ -447,7 +452,11 @@ public class Submitter : ISubmitter
                                            options,
                                            taskRequest.ExpectedOutputKeys.ToList(),
                                            taskRequest.DataDependencies.ToList()));
-      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(taskRequest.PayloadChunks,
+      payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                             {
+                                                               ResultId = payloadId,
+                                                             },
+                                                             taskRequest.PayloadChunks,
                                                              cancellationToken));
     }
 
