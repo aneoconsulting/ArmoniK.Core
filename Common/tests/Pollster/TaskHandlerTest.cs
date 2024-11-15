@@ -1793,7 +1793,8 @@ public class TaskHandlerTest
                                CancellationToken   cancellationToken = default)
       => Task.CompletedTask;
 
-    public Task<(byte[] id, long size)> AddOrUpdateAsync(IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+    public Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
+                                                         IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                          CancellationToken                      cancellationToken = default)
       => Task.FromResult<(byte[] id, long size)>((Encoding.UTF8.GetBytes("forty-two"), 42));
   }

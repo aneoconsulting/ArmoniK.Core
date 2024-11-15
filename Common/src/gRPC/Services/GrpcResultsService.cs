@@ -25,6 +25,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
@@ -172,7 +173,11 @@ public class GrpcResultsService : Results.ResultsBase
                                                  var resultId = Guid.NewGuid()
                                                                     .ToString();
 
-                                                 var (id, size) = await objectStorage_.AddOrUpdateAsync(new List<ReadOnlyMemory<byte>>
+                                                 var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                                                        {
+                                                                                                          ResultId = resultId,
+                                                                                                        },
+                                                                                                        new List<ReadOnlyMemory<byte>>
                                                                                                         {
                                                                                                           rc.Data.Memory,
                                                                                                         }.ToAsyncEnumerable(),
@@ -337,7 +342,11 @@ public class GrpcResultsService : Results.ResultsBase
                                                     context.CancellationToken);
 
 
-    var (opaqueId, size) = await objectStorage_.AddOrUpdateAsync(requestStream.ReadAllAsync(context.CancellationToken)
+    var (opaqueId, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                 {
+                                                                   ResultId = id.ResultId,
+                                                                 },
+                                                                 requestStream.ReadAllAsync(context.CancellationToken)
                                                                               .Select(r => r.DataChunk.Memory),
                                                                  context.CancellationToken)
                                                .ConfigureAwait(false);

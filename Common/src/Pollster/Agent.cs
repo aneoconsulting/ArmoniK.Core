@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -279,7 +280,11 @@ public sealed class Agent : IAgent
                                                                   0,
                                                                   Array.Empty<byte>());
 
-                                          var add = await objectStorage_.AddOrUpdateAsync(new List<ReadOnlyMemory<byte>>
+                                          var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                                          {
+                                                                                            ResultId = result.ResultId,
+                                                                                          },
+                                                                                          new List<ReadOnlyMemory<byte>>
                                                                                           {
                                                                                             rc.data,
                                                                                           }.ToAsyncEnumerable(),
@@ -321,7 +326,11 @@ public sealed class Agent : IAgent
       using var r       = new BinaryReader(fs);
       var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
 
-      var addTask = objectStorage_.AddOrUpdateAsync(channel.Reader.ReadAllAsync(cancellationToken),
+      var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                    {
+                                                      ResultId = result,
+                                                    },
+                                                    channel.Reader.ReadAllAsync(cancellationToken),
                                                     cancellationToken);
 
       int read;
