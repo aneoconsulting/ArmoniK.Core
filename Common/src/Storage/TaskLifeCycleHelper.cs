@@ -530,20 +530,25 @@ public static class TaskLifeCycleHelper
                                             .WithCancellation(cancellationToken)
                                             .ConfigureAwait(false))
     {
-      var tasks = await grouping.ToListAsync(cancellationToken)
-                                .ConfigureAwait(false);
+      await foreach (var tasks in grouping.ToChunksAsync(100000,
+                                                         TimeSpan.FromSeconds(1),
+                                                         cancellationToken)
+                                          .ConfigureAwait(false))
+      {
+        var taskIds = tasks.Select(task => task.TaskId)
+                           .AsICollection();
 
-      var taskIds = tasks.Select(task => task.TaskId)
-                         .AsICollection();
-      await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && taskIds.Contains(data.TaskId),
-                                      new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                           TaskStatus.Submitted),
-                                      cancellationToken)
-                     .ConfigureAwait(false);
-      await pushQueueStorage.PushMessagesAsync(tasks,
-                                               grouping.Key.PartitionId,
-                                               cancellationToken)
-                            .ConfigureAwait(false);
+        await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && taskIds.Contains(data.TaskId),
+                                        new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                             TaskStatus.Submitted),
+                                        cancellationToken)
+                       .ConfigureAwait(false);
+
+        await pushQueueStorage.PushMessagesAsync(tasks,
+                                                 grouping.Key.PartitionId,
+                                                 cancellationToken)
+                              .ConfigureAwait(false);
+      }
     }
 
     return session;
