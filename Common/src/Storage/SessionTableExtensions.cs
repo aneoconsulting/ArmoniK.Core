@@ -233,7 +233,7 @@ public static class SessionTableExtensions
                                                            CancellationToken  cancellationToken = default)
   {
     var session = await sessionTable.UpdateOneSessionAsync(sessionId,
-                                                           data => data.Status == SessionStatus.Paused,
+                                                           data => data.Status == SessionStatus.Paused || data.Status == SessionStatus.Running,
                                                            new UpdateDefinition<SessionData>().Set(model => model.Status,
                                                                                                    SessionStatus.Running),
                                                            false,
@@ -251,8 +251,8 @@ public static class SessionTableExtensions
     switch (session.Status)
     {
       case SessionStatus.Paused:
-        throw new UnreachableException($"Session status should be {SessionStatus.Running} but is {session.Status}");
       case SessionStatus.Running:
+        throw new UnreachableException($"Session status should be {SessionStatus.Running} but is {session.Status}");
       case SessionStatus.Purged:
       case SessionStatus.Cancelled:
         throw new InvalidSessionTransitionException($"Cannot resume a session with status {session.Status}");

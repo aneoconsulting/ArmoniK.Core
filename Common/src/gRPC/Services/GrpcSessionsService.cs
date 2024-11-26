@@ -35,8 +35,6 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
-using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
@@ -516,36 +514,28 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (InvalidSessionTransitionException e)
     {
       logger_.LogWarning(e,
-                         "Error while cancelling session");
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         "Session is in a state that cannot be cancelled"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
-      await taskTable_.UpdateManyTasks(data => data.SessionId == request.SessionId && data.Status == TaskStatus.Submitted,
-                                       new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                            TaskStatus.Paused))
-                      .ConfigureAwait(false);
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
-      await taskTable_.UpdateManyTasks(data => data.SessionId == request.SessionId && data.Status == TaskStatus.Submitted,
-                                       new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                            TaskStatus.Paused))
-                      .ConfigureAwait(false);
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }
