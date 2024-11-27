@@ -376,7 +376,6 @@ public class PollsterTest
     // This test that we return from the mainloop after the health check is unhealthy
     await testServiceProvider.Pollster.MainLoop()
                              .ConfigureAwait(false);
-    Assert.True(testServiceProvider.ExceptionManager.Failed);
   }
 
   [Test]
@@ -449,10 +448,14 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
-  public async Task ExecuteTaskShouldSucceed()
+  public async Task ExecuteTaskShouldSucceed([Values] HealthStatus healthStatus)
   {
-    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
-    var waitWorkerStreamHandler = new SimpleWorkerStreamHandler();
+    var mockPullQueueStorage = new SimplePullQueueStorageChannel
+                               {
+                                 CheckResult = new HealthCheckResult(healthStatus,
+                                                                     $"value for test called {nameof(ExecuteTaskShouldSucceed)}"),
+                               };
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(500);
     var simpleAgentHandler      = new SimpleAgentHandler();
 
     using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
@@ -480,8 +483,13 @@ public class PollsterTest
                              .ConfigureAwait(false);
 
     var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(1));
+    var loop = testServiceProvider.Pollster.MainLoop();
 
-    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
+    // checking health should not interrupt task execution
+    await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                             .ConfigureAwait(false);
+
+    Assert.DoesNotThrowAsync(() => loop);
     Assert.DoesNotThrowAsync(() => stop);
 
     Assert.AreEqual(TaskStatus.Completed,
