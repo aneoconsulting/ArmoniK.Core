@@ -54,7 +54,7 @@ locals {
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = "${local.prefix_run} --eval 'rs.initiate()'"
+    command = "${local.prefix_run} --eval 'rs.initiate({_id: \"${var.mongodb_params.replica_set_name}\"})'"
   }
   depends_on = [time_sleep.wait]
 }
