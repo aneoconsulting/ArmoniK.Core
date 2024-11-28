@@ -188,5 +188,8 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
     {
       File.Delete(computePlaneOptions_.AgentChannel.Address);
     }
+
+    logger_.LogDebug("Socket {file} deleted",
+                     computePlaneOptions_.AgentChannel.Address);
   }
 }
