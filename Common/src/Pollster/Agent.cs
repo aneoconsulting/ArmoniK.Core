@@ -50,6 +50,7 @@ public sealed class Agent : IAgent
   private readonly IObjectStorage            objectStorage_;
   private readonly IPushQueueStorage         pushQueueStorage_;
   private readonly IResultTable              resultTable_;
+  private readonly SemaphoreSlim             sem_;
   private readonly Dictionary<string, long>  sentResults_;
   private readonly SessionData               sessionData_;
   private readonly ISubmitter                submitter_;
@@ -87,11 +88,13 @@ public sealed class Agent : IAgent
     taskTable_        = taskTable;
     logger_           = logger;
     createdTasks_     = new List<TaskCreationRequest>();
-    sentResults_      = new Dictionary<string, long>();
-    sessionData_      = sessionData;
-    taskData_         = taskData;
-    Folder            = folder;
-    Token             = token;
+    sem_ = new SemaphoreSlim(1,
+                             1);
+    sentResults_ = new Dictionary<string, long>();
+    sessionData_ = sessionData;
+    taskData_    = taskData;
+    Folder       = folder;
+    Token        = token;
   }
 
   /// <inheritdoc />
@@ -113,6 +116,9 @@ public sealed class Agent : IAgent
                                           ("sessionId", sessionData_.SessionId));
 
     logger_.LogDebug("Finalize child task creation");
+    logger_.LogDebug("created {results} and {tasks}",
+                     sentResults_.Count,
+                     createdTasks_.Count);
 
     await submitter_.FinalizeTaskCreation(createdTasks_,
                                           sessionData_,
@@ -137,12 +143,14 @@ public sealed class Agent : IAgent
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
+    logger_.LogDebug("created {results} and {tasks}",
+                     sentResults_.Count,
+                     createdTasks_.Count);
   }
 
   /// <inheritdoc />
   public void Dispose()
-  {
-  }
+    => sem_.Dispose();
 
   /// <inheritdoc />
   public async Task<string> GetResourceData(string            token,
@@ -248,6 +256,16 @@ public sealed class Agent : IAgent
                                           cancellationToken)
                              .ConfigureAwait(false);
 
+    await using var def = new Deferrer(() =>
+                                       {
+                                         sem_.Release(1);
+                                       });
+    if (!sem_.Wait(0))
+    {
+      logger_.LogError("Concurrency issue when submitting tasks");
+      def.Reset();
+    }
+
     createdTasks_.AddRange(createdTasks);
 
     return createdTasks;
@@ -293,6 +311,16 @@ public sealed class Agent : IAgent
 
     foreach (var result in results)
     {
+      await using var def = new Deferrer(() =>
+                                         {
+                                           sem_.Release(1);
+                                         });
+      if (!sem_.Wait(0))
+      {
+        logger_.LogError("Concurrency issue when creating results");
+        def.Reset();
+      }
+
       sentResults_.Add(result.ResultId,
                        result.Size);
     }
@@ -340,6 +368,17 @@ public sealed class Agent : IAgent
       channel.Writer.Complete();
 
       await add.ConfigureAwait(false);
+
+      await using var def = new Deferrer(() =>
+                                         {
+                                           sem_.Release(1);
+                                         });
+      if (!sem_.Wait(0))
+      {
+        logger_.LogError("Concurrency issue when notifying results");
+        def.Reset();
+      }
+
       sentResults_.Add(result,
                        size);
     }
