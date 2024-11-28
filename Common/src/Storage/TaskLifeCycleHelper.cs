@@ -535,18 +535,20 @@ public static class TaskLifeCycleHelper
                                                          cancellationToken)
                                           .ConfigureAwait(false))
       {
+        cancellationToken.ThrowIfCancellationRequested();
+
         var taskIds = tasks.Select(task => task.TaskId)
                            .AsICollection();
 
         await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && taskIds.Contains(data.TaskId),
                                         new UpdateDefinition<TaskData>().Set(data => data.Status,
                                                                              TaskStatus.Submitted),
-                                        cancellationToken)
+                                        CancellationToken.None)
                        .ConfigureAwait(false);
 
         await pushQueueStorage.PushMessagesAsync(tasks,
                                                  grouping.Key.PartitionId,
-                                                 cancellationToken)
+                                                 CancellationToken.None)
                               .ConfigureAwait(false);
       }
     }
