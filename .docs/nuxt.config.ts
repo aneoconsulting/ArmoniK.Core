@@ -26,4 +26,8 @@ export default defineNuxtConfig({
   robots: { 
     robotsTxt: false
   },
+
+  ogImage: {
+    enabled: false,
+  },
 })
