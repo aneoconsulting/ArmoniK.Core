@@ -16,7 +16,7 @@
   "dependencies": {
     "@aneoconsultingfr/armonik-docs-theme": "^0.6.15",
     "mermaid": "^11.4.1",
-    "nuxt": "^3.6.1"
+    "nuxt": "^3.14.1592"
   },
   "devDependencies": {
     "@nuxt/eslint-config": "^0.7.2",
