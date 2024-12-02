@@ -24,11 +24,12 @@ resource "docker_container" "database" {
     for_each = var.mongodb_params.windows ? [] : [1]
     content {
       test     = ["CMD", "mongosh", "--quiet", "--tls", "--tlsCAFile", "/mongo-certificate/ca.pem", "--eval", "db.runCommand('ping').ok"]
-      interval = "3s"
+     interval = "3s"
       retries  = "2"
       timeout  = "3s"
     }
   }
+
   upload {
     file    = "/mongo-certificate/key.pem"
     content = local.server_key
@@ -39,7 +40,6 @@ resource "docker_container" "database" {
     content = tls_locally_signed_cert.mongodb_certificate.ca_cert_pem
   }
 }
-
 resource "time_sleep" "wait" {
   create_duration = var.mongodb_params.windows ? "15s" : "0s"
   depends_on      = [docker_container.database]
@@ -54,7 +54,16 @@ locals {
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = "${local.prefix_run} --eval 'rs.initiate({_id: \"${var.mongodb_params.replica_set_name}\"})'"
+    command = <<EOT
+
+
+${local.prefix_run} --eval 'rs.initiate({
+    _id: "${var.mongodb_params.replica_set_name}",
+    members: [
+        { _id: 0, host: "127.0.0.1:27017" }
+    ]
+})'
+EOT
   }
   depends_on = [time_sleep.wait]
 }
