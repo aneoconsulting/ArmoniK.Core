@@ -1,7 +1,3 @@
-terraform {
-  required_version = "= 1.9.8"
-}
-
 module "fluenbit" {
   source  = "./modules/monitoring/fluentbit"
   image   = var.log_driver_image
