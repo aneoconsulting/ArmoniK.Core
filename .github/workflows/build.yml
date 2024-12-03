@@ -601,7 +601,8 @@ jobs:
           submodules: true
 
       - name: Setup Terraform
-        run: choco install terraform mongodb-shell 7zip just
+        run: choco install terraform --version=1.9.8 mongodb-shell 7zip just
+
 
       - name: Setup AWS cli
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
@@ -735,6 +736,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.9.8
+
 
       - name: Deploy Core
         run: |
@@ -819,6 +823,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.9.8
+
 
       - name: Deploy Core
         run: |
@@ -937,6 +944,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.9.8
+
 
       - name: Deploy Core
         run: |
@@ -1009,6 +1019,9 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: 1.9.8
+
 
       - name: Deploy Core
         run: |
