@@ -600,8 +600,12 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Setup Terraform
-        run: choco install terraform --version=1.9.8 mongodb-shell 7zip just
+      - name: Install Terraform
+        run: choco install terraform --version=1.9.8 -y
+
+      - name: Install Other Dependencies
+        run: choco install mongodb-shell 7zip just -y
+
 
 
       - name: Setup AWS cli
