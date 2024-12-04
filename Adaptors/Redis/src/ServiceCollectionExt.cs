@@ -15,8 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.IO;
+using System.Linq;
+using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -70,53 +72,88 @@ public static class ServiceCollectionExt
 
       if (!string.IsNullOrEmpty(redisOptions.CaPath))
       {
-        var localTrustStore       = new X509Store(StoreName.Root);
-        var certificateCollection = new X509Certificate2Collection();
-        try
+        var authority = new X509Certificate2(redisOptions.CaPath);
+
+        // Configure the SSL settings (https://stackexchange.github.io/StackExchange.Redis/Configuration.html)
+        var config = new ConfigurationOptions
+                     {
+                       ClientName           = redisOptions.ClientName,
+                       ReconnectRetryPolicy = new ExponentialRetry(10),
+                       Ssl                  = redisOptions.Ssl,
+                       AbortOnConnectFail   = true,
+                       SslHost              = redisOptions.SslHost,
+                       Password             = redisOptions.Password,
+                       User                 = redisOptions.User,
+                       SslProtocols         = SslProtocols.Tls12,
+                     };
+        config.CertificateValidation += (sender,
+                                         certificate,
+                                         chain,
+                                         sslPolicyErrors) =>
+                                        {
+                                          if (sslPolicyErrors == SslPolicyErrors.None)
+                                          {
+                                            return true;
+                                          }
+
+                                          if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                          {
+                                            logger.LogError("SSL validation failed: {SslPolicyErrors}",
+                                                            sslPolicyErrors);
+                                            return false;
+                                          }
+
+                                          // If there is any error other than untrusted root or partial chain, fail the validation
+                                          if (chain!.ChainStatus.Any(status => status.Status is not X509ChainStatusFlags.UntrustedRoot and
+                                                                                                not X509ChainStatusFlags.PartialChain))
+                                          {
+                                            return false;
+                                          }
+
+                                          // Disable some extensive checks that would fail on the authority that is not in store
+                                          chain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
+                                          chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+
+                                          // Add unknown authority to the store
+                                          chain.ChainPolicy.ExtraStore.Add(authority);
+
+                                          // Check if the chain is valid for the actual server certificate (ie: trusted)
+                                          if (!chain.Build(new X509Certificate2(certificate!)))
+                                          {
+                                            logger.LogError("SSL chain validation failed.");
+                                            return false;
+                                          }
+
+                                          // Check that the chain root is actually the specified authority (caCert)
+                                          var isTrusted = chain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+
+                                          if (!isTrusted)
+                                          {
+                                            logger.LogError("Certificate chain root does not match the specified CA authority.");
+                                          }
+
+                                          return isTrusted;
+                                        };
+        config.EndPoints.Add(redisOptions.EndpointUrl);
+
+        if (redisOptions.Timeout > 0)
         {
-          certificateCollection.ImportFromPemFile(redisOptions.CaPath);
-          localTrustStore.Open(OpenFlags.ReadWrite);
-          localTrustStore.AddRange(certificateCollection);
-          logger.LogTrace("Imported Redis certificate from file {path}",
-                          redisOptions.CaPath);
+          config.ConnectTimeout = redisOptions.Timeout;
         }
-        catch (Exception ex)
-        {
-          logger.LogError("Root certificate import failed: {error}",
-                          ex.Message);
-          throw;
-        }
-        finally
-        {
-          localTrustStore.Close();
-        }
+
+        logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
+                        redisOptions.EndpointUrl,
+                        redisOptions.User);
+
+        serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
+                                                                                          TextWriter.Null)
+                                                                                 .GetDatabase());
+        serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
       }
-
-      var config = new ConfigurationOptions
-                   {
-                     ClientName           = redisOptions.ClientName,
-                     ReconnectRetryPolicy = new ExponentialRetry(10),
-                     Ssl                  = redisOptions.Ssl,
-                     AbortOnConnectFail   = true,
-                     SslHost              = redisOptions.SslHost,
-                     Password             = redisOptions.Password,
-                     User                 = redisOptions.User,
-                   };
-      config.EndPoints.Add(redisOptions.EndpointUrl);
-
-      if (redisOptions.Timeout > 0)
+      else
       {
-        config.ConnectTimeout = redisOptions.Timeout;
+        logger.LogTrace("No CA path provided");
       }
-
-      logger.LogDebug("setup connection to Redis at {EndpointUrl} with user {user}",
-                      redisOptions.EndpointUrl,
-                      redisOptions.User);
-
-      serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
-                                                                                        TextWriter.Null)
-                                                                               .GetDatabase());
-      serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
     }
 
     return serviceCollection;

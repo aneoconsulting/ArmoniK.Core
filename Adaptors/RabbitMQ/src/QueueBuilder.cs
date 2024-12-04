@@ -15,10 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using System.Linq;
+using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
 
-using ArmoniK.Core.Adapters.QueueCommon;
+using ArmoniK.Core.Adapters.RabbitMQ;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
 
@@ -28,7 +29,9 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Adapters.RabbitMQ;
+using RabbitMQ.Client;
+
+namespace ArmoniK.Core.Adapters.Amqp;
 
 /// <summary>
 ///   Class for building RabbitMQ object and Queue interfaces through Dependency Injection
@@ -42,25 +45,22 @@ public class QueueBuilder : IDependencyInjectionBuildable
                     ConfigurationManager configuration,
                     ILogger              logger)
   {
-    logger.LogInformation("Configure RabbitMQ client");
-
+    logger.LogInformation("Configure Amqp client");
 
     serviceCollection.AddOption(configuration,
-                                Amqp.SettingSection,
-                                out Amqp amqpOptions);
-
+                                QueueCommon.Amqp.SettingSection,
+                                out QueueCommon.Amqp amqpOptions);
 
     if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
     {
       configuration.AddJsonFile(amqpOptions.CredentialsPath,
                                 false,
                                 false);
+      serviceCollection.AddOption(configuration,
+                                  QueueCommon.Amqp.SettingSection,
+                                  out amqpOptions);
       logger.LogTrace("Loaded amqp credentials from file {path}",
                       amqpOptions.CredentialsPath);
-
-      serviceCollection.AddOption(configuration,
-                                  Amqp.SettingSection,
-                                  out amqpOptions);
     }
     else
     {
@@ -69,26 +69,79 @@ public class QueueBuilder : IDependencyInjectionBuildable
 
     if (!string.IsNullOrEmpty(amqpOptions.CaPath))
     {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(amqpOptions.CaPath);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported AMQP certificate from file {path}",
-                        amqpOptions.CaPath);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
+      var authority = new X509Certificate2(amqpOptions.CaPath);
+
+      // Configure the SSL settings
+      var sslOption = new SslOption
+                      {
+                        Enabled                = true,
+                        ServerName             = amqpOptions.Host,
+                        Certs                  = new X509Certificate2Collection(),
+                        AcceptablePolicyErrors = SslPolicyErrors.RemoteCertificateChainErrors,
+                        CertificateValidationCallback = (sender,
+                                                         certificate,
+                                                         chain,
+                                                         sslPolicyErrors) =>
+                                                        {
+                                                          if (sslPolicyErrors == SslPolicyErrors.None)
+                                                          {
+                                                            return true;
+                                                          }
+
+                                                          if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                                          {
+                                                            logger.LogError("SSL validation failed: {errors}",
+                                                                            sslPolicyErrors);
+                                                            return false;
+                                                          }
+
+                                                          // If there is any error other than untrusted root or partial chain, fail the validation
+                                                          if (chain!.ChainStatus.Any(status => status.Status is not X509ChainStatusFlags.UntrustedRoot and
+                                                                                                                not X509ChainStatusFlags.PartialChain))
+                                                          {
+                                                            return false;
+                                                          }
+
+                                                          // Disable some extensive checks that would fail on the authority that is not in store
+                                                          chain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
+                                                          chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+
+                                                          // Add unknown authority to the store
+                                                          chain.ChainPolicy.ExtraStore.Add(authority);
+
+                                                          // Check if the chain is valid for the actual server certificate (ie: trusted)
+                                                          if (!chain.Build(new X509Certificate2(certificate!)))
+                                                          {
+                                                            logger.LogError("SSL chain validation failed.");
+                                                            return false;
+                                                          }
+
+                                                          // Check that the chain root is actually the specified authority (caCert)
+                                                          var isTrusted = chain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+
+                                                          if (!isTrusted)
+                                                          {
+                                                            logger.LogError("Certificate chain root does not match the specified CA authority.");
+                                                          }
+
+                                                          return isTrusted;
+                                                        },
+                      };
+
+      // Apply the SSL settings to your RabbitMQ connection factory
+      var factory = new ConnectionFactory
+                    {
+                      HostName = amqpOptions.Host,
+                      UserName = amqpOptions.User,
+                      Password = amqpOptions.Password,
+                      Ssl      = sslOption,
+                    };
+
+      serviceCollection.AddSingleton(factory);
+    }
+    else
+    {
+      logger.LogTrace("No CA path provided");
     }
 
     serviceCollection.AddSingletonWithHealthCheck<IConnectionRabbit, ConnectionRabbit>(nameof(IConnectionRabbit));
