@@ -59,6 +59,11 @@ jobs:
       run: |
           sudo snap install --edge --classic just
 
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      with:
+        terraform_version: 1.9.8
+    
     - name: Minio Server UP
       if: ${{ matrix.projects }} == "Adaptors/S3/tests"
       run: |
@@ -125,7 +130,12 @@ jobs:
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
-
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      with:
+        terraform_version: 1.9.8
+    
     - name: Set up queue
       run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
@@ -269,7 +279,12 @@ jobs:
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
-
+    
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      with:
+        terraform_version: 1.9.8
+    
     - name: Login to Docker Hub
       uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
       with:
