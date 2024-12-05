@@ -350,7 +350,9 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -448,9 +450,11 @@ jobs:
       - name: Setup just
         run: |
           sudo snap install --edge --classic just
-
+      
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -600,8 +604,12 @@ jobs:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Setup Terraform
-        run: choco install terraform mongodb-shell 7zip just
+      - name: Setup Terraform and other tools
+        run: |
+          choco install terraform -y
+          choco install mongodb-shell -y
+          choco install 7zip -y
+          choco install just -y
 
       - name: Setup AWS cli
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
@@ -734,7 +742,9 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -818,7 +828,9 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -936,7 +948,9 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -1008,7 +1022,9 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -1078,7 +1094,9 @@ jobs:
           sudo snap install --edge --classic just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
