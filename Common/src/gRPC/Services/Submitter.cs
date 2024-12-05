@@ -397,7 +397,8 @@ public class Submitter : ISubmitter
 
     var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
                                                            {
-                                                             ResultId = key,
+                                                             ResultId  = key,
+                                                             SessionId = sessionId,
                                                            },
                                                            chunks,
                                                            cancellationToken)
@@ -454,7 +455,8 @@ public class Submitter : ISubmitter
                                            taskRequest.DataDependencies.ToList()));
       payloadUploadTasks.Add(objectStorage_.AddOrUpdateAsync(new ObjectData
                                                              {
-                                                               ResultId = payloadId,
+                                                               ResultId  = payloadId,
+                                                               SessionId = sessionId,
                                                              },
                                                              taskRequest.PayloadChunks,
                                                              cancellationToken));

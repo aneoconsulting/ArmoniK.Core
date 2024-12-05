@@ -282,7 +282,8 @@ public sealed class Agent : IAgent
 
                                           var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
                                                                                           {
-                                                                                            ResultId = result.ResultId,
+                                                                                            ResultId  = result.ResultId,
+                                                                                            SessionId = rc.request.SessionId,
                                                                                           },
                                                                                           new List<ReadOnlyMemory<byte>>
                                                                                           {
@@ -328,7 +329,8 @@ public sealed class Agent : IAgent
 
       var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
                                                     {
-                                                      ResultId = result,
+                                                      ResultId  = result,
+                                                      SessionId = sessionData_.SessionId,
                                                     },
                                                     channel.Reader.ReadAllAsync(cancellationToken),
                                                     cancellationToken);

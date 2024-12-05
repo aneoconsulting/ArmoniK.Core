@@ -175,7 +175,8 @@ public class GrpcResultsService : Results.ResultsBase
 
                                                  var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
                                                                                                         {
-                                                                                                          ResultId = resultId,
+                                                                                                          ResultId  = resultId,
+                                                                                                          SessionId = request.SessionId,
                                                                                                         },
                                                                                                         new List<ReadOnlyMemory<byte>>
                                                                                                         {
@@ -344,7 +345,8 @@ public class GrpcResultsService : Results.ResultsBase
 
     var (opaqueId, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
                                                                  {
-                                                                   ResultId = id.ResultId,
+                                                                   ResultId  = id.ResultId,
+                                                                   SessionId = id.SessionId,
                                                                  },
                                                                  requestStream.ReadAllAsync(context.CancellationToken)
                                                                               .Select(r => r.DataChunk.Memory),
