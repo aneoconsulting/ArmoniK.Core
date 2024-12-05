@@ -607,7 +607,8 @@ public class AgentTest
 
     var (id, size) = await holder.ObjectStorage.AddOrUpdateAsync(new ObjectData
                                                                  {
-                                                                   ResultId = "",
+                                                                   ResultId  = "ResultId",
+                                                                   SessionId = "SessionId",
                                                                  },
                                                                  new List<byte[]>
                                                                    {

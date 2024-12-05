@@ -26,4 +26,9 @@ public record ObjectData
   ///   Id of the result
   /// </summary>
   public required string ResultId;
+
+  /// <summary>
+  ///   Id of the session
+  /// </summary>
+  public required string SessionId;
 }

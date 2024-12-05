@@ -57,7 +57,8 @@ public class ObjectStorageTestBase
                         };
     datakey1_ = (await ObjectStorage!.AddOrUpdateAsync(new ObjectData
                                                        {
-                                                         ResultId = string.Empty,
+                                                         ResultId  = "ResultId",
+                                                         SessionId = "SessionId",
                                                        },
                                                        dataBytesList.ToAsyncEnumerable())
                                      .ConfigureAwait(false)).id;
@@ -68,7 +69,8 @@ public class ObjectStorageTestBase
                     };
     datakey2_ = (await ObjectStorage.AddOrUpdateAsync(new ObjectData
                                                       {
-                                                        ResultId = string.Empty,
+                                                        ResultId  = "ResultId",
+                                                        SessionId = "SessionId",
                                                       },
                                                       dataBytesList.ToAsyncEnumerable())
                                     .ConfigureAwait(false)).id;
@@ -79,7 +81,8 @@ public class ObjectStorageTestBase
                     };
     datakeyEmpty_ = (await ObjectStorage.AddOrUpdateAsync(new ObjectData
                                                           {
-                                                            ResultId = string.Empty,
+                                                            ResultId  = "ResultId",
+                                                            SessionId = "SessionId",
                                                           },
                                                           dataBytesList.ToAsyncEnumerable())
                                         .ConfigureAwait(false)).id;
@@ -152,7 +155,8 @@ public class ObjectStorageTestBase
     {
       var (id, size) = await ObjectStorage!.AddOrUpdateAsync(new ObjectData
                                                              {
-                                                               ResultId = string.Empty,
+                                                               ResultId  = "ResultId",
+                                                               SessionId = "SessionId",
                                                              },
                                                              AsyncEnumerable.Empty<ReadOnlyMemory<byte>>())
                                            .ConfigureAwait(false);
@@ -191,7 +195,8 @@ public class ObjectStorageTestBase
     {
       var (id, size) = await ObjectStorage!.AddOrUpdateAsync(new ObjectData
                                                              {
-                                                               ResultId = string.Empty,
+                                                               ResultId  = "ResultId",
+                                                               SessionId = "SessionId",
                                                              },
                                                              inputChunks.ToAsyncEnumerable()
                                                                         .Select(s => (ReadOnlyMemory<byte>)Encoding.ASCII.GetBytes(s)))
@@ -322,7 +327,8 @@ public class ObjectStorageTestBase
 
       var (id, size) = await ObjectStorage!.AddOrUpdateAsync(new ObjectData
                                                              {
-                                                               ResultId = string.Empty,
+                                                               ResultId  = "ResultId",
+                                                               SessionId = "SessionId",
                                                              },
                                                              listChunks.ToAsyncEnumerable())
                                            .ConfigureAwait(false);
