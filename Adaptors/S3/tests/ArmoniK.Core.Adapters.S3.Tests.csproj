@@ -27,7 +27,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\tests\ArmoniK.Core.Common.Tests.csproj" />
-    <ProjectReference Include="..\src\ArmoniK.Core.Adapters.S3.csproj" />
   </ItemGroup>
 
 </Project>

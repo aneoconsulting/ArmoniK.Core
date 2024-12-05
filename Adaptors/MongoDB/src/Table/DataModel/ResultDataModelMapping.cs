@@ -53,7 +53,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                               cm.MapProperty(nameof(Result.Size))
                                                 .SetIgnoreIfDefault(true)
                                                 .SetDefaultValue(0);
-                                              cm.MapProperty(nameof(Result.Data))
+                                              cm.MapProperty(nameof(Result.OpaqueId))
                                                 .SetIsRequired(true);
                                               cm.SetIgnoreExtraElements(true);
                                               cm.MapCreator(model => new Result(model.SessionId,
@@ -65,7 +65,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                                                 model.DependentTasks,
                                                                                 model.CreationDate,
                                                                                 model.Size,
-                                                                                model.Data));
+                                                                                model.OpaqueId));
                                             });
     }
   }

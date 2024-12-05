@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -15,14 +15,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils;
+
 using JetBrains.Annotations;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Options;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
+namespace ArmoniK.Core.Adapters.Embed;
+
+/// <summary>
+///   Class for building RabbitMQ object and Queue interfaces through Dependency Injection
+/// </summary>
 [PublicAPI]
-public class ObjectStorage
+public class ObjectBuilder : IDependencyInjectionBuildable
 {
-  public const string SettingSection = nameof(MongoDB) + ":" + nameof(ObjectStorage);
-
-  public int ChunkSize { get; set; } = 14500000;
+  /// <inheritdoc />
+  [PublicAPI]
+  public void Build(IServiceCollection   serviceCollection,
+                    ConfigurationManager configuration,
+                    ILogger              logger)
+    => serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
 }

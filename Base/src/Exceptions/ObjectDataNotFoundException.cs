@@ -17,7 +17,7 @@
 
 using System;
 
-namespace ArmoniK.Core.Common.Exceptions;
+namespace ArmoniK.Core.Base.Exceptions;
 
 [Serializable]
 public class ObjectDataNotFoundException : ArmoniKException
