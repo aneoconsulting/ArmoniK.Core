@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -97,10 +98,11 @@ public class ObjectStorage : IObjectStorage
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
-    var  id   = Guid.NewGuid();
     long size = 0;
+    var key = Guid.NewGuid()
+                  .ToString();
     var filename = Path.Combine(path_,
-                                id.ToString());
+                                key);
 
 
     // Write to temporary file
@@ -134,14 +136,14 @@ public class ObjectStorage : IObjectStorage
     await file.FlushAsync(cancellationToken)
               .ConfigureAwait(false);
 
-    return (id.ToByteArray(), size);
+    return (Encoding.UTF8.GetBytes(key), size);
   }
 
   /// <inheritdoc />
   public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var key = new Guid(id).ToString();
+    var key = Encoding.UTF8.GetString(id);
 
     var filename = Path.Combine(path_,
                                 key);
@@ -191,7 +193,7 @@ public class ObjectStorage : IObjectStorage
   {
     foreach (var id in ids)
     {
-      var key = new Guid(id).ToString();
+      var key = Encoding.UTF8.GetString(id);
       await TryDeleteAsync(key,
                            cancellationToken)
         .ConfigureAwait(false);
