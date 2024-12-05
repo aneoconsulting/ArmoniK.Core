@@ -21,6 +21,13 @@ export default defineNuxtConfig({
       siteName: 'ArmoniK Core',
       siteDescription: 'The heart of ArmoniK'
     }
-  }
+  },
 
+  robots: { 
+    robotsTxt: false
+  },
+
+  ogImage: {
+    enabled: false,
+  },
 })
