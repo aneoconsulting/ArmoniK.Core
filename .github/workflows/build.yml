@@ -54,6 +54,11 @@ jobs:
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
         pip install awscli
+     
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+          terraform_version: latest
 
     - name: Setup just
       run: |
@@ -121,7 +126,12 @@ jobs:
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
         pip install awscli
-    
+   
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+       terraform_version: latest
+
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
@@ -606,10 +616,10 @@ jobs:
 
       - name: Setup Terraform and other tools
         run: |
-          choco install terraform -y
+          choco install terraform --version=1.10.1 -y
           choco install mongodb-shell -y
           choco install 7zip -y
-          choco install just -y
+          choco install just -y      
 
       - name: Setup AWS cli
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
