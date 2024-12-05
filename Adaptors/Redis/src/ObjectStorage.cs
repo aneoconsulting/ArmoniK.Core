@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -90,9 +91,10 @@ public class ObjectStorage : IObjectStorage
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
-    var  id             = Guid.NewGuid();
+    var key = Guid.NewGuid()
+                  .ToString();
+    var  storageNameKey = objectStorageName_ + key;
     long size           = 0;
-    var  storageNameKey = objectStorageName_ + id;
 
     var idx      = 0;
     var taskList = new List<Task>();
@@ -111,14 +113,14 @@ public class ObjectStorage : IObjectStorage
     await taskList.WhenAll()
                   .ConfigureAwait(false);
 
-    return (id.ToByteArray(), size);
+    return (Encoding.UTF8.GetBytes(key), size);
   }
 
   /// <inheritdoc />
   public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var key = new Guid(id);
+    var key = Encoding.UTF8.GetString(id);
     var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
                   .ConfigureAwait(false);
 
@@ -146,13 +148,15 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
                                    CancellationToken   cancellationToken = default)
-    => await ids.ParallelForEach(key => TryDeleteAsync(new Guid(key).ToString(),
-                                                       cancellationToken))
+    => await ids.ParallelForEach(id => TryDeleteAsync(id,
+                                                      cancellationToken))
                 .ConfigureAwait(false);
 
-  private async Task TryDeleteAsync(string            key,
+  private async Task TryDeleteAsync(byte[]            id,
                                     CancellationToken cancellationToken = default)
   {
+    var key = Encoding.UTF8.GetString(id);
+
     var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
                   .ConfigureAwait(false);
 

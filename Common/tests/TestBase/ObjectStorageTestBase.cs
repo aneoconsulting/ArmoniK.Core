@@ -224,8 +224,7 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      var id = Guid.NewGuid()
-                   .ToByteArray();
+      var id   = Encoding.UTF8.GetBytes("IdThatShouldFail");
       var data = new List<byte>();
 
       try
@@ -266,7 +265,8 @@ public class ObjectStorageTestBase
 
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
-      Assert.IsTrue(str.SequenceEqual("AAAABBBB"));
+      Assert.AreEqual("AAAABBBB",
+                      str);
     }
   }
 
@@ -286,7 +286,8 @@ public class ObjectStorageTestBase
 
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
-      Assert.IsTrue(str.SequenceEqual("AAAABBBBCCCCDDDD"));
+      Assert.AreEqual("AAAABBBBCCCCDDDD",
+                      str);
     }
   }
 

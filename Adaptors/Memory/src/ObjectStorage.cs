@@ -19,6 +19,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,7 +56,8 @@ public class ObjectStorage : IObjectStorage
   {
     var array = new List<byte>();
 
-    var id = Guid.NewGuid();
+    var key = Guid.NewGuid()
+                  .ToString();
 
     await foreach (var val in valueChunks.WithCancellation(cancellationToken)
                                          .ConfigureAwait(false))
@@ -63,9 +65,9 @@ public class ObjectStorage : IObjectStorage
       array.AddRange(val.ToArray());
     }
 
-    store_[id.ToString()] = array.ToArray();
+    store_[key] = array.ToArray();
 
-    return (id.ToByteArray(), array.Count);
+    return (Encoding.UTF8.GetBytes(key), array.Count);
   }
 
 #pragma warning disable CS1998
@@ -73,7 +75,7 @@ public class ObjectStorage : IObjectStorage
 #pragma warning restore CS1998
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var key = new Guid(id).ToString();
+    var key = Encoding.UTF8.GetString(id);
     if (!store_.TryGetValue(key,
                             out var value))
     {
@@ -91,7 +93,7 @@ public class ObjectStorage : IObjectStorage
   {
     foreach (var id in ids)
     {
-      var key = new Guid(id).ToString();
+      var key = Encoding.UTF8.GetString(id);
 
       store_.TryRemove(key,
                        out _);

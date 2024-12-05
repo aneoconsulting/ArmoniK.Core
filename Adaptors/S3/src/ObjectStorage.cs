@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -98,7 +99,7 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var key                   = new Guid(id);
+    var key                   = Encoding.UTF8.GetString(id);
     var objectStorageFullName = $"{objectStorageName_}{key}";
 
     try
@@ -173,8 +174,9 @@ public class ObjectStorage : IObjectStorage
     {
       0,
     };
-    var id                    = Guid.NewGuid();
-    var objectStorageFullName = $"{objectStorageName_}{id.ToString()}";
+    var key = Guid.NewGuid()
+                  .ToString();
+    var objectStorageFullName = $"{objectStorageName_}{key}";
 
     logger_.LogDebug("Upload object");
     var initRequest = new InitiateMultipartUploadRequest
@@ -226,19 +228,20 @@ public class ObjectStorage : IObjectStorage
       throw;
     }
 
-    return (id.ToByteArray(), sizeBox[0]);
+    return (Encoding.UTF8.GetBytes(key), sizeBox[0]);
   }
 
   /// <inheritdoc />
   public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
                                    CancellationToken   cancellationToken = default)
-    => await ids.ParallelForEach(key => TryDeleteAsync(new Guid(key).ToString(),
-                                                       cancellationToken))
+    => await ids.ParallelForEach(id => TryDeleteAsync(id,
+                                                      cancellationToken))
                 .ConfigureAwait(false);
 
-  private async Task TryDeleteAsync(string            key,
+  private async Task TryDeleteAsync(byte[]            id,
                                     CancellationToken cancellationToken = default)
   {
+    var key                   = Encoding.UTF8.GetString(id);
     var objectStorageFullName = $"{objectStorageName_}{key}";
 
     var objectDeleteRequest = new DeleteObjectRequest
