@@ -33,6 +33,7 @@ using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using Moq;
 
@@ -55,6 +56,88 @@ public class DataPrefetcherTest
   }
 
   private ActivitySource? activitySource_;
+
+  private class CustomGetResultTable : IResultTable
+  {
+    private readonly List<string> resultIds_;
+    private readonly string       sessionId_;
+
+
+    public CustomGetResultTable(string       sessionId,
+                                List<string> resultIds)
+    {
+      sessionId_ = sessionId;
+      resultIds_ = resultIds;
+    }
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => throw new NotImplementedException();
+
+    public Task Init(CancellationToken cancellationToken)
+      => throw new NotImplementedException();
+
+    public ILogger Logger
+      => NullLogger.Instance;
+
+    public Task ChangeResultOwnership(string                                                 oldTaskId,
+                                      IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
+                                      CancellationToken                                      cancellationToken)
+      => throw new NotImplementedException();
+
+    public Task Create(ICollection<Result> results,
+                       CancellationToken   cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
+                                    CancellationToken                        cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task DeleteResult(string            key,
+                             CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task DeleteResults(string            sessionId,
+                              CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
+                                             Expression<Func<Result, T>>    convertor,
+                                             CancellationToken              cancellationToken = default)
+      => resultIds_.Select(s => convertor.Compile()
+                                         .Invoke(new Result(sessionId_,
+                                                            s,
+                                                            "",
+                                                            "",
+                                                            "",
+                                                            ResultStatus.Completed,
+                                                            new List<string>(),
+                                                            DateTime.UtcNow,
+                                                            100,
+                                                            Encoding.UTF8.GetBytes(s))))
+                   .ToAsyncEnumerable();
+
+    public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
+                                                                                Expression<Func<Result, object?>> orderField,
+                                                                                bool                              ascOrder,
+                                                                                int                               page,
+                                                                                int                               pageSize,
+                                                                                CancellationToken                 cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
+                                 CancellationToken                             cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<Result> UpdateOneResult(string                   resultId,
+                                        UpdateDefinition<Result> updates,
+                                        CancellationToken        cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<long> UpdateManyResults(Expression<Func<Result, bool>> filter,
+                                        UpdateDefinition<Result>       updates,
+                                        CancellationToken              cancellationToken = default)
+      => throw new NotImplementedException();
+  }
 
   [Test]
   public async Task EmptyPayloadAndOneDependency()
@@ -80,38 +163,16 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("3333"),
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
-    var mockResultTable = new Mock<IResultTable>();
-    mockResultTable.Setup(x => x.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
-                                            It.IsAny<Expression<Func<Result, Result>>>(),
-                                            CancellationToken.None))
-                   .Returns(new List<Result>
-                            {
-                              new(sessionId,
-                                  dependency1,
-                                  "",
-                                  "",
-                                  "",
-                                  ResultStatus.Completed,
-                                  new List<string>(),
-                                  DateTime.UtcNow,
-                                  100,
-                                  Encoding.UTF8.GetBytes(dependency1)),
-                              new(sessionId,
-                                  payloadId,
-                                  "",
-                                  "",
-                                  "",
-                                  ResultStatus.Completed,
-                                  new List<string>(),
-                                  DateTime.UtcNow,
-                                  100,
-                                  Encoding.UTF8.GetBytes(payloadId)),
-                            }.ToAsyncEnumerable());
 
     var loggerFactory = new LoggerFactory();
 
     var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            mockResultTable.Object,
+                                            new CustomGetResultTable(sessionId,
+                                                                     new List<string>
+                                                                     {
+                                                                       dependency1,
+                                                                       payloadId,
+                                                                     }),
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
@@ -194,48 +255,16 @@ public class DataPrefetcherTest
                                                          Convert.FromBase64String("4444"),
                                                        }.ToAsyncEnumerable());
 
-    var mockResultTable = new Mock<IResultTable>();
-    mockResultTable.Setup(x => x.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
-                                            It.IsAny<Expression<Func<Result, Result>>>(),
-                                            CancellationToken.None))
-                   .Returns(new List<Result>
-                            {
-                              new(sessionId,
-                                  dependency1,
-                                  "",
-                                  "",
-                                  "",
-                                  ResultStatus.Completed,
-                                  new List<string>(),
-                                  DateTime.UtcNow,
-                                  100,
-                                  Encoding.UTF8.GetBytes(dependency1)),
-                              new(sessionId,
-                                  dependency2,
-                                  "",
-                                  "",
-                                  "",
-                                  ResultStatus.Completed,
-                                  new List<string>(),
-                                  DateTime.UtcNow,
-                                  100,
-                                  Encoding.UTF8.GetBytes(dependency2)),
-                              new(sessionId,
-                                  payloadId,
-                                  "",
-                                  "",
-                                  "",
-                                  ResultStatus.Completed,
-                                  new List<string>(),
-                                  DateTime.UtcNow,
-                                  100,
-                                  Encoding.UTF8.GetBytes(payloadId)),
-                            }.ToAsyncEnumerable());
-
     var loggerFactory = new LoggerFactory();
 
     var dataPrefetcher = new DataPrefetcher(mockObjectStorage.Object,
-                                            mockResultTable.Object,
+                                            new CustomGetResultTable(sessionId,
+                                                                     new List<string>
+                                                                     {
+                                                                       dependency1,
+                                                                       dependency2,
+                                                                       payloadId,
+                                                                     }),
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
