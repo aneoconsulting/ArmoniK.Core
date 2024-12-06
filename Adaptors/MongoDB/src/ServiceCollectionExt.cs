@@ -16,6 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
+using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -140,30 +143,6 @@ public static class ServiceCollectionExt
       logger.LogTrace("No credentials provided");
     }
 
-    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
-    {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported mongodb certificate from file {path}",
-                        mongoOptions.CAFile);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
-    }
-
     string connectionString;
     if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
     {
@@ -197,6 +176,75 @@ public static class ServiceCollectionExt
     settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
     settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
+    {
+      logger.LogInformation("Starting X509 certificate .");
+
+      // Find the authority certificate in the collection
+      var authority = new X509Certificate2(mongoOptions.CAFile);
+      logger.LogInformation("CA certificate loaded.: " + authority);
+
+      // Configure the SSL settings
+      settings.SslSettings = new SslSettings
+                             {
+                               ClientCertificates         = new X509Certificate2Collection(),
+                               CheckCertificateRevocation = false,
+                               EnabledSslProtocols        = SslProtocols.Tls12,
+                               ServerCertificateValidationCallback = (sender,
+                                                                      certificate2,
+                                                                      certChain,
+                                                                      sslPolicyErrors) =>
+                                                                     {
+                                                                       logger.LogInformation("Starting SSL certificate validation.");
+
+                                                                       if (sslPolicyErrors == SslPolicyErrors.None)
+                                                                       {
+                                                                         return true;
+                                                                       }
+
+                                                                       if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                                                       {
+                                                                         logger.LogError("SSL validation failed: {errors}",
+                                                                                         sslPolicyErrors);
+                                                                         return false;
+                                                                       }
+
+                                                                       // If there is any error other than untrusted root or partial chain, fail the validation
+                                                                       if (certChain!.ChainStatus.Any(status
+                                                                                                        => status.Status is not X509ChainStatusFlags.UntrustedRoot and
+                                                                                                                            not X509ChainStatusFlags.PartialChain))
+                                                                       {
+                                                                         return false;
+                                                                       }
+
+                                                                       // Disable some extensive checks that would fail on the authority that is not in store
+                                                                       certChain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
+                                                                       certChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+
+                                                                       // Add unknown authority to the store
+                                                                       certChain.ChainPolicy.ExtraStore.Add(authority);
+
+                                                                       // Check if the chain is valid for the actual server certificate (ie: trusted)
+                                                                       if (!certChain.Build(new X509Certificate2(certificate2!)))
+                                                                       {
+                                                                         logger.LogError("SSL chain validation failed.");
+                                                                         return false;
+                                                                       }
+
+                                                                       // Check that the chain root is actually the specified authority (caCert)
+                                                                       var isTrusted =
+                                                                         certChain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+
+                                                                       if (!isTrusted)
+                                                                       {
+                                                                         logger.LogError("Certificate chain root does not match the specified CA authority.");
+                                                                       }
+
+                                                                       return isTrusted;
+                                                                     },
+                             };
+    }
+
     settings.ClusterConfigurator = cb =>
                                    {
                                      //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
@@ -204,6 +252,7 @@ public static class ServiceCollectionExt
                                      //                                                       e.Command.ToJson()));
                                      cb.Subscribe(new DiagnosticsActivityEventSubscriber());
                                    };
+
 
     var client = new MongoClient(settings);
 
