@@ -14,6 +14,10 @@ variable "generated_env_vars" {
   type = map(string)
 }
 
+variable "mounts" {
+  type = map(string)
+}
+
 variable "exposed_port" {
   type    = number
   default = 5002
