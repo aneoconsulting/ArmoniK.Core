@@ -16,8 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
+using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -174,42 +177,106 @@ public static class ServiceCollectionExt
     {
       logger.LogInformation("Starting X509 certificate configuration.");
 
-      // Load the CA certificate
-      var authority = new X509Certificate2(mongoOptions.CAFile);
-      logger.LogInformation($"CA certificate loaded: {authority.Subject}");
-
-      //  SSL Parameters configuration
-      settings.SslSettings = new SslSettings
+      if (!File.Exists(mongoOptions.CAFile))
       {
-        ClientCertificates = new X509Certificate2Collection(authority),
-        EnabledSslProtocols = SslProtocols.Tls12,
-        ServerCertificateValidationCallback = (sender,
-                                               certificate,
-                                               chain,
-                                               sslPolicyErrors) =>
-                                              {
-                                                logger.LogInformation("Validating server certificate.");
+        throw new FileNotFoundException("CA certificate file not found", mongoOptions.CAFile);
+      }
 
+      // Load the CA certificate
+      try
+      {
+        var authority = new X509Certificate2(mongoOptions.CAFile);
+        logger.LogInformation("CA certificate loaded: {authority.Subject}", authority.Subject);
 
-                                                if (sslPolicyErrors == SslPolicyErrors.None)
+        //  SSL Parameters configuration
+        settings.SslSettings = new SslSettings
+        {
+          ClientCertificates = new X509Certificate2Collection(authority),
+          EnabledSslProtocols = SslProtocols.Tls12,
+          ServerCertificateValidationCallback = (sender,
+                                                 certificate,
+                                                 certChain,
+                                                 sslPolicyErrors) =>
                                                 {
-                                                  logger.LogInformation("SSL validation successful: no errors.");
+
+
+                                                  if (sslPolicyErrors == SslPolicyErrors.None)
+                                                  {
+                                                    logger.LogInformation("SSL validation successful: no errors.");
+                                                    return true;
+                                                  }
+                                                  // var cert = new X509Certificate2(certificate!);
+                                                  // var validHosts = new[] { mongoOptions.Host, "127.0.0.1", "localhost" }; //Adding localhost for local development
+
+                                                  // if (!validHosts.Any(host => cert.Subject.Contains($"CN={host}", StringComparison.OrdinalIgnoreCase)))
+                                                  // {
+                                                  //   logger.LogError("MongoOptions Host: {Host}", mongoOptions.Host);
+                                                  //   logger.LogError("Certificate Subject: {Subject}", cert.Subject);
+                                                  //   logger.LogError("Certificate name mismatch. Expected one of: {ExpectedHosts}, but found: {ActualSubject}", string.Join(", ", validHosts), cert.Subject);
+                                                  //   return false;
+                                                  // }
+                                                  logger.LogError("SSL validation failed with errors: {sslPolicyErrors}", sslPolicyErrors);
+
+                                                  // No Critical errors
+                                                  if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                                  {
+                                                    logger.LogCritical("Critical SSL errors detected.");
+                                                    return false;
+                                                  }
+
+                                                  // Validation of the certificate chain
+                                                  certChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                                                  certChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+                                                  certChain.ChainPolicy.ExtraStore.Add(authority); // add the CA certificate to the chain
+
+
+                                                  if (!certChain.Build(new X509Certificate2(certificate!)))
+                                                  {
+                                                    logger.LogError("SSL chain validation failed.");
+                                                    foreach (var status in certChain.ChainStatus)
+                                                    {
+                                                      logger.LogInformation("ChainStatus: {status.StatusInformation} ({status.Status})", status.StatusInformation, status.Status);
+                                                    }
+
+                                                    return false;
+                                                  }
+
+                                                  var isTrusted =
+                                                    certChain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+
+                                                  if (!isTrusted)
+                                                  {
+                                                    logger.LogError("Certificate chain root does not match the specified CA authority.");
+                                                    return false;
+                                                  }
+
                                                   return true;
                                                 }
+        };
 
-                                                logger.LogError($"SSL validation failed with errors: {sslPolicyErrors}");
+      }
+      catch (CryptographicException e)
+      {
+        logger.LogError(e,
+                        "Error loading CA certificate: {message}",
+                        e.Message);
+        logger.LogError(e.InnerException,
+                        "Inner exception: {message}",
+                        e.InnerException?.Message);
+        logger.LogError("Stack trace: {stackTrace}",
+                        e.StackTrace);
+        logger.LogError("Help link: {helpLink}",
+                        e.HelpLink);
 
-                                                // Refuse critical errors
-                                                if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
-                                                {
-                                                  logger.LogError("Critical SSL errors detected.");
-                                                  return false;
-                                                }
+        logger.LogError("HResult: {hResult}",
+                        e.HResult);
+        logger.LogError("Source: {source}",
+                        e.Source);
+        logger.LogError("Exception Data: {Data}", e.Data);
+        throw;
+      }
 
-                                                logger.LogInformation("SSL validation succeeded despite minor chain errors.");
-                                                return true;
-                                              },
-      };
+
     }
 
 
