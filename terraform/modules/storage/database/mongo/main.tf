@@ -50,9 +50,7 @@ resource "tls_self_signed_cert" "mongodb_certificate" {
   key_algorithm   = "RSA"
   private_key_pem = tls_private_key.mongodb_key.private_key_pem
 
-  subjects {
-    common_name = "mongodb"
-  }
+
 
   validity_period_hours = 8760
   early_renewal_hours   = 720
