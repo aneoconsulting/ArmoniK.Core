@@ -16,6 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
+using System.Linq;
+using System.Net.Security;
+using System.Security.Authentication;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -46,8 +51,8 @@ public static class ServiceCollectionExt
 {
   [PublicAPI]
   public static IServiceCollection AddMongoComponents(this IServiceCollection services,
-                                                      ConfigurationManager    configuration,
-                                                      ILogger                 logger)
+                                                      ConfigurationManager configuration,
+                                                      ILogger logger)
   {
     services.AddMongoClient(configuration,
                             logger);
@@ -58,8 +63,8 @@ public static class ServiceCollectionExt
 
   [PublicAPI]
   public static IServiceCollection AddMongoStorages(this IServiceCollection services,
-                                                    ConfigurationManager    configuration,
-                                                    ILogger                 logger)
+                                                    ConfigurationManager configuration,
+                                                    ILogger logger)
   {
     logger.LogInformation("Configure MongoDB Components");
 
@@ -98,8 +103,8 @@ public static class ServiceCollectionExt
   }
 
   public static IServiceCollection AddMongoClient(this IServiceCollection services,
-                                                  ConfigurationManager    configuration,
-                                                  ILogger                 logger)
+                                                  ConfigurationManager configuration,
+                                                  ILogger logger)
   {
     Options.MongoDB mongoOptions;
     services.AddOption(configuration,
@@ -140,30 +145,6 @@ public static class ServiceCollectionExt
       logger.LogTrace("No credentials provided");
     }
 
-    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
-    {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported mongodb certificate from file {path}",
-                        mongoOptions.CAFile);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
-    }
-
     string connectionString;
     if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
     {
@@ -190,13 +171,123 @@ public static class ServiceCollectionExt
     }
 
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
-    settings.UseTls                 = mongoOptions.Tls;
-    settings.DirectConnection       = mongoOptions.DirectConnection;
-    settings.Scheme                 = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+
+    // Configure the connection settings
+    settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
+    settings.UseTls = mongoOptions.Tls;
+    settings.DirectConnection = mongoOptions.DirectConnection;
+    settings.Scheme = ConnectionStringScheme.MongoDB;
+    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    settings.ReplicaSetName = mongoOptions.ReplicaSet;
+
+    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
+    {
+      logger.LogInformation("Starting X509 certificate configuration.");
+
+      if (!File.Exists(mongoOptions.CAFile))
+      {
+        throw new FileNotFoundException("CA certificate file not found", mongoOptions.CAFile);
+      }
+
+      // Load the CA certificate
+      try
+      {
+        var authority = new X509Certificate2(mongoOptions.CAFile);
+        logger.LogInformation("CA certificate loaded: {authority.Subject}", authority.Subject);
+
+        //  SSL Parameters configuration
+        settings.SslSettings = new SslSettings
+        {
+          ClientCertificates = new X509Certificate2Collection(authority),
+          EnabledSslProtocols = SslProtocols.Tls12,
+          ServerCertificateValidationCallback = (sender,
+                                                 certificate,
+                                                 certChain,
+                                                 sslPolicyErrors) =>
+                                                {
+
+
+                                                  if (sslPolicyErrors == SslPolicyErrors.None)
+                                                  {
+                                                    logger.LogInformation("SSL validation successful: no errors.");
+                                                    return true;
+                                                  }
+                                                  // var cert = new X509Certificate2(certificate!);
+                                                  // var validHosts = new[] { mongoOptions.Host, "127.0.0.1", "localhost" }; //Adding localhost for local development
+
+                                                  // if (!validHosts.Any(host => cert.Subject.Contains($"CN={host}", StringComparison.OrdinalIgnoreCase)))
+                                                  // {
+                                                  //   logger.LogError("MongoOptions Host: {Host}", mongoOptions.Host);
+                                                  //   logger.LogError("Certificate Subject: {Subject}", cert.Subject);
+                                                  //   logger.LogError("Certificate name mismatch. Expected one of: {ExpectedHosts}, but found: {ActualSubject}", string.Join(", ", validHosts), cert.Subject);
+                                                  //   return false;
+                                                  // }
+                                                  logger.LogError("SSL validation failed with errors: {sslPolicyErrors}", sslPolicyErrors);
+
+                                                  // No Critical errors
+                                                  if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                                  {
+                                                    logger.LogCritical("Critical SSL errors detected.");
+                                                    return false;
+                                                  }
+
+                                                  // Validation of the certificate chain
+                                                  certChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                                                  certChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+                                                  certChain.ChainPolicy.ExtraStore.Add(authority); // add the CA certificate to the chain
+
+
+                                                  if (!certChain.Build(new X509Certificate2(certificate!)))
+                                                  {
+                                                    logger.LogError("SSL chain validation failed.");
+                                                    foreach (var status in certChain.ChainStatus)
+                                                    {
+                                                      logger.LogInformation("ChainStatus: {status.StatusInformation} ({status.Status})", status.StatusInformation, status.Status);
+                                                    }
+
+                                                    return false;
+                                                  }
+
+                                                  var isTrusted =
+                                                    certChain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+
+                                                  if (!isTrusted)
+                                                  {
+                                                    logger.LogError("Certificate chain root does not match the specified CA authority.");
+                                                    return false;
+                                                  }
+
+                                                  return true;
+                                                }
+        };
+
+      }
+      catch (CryptographicException e)
+      {
+        logger.LogError(e,
+                        "Error loading CA certificate: {message}",
+                        e.Message);
+        logger.LogError(e.InnerException,
+                        "Inner exception: {message}",
+                        e.InnerException?.Message);
+        logger.LogError("Stack trace: {stackTrace}",
+                        e.StackTrace);
+        logger.LogError("Help link: {helpLink}",
+                        e.HelpLink);
+
+        logger.LogError("HResult: {hResult}",
+                        e.HResult);
+        logger.LogError("Source: {source}",
+                        e.Source);
+        logger.LogError("Exception Data: {Data}", e.Data);
+        throw;
+      }
+
+
+    }
+
+
     settings.ClusterConfigurator = cb =>
                                    {
                                      //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
@@ -204,6 +295,7 @@ public static class ServiceCollectionExt
                                      //                                                       e.Command.ToJson()));
                                      cb.Subscribe(new DiagnosticsActivityEventSubscriber());
                                    };
+
 
     var client = new MongoClient(settings);
 
@@ -229,7 +321,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager    configuration)
+                                                                           ConfigurationManager configuration)
   {
     var components = configuration.GetSection(Components.SettingSection);
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
@@ -250,7 +342,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager    configuration,
+                                                                  ConfigurationManager configuration,
                                                                   out AuthenticationCache authCache)
   {
     authCache = new AuthenticationCache();
