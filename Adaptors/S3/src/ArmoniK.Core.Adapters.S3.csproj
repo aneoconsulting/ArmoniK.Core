@@ -12,6 +12,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="AWSSDK.S3" Version="3.7.405" />
+    <!-- AWSSDK.SecurityToken is required to handle the default authentication -->
     <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.400.36" />
   </ItemGroup>
 
