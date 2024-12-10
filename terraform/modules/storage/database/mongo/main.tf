@@ -24,7 +24,7 @@ resource "docker_container" "database" {
     for_each = var.mongodb_params.windows ? [] : [1]
     content {
       test     = ["CMD", "mongosh", "--quiet", "--tls", "--tlsCAFile", "/mongo-certificate/ca.pem", "--eval", "db.runCommand('ping').ok"]
-     interval = "3s"
+      interval = "3s"
       retries  = "2"
       timeout  = "3s"
     }
@@ -32,14 +32,43 @@ resource "docker_container" "database" {
 
   upload {
     file    = "/mongo-certificate/key.pem"
-    content = local.server_key
+    content = tls_private_key.mongodb_key.private_key_pem
   }
 
   upload {
     file    = "/mongo-certificate/ca.pem"
-    content = tls_locally_signed_cert.mongodb_certificate.ca_cert_pem
+    content = tls_self_signed_cert.mongodb_certificate.cert_pem
   }
 }
+
+resource "tls_private_key" "mongodb_key" {
+  algorithm = "RSA"
+  rsa_bits  = 2048
+}
+
+resource "tls_self_signed_cert" "mongodb_certificate" {
+  key_algorithm   = "RSA"
+  private_key_pem = tls_private_key.mongodb_key.private_key_pem
+
+  subjects {
+    common_name = "mongodb"
+  }
+
+  validity_period_hours = 8760
+  early_renewal_hours   = 720
+
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "server_auth",
+  ]
+}
+
+resource "local_sensitive_file" "ca" {
+  content  = tls_self_signed_cert.mongodb_certificate.cert_pem
+  filename = "${path.module}/ca.pem"
+}
+
 resource "time_sleep" "wait" {
   create_duration = var.mongodb_params.windows ? "15s" : "0s"
   depends_on      = [docker_container.database]
