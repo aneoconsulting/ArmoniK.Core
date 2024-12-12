@@ -297,8 +297,9 @@ public sealed class Agent : IAgent
                                 .WhenAll()
                                 .ConfigureAwait(false);
 
-    await resultTable_.Create(results.Select(tuple => tuple.result)
-                                     .AsICollection(),
+    var ids = results.ViewSelect(tuple => tuple.result);
+
+    await resultTable_.Create(ids,
                               cancellationToken)
                       .ConfigureAwait(false);
 
@@ -308,8 +309,7 @@ public sealed class Agent : IAgent
                        result.add);
     }
 
-    return results.Select(tuple => tuple.result)
-                  .AsICollection();
+    return ids;
   }
 
   /// <inheritdoc />

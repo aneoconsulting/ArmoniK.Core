@@ -199,8 +199,7 @@ public class GrpcResultsService : Results.ResultsBase
                                .WhenAll()
                                .ConfigureAwait(false);
 
-    await resultTable_.Create(results.Select(tuple => tuple.Item1)
-                                     .AsICollection(),
+    await resultTable_.Create(results.ViewSelect(tuple => tuple.Item1),
                               context.CancellationToken)
                       .ConfigureAwait(false);
 
