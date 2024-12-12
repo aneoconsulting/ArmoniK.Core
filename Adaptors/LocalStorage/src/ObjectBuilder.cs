@@ -27,7 +27,7 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Adapters.LocalStorage;
 
 /// <summary>
-///   Class for building RabbitMQ object and Queue interfaces through Dependency Injection
+///   Class for building Local Storage instance and Object interfaces through Dependency Injection
 /// </summary>
 [PublicAPI]
 public class ObjectBuilder : IDependencyInjectionBuildable

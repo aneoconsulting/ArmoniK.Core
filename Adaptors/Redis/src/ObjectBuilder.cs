@@ -33,7 +33,7 @@ using StackExchange.Redis;
 namespace ArmoniK.Core.Adapters.Redis;
 
 /// <summary>
-///   Class for building RabbitMQ object and Queue interfaces through Dependency Injection
+///   Class for building Redis instance and Object interfaces through Dependency Injection
 /// </summary>
 [PublicAPI]
 public class ObjectBuilder : IDependencyInjectionBuildable
