@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,9 +26,10 @@ namespace ArmoniK.Core.Adapters.SQS;
 
 internal static class AmazonSqsClientExt
 {
-  public static async Task<string> GetOrCreateQueueUrlAsync(this AmazonSQSClient client,
-                                                            string               queueName,
-                                                            CancellationToken    cancellationToken)
+  public static async Task<string> GetOrCreateQueueUrlAsync(this AmazonSQSClient       client,
+                                                            string                     queueName,
+                                                            Dictionary<string, string> tags,
+                                                            CancellationToken          cancellationToken)
   {
     try
     {
@@ -40,9 +42,26 @@ internal static class AmazonSqsClientExt
       return (await client.CreateQueueAsync(new CreateQueueRequest
                                             {
                                               QueueName = queueName,
+                                              Tags      = tags,
                                             },
                                             cancellationToken)
                           .ConfigureAwait(false)).QueueUrl;
     }
+  }
+
+  public static string GetQueueName(this AmazonSQSClient client,
+                                    SQS                  options,
+                                    string?              partition = null)
+  {
+    _ = client;
+
+    if (string.IsNullOrEmpty(partition))
+    {
+      partition = options.PartitionId;
+    }
+
+    return string.IsNullOrEmpty(options.Prefix)
+             ? partition
+             : $"{options.Prefix}-{partition}";
   }
 }
