@@ -49,10 +49,33 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public static class ServiceCollectionExt
 {
+  public static void LogObjectProperties<T>(ILogger logger,
+                                            T obj,
+                                            string objectName)
+  {
+    if (obj == null)
+    {
+      logger.LogError("{ObjectName} is null",
+                      objectName);
+      return;
+    }
+
+    var properties = typeof(T).GetProperties();
+    foreach (var property in properties)
+    {
+      var value = property.GetValue(obj,
+                                    null);
+      logger.LogInformation("{ObjectName}.{Property} = {Value}",
+                            objectName,
+                            property.Name,
+                            value);
+    }
+  }
+
   [PublicAPI]
   public static IServiceCollection AddMongoComponents(this IServiceCollection services,
-                                                      ConfigurationManager    configuration,
-                                                      ILogger                 logger)
+                                                      ConfigurationManager configuration,
+                                                      ILogger logger)
   {
     services.AddMongoClient(configuration,
                             logger);
@@ -63,8 +86,8 @@ public static class ServiceCollectionExt
 
   [PublicAPI]
   public static IServiceCollection AddMongoStorages(this IServiceCollection services,
-                                                    ConfigurationManager    configuration,
-                                                    ILogger                 logger)
+                                                    ConfigurationManager configuration,
+                                                    ILogger logger)
   {
     logger.LogInformation("Configure MongoDB Components");
 
@@ -103,14 +126,13 @@ public static class ServiceCollectionExt
   }
 
   public static IServiceCollection AddMongoClient(this IServiceCollection services,
-                                                  ConfigurationManager    configuration,
-                                                  ILogger                 logger)
+                                                  ConfigurationManager configuration,
+                                                  ILogger logger)
   {
     Options.MongoDB mongoOptions;
     services.AddOption(configuration,
                        Options.MongoDB.SettingSection,
                        out mongoOptions);
-
     using var _ = logger.BeginNamedScope("MongoDB configuration",
                                          ("host", mongoOptions.Host),
                                          ("port", mongoOptions.Port));
@@ -173,13 +195,13 @@ public static class ServiceCollectionExt
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
 
     // Configure the connection settings
-    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
-    settings.UseTls                 = mongoOptions.Tls;
-    settings.DirectConnection       = mongoOptions.DirectConnection;
-    settings.Scheme                 = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+    settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
+    settings.UseTls = mongoOptions.Tls;
+    settings.DirectConnection = mongoOptions.DirectConnection;
+    settings.Scheme = ConnectionStringScheme.MongoDB;
+    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    settings.ReplicaSetName = mongoOptions.ReplicaSet;
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
@@ -199,95 +221,82 @@ public static class ServiceCollectionExt
       // Load the CA certificate
       try
       {
-        var authority = new X509Certificate2(mongoOptions.CAFile);
-        logger.LogInformation("CA certificate loaded: {authority.Subject}",
-                              authority.Subject);
-
+        var fileInfo = new FileInfo(mongoOptions.CAFile);
+        LogObjectProperties(logger,
+                            fileInfo,
+                            nameof(fileInfo));
+        var content = File.ReadAllLines(mongoOptions.CAFile);
+        LogObjectProperties(logger,
+                            content,
+                            nameof(content));
+        var authority = new X509Certificate2(mongoOptions.CAFile,
+                                             "",
+                                             X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet);
+        logger.LogInformation("CA certificate loaded: {authority}",
+                              authority);
         //  SSL Parameters configuration
         settings.SslSettings = new SslSettings
-                               {
-                                 ClientCertificates  = new X509Certificate2Collection(authority),
-                                 EnabledSslProtocols = SslProtocols.Tls12,
-                                 ServerCertificateValidationCallback = (sender,
-                                                                        certificate,
-                                                                        certChain,
-                                                                        sslPolicyErrors) =>
-                                                                       {
-                                                                         if (sslPolicyErrors == SslPolicyErrors.None)
-                                                                         {
-                                                                           logger.LogInformation("SSL validation successful: no errors.");
-                                                                           return true;
-                                                                         }
+        {
+          ClientCertificates = new X509Certificate2Collection(authority),
+          EnabledSslProtocols = SslProtocols.Tls12,
+          ServerCertificateValidationCallback = (sender,
+                                                 certificate,
+                                                 certChain,
+                                                 sslPolicyErrors) =>
 
-                                                                         logger.LogError("SSL validation failed with errors: {sslPolicyErrors}",
-                                                                                         sslPolicyErrors);
+                                                {
+                                                  logger.LogInformation("SSL validation callback called.");
+                                                  if (sslPolicyErrors == SslPolicyErrors.None)
+                                                  {
+                                                    logger.LogInformation("SSL validation successful: no errors.");
+                                                    return true;
+                                                  }
 
-                                                                         if (certificate == null)
-                                                                         {
-                                                                           logger.LogError("Certificate is null!");
-                                                                           return false;
-                                                                         }
+                                                  if (certificate == null)
+                                                  {
+                                                    logger.LogInformation("Certificate is null!");
+                                                    return false;
+                                                  }
 
-                                                                         var cert = new X509Certificate2(certificate);
-                                                                         if (certChain == null)
-                                                                         {
-                                                                           logger.LogError("Certificate chain is null!");
-                                                                           return false;
-                                                                         }
+                                                  if (certChain == null)
+                                                  {
+                                                    logger.LogInformation("Certificate chain is null!");
+                                                    return false;
+                                                  }
 
-                                                                         certChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                                                                         certChain.ChainPolicy.VerificationFlags =
-                                                                           X509VerificationFlags.AllowUnknownCertificateAuthority;
-                                                                         // Build the chain 
-                                                                         if (!certChain.Build(cert))
-                                                                         {
-                                                                           logger.LogError("SSL chain validation failed.");
-                                                                           foreach (var status in certChain.ChainStatus)
-                                                                           {
-                                                                             logger.LogError("ChainStatus: {status.StatusInformation} ({status.Status})",
-                                                                                             status.StatusInformation,
-                                                                                             status.Status);
-                                                                           }
-
-                                                                           return false;
-                                                                         }
-
-                                                                         // Verification of the chain root 
-                                                                         if (authority != null)
-                                                                         {
-                                                                           certChain.ChainPolicy.ExtraStore.Add(authority);
-                                                                           logger.LogInformation("Added CA certificate to chain policy.");
-                                                                           var isTrusted =
-                                                                             certChain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
-
-                                                                           if (!isTrusted)
-                                                                           {
-                                                                             logger.LogError("Certificate chain root does not match the specified CA authority.");
-                                                                             return false;
-                                                                           }
-                                                                         }
+                                                  logger.LogError("SSL validation failed with errors: {sslPolicyErrors}",
+                                                                  sslPolicyErrors.ToString());
 
 
-                                                                         var validHosts = new[]
-                                                                                          {
-                                                                                            mongoOptions.Host,
-                                                                                            "127.0.0.1",
-                                                                                            "localhost"
-                                                                                          };
-                                                                         if (!validHosts.Any(host => cert.Subject.Contains($"CN={host}",
-                                                                                                                           StringComparison.OrdinalIgnoreCase)))
-                                                                         {
-                                                                           logger
-                                                                             .LogError("Certificate host mismatch. Expected one of: {ValidHosts}, but found: {CertSubject}",
-                                                                                       validHosts,
-                                                                                       cert.Subject);
-                                                                           return false;
-                                                                         }
+                                                  var cert = new X509Certificate2(certificate);
 
-                                                                         logger.LogInformation("SSL validation successful.");
-                                                                         return true;
-                                                                       }
-                               };
+
+                                                  if (mongoOptions.AllowInsecureTls)
+                                                  {
+                                                    certChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                                                    certChain.ChainPolicy.VerificationFlags =
+                                                      X509VerificationFlags.AllowUnknownCertificateAuthority;
+                                                  }
+
+                                                  certChain.ChainPolicy.ExtraStore.Add(authority);
+                                                  if (!certChain.Build(cert))
+                                                  {
+                                                    logger.LogError("SSL chain validation failed.");
+                                                    foreach (var status in certChain.ChainStatus)
+                                                    {
+                                                      logger.LogError("ChainStatus: {status.StatusInformation} ({status.Status})",
+                                                                      status.StatusInformation,
+                                                                      status.Status);
+                                                    }
+
+                                                    return false;
+                                                  }
+
+                                                  logger.LogError("SSL validation failed with errors: {sslPolicyErrors}",
+                                                                  sslPolicyErrors.ToString());
+                                                  return false;
+                                                }
+        };
       }
       catch (CryptographicException e)
       {
@@ -346,7 +355,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager    configuration)
+                                                                           ConfigurationManager configuration)
   {
     var components = configuration.GetSection(Components.SettingSection);
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
@@ -367,7 +376,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager    configuration,
+                                                                  ConfigurationManager configuration,
                                                                   out AuthenticationCache authCache)
   {
     authCache = new AuthenticationCache();
