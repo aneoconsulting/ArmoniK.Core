@@ -17,7 +17,6 @@
 
 using System;
 
-using Amazon.Runtime;
 using Amazon.SQS;
 
 using ArmoniK.Core.Base;
@@ -40,9 +39,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
     var sqsOptions = configuration.GetSection(SQS.SettingSection)
                                   .Get<SQS>() ?? throw new InvalidOperationException("Options not found");
 
-    var credentials = new EnvironmentVariablesAWSCredentials();
-    var client = new AmazonSQSClient(credentials,
-                                     new AmazonSQSConfig
+    var client = new AmazonSQSClient(new AmazonSQSConfig
                                      {
                                        ServiceURL = sqsOptions.ServiceURL,
                                      });
