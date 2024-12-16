@@ -17,7 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,18 +67,17 @@ public class ObjectStorage : IObjectStorage
     await foreach (var val in valueChunks.WithCancellation(cancellationToken)
                                          .ConfigureAwait(false))
     {
-      array.AddRange(val.ToArray());
+      array.AddRange(val.Span);
     }
 
     return (array.ToArray(), array.Count);
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
-                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    yield return id;
-  }
+  public IAsyncEnumerable<byte[]> GetValuesAsync(byte[]            id,
+                                                 CancellationToken cancellationToken = default)
+    => AsyncEnumerable.Repeat(id,
+                              1);
 
   /// <inheritdoc />
   public Task TryDeleteAsync(IEnumerable<byte[]> ids,
