@@ -52,27 +52,11 @@ locals {
   prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
 }
 
-resource "null_resource" "test_connection" {
-  provisioner "local-exec" {
-    command = <<EOT
-      output=$(${local.prefix_run} --eval "db.runCommand('ping')"); 
-      echo "$output"; 
-      if echo "$output" | grep -q '"ok" : 1'; then 
-        echo "Ping successful"; 
-      else 
-        echo "Ping failed"; 
-        exit 1; 
-      fi
-    EOT
-  }
-  depends_on = [time_sleep.wait]
-}
-
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
     command = "${local.prefix_run} --eval \"rs.initiate({_id: '${var.mongodb_params.replica_set_name}', members: [{_id: 0, host: '127.0.0.1:27017'}]})\""
   }
-  depends_on = [null_resource.test_connection]
+  depends_on = [time_sleep.wait]
 }
 
 
