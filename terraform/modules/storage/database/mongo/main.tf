@@ -24,7 +24,7 @@ resource "docker_container" "database" {
     for_each = var.mongodb_params.windows ? [] : [1]
     content {
       test     = ["CMD", "mongosh", "--quiet", "--tls", "--tlsCAFile", "/mongo-certificate/ca.pem", "--eval", "db.runCommand('ping').ok"]
-     interval = "3s"
+      interval = "3s"
       retries  = "2"
       timeout  = "3s"
     }
@@ -33,6 +33,18 @@ resource "docker_container" "database" {
   upload {
     file    = "/mongo-certificate/key.pem"
     content = local.server_key
+  }
+
+  upload {
+    file    = "/mongo-init.js"
+    content = <<EOT
+rs.initiate({
+  _id: "${var.mongodb_params.replica_set_name}",
+  members: [
+    {_id: 0, host: "127.0.0.1:27017"}
+  ]
+});
+EOT
   }
 
   upload {
@@ -54,15 +66,7 @@ locals {
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = <<EOT
-echo 'rs.initiate({
-  _id: "${var.mongodb_params.replica_set_name}",
-  members: [
-    {_id: 0, host: "127.0.0.1:27017"}
-  ]
-});' > initReplicaSet.js
-${local.prefix_run} initReplicaSet.js
-EOT
+    command = "${local.prefix_run} /mongo-init.js"
   }
   depends_on = [time_sleep.wait]
 }
