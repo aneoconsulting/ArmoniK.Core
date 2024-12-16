@@ -46,15 +46,15 @@ resource "time_sleep" "wait" {
 }
 
 locals {
-  linux_run = "docker exec ${docker_container.database.name} mongosh mongodb://127.0.0.1:27017/${var.mongodb_params.database_name} --tls --tlsCAFile /mongo-certificate/ca.pem"
+  linux_run = "docker exec ${docker_container.database.name} mongosh mongodb://localhost:27017/${var.mongodb_params.database_name} --tls --tlsCAFile /mongo-certificate/ca.pem"
   // mongosh is not installed in windows docker images so we need it to be installed locally
-  windows_run = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name} --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
+  windows_run = "mongosh.exe mongodb://localhost:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name} --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
   prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
 }
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = "${local.prefix_run} --eval \"rs.initiate({_id: '${var.mongodb_params.replica_set_name}', members: [{_id: 0, host: '127.0.0.1:27017'}]})\""
+    command = "${local.prefix_run} --eval \"rs.initiate({_id: '${var.mongodb_params.replica_set_name}', members: [{_id: 0, host: 'localhost:27017'}]})\""
   }
   depends_on = [time_sleep.wait]
 }
