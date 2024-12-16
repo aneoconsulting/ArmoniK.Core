@@ -51,51 +51,27 @@ locals {
   windows_run = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name} --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
   prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
 }
+
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = var.mongodb_params.windows ? (
-      <<EOT
-${local.prefix_run} --eval @'
-rs.initiate({
+    command = <<EOT
+echo 'rs.initiate({
   _id: "${var.mongodb_params.replica_set_name}",
   members: [
     {_id: 0, host: "127.0.0.1:27017"}
   ]
-});
-'@
+});' > initReplicaSet.js
+${local.prefix_run} initReplicaSet.js
 EOT
-    ) : (
-      <<EOT
-${local.prefix_run} --eval '
-rs.initiate({
-  _id: "${var.mongodb_params.replica_set_name}",
-  members: [
-    {_id: 0, host: "127.0.0.1:27017"}
-  ]
-});
-'
-EOT
-    )
   }
   depends_on = [time_sleep.wait]
 }
 
+
 resource "null_resource" "partitions_in_db" {
   for_each = var.partition_list
   provisioner "local-exec" {
-    command = var.mongodb_params.windows ? (
-      <<EOT
-${local.prefix_run} --eval @'
-db.PartitionData.insertOne(${jsonencode(each.value)});
-'@
-EOT
-    ) : (
-      <<EOT
-${local.prefix_run} --eval '
-db.PartitionData.insertOne(${jsonencode(each.value)});
-'
-EOT
-    )
+    command = "${local.prefix_run} --eval 'db.PartitionData.insertOne(${jsonencode(each.value)})'"
   }
   depends_on = [null_resource.init_replica]
 }
