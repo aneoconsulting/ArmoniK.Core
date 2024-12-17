@@ -221,9 +221,7 @@ public static class ServiceCollectionExt
         LogObjectProperties(logger,
                             content,
                             nameof(content));
-        var authority = new X509Certificate2(mongoOptions.CAFile,
-                                             "",
-                                             X509KeyStorageFlags.Exportable | X509KeyStorageFlags.MachineKeySet);
+        var authority = new X509Certificate2(mongoOptions.CAFile);
         logger.LogInformation("CA certificate loaded: {authority}",
                               authority);
         //  SSL Parameters configuration
@@ -244,6 +242,12 @@ public static class ServiceCollectionExt
                                                     return true;
                                                   }
 
+                                                  // If there is any error other than untrusted root or partial chain, fail the validation
+                                                  if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                                  {
+                                                    return false;
+                                                  }
+
                                                   if (certificate == null)
                                                   {
                                                     logger.LogInformation("Certificate is null!");
@@ -255,20 +259,21 @@ public static class ServiceCollectionExt
                                                     logger.LogInformation("Certificate chain is null!");
                                                     return false;
                                                   }
+                                                  // If there is any error other than untrusted root or partial chain, fail the validation
+                                                  if (certChain.ChainStatus.Any(status => status.Status is not X509ChainStatusFlags.UntrustedRoot and not X509ChainStatusFlags.PartialChain))
+                                                  {
+                                                    return false;
+                                                  }
 
                                                   logger.LogError("SSL validation failed with errors: {sslPolicyErrors}",
-                                                                  sslPolicyErrors.ToString());
+                                                                  sslPolicyErrors);
 
 
                                                   var cert = new X509Certificate2(certificate);
+                                                  certChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
+                                                  certChain.ChainPolicy.VerificationFlags =
+                                                    X509VerificationFlags.AllowUnknownCertificateAuthority;
 
-
-                                                  if (mongoOptions.AllowInsecureTls)
-                                                  {
-                                                    certChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                                                    certChain.ChainPolicy.VerificationFlags =
-                                                      X509VerificationFlags.AllowUnknownCertificateAuthority;
-                                                  }
 
                                                   certChain.ChainPolicy.ExtraStore.Add(authority);
                                                   if (!certChain.Build(cert))
@@ -284,9 +289,8 @@ public static class ServiceCollectionExt
                                                     return false;
                                                   }
 
-                                                  logger.LogError("SSL validation failed with errors: {sslPolicyErrors}",
-                                                                  sslPolicyErrors.ToString());
-                                                  return false;
+                                                  return certChain.ChainElements.Cast<X509ChainElement>()
+                               .Any(x => x.Certificate.Thumbprint == authority.Thumbprint); ;
                                                 }
         };
       }
