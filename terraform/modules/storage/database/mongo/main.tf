@@ -63,14 +63,25 @@ locals {
   windows_run = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name} --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
   prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
 }
+resource "local_file" "mongo_init" {
+  content = <<EOT
+rs.initiate({
+  _id: "${var.mongodb_params.replica_set_name}",
+  members: [
+    {_id: 0, host: "127.0.0.1:27017"}
+  ]
+});
+EOT
+  filename        = "${path.root}/generated/mongo/mongo-init.js"
+  file_permission = "0644"
+}
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = "${local.prefix_run} --file ./mongo-certificate/mongo-init.js"
+    command = "${local.prefix_run} --file ${local_file.mongo_init.filename}"
   }
   depends_on = [time_sleep.wait]
 }
-
 
 resource "null_resource" "partitions_in_db" {
   for_each = var.partition_list
