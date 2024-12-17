@@ -36,7 +36,7 @@ resource "docker_container" "database" {
   }
 
   upload {
-    file    = "/mongo-init.js"
+    file    = "/mongo-certificate/mongo-init.js"
     content = <<EOT
 rs.initiate({
   _id: "${var.mongodb_params.replica_set_name}",
@@ -66,7 +66,7 @@ locals {
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = "${local.prefix_run} --file ./mongo-init.js"
+    command = "${local.prefix_run} --file /mongo-certificate/mongo-init.js"
   }
   depends_on = [time_sleep.wait]
 }
