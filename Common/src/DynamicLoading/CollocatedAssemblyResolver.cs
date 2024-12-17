@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2023. All rights reserved.
+// Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -52,7 +52,11 @@ public class CollocatedAssemblyResolver
 
     PathDictionary[Path.GetDirectoryName(Assembly.GetCallingAssembly()
                                                  .Location)!] = true;
-    PathDictionary[Path.GetDirectoryName(typeof(CollocatedAssemblyResolver).Assembly.Location)!] = true;
+
+    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+    {
+      PathDictionary[Path.GetDirectoryName(assembly.Location)!] = true;
+    }
   }
 
   public Assembly? AssemblyResolve(object?          sender,
@@ -66,27 +70,38 @@ public class CollocatedAssemblyResolver
       return null;
     }
 
-    var assemblyName  = new AssemblyName(args.Name).Name;
-    var directoryName = Path.GetDirectoryName(args.RequestingAssembly.Location)!;
+    var assemblyName = new AssemblyName(args.Name).Name;
 
-    PathDictionary[directoryName] = true;
-
-    foreach (var kp in PathDictionary)
+    if (string.IsNullOrEmpty(assemblyName))
     {
-      logger_.LogInformation("Trying to load {Assembly} from {Directory}",
-                             assemblyName,
-                             kp.Key);
+      logger_.LogWarning("The assembly to resolve {AssemblyToResolve} does not have a name",
+                         args.Name);
+      return null;
+    }
 
-      var assemblyPath = Path.Combine(kp.Key,
+    var directoryName = Path.GetDirectoryName(args.RequestingAssembly.Location);
+
+    if (!string.IsNullOrEmpty(directoryName))
+    {
+      PathDictionary[directoryName] = true;
+    }
+
+    foreach (var path in PathDictionary.Keys)
+    {
+      var assemblyPath = Path.Combine(path,
                                       assemblyName + ".dll");
 
       if (File.Exists(assemblyPath))
       {
+        logger_.LogDebug("Loading assembly {Assembly} from {Directory}",
+                         assemblyName,
+                         path);
         return Assembly.LoadFile(assemblyPath);
       }
 
-      logger_.LogDebug("{AssemblyPath} file does not exist",
-                       assemblyPath);
+      logger_.LogDebug("Assembly {Assembly} not found in {Directory}",
+                       assemblyName,
+                       path);
     }
 
     return null;
