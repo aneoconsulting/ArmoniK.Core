@@ -66,7 +66,7 @@ locals {
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = "${local.prefix_run} /mongo-init.js"
+    command = "${local.prefix_run} --file /mongo-init.js"
   }
   depends_on = [time_sleep.wait]
 }
