@@ -36,15 +36,8 @@ resource "docker_container" "database" {
   }
 
   upload {
-    file    = "/mongo-certificate/mongo-init.js"
-    content = <<EOT
-rs.initiate({
-  _id: "${var.mongodb_params.replica_set_name}",
-  members: [
-    {_id: 0, host: "127.0.0.1:27017"}
-  ]
-});
-EOT
+    file    = "/mongo-init.js"
+    content = local.mongo_init_repset
   }
 
   upload {
@@ -60,11 +53,9 @@ resource "time_sleep" "wait" {
 locals {
   linux_run = "docker exec ${docker_container.database.name} mongosh mongodb://127.0.0.1:27017/${var.mongodb_params.database_name} --tls --tlsCAFile /mongo-certificate/ca.pem"
   // mongosh is not installed in windows docker images so we need it to be installed locally
-  windows_run = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name} --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
-  prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
-}
-resource "local_file" "mongo_init" {
-  content = <<EOT
+  windows_run       = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name} --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
+  prefix_run        = var.mongodb_params.windows ? local.windows_run : local.linux_run
+  mongo_init_repset = <<EOT
 rs.initiate({
   _id: "${var.mongodb_params.replica_set_name}",
   members: [
@@ -72,13 +63,17 @@ rs.initiate({
   ]
 });
 EOT
-  filename        = "${path.root}/generated/mongo/mongo-init.js"
-  file_permission = "0644"
+}
+
+resource "local_file" "mongo_init" {
+  content  = local.mongo_init_repset
+  filename = "${path.root}/generated/mongo/mongo_init.js"
+
 }
 
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = "${local.prefix_run} --file ${local_file.mongo_init.filename}"
+    command = var.mongodb_params.windows ? "${local.windows_run} --file ${local_file.mongo_init.filename}" : "${local.linux_run} --file /mongo-init.js"
   }
   depends_on = [time_sleep.wait]
 }
