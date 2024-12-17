@@ -20,7 +20,6 @@ using System.IO;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Authentication;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -49,33 +48,10 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 public static class ServiceCollectionExt
 {
-  public static void LogObjectProperties<T>(ILogger logger,
-                                            T obj,
-                                            string objectName)
-  {
-    if (obj == null)
-    {
-      logger.LogError("{ObjectName} is null",
-                      objectName);
-      return;
-    }
-
-    var properties = typeof(T).GetProperties();
-    foreach (var property in properties)
-    {
-      var value = property.GetValue(obj,
-                                    null);
-      logger.LogInformation("{ObjectName}.{Property} = {Value}",
-                            objectName,
-                            property.Name,
-                            value);
-    }
-  }
-
   [PublicAPI]
   public static IServiceCollection AddMongoComponents(this IServiceCollection services,
-                                                      ConfigurationManager configuration,
-                                                      ILogger logger)
+                                                      ConfigurationManager    configuration,
+                                                      ILogger                 logger)
   {
     services.AddMongoClient(configuration,
                             logger);
@@ -86,8 +62,8 @@ public static class ServiceCollectionExt
 
   [PublicAPI]
   public static IServiceCollection AddMongoStorages(this IServiceCollection services,
-                                                    ConfigurationManager configuration,
-                                                    ILogger logger)
+                                                    ConfigurationManager    configuration,
+                                                    ILogger                 logger)
   {
     logger.LogInformation("Configure MongoDB Components");
 
@@ -118,8 +94,8 @@ public static class ServiceCollectionExt
   }
 
   public static IServiceCollection AddMongoClient(this IServiceCollection services,
-                                                  ConfigurationManager configuration,
-                                                  ILogger logger)
+                                                  ConfigurationManager    configuration,
+                                                  ILogger                 logger)
   {
     Options.MongoDB mongoOptions;
     services.AddOption(configuration,
@@ -187,134 +163,81 @@ public static class ServiceCollectionExt
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
 
     // Configure the connection settings
-    settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
-    settings.UseTls = mongoOptions.Tls;
-    settings.DirectConnection = mongoOptions.DirectConnection;
-    settings.Scheme = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
+    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
+    settings.UseTls                 = mongoOptions.Tls;
+    settings.DirectConnection       = mongoOptions.DirectConnection;
+    settings.Scheme                 = ConnectionStringScheme.MongoDB;
+    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName = mongoOptions.ReplicaSet;
+    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
-      logger.LogInformation("Starting X509 certificate configuration.");
-
       if (!File.Exists(mongoOptions.CAFile))
       {
         throw new FileNotFoundException("CA certificate file not found",
                                         mongoOptions.CAFile);
       }
 
-      logger.LogInformation("CA file found at path: {path}",
-                            mongoOptions.CAFile);
-      logger.LogInformation("Raw CA file path: {path}",
-                            mongoOptions.CAFile);
-
       // Load the CA certificate
-      try
-      {
-        var fileInfo = new FileInfo(mongoOptions.CAFile);
-        LogObjectProperties(logger,
-                            fileInfo,
-                            nameof(fileInfo));
-        var content = File.ReadAllLines(mongoOptions.CAFile);
-        LogObjectProperties(logger,
-                            content,
-                            nameof(content));
-        var authority = new X509Certificate2(mongoOptions.CAFile);
-        logger.LogInformation("CA certificate loaded: {authority}",
-                              authority);
-        //  SSL Parameters configuration
-        settings.SslSettings = new SslSettings
-        {
-          ClientCertificates = new X509Certificate2Collection(authority),
-          EnabledSslProtocols = SslProtocols.Tls12,
-          ServerCertificateValidationCallback = (sender,
-                                                 certificate,
-                                                 certChain,
-                                                 sslPolicyErrors) =>
+      var authority = new X509Certificate2(mongoOptions.CAFile);
+      logger.LogInformation("CA certificate loaded: {authority}",
+                            authority);
+      //  SSL Parameters configuration
+      settings.SslSettings = new SslSettings
+                             {
+                               ClientCertificates  = new X509Certificate2Collection(authority),
+                               EnabledSslProtocols = SslProtocols.Tls12,
+                               ServerCertificateValidationCallback = (sender,
+                                                                      certificate,
+                                                                      certChain,
+                                                                      sslPolicyErrors) =>
 
-                                                {
-                                                  logger.LogInformation("SSL validation callback called.");
-                                                  if (sslPolicyErrors == SslPolicyErrors.None)
-                                                  {
-                                                    logger.LogInformation("SSL validation successful: no errors.");
-                                                    return true;
-                                                  }
+                                                                     {
+                                                                       // If there is any error other than untrusted root or partial chain, fail the validation
+                                                                       if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                                                       {
+                                                                         logger.LogDebug("SSL validation failed with errors: {sslPolicyErrors}",
+                                                                                         sslPolicyErrors);
+                                                                         return false;
+                                                                       }
 
-                                                  // If there is any error other than untrusted root or partial chain, fail the validation
-                                                  if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
-                                                  {
-                                                    return false;
-                                                  }
+                                                                       if (certificate == null)
+                                                                       {
+                                                                         logger.LogDebug("Certificate is null!");
+                                                                         return false;
+                                                                       }
 
-                                                  if (certificate == null)
-                                                  {
-                                                    logger.LogInformation("Certificate is null!");
-                                                    return false;
-                                                  }
+                                                                       if (certChain == null)
+                                                                       {
+                                                                         logger.LogDebug("Certificate chain is null!");
+                                                                         return false;
+                                                                       }
 
-                                                  if (certChain == null)
-                                                  {
-                                                    logger.LogInformation("Certificate chain is null!");
-                                                    return false;
-                                                  }
-                                                  // If there is any error other than untrusted root or partial chain, fail the validation
-                                                  if (certChain.ChainStatus.Any(status => status.Status is not X509ChainStatusFlags.UntrustedRoot and not X509ChainStatusFlags.PartialChain))
-                                                  {
-                                                    return false;
-                                                  }
+                                                                       // If there is any error other than untrusted root or partial chain, fail the validation
+                                                                       if (certChain.ChainStatus.Any(status
+                                                                                                       => status.Status is not X509ChainStatusFlags.UntrustedRoot and
+                                                                                                                           not X509ChainStatusFlags.PartialChain))
+                                                                       {
+                                                                         logger.LogDebug("SSL validation failed with chain status: {chainStatus}",
+                                                                                         certChain.ChainStatus);
+                                                                         return false;
+                                                                       }
 
-                                                  logger.LogError("SSL validation failed with errors: {sslPolicyErrors}",
-                                                                  sslPolicyErrors);
+                                                                       var cert = new X509Certificate2(certificate);
+                                                                       certChain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
+                                                                       certChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
 
+                                                                       certChain.ChainPolicy.ExtraStore.Add(authority);
+                                                                       if (!certChain.Build(cert))
+                                                                       {
+                                                                         return false;
+                                                                       }
 
-                                                  var cert = new X509Certificate2(certificate);
-                                                  certChain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;
-                                                  certChain.ChainPolicy.VerificationFlags =
-                                                    X509VerificationFlags.AllowUnknownCertificateAuthority;
-
-
-                                                  certChain.ChainPolicy.ExtraStore.Add(authority);
-                                                  if (!certChain.Build(cert))
-                                                  {
-                                                    logger.LogError("SSL chain validation failed.");
-                                                    foreach (var status in certChain.ChainStatus)
-                                                    {
-                                                      logger.LogError("ChainStatus: {status.StatusInformation} ({status.Status})",
-                                                                      status.StatusInformation,
-                                                                      status.Status);
-                                                    }
-
-                                                    return false;
-                                                  }
-
-                                                  return certChain.ChainElements.Cast<X509ChainElement>()
-                               .Any(x => x.Certificate.Thumbprint == authority.Thumbprint); ;
-                                                }
-        };
-      }
-      catch (CryptographicException e)
-      {
-        logger.LogError(e,
-                        "Error loading CA certificate: {message}",
-                        e.Message);
-        logger.LogError(e.InnerException,
-                        "Inner exception: {message}",
-                        e.InnerException?.Message);
-        logger.LogError("Stack trace: {stackTrace}",
-                        e.StackTrace);
-        logger.LogError("Help link: {helpLink}",
-                        e.HelpLink);
-
-        logger.LogError("HResult: {hResult}",
-                        e.HResult);
-        logger.LogError("Source: {source}",
-                        e.Source);
-        logger.LogError("Exception Data: {Data}",
-                        e.Data);
-        throw;
-      }
+                                                                       return certChain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+                                                                       ;
+                                                                     },
+                             };
     }
 
 
@@ -351,7 +274,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager configuration)
+                                                                           ConfigurationManager    configuration)
   {
     var components = configuration.GetSection(Components.SettingSection);
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
@@ -372,7 +295,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager configuration,
+                                                                  ConfigurationManager    configuration,
                                                                   out AuthenticationCache authCache)
   {
     authCache = new AuthenticationCache();
