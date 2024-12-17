@@ -53,10 +53,7 @@ public class CollocatedAssemblyResolver
     PathDictionary[Path.GetDirectoryName(Assembly.GetCallingAssembly()
                                                  .Location)!] = true;
 
-    foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-    {
-      PathDictionary[Path.GetDirectoryName(assembly.Location)!] = true;
-    }
+    PathDictionary[Path.GetDirectoryName(typeof(CollocatedAssemblyResolver).Assembly.Location)!] = true;
   }
 
   public Assembly? AssemblyResolve(object?          sender,
