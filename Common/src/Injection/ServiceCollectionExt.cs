@@ -104,6 +104,7 @@ public static class ServiceCollectionExt
     }
 
     var assembly = Assembly.LoadFrom(queueSettings.AdapterAbsolutePath);
+
     logger.LogInformation("Loaded assembly {assemblyName}",
                           assembly.FullName);
 
