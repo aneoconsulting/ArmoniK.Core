@@ -36,6 +36,7 @@
     <PackageReference Include="AWSSDK.SQS" Version="3.7.400.36" />
     <!-- AWSSDK.SecurityToken is required to handle the default authentication -->
     <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.400.36" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.400.36" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="8.0.1" />
   </ItemGroup>
 

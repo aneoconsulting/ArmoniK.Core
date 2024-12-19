@@ -62,6 +62,8 @@ public class AdapterLoadingTest
                                     "ArmoniK.Core.Adapters.Amqp.QueueBuilder").SetArgDisplayNames("Amqp");
       yield return new TestCaseData($"{SolutionRoot}{RabbitPath}",
                                     "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder").SetArgDisplayNames("RabbitMQ");
+      yield return new TestCaseData($"{SolutionRoot}{SqsPath}",
+                                    "ArmoniK.Core.Adapters.SQS.QueueBuilder").SetArgDisplayNames("SQS");
     }
   }
 
@@ -100,6 +102,9 @@ public class AdapterLoadingTest
                                            },
                                            {
                                              "Amqp:User", "User"
+                                           },
+                                           {
+                                             "SQS:ServiceURL", "http://test:4566"
                                            },
                                          };
 
@@ -188,22 +193,6 @@ public class AdapterLoadingTest
                                         $"{SolutionRoot}{PubSubPath}"
                                       },
                                     }).SetArgDisplayNames("PubSub no credentials");
-
-      yield return new TestCaseData(new MissingMethodException(),
-                                    new Dictionary<string, string?>
-                                    {
-                                      {
-                                        "SQS:ServiceURL", "ServiceURL"
-                                      },
-                                      {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}",
-                                        "ArmoniK.Core.Adapters.SQS.QueueBuilder"
-                                      },
-                                      {
-                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
-                                        $"{SolutionRoot}{SqsPath}"
-                                      },
-                                    }).SetArgDisplayNames("SQS misses a method when loading");
     }
   }
 

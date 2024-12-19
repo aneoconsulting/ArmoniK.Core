@@ -106,6 +106,7 @@ public static class ServiceCollectionExt
     }
 
     var assembly = Assembly.LoadFrom(settings.AdapterAbsolutePath);
+
     logger.LogInformation("Loaded assembly {assemblyName}",
                           assembly.FullName);
 
