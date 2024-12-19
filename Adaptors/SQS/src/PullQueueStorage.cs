@@ -41,9 +41,10 @@ internal class PullQueueStorage : IPullQueueStorage
   // ReSharper disable once NotAccessedField.Local
   private readonly ILogger<PullQueueStorage> logger_;
 
-  private readonly string  queueName_;
-  private          bool    isInitialized_;
-  private          string? queueUrl_;
+  private readonly string                     queueName_;
+  private readonly Dictionary<string, string> tags_;
+  private          bool                       isInitialized_;
+  private          string?                    queueUrl_;
 
   public PullQueueStorage(AmazonSQSClient           client,
                           SQS                       options,
@@ -51,7 +52,8 @@ internal class PullQueueStorage : IPullQueueStorage
   {
     client_    = client;
     logger_    = logger;
-    queueName_ = $"a{options.Prefix}-{options.PartitionId}";
+    queueName_ = client.GetQueueName(options);
+    tags_      = options.Tags;
 
     ackDeadlinePeriod_     = options.AckDeadlinePeriod;
     ackExtendDeadlineStep_ = options.AckExtendDeadlineStep;
@@ -95,6 +97,7 @@ internal class PullQueueStorage : IPullQueueStorage
     if (!isInitialized_)
     {
       queueUrl_ = await client_.GetOrCreateQueueUrlAsync(queueName_,
+                                                         tags_,
                                                          cancellationToken)
                                .ConfigureAwait(false);
 

@@ -16,7 +16,7 @@ jobs:
       version: ${{ steps.genver.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         ref: ${{ github.ref }}
         fetch-depth: 0
@@ -40,13 +40,14 @@ jobs:
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
           - Adaptors/S3/tests
+          - Adaptors/Embed/tests
         os:
           - ubuntu-latest
       fail-fast: false
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -54,6 +55,11 @@ jobs:
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
         pip install awscli
+     
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      with:
+          terraform_version: latest
 
     - name: Setup just
       run: |
@@ -67,12 +73,12 @@ jobs:
 
     - name: Dotnet Restore
       run: |
-        MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+        MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
           dotnet restore
 
     - name: Dotnet Build
       run: |
-        MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+        MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
           dotnet build
 
     - name: Run tests
@@ -113,7 +119,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -121,7 +127,12 @@ jobs:
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
         pip install awscli
-    
+   
+    - name: Setup Terraform
+      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      with:
+       terraform_version: latest
+
     - name: Setup just
       run: |
           sudo snap install --edge --classic just
@@ -133,12 +144,12 @@ jobs:
 
     - name: Dotnet Restore
       run: |
-        MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+        MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
           dotnet restore
 
     - name: Dotnet Build
       run: |
-        MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+        MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
           dotnet build
 
     - name: Run tests
@@ -169,24 +180,21 @@ jobs:
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
+          - Adaptors/Embed/tests
       fail-fast: false
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Dotnet Restore
-      run: |
-        cd ${{ matrix.projects }}
-        dotnet restore
+      run: dotnet restore
 
     - name: Dotnet Build
-      run: |
-        cd ${{ matrix.projects }}
-        dotnet build
+      run: dotnet build
 
     - name: Run tests
       run: |
@@ -205,7 +213,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -222,7 +230,7 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         ref: ${{ github.ref }}
 
@@ -258,7 +266,7 @@ jobs:
           - worker=htcmock buildWorker
     steps:
     - name: Checkout
-      uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
       with:
         ref: ${{ github.ref }}
 
@@ -306,7 +314,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     - name: Analyze for critical and high CVEs
-      uses: docker/scout-action@cc6bf8dd03587425ef920278b3e2726ba8d791e8 # v1
+      uses: docker/scout-action@b23590dc1e4d09febc00cfcbc51e9e8c0f7ee9f3 # v1
       with:
         command: cves
         image: "${{ matrix.image }}:${{ needs.versionning.outputs.version }}"
@@ -336,7 +344,7 @@ jobs:
           - Verbose
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -351,6 +359,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -440,12 +450,18 @@ jobs:
           - { queue: pubsub, object: minio, log-level: Information, cinit: true }
           - { queue: sqs, object: minio, log-level: Information, cinit: true }
 
+          - { queue: activemq, object: embed, log-level: Information, cinit: true }
+          - { queue: rabbitmq, object: embed, log-level: Information, cinit: true }
+          - { queue: rabbitmq091, object: embed, log-level: Information, cinit: true }
+          - { queue: pubsub, object: embed, log-level: Information, cinit: true }
+          - { queue: sqs, object: embed, log-level: Information, cinit: true }
+
           - { queue: activemq, object: redis, log-level: Information, cinit: false }
 
     name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.cinit }}
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -457,9 +473,11 @@ jobs:
       - name: Setup just
         run: |
           sudo snap install --edge --classic just
-
+      
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -604,13 +622,17 @@ jobs:
     name: Docker Windows
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
 
-      - name: Setup Terraform
-        run: choco install terraform mongodb-shell 7zip just
+      - name: Setup Terraform and other tools
+        run: |
+          choco install terraform --version=1.10.1 -y
+          choco install mongodb-shell -y
+          choco install 7zip -y
+          choco install just -y      
 
       - name: Setup AWS cli
         uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
@@ -621,6 +643,11 @@ jobs:
 
       - name: Deploy Core
         run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq091 deploy
+        shell: powershell
+
+      - name: Pull image
+        run: docker pull dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
+        timeout-minutes: 10
         shell: powershell
 
       - name: Run HtcMock test 100 tasks 1 level
@@ -724,7 +751,7 @@ jobs:
     name: "Test connectivity - Ca installed ${{ matrix.ca }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -739,6 +766,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -808,7 +837,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -823,6 +852,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -926,7 +957,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -941,6 +972,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -998,7 +1031,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -1013,6 +1046,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |
@@ -1068,7 +1103,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@eef61447b9ff4aafe5dcd4e0bbf5d482be7e7871 # v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -1083,6 +1118,8 @@ jobs:
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
 
       - name: Deploy Core
         run: |

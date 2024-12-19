@@ -82,9 +82,6 @@ public class SimpleAgent : IAgent
     => Task.FromResult(Array.Empty<string>()
                             .AsICollection());
 
-  public Task CancelChildTasks(CancellationToken cancellationToken)
-    => Task.CompletedTask;
-
   public void Dispose()
     => GC.SuppressFinalize(this);
 }

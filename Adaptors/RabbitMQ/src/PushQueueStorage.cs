@@ -63,14 +63,17 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   {
     var task = Task.Run(() => PushMessages(messages,
                                            partitionId,
-                                           priority),
+                                           priority,
+                                           cancellationToken),
                         cancellationToken);
     return task;
   }
 
-  private void PushMessages(IEnumerable<MessageData> messages,
-                            string                   partitionId,
-                            int                      priority)
+  private async Task PushMessages(IEnumerable<MessageData> messages,
+                                  string                   partitionId,
+                                  int                      priority,
+                                  CancellationToken        cancellationToken)
+
   {
     if (!IsInitialized)
     {
@@ -80,29 +83,34 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     var queueArgs = new Dictionary<string, object>
                     {
                       {
-                        "x-max-priority", Options!.MaxPriority
+                        "x-max-priority", Options.MaxPriority
                       },
                       {
                         "x-queue-mode", "lazy" // queue will try to move messages to disk as early as practically possible
                       },
                     };
 
-    ConnectionRabbit.Channel!.QueueDeclare(partitionId,
-                                           false, /* to survive broker restart */
-                                           false, /* used by multiple connections */
-                                           false, /* not deleted when last consumer unsubscribes (if it has had one) */
-                                           queueArgs);
+    var connection = await ConnectionRabbit.GetConnectionAsync(CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+    connection.QueueDeclare(partitionId,
+                            false, /* to survive broker restart */
+                            false, /* used by multiple connections */
+                            false, /* not deleted when last consumer unsubscribes (if it has had one) */
+                            queueArgs);
 
     foreach (var msg in messages)
     {
-      var basicProperties = ConnectionRabbit.Channel!.CreateBasicProperties();
+      connection = await ConnectionRabbit.GetConnectionAsync(CancellationToken.None)
+                                         .ConfigureAwait(false);
+      var basicProperties = connection.CreateBasicProperties();
       basicProperties.Priority = Convert.ToByte(priority);
       basicProperties.MessageId = Guid.NewGuid()
                                       .ToString();
-      ConnectionRabbit.Channel.BasicPublish("",
-                                            partitionId,
-                                            basicProperties,
-                                            Encoding.UTF8.GetBytes(msg.TaskId));
+      connection.BasicPublish("",
+                              partitionId,
+                              basicProperties,
+                              Encoding.UTF8.GetBytes(msg.TaskId));
     }
   }
 }

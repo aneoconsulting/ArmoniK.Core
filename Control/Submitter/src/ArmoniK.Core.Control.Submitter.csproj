@@ -38,9 +38,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
-    <ProjectReference Include="..\..\..\Adaptors\LocalStorage\src\ArmoniK.Core.Adapters.LocalStorage.csproj" />
-    <ProjectReference Include="..\..\..\Adaptors\Redis\src\ArmoniK.Core.Adapters.Redis.csproj" />
-    <ProjectReference Include="..\..\..\Adaptors\S3\src\ArmoniK.Core.Adapters.S3.csproj" />
     <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>
 

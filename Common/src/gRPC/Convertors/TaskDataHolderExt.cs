@@ -136,9 +136,7 @@ public static class TaskDataHolderExt
          StartedAt = taskDataSummary.StartDate is not null
                        ? FromDateTime(taskDataSummary.StartDate.Value)
                        : null,
-         Error = taskDataSummary.Status == TaskStatus.Error
-                   ? taskDataSummary.Output?.Error
-                   : "",
+         Error         = taskDataSummary.Output?.Error ?? string.Empty,
          StatusMessage = taskDataSummary.StatusMessage,
          SubmittedAt = taskDataSummary.SubmittedDate is not null
                          ? FromDateTime(taskDataSummary.SubmittedDate.Value)

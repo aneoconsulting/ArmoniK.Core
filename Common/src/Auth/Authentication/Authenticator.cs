@@ -22,8 +22,8 @@ using System.Text.Encodings.Web;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Exceptions;
 
 using JetBrains.Annotations;
 

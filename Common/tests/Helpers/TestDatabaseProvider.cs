@@ -21,8 +21,10 @@ using System.Diagnostics;
 using System.Threading;
 
 using ArmoniK.Api.Common.Options;
+using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
@@ -111,10 +113,6 @@ public class TestDatabaseProvider : IDisposable
                                                     "00:00:10"
                                                   },
                                                   {
-                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                    "14000"
-                                                  },
-                                                  {
                                                     $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                   },
                                                   {
@@ -146,6 +144,7 @@ public class TestDatabaseProvider : IDisposable
            .AddSingleton<InitDatabase>()
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
+           .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);

@@ -15,16 +15,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 using Amazon.S3;
 using Amazon.S3.Model;
 using Amazon.S3.Util;
 
-using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -90,13 +96,12 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_.Confidential()));
+    var key                   = Encoding.UTF8.GetString(id);
+    var objectStorageFullName = $"{objectStorageName_}{key}";
+
     try
     {
       await s3Client_.GetObjectAsync(options_.BucketName,
@@ -160,30 +165,19 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task TryDeleteAsync(IEnumerable<string> keys,
-                                   CancellationToken   cancellationToken = default)
-    => await keys.ParallelForEach(key => TryDeleteAsync(key,
-                                                        cancellationToken))
-                 .ConfigureAwait(false);
-
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
-
-  /// <inheritdoc />
-  public async Task<long> AddOrUpdateAsync(string                                 key,
-                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                           CancellationToken                      cancellationToken = default)
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
+                                                             IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                             CancellationToken                      cancellationToken = default)
 
   {
     long[] sizeBox =
     {
       0,
     };
-    var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_.Confidential()));
+    var key = Guid.NewGuid()
+                  .ToString();
+    var objectStorageFullName = $"{objectStorageName_}{key}";
+
     logger_.LogDebug("Upload object");
     var initRequest = new InitiateMultipartUploadRequest
                       {
@@ -234,16 +228,22 @@ public class ObjectStorage : IObjectStorage
       throw;
     }
 
-    return sizeBox[0];
+    return (Encoding.UTF8.GetBytes(key), sizeBox[0]);
   }
 
-  private async Task TryDeleteAsync(string            key,
+  /// <inheritdoc />
+  public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
+                                   CancellationToken   cancellationToken = default)
+    => await ids.ParallelForEach(id => TryDeleteAsync(id,
+                                                      cancellationToken))
+                .ConfigureAwait(false);
+
+  private async Task TryDeleteAsync(byte[]            id,
                                     CancellationToken cancellationToken = default)
   {
-    var       objectStorageFullName = $"{objectStorageName_}{key}";
-    using var loggerFunction        = logger_.LogFunction(objectStorageFullName);
-    using var loggerContext = logger_.BeginPropertyScope(("objectKey", key),
-                                                         ("@S3Options", options_.Confidential()));
+    var key                   = Encoding.UTF8.GetString(id);
+    var objectStorageFullName = $"{objectStorageName_}{key}";
+
     var objectDeleteRequest = new DeleteObjectRequest
                               {
                                 BucketName = options_.BucketName,

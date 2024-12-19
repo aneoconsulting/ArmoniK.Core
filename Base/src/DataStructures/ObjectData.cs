@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -15,20 +15,20 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+namespace ArmoniK.Core.Base.DataStructures;
 
-using JetBrains.Annotations;
-
-namespace ArmoniK.Core.Adapters.MongoDB.Options;
-
-[PublicAPI]
-public class QueueStorage
+/// <summary>
+///   Metadata given to the <see cref="IObjectStorage" />
+/// </summary>
+public record ObjectData
 {
-  public const string SettingSection = nameof(MongoDB) + ":" + nameof(QueueStorage);
+  /// <summary>
+  ///   Id of the result
+  /// </summary>
+  public required string ResultId;
 
-  public TimeSpan LockRefreshPeriodicity { get; set; } = TimeSpan.FromMinutes(2);
-
-  public TimeSpan PollPeriodicity { get; set; } = TimeSpan.FromSeconds(5);
-
-  public TimeSpan LockRefreshExtension { get; set; } = TimeSpan.FromMinutes(5);
+  /// <summary>
+  ///   Id of the session
+  /// </summary>
+  public required string SessionId;
 }

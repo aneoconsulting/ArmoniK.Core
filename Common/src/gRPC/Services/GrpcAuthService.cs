@@ -20,10 +20,10 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Auth;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Meter;
 
 using Grpc.Core;

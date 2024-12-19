@@ -19,13 +19,13 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base.Exceptions;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -94,15 +94,16 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async Task<long> AddOrUpdateAsync(string                                 key,
-                                           IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                           CancellationToken                      cancellationToken = default)
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
+                                                             IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                             CancellationToken                      cancellationToken = default)
   {
     long size = 0;
+    var key = Guid.NewGuid()
+                  .ToString();
     var filename = Path.Combine(path_,
                                 key);
 
-    using var _ = logger_.LogFunction(filename);
 
     // Write to temporary file
     await using var file = File.Open(filename,
@@ -135,17 +136,17 @@ public class ObjectStorage : IObjectStorage
     await file.FlushAsync(cancellationToken)
               .ConfigureAwait(false);
 
-    return size;
+    return (Encoding.UTF8.GetBytes(key), size);
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<byte[]> GetValuesAsync(string                                     key,
+  public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    var key = Encoding.UTF8.GetString(id);
+
     var filename = Path.Combine(path_,
                                 key);
-
-    using var _ = logger_.LogFunction(filename);
 
     if (!File.Exists(filename))
     {
@@ -187,28 +188,23 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <inheritdoc />
-  public async Task TryDeleteAsync(IEnumerable<string> keys,
+  public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
                                    CancellationToken   cancellationToken = default)
   {
-    foreach (var key in keys)
+    foreach (var id in ids)
     {
+      var key = Encoding.UTF8.GetString(id);
       await TryDeleteAsync(key,
                            cancellationToken)
         .ConfigureAwait(false);
     }
   }
 
-  /// <inheritdoc />
-  public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-    => throw new NotImplementedException();
-
   public Task<bool> TryDeleteAsync(string            key,
                                    CancellationToken cancellationToken = default)
   {
     var filename = Path.Combine(path_,
                                 key);
-
-    using var _ = logger_.LogFunction(filename);
 
     File.Delete(filename);
 

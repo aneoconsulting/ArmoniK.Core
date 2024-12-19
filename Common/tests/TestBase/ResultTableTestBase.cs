@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -323,48 +324,25 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      await ResultTable!.SetResult((string)"SessionId",
-                                   (string)"OwnerId",
-                                   (string)"ResultIsNotAvailable",
-                                   5,
-                                   CancellationToken.None)
-                        .ConfigureAwait(false);
-
-      var result = await ResultTable!.GetResult("ResultIsNotAvailable",
-                                                CancellationToken.None)
-                                     .ConfigureAwait(false);
-
-      Assert.IsTrue(result.ResultId == "ResultIsNotAvailable");
-      Assert.AreEqual(5,
-                      result.Size);
-    }
-  }
-
-  [Test]
-  public async Task SetResultSmallPayloadShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var smallPayload = new[]
-                         {
-                           (byte)1,
-                           (byte)2,
-                         };
-
+      var id = Encoding.UTF8.GetBytes("OpaqueId");
       await ResultTable!.SetResult("SessionId",
                                    "OwnerId",
                                    "ResultIsNotAvailable",
-                                   smallPayload,
+                                   5,
+                                   id,
                                    CancellationToken.None)
                         .ConfigureAwait(false);
+
       var result = await ResultTable!.GetResult("ResultIsNotAvailable",
                                                 CancellationToken.None)
                                      .ConfigureAwait(false);
 
-      Assert.AreEqual(result.Data,
-                      smallPayload);
-      Assert.AreEqual(smallPayload.Length,
+      Assert.AreEqual("ResultIsNotAvailable",
+                      result.ResultId);
+      Assert.AreEqual(5,
                       result.Size);
+      Assert.AreEqual(id,
+                      result.OpaqueId);
     }
   }
 
@@ -769,6 +747,7 @@ public class ResultTableTestBase
                          .ToString();
       var sessionId = Guid.NewGuid()
                           .ToString();
+      var id = Encoding.UTF8.GetBytes("OpaqueId");
       await ResultTable!.Create(new List<Result>
                                 {
                                   new(sessionId,
@@ -788,11 +767,16 @@ public class ResultTableTestBase
       var result = await ResultTable.CompleteResult(sessionId,
                                                     resultId,
                                                     5,
+                                                    id,
                                                     CancellationToken.None)
                                     .ConfigureAwait(false);
 
       Assert.AreEqual(ResultStatus.Completed,
                       result.Status);
+      Assert.AreEqual(id,
+                      result.OpaqueId);
+      Assert.AreEqual(5,
+                      result.Size);
 
       result = await ResultTable.GetResult(resultId,
                                            CancellationToken.None)
@@ -802,6 +786,8 @@ public class ResultTableTestBase
                       result.Status);
       Assert.AreEqual(5,
                       result.Size);
+      Assert.AreEqual(id,
+                      result.OpaqueId);
     }
   }
 
@@ -810,9 +796,11 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
+      var id = Encoding.UTF8.GetBytes("OpaqueId");
       Assert.ThrowsAsync<ResultNotFoundException>(async () => await ResultTable!.CompleteResult("SessionId",
                                                                                                 "NotExistingResult111",
                                                                                                 5,
+                                                                                                id,
                                                                                                 CancellationToken.None)
                                                                                 .ConfigureAwait(false));
     }

@@ -119,7 +119,7 @@ internal class BsonSerializerTest
                     deserialized.DependentTasks);
     Assert.AreEqual(rdm.CreationDate,
                     deserialized.CreationDate);
-    Assert.IsTrue(rdm.Data.SequenceEqual(deserialized.Data));
+    Assert.IsTrue(rdm.OpaqueId.SequenceEqual(deserialized.OpaqueId));
   }
 
   [Test]

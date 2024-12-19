@@ -3,6 +3,7 @@ name: Scout Images
 on:
     schedule:
       - cron: '10 9 * * 1'   # 9:10 on Monday
+    workflow_dispatch:
 
 jobs:
   releases:
@@ -10,6 +11,7 @@ jobs:
     outputs:
       releases: ${{ steps.releases.outputs.releases }}
     steps:
+    - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: List last releases
       id: releases
       run: echo "releases:$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
@@ -41,7 +43,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     - name: Analyze for critical and high CVEs
-      uses: docker/scout-action@cc6bf8dd03587425ef920278b3e2726ba8d791e8 # v1
+      uses: docker/scout-action@b23590dc1e4d09febc00cfcbc51e9e8c0f7ee9f3 # v1
       with:
         command: cves
         image: "${{ matrix.image }}:${{ matrix.image }}"

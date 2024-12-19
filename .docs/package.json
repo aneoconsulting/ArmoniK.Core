@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@aneoconsultingfr/armonik-docs-theme": "^0.6.12",
-    "mermaid": "^10.2.3",
+    "mermaid": "^11.4.0",
     "nuxt": "^3.6.1"
   },
   "devDependencies": {

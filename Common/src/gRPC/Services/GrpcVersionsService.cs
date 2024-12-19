@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Diagnostics;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Versions;
@@ -30,11 +31,11 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcVersionsService : Versions.VersionsBase
 {
-  public static readonly string CoreVersion = typeof(GrpcVersionsService).Assembly.GetName()
-                                                                         .Version!.ToString();
+  public static readonly string CoreVersion = FileVersionInfo.GetVersionInfo(typeof(GrpcVersionsService).Assembly.Location)
+                                                             .ProductVersion ?? "Unknown";
 
-  public static readonly string ApiVersion = typeof(Versions.VersionsBase).Assembly.GetName()
-                                                                          .Version!.ToString();
+  public static readonly string ApiVersion = FileVersionInfo.GetVersionInfo(typeof(Versions.VersionsBase).Assembly.Location)
+                                                            .ProductVersion ?? "Unknown";
 
   [RequiresPermission(typeof(GrpcVersionsService),
                       nameof(ListVersions))]

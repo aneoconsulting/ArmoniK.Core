@@ -85,9 +85,6 @@ internal class MongoDatabaseProvider : IDisposable
                                                     $"{Components.SettingSection}:{nameof(Components.TableStorage)}", "ArmoniK.Adapters.MongoDB.TableStorage"
                                                   },
                                                   {
-                                                    $"{Components.SettingSection}:{nameof(Components.ObjectStorage)}", "ArmoniK.Adapters.MongoDB.ObjectStorage"
-                                                  },
-                                                  {
                                                     $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
                                                     "ArmoniK.Adapters.MongoDB.AuthenticationTable"
                                                   },
@@ -97,10 +94,6 @@ internal class MongoDatabaseProvider : IDisposable
                                                   {
                                                     $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:{nameof(Options.MongoDB.TableStorage.PollingDelayMax)}",
                                                     "00:00:10"
-                                                  },
-                                                  {
-                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:{nameof(Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                    "140000"
                                                   },
                                                 };
 
