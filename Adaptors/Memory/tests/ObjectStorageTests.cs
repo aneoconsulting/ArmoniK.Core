@@ -15,14 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
-
-using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Tests;
+namespace ArmoniK.Core.Adapters.Memory.Tests;
 
 [TestFixture]
 public class ObjectStorageTests : ObjectStorageTestBase
@@ -30,17 +27,13 @@ public class ObjectStorageTests : ObjectStorageTestBase
   public override void TearDown()
   {
     ObjectStorage = null;
-    tableProvider_?.Dispose();
-    RunTests = false;
+    RunTests      = false;
   }
 
-  private MongoDatabaseProvider? tableProvider_;
 
   protected override void GetObjectStorageInstance()
   {
-    tableProvider_ = new MongoDatabaseProvider(serviceConfigurator: collection => collection.AddSingleton<IObjectStorage, ObjectStorage>());
-    var provider = tableProvider_.GetServiceProvider();
-    ObjectStorage = provider.GetRequiredService<IObjectStorage>();
+    ObjectStorage = new ObjectStorage();
     RunTests      = true;
   }
 }

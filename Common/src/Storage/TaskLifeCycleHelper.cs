@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Utils;
 
@@ -223,6 +224,9 @@ public static class TaskLifeCycleHelper
       return;
     }
 
+    logger.LogDebug("Tasks to finalize : {@TaskRequests}",
+                    taskRequests);
+
     var prepareTaskDependencies = PrepareTaskDependencies(taskTable,
                                                           resultTable,
                                                           taskRequests,
@@ -260,6 +264,7 @@ public static class TaskLifeCycleHelper
                             pushQueueStorage,
                             sessionData,
                             readyTask,
+                            logger,
                             cancellationToken)
       .ConfigureAwait(false);
   }
@@ -447,6 +452,7 @@ public static class TaskLifeCycleHelper
                             pushQueueStorage,
                             sessionData,
                             readyTasks,
+                            logger,
                             cancellationToken)
       .ConfigureAwait(false);
   }
@@ -466,6 +472,7 @@ public static class TaskLifeCycleHelper
                                               IPushQueueStorage        pushQueueStorage,
                                               SessionData              sessionData,
                                               ICollection<MessageData> messages,
+                                              ILogger                  logger,
                                               CancellationToken        cancellationToken)
   {
     if (!messages.Any())
@@ -482,6 +489,9 @@ public static class TaskLifeCycleHelper
                                                  cancellationToken)
                               .ConfigureAwait(false);
       }
+
+      logger.LogDebug("Pushed messages : {@Messages}",
+                      messages);
     }
 
     await taskTable.FinalizeTaskCreation(messages.Select(task => task.TaskId)
@@ -521,20 +531,27 @@ public static class TaskLifeCycleHelper
                                             .WithCancellation(cancellationToken)
                                             .ConfigureAwait(false))
     {
-      var tasks = await grouping.ToListAsync(cancellationToken)
-                                .ConfigureAwait(false);
+      await foreach (var tasks in grouping.ToChunksAsync(100000,
+                                                         TimeSpan.FromSeconds(1),
+                                                         cancellationToken)
+                                          .ConfigureAwait(false))
+      {
+        cancellationToken.ThrowIfCancellationRequested();
 
-      var taskIds = tasks.Select(task => task.TaskId)
-                         .AsICollection();
-      await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && taskIds.Contains(data.TaskId),
-                                      new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                           TaskStatus.Submitted),
-                                      cancellationToken)
-                     .ConfigureAwait(false);
-      await pushQueueStorage.PushMessagesAsync(tasks,
-                                               grouping.Key.PartitionId,
-                                               cancellationToken)
-                            .ConfigureAwait(false);
+        var taskIds = tasks.Select(task => task.TaskId)
+                           .AsICollection();
+
+        await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && taskIds.Contains(data.TaskId),
+                                        new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                             TaskStatus.Submitted),
+                                        CancellationToken.None)
+                       .ConfigureAwait(false);
+
+        await pushQueueStorage.PushMessagesAsync(tasks,
+                                                 grouping.Key.PartitionId,
+                                                 CancellationToken.None)
+                              .ConfigureAwait(false);
+      }
     }
 
     return session;

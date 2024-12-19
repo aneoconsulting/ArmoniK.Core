@@ -22,7 +22,6 @@ using System.Diagnostics;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Configuration;
@@ -88,9 +87,6 @@ internal class InjectionTests
                                                },
                                                {
                                                  $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelayMax", "00:00:20"
-                                               },
-                                               {
-                                                 $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.ObjectStorage)}:ChunkSize", "100000"
                                                },
                                              };
 
@@ -239,23 +235,6 @@ internal class InjectionTests
   }
 
   [Test]
-  public void ObjectOptionsNotNull()
-  {
-    var options = provider_!.GetRequiredService<Options.ObjectStorage>();
-
-    Assert.NotNull(options);
-  }
-
-  [Test]
-  public void ReadObjectChunkSize()
-  {
-    var options = provider_!.GetRequiredService<Options.ObjectStorage>();
-
-    Assert.AreEqual(100000,
-                    options.ChunkSize);
-  }
-
-  [Test]
   public void BuildTableStorage()
   {
     var table = provider_!.GetRequiredService<TableStorage>();
@@ -279,23 +258,5 @@ internal class InjectionTests
 
     Assert.AreEqual(TimeSpan.FromSeconds(20),
                     table.PollingDelayMax);
-  }
-
-  [Test]
-  public void BuildObjectStorage()
-  {
-    var objectStorage = provider_!.GetRequiredService<ObjectStorage>();
-
-    Assert.NotNull(objectStorage);
-  }
-
-  [Test]
-  public void ObjectStorageFactoryHasBindingToObjectStorage()
-  {
-    var objectStorage = provider_!.GetRequiredService<IObjectStorage>();
-
-    Assert.NotNull(objectStorage);
-    Assert.AreEqual(typeof(ObjectStorage),
-                    objectStorage.GetType());
   }
 }

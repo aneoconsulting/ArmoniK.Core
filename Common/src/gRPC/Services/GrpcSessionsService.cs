@@ -23,6 +23,7 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -34,8 +35,6 @@ using Grpc.Core;
 
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
-
-using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
@@ -81,11 +80,18 @@ public class GrpcSessionsService : Sessions.SessionsBase
     using var measure = meter_.CountAndTime();
     try
     {
+      var tasks = taskTable_.CancelSessionAsync(request.SessionId,
+                                                context.CancellationToken);
+      var results = resultTable_.AbortSessionResults(request.SessionId,
+                                                     context.CancellationToken);
+      var sessions = sessionTable_.CancelSessionAsync(request.SessionId,
+                                                      context.CancellationToken);
+
+      await tasks.ConfigureAwait(false);
+      await results.ConfigureAwait(false);
       return new CancelSessionResponse
              {
-               Session = (await sessionTable_.CancelSessionAsync(request.SessionId,
-                                                                 context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
+               Session = (await sessions.ConfigureAwait(false)).ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)
@@ -509,36 +515,28 @@ public class GrpcSessionsService : Sessions.SessionsBase
     catch (SessionNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Session not found"));
     }
     catch (InvalidSessionTransitionException e)
     {
       logger_.LogWarning(e,
-                         "Error while cancelling session");
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         "Session is in a state that cannot be cancelled"));
     }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
-      await taskTable_.UpdateManyTasks(data => data.SessionId == request.SessionId && data.Status == TaskStatus.Submitted,
-                                       new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                            TaskStatus.Paused))
-                      .ConfigureAwait(false);
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.Internal,
                                         "Internal Armonik Exception, see application logs"));
     }
     catch (Exception e)
     {
       logger_.LogWarning(e,
-                         "Error while getting session");
-      await taskTable_.UpdateManyTasks(data => data.SessionId == request.SessionId && data.Status == TaskStatus.Submitted,
-                                       new UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                            TaskStatus.Paused))
-                      .ConfigureAwait(false);
+                         "Error while resuming session");
       throw new RpcException(new Status(StatusCode.Unknown,
                                         "Unknown Exception, see application logs"));
     }

@@ -62,10 +62,12 @@ internal class PushQueueStorage : IPushQueueStorage
       throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
-    var queueName = $"a{options_.Prefix}-{partitionId}";
+    var queueName = client_.GetQueueName(options_,
+                                         partitionId);
 
     var queueUrl = await cache_.GetOrCreateAsync(queueName,
                                                  _ => client_.GetOrCreateQueueUrlAsync(queueName,
+                                                                                       options_.Tags,
                                                                                        cancellationToken))
                                .ConfigureAwait(false);
 

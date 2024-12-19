@@ -31,7 +31,7 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="DependentTasks">List of tasks that depend on this result.</param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
 /// <param name="Size">Size of the result.</param>
-/// <param name="Data">Data for the current <paramref name="Name" /></param>
+/// <param name="OpaqueId">Opaque Identifier used by the object storage to refer to this result's data</param>
 public record Result(string       SessionId,
                      string       ResultId,
                      string       Name,
@@ -41,7 +41,7 @@ public record Result(string       SessionId,
                      List<string> DependentTasks,
                      DateTime     CreationDate,
                      long         Size,
-                     byte[]       Data)
+                     byte[]       OpaqueId)
 {
   /// <summary>
   ///   Creates a copy of a <see cref="Result" /> and modify it according to given updates

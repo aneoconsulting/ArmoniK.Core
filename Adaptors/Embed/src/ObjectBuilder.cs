@@ -15,26 +15,27 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils;
 
-namespace ArmoniK.Core.Common.Exceptions;
+using JetBrains.Annotations;
 
-[Serializable]
-public class ObjectDataNotFoundException : ArmoniKException
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+
+namespace ArmoniK.Core.Adapters.Embed;
+
+/// <summary>
+///   Class for building Embed instance and Object interfaces through Dependency Injection
+/// </summary>
+[PublicAPI]
+public class ObjectBuilder : IDependencyInjectionBuildable
 {
-  public ObjectDataNotFoundException()
-  {
-  }
-
-  public ObjectDataNotFoundException(string message)
-    : base(message)
-  {
-  }
-
-  public ObjectDataNotFoundException(string    message,
-                                     Exception innerException)
-    : base(message,
-           innerException)
-  {
-  }
+  /// <inheritdoc />
+  [PublicAPI]
+  public void Build(IServiceCollection   serviceCollection,
+                    ConfigurationManager configuration,
+                    ILogger              logger)
+    => serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
 }

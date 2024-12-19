@@ -32,6 +32,7 @@ using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Convertors;
@@ -2151,8 +2152,8 @@ public class TaskTableTestBase
     {
       var taskId = Guid.NewGuid()
                        .ToString();
-      var dd1 = "dependency.1";
-      var dd2 = "dependency.2";
+      var dd1 = "dependency1";
+      var dd2 = "dependency2";
 
       await TaskTable!.CreateTasks(new[]
                                    {

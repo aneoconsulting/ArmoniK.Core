@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+
 namespace ArmoniK.Core.Adapters.SQS;
 
 internal class SQS
@@ -36,6 +38,11 @@ internal class SQS
   ///   Prefix to add to the created topics and subscriptions
   /// </summary>
   public string Prefix { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   AWS Tags to add to the Queues when they are created
+  /// </summary>
+  public Dictionary<string, string> Tags { get; set; } = new();
 
   /// <summary>
   ///   Acknowledgment deadline in seconds: If a message wasn't acknowledged within this deadline, it will be

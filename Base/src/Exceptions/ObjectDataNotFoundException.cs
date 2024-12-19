@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2024. All rights reserved.
 // 
@@ -15,14 +15,26 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System;
 
-namespace ArmoniK.Core.Adapters.MongoDB.Options;
+namespace ArmoniK.Core.Base.Exceptions;
 
-[PublicAPI]
-public class ObjectStorage
+[Serializable]
+public class ObjectDataNotFoundException : ArmoniKException
 {
-  public const string SettingSection = nameof(MongoDB) + ":" + nameof(ObjectStorage);
+  public ObjectDataNotFoundException()
+  {
+  }
 
-  public int ChunkSize { get; set; } = 14500000;
+  public ObjectDataNotFoundException(string message)
+    : base(message)
+  {
+  }
+
+  public ObjectDataNotFoundException(string    message,
+                                     Exception innerException)
+    : base(message,
+           innerException)
+  {
+  }
 }

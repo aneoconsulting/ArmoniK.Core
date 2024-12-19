@@ -69,11 +69,15 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                       },
                     };
 
-    ConnectionRabbit.Channel!.QueueDeclare(Options!.PartitionId,
-                                           false, /* to survive broker restart */
-                                           false, /* used by multiple connections */
-                                           false, /* not deleted when last consumer unsubscribes (if it has had one) */
-                                           queueArgs);
+    var connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
+                                           .ConfigureAwait(false);
+
+    connection.QueueDeclare(Options!.PartitionId,
+                            false, /* to survive broker restart */
+                            false, /* used by multiple connections */
+                            false, /* not deleted when last consumer unsubscribes (if it has had one) */
+                            queueArgs);
+
     IsInitialized = true;
   }
 
@@ -91,8 +95,11 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     {
       cancellationToken.ThrowIfCancellationRequested();
 
-      var message = ConnectionRabbit.Channel!.BasicGet(Options.PartitionId,
-                                                       false);
+      var connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
+                                             .ConfigureAwait(false);
+
+      var message = connection.BasicGet(Options.PartitionId,
+                                        false);
 
       if (message is null)
       {
@@ -103,7 +110,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       }
 
       nbPulledMessage++;
-      yield return new QueueMessageHandler(ConnectionRabbit.Channel!,
+      yield return new QueueMessageHandler(ConnectionRabbit,
                                            message,
                                            Encoding.UTF8.GetString(message.Body.ToArray()),
                                            cancellationToken);

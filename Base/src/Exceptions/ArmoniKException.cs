@@ -17,7 +17,7 @@
 
 using System;
 
-namespace ArmoniK.Core.Common.Exceptions;
+namespace ArmoniK.Core.Base.Exceptions;
 
 /// <summary>
 ///   Base exception for exceptions in ArmoniK core

@@ -29,6 +29,9 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleWorkerStreamHandler : IWorkerStreamHandler
 {
+  public Output Output = new(OutputStatus.Success,
+                             "");
+
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(HealthCheckResult.Healthy());
 
@@ -42,6 +45,5 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
                                           string            token,
                                           string            dataFolder,
                                           CancellationToken cancellationToken)
-    => Task.FromResult(new Output(OutputStatus.Success,
-                                  ""));
+    => Task.FromResult(Output);
 }

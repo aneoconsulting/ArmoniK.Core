@@ -27,6 +27,7 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -370,11 +371,11 @@ public class TaskTable : ITaskTable
     }
 
 
-    var key0   = TaskData.EscapeKey(deps.Current);
+    var key0   = deps.Current;
     var update = new UpdateDefinitionBuilder<TaskData>().Unset(data => data.RemainingDataDependencies[key0]);
     while (deps.MoveNext())
     {
-      var key = TaskData.EscapeKey(deps.Current);
+      var key = deps.Current;
       update = update.Unset(data => data.RemainingDataDependencies[key]);
     }
 

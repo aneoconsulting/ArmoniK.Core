@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
@@ -480,7 +481,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                         .ConfigureAwait(false);
           }
 
-          if (retryData.Status is TaskStatus.Creating or TaskStatus.Submitted)
+          if (retryData.Status is TaskStatus.Creating or TaskStatus.Pending or TaskStatus.Submitted)
           {
             logger_.LogWarning("Retried task {task} is in {status}; trying to finalize task creation",
                                retryId,
@@ -498,11 +499,18 @@ public sealed class TaskHandler : IAsyncDisposable
                                                   CancellationToken.None)
                             .ConfigureAwait(false);
           }
+          else
+          {
+            logger_.LogInformation("Retried task {task} is in {status}; nothing done",
+                                   retryId,
+                                   retryData.Status);
+          }
 
           return (taskNotFound, taskExists, retryData.Status) switch
                  {
                    (false, false, TaskStatus.Submitted)                       => AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted,
                    (false, false, TaskStatus.Creating)                        => AcquisitionStatus.TaskIsRetriedAndRetryIsCreating,
+                   (false, false, TaskStatus.Pending)                         => AcquisitionStatus.TaskIsRetriedAndRetryIsPending,
                    (true, false, TaskStatus.Submitted or TaskStatus.Creating) => AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
                    _                                                          => AcquisitionStatus.TaskIsRetried,
                  };
@@ -960,11 +968,6 @@ public sealed class TaskHandler : IAsyncDisposable
         await agent_.FinalizeTaskCreation(CancellationToken.None)
                     .ConfigureAwait(false);
       }
-      else
-      {
-        await agent_.CancelChildTasks(CancellationToken.None)
-                    .ConfigureAwait(false);
-      }
 
       await submitter_.CompleteTaskAsync(taskData_,
                                          sessionData_,
@@ -1088,12 +1091,6 @@ public sealed class TaskHandler : IAsyncDisposable
         messageHandler_.Status = resubmit
                                    ? QueueMessageStatus.Cancelled
                                    : QueueMessageStatus.Processed;
-      }
-
-      if (agent_ is not null)
-      {
-        await agent_.CancelChildTasks(CancellationToken.None)
-                    .ConfigureAwait(false);
       }
     }
 
