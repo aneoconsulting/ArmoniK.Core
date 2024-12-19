@@ -77,14 +77,6 @@ public static class ServiceCollectionExt
               .AddSingleton<IResultWatcher, ResultWatcher>();
     }
 
-    if (components["ObjectStorage"] == "ArmoniK.Adapters.MongoDB.ObjectStorage")
-    {
-      services.AddOption<Options.ObjectStorage>(configuration,
-                                                Options.ObjectStorage.SettingSection)
-              .AddSingleton<ObjectStorage>()
-              .AddSingleton<IObjectStorage, ObjectStorage>();
-    }
-
     services.AddOption<Options.MongoDB>(configuration,
                                         Options.MongoDB.SettingSection,
                                         out var mongoOptions);

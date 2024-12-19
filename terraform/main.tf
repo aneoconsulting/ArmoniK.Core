@@ -60,6 +60,11 @@ module "object_local" {
   local_path = var.object_storage.local_storage_path
 }
 
+module "object_embed" {
+  source = "./modules/storage/object/embed"
+  count  = var.object_storage.name == "embed" ? 1 : 0
+}
+
 module "queue_rabbitmq" {
   source     = "./modules/storage/queue/rabbitmq"
   count      = var.queue_storage.name == "rabbitmq" ? 1 : 0

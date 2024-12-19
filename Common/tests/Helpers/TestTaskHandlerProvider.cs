@@ -22,6 +22,7 @@ using System.IO;
 using System.Threading;
 
 using ArmoniK.Api.Common.Options;
+using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -110,10 +111,6 @@ public class TestTaskHandlerProvider : IDisposable
                                                     "00:00:10"
                                                   },
                                                   {
-                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                    "14000"
-                                                  },
-                                                  {
                                                     $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                   },
                                                   {
@@ -160,6 +157,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
            .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+           .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
            .AddSingleton<ExceptionManager.Options>()

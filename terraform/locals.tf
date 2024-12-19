@@ -16,7 +16,7 @@ locals {
   worker   = merge(var.compute_plane.worker, { image = var.worker_image })
   queue    = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_none))
   database = module.database
-  object   = one(concat(module.object_redis, module.object_minio, module.object_local))
+  object   = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed))
   env_maps = concat([
     local.queue.generated_env_vars,
     local.object.generated_env_vars,

@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
@@ -95,10 +96,6 @@ public class SubmitterTests
                                                     "00:00:10"
                                                   },
                                                   {
-                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.ObjectStorage.ChunkSize)}",
-                                                    "14000"
-                                                  },
-                                                  {
                                                     $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
                                                   },
                                                   {
@@ -126,6 +123,7 @@ public class SubmitterTests
             .AddSingleton<IMongoClient>(client_)
             .AddLogging(builder => builder.AddProvider(loggerProvider))
             .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
+            .AddSingleton<IObjectStorage, ObjectStorage>()
             .AddOption<Injection.Options.Submitter>(configuration,
                                                     Injection.Options.Submitter.SettingSection)
             .AddSingleton<IPushQueueStorage>(pushQueueStorage_);
@@ -969,10 +967,7 @@ public class SubmitterTests
     Assert.AreEqual(ResultReply.TypeOneofCase.Result,
                     writer.Messages[1]
                           .TypeCase);
-    Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[2]
-                          .TypeCase);
-    Assert.IsTrue(writer.Messages[2]
+    Assert.IsTrue(writer.Messages[1]
                         .Result.DataComplete);
   }
 

@@ -56,10 +56,6 @@ public class MongoDB
 
   public TableStorage TableStorage { get; set; } = new();
 
-  public ObjectStorage ObjectStorage { get; set; } = new();
-
-  public QueueStorage QueueStorage { get; set; } = new();
-
   public int MaxConnectionPoolSize { get; set; } = 500;
 
   public TimeSpan ServerSelectionTimeout { get; set; } = TimeSpan.FromMinutes(2);

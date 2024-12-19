@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Tests.TestBase;
 using ArmoniK.Core.Utils;
 
@@ -53,9 +53,6 @@ public class ObjectStorageTests : ObjectStorageTestBase
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
                                                 {
-                                                  {
-                                                    "Components:ObjectStorage", "ArmoniK.Adapters.Redis.ObjectStorage"
-                                                  },
                                                   {
                                                     "Redis:MaxRetry", "5"
                                                   },

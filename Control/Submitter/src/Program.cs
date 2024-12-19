@@ -22,10 +22,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.LocalStorage;
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.Redis;
-using ArmoniK.Core.Adapters.S3;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -33,6 +30,7 @@ using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
@@ -91,14 +89,12 @@ public static class Program
              .AddHttpClient()
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddQueue(builder.Configuration,
-                       logger.GetLogger())
-             .AddRedis(builder.Configuration,
-                       logger.GetLogger())
-             .AddLocalStorage(builder.Configuration,
-                              logger.GetLogger())
-             .AddS3(builder.Configuration,
-                    logger.GetLogger())
+             .AddAdapter(builder.Configuration,
+                         nameof(Components.QueueAdaptorSettings),
+                         logger.GetLogger())
+             .AddAdapter(builder.Configuration,
+                         nameof(Components.ObjectStorageAdaptorSettings),
+                         logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,

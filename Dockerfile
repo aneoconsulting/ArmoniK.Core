@@ -24,6 +24,7 @@ COPY ["Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj", "Adaptors/PubSu
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj", "Adaptors/S3/src/"]
 COPY ["Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj", "Adaptors/SQS/src/"]
+COPY ["Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj", "Adaptors/Embed/src/"]
 COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 COPY ["Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj", "Compute/PollingAgent/src/"]
@@ -40,6 +41,10 @@ RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.A
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj"
 
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"\$D\\\", \\\"\$D\\\"]"
 COPY ["Adaptors/Amqp/src", "Adaptors/Amqp/src"]
@@ -52,6 +57,7 @@ COPY ["Adaptors/PubSub/src", "Adaptors/PubSub/src"]
 COPY ["Adaptors/Redis/src", "Adaptors/Redis/src"]
 COPY ["Adaptors/S3/src", "Adaptors/S3/src"]
 COPY ["Adaptors/SQS/src", "Adaptors/SQS/src"]
+COPY ["Adaptors/Embed/src", "Adaptors/Embed/src"]
 COPY ["Base/src", "Base/src"]
 COPY ["Common/src", "Common/src"]
 COPY ["Compute/PollingAgent/src", "Compute/PollingAgent/src"]
@@ -71,6 +77,18 @@ RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -a "${TARGETARCH}" --no-r
 
 WORKDIR /src/Adaptors/RabbitMQ/src
 RUN dotnet publish "ArmoniK.Core.Adapters.RabbitMQ.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/rabbit /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+WORKDIR /src/Adaptors/LocalStorage/src
+RUN dotnet publish "ArmoniK.Core.Adapters.LocalStorage.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/local_storage /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+WORKDIR /src/Adaptors/Embed/src
+RUN dotnet publish "ArmoniK.Core.Adapters.Embed.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/embed /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+WORKDIR /src/Adaptors/Redis/src
+RUN dotnet publish "ArmoniK.Core.Adapters.Redis.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/redis /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+WORKDIR /src/Adaptors/S3/src
+RUN dotnet publish "ArmoniK.Core.Adapters.S3.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/s3 /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Compute/PollingAgent/src
 RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/polling_agent /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
@@ -94,6 +112,14 @@ WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
+WORKDIR /adapters/object/local_storage
+COPY --from=build /app/publish/local_storage .
+WORKDIR /adapters/object/redis
+COPY --from=build /app/publish/redis .
+WORKDIR /adapters/object/embed
+COPY --from=build /app/publish/embed .
+WORKDIR /adapters/object/s3
+COPY --from=build /app/publish/s3 .
 WORKDIR /app
 COPY --from=build /app/publish/polling_agent .
 ENV ASPNETCORE_URLS http://+:1080
@@ -126,6 +152,14 @@ WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/queue/rabbit
 COPY --from=build /app/publish/rabbit .
+WORKDIR /adapters/object/local_storage
+COPY --from=build /app/publish/local_storage .
+WORKDIR /adapters/object/redis
+COPY --from=build /app/publish/redis .
+WORKDIR /adapters/object/embed
+COPY --from=build /app/publish/embed .
+WORKDIR /adapters/object/s3
+COPY --from=build /app/publish/s3 .
 WORKDIR /app
 COPY --from=build /app/publish/submitter .
 ENV ASPNETCORE_URLS http://+:1080, http://+:1081

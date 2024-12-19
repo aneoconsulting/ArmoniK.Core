@@ -25,6 +25,8 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
@@ -171,35 +173,40 @@ public class GrpcResultsService : Results.ResultsBase
                                                  var resultId = Guid.NewGuid()
                                                                     .ToString();
 
-                                                 var size = await objectStorage_.AddOrUpdateAsync(resultId,
-                                                                                                  new List<ReadOnlyMemory<byte>>
-                                                                                                  {
-                                                                                                    rc.Data.Memory,
-                                                                                                  }.ToAsyncEnumerable(),
-                                                                                                  context.CancellationToken)
-                                                                                .ConfigureAwait(false);
+                                                 var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                                                        {
+                                                                                                          ResultId  = resultId,
+                                                                                                          SessionId = request.SessionId,
+                                                                                                        },
+                                                                                                        new List<ReadOnlyMemory<byte>>
+                                                                                                        {
+                                                                                                          rc.Data.Memory,
+                                                                                                        }.ToAsyncEnumerable(),
+                                                                                                        context.CancellationToken)
+                                                                                      .ConfigureAwait(false);
 
-                                                 return new Result(request.SessionId,
-                                                                   resultId,
-                                                                   rc.Name,
-                                                                   "",
-                                                                   request.SessionId,
-                                                                   ResultStatus.Created,
-                                                                   new List<string>(),
-                                                                   DateTime.UtcNow,
-                                                                   size,
-                                                                   Array.Empty<byte>());
+                                                 return (new Result(request.SessionId,
+                                                                    resultId,
+                                                                    rc.Name,
+                                                                    "",
+                                                                    request.SessionId,
+                                                                    ResultStatus.Created,
+                                                                    new List<string>(),
+                                                                    DateTime.UtcNow,
+                                                                    size,
+                                                                    Array.Empty<byte>()), id);
                                                })
                                .WhenAll()
                                .ConfigureAwait(false);
 
-    await resultTable_.Create(results,
+    await resultTable_.Create(results.ViewSelect(tuple => tuple.Item1),
                               context.CancellationToken)
                       .ConfigureAwait(false);
 
     var resultList = await results.Select(async r => await resultTable_.CompleteResult(request.SessionId,
-                                                                                       r.ResultId,
-                                                                                       r.Size)
+                                                                                       r.Item1.ResultId,
+                                                                                       r.Item1.Size,
+                                                                                       r.id)
                                                                        .ConfigureAwait(false))
                                   .WhenAll()
                                   .ConfigureAwait(false);
@@ -221,7 +228,13 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
     try
     {
-      await objectStorage_.TryDeleteAsync(request.ResultId,
+      var opaqueIds = await resultTable_.GetResults(result => request.ResultId.Contains(result.ResultId),
+                                                    result => result.OpaqueId,
+                                                    context.CancellationToken)
+                                        .ToListAsync(context.CancellationToken)
+                                        .ConfigureAwait(false);
+
+      await objectStorage_.TryDeleteAsync(opaqueIds,
                                           context.CancellationToken)
                           .ConfigureAwait(false);
 
@@ -236,7 +249,14 @@ public class GrpcResultsService : Results.ResultsBase
     catch (ObjectDataNotFoundException e)
     {
       logger_.LogWarning(e,
-                         "Error while downloading results");
+                         "Error while deleting results");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result data not found"));
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while deleting results");
       throw new RpcException(new Status(StatusCode.NotFound,
                                         "Result data not found"));
     }
@@ -251,7 +271,10 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
     try
     {
-      await foreach (var chunk in objectStorage_.GetValuesAsync(request.ResultId,
+      var id = (await resultTable_.GetResult(request.ResultId)
+                                  .ConfigureAwait(false)).OpaqueId;
+
+      await foreach (var chunk in objectStorage_.GetValuesAsync(id,
                                                                 context.CancellationToken)
                                                 .ConfigureAwait(false))
       {
@@ -263,6 +286,13 @@ public class GrpcResultsService : Results.ResultsBase
       }
     }
     catch (ObjectDataNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while downloading results");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "Result data not found"));
+    }
+    catch (ResultNotFoundException e)
     {
       logger_.LogWarning(e,
                          "Error while downloading results");
@@ -311,17 +341,16 @@ public class GrpcResultsService : Results.ResultsBase
     var sessionTask = sessionTable_.GetSessionAsync(id.SessionId,
                                                     context.CancellationToken);
 
-    long size = 0;
 
-    await objectStorage_.AddOrUpdateAsync(id.ResultId,
-                                          requestStream.ReadAllAsync(context.CancellationToken)
-                                                       .Select(r =>
-                                                               {
-                                                                 size += r.DataChunk.Length;
-                                                                 return r.DataChunk.Memory;
-                                                               }),
-                                          context.CancellationToken)
-                        .ConfigureAwait(false);
+    var (opaqueId, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                 {
+                                                                   ResultId  = id.ResultId,
+                                                                   SessionId = id.SessionId,
+                                                                 },
+                                                                 requestStream.ReadAllAsync(context.CancellationToken)
+                                                                              .Select(r => r.DataChunk.Memory),
+                                                                 context.CancellationToken)
+                                               .ConfigureAwait(false);
 
     try
     {
@@ -330,6 +359,7 @@ public class GrpcResultsService : Results.ResultsBase
       var resultData = await resultTable_.CompleteResult(id.SessionId,
                                                          id.ResultId,
                                                          size,
+                                                         opaqueId,
                                                          context.CancellationToken)
                                          .ConfigureAwait(false);
 
