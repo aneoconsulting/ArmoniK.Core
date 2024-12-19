@@ -72,12 +72,12 @@ jobs:
 
     - name: Dotnet Restore
       run: |
-        MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+        MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
           dotnet restore
 
     - name: Dotnet Build
       run: |
-        MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+        MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
           dotnet build
 
     - name: Run tests
@@ -143,12 +143,12 @@ jobs:
 
     - name: Dotnet Restore
       run: |
-        MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
+        MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
           dotnet restore
 
     - name: Dotnet Build
       run: |
-        MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+        MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
           dotnet build
 
     - name: Run tests
@@ -190,12 +190,10 @@ jobs:
 
     - name: Dotnet Restore
       run: |
-        cd ${{ matrix.projects }}
         dotnet restore
 
     - name: Dotnet Build
       run: |
-        cd ${{ matrix.projects }}
         dotnet build
 
     - name: Run tests

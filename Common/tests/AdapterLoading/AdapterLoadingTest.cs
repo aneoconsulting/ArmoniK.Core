@@ -20,6 +20,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 
+using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Tests.Helpers;
@@ -46,6 +47,12 @@ public class AdapterLoadingTest
   private static readonly string RabbitPath =
     $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}RabbitMQ{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.RabbitMQ.dll";
 
+  private static readonly string SqsPath =
+    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}SQS{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.SQS.dll";
+
+  private static readonly string PubSubPath =
+    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}PubSub{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.PubSub.dll";
+
 
   public static IEnumerable TestCasesQueueLocation
   {
@@ -62,6 +69,8 @@ public class AdapterLoadingTest
   {
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var logger         = loggerProvider.CreateLogger("root");
+
+    AppDomain.CurrentDomain.AssemblyResolve += new CollocatedAssemblyResolver(logger).AssemblyResolve;
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(config);
@@ -93,20 +102,22 @@ public class AdapterLoadingTest
                                            },
                                          };
 
-    Assert.DoesNotThrow(() => BuildServiceProvider(config));
+    BuildServiceProvider(config);
   }
 
   public static IEnumerable ConfInvalidOperationException
   {
     get
     {
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
                                       },
                                     }).SetArgDisplayNames("No components");
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -115,7 +126,8 @@ public class AdapterLoadingTest
                                         $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}", ""
                                       },
                                     }).SetArgDisplayNames("Empty class");
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -128,7 +140,8 @@ public class AdapterLoadingTest
                                         "path"
                                       },
                                     }).SetArgDisplayNames("Empty path");
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new FileNotFoundException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -143,7 +156,8 @@ public class AdapterLoadingTest
                                       },
                                     }).SetArgDisplayNames("invalid path");
 
-      yield return new TestCaseData(new Dictionary<string, string?>
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
                                     {
                                       {
                                         "Amqp:User", "User"
@@ -157,13 +171,47 @@ public class AdapterLoadingTest
                                         $"{SolutionRoot}{AmqpPath}"
                                       },
                                     }).SetArgDisplayNames("Not implemented");
+
+      yield return new TestCaseData(new InvalidOperationException(),
+                                    new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "PubSub:hey", "hey"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}",
+                                        "ArmoniK.Core.Adapters.PubSub.QueueBuilder"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
+                                        $"{SolutionRoot}{PubSubPath}"
+                                      },
+                                    }).SetArgDisplayNames("PubSub no credentials");
+
+      yield return new TestCaseData(new MissingMethodException(),
+                                    new Dictionary<string, string?>
+                                    {
+                                      {
+                                        "SQS:ServiceURL", "ServiceURL"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.ClassName)}",
+                                        "ArmoniK.Core.Adapters.SQS.QueueBuilder"
+                                      },
+                                      {
+                                        $"{Components.SettingSection}:{nameof(Components.QueueAdaptorSettings)}:{nameof(Components.QueueAdaptorSettings.AdapterAbsolutePath)}",
+                                        $"{SolutionRoot}{SqsPath}"
+                                      },
+                                    }).SetArgDisplayNames("SQS misses a method when loading");
     }
   }
 
   [Test]
   [TestCaseSource(nameof(ConfInvalidOperationException))]
-  public void InvalidConfShouldFail(Dictionary<string, string?> config)
-    => Assert.Throws<InvalidOperationException>(() => BuildServiceProvider(config));
+  public void InvalidConfShouldFail<TEx>(TEx                         ex,
+                                         Dictionary<string, string?> config)
+    where TEx : Exception
+    => Assert.Throws<TEx>(() => BuildServiceProvider(config));
 
   public static IEnumerable ConfTypeLoadException
   {

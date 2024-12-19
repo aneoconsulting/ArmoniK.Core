@@ -103,8 +103,7 @@ public static class ServiceCollectionExt
       throw new InvalidOperationException($"{nameof(queueSettings.ClassName)} should not be null or empty.");
     }
 
-    var ctx      = new AdapterLoadContext(queueSettings.AdapterAbsolutePath);
-    var assembly = ctx.LoadFromAssemblyName(AssemblyName.GetAssemblyName(queueSettings.AdapterAbsolutePath));
+    var assembly = Assembly.LoadFrom(queueSettings.AdapterAbsolutePath);
     logger.LogInformation("Loaded assembly {assemblyName}",
                           assembly.FullName);
 
