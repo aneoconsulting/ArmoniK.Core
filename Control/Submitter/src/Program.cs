@@ -26,6 +26,7 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
@@ -80,6 +81,8 @@ public static class Program
 
     try
     {
+      AppDomain.CurrentDomain.AssemblyResolve += new CollocatedAssemblyResolver(logger.GetLogger()).AssemblyResolve;
+
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)

@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
@@ -78,6 +79,8 @@ public static class Program
 
     try
     {
+      AppDomain.CurrentDomain.AssemblyResolve += new CollocatedAssemblyResolver(logger.GetLogger()).AssemblyResolve;
+
       var pollsterOptions = builder.Configuration.GetSection(Pollster.SettingSection)
                                    .Get<Pollster>() ?? new Pollster();
 
