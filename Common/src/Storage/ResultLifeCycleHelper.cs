@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
@@ -156,8 +157,8 @@ public static class ResultLifeCycleHelper
                                              string            sessionId,
                                              CancellationToken cancellationToken)
   {
-    await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId,
-                                                     result => result.ResultId,
+    await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId && result.OpaqueId.Length > 0,
+                                                     result => result.OpaqueId,
                                                      cancellationToken)
                                          .ToChunksAsync(500,
                                                         Timeout.InfiniteTimeSpan,
@@ -171,7 +172,9 @@ public static class ResultLifeCycleHelper
 
     await resultTable.UpdateManyResults(result => result.SessionId == sessionId,
                                         new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                           ResultStatus.DeletedData),
+                                                                           ResultStatus.DeletedData)
+                                                                      .Set(result => result.OpaqueId,
+                                                                           Array.Empty<byte>()),
                                         cancellationToken)
                      .ConfigureAwait(false);
   }

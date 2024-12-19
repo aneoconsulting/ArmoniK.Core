@@ -406,15 +406,6 @@ public class AgentTest
                                         CancellationToken.None)
                 .ConfigureAwait(false);
 
-    var datAsyncEnumerable = holder.ObjectStorage.GetValuesAsync(ExpectedOutput1,
-                                                                 CancellationToken.None);
-
-    var dataStored = await datAsyncEnumerable.SingleAsync(CancellationToken.None)
-                                             .ConfigureAwait(false);
-
-    Assert.AreEqual(data,
-                    dataStored);
-
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
                 .ConfigureAwait(false);
 
@@ -430,6 +421,15 @@ public class AgentTest
                     resultData.OwnerTaskId);
     Assert.AreEqual(data.Length,
                     resultData.Size);
+
+    var datAsyncEnumerable = holder.ObjectStorage.GetValuesAsync(resultData.OpaqueId,
+                                                                 CancellationToken.None);
+
+    var dataStored = await datAsyncEnumerable.SingleAsync(CancellationToken.None)
+                                             .ConfigureAwait(false);
+
+    Assert.AreEqual(data,
+                    dataStored);
 
     var dependents = await holder.ResultTable.GetDependents(holder.Session,
                                                             ExpectedOutput1,
@@ -605,14 +605,33 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    await holder.ObjectStorage.AddOrUpdateAsync("ResourceData",
-                                                new List<byte[]>
-                                                  {
-                                                    Encoding.ASCII.GetBytes("Data1"),
-                                                    Encoding.ASCII.GetBytes("Data2"),
-                                                  }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
-                                                   .ToAsyncEnumerable(),
-                                                CancellationToken.None)
+    var (id, size) = await holder.ObjectStorage.AddOrUpdateAsync(new ObjectData
+                                                                 {
+                                                                   ResultId  = "ResultId",
+                                                                   SessionId = "SessionId",
+                                                                 },
+                                                                 new List<byte[]>
+                                                                   {
+                                                                     Encoding.ASCII.GetBytes("Data1"),
+                                                                     Encoding.ASCII.GetBytes("Data2"),
+                                                                   }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                                    .ToAsyncEnumerable(),
+                                                                 CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+    await holder.ResultTable.Create(new List<Result>
+                                    {
+                                      new("SessionId",
+                                          "ResourceData",
+                                          "",
+                                          "",
+                                          "",
+                                          ResultStatus.Completed,
+                                          new List<string>(),
+                                          DateTime.UtcNow,
+                                          size,
+                                          id),
+                                    })
                 .ConfigureAwait(false);
 
     await holder.Agent.GetResourceData(holder.Token,
@@ -657,14 +676,6 @@ public class AgentTest
                       resultMetadata.Status);
       Assert.AreEqual(holder.TaskData.TaskId,
                       resultMetadata.CreatedBy);
-
-      var bytes = (await holder.ObjectStorage.GetValuesAsync(result.ResultId)
-                               .ToListAsync()
-                               .ConfigureAwait(false)).Single();
-
-      Assert.AreEqual(ByteString.CopyFromUtf8(result.Name)
-                                .ToByteArray(),
-                      bytes);
     }
 
     await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
@@ -684,6 +695,14 @@ public class AgentTest
                       resultMetadata.Status);
       Assert.AreEqual(7,
                       resultMetadata.Size);
+
+      var bytes = (await holder.ObjectStorage.GetValuesAsync(resultMetadata.OpaqueId)
+                               .ToListAsync()
+                               .ConfigureAwait(false)).Single();
+
+      Assert.AreEqual(ByteString.CopyFromUtf8(result.Name)
+                                .ToByteArray(),
+                      bytes);
     }
   }
 

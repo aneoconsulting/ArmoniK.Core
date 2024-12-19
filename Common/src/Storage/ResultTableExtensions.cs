@@ -101,6 +101,7 @@ public static class ResultTableExtensions
   /// <param name="sessionId">id of the session containing the results</param>
   /// <param name="resultId">Id of the result to complete</param>
   /// <param name="size">Size of the result to complete</param>
+  /// <param name="opaqueId">Opaque unique identifier representing the object</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The new version of the result metadata
@@ -110,13 +111,16 @@ public static class ResultTableExtensions
                                                   string            sessionId,
                                                   string            resultId,
                                                   long              size,
+                                                  byte[]            opaqueId,
                                                   CancellationToken cancellationToken = default)
   {
     var result = await resultTable.UpdateOneResult(resultId,
                                                    new UpdateDefinition<Result>().Set(data => data.Status,
                                                                                       ResultStatus.Completed)
                                                                                  .Set(data => data.Size,
-                                                                                      size),
+                                                                                      size)
+                                                                                 .Set(data => data.OpaqueId,
+                                                                                      opaqueId),
                                                    cancellationToken)
                                   .ConfigureAwait(false);
 
@@ -128,47 +132,8 @@ public static class ResultTableExtensions
            {
              Status = ResultStatus.Completed,
              Size = size,
+             OpaqueId = opaqueId,
            };
-  }
-
-  /// <summary>
-  ///   Update result with small payload
-  /// </summary>
-  /// <param name="resultTable">Interface to manage results</param>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="ownerTaskId">id of the task owning the result</param>
-  /// <param name="resultId">id of the result to be modified</param>
-  /// <param name="smallPayload">payload data</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  public static async Task SetResult(this IResultTable resultTable,
-                                     string            sessionId,
-                                     string            ownerTaskId,
-                                     string            resultId,
-                                     byte[]            smallPayload,
-                                     CancellationToken cancellationToken = default)
-  {
-    var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
-                                                    new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                                       ResultStatus.Completed)
-                                                                                  .Set(data => data.Size,
-                                                                                       smallPayload.Length)
-                                                                                  .Set(result => result.Data,
-                                                                                       smallPayload),
-                                                    cancellationToken)
-                                 .ConfigureAwait(false);
-
-    resultTable.Logger.LogDebug("Update {result} from {owner} to {status}",
-                                resultId,
-                                ownerTaskId,
-                                ResultStatus.Completed);
-
-    if (count == 0)
-    {
-      throw new ResultNotFoundException($"Result '{resultId}' was not found for '{ownerTaskId}'");
-    }
   }
 
   /// <summary>
@@ -188,13 +153,16 @@ public static class ResultTableExtensions
                                      string            ownerTaskId,
                                      string            resultId,
                                      long              size,
+                                     byte[]            opaqueId,
                                      CancellationToken cancellationToken = default)
   {
     var count = await resultTable.UpdateManyResults(result => result.ResultId == resultId && result.OwnerTaskId == ownerTaskId,
                                                     new UpdateDefinition<Result>().Set(result => result.Status,
                                                                                        ResultStatus.Completed)
                                                                                   .Set(result => result.Size,
-                                                                                       size),
+                                                                                       size)
+                                                                                  .Set(result => result.OpaqueId,
+                                                                                       opaqueId),
                                                     cancellationToken)
                                  .ConfigureAwait(false);
 

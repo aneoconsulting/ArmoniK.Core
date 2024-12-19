@@ -17,6 +17,8 @@
 
 using System;
 
+using ArmoniK.Core.Base.Exceptions;
+
 namespace ArmoniK.Core.Common.Exceptions;
 
 [Serializable]

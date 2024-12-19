@@ -29,6 +29,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
@@ -1784,21 +1785,18 @@ public class TaskHandlerTest
     public Task Init(CancellationToken cancellationToken)
       => Task.CompletedTask;
 
-    public Task<long> AddOrUpdateAsync(string                                 key,
-                                       IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                       CancellationToken                      cancellationToken = default)
-      => Task.FromResult<long>(42);
-
-    public IAsyncEnumerable<byte[]> GetValuesAsync(string            key,
+    public IAsyncEnumerable<byte[]> GetValuesAsync(byte[]            id,
                                                    CancellationToken cancellationToken = default)
       => throw new ObjectDataNotFoundException();
 
-    public Task TryDeleteAsync(IEnumerable<string> keys,
+    public Task TryDeleteAsync(IEnumerable<byte[]> ids,
                                CancellationToken   cancellationToken = default)
       => Task.CompletedTask;
 
-    public IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default)
-      => throw new NotImplementedException();
+    public Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
+                                                         IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                         CancellationToken                      cancellationToken = default)
+      => Task.FromResult<(byte[] id, long size)>((Encoding.UTF8.GetBytes("forty-two"), 42));
   }
 
   [Test]

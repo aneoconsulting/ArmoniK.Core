@@ -78,8 +78,9 @@ public class AdapterLoadingTest
     configuration.AddInMemoryCollection(config);
 
     var serviceCollection = new ServiceCollection();
-    serviceCollection.AddQueue(configuration,
-                               logger);
+    serviceCollection.AddAdapter(configuration,
+                                 nameof(Components.QueueAdaptorSettings),
+                                 logger);
 
     serviceCollection.BuildServiceProvider();
   }

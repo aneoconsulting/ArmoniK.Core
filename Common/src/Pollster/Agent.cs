@@ -26,6 +26,8 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
@@ -45,16 +47,16 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public sealed class Agent : IAgent
 {
-  private readonly List<TaskCreationRequest> createdTasks_;
-  private readonly ILogger                   logger_;
-  private readonly IObjectStorage            objectStorage_;
-  private readonly IPushQueueStorage         pushQueueStorage_;
-  private readonly IResultTable              resultTable_;
-  private readonly Dictionary<string, long>  sentResults_;
-  private readonly SessionData               sessionData_;
-  private readonly ISubmitter                submitter_;
-  private readonly TaskData                  taskData_;
-  private readonly ITaskTable                taskTable_;
+  private readonly List<TaskCreationRequest>                  createdTasks_;
+  private readonly ILogger                                    logger_;
+  private readonly IObjectStorage                             objectStorage_;
+  private readonly IPushQueueStorage                          pushQueueStorage_;
+  private readonly IResultTable                               resultTable_;
+  private readonly Dictionary<string, (byte[] id, long size)> sentResults_;
+  private readonly SessionData                                sessionData_;
+  private readonly ISubmitter                                 submitter_;
+  private readonly TaskData                                   taskData_;
+  private readonly ITaskTable                                 taskTable_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -64,8 +66,8 @@ public sealed class Agent : IAgent
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskTable">Interface to manage task states</param>
-  /// <param name="sessionData">Data of the session</param>
-  /// <param name="taskData">Data of the task</param>
+  /// <param name="sessionData">OpaqueId of the session</param>
+  /// <param name="taskData">OpaqueId of the task</param>
   /// <param name="folder">Shared folder between Agent and Worker</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
@@ -87,7 +89,7 @@ public sealed class Agent : IAgent
     taskTable_        = taskTable;
     logger_           = logger;
     createdTasks_     = new List<TaskCreationRequest>();
-    sentResults_      = new Dictionary<string, long>();
+    sentResults_      = new Dictionary<string, (byte[] id, long size)>();
     sessionData_      = sessionData;
     taskData_         = taskData;
     Folder            = folder;
@@ -120,11 +122,12 @@ public sealed class Agent : IAgent
                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    foreach (var (result, size) in sentResults_)
+    foreach (var (result, (id, size)) in sentResults_)
     {
       await resultTable_.CompleteResult(taskData_.SessionId,
                                         result,
                                         size,
+                                        id,
                                         cancellationToken)
                         .ConfigureAwait(false);
     }
@@ -155,29 +158,32 @@ public sealed class Agent : IAgent
 
     ThrowIfInvalidToken(token);
 
+
     try
     {
-      await using (var fs = new FileStream(Path.Combine(Folder,
-                                                        resultId),
-                                           FileMode.OpenOrCreate))
+      var opaqueId = (await resultTable_.GetResult(resultId,
+                                                   cancellationToken)
+                                        .ConfigureAwait(false)).OpaqueId;
+
+      await using var fs = new FileStream(Path.Combine(Folder,
+                                                       resultId),
+                                          FileMode.OpenOrCreate);
+      await using var w = new BinaryWriter(fs);
+      await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
+                                                                cancellationToken)
+                                                .ConfigureAwait(false))
       {
-        await using var w = new BinaryWriter(fs);
-        await foreach (var chunk in objectStorage_.GetValuesAsync(resultId,
-                                                                  cancellationToken)
-                                                  .ConfigureAwait(false))
-        {
-          w.Write(chunk);
-        }
+        w.Write(chunk);
       }
 
 
       return resultId;
     }
-    catch (ObjectDataNotFoundException)
+    catch (Exception ex) when (ex is ResultNotFoundException or ObjectDataNotFoundException)
     {
       throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Data not found"),
-                             "Data not found");
+                                        "ResultId not found"),
+                             "ResultId not found");
     }
   }
 
@@ -262,42 +268,48 @@ public sealed class Agent : IAgent
 
     var results = await requests.Select(async rc =>
                                         {
-                                          var resultId = Guid.NewGuid()
-                                                             .ToString();
+                                          var result = new Result(rc.request.SessionId,
+                                                                  Guid.NewGuid()
+                                                                      .ToString(),
+                                                                  rc.request.Name,
+                                                                  taskData_.TaskId,
+                                                                  "",
+                                                                  ResultStatus.Created,
+                                                                  new List<string>(),
+                                                                  DateTime.UtcNow,
+                                                                  0,
+                                                                  Array.Empty<byte>());
 
-                                          var size = await objectStorage_.AddOrUpdateAsync(resultId,
-                                                                                           new List<ReadOnlyMemory<byte>>
-                                                                                           {
-                                                                                             rc.data,
-                                                                                           }.ToAsyncEnumerable(),
-                                                                                           cancellationToken)
-                                                                         .ConfigureAwait(false);
+                                          var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                                          {
+                                                                                            ResultId  = result.ResultId,
+                                                                                            SessionId = rc.request.SessionId,
+                                                                                          },
+                                                                                          new List<ReadOnlyMemory<byte>>
+                                                                                          {
+                                                                                            rc.data,
+                                                                                          }.ToAsyncEnumerable(),
+                                                                                          cancellationToken)
+                                                                        .ConfigureAwait(false);
 
-                                          return new Result(rc.request.SessionId,
-                                                            resultId,
-                                                            rc.request.Name,
-                                                            taskData_.TaskId,
-                                                            "",
-                                                            ResultStatus.Created,
-                                                            new List<string>(),
-                                                            DateTime.UtcNow,
-                                                            size,
-                                                            Array.Empty<byte>());
+                                          return (result, add);
                                         })
                                 .WhenAll()
                                 .ConfigureAwait(false);
 
-    await resultTable_.Create(results,
+    var ids = results.ViewSelect(tuple => tuple.result);
+
+    await resultTable_.Create(ids,
                               cancellationToken)
                       .ConfigureAwait(false);
 
     foreach (var result in results)
     {
-      sentResults_.Add(result.ResultId,
-                       result.Size);
+      sentResults_.Add(result.result.ResultId,
+                       result.add);
     }
 
-    return results;
+    return ids;
   }
 
   /// <inheritdoc />
@@ -315,19 +327,21 @@ public sealed class Agent : IAgent
       using var r       = new BinaryReader(fs);
       var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
 
-      var add = objectStorage_.AddOrUpdateAsync(result,
-                                                channel.Reader.ReadAllAsync(cancellationToken),
-                                                cancellationToken);
+      var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                    {
+                                                      ResultId  = result,
+                                                      SessionId = sessionData_.SessionId,
+                                                    },
+                                                    channel.Reader.ReadAllAsync(cancellationToken),
+                                                    cancellationToken);
 
-      long size = 0;
-      int  read;
+      int read;
       do
       {
         var buffer = new byte[PayloadConfiguration.MaxChunkSize];
         read = r.Read(buffer,
                       0,
                       PayloadConfiguration.MaxChunkSize);
-        size += read;
         if (read > 0)
         {
           await channel.Writer.WriteAsync(buffer.AsMemory(0,
@@ -339,9 +353,9 @@ public sealed class Agent : IAgent
 
       channel.Writer.Complete();
 
-      await add.ConfigureAwait(false);
+      var add = await addTask.ConfigureAwait(false);
       sentResults_.Add(result,
-                       size);
+                       add);
     }
 
     return resultIds;

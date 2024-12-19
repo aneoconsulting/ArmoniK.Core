@@ -40,6 +40,7 @@ jobs:
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
           - Adaptors/S3/tests
+          - Adaptors/Embed/tests
         os:
           - ubuntu-latest
       fail-fast: false
@@ -179,6 +180,7 @@ jobs:
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
+          - Adaptors/Embed/tests
       fail-fast: false
     runs-on: windows-latest
     steps:
@@ -189,12 +191,10 @@ jobs:
         submodules: true
 
     - name: Dotnet Restore
-      run: |
-        dotnet restore
+      run: dotnet restore
 
     - name: Dotnet Build
-      run: |
-        dotnet build
+      run: dotnet build
 
     - name: Run tests
       run: |
@@ -440,6 +440,7 @@ jobs:
         object:
           - redis
           - minio
+          - embed
         log-level:
           - Information
           - Verbose

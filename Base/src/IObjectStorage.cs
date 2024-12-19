@@ -20,10 +20,10 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 
-namespace ArmoniK.Core.Common.Storage;
+namespace ArmoniK.Core.Base;
 
 /// <summary>
 ///   Object Storage interface
@@ -35,47 +35,40 @@ public interface IObjectStorage : IInitializable
   ///   Add the given data in the storage at the given key
   ///   Update data if it already exists
   /// </summary>
-  /// <param name="key">Key representing the object</param>
   /// <param name="valueChunks">Chunks of data that will be stored in the Object Storage</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   The size of the object that has been uploaded.
+  ///   The opaque unique identifier representing the object and the size of the object that has been uploaded.
   /// </returns>
+  /// <remarks>
+  ///   Opaque ID will be used to refer to the object. The implementation of this interface should generate it.
+  /// </remarks>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  Task<long> AddOrUpdateAsync(string                                 key,
-                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                              CancellationToken                      cancellationToken = default);
+  Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             data,
+                                                IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
+                                                CancellationToken                      cancellationToken = default);
 
   /// <summary>
   ///   Get object in the Object Storage
   /// </summary>
-  /// <param name="key">Key representing the object to be retrieved</param>
+  /// <param name="id">Opaque unique identifier representing the object</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Byte arrays representing the object chunked
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  IAsyncEnumerable<byte[]> GetValuesAsync(string            key,
+  IAsyncEnumerable<byte[]> GetValuesAsync(byte[]            id,
                                           CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Delete data in the object storage
   /// </summary>
-  /// <param name="keys">Keys representing the objects to delete</param>
+  /// <param name="ids">Opaque unique identifiers representing the objects to delete</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
-  Task TryDeleteAsync(IEnumerable<string> keys,
+  Task TryDeleteAsync(IEnumerable<byte[]> ids,
                       CancellationToken   cancellationToken = default);
-
-  /// <summary>
-  ///   List data in the Object Storage
-  /// </summary>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The keys representing data found in the Object Storage
-  /// </returns>
-  IAsyncEnumerable<string> ListKeysAsync(CancellationToken cancellationToken = default);
 }
