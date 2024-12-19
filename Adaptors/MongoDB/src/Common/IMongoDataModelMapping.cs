@@ -17,6 +17,8 @@
 
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Injection.Options.Database;
+
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
@@ -25,10 +27,44 @@ public interface IMongoDataModelMapping<T>
 {
   string CollectionName { get; }
 
+  /// <summary>
+  ///   Setup indexes for the collection
+  ///   Can be called multiple times
+  /// </summary>
+  /// <param name="sessionHandle">MongoDB Client session</param>
+  /// <param name="collection">MongoDDB Collection in which to insert data</param>
+  /// <param name="options">Options for MongoDB</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
                               IMongoCollection<T>  collection,
                               Options.MongoDB      options);
 
+  /// <summary>
+  ///   Setup sharding for the collection
+  ///   Can be called multiple times
+  /// </summary>
+  /// <param name="sessionHandle">MongoDB Client session</param>
+  /// <param name="options">Options for MongoDB</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                             Options.MongoDB      options);
+
+  /// <summary>
+  ///   Insert data into the collection after its creation.
+  ///   Can be called multiple times
+  /// </summary>
+  /// <param name="sessionHandle">MongoDB Client session</param>
+  /// <param name="collection">MongoDDB Collection in which to insert data</param>
+  /// <param name="initDatabase">Data to insert</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task InitializeCollectionAsync(IClientSessionHandle sessionHandle,
+                                 IMongoCollection<T>  collection,
+                                 InitDatabase         initDatabase)
+    => Task.CompletedTask;
 }

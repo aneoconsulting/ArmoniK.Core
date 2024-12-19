@@ -49,11 +49,3 @@ resource "null_resource" "init_replica" {
   }
   depends_on = [time_sleep.wait]
 }
-
-resource "null_resource" "partitions_in_db" {
-  for_each = var.partition_list
-  provisioner "local-exec" {
-    command = "${local.prefix_run} --eval 'db.PartitionData.insertOne(${jsonencode(each.value)})'"
-  }
-  depends_on = [null_resource.init_replica]
-}
