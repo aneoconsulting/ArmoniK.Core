@@ -33,6 +33,8 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.gRPC.Validators;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils;
@@ -126,6 +128,9 @@ public class SubmitterTests
             .AddSingleton<IObjectStorage, ObjectStorage>()
             .AddOption<Injection.Options.Submitter>(configuration,
                                                     Injection.Options.Submitter.SettingSection)
+            .AddInitializedOption<InitServices>(configuration,
+                                                InitServices.SettingSection)
+            .AddSingleton<InitDatabase>()
             .AddSingleton<IPushQueueStorage>(pushQueueStorage_);
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions

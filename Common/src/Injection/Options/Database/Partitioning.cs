@@ -15,14 +15,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-namespace ArmoniK.Core.Common.Auth.Authentication;
+using System.Collections.Generic;
+
+namespace ArmoniK.Core.Common.Injection.Options.Database;
 
 /// <summary>
-///   Role object in database
+///   Options to fill partitions related data
 /// </summary>
-/// <param name="RoleId">Role Id</param>
-/// <param name="RoleName">Role Name</param>
-/// <param name="Permissions">Permissions list, as strings</param>
-public record RoleData(int      RoleId,
-                       string   RoleName,
-                       string[] Permissions);
+public class Partitioning
+{
+  /// <summary>
+  ///   Path to the section containing the values in the configuration object
+  /// </summary>
+  public const string SettingSection = nameof(Partitioning);
+
+  /// <summary>
+  ///   Partitions in a JSON string to insert into the database
+  /// </summary>
+  public List<string> Partitions { get; init; } = new();
+}
