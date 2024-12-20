@@ -16,6 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
+using System.Linq;
+using System.Net.Security;
+using System.Security.Authentication;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
@@ -97,7 +101,6 @@ public static class ServiceCollectionExt
     services.AddOption(configuration,
                        Options.MongoDB.SettingSection,
                        out mongoOptions);
-
     using var _ = logger.BeginNamedScope("MongoDB configuration",
                                          ("host", mongoOptions.Host),
                                          ("port", mongoOptions.Port));
@@ -132,30 +135,6 @@ public static class ServiceCollectionExt
       logger.LogTrace("No credentials provided");
     }
 
-    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
-    {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported mongodb certificate from file {path}",
-                        mongoOptions.CAFile);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
-    }
-
     string connectionString;
     if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
     {
@@ -182,6 +161,8 @@ public static class ServiceCollectionExt
     }
 
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+
+    // Configure the connection settings
     settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
     settings.UseTls                 = mongoOptions.Tls;
     settings.DirectConnection       = mongoOptions.DirectConnection;
@@ -189,6 +170,77 @@ public static class ServiceCollectionExt
     settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
     settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+
+    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
+    {
+      if (!File.Exists(mongoOptions.CAFile))
+      {
+        throw new FileNotFoundException("CA certificate file not found",
+                                        mongoOptions.CAFile);
+      }
+
+      // Load the CA certificate
+      var authority = new X509Certificate2(mongoOptions.CAFile);
+      logger.LogInformation("CA certificate loaded: {authority}",
+                            authority);
+      //  SSL Parameters configuration
+      settings.SslSettings = new SslSettings
+                             {
+                               ClientCertificates  = new X509Certificate2Collection(authority),
+                               EnabledSslProtocols = SslProtocols.Tls12,
+                               ServerCertificateValidationCallback = (sender,
+                                                                      certificate,
+                                                                      certChain,
+                                                                      sslPolicyErrors) =>
+
+                                                                     {
+                                                                       // If there is any error other than untrusted root or partial chain, fail the validation
+                                                                       if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                                                                       {
+                                                                         logger.LogDebug("SSL validation failed with errors: {sslPolicyErrors}",
+                                                                                         sslPolicyErrors);
+                                                                         return false;
+                                                                       }
+
+                                                                       if (certificate == null)
+                                                                       {
+                                                                         logger.LogDebug("Certificate is null!");
+                                                                         return false;
+                                                                       }
+
+                                                                       if (certChain == null)
+                                                                       {
+                                                                         logger.LogDebug("Certificate chain is null!");
+                                                                         return false;
+                                                                       }
+
+                                                                       // If there is any error other than untrusted root or partial chain, fail the validation
+                                                                       if (certChain.ChainStatus.Any(status
+                                                                                                       => status.Status is not X509ChainStatusFlags.UntrustedRoot and
+                                                                                                                           not X509ChainStatusFlags.PartialChain))
+                                                                       {
+                                                                         logger.LogDebug("SSL validation failed with chain status: {chainStatus}",
+                                                                                         certChain.ChainStatus);
+                                                                         return false;
+                                                                       }
+
+                                                                       var cert = new X509Certificate2(certificate);
+                                                                       certChain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
+                                                                       certChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+
+                                                                       certChain.ChainPolicy.ExtraStore.Add(authority);
+                                                                       if (!certChain.Build(cert))
+                                                                       {
+                                                                         return false;
+                                                                       }
+
+                                                                       return certChain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+                                                                       ;
+                                                                     },
+                             };
+    }
+
+
     settings.ClusterConfigurator = cb =>
                                    {
                                      //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
@@ -196,6 +248,7 @@ public static class ServiceCollectionExt
                                      //                                                       e.Command.ToJson()));
                                      cb.Subscribe(new DiagnosticsActivityEventSubscriber());
                                    };
+
 
     var client = new MongoClient(settings);
 
