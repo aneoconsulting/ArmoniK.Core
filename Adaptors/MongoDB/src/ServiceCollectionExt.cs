@@ -171,9 +171,21 @@ public static class ServiceCollectionExt
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
-      var validationCallback = CreateCallback(mongoOptions.CAFile,
-                                              logger);
+      if (!File.Exists(mongoOptions.CAFile))
+      {
+        throw new FileNotFoundException("CA certificate file not found",
+                                        mongoOptions.CAFile);
+      }
 
+      // Load the CA certificate
+      string content = File.ReadAllText(mongoOptions.CAFile);
+      logger.LogDebug("CA certificate content: {content}",
+                      content);
+
+      var authority = X509Certificate2.CreateFromPem(content); //new X509Certificate2(mongoOptions.CAFile);
+      logger.LogInformation("CA certificate loaded: {authority}",
+                            authority);
+      //  SSL Parameters configuration
       settings.SslSettings = new SslSettings
       {
         ClientCertificates = new X509Certificate2Collection(authority),
