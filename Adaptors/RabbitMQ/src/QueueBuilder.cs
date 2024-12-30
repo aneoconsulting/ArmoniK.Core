@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Adapters.QueueCommon;
@@ -27,6 +27,8 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using RabbitMQ.Client;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
@@ -67,31 +69,54 @@ public class QueueBuilder : IDependencyInjectionBuildable
       logger.LogTrace("No credential path provided");
     }
 
+    SslOption? sslOption = null;
     if (!string.IsNullOrEmpty(amqpOptions.CaPath))
     {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
+      if (!File.Exists(amqpOptions.CaPath))
       {
-        certificateCollection.ImportFromPemFile(amqpOptions.CaPath);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported AMQP certificate from file {path}",
+        logger.LogError("CA file {path} does not exist",
                         amqpOptions.CaPath);
+        throw new FileNotFoundException("Root certificate file not found",
+                                        amqpOptions.CaPath);
       }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
+
+      var authority = new X509Certificate2(amqpOptions.CaPath);
+      logger.LogInformation("Loaded CA certificate from file {path}",
+                            amqpOptions.CaPath);
+
+      sslOption = new SslOption
+                  {
+                    Enabled    = true,
+                    ServerName = amqpOptions.Host,
+                    CertificateValidationCallback = (sender,
+                                                     certificate,
+                                                     chain,
+                                                     sslPolicyErrors) =>
+                                                    {
+                                                      if (certificate == null || chain == null)
+                                                      {
+                                                        logger.LogWarning("Certificate or certificate chain is null");
+                                                        return false;
+                                                      }
+
+                                                      return CertificateValidator.ValidateServerCertificate(sender,
+                                                                                                            certificate,
+                                                                                                            chain,
+                                                                                                            sslPolicyErrors,
+                                                                                                            authority,
+                                                                                                            logger);
+                                                    }
+                  };
+      logger.LogDebug("Server certificate validation callback set");
+    }
+    else
+    {
+      logger.LogWarning("No CA certificate provided");
     }
 
-    serviceCollection.AddSingletonWithHealthCheck<IConnectionRabbit, ConnectionRabbit>(nameof(IConnectionRabbit));
+    serviceCollection.AddSingleton<IConnectionRabbit>(sp => new ConnectionRabbit(amqpOptions,
+                                                                                 sp.GetRequiredService<ILogger<ConnectionRabbit>>(),
+                                                                                 sslOption));
     serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
 
