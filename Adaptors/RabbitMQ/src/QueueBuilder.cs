@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Core.Adapters.QueueCommon;
 using ArmoniK.Core.Base;
@@ -29,6 +28,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using RabbitMQ.Client;
+
+using static ArmoniK.Core.Utils.CertificateValidator;
 
 namespace ArmoniK.Core.Adapters.RabbitMQ;
 
@@ -80,32 +81,13 @@ public class QueueBuilder : IDependencyInjectionBuildable
                                         amqpOptions.CaPath);
       }
 
-      var authority = new X509Certificate2(amqpOptions.CaPath);
-      logger.LogInformation("Loaded CA certificate from file {path}",
-                            amqpOptions.CaPath);
-
+      var (validationCallback, authority) = CertificateValidatorFactory.CreateCallback(amqpOptions.CaPath,
+                                                                                       logger);
       sslOption = new SslOption
                   {
-                    Enabled    = true,
-                    ServerName = amqpOptions.Host,
-                    CertificateValidationCallback = (sender,
-                                                     certificate,
-                                                     chain,
-                                                     sslPolicyErrors) =>
-                                                    {
-                                                      if (certificate == null || chain == null)
-                                                      {
-                                                        logger.LogWarning("Certificate or certificate chain is null");
-                                                        return false;
-                                                      }
-
-                                                      return CertificateValidator.ValidateServerCertificate(sender,
-                                                                                                            certificate,
-                                                                                                            chain,
-                                                                                                            sslPolicyErrors,
-                                                                                                            authority,
-                                                                                                            logger);
-                                                    }
+                    Enabled                       = true,
+                    ServerName                    = amqpOptions.Host,
+                    CertificateValidationCallback = validationCallback,
                   };
       logger.LogDebug("Server certificate validation callback set");
     }
