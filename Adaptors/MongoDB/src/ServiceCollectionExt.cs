@@ -48,8 +48,8 @@ public static class ServiceCollectionExt
 {
   [PublicAPI]
   public static IServiceCollection AddMongoComponents(this IServiceCollection services,
-                                                      ConfigurationManager configuration,
-                                                      ILogger logger)
+                                                      ConfigurationManager    configuration,
+                                                      ILogger                 logger)
   {
     services.AddMongoClient(configuration,
                             logger);
@@ -60,8 +60,8 @@ public static class ServiceCollectionExt
 
   [PublicAPI]
   public static IServiceCollection AddMongoStorages(this IServiceCollection services,
-                                                    ConfigurationManager configuration,
-                                                    ILogger logger)
+                                                    ConfigurationManager    configuration,
+                                                    ILogger                 logger)
   {
     logger.LogInformation("Configure MongoDB Components");
 
@@ -92,8 +92,8 @@ public static class ServiceCollectionExt
   }
 
   public static IServiceCollection AddMongoClient(this IServiceCollection services,
-                                                  ConfigurationManager configuration,
-                                                  ILogger logger)
+                                                  ConfigurationManager    configuration,
+                                                  ILogger                 logger)
   {
     Options.MongoDB mongoOptions;
     services.AddOption(configuration,
@@ -161,53 +161,33 @@ public static class ServiceCollectionExt
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
 
     // Configure the connection settings
-    settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
-    settings.UseTls = mongoOptions.Tls;
-    settings.DirectConnection = mongoOptions.DirectConnection;
-    settings.Scheme = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
+    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
+    settings.UseTls                 = mongoOptions.Tls;
+    settings.DirectConnection       = mongoOptions.DirectConnection;
+    settings.Scheme                 = ConnectionStringScheme.MongoDB;
+    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName = mongoOptions.ReplicaSet;
+    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
       if (!File.Exists(mongoOptions.CAFile))
       {
-        throw new FileNotFoundException("CA certificate file not found",
+        logger.LogError("CA certificate Mongo file not found at {path}",
+                        mongoOptions.CAFile);
+        throw new FileNotFoundException("CA certificate Mongo file not found",
                                         mongoOptions.CAFile);
       }
 
-      // Load the CA certificate
-      string content = File.ReadAllText(mongoOptions.CAFile);
-      logger.LogDebug("CA certificate content: {content}",
-                      content);
+      var (validationCallback, authority) = CertificateValidatorFactory.CreateCallback(mongoOptions.CAFile,
+                                                                                       logger);
 
-      var authority = X509Certificate2.CreateFromPem(content); //new X509Certificate2(mongoOptions.CAFile);
-      logger.LogInformation("CA certificate loaded: {authority}",
-                            authority);
-      //  SSL Parameters configuration
       settings.SslSettings = new SslSettings
-      {
-        ClientCertificates = new X509Certificate2Collection(authority),
-        EnabledSslProtocols = SslProtocols.Tls12,
-        ServerCertificateValidationCallback = (sender,
-                                               certificate,
-                                               certChain,
-                                               sslPolicyErrors) =>
-        {
-          if (certificate == null || certChain == null)
-          {
-            logger.LogWarning("Certificate or certificate chain is null");
-            return false;
-          }
-          return CertificateValidator.ValidateServerCertificate(sender,
-                                                                certificate,
-                                                                certChain,
-                                                                sslPolicyErrors,
-                                                                authority,
-                                                                logger);
-        }
-      };
+                             {
+                               ClientCertificates                  = new X509Certificate2Collection(authority),
+                               EnabledSslProtocols                 = SslProtocols.Tls12,
+                               ServerCertificateValidationCallback = validationCallback
+                             };
     }
 
     settings.ClusterConfigurator = cb =>
@@ -243,7 +223,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager configuration)
+                                                                           ConfigurationManager    configuration)
   {
     var components = configuration.GetSection(Components.SettingSection);
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
@@ -264,7 +244,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager configuration,
+                                                                  ConfigurationManager    configuration,
                                                                   out AuthenticationCache authCache)
   {
     authCache = new AuthenticationCache();
