@@ -16,11 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.IO;
-using System.Linq;
-using System.Net.Security;
 using System.Security.Authentication;
-using System.Security.Cryptography.X509Certificates;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -43,6 +39,8 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
+
+using static ArmoniK.Core.Utils.CertificateValidator;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -173,73 +171,15 @@ public static class ServiceCollectionExt
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
-      if (!File.Exists(mongoOptions.CAFile))
-      {
-        throw new FileNotFoundException("CA certificate file not found",
-                                        mongoOptions.CAFile);
-      }
+      var validationCallback = CreateCallback(mongoOptions.CAFile,
+                                              logger);
 
-      // Load the CA certificate
-      var authority = new X509Certificate2(mongoOptions.CAFile);
-      logger.LogInformation("CA certificate loaded: {authority}",
-                            authority);
-      //  SSL Parameters configuration
       settings.SslSettings = new SslSettings
                              {
-                               ClientCertificates  = new X509Certificate2Collection(authority),
-                               EnabledSslProtocols = SslProtocols.Tls12,
-                               ServerCertificateValidationCallback = (sender,
-                                                                      certificate,
-                                                                      certChain,
-                                                                      sslPolicyErrors) =>
-
-                                                                     {
-                                                                       // If there is any error other than untrusted root or partial chain, fail the validation
-                                                                       if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
-                                                                       {
-                                                                         logger.LogDebug("SSL validation failed with errors: {sslPolicyErrors}",
-                                                                                         sslPolicyErrors);
-                                                                         return false;
-                                                                       }
-
-                                                                       if (certificate == null)
-                                                                       {
-                                                                         logger.LogDebug("Certificate is null!");
-                                                                         return false;
-                                                                       }
-
-                                                                       if (certChain == null)
-                                                                       {
-                                                                         logger.LogDebug("Certificate chain is null!");
-                                                                         return false;
-                                                                       }
-
-                                                                       // If there is any error other than untrusted root or partial chain, fail the validation
-                                                                       if (certChain.ChainStatus.Any(status
-                                                                                                       => status.Status is not X509ChainStatusFlags.UntrustedRoot and
-                                                                                                                           not X509ChainStatusFlags.PartialChain))
-                                                                       {
-                                                                         logger.LogDebug("SSL validation failed with chain status: {chainStatus}",
-                                                                                         certChain.ChainStatus);
-                                                                         return false;
-                                                                       }
-
-                                                                       var cert = new X509Certificate2(certificate);
-                                                                       certChain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
-                                                                       certChain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
-
-                                                                       certChain.ChainPolicy.ExtraStore.Add(authority);
-                                                                       if (!certChain.Build(cert))
-                                                                       {
-                                                                         return false;
-                                                                       }
-
-                                                                       return certChain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
-                                                                       ;
-                                                                     },
+                               EnabledSslProtocols                 = SslProtocols.Tls12,
+                               ServerCertificateValidationCallback = validationCallback,
                              };
     }
-
 
     settings.ClusterConfigurator = cb =>
                                    {
