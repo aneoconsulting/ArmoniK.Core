@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: List last releases
       id: releases
-      run: echo "releases:$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
+      run: echo "releases=$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
       env:
         GH_TOKEN: ${{ github.token }}
 
@@ -46,9 +46,9 @@ jobs:
       uses: docker/scout-action@b23590dc1e4d09febc00cfcbc51e9e8c0f7ee9f3 # v1
       with:
         command: cves
-        image: "${{ matrix.image }}:${{ matrix.image }}"
-        sarif-file: "${{ matrix.image }}_${{ matrix.image }}.sarif.json"
+        image: "${{ matrix.image }}:${{ matrix.version }}"
+        sarif-file: "${{ matrix.image }}_${{ matrix.version }}.sarif.json"
         summary: true
         platform: linux/arm64,linux/amd64,windows/amd64
     - name: print sarif file
-      run: cat "${{ matrix.image }}_${{ matrix.image }}.sarif.json"
+      run: cat "${{ matrix.image }}_${{ matrix.version }}.sarif.json"
