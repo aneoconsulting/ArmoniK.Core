@@ -130,10 +130,11 @@ public class SessionTable : ISessionTable
                                                                                             int                                    pageSize,
                                                                                             CancellationToken                      cancellationToken = default)
   {
-    using var _                 = Logger.LogFunction();
-    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
-    var       sessionHandle     = sessionProvider_.Get();
-    var       sessionCollection = sessionCollectionProvider_.Get();
+    using var _             = Logger.LogFunction();
+    using var activity      = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
+    var       sessionHandle = sessionProvider_.Get();
+    var sessionCollection = sessionCollectionProvider_.Get()
+                                                      .WithReadPreference(ReadPreference.SecondaryPreferred);
 
     var sessionList = Task.FromResult(new List<SessionData>());
     if (pageSize > 0)

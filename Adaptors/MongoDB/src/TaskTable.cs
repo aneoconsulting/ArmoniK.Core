@@ -123,8 +123,9 @@ public class TaskTable : ITaskTable
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountTasksAsync)}");
 
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
+    var sessionHandle = sessionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get()
+                                                .WithReadPreference(ReadPreference.SecondaryPreferred);
 
     var res = await taskCollection.AsQueryable(sessionHandle)
                                   .Where(filter)
@@ -142,8 +143,9 @@ public class TaskTable : ITaskTable
   {
     using var activity = activitySource_.StartActivity($"{nameof(CountPartitionTasksAsync)}");
 
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
+    var sessionHandle = sessionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get()
+                                                .WithReadPreference(ReadPreference.SecondaryPreferred);
 
 
     var res = await taskCollection.AsQueryable(sessionHandle)
@@ -213,9 +215,10 @@ public class TaskTable : ITaskTable
                                                                                int                                 pageSize,
                                                                                CancellationToken                   cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity      = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
+    var       sessionHandle = sessionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get()
+                                                .WithReadPreference(ReadPreference.SecondaryPreferred);
 
     var taskList = Task.FromResult(new List<T>());
     if (pageSize > 0)
@@ -332,7 +335,8 @@ public class TaskTable : ITaskTable
   {
     using var activity       = activitySource_.StartActivity($"{nameof(ListApplicationsAsync)}");
     var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
+    var taskCollection = taskCollectionProvider_.Get()
+                                                .WithReadPreference(ReadPreference.SecondaryPreferred);
 
     var queryable = taskCollection.AsQueryable(sessionHandle)
                                   .Where(filter)
