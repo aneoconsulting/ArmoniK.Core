@@ -44,8 +44,7 @@ public class ConnectionRabbit : IConnectionRabbit
   private          IModel?                     model_;
 
   public ConnectionRabbit(Amqp                      options,
-                          ILogger<ConnectionRabbit> logger,
-                          SslOption?                sslOption)
+                          ILogger<ConnectionRabbit> logger)
   {
     logger_  = logger;
     options_ = options;
@@ -55,8 +54,7 @@ public class ConnectionRabbit : IConnectionRabbit
                  Password               = options.Password,
                  HostName               = options.Host,
                  Port                   = options.Port,
-                 DispatchConsumersAsync = true,
-                 Ssl                    = sslOption
+                 DispatchConsumersAsync = true
                };
   }
 

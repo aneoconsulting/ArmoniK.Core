@@ -12,6 +12,7 @@ variable "polling_agent" {
     worker_check_delay   = string,
     shared_socket        = string
     shared_data          = string
+    windows              = bool
   })
 }
 

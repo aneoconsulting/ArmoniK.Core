@@ -45,6 +45,7 @@ variable "submitter" {
     name  = optional(string, "armonik.control.submitter")
     image = optional(string, "dockerhubaneo/armonik_control")
     port  = optional(number, 5001)
+    windows = optional(bool, false)
   })
   default = {}
 }
@@ -67,6 +68,25 @@ variable "object_storage" {
   }
   default = {}
 }
+variable "redis_params" {
+  type = object({
+    host        = optional(string, "redis")
+    port        = optional(number, 6380)
+    user        = optional(string, "admin")
+    password    = optional(string, "admin")
+    tls_enabled = optional(bool, true)
+    Ssl         = optional(bool, true)
+    ca_path     = optional(string, "/redis/certs/ca.pem")
+    cert_path   = optional(string, "/redis/certs/redis.crt")
+    key_path    = optional(string, "/redis/certs/redis.key")
+    credentials = optional(string, "")
+    database_name = optional(string, "redis_database")
+    windows     = optional(bool, false)
+  })
+  default = {}
+}
+
+
 
 variable "queue_storage" {
   type = object({
@@ -92,7 +112,7 @@ variable "queue_env_vars" {
     password     = optional(string, "admin"),
     host         = optional(string, "queue")
     port         = optional(number, 5672)
-    max_priority = optional(number, 10)
+    max_priority = optional(number, 20)
     max_retries  = optional(number, 10)
     link_credit  = optional(number, 2)
     partition    = optional(string, "TestPartition")
@@ -126,6 +146,7 @@ variable "compute_plane" {
       // They will be used for both
       shared_socket = optional(string, "/cache")
       shared_data   = optional(string, "/cache")
+      windows       = optional(bool, true)
     })
   })
   default = {

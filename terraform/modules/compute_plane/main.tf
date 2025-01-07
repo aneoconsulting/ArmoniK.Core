@@ -6,6 +6,16 @@ resource "docker_image" "worker" {
   name         = var.worker.image
   keep_locally = true
 }
+data "external" "detect_os" {
+  program = ["sh", "-c", "pwd | awk '{if ($0 ~ /^[A-Za-z]:\\\\/) {print \"{\\\"os\\\":\\\"windows\\\"}\"} else {print \"{\\\"os\\\":\\\"linux\\\"}\"}}'"]
+}
+
+locals {
+  is_windows = data.external.detect_os.result["os"] == "windows"
+}
+resource "docker_volume" "redis_certs" {
+  name = "redis_certs"
+}
 
 resource "docker_container" "worker" {
   name  = "${var.worker.name}${var.replica_counter}"
@@ -26,7 +36,7 @@ resource "docker_container" "worker" {
     internal = 1080
     external = var.worker.port + var.replica_counter
   }
-
+  # wait = !var.compute_plane.windows
   mounts {
     type   = "volume"
     target = var.polling_agent.shared_socket
@@ -56,13 +66,17 @@ resource "docker_container" "polling_agent" {
     internal = 1080
     external = var.polling_agent.port + var.replica_counter
   }
-
+  wait = !var.polling_agent.windows
   mounts {
     type   = "volume"
     target = var.polling_agent.shared_socket
     source = docker_volume.socket_vol.name
   }
-
+  mounts {
+  type   = "volume"
+  target = local.is_windows ? "C:\\redis\\certs" : "/redis/certs"
+  source = docker_volume.redis_certs.name
+}
   restart = "unless-stopped"
 
   dynamic "mounts" {

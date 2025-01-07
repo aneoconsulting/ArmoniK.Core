@@ -36,10 +36,13 @@ module "database" {
 }
 
 module "object_redis" {
-  source  = "./modules/storage/object/redis"
-  count   = var.object_storage.name == "redis" ? 1 : 0
-  image   = var.object_storage.image
-  network = docker_network.armonik.id
+  source       = "./modules/storage/object/redis"
+  count        = var.object_storage.name == "redis" ? 1 : 0
+  image        = "redis:latest"
+  exposed_port = 6380
+  network      = docker_network.armonik.id
+  redis_params = var.redis_params
+  object_storage = var.object_storage
 }
 
 module "object_minio" {
@@ -112,7 +115,7 @@ module "queue_none" {
 }
 
 module "submitter" {
-  source             = "./modules/submitter"
+  source             = "./modules/submitter"  
   container_name     = local.submitter.name
   core_tag           = local.submitter.tag
   docker_image       = local.submitter.image
@@ -120,7 +123,8 @@ module "submitter" {
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
   volumes            = local.volumes
-  mounts             = module.database.core_mounts
+  mounts             = module.database.core_mounts  
+  object_storage     = var.object_storage
 }
 
 module "compute_plane" {
@@ -184,3 +188,4 @@ module "tracing" {
   otel_collector_image = var.otel_collector_image
   ingestion_ports      = var.tracing_ingestion_ports
 }
+

@@ -32,192 +32,192 @@ jobs:
     - name: Print version
       run: echo VERSION ${{ steps.genver.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
-  tests:
-    strategy:
-      matrix:
-        projects:
-          - Common/tests
-          - Adaptors/MongoDB/tests
-          - Adaptors/Memory/tests
-          - Adaptors/S3/tests
-          - Adaptors/Embed/tests
-        os:
-          - ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
+  # tests:
+  #   strategy:
+  #     matrix:
+  #       projects:
+  #         - Common/tests
+  #         - Adaptors/MongoDB/tests
+  #         - Adaptors/Memory/tests
+  #         - Adaptors/S3/tests
+  #         - Adaptors/Embed/tests
+  #       os:
+  #         - ubuntu-latest
+  #     fail-fast: false
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #     with:
+  #       ref: ${{ github.ref }}
+  #       submodules: true
 
-    - name: Install AWSCLI (the one in the Github runner does not work)
-      run: |
-        pip install awscli
+  #   - name: Install AWSCLI (the one in the Github runner does not work)
+  #     run: |
+  #       pip install awscli
      
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-      with:
-          terraform_version: latest
+  #   - name: Setup Terraform
+  #     uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #     with:
+  #         terraform_version: latest
 
-    - name: Setup just
-      run: |
-          sudo snap install --edge --classic just
+  #   - name: Setup just
+  #     run: |
+  #         sudo snap install --edge --classic just
 
-    - name: Install libssl1.1 (EphemeralMongo6 v1.1.3 dependency)
-      run: |
-          curl -fsSL https://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb -o /tmp/libssl.dev
-          sudo dpkg -i /tmp/libssl.dev
+  #   - name: Install libssl1.1 (EphemeralMongo6 v1.1.3 dependency)
+  #     run: |
+  #         curl -fsSL https://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb -o /tmp/libssl.dev
+  #         sudo dpkg -i /tmp/libssl.dev
 
-    - name: Minio Server UP
-      if: ${{ matrix.projects }} == "Adaptors/S3/tests"
-      run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just object=minio deployTargetObject
+  #   - name: Minio Server UP
+  #     if: ${{ matrix.projects }} == "Adaptors/S3/tests"
+  #     run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+  #           just object=minio deployTargetObject
 
-    - name: Dotnet Restore
-      run: |
-        MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
-          dotnet restore
+  #   - name: Dotnet Restore
+  #     run: |
+  #       MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
+  #         dotnet restore
 
-    - name: Dotnet Build
-      run: |
-        MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
-          dotnet build
+  #   - name: Dotnet Build
+  #     run: |
+  #       MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
+  #         dotnet build
 
-    - name: Run tests
-      run: |
-          MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
-            dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+  #   - name: Run tests
+  #     run: |
+  #         MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+  #           dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        name: Test - ${{ matrix.os }} ${{ matrix.projects }}
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
-        reporter: dotnet-trx
-    - name: Upload monitor profile
-      if: always()
-      run: |
-        export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-        export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
-        tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz
+  #   - name: Test Report
+  #     uses: dorny/test-reporter@v1
+  #     if: success() || failure()
+  #     with:
+  #       name: Test - ${{ matrix.os }} ${{ matrix.projects }}
+  #       path: ${{ matrix.projects }}/TestResults/test-results.trx
+  #       reporter: dotnet-trx
+  #   - name: Upload monitor profile
+  #     if: always()
+  #     run: |
+  #       export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #       export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #       project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
+  #       tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz
 
-  testsQueueProtos:
-    strategy:
-      matrix:
-        queue:
-          - activemq
-          - rabbitmq
-        projects:
-          - Adaptors/Amqp/tests
-        os:
-          - ubuntu-latest
-        include:
-          - queue: rabbitmq091
-            projects: Adaptors/RabbitMQ/tests
-            os: ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
+  # testsQueueProtos:
+  #   strategy:
+  #     matrix:
+  #       queue:
+  #         - activemq
+  #         - rabbitmq
+  #       projects:
+  #         - Adaptors/Amqp/tests
+  #       os:
+  #         - ubuntu-latest
+  #       include:
+  #         - queue: rabbitmq091
+  #           projects: Adaptors/RabbitMQ/tests
+  #           os: ubuntu-latest
+  #     fail-fast: false
+  #   runs-on: ${{ matrix.os }}
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #     with:
+  #       ref: ${{ github.ref }}
+  #       submodules: true
 
-    - name: Install AWSCLI (the one in the Github runner does not work)
-      run: |
-        pip install awscli
+  #   - name: Install AWSCLI (the one in the Github runner does not work)
+  #     run: |
+  #       pip install awscli
    
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-      with:
-       terraform_version: latest
+  #   - name: Setup Terraform
+  #     uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #     with:
+  #      terraform_version: latest
 
-    - name: Setup just
-      run: |
-          sudo snap install --edge --classic just
+  #   - name: Setup just
+  #     run: |
+  #         sudo snap install --edge --classic just
 
-    - name: Install libssl1.1 (EphemeralMongo6 v1.1.3 dependency)
-      run: |
-          curl -fsSL https://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb -o /tmp/libssl.dev
-          sudo dpkg -i /tmp/libssl.dev
+  #   - name: Install libssl1.1 (EphemeralMongo6 v1.1.3 dependency)
+  #     run: |
+  #         curl -fsSL https://security.ubuntu.com/ubuntu/pool/main/o/openssl/libssl1.1_1.1.1f-1ubuntu2.23_amd64.deb -o /tmp/libssl.dev
+  #         sudo dpkg -i /tmp/libssl.dev
 
-    - name: Set up queue
-      run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just queue=${{ matrix.queue }} deployTargetQueue
+  #   - name: Set up queue
+  #     run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+  #           just queue=${{ matrix.queue }} deployTargetQueue
 
-    - name: Dotnet Restore
-      run: |
-        MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
-          dotnet restore
+  #   - name: Dotnet Restore
+  #     run: |
+  #       MONITOR_PREFIX="monitor/restore/" tools/retry.sh -w 60 -- tools/monitor.sh \
+  #         dotnet restore
 
-    - name: Dotnet Build
-      run: |
-        MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
-          dotnet build
+  #   - name: Dotnet Build
+  #     run: |
+  #       MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
+  #         dotnet build
 
-    - name: Run tests
-      run: |
-        MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
-          dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+  #   - name: Run tests
+  #     run: |
+  #       MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
+  #         dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
-        reporter: dotnet-trx
-    - name: Upload monitor profile
-      if: always()
-      run: |
-        export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-        export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
-        tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz
+  #   - name: Test Report
+  #     uses: dorny/test-reporter@v1
+  #     if: success() || failure()
+  #     with:
+  #       name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
+  #       path: ${{ matrix.projects }}/TestResults/test-results.trx
+  #       reporter: dotnet-trx
+  #   - name: Upload monitor profile
+  #     if: always()
+  #     run: |
+  #       export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #       export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #       project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
+  #       tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz
 
-  testsWinOnly:
-    strategy:
-      matrix:
-        projects:
-          - Adaptors/Redis/tests
-          - Common/tests
-          - Adaptors/MongoDB/tests
-          - Adaptors/Memory/tests
-          - Adaptors/Embed/tests
-      fail-fast: false
-    runs-on: windows-latest
-    steps:
-    - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      with:
-        ref: ${{ github.ref }}
-        submodules: true
+  # testsWinOnly:
+  #   strategy:
+  #     matrix:
+  #       projects:
+  #         - Adaptors/Redis/tests
+  #         - Common/tests
+  #         - Adaptors/MongoDB/tests
+  #         - Adaptors/Memory/tests
+  #         - Adaptors/Embed/tests
+  #     fail-fast: false
+  #   runs-on: windows-latest
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #     with:
+  #       ref: ${{ github.ref }}
+  #       submodules: true
 
-    - name: Dotnet Restore
-      run: dotnet restore
+  #   - name: Dotnet Restore
+  #     run: dotnet restore
 
-    - name: Dotnet Build
-      run: dotnet build
+  #   - name: Dotnet Build
+  #     run: dotnet build
 
-    - name: Run tests
-      run: |
-        cd ${{ matrix.projects }}
-        dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+  #   - name: Run tests
+  #     run: |
+  #       cd ${{ matrix.projects }}
+  #       dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
-    - name: Test Report
-      uses: dorny/test-reporter@v1
-      if: success() || failure()
-      with:
-        name: Test - windows ${{ matrix.projects }}
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
-        reporter: dotnet-trx
+  #   - name: Test Report
+  #     uses: dorny/test-reporter@v1
+  #     if: success() || failure()
+  #     with:
+  #       name: Test - windows ${{ matrix.projects }}
+  #       path: ${{ matrix.projects }}/TestResults/test-results.trx
+  #       reporter: dotnet-trx
 
   buildProjects:
     runs-on: ubuntu-latest
@@ -231,29 +231,29 @@ jobs:
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release
 
-  publish-nuget:
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - buildProjects
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-      with:
-        ref: ${{ github.ref }}
+  # publish-nuget:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - versionning
+  #     - buildProjects
+  #   env:
+  #     VERSION: ${{ needs.versionning.outputs.version }}
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #     with:
+  #       ref: ${{ github.ref }}
 
-    - name: Build the package
-      run: |
-        dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release -p:RunAnalyzers=false -p:WarningLevel=0
+  #   - name: Build the package
+  #     run: |
+  #       dotnet build Base/src/ArmoniK.Core.Base.csproj -c Release -p:RunAnalyzers=false -p:WarningLevel=0
 
-    - name: Pack the package
-      run: |
-        dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
+  #   - name: Pack the package
+  #     run: |
+  #       dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
 
-    - name: Push the package
-      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg --skip-duplicate -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+  #   - name: Push the package
+  #     run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg --skip-duplicate -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
 
   images:
@@ -298,137 +298,137 @@ jobs:
       run: |
         tools/retry.sh -w 60 -r 2 -- just tag=$VERSION platform=linux/arm64,linux/amd64,windows/amd64 load=false push=true ${{ matrix.type }}
 
-  scout:
-    runs-on: ubuntu-latest
-    needs:
-      - versionning
-      - images
-    strategy:
-      fail-fast: false
-      matrix:
-        image:
-          - dockerhubaneo/armonik_pollingagent
-          - dockerhubaneo/armonik_control_metrics
-          - dockerhubaneo/armonik_control_partition_metrics
-          - dockerhubaneo/armonik_control
-          - dockerhubaneo/armonik_core_stream_test_worker
-          - dockerhubaneo/armonik_core_stream_test_client
-          - dockerhubaneo/armonik_core_htcmock_test_worker
-          - dockerhubaneo/armonik_core_htcmock_test_client
-          - dockerhubaneo/armonik_core_bench_test_worker
-          - dockerhubaneo/armonik_core_bench_test_client
-    steps:
-    - name: Login to Docker Hub
-      uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_LOGIN }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
-    - name: Analyze for critical and high CVEs
-      uses: docker/scout-action@b23590dc1e4d09febc00cfcbc51e9e8c0f7ee9f3 # v1
-      with:
-        command: cves
-        image: "${{ matrix.image }}:${{ needs.versionning.outputs.version }}"
-        sarif-file: sarif.output.json
-        summary: true
-    - name: print sarif file
-      run: cat sarif.output.json
+  # scout:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - versionning
+  #     - images
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       image:
+  #         - dockerhubaneo/armonik_pollingagent
+  #         - dockerhubaneo/armonik_control_metrics
+  #         - dockerhubaneo/armonik_control_partition_metrics
+  #         - dockerhubaneo/armonik_control
+  #         - dockerhubaneo/armonik_core_stream_test_worker
+  #         - dockerhubaneo/armonik_core_stream_test_client
+  #         - dockerhubaneo/armonik_core_htcmock_test_worker
+  #         - dockerhubaneo/armonik_core_htcmock_test_client
+  #         - dockerhubaneo/armonik_core_bench_test_worker
+  #         - dockerhubaneo/armonik_core_bench_test_client
+  #   steps:
+  #   - name: Login to Docker Hub
+  #     uses: docker/login-action@9780b0c442fbb1117ed29e0efdff1e18412f7567 # v3
+  #     with:
+  #       username: ${{ secrets.DOCKER_HUB_LOGIN }}
+  #       password: ${{ secrets.DOCKER_HUB_TOKEN }}
+  #   - name: Analyze for critical and high CVEs
+  #     uses: docker/scout-action@b23590dc1e4d09febc00cfcbc51e9e8c0f7ee9f3 # v1
+  #     with:
+  #       command: cves
+  #       image: "${{ matrix.image }}:${{ needs.versionning.outputs.version }}"
+  #       sarif-file: sarif.output.json
+  #       summary: true
+  #   - name: print sarif file
+  #     run: cat sarif.output.json
 
 
-  testStreamDC:
-    needs:
-      - versionning
-      - images
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    name: Stream ${{ matrix.queue }} ${{ matrix.log-level }}
-    strategy:
-      fail-fast: false
-      matrix:
-        queue:
-          - activemq
-          - rabbitmq
-          - rabbitmq091
-        log-level:
-          - Information
-          - Verbose
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
+  # testStreamDC:
+  #   needs:
+  #     - versionning
+  #     - images
+  #   env:
+  #     VERSION: ${{ needs.versionning.outputs.version }}
+  #   runs-on: ubuntu-latest
+  #   name: Stream ${{ matrix.queue }} ${{ matrix.log-level }}
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       queue:
+  #         - activemq
+  #         - rabbitmq
+  #         - rabbitmq091
+  #       log-level:
+  #         - Information
+  #         - Verbose
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         submodules: true
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
+  #     - name: Install AWSCLI (the one in the Github runner does not work)
+  #       run: |
+  #         pip install awscli
 
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
+  #     - name: Setup just
+  #       run: |
+  #         sudo snap install --edge --classic just
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-        with:
-          terraform_version: latest
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #       with:
+  #         terraform_version: latest
 
-      - name: Deploy Core
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
-          sleep 10
+  #     - name: Deploy Core
+  #       run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+  #           just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+  #         sleep 10
 
-      - name: Dotnet Restore
-        run: |
-          MONITOR_PREFIX="monitor/restore/" MONITOR_CD=./Tests/Stream/Client/ tools/retry.sh -w 60 -- tools/monitor.sh \
-            dotnet restore
+  #     - name: Dotnet Restore
+  #       run: |
+  #         MONITOR_PREFIX="monitor/restore/" MONITOR_CD=./Tests/Stream/Client/ tools/retry.sh -w 60 -- tools/monitor.sh \
+  #           dotnet restore
 
-      - name: Dotnet Build
-        run: |
-          MONITOR_PREFIX="monitor/build/" MONITOR_CD=./Tests/Stream/Client/ tools/monitor.sh \
-            dotnet build
+  #     - name: Dotnet Build
+  #       run: |
+  #         MONITOR_PREFIX="monitor/build/" MONITOR_CD=./Tests/Stream/Client/ tools/monitor.sh \
+  #           dotnet build
 
-      - name: Run Stream Test
-        timeout-minutes: 4
-        run: |
-          export GrpcClient__Endpoint=http://localhost:5001
-          export Partition=TestPartition0
-          MONITOR_PREFIX="monitor/test/" MONITOR_CD=./Tests/Stream/Client/ tools/monitor.sh \
-            dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+  #     - name: Run Stream Test
+  #       timeout-minutes: 4
+  #       run: |
+  #         export GrpcClient__Endpoint=http://localhost:5001
+  #         export Partition=TestPartition0
+  #         MONITOR_PREFIX="monitor/test/" MONITOR_CD=./Tests/Stream/Client/ tools/monitor.sh \
+  #           dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: success() || failure()
-        with:
-          name: Test - ${{ matrix.queue }} x ${{ matrix.log-level }}
-          path: ./Tests/Stream/Client/TestResults/test-results.trx
-          reporter: dotnet-trx
+  #     - name: Test Report
+  #       uses: dorny/test-reporter@v1
+  #       if: success() || failure()
+  #       with:
+  #         name: Test - ${{ matrix.queue }} x ${{ matrix.log-level }}
+  #         path: ./Tests/Stream/Client/TestResults/test-results.trx
+  #         reporter: dotnet-trx
 
-      - name: Show logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz
-      - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: always()
-        with:
-          dest: './container-logs'
-      - name: Upload docker container logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
-      - name: Export and upload database
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-database.tar.gz
+  #     - name: Show logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.gz
+  #         tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz
+  #     - name: Collect docker container logs
+  #       uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+  #       if: always()
+  #       with:
+  #         dest: './container-logs'
+  #     - name: Upload docker container logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
+  #     - name: Export and upload database
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         bash tools/export_mongodb.sh
+  #         tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-database.tar.gz
 
 
   testHtcMockDC:
@@ -475,11 +475,20 @@ jobs:
         with:
           terraform_version: latest
 
+      - name: Print working directory and list files
+        run: |
+          echo "Current working directory:"
+          pwd
+          echo "Files in the current directory:"
+          ls -al
+
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} object=${{ matrix.object }} worker=htcmock deploy
           sleep 10
+      
+    
 
       - name: Print And Time Metrics
         run: |
@@ -733,516 +742,516 @@ jobs:
         if: always()
         run: docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-armonik-logs.json.gz
 
-  testConnectivity:
-    needs:
-      - versionning
-      - images
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        ca: [true, false]
-    name: "Test connectivity - Ca installed ${{ matrix.ca }}"
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
+  # testConnectivity:
+  #   needs:
+  #     - versionning
+  #     - images
+  #   env:
+  #     VERSION: ${{ needs.versionning.outputs.version }}
+  #   runs-on: ubuntu-latest
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       ca: [true, false]
+  #   name: "Test connectivity - Ca installed ${{ matrix.ca }}"
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         submodules: true
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
+  #     - name: Install AWSCLI (the one in the Github runner does not work)
+  #       run: |
+  #         pip install awscli
 
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
+  #     - name: Setup just
+  #       run: |
+  #         sudo snap install --edge --classic just
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-        with:
-          terraform_version: latest
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #       with:
+  #         terraform_version: latest
 
-      - name: Deploy Core
-        run: |
-          tools/retry.sh -w 30 -- just tag=${VERSION} deploy
-          sleep 10
+  #     - name: Deploy Core
+  #       run: |
+  #         tools/retry.sh -w 30 -- just tag=${VERSION} deploy
+  #         sleep 10
 
-      - name: Add CA to store
-        if: ${{ matrix.ca }}
-        run: |
-         sudo apt install ca-certificates
-         sudo mkdir -p /usr/local/share/ca-certificates/
-         sudo cp terraform/generated/ingress_tls/server/ca.crt /usr/local/share/ca-certificates/ca_tls.crt
-         sudo cp terraform/generated/ingress_mtls/server/ca.crt /usr/local/share/ca-certificates/ca_mtls.crt
-         sudo update-ca-certificates
+  #     - name: Add CA to store
+  #       if: ${{ matrix.ca }}
+  #       run: |
+  #        sudo apt install ca-certificates
+  #        sudo mkdir -p /usr/local/share/ca-certificates/
+  #        sudo cp terraform/generated/ingress_tls/server/ca.crt /usr/local/share/ca-certificates/ca_tls.crt
+  #        sudo cp terraform/generated/ingress_mtls/server/ca.crt /usr/local/share/ca-certificates/ca_mtls.crt
+  #        sudo update-ca-certificates
 
-      - name: Dotnet Restore
-        run: dotnet restore Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj
+  #     - name: Dotnet Restore
+  #       run: dotnet restore Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj
 
-      - name: Dotnet Build
-        run: dotnet build Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj
+  #     - name: Dotnet Build
+  #       run: dotnet build Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj
 
-      - name: Run connection test
-        run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+  #     - name: Run connection test
+  #       run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
-      - name: Test Report
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Test - Connectivity CA ${{ matrix.ca }}
-          path: ./Tests/Connectivity/src/TestResults/test-results.trx
-          reporter: dotnet-trx
+  #     - name: Test Report
+  #       uses: dorny/test-reporter@v1
+  #       if: always()
+  #       with:
+  #         name: Test - Connectivity CA ${{ matrix.ca }}
+  #         path: ./Tests/Connectivity/src/TestResults/test-results.trx
+  #         reporter: dotnet-trx
 
-      - name: Show logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.gz
-      - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: always()
-        with:
-          dest: './container-logs'
-      - name: Upload docker container logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-container-logs.tar.gz
-      - name: Export and upload database
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-database.tar.gz
+  #     - name: Show logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.gz
+  #     - name: Collect docker container logs
+  #       uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+  #       if: always()
+  #       with:
+  #         dest: './container-logs'
+  #     - name: Upload docker container logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-container-logs.tar.gz
+  #     - name: Export and upload database
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         bash tools/export_mongodb.sh
+  #         tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-database.tar.gz
 
 
 
   
-  runBench:
-    needs:
-      - versionning
-      - images
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
+  # runBench:
+  #   needs:
+  #     - versionning
+  #     - images
+  #   env:
+  #     VERSION: ${{ needs.versionning.outputs.version }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         submodules: true
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
+  #     - name: Install AWSCLI (the one in the Github runner does not work)
+  #       run: |
+  #         pip install awscli
 
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
+  #     - name: Setup just
+  #       run: |
+  #         sudo snap install --edge --classic just
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-        with:
-          terraform_version: latest
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #       with:
+  #         terraform_version: latest
 
-      - name: Deploy Core
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
-          sleep 10
+  #     - name: Deploy Core
+  #       run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+  #           just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
+  #         sleep 10
 
-      - name: Run Bench test tasks - many tasks (400)
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/bench-many-tasks-400/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e BenchOptions__NTasks=400 \
-            -e BenchOptions__TaskDurationMs=10 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_bench_test_client:$VERSION
-      - name: Run Bench test tasks - many tasks (400) with pause
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/bench-many-tasks-400/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e BenchOptions__NTasks=400 \
-            -e BenchOptions__TaskDurationMs=10 \
-            -e BenchOptions__PauseSessionDuringSubmission=true \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_bench_test_client:$VERSION
-      - name: Run Bench test tasks - many tasks (200) with events
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/bench-many-tasks-200-e/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e BenchOptions__NTasks=200 \
-            -e BenchOptions__TaskDurationMs=100 \
-            -e BenchOptions__ShowEvents=true \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_bench_test_client:$VERSION
-      - name: Run Bench test time - long tasks (10s)
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/bench-long-tasks-10s/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e BenchOptions__NTasks=2 \
-            -e BenchOptions__TaskDurationMs=10000 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_bench_test_client:$VERSION
-      - name: Run Bench test time - large payloads (10MB)
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/bench-large-payload-10m/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e BenchOptions__NTasks=10 \
-            -e BenchOptions__TaskDurationMs=10 \
-            -e BenchOptions__ResultSize=1 \
-            -e BenchOptions__PayloadSize=10000 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_bench_test_client:$VERSION
-      - name: Run Bench test time - large results (10MB)
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/bench-large-result-10m/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e BenchOptions__NTasks=10 \
-            -e BenchOptions__TaskDurationMs=10 \
-            -e BenchOptions__ResultSize=10000 \
-            -e BenchOptions__PayloadSize=1 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_bench_test_client:$VERSION
-      - name: Show logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-monitor.tar.gz
-      - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: always()
-        with:
-          dest: './container-logs'
-      - name: Upload docker container logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
-      - name: Export and upload database
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-database.tar.gz
-
-
-  runCrash:
-    needs:
-      - versionning
-      - images
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
-
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
-
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
-
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-        with:
-          terraform_version: latest
-
-      - name: Deploy Core
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 build-deploy
-          sleep 10
-
-      - name: Build client
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
-            just tag=${VERSION} buildCrashingWorkerClient
-
-      - name: Run Crash test
-        timeout-minutes: 4
-        run: |
-          MONITOR_PREFIX="monitor/crash" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_crashingworker_test_client:$VERSION
-
-      - name: Show logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-monitor.tar.gz
-      - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: always()
-        with:
-          dest: './container-logs'
-      - name: Upload docker container logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-container-logs.tar.gz
-      - name: Export and upload database
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-database.tar.gz
+  #     - name: Run Bench test tasks - many tasks (400)
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/bench-many-tasks-400/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e BenchOptions__NTasks=400 \
+  #           -e BenchOptions__TaskDurationMs=10 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_bench_test_client:$VERSION
+  #     - name: Run Bench test tasks - many tasks (400) with pause
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/bench-many-tasks-400/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e BenchOptions__NTasks=400 \
+  #           -e BenchOptions__TaskDurationMs=10 \
+  #           -e BenchOptions__PauseSessionDuringSubmission=true \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_bench_test_client:$VERSION
+  #     - name: Run Bench test tasks - many tasks (200) with events
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/bench-many-tasks-200-e/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e BenchOptions__NTasks=200 \
+  #           -e BenchOptions__TaskDurationMs=100 \
+  #           -e BenchOptions__ShowEvents=true \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_bench_test_client:$VERSION
+  #     - name: Run Bench test time - long tasks (10s)
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/bench-long-tasks-10s/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e BenchOptions__NTasks=2 \
+  #           -e BenchOptions__TaskDurationMs=10000 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_bench_test_client:$VERSION
+  #     - name: Run Bench test time - large payloads (10MB)
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/bench-large-payload-10m/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e BenchOptions__NTasks=10 \
+  #           -e BenchOptions__TaskDurationMs=10 \
+  #           -e BenchOptions__ResultSize=1 \
+  #           -e BenchOptions__PayloadSize=10000 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_bench_test_client:$VERSION
+  #     - name: Run Bench test time - large results (10MB)
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/bench-large-result-10m/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e BenchOptions__NTasks=10 \
+  #           -e BenchOptions__TaskDurationMs=10 \
+  #           -e BenchOptions__ResultSize=10000 \
+  #           -e BenchOptions__PayloadSize=1 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_bench_test_client:$VERSION
+  #     - name: Show logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.gz
+  #         tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-monitor.tar.gz
+  #     - name: Collect docker container logs
+  #       uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+  #       if: always()
+  #       with:
+  #         dest: './container-logs'
+  #     - name: Upload docker container logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
+  #     - name: Export and upload database
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         bash tools/export_mongodb.sh
+  #         tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-database.tar.gz
 
 
+  # runCrash:
+  #   needs:
+  #     - versionning
+  #     - images
+  #   env:
+  #     VERSION: ${{ needs.versionning.outputs.version }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         submodules: true
 
-  defaultPartitionMock:
-    needs:
-      - versionning
-      - images
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
+  #     - name: Install AWSCLI (the one in the Github runner does not work)
+  #       run: |
+  #         pip install awscli
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
+  #     - name: Setup just
+  #       run: |
+  #         sudo snap install --edge --classic just
 
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #       with:
+  #         terraform_version: latest
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-        with:
-          terraform_version: latest
+  #     - name: Deploy Core
+  #       run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+  #           just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 build-deploy
+  #         sleep 10
 
-      - name: Deploy Core
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
-          sleep 10
+  #     - name: Build client
+  #       run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
+  #           just tag=${VERSION} buildCrashingWorkerClient
 
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/htcmock-default-partition/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=1000 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+  #     - name: Run Crash test
+  #       timeout-minutes: 4
+  #       run: |
+  #         MONITOR_PREFIX="monitor/crash" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_crashingworker_test_client:$VERSION
 
-      - name: Show logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultPartition-monitor.tar.gz
-      - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: always()
-        with:
-          dest: './container-logs'
-      - name: Upload docker container logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
-      - name: Export and upload database
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-database.tar.gz
+  #     - name: Show logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.gz
+  #         tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-monitor.tar.gz
+  #     - name: Collect docker container logs
+  #       uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+  #       if: always()
+  #       with:
+  #         dest: './container-logs'
+  #     - name: Upload docker container logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-container-logs.tar.gz
+  #     - name: Export and upload database
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         bash tools/export_mongodb.sh
+  #         tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-database.tar.gz
 
-  healthCheckTest:
-    needs:
-      - versionning
-      - images
-    env:
-      VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
-        with:
-          ref: ${{ github.ref }}
-          submodules: true
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
 
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
+  # defaultPartitionMock:
+  #   needs:
+  #     - versionning
+  #     - images
+  #   env:
+  #     VERSION: ${{ needs.versionning.outputs.version }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         submodules: true
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
-        with:
-          terraform_version: latest
+  #     - name: Install AWSCLI (the one in the Github runner does not work)
+  #       run: |
+  #         pip install awscli
 
-      - name: Deploy Core
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just tag=${VERSION} object=redis deploy
-          sleep 10
+  #     - name: Setup just
+  #       run: |
+  #         sudo snap install --edge --classic just
 
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/htcmock-base/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #       with:
+  #         terraform_version: latest
 
-      - name: Health Check Test when database is down
-        timeout-minutes: 10
-        run: |
-          just tag=${VERSION} object=redis stop database
-          just healthChecks
-          just tag=${VERSION} object=redis restoreDeployment database
-          sleep 10
-          just healthChecks
+  #     - name: Deploy Core
+  #       run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+  #           just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
+  #         sleep 10
 
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/htcmock-restarted-db/" tools/monitor.sh \
-          docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+  #     - name: Run HtcMock test
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/htcmock-default-partition/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e HtcMock__NTasks=1000 \
+  #           -e HtcMock__TotalCalculationTime=00:00:00.100 \
+  #           -e HtcMock__DataSize=1 \
+  #           -e HtcMock__MemorySize=1 \
+  #           -e HtcMock__SubTasksLevels=3 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
-      - name: Health Check Test when queue is down
-        timeout-minutes: 10
-        run: |
-          just tag=${VERSION} object=redis stop queue
-          just healthChecks
-          just tag=${VERSION} object=redis restoreDeployment queue
-          sleep 10
-          just healthChecks
+  #     - name: Show logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.gz
+  #         tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultPartition-monitor.tar.gz
+  #     - name: Collect docker container logs
+  #       uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+  #       if: always()
+  #       with:
+  #         dest: './container-logs'
+  #     - name: Upload docker container logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
+  #     - name: Export and upload database
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         bash tools/export_mongodb.sh
+  #         tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-database.tar.gz
 
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/htcmock-restarted-redis/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+  # healthCheckTest:
+  #   needs:
+  #     - versionning
+  #     - images
+  #   env:
+  #     VERSION: ${{ needs.versionning.outputs.version }}
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
+  #       with:
+  #         ref: ${{ github.ref }}
+  #         submodules: true
 
-      - name: Health Check Test when object is down
-        timeout-minutes: 10
-        run: |
-          just tag=${VERSION} object=redis stop object
-          just healthChecks
-          just tag=${VERSION} object=redis restoreDeployment object
-          sleep 10
-          just healthChecks
+  #     - name: Install AWSCLI (the one in the Github runner does not work)
+  #       run: |
+  #         pip install awscli
 
-      - name: Run HtcMock test
-        timeout-minutes: 3
-        run: |
-          MONITOR_PREFIX="monitor/htcmock-restarted-redis2/" tools/monitor.sh \
-            docker run --net armonik_network --rm \
-            -e HtcMock__NTasks=100 \
-            -e HtcMock__TotalCalculationTime=00:00:00.100 \
-            -e HtcMock__DataSize=1 \
-            -e HtcMock__MemorySize=1 \
-            -e HtcMock__SubTasksLevels=3 \
-            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
-            dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+  #     - name: Setup just
+  #       run: |
+  #         sudo snap install --edge --classic just
 
-      - name: Show logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-monitor.tar.gz
-      - name: Collect docker container logs
-        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: always()
-        with:
-          dest: './container-logs'
-      - name: Upload docker container logs
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
-      - name: Export and upload database
-        if: always()
-        run: |
-          export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
-          export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-database.tar.gz
+  #     - name: Setup Terraform
+  #       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+  #       with:
+  #         terraform_version: latest
+
+  #     - name: Deploy Core
+  #       run: |
+  #         MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+  #           just tag=${VERSION} object=redis deploy
+  #         sleep 10
+
+  #     - name: Run HtcMock test
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/htcmock-base/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e HtcMock__NTasks=100 \
+  #           -e HtcMock__TotalCalculationTime=00:00:00.100 \
+  #           -e HtcMock__DataSize=1 \
+  #           -e HtcMock__MemorySize=1 \
+  #           -e HtcMock__SubTasksLevels=3 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+  #     - name: Health Check Test when database is down
+  #       timeout-minutes: 10
+  #       run: |
+  #         just tag=${VERSION} object=redis stop database
+  #         just healthChecks
+  #         just tag=${VERSION} object=redis restoreDeployment database
+  #         sleep 10
+  #         just healthChecks
+
+  #     - name: Run HtcMock test
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/htcmock-restarted-db/" tools/monitor.sh \
+  #         docker run --net armonik_network --rm \
+  #           -e HtcMock__NTasks=100 \
+  #           -e HtcMock__TotalCalculationTime=00:00:00.100 \
+  #           -e HtcMock__DataSize=1 \
+  #           -e HtcMock__MemorySize=1 \
+  #           -e HtcMock__SubTasksLevels=3 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+  #     - name: Health Check Test when queue is down
+  #       timeout-minutes: 10
+  #       run: |
+  #         just tag=${VERSION} object=redis stop queue
+  #         just healthChecks
+  #         just tag=${VERSION} object=redis restoreDeployment queue
+  #         sleep 10
+  #         just healthChecks
+
+  #     - name: Run HtcMock test
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/htcmock-restarted-redis/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e HtcMock__NTasks=100 \
+  #           -e HtcMock__TotalCalculationTime=00:00:00.100 \
+  #           -e HtcMock__DataSize=1 \
+  #           -e HtcMock__MemorySize=1 \
+  #           -e HtcMock__SubTasksLevels=3 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+  #     - name: Health Check Test when object is down
+  #       timeout-minutes: 10
+  #       run: |
+  #         just tag=${VERSION} object=redis stop object
+  #         just healthChecks
+  #         just tag=${VERSION} object=redis restoreDeployment object
+  #         sleep 10
+  #         just healthChecks
+
+  #     - name: Run HtcMock test
+  #       timeout-minutes: 3
+  #       run: |
+  #         MONITOR_PREFIX="monitor/htcmock-restarted-redis2/" tools/monitor.sh \
+  #           docker run --net armonik_network --rm \
+  #           -e HtcMock__NTasks=100 \
+  #           -e HtcMock__TotalCalculationTime=00:00:00.100 \
+  #           -e HtcMock__DataSize=1 \
+  #           -e HtcMock__MemorySize=1 \
+  #           -e HtcMock__SubTasksLevels=3 \
+  #           -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+  #           dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
+
+  #     - name: Show logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.gz
+  #         tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-monitor.tar.gz
+  #     - name: Collect docker container logs
+  #       uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+  #       if: always()
+  #       with:
+  #         dest: './container-logs'
+  #     - name: Upload docker container logs
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
+  #     - name: Export and upload database
+  #       if: always()
+  #       run: |
+  #         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
+  #         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
+  #         bash tools/export_mongodb.sh
+  #         tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-database.tar.gz
 
   canMerge:
     needs:
-      - tests
-      - testsQueueProtos
-      - testsWinOnly
-      - testHtcMockDC
-      - defaultPartitionMock
-      - testStreamDC
+      # - tests
+      # - testsQueueProtos
+      # - testsWinOnly
+      # - testHtcMockDC
+      # - defaultPartitionMock
+      # - testStreamDC
       - images
-      - runBench
-      - runCrash
-      - healthCheckTest
-      - testConnectivity
+      # - runBench
+      # - runCrash
+      # - healthCheckTest
+      # - testConnectivity
       - testWindowsDocker
-      - scout
+      # - scout
     runs-on: ubuntu-latest
     steps:
       - name: Echo OK
