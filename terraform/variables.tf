@@ -126,6 +126,7 @@ variable "compute_plane" {
       // They will be used for both
       shared_socket = optional(string, "/cache")
       shared_data   = optional(string, "/cache")
+      socket_type   = optional(string, "unixdomainsocket")
     })
   })
   default = {

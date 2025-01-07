@@ -9,11 +9,15 @@ locals {
     "Amqp__PartitionId=TestPartition${local.partition_chooser}",
     "PubSub__PartitionId=TestPartition${local.partition_chooser}",
   ]
+  worker_tcp = format("%s://%s:%s", "http", "${var.worker.name}${var.replica_counter}","10667")
+  worker_socket = format("%s/%s", var.polling_agent.shared_socket,"armonik_worker.sock")
+  agent_tcp = format("%s://%s:%s", "http", "${var.polling_agent.name}${var.replica_counter}","10666")
+  agent_socket = format("%s/%s", var.polling_agent.shared_socket,"armonik_agent.sock")
   common_env = [
-    "ComputePlane__WorkerChannel__SocketType=unixdomainsocket",
-    "ComputePlane__WorkerChannel__Address=${var.polling_agent.shared_socket}/armonik_worker.sock",
-    "ComputePlane__AgentChannel__SocketType=unixdomainsocket",
-    "ComputePlane__AgentChannel__Address=${var.polling_agent.shared_socket}/armonik_agent.sock",
+    "ComputePlane__WorkerChannel__SocketType=${var.polling_agent.socket_type}",
+    "ComputePlane__WorkerChannel__Address=${var.polling_agent.socket_type == "tcp" ? local.worker_tcp : local.worker_socket}",
+    "ComputePlane__AgentChannel__SocketType=${var.polling_agent.socket_type}",
+    "ComputePlane__AgentChannel__Address=${var.polling_agent.socket_type == "tcp" ? local.agent_tcp : local.agent_socket}"
   ]
   gen_env            = [for k, v in var.generated_env_vars : "${k}=${v}"]
   polling_agent_name = "${var.polling_agent.name}${var.replica_counter}"
