@@ -64,6 +64,11 @@ jobs:
         with:
           ref: ${{ github.ref }}
 
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        with:
+          terraform_version: latest
+
       - name: Check Format
         run: terraform fmt -check -recursive -diff
 
