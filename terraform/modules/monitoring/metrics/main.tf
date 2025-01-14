@@ -20,4 +20,12 @@ resource "docker_container" "metrics" {
     internal = 1080
     external = var.exposed_port
   }
+
+  dynamic "upload" {
+    for_each = var.mounts
+    content {
+      source = upload.value
+      file   = upload.key
+    }
+  }
 }
