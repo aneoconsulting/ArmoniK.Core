@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Security.Cryptography.X509Certificates;
+using System.Security.Authentication;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -39,6 +39,8 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Extensions.DiagnosticSources;
+
+using static ArmoniK.Core.Utils.CertificateValidator;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
@@ -97,7 +99,6 @@ public static class ServiceCollectionExt
     services.AddOption(configuration,
                        Options.MongoDB.SettingSection,
                        out mongoOptions);
-
     using var _ = logger.BeginNamedScope("MongoDB configuration",
                                          ("host", mongoOptions.Host),
                                          ("port", mongoOptions.Port));
@@ -132,30 +133,6 @@ public static class ServiceCollectionExt
       logger.LogTrace("No credentials provided");
     }
 
-    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
-    {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(mongoOptions.CAFile);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported mongodb certificate from file {path}",
-                        mongoOptions.CAFile);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
-    }
-
     string connectionString;
     if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
     {
@@ -182,6 +159,8 @@ public static class ServiceCollectionExt
     }
 
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+
+    // Configure the connection settings
     settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
     settings.UseTls                 = mongoOptions.Tls;
     settings.DirectConnection       = mongoOptions.DirectConnection;
@@ -189,6 +168,19 @@ public static class ServiceCollectionExt
     settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
     settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+
+    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
+    {
+      var validationCallback = CreateCallback(mongoOptions.CAFile,
+                                              logger);
+
+      settings.SslSettings = new SslSettings
+                             {
+                               EnabledSslProtocols                 = SslProtocols.Tls12,
+                               ServerCertificateValidationCallback = validationCallback,
+                             };
+    }
+
     settings.ClusterConfigurator = cb =>
                                    {
                                      //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
@@ -196,6 +188,7 @@ public static class ServiceCollectionExt
                                      //                                                       e.Command.ToJson()));
                                      cb.Subscribe(new DiagnosticsActivityEventSubscriber());
                                    };
+
 
     var client = new MongoClient(settings);
 

@@ -120,6 +120,7 @@ module "submitter" {
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
   volumes            = local.volumes
+  mounts             = module.database.core_mounts
 }
 
 module "compute_plane" {
@@ -134,6 +135,7 @@ module "compute_plane" {
   volumes            = local.volumes
   network            = docker_network.armonik.id
   log_driver         = module.fluenbit.log_driver
+  mounts             = module.database.core_mounts
 }
 
 module "metrics_exporter" {
@@ -143,6 +145,7 @@ module "metrics_exporter" {
   network            = docker_network.armonik.id
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
+  mounts             = module.database.core_mounts
 }
 
 module "partition_metrics_exporter" {
@@ -153,6 +156,7 @@ module "partition_metrics_exporter" {
   generated_env_vars = local.environment
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
+  mounts             = module.database.core_mounts
 }
 
 module "ingress" {

@@ -32,6 +32,10 @@ variable "volumes" {
   type = map(string)
 }
 
+variable "mounts" {
+  type = map(string)
+}
+
 variable "replica_counter" {
   type = number
 }
