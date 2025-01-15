@@ -286,18 +286,26 @@ public class GrpcTasksService : Task.TasksBase
                                        context.CancellationToken)
                       .ConfigureAwait(false);
       var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
-                                                        data => data.OwnerPodId)
+                                                        data => new
+                                                                {
+                                                                  data.OwnerPodId,
+                                                                  data.TaskId,
+                                                                })
                                         .ToListAsync()
                                         .ConfigureAwait(false);
 
       await ownerPodIds.ParallelForEach(new ParallelTaskOptions(10),
-                                        async ownerPodId =>
+                                        async t =>
                                         {
                                           try
                                           {
-                                            await (string.IsNullOrEmpty(ownerPodId)
+                                            logger_.LogInformation("Cancel task {TaskId} on {OwnerPodId}",
+                                                                   t.TaskId,
+                                                                   t.OwnerPodId);
+
+                                            await (string.IsNullOrEmpty(t.OwnerPodId)
                                                      ? System.Threading.Tasks.Task.CompletedTask
-                                                     : httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false);
+                                                     : httpClient_.GetAsync("http://" + t.OwnerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false);
                                           }
                                           // Ignore unreachable agents
                                           catch (HttpRequestException e) when (e is
@@ -310,7 +318,7 @@ public class GrpcTasksService : Task.TasksBase
                                           {
                                             logger_.LogError(e,
                                                              "The agent with {OwnerPodId} was not reached successfully",
-                                                             ownerPodId);
+                                                             t.OwnerPodId);
                                           }
                                         })
                        .ConfigureAwait(false);
