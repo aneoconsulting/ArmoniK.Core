@@ -32,10 +32,11 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimplePullQueueStorageChannel : IPullQueueStorage, IPushQueueStorage
 {
-  public readonly Channel<IQueueMessageHandler> Channel = System.Threading.Channels.Channel.CreateUnbounded<IQueueMessageHandler>();
+  public readonly Channel<IQueueMessageHandler> Channel     = System.Threading.Channels.Channel.CreateUnbounded<IQueueMessageHandler>();
+  public          HealthCheckResult             CheckResult = HealthCheckResult.Healthy();
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
+    => Task.FromResult(CheckResult);
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;
