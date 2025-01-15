@@ -106,6 +106,16 @@ variable "worker_image" {
   default = "dockerhubaneo/armonik_core_htcmock_test_worker"
 }
 
+variable "socket_type" {
+  type        = string
+  description = "Socket type used by agent and worker to communicate"
+  validation {
+    condition     = can(regex("^(unixdomainsocket|tcp)$", var.socket_type))
+    error_message = "Socket must be either unixdomainsocket or tcp"
+  }
+  default = "unixdomaisocket"
+}
+
 variable "compute_plane" {
   type = object({
     worker = object({
@@ -126,7 +136,6 @@ variable "compute_plane" {
       // They will be used for both
       shared_socket = optional(string, "/cache")
       shared_data   = optional(string, "/cache")
-      socket_type   = optional(string, "unixdomainsocket")
     })
   })
   default = {

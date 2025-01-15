@@ -2,6 +2,10 @@ variable "core_tag" {
   type = string
 }
 
+variable "socket_type" {
+  type = string
+}
+
 variable "polling_agent" {
   type = object({
     name                 = string,
@@ -12,7 +16,6 @@ variable "polling_agent" {
     worker_check_delay   = string,
     shared_socket        = string
     shared_data          = string
-    socket_type          = string
   })
 }
 

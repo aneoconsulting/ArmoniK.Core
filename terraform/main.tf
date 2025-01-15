@@ -131,6 +131,7 @@ module "compute_plane" {
   core_tag           = local.compute_plane.tag
   polling_agent      = local.compute_plane.polling_agent
   worker             = local.compute_plane.worker
+  socket_type        = var.socket_type
   generated_env_vars = local.environment
   volumes            = local.volumes
   network            = docker_network.armonik.id

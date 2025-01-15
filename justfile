@@ -20,6 +20,7 @@ ingress      := "true"
 prometheus   := "true"
 grafana      := "true"
 seq          := "true"
+socket_type  := "unixdomainsocket"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag          := tag
@@ -30,7 +31,7 @@ export TF_VAR_num_partitions    := partitions
 export TF_VAR_enable_grafana    := grafana
 export TF_VAR_enable_seq        := seq
 export TF_VAR_enable_prometheus := prometheus
-
+export TF_VAR_socket_type       := socket_type
 
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
