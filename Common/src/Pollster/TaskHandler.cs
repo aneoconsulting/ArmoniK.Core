@@ -198,6 +198,11 @@ public sealed class TaskHandler : IAsyncDisposable
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
                                                                  activity_);
 
+    using var _ = logger_.BeginNamedScope("StopCancelledTask",
+                                          ("taskId", messageHandler_.TaskId),
+                                          ("messageHandler", messageHandler_.MessageId),
+                                          ("sessionId", taskData_?.SessionId ?? ""));
+
     if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,

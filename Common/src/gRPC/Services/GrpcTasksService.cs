@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -285,13 +286,41 @@ public class GrpcTasksService : Task.TasksBase
                                        context.CancellationToken)
                       .ConfigureAwait(false);
       var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
-                                                        data => data.OwnerPodId)
+                                                        data => new
+                                                                {
+                                                                  data.OwnerPodId,
+                                                                  data.TaskId,
+                                                                })
                                         .ToListAsync()
                                         .ConfigureAwait(false);
+
       await ownerPodIds.ParallelForEach(new ParallelTaskOptions(10),
-                                        async ownerPodId => await (string.IsNullOrEmpty(ownerPodId)
-                                                                     ? System.Threading.Tasks.Task.CompletedTask
-                                                                     : httpClient_.GetAsync("http://" + ownerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false))
+                                        async t =>
+                                        {
+                                          try
+                                          {
+                                            logger_.LogInformation("Cancel task {TaskId} on {OwnerPodId}",
+                                                                   t.TaskId,
+                                                                   t.OwnerPodId);
+
+                                            await (string.IsNullOrEmpty(t.OwnerPodId)
+                                                     ? System.Threading.Tasks.Task.CompletedTask
+                                                     : httpClient_.GetAsync("http://" + t.OwnerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false);
+                                          }
+                                          // Ignore unreachable agents
+                                          catch (HttpRequestException e) when (e is
+                                                                               {
+                                                                                 InnerException: SocketException
+                                                                                                 {
+                                                                                                   SocketErrorCode: SocketError.ConnectionRefused,
+                                                                                                 },
+                                                                               })
+                                          {
+                                            logger_.LogError(e,
+                                                             "The agent with {OwnerPodId} was not reached successfully",
+                                                             t.OwnerPodId);
+                                          }
+                                        })
                        .ConfigureAwait(false);
 
       await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
