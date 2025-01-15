@@ -113,7 +113,7 @@ variable "socket_type" {
     condition     = can(regex("^(unixdomainsocket|tcp)$", var.socket_type))
     error_message = "Socket must be either unixdomainsocket or tcp"
   }
-  default = "unixdomaisocket"
+  default = "unixdomainsocket"
 }
 
 variable "compute_plane" {
