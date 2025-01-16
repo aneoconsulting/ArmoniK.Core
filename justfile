@@ -138,7 +138,7 @@ export TF_VAR_mongodb_params:= if os_family() == "windows" {
 }
 
 export TF_VAR_compute_plane:= if os_family() == "windows" {
-  '{ "polling_agent" : { "image" : "' + image_polling_agent + '", "shared_socket" : "c:/cache", "shared_data" : "c:/cache" }, "worker" = {}}'
+  '{ "polling_agent" : { "image" : "' + image_polling_agent + '", "shared_socket" : "c:/cache", "shared_data" : "c:/comm" }, "worker" = {}}'
 } else {
   '{ "polling_agent" : { "image" : "' + image_polling_agent + '" }, "worker" = {}}'
 }
