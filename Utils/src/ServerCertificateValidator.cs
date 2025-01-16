@@ -58,18 +58,6 @@ public static class CertificateValidator
            return false;
          }
 
-         if (certificate == null)
-         {
-           logger.LogDebug("Certificate is null!");
-           return false;
-         }
-
-         if (chain == null)
-         {
-           logger.LogDebug("Certificate chain is null!");
-           return false;
-         }
-
          // If there is any error other than untrusted root or partial chain, fail the validation
          if (chain.ChainStatus.Any(status => status.Status is not X509ChainStatusFlags.UntrustedRoot and not X509ChainStatusFlags.PartialChain))
          {
