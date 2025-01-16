@@ -190,6 +190,8 @@ _usage:
 
       local_images: Let terraform build the docker images locally (default = false)
 
+      socket_type: Socket type used by agent and worker to communicate (default = unixdomainsocket)
+
     IMPORTANT: In order to properly destroy the resources created you should call the recipe destroy with the
     same parameters used for deploy
   EOF
