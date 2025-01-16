@@ -135,7 +135,7 @@ variable "compute_plane" {
       // env for the agent and env for the worker
       // They will be used for both
       shared_socket = optional(string, "/cache")
-      shared_data   = optional(string, "/cache")
+      shared_data   = optional(string, "/comm")
     })
   })
   default = {

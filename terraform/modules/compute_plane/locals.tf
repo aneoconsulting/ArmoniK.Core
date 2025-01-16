@@ -21,4 +21,5 @@ locals {
   ]
   gen_env            = [for k, v in var.generated_env_vars : "${k}=${v}"]
   polling_agent_name = "${var.polling_agent.name}${var.replica_counter}"
+  socket_vol         = var.socket_type == "tcp" ? {} : { (var.polling_agent.shared_socket) = one(docker_volume.socket_vol[*].name) }
 }
