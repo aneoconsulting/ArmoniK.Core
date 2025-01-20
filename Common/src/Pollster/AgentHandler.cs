@@ -103,13 +103,29 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
 
       builder.WebHost.ConfigureKestrel(options =>
                                        {
-                                         if (File.Exists(computePlaneOptions.AgentChannel.Address))
+                                         var address = computePlaneOptions.AgentChannel.Address;
+                                         switch (computePlaneOptions.AgentChannel.SocketType)
                                          {
-                                           File.Delete(computePlaneOptions.AgentChannel.Address);
-                                         }
+                                           case GrpcSocketType.UnixDomainSocket:
+                                           {
+                                             if (File.Exists(address))
+                                             {
+                                               File.Delete(address);
+                                             }
 
-                                         options.ListenUnixSocket(computePlaneOptions.AgentChannel.Address,
-                                                                  listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                                             options.ListenUnixSocket(address,
+                                                                      listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+                                             break;
+                                           }
+                                           case GrpcSocketType.Tcp:
+                                             var uri = new Uri(address);
+                                             options.ListenAnyIP(uri.Port,
+                                                                 listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
+
+                                             break;
+                                           default:
+                                             throw new InvalidOperationException("Socket type unknown");
+                                         }
                                        });
 
       app_ = builder.Build();

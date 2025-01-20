@@ -20,6 +20,7 @@ ingress      := "true"
 prometheus   := "true"
 grafana      := "true"
 seq          := "true"
+socket_type  := "unixdomainsocket"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag          := tag
@@ -30,7 +31,7 @@ export TF_VAR_num_partitions    := partitions
 export TF_VAR_enable_grafana    := grafana
 export TF_VAR_enable_seq        := seq
 export TF_VAR_enable_prometheus := prometheus
-
+export TF_VAR_socket_type       := socket_type
 
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
@@ -137,7 +138,7 @@ export TF_VAR_mongodb_params:= if os_family() == "windows" {
 }
 
 export TF_VAR_compute_plane:= if os_family() == "windows" {
-  '{ "polling_agent" : { "image" : "' + image_polling_agent + '", "shared_socket" : "c:/cache", "shared_data" : "c:/cache" }, "worker" = {}}'
+  '{ "polling_agent" : { "image" : "' + image_polling_agent + '", "shared_socket" : "c:/cache", "shared_data" : "c:/comm" }, "worker" = {}}'
 } else {
   '{ "polling_agent" : { "image" : "' + image_polling_agent + '" }, "worker" = {}}'
 }
@@ -188,6 +189,8 @@ _usage:
       partitions: Number of partitions (default = 2)
 
       local_images: Let terraform build the docker images locally (default = false)
+
+      socket_type: Socket type used by agent and worker to communicate (default = unixdomainsocket)
 
     IMPORTANT: In order to properly destroy the resources created you should call the recipe destroy with the
     same parameters used for deploy

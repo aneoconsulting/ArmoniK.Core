@@ -1,5 +1,11 @@
 resource "docker_volume" "socket_vol" {
-  name = "socket_vol${var.replica_counter}"
+  count = var.socket_type == "tcp" ? 0 : 1
+  name  = "socket_vol${var.replica_counter}"
+
+}
+
+resource "docker_volume" "comm_vol" {
+  name = "comm_vol${var.replica_counter}"
 }
 
 resource "docker_image" "worker" {
@@ -27,10 +33,19 @@ resource "docker_container" "worker" {
     external = var.worker.port + var.replica_counter
   }
 
+  dynamic "mounts" {
+    for_each = local.socket_vol
+    content {
+      type   = "volume"
+      target = mounts.key
+      source = mounts.value
+    }
+  }
+
   mounts {
     type   = "volume"
-    target = var.polling_agent.shared_socket
-    source = docker_volume.socket_vol.name
+    target = var.polling_agent.shared_data
+    source = docker_volume.comm_vol.name
   }
 }
 
@@ -59,8 +74,17 @@ resource "docker_container" "polling_agent" {
 
   mounts {
     type   = "volume"
-    target = var.polling_agent.shared_socket
-    source = docker_volume.socket_vol.name
+    target = var.polling_agent.shared_data
+    source = docker_volume.comm_vol.name
+  }
+
+  dynamic "mounts" {
+    for_each = local.socket_vol
+    content {
+      type   = "volume"
+      target = mounts.key
+      source = mounts.value
+    }
   }
 
   restart = "unless-stopped"

@@ -2,6 +2,10 @@ variable "core_tag" {
   type = string
 }
 
+variable "socket_type" {
+  type = string
+}
+
 variable "polling_agent" {
   type = object({
     name                 = string,
