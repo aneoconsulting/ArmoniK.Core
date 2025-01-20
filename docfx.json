@@ -1,0 +1,23 @@
+{
+  "$schema": "https://raw.githubusercontent.com/dotnet/docfx/main/schemas/docfx.schema.json",
+  "metadata": [
+    {
+      "src": [
+        {
+          "src": ".",
+          "files": [
+            "**/*.csproj"
+          ],
+          "exclude":[
+            "**/tests/*.csproj",
+            "Tests/Stream/**/*.csproj",
+            "Tests/Connectivity/**/*.csproj"
+          ]
+        }
+      ],
+      "outputFormat": "markdown",
+      "output": ".docs/content/csharp",
+      "namespaceLayout": "nested"
+    }
+  ]
+}
