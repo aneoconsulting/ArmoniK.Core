@@ -181,7 +181,7 @@ variable "prometheus_image" {
 
 variable "database_image" {
   type    = string
-  default = "mongo"
+  default = "mongo:7.0.5"
 }
 
 variable "otel_collector_image" {
