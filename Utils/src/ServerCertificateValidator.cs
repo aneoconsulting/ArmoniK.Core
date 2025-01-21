@@ -83,8 +83,15 @@ public static class CertificateValidator
          }
          else
          {
-           logger.LogInformation("SSL validation failed with errors: {sslPolicyErrors}",
+           logger.LogInformation("Certificate untrusted: {sslPolicyErrors}",
                                  sslPolicyErrors);
+           logger.LogInformation("Certificate thumbprint: {thumbprint}",
+                           cert.Thumbprint);
+           logger.LogInformation("Authority thumbprint: {thumbprint}",
+                           authority.Thumbprint);
+           logger.LogInformation("Chain thumbprints: {thumbprints}",
+                           string.Join(", ",
+                                       chain.ChainElements.Select(x => x.Certificate.Thumbprint)));
          }
 
          return isTrusted;
