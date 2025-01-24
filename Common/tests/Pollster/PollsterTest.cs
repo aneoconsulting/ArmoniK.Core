@@ -356,9 +356,8 @@ public class PollsterTest
 
     Console.WriteLine(res.Description);
 
-    Assert.AreEqual(new StringBuilder().AppendLine(desc)
-                                       .ToString(),
-                    healthResult.Description);
+    Assert.AreEqual(desc,
+                    healthResult.Description?.Trim());
     Assert.AreEqual(new AggregateException(ex).Message,
                     healthResult.Exception?.Message);
     Assert.AreEqual(HealthStatus.Unhealthy,

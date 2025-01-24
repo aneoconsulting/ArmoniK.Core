@@ -49,8 +49,9 @@ public static class HealthCheckResultCombiner
   {
     var exceptions  = new List<Exception>();
     var data        = new Dictionary<string, object>();
-    var description = new StringBuilder(desc);
+    var description = new StringBuilder();
     var worstStatus = HealthStatus.Healthy;
+    description.AppendLine(desc);
 
     foreach (var healthCheckResult in await providers.Select(p => p.Check(tag))
                                                      .WhenAll()

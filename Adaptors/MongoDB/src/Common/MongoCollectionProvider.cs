@@ -68,10 +68,10 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
          HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
                                                                                  ? HealthCheckResult.Healthy()
                                                                                  : HealthCheckResult
-                                                                                   .Unhealthy($"Mongo Collection<{nameof(TData)}> not initialized yet.")),
-         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && mongoCollection_ is null
+                                                                                   .Unhealthy($"Mongo Collection<{typeof(TData)}> not initialized yet.")),
+         HealthCheckTag.Liveness => Task.FromResult(isInitialized_ && mongoCollection_ is not null
                                                       ? HealthCheckResult.Healthy()
-                                                      : HealthCheckResult.Unhealthy($"Mongo Collection<{nameof(TData)}> not initialized yet.")),
+                                                      : HealthCheckResult.Unhealthy($"Mongo Collection<{typeof(TData)}> not initialized yet.")),
          _ => throw new ArgumentOutOfRangeException(nameof(tag),
                                                     tag,
                                                     null),
