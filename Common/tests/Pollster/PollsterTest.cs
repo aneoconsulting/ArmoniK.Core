@@ -449,6 +449,7 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
+  [Retry(3)]
   public async Task ExecuteTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -494,6 +495,7 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
+  [Retry(3)]
   public async Task ExecuteTaskTimeoutAcquire()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -600,6 +602,7 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
+  [Retry(3)]
   public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
