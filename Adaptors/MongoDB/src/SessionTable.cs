@@ -27,6 +27,7 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using JetBrains.Annotations;
@@ -179,10 +180,18 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(isInitialized_
-                         ? HealthCheckResult.Healthy()
-                         : HealthCheckResult.Unhealthy());
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    var result = await HealthCheckResultCombiner.Combine(tag,
+                                                         $"{nameof(SessionTable)} is not initialized",
+                                                         sessionProvider_,
+                                                         sessionCollectionProvider_)
+                                                .ConfigureAwait(false);
+
+    return isInitialized_ && result.Status == HealthStatus.Healthy
+             ? HealthCheckResult.Healthy()
+             : HealthCheckResult.Unhealthy(result.Description);
+  }
 
   /// <inheritdoc />
   public async Task<SessionData?> UpdateOneSessionAsync(string                                            sessionId,

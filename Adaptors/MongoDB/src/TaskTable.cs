@@ -30,6 +30,7 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -435,10 +436,18 @@ public class TaskTable : ITaskTable
   public ILogger Logger { get; }
 
   /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(isInitialized_
-                         ? HealthCheckResult.Healthy()
-                         : HealthCheckResult.Unhealthy());
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    var result = await HealthCheckResultCombiner.Combine(tag,
+                                                         $"{nameof(TaskTable)} is not initialized",
+                                                         sessionProvider_,
+                                                         taskCollectionProvider_)
+                                                .ConfigureAwait(false);
+
+    return isInitialized_ && result.Status == HealthStatus.Healthy
+             ? HealthCheckResult.Healthy()
+             : HealthCheckResult.Unhealthy(result.Description);
+  }
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)

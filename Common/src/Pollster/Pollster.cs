@@ -22,7 +22,6 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -36,6 +35,7 @@ using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using Grpc.Core;
@@ -180,56 +180,19 @@ public class Pollster : IInitializable
       return HealthCheckResult.Unhealthy("End of main loop reached, no more tasks will be executed.");
     }
 
-    var checks = new List<Task<HealthCheckResult>>
-                 {
-                   pullQueueStorage_.Check(tag),
-                   dataPrefetcher_.Check(tag),
-                   workerStreamHandler_.Check(tag),
-                   objectStorage_.Check(tag),
-                   resultTable_.Check(tag),
-                   sessionTable_.Check(tag),
-                   taskTable_.Check(tag),
-                 };
+    // no need for description because this check is registered as the agent health check and it will add proper metadata.
+    var result = await HealthCheckResultCombiner.Combine(tag,
+                                                         string.Empty,
+                                                         pullQueueStorage_,
+                                                         dataPrefetcher_,
+                                                         workerStreamHandler_,
+                                                         objectStorage_,
+                                                         resultTable_,
+                                                         sessionTable_,
+                                                         taskTable_)
+                                                .ConfigureAwait(false);
 
-    var exceptions  = new List<Exception>();
-    var data        = new Dictionary<string, object>();
-    var description = new StringBuilder();
-    var worstStatus = HealthStatus.Healthy;
-
-    foreach (var healthCheckResult in await checks.WhenAll()
-                                                  .ConfigureAwait(false))
-    {
-      if (healthCheckResult.Status == HealthStatus.Healthy)
-      {
-        continue;
-      }
-
-      if (healthCheckResult.Exception is not null)
-      {
-        exceptions.Add(healthCheckResult.Exception);
-      }
-
-      foreach (var (key, value) in healthCheckResult.Data)
-      {
-        data[key] = value;
-      }
-
-      if (healthCheckResult.Description is not null)
-      {
-        description.AppendLine(healthCheckResult.Description);
-      }
-
-      worstStatus = worstStatus < healthCheckResult.Status
-                      ? worstStatus
-                      : healthCheckResult.Status;
-    }
-
-    var result = new HealthCheckResult(worstStatus,
-                                       description.ToString(),
-                                       new AggregateException(exceptions),
-                                       data);
-
-    if (worstStatus == HealthStatus.Unhealthy && tag == HealthCheckTag.Liveness)
+    if (result.Status == HealthStatus.Unhealthy && tag == HealthCheckTag.Liveness)
     {
       healthCheckFailedResult_ = result;
     }

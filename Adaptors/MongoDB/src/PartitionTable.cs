@@ -30,6 +30,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -59,11 +60,21 @@ public class PartitionTable : IPartitionTable
     activitySource_              = activitySource;
   }
 
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(isInitialized_
-                         ? HealthCheckResult.Healthy()
-                         : HealthCheckResult.Unhealthy());
+  /// <inheritdoc />
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    var result = await HealthCheckResultCombiner.Combine(tag,
+                                                         $"{nameof(PartitionTable)} is not initialized",
+                                                         sessionProvider_,
+                                                         partitionCollectionProvider_)
+                                                .ConfigureAwait(false);
 
+    return isInitialized_ && result.Status == HealthStatus.Healthy
+             ? HealthCheckResult.Healthy()
+             : HealthCheckResult.Unhealthy(result.Description);
+  }
+
+  /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
