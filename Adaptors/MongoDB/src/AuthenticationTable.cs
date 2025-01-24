@@ -27,6 +27,7 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;
 
@@ -137,10 +138,20 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(isInitialized_
-                         ? HealthCheckResult.Healthy()
-                         : HealthCheckResult.Unhealthy());
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    var result = await HealthCheckResultCombiner.Combine(tag,
+                                                         $"{nameof(AuthenticationTable)} is not initialized",
+                                                         sessionProvider_,
+                                                         userCollectionProvider_,
+                                                         authCollectionProvider_,
+                                                         roleCollectionProvider_)
+                                                .ConfigureAwait(false);
+
+    return isInitialized_ && result.Status == HealthStatus.Healthy
+             ? HealthCheckResult.Healthy()
+             : HealthCheckResult.Unhealthy(result.Description);
+  }
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
