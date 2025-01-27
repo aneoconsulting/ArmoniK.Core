@@ -101,6 +101,9 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
              .AddSingleton<GrpcAgentService>()
              .AddGrpc();
 
+      AppContext.SetSwitch("System.Net.SocketsHttpHandler.Http2FlowControl.DisableDynamicWindowSizing",
+                           true);
+
       builder.WebHost.ConfigureKestrel(options =>
                                        {
                                          var address = computePlaneOptions.AgentChannel.Address;
