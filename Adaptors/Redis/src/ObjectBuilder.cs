@@ -15,9 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.IO;
-using System.Security.Cryptography.X509Certificates;
+using System.Net.Security;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
@@ -64,30 +63,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                       redisOptions.CredentialsPath);
     }
 
-    if (!string.IsNullOrEmpty(redisOptions.CaPath))
-    {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(redisOptions.CaPath);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported Redis certificate from file {path}",
-                        redisOptions.CaPath);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
-    }
-
+    RemoteCertificateValidationCallback? validationCallback = null;
     var config = new ConfigurationOptions
                  {
                    ClientName           = redisOptions.ClientName,
@@ -98,6 +74,14 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                    Password             = redisOptions.Password,
                    User                 = redisOptions.User,
                  };
+
+    if (redisOptions.Ssl && !string.IsNullOrEmpty(redisOptions.CaPath))
+    {
+      validationCallback = CertificateValidator.CreateCallback(redisOptions.CaPath,
+                                                               logger);
+    }
+
+    config.CertificateValidation += validationCallback;
     config.EndPoints.Add(redisOptions.EndpointUrl);
 
     if (redisOptions.Timeout > 0)

@@ -5,8 +5,3 @@ variable "image" {
 variable "network" {
   type = string
 }
-
-variable "exposed_port" {
-  type    = number
-  default = 6379
-}

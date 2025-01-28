@@ -12,3 +12,8 @@ output "volumes" {
     (docker_volume.object.name) : var.local_path,
   }
 }
+
+output "core_mounts" {
+  description = "Volumes that agents and submitters must mount to access the object storage"
+  value       = {}
+}
