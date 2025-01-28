@@ -42,9 +42,10 @@ variable "aspnet_core_env" {
 
 variable "submitter" {
   type = object({
-    name  = optional(string, "armonik.control.submitter")
-    image = optional(string, "dockerhubaneo/armonik_control")
-    port  = optional(number, 5001)
+    name    = optional(string, "armonik.control.submitter")
+    image   = optional(string, "dockerhubaneo/armonik_control")
+    port    = optional(number, 5001)
+    windows = optional(bool, false)
   })
   default = {}
 }
@@ -65,6 +66,24 @@ variable "object_storage" {
     condition     = can(regex("^(redis|local|minio|embed)$", var.object_storage.name))
     error_message = "Must be redis, minio, embed, or local"
   }
+  default = {}
+}
+variable "redis_params" {
+  type = object({
+    host          = optional(string, "redis")
+    exposed_port  = optional(number, 6380)
+    user          = optional(string, "admin")
+    password      = optional(string, "admin")
+    scheme        = optional(string, "redis")
+    tls_enabled   = optional(bool, true)
+    Ssl           = optional(bool, true)
+    ca_path       = optional(string, "/redis/certs/ca.pem")
+    cert_path     = optional(string, "/redis/certs/redis.crt")
+    key_path      = optional(string, "/redis/certs/redis.key")
+    timeout       = optional(string, "20000")
+    database_name = optional(string, "redis_database")
+    windows       = optional(bool, false)
+  })
   default = {}
 }
 
@@ -136,6 +155,7 @@ variable "compute_plane" {
       // They will be used for both
       shared_socket = optional(string, "/cache")
       shared_data   = optional(string, "/comm")
+      windows       = optional(bool, false)
     })
   })
   default = {

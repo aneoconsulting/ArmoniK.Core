@@ -36,10 +36,11 @@ module "database" {
 }
 
 module "object_redis" {
-  source  = "./modules/storage/object/redis"
-  count   = var.object_storage.name == "redis" ? 1 : 0
-  image   = var.object_storage.image
-  network = docker_network.armonik.id
+  source       = "./modules/storage/object/redis"
+  count        = var.object_storage.name == "redis" ? 1 : 0
+  image        = var.object_storage.image
+  network      = docker_network.armonik.id
+  redis_params = var.redis_params
 }
 
 module "object_minio" {
@@ -120,7 +121,7 @@ module "submitter" {
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
   volumes            = local.volumes
-  mounts             = module.database.core_mounts
+  mounts             = local.mounts
 }
 
 module "compute_plane" {
@@ -136,7 +137,7 @@ module "compute_plane" {
   volumes            = local.volumes
   network            = docker_network.armonik.id
   log_driver         = module.fluenbit.log_driver
-  mounts             = module.database.core_mounts
+  mounts             = local.mounts
 }
 
 module "metrics_exporter" {
@@ -146,7 +147,7 @@ module "metrics_exporter" {
   network            = docker_network.armonik.id
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
-  mounts             = module.database.core_mounts
+  mounts             = local.mounts
 }
 
 module "partition_metrics_exporter" {
@@ -157,7 +158,7 @@ module "partition_metrics_exporter" {
   generated_env_vars = local.environment
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
-  mounts             = module.database.core_mounts
+  mounts             = local.mounts
 }
 
 module "ingress" {

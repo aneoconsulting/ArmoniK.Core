@@ -14,3 +14,8 @@ output "volumes" {
   description = "Volumes that agents and submitters must mount to access the object storage"
   value       = {}
 }
+
+output "core_mounts" {
+  description = "Volumes that agents and submitters must mount to access the object storage"
+  value       = {}
+}

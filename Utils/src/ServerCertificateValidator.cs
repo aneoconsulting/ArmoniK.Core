@@ -61,7 +61,7 @@ public static class CertificateValidator
          // If there is any error other than untrusted root or partial chain, fail the validation
          if (chain.ChainStatus.Any(status => status.Status is not X509ChainStatusFlags.UntrustedRoot and not X509ChainStatusFlags.PartialChain))
          {
-           logger.LogDebug("SSL validation failed with chain status: {chainStatus}",
+           logger.LogDebug("SSL validation failed with chain status: {ChainStatus}",
                            chain.ChainStatus);
            return false;
          }
@@ -73,18 +73,18 @@ public static class CertificateValidator
          chain.ChainPolicy.ExtraStore.Add(authority);
          if (!chain.Build(cert))
          {
+           logger.LogInformation("SSL validation failed: unable to build the certificate chain");
            return false;
          }
 
          var isTrusted = chain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
          if (isTrusted)
          {
-           logger.LogInformation("SSL validation succeeded");
+           logger.LogInformation("SSL validation succeeded: certificate is trusted");
          }
          else
          {
-           logger.LogInformation("SSL validation failed with errors: {sslPolicyErrors}",
-                                 sslPolicyErrors);
+           logger.LogInformation("SSL validation failed: certificate is not trusted");
          }
 
          return isTrusted;
