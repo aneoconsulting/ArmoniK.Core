@@ -52,18 +52,14 @@ resource "docker_container" "object" {
     external = 6380
   }
   healthcheck {
-      test     = ["CMD-SHELL", "redis-cli -p 6380 -a \"$REDIS_PASSWORD\" --tls --cacert /redis/certs/ca.pem --cert /redis/certs/redis.crt --key /redis/certs/redis.key ping | grep PONG"]
-      interval = "3s"
-      timeout  = "5s"
-      retries  = 5
+    test     = ["CMD-SHELL", "redis-cli -p 6380 -a \"$REDIS_PASSWORD\" --tls --cacert /redis/certs/ca.pem --cert /redis/certs/redis.crt --key /redis/certs/redis.key ping | grep PONG"]
+    interval = "3s"
+    timeout  = "5s"
+    retries  = 5
   }
 
   depends_on = [
     docker_image.object,
     local_file.redis_conf
   ]
-}
-output "container_id" {
-  value       = docker_container.object.id
-  description = "The ID of the Redis container"
 }

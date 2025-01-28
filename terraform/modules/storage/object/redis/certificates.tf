@@ -27,7 +27,7 @@ resource "tls_cert_request" "redis_cert_request" {
     common_name  = "redis"
   }
   ip_addresses = ["127.0.0.1", "172.20.0.6"]
-  dns_names    = ["localhost", "redis", var.redis_params.database_name]
+  dns_names    = ["localhost", "redis"]
 }
 
 resource "tls_locally_signed_cert" "redis_cert" {

@@ -36,11 +36,10 @@ module "database" {
 }
 
 module "object_redis" {
-  source       = "./modules/storage/object/redis"
-  count        = var.object_storage.name == "redis" ? 1 : 0
-  image        = var.object_storage.image
-  network      = docker_network.armonik.id
-  redis_params = var.redis_params
+  source  = "./modules/storage/object/redis"
+  count   = var.object_storage.name == "redis" ? 1 : 0
+  image   = var.object_storage.image
+  network = docker_network.armonik.id
 }
 
 module "object_minio" {
