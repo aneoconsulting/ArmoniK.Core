@@ -691,4 +691,69 @@ public class TaskLifeCycleHelperTest
     Assert.AreEqual(2,
                     count);
   }
+
+  [Test]
+  public async Task PauseSessionWithDispatchedShouldSucceed()
+  {
+    using var holder = new Holder();
+
+    var taskData = await holder.TaskTable.FindTasksAsync(data => data.Status == TaskStatus.Submitted && data.SessionId == holder.Session,
+                                                         data => data)
+                               .FirstAsync();
+
+    taskData = taskData with
+               {
+                 OwnerPodId = "podId",
+                 OwnerPodName = "podName",
+                 AcquisitionDate = DateTime.Now,
+                 ReceptionDate = DateTime.Now,
+               };
+
+    await holder.TaskTable.AcquireTask(taskData,
+                                       CancellationToken.None)
+                .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.PauseAsync(holder.TaskTable,
+                                         holder.SessionTable,
+                                         holder.Session)
+                             .ConfigureAwait(false);
+
+    var session = await holder.SessionTable.GetSessionAsync(holder.Session)
+                              .ConfigureAwait(false);
+
+    Assert.That(session.Status,
+                Is.EqualTo(SessionStatus.Paused));
+
+    await holder.QueueStorage.EmptyAsync()
+                .ConfigureAwait(false);
+    Assert.That(holder.QueueStorage.Channel.Reader.Count,
+                Is.EqualTo(0));
+
+    await TaskLifeCycleHelper.ResumeAsync(holder.TaskTable,
+                                          holder.SessionTable,
+                                          holder.PushQueueStorage,
+                                          holder.Session)
+                             .ConfigureAwait(false);
+
+    session = await holder.SessionTable.GetSessionAsync(holder.Session)
+                          .ConfigureAwait(false);
+
+    Assert.That(session.Status,
+                Is.EqualTo(SessionStatus.Running));
+    Assert.That(holder.QueueStorage.Channel.Reader.Count,
+                Is.EqualTo(1));
+
+    taskData = await holder.TaskTable.ReadTaskAsync(taskData.TaskId)
+                           .ConfigureAwait(false);
+    Assert.That(taskData.OwnerPodName,
+                Is.Empty);
+    Assert.That(taskData.OwnerPodId,
+                Is.Empty);
+    Assert.That(taskData.AcquisitionDate,
+                Is.Null);
+    Assert.That(taskData.ReceptionDate,
+                Is.Null);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
+  }
 }
