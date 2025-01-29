@@ -30,7 +30,7 @@ variable "exposed_ports" {
     amqp_connector  = number,
   })
   default = {
-    admin_interface = 15672
-    amqp_connector  = 5672
+    admin_interface = 15671
+    amqp_connector  = 5671
   }
 }

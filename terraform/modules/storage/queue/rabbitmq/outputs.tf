@@ -6,8 +6,8 @@ output "generated_env_vars" {
     "Amqp__User"                                            = "guest" # Default value, to change it we should provide a suitable .conf file
     "Amqp__Password"                                        = "guest" # Default value, to change it we should provide a suitable .conf file
     "Amqp__Ssl"                                             = true
-    "Amqp__Host"                                            = "${var.queue_envs.host}"
-    "Amqp__Port"                                            = "${var.queue_envs.port}"
+    "Amqp__Host"                                            = "queue"
+    "Amqp__Port"                                            = 5671
     "Amqp__Scheme"                                          = "AMQPS"
     "Amqp__CaPath"                                          = "/rabbitmq/certs/ca.pem"
     "Amqp__CertPath"                                        = "/rabbitmq/certs/rabbit.crt"
@@ -16,6 +16,7 @@ output "generated_env_vars" {
     "Amqp__MaxPriority"                                     = "${var.queue_envs.max_priority}"
     "Amqp__MaxRetries"                                      = "${var.queue_envs.max_retries}"
     "Amqp__LinkCredit"                                      = "${var.queue_envs.link_credit}"
+    "Amqp__EndpointUrl"                                     = "queue:5671"
   })
 }
 
