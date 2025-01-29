@@ -12,12 +12,12 @@ resource "docker_container" "queue" {
   }
 
   ports {
-    internal = 5672
+    internal = 5671
     external = var.exposed_ports.amqp_connector
   }
 
   ports {
-    internal = 15672
+    internal = 15671
     external = var.exposed_ports.admin_interface
   }
   upload {
@@ -43,4 +43,16 @@ resource "docker_container" "queue" {
     file   = "/etc/rabbitmq/conf.d/10-defaults.conf"
     source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
   }
+  healthcheck {
+    test     = ["CMD-SHELL", "rabbitmqctl status"]
+    interval = "10s"
+    timeout  = "10s"
+    retries  = 10
+    start_period = "30s"
+  }
+  depends_on = [docker_image.queue]
+}
+resource "time_sleep" "wait_for_rabbit" {
+  depends_on      = [docker_container.queue]
+  create_duration = "10s"
 }

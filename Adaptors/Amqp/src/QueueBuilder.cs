@@ -65,30 +65,6 @@ public class QueueBuilder : IDependencyInjectionBuildable
       logger.LogTrace("No credential path provided");
     }
 
-    if (!string.IsNullOrEmpty(amqpOptions.CaPath))
-    {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(amqpOptions.CaPath);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported AMQP certificate from file {path}",
-                        amqpOptions.CaPath);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
-    }
-
     serviceCollection.AddSingletonWithHealthCheck<IConnectionAmqp, ConnectionAmqp>(nameof(IConnectionAmqp));
     serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();

@@ -17,6 +17,7 @@
 
 using System;
 using System.Net.Security;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -105,46 +106,23 @@ public class ConnectionAmqp : IConnectionAmqp
     var connectionFactory = new ConnectionFactory();
     if (options.Scheme.Equals("AMQPS"))
     {
-      logger.LogWarning("Setting up SSL for ActiveMQ");
-      logger.LogWarning("SSL is {ssl}",
-                        options.Ssl
-                          ? "enabled for ActiveMQ "
-                          : "disabled for ActiveMQ");
-      logger.LogWarning("CA path is {caPath}",
-                        options.CaPath);
       RemoteCertificateValidationCallback? validationCallback = null;
       if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
       {
         validationCallback = CertificateValidator.CreateCallback(options.CaPath,
                                                                  logger);
-        logger.LogWarning("Certificate validation callback created for ActiveMQ");
       }
       else if (!options.Ssl)
       {
-        logger.LogWarning("SSL is disabled for ActiveMQ");
+        logger.LogError("SSL is disabled for ActiveMQ but the scheme is {scheme}",
+                          options.Scheme);
       }
       else
       {
-        logger.LogWarning("No CA path provided for ActiveMQ");
+        logger.LogError("No CA path provided for ActiveMQ");
       }
 
       connectionFactory.SSL.RemoteCertificateValidationCallback = validationCallback;
-      // connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object           _,
-      //                                                                      X509Certificate? _,
-      //                                                                      X509Chain?       _,
-      //                                                                      SslPolicyErrors  errors)
-      //                                                             {
-      //                                                               switch (errors)
-      //                                                               {
-      //                                                                 case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
-      //                                                                 case SslPolicyErrors.None:
-      //                                                                   return true;
-      //                                                                 default:
-      //                                                                   logger.LogError("SSL error : {error}",
-      //                                                                                   errors);
-      //                                                                   return false;
-      //                                                               }
-      //                                                             };
     }
     else
     {
