@@ -17,12 +17,12 @@
 
 using System;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.QueueCommon;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using JetBrains.Annotations;
@@ -50,10 +50,14 @@ public class ConnectionRabbit : IConnectionRabbit
     options_ = options;
     factory_ = new ConnectionFactory
                {
-                 UserName               = options.User,
-                 Password               = options.Password,
-                 HostName               = options.Host,
-                 Port                   = options.Port,
+                 UserName = options.User,
+                 Password = options.Password,
+                 HostName = options.Host,
+                 Port     = options.Port,
+                 Ssl = new SslOption
+                       {
+                         Enabled = options.Ssl,
+                       },
                  DispatchConsumersAsync = true,
                };
   }
@@ -118,26 +122,36 @@ public class ConnectionRabbit : IConnectionRabbit
                                                      ILogger           logger,
                                                      CancellationToken cancellationToken = default)
   {
+    logger.LogInformation("In Create connection for rabbit");
     if (options.Scheme.Equals("AMQPS"))
     {
+      logger.LogInformation("Setting up SSL for RabbitMQ");
       factory.Ssl.Enabled    = true;
       factory.Ssl.ServerName = options.Host;
-      factory.Ssl.CertificateValidationCallback = delegate(object           _,
-                                                           X509Certificate? _,
-                                                           X509Chain?       _,
-                                                           SslPolicyErrors  errors)
-                                                  {
-                                                    switch (errors)
-                                                    {
-                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
-                                                      case SslPolicyErrors.None:
-                                                        return true;
-                                                      default:
-                                                        logger.LogError("SSL error : {error}",
-                                                                        errors);
-                                                        return false;
-                                                    }
-                                                  };
+
+      RemoteCertificateValidationCallback? validationCallback = null;
+      logger.LogInformation("SSL is {ssl}",
+                            options.Ssl
+                              ? "enabled for RabbitMQ"
+                              : "disabled for RabbitMQ");
+      logger.LogInformation("CA path is {caPath}",
+                            options.CaPath);
+      if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
+      {
+        validationCallback = CertificateValidator.CreateCallback(options.CaPath,
+                                                                 logger);
+        logger.LogInformation("Certificate validation callback created for Rabbitmq");
+      }
+      else if (!options.Ssl)
+      {
+        logger.LogWarning("SSL is disabled for RabbitMQ");
+      }
+      else
+      {
+        logger.LogWarning("No CA path provided for RabbitMQ");
+      }
+
+      factory.Ssl.CertificateValidationCallback = validationCallback;
     }
 
     var retry = 0;

@@ -8,3 +8,8 @@ output "generated_env_vars" {
     "PUBSUB_EMULATOR_HOST"                                  = "${var.queue_envs.host}:8085"
   })
 }
+output "core_mounts" {
+  description = "Volumes that agents and submitters must mount to access the queue"
+  value = {
+  }
+}

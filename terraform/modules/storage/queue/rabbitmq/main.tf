@@ -20,6 +20,19 @@ resource "docker_container" "queue" {
     internal = 15672
     external = var.exposed_ports.admin_interface
   }
+  upload {
+    file    = "/rabbitmq/certs/rabbit.key"
+    content = local_file.key.content
+  }
+  upload {
+    file    = "/rabbitmq/certs/rabbit.crt"
+    content = local_file.cert.content
+  }
+
+  upload {
+    file    = "/rabbitmq/certs/ca.pem"
+    content = local_file.ca.content
+  }
 
   upload {
     file    = "/etc/rabbitmq/enabled_plugins"
