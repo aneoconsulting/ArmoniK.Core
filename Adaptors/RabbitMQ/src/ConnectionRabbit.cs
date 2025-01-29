@@ -122,33 +122,25 @@ public class ConnectionRabbit : IConnectionRabbit
                                                      ILogger           logger,
                                                      CancellationToken cancellationToken = default)
   {
-    logger.LogInformation("In Create connection for rabbit");
     if (options.Scheme.Equals("AMQPS"))
     {
-      logger.LogInformation("Setting up SSL for RabbitMQ");
       factory.Ssl.Enabled    = true;
       factory.Ssl.ServerName = options.Host;
 
       RemoteCertificateValidationCallback? validationCallback = null;
-      logger.LogInformation("SSL is {ssl}",
-                            options.Ssl
-                              ? "enabled for RabbitMQ"
-                              : "disabled for RabbitMQ");
-      logger.LogInformation("CA path is {caPath}",
-                            options.CaPath);
       if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
       {
         validationCallback = CertificateValidator.CreateCallback(options.CaPath,
                                                                  logger);
-        logger.LogInformation("Certificate validation callback created for Rabbitmq");
       }
       else if (!options.Ssl)
       {
-        logger.LogWarning("SSL is disabled for RabbitMQ");
+        logger.LogError("SSL is disabled for RabbitMQ and your current scheme is {scheme}",
+                        options.Scheme);
       }
       else
       {
-        logger.LogWarning("No CA path provided for RabbitMQ");
+        logger.LogError("No CA path provided for RabbitMQ, SSL validation will not be performed");
       }
 
       factory.Ssl.CertificateValidationCallback = validationCallback;

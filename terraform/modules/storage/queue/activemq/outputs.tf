@@ -6,12 +6,7 @@ output "generated_env_vars" {
     "Amqp__Password"                                        = "${var.queue_envs.password}"
     "Amqp__Host"                                            = "${var.queue_envs.host}"
     "Amqp__Port"                                            = "${var.queue_envs.port}"
-    "Amqp__Ssl"                                             = true
-    "Amqp__Scheme"                                          = "AMQPS"
-    "Amqp__CaPath"                                          = "/activemq/certs/ca.pem"
-    "Amqp__CertPath"                                        = "/activemq/certs/rabbit.crt"
-    "Amqp__KeyPath"                                         = "/activemq/certs/rabbit.key"
-    "Amqp__Timeout"                                         = "20000"
+    "Amqp__Scheme"                                          = "AMQP"
     "Amqp__MaxPriority"                                     = "${var.queue_envs.max_priority}"
     "Amqp__MaxRetries"                                      = "${var.queue_envs.max_retries}"
     "Amqp__LinkCredit"                                      = "${var.queue_envs.link_credit}"
