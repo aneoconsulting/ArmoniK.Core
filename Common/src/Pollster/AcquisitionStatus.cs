@@ -177,4 +177,9 @@ public enum AcquisitionStatus
   ///   Task is missing dependencies but happens to be in the queue
   /// </summary>
   TaskIsPending,
+
+  /// <summary>
+  ///   Task is submitted but execution is not possible
+  /// </summary>
+  TaskSubmittedWithNoPossibleExecution,
 }
