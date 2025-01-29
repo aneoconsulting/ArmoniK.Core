@@ -24,7 +24,7 @@ locals {
     local.logging_env_vars,
     var.custom_env_vars
   ], module.tracing[*].generated_env_vars)
-  mounts              = merge(local.database.core_mounts, local.object.core_mounts)
+  mounts              = merge(local.database.core_mounts, local.object.core_mounts, local.queue.core_mounts)
   environment         = merge(local.env_maps...)
   volumes             = local.object.volumes
   submitter           = merge(var.submitter, { tag = var.core_tag })
