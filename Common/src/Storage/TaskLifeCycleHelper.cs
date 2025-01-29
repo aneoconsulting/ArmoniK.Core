@@ -541,7 +541,15 @@ public static class TaskLifeCycleHelper
                            .AsICollection();
 
         await taskTable.UpdateManyTasks(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused && taskIds.Contains(data.TaskId),
-                                        new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                        new UpdateDefinition<TaskData>().Set(data => data.OwnerPodId,
+                                                                             "")
+                                                                        .Set(data => data.OwnerPodName,
+                                                                             "")
+                                                                        .Set(data => data.ReceptionDate,
+                                                                             null)
+                                                                        .Set(data => data.AcquisitionDate,
+                                                                             null)
+                                                                        .Set(data => data.Status,
                                                                              TaskStatus.Submitted),
                                         CancellationToken.None)
                        .ConfigureAwait(false);
