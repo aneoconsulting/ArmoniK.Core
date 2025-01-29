@@ -620,8 +620,14 @@ public sealed class TaskHandler : IAsyncDisposable
           logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                  taskData_.Status);
 
-          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate + delayBeforeAcquisition_ > DateTime.UtcNow)
+          if (taskData_.Status is TaskStatus.Submitted)
+          {
+            messageHandler_.Status = QueueMessageStatus.Postponed;
+            // TODO: AcquistionStatus must be tested
+            return AcquisitionStatus.TaskSubmittedWithNoPossibleExecution;
+          }
 
+          if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate + delayBeforeAcquisition_ > DateTime.UtcNow)
           {
             messageHandler_.Status = QueueMessageStatus.Postponed;
             logger_.LogDebug("Wait to exceed acquisition timeout before resubmitting task");
