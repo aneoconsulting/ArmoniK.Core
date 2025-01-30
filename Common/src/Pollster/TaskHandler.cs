@@ -414,6 +414,15 @@ public sealed class TaskHandler : IAsyncDisposable
               logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                      taskData_.Status);
 
+              if (taskData_.Status is TaskStatus.Submitted)
+              {
+                logger_.LogInformation("Task {task} was being processed on another pod, but has been released during acquirement",
+                                       taskData_.TaskId);
+                messageHandler_.Status = QueueMessageStatus.Postponed;
+                // TODO: AcquistionStatus must be tested
+                return AcquisitionStatus.TaskSubmittedButPreviouslyProcessing;
+              }
+
               if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
               {
                 logger_.LogDebug("Resubmitting task {task} on another pod",
@@ -629,8 +638,8 @@ public sealed class TaskHandler : IAsyncDisposable
           if (taskData_.Status is TaskStatus.Submitted)
           {
             messageHandler_.Status = QueueMessageStatus.Postponed;
-            // TODO: AcquistionStatus must be tested
-            return AcquisitionStatus.TaskSubmittedWithNoPossibleExecution;
+            // TODO: AcquistionStatus TaskSubmittedButPreviouslyDispatched must be tested
+            return AcquisitionStatus.TaskSubmittedButPreviouslyDispatched;
           }
 
           if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate + delayBeforeAcquisition_ > DateTime.UtcNow)

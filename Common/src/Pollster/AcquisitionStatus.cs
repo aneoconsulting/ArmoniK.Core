@@ -179,7 +179,12 @@ public enum AcquisitionStatus
   TaskIsPending,
 
   /// <summary>
-  ///   Task is submitted but execution is not possible
+  ///   Task has status 'submitted' but it had the status 'dispatched' during the start of acquirement
   /// </summary>
-  TaskSubmittedWithNoPossibleExecution,
+  TaskSubmittedButPreviouslyDispatched,
+
+  /// <summary>
+  ///   Task has status 'submitted' but it had the status 'processing' during the start of acquirement
+  /// </summary>
+  TaskSubmittedButPreviouslyProcessing,
 }
