@@ -118,6 +118,9 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
                                              break;
                                            }
                                            case GrpcSocketType.Tcp:
+                                             options.Limits.Http2.KeepAlivePingDelay   = TimeSpan.MaxValue;
+                                             options.Limits.Http2.KeepAlivePingTimeout = TimeSpan.MaxValue;
+                                             options.Limits.KeepAliveTimeout           = TimeSpan.MaxValue;
                                              var uri = new Uri(address);
                                              options.ListenAnyIP(uri.Port,
                                                                  listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
