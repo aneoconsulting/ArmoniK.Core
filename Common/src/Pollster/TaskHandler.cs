@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
-// Copyright (C) ANEO, 2021-2024. All rights reserved.
-// 
+//
+// Copyright (C) ANEO, 2021-2025. All rights reserved.
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
@@ -196,6 +197,11 @@ public sealed class TaskHandler : IAsyncDisposable
     using var measure = functionExecutionMetrics_.CountAndTime();
     using var activity = activitySource_.StartActivityFromParent(activityContext_,
                                                                  activity_);
+
+    using var _ = logger_.BeginNamedScope("StopCancelledTask",
+                                          ("taskId", messageHandler_.TaskId),
+                                          ("messageHandler", messageHandler_.MessageId),
+                                          ("sessionId", taskData_?.SessionId ?? ""));
 
     if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
     {
@@ -407,6 +413,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                           .ConfigureAwait(false);
               logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
                                      taskData_.Status);
+
+              if (taskData_.Status is TaskStatus.Submitted)
+              {
+                logger_.LogInformation("Task {task} was being processed on another pod, but has been released during acquirement",
+                                       taskData_.TaskId);
+                messageHandler_.Status = QueueMessageStatus.Postponed;
+                // TODO: AcquistionStatus must be tested
+                return AcquisitionStatus.TaskSubmittedButPreviouslyProcessing;
+              }
 
               if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
               {
@@ -622,10 +637,11 @@ public sealed class TaskHandler : IAsyncDisposable
 
           if (taskData_.Status is TaskStatus.Submitted)
           {
-            logger_.LogInformation("Task {task} was runing on another pod, but has been released during acquirement", taskData_.TaskId);
+            logger_.LogInformation("Task {task} was dispatched on another pod who crashed, but has been released during acquirement",
+                                   taskData_.TaskId);
             messageHandler_.Status = QueueMessageStatus.Postponed;
-            // TODO: AcquistionStatus must be tested
-            return AcquisitionStatus.TaskSubmittedWithNoPossibleExecution;
+            // TODO: AcquistionStatus TaskSubmittedButPreviouslyDispatched must be tested
+            return AcquisitionStatus.TaskSubmittedButPreviouslyDispatched;
           }
 
           if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate + delayBeforeAcquisition_ > DateTime.UtcNow)
