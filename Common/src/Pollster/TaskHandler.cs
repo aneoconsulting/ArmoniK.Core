@@ -622,6 +622,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
           if (taskData_.Status is TaskStatus.Submitted)
           {
+            logger_.LogInformation("Task {task} was runing on another pod, but has been released during acquirement", taskData_.TaskId);
             messageHandler_.Status = QueueMessageStatus.Postponed;
             // TODO: AcquistionStatus must be tested
             return AcquisitionStatus.TaskSubmittedWithNoPossibleExecution;
