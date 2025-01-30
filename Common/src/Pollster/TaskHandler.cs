@@ -416,8 +416,9 @@ public sealed class TaskHandler : IAsyncDisposable
 
               if (taskData_.Status is TaskStatus.Submitted)
               {
-                logger_.LogInformation("Task {task} was being processed on another pod, but has been released during acquirement",
-                                       taskData_.TaskId);
+                logger_.LogInformation("Task {task} with status: {status} was being processed on another pod, but has been released during acquirement",
+                                       taskData_.TaskId,
+                                       taskData_.Status);
                 messageHandler_.Status = QueueMessageStatus.Postponed;
                 // TODO: AcquistionStatus must be tested
                 return AcquisitionStatus.TaskSubmittedButPreviouslyProcessing;
@@ -637,6 +638,9 @@ public sealed class TaskHandler : IAsyncDisposable
 
           if (taskData_.Status is TaskStatus.Submitted)
           {
+            logger_.LogInformation("Task {task} with status {status} was dispatched on another pod who crashed, but has been released during acquirement",
+                                   taskData_.TaskId,
+                                   taskData_.Status);
             messageHandler_.Status = QueueMessageStatus.Postponed;
             // TODO: AcquistionStatus TaskSubmittedButPreviouslyDispatched must be tested
             return AcquisitionStatus.TaskSubmittedButPreviouslyDispatched;

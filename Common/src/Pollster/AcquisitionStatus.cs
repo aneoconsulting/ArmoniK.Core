@@ -179,12 +179,16 @@ public enum AcquisitionStatus
   TaskIsPending,
 
   /// <summary>
-  ///   Task has status 'submitted' but it had the status 'dispatched' during the start of acquirement
+  ///   Task is received with status  <see cref="TaskStatus.Dispatched" /> but its status is
+  ///   <see cref="TaskStatus.Submitted" />
+  ///   after failing to check the agent that should be running the task initially
   /// </summary>
   TaskSubmittedButPreviouslyDispatched,
 
   /// <summary>
-  ///   Task has status 'submitted' but it had the status 'processing' during the start of acquirement
+  ///   Task is received with status  <see cref="TaskStatus.Processing" /> but its status is
+  ///   <see cref="TaskStatus.Submitted" />
+  ///   after failing to check the agent that should be running the task initially
   /// </summary>
   TaskSubmittedButPreviouslyProcessing,
 }
