@@ -179,7 +179,16 @@ public enum AcquisitionStatus
   TaskIsPending,
 
   /// <summary>
-  ///   Task is submitted but execution is not possible
+  ///   Task is received with status  <see cref="TaskStatus.Dispatched" /> but its status is
+  ///   <see cref="TaskStatus.Submitted" />
+  ///   after failing to check the agent that should be running the task initially
   /// </summary>
-  TaskSubmittedWithNoPossibleExecution,
+  TaskSubmittedButPreviouslyDispatched,
+
+  /// <summary>
+  ///   Task is received with status  <see cref="TaskStatus.Processing" /> but its status is
+  ///   <see cref="TaskStatus.Submitted" />
+  ///   after failing to check the agent that should be running the task initially
+  /// </summary>
+  TaskSubmittedButPreviouslyProcessing,
 }
