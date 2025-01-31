@@ -141,7 +141,7 @@ def main():
     s3 = boto3.client('s3')
     s3.download_file(args.bucket_name, obj_name, file_name)
 
-    if file_name.endswith(".json.tar.gz"):
+    if file_name.endswith(".json.tar.gz") or file_name.endswith(".json.gz"):
         process_jsongz_log(args.url, file_name)
     elif file_name.endswith(".json"):
         process_json_log(args.url, file_name)
