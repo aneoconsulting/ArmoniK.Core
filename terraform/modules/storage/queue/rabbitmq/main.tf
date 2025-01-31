@@ -44,10 +44,15 @@ resource "docker_container" "queue" {
     source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
   }
   healthcheck {
-    test     = ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+    test     = ["CMD-SHELL", "rabbitmqctl status"]
     interval = "10s"
     timeout  = "10s"
     retries  = 10
+    start_period = "30s"
   }
   depends_on = [docker_image.queue]
+}
+resource "time_sleep" "wait_for_rabbit" {
+  depends_on      = [docker_container.queue]
+  create_duration = "10s"
 }

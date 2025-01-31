@@ -672,7 +672,6 @@ jobs:
       - name: Check docker network
         run:  docker network inspect armonik_network
         shell: powershell
-        
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
         shell: powershell
