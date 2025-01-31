@@ -550,13 +550,13 @@ public class Submitter : ISubmitter
         break;
       case OutputStatus.Error:
 
-        await taskTable_.UpdateManyTasks(data => data.CreatedBy == taskData.TaskId,
+        await taskTable_.UpdateManyTasks(data => data.CreatedBy == taskData.TaskId && data.Status == TaskStatus.Creating,
                                          new UpdateDefinition<TaskData>().Set(data => data.Status,
                                                                               TaskStatus.Cancelled),
                                          CancellationToken.None)
                         .ConfigureAwait(false);
 
-        await resultTable_.UpdateManyResults(data => data.CreatedBy == taskData.TaskId,
+        await resultTable_.UpdateManyResults(data => data.CreatedBy == taskData.TaskId && data.Status == ResultStatus.Created,
                                              new UpdateDefinition<Result>().Set(data => data.Status,
                                                                                 ResultStatus.Aborted),
                                              CancellationToken.None)
