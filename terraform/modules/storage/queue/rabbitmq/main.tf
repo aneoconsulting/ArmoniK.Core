@@ -44,7 +44,7 @@ resource "docker_container" "queue" {
     source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
   }
   healthcheck {
-    test     = ["CMD-SHELL", "rabbitmq-diagnostics -q ping"]
+    test     = ["CMD-SHELL", "rabbitmq-diagnostics -q status"]
     interval = "10s"
     timeout  = "10s"
     retries  = 10

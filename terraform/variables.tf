@@ -91,7 +91,7 @@ variable "queue_env_vars" {
     user         = optional(string, "admin"),
     password     = optional(string, "admin"),
     host         = optional(string, "queue")
-    port         = optional(number, 5672)
+    port         = optional(number, 5671)
     max_priority = optional(number, 10)
     max_retries  = optional(number, 10)
     link_credit  = optional(number, 2)
