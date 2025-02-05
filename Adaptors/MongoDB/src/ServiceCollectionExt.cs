@@ -172,6 +172,7 @@ public static class ServiceCollectionExt
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
       var validationCallback = CreateCallback(mongoOptions.CAFile,
+                                              mongoOptions.AllowInsecureTls,
                                               logger);
 
       settings.SslSettings = new SslSettings

@@ -78,6 +78,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
     if (redisOptions.Ssl && !string.IsNullOrEmpty(redisOptions.CaPath))
     {
       validationCallback = CertificateValidator.CreateCallback(redisOptions.CaPath,
+                                                               redisOptions.AllowHostMismatch,
                                                                logger);
     }
 
