@@ -64,7 +64,7 @@ public static class CertificateValidator
 
            // We allow host mismatch, so we remove the error
            sslPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
-           logger.LogDebug("Allowing RemoteCertificateNameMismatch since allowHostMismatch=true");
+           logger.LogInformation("Allowing RemoteCertificateNameMismatch since allowHostMismatch=true");
          }
 
          // If there is any error other than untrusted root or partial chain, fail the validation
@@ -84,8 +84,8 @@ public static class CertificateValidator
          // If there is any error other than untrusted root or partial chain, fail the validation
          if (chain.ChainStatus.Any(status => status.Status is not X509ChainStatusFlags.UntrustedRoot and not X509ChainStatusFlags.PartialChain))
          {
-           logger.LogDebug("SSL validation failed with chain status: {ChainStatus}",
-                           chain.ChainStatus);
+           logger.LogWarning("SSL validation failed with chain status: {ChainStatus}",
+                             chain.ChainStatus);
            return false;
          }
 
@@ -96,7 +96,7 @@ public static class CertificateValidator
          chain.ChainPolicy.ExtraStore.Add(authority);
          if (!chain.Build(cert))
          {
-           logger.LogInformation("SSL validation failed: unable to build the certificate chain");
+           logger.LogWarning("SSL validation failed: unable to build the certificate chain");
            return false;
          }
 
@@ -107,7 +107,7 @@ public static class CertificateValidator
          }
          else
          {
-           logger.LogInformation("SSL validation failed: certificate is not trusted");
+           logger.LogWarning("SSL validation failed: certificate is not trusted");
          }
 
          return isTrusted;
