@@ -38,7 +38,8 @@ public static class CertificateValidator
   ///   A <see cref="RemoteCertificateValidationCallback" /> delegate that performs SSL/TLS certificate validation.
   /// </returns>
   public static RemoteCertificateValidationCallback ValidationCallback(ILogger          logger,
-                                                                       X509Certificate2 authority)
+                                                                       X509Certificate2 authority,
+                                                                       bool             allowHostMismatch)
     => (sender,
         certificate,
         chain,
@@ -50,11 +51,33 @@ public static class CertificateValidator
            return false;
          }
 
+         // If there is a mismatch in the certificate name, we check if we allow it
+         if ((sslPolicyErrors & SslPolicyErrors.RemoteCertificateNameMismatch) != 0)
+         {
+           if (!allowHostMismatch)
+           {
+             // We don't allow host mismatch, so we fail the validation
+             logger.LogWarning("SSL validation failed: certificate name mismatch (errors: {sslPolicyErrors})",
+                               sslPolicyErrors);
+             return false;
+           }
+
+           // We allow host mismatch, so we remove the error
+           sslPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
+           logger.LogDebug("Allowing RemoteCertificateNameMismatch since allowHostMismatch=true");
+         }
+
          // If there is any error other than untrusted root or partial chain, fail the validation
+         if ((sslPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+         {
+           logger.LogWarning("Ignoring SSL validation error: RemoteCertificateChainErrors");
+         }
+
+         // If there is any errors other than the chain errors and the mismatch, fail the validation
          if ((sslPolicyErrors & ~SslPolicyErrors.RemoteCertificateChainErrors) != 0)
          {
-           logger.LogDebug("SSL validation failed with errors: {sslPolicyErrors}",
-                           sslPolicyErrors);
+           logger.LogWarning("SSL validation failed with errors: {sslPolicyErrors}",
+                             sslPolicyErrors);
            return false;
          }
 
@@ -102,6 +125,7 @@ public static class CertificateValidator
   ///   Thrown if the specified CA certificate file is not found.
   /// </exception>
   public static RemoteCertificateValidationCallback CreateCallback(string  caFilePath,
+                                                                   bool    allowHostMismatch,
                                                                    ILogger logger)
   {
     if (!File.Exists(caFilePath))
@@ -117,7 +141,8 @@ public static class CertificateValidator
     logger.LogInformation("Loaded CA certificate from file {path}",
                           caFilePath);
     var callback = ValidationCallback(logger,
-                                      authority);
+                                      authority,
+                                      allowHostMismatch);
     return callback;
   }
 }
