@@ -103,7 +103,8 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
              .AddSingleton<GrpcAgentService>()
              .AddGrpc();
 
-      builder.WebHost.ConfigureKestrel((context, options) =>
+      builder.WebHost.ConfigureKestrel((context,
+                                        options) =>
                                        {
                                          var address = computePlaneOptions.AgentChannel.Address;
                                          switch (computePlaneOptions.AgentChannel.SocketType)

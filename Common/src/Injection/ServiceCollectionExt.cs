@@ -35,6 +35,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
+using ConfigurationExt = ArmoniK.Core.Utils.ConfigurationExt;
 using CreateSessionRequestValidator = ArmoniK.Core.Common.gRPC.Validators.SessionsService.CreateSessionRequestValidator;
 
 namespace ArmoniK.Core.Common.Injection;
@@ -62,33 +63,38 @@ public static class ServiceCollectionExt
       return services;
     }
 
-    var workerChannelOptions = computePlanComponent.
-                                         GetRequiredSection(ComputePlane.WorkerChannelSection);
-    var agentChannelOptions = computePlanComponent.GetRequiredSection(ComputePlane.AgentChannelSection);
+    var workerChannelOptions = computePlanComponent.GetRequiredSection(ComputePlane.WorkerChannelSection);
+    var agentChannelOptions  = computePlanComponent.GetRequiredSection(ComputePlane.AgentChannelSection);
 
     var parsedComputePlane = new ComputePlane
-                                      {
-                                        WorkerChannel = new GrpcChannel
-                                                        {
-                                                          Address    = ArmoniK.Core.Utils.ConfigurationExt.GetRequiredValue<string>(workerChannelOptions,"Address"),
-                                                          SocketType = workerChannelOptions.GetValue("SocketType", GrpcSocketType.UnixDomainSocket),
-                                                          KeepAlivePingTimeOut = workerChannelOptions.GetTimeSpanOrDefault("KeepAlivePingTimeOut",
-                                                                                                                           TimeSpan.FromSeconds(20)),
-                                                          KeepAliveTimeOut = workerChannelOptions.GetTimeSpanOrDefault("KeepAliveTimeOut",
-                                                                                                                       TimeSpan.FromSeconds(130)),
-                                                        },
-                                        AgentChannel = new GrpcChannel
-                                                       {
-                                                          Address    = ArmoniK.Core.Utils.ConfigurationExt.GetRequiredValue<string>(agentChannelOptions, "Address"),
-                                                          SocketType = agentChannelOptions.GetValue("SocketType", GrpcSocketType.UnixDomainSocket),
-                                                          KeepAlivePingTimeOut = agentChannelOptions.GetTimeSpanOrDefault("KeepAlivePingTimeOut",
-                                                                                                                           TimeSpan.FromSeconds(20)),
-                                                          KeepAliveTimeOut = agentChannelOptions.GetTimeSpanOrDefault("KeepAliveTimeOut",
-                                                                                                                                      TimeSpan.FromSeconds(130)),
-                                                       },
-                                        MessageBatchSize = computePlanComponent.GetValue("MessageBatchSize", 1),
-                                        AbortAfter       = computePlanComponent.GetValue("AbortAfter",       TimeSpan.Zero),
-                                      };
+                             {
+                               WorkerChannel = new GrpcChannel
+                                               {
+                                                 Address = ConfigurationExt.GetRequiredValue<string>(workerChannelOptions,
+                                                                                                     "Address"),
+                                                 SocketType = workerChannelOptions.GetValue("SocketType",
+                                                                                            GrpcSocketType.UnixDomainSocket),
+                                                 KeepAlivePingTimeOut = workerChannelOptions.GetTimeSpanOrDefault("KeepAlivePingTimeOut",
+                                                                                                                  TimeSpan.FromSeconds(20)),
+                                                 KeepAliveTimeOut = workerChannelOptions.GetTimeSpanOrDefault("KeepAliveTimeOut",
+                                                                                                              TimeSpan.FromSeconds(130)),
+                                               },
+                               AgentChannel = new GrpcChannel
+                                              {
+                                                Address = ConfigurationExt.GetRequiredValue<string>(agentChannelOptions,
+                                                                                                    "Address"),
+                                                SocketType = agentChannelOptions.GetValue("SocketType",
+                                                                                          GrpcSocketType.UnixDomainSocket),
+                                                KeepAlivePingTimeOut = agentChannelOptions.GetTimeSpanOrDefault("KeepAlivePingTimeOut",
+                                                                                                                TimeSpan.FromSeconds(20)),
+                                                KeepAliveTimeOut = agentChannelOptions.GetTimeSpanOrDefault("KeepAliveTimeOut",
+                                                                                                            TimeSpan.FromSeconds(130)),
+                                              },
+                               MessageBatchSize = computePlanComponent.GetValue("MessageBatchSize",
+                                                                                1),
+                               AbortAfter = computePlanComponent.GetValue("AbortAfter",
+                                                                          TimeSpan.Zero),
+                             };
 
     services.AddSingleton(parsedComputePlane)
             .AddSingleton(parsedComputePlane.WorkerChannel)
@@ -107,8 +113,8 @@ public static class ServiceCollectionExt
                                               string                  storage,
                                               ILogger                 logger)
   {
-
-    var settings = ArmoniK.Core.Utils.ConfigurationExt.GetRequiredValue<AdapterSettings>(configuration,$"{Components.SettingSection}:{storage}");
+    var settings = ConfigurationExt.GetRequiredValue<AdapterSettings>(configuration,
+                                                                      $"{Components.SettingSection}:{storage}");
 
     logger.LogInformation("{storage} settings for loading adapter {@settings}",
                           storage,
