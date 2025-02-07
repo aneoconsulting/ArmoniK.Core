@@ -34,7 +34,7 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
-    <PackageReference Include="ArmoniK.Api.Client" Version="3.23.0" />
+    <PackageReference Include="ArmoniK.Api.Client" Version="3.24.0" />
   </ItemGroup>
 
   <ItemGroup>
