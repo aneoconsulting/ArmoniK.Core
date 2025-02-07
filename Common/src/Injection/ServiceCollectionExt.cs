@@ -20,6 +20,7 @@ using System.Reflection;
 
 using ArmoniK.Api.Common.Channel.Utils;
 using ArmoniK.Api.Common.Options;
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
@@ -61,15 +62,36 @@ public static class ServiceCollectionExt
       return services;
     }
 
-    var computePlanOptions = computePlanComponent.Get<ComputePlane>();
+    var workerChannelOptions = computePlanComponent.
+                                         GetRequiredSection(ComputePlane.WorkerChannelSection);
+    var agentChannelOptions = computePlanComponent.GetRequiredSection(ComputePlane.AgentChannelSection);
 
-    if (computePlanOptions is null)
-    {
-      return services;
-    }
+    var parsedComputePlane = new ComputePlane
+                                      {
+                                        WorkerChannel = new GrpcChannel
+                                                        {
+                                                          Address    = ArmoniK.Core.Utils.ConfigurationExt.GetRequiredValue<string>(workerChannelOptions,"Address"),
+                                                          SocketType = workerChannelOptions.GetValue("SocketType", GrpcSocketType.UnixDomainSocket),
+                                                          KeepAlivePingTimeOut = workerChannelOptions.GetTimeSpanOrDefault("KeepAlivePingTimeOut",
+                                                                                                                           TimeSpan.FromSeconds(20)),
+                                                          KeepAliveTimeOut = workerChannelOptions.GetTimeSpanOrDefault("KeepAliveTimeOut",
+                                                                                                                       TimeSpan.FromSeconds(130)),
+                                                        },
+                                        AgentChannel = new GrpcChannel
+                                                       {
+                                                          Address    = ArmoniK.Core.Utils.ConfigurationExt.GetRequiredValue<string>(agentChannelOptions, "Address"),
+                                                          SocketType = agentChannelOptions.GetValue("SocketType", GrpcSocketType.UnixDomainSocket),
+                                                          KeepAlivePingTimeOut = agentChannelOptions.GetTimeSpanOrDefault("KeepAlivePingTimeOut",
+                                                                                                                           TimeSpan.FromSeconds(20)),
+                                                          KeepAliveTimeOut = agentChannelOptions.GetTimeSpanOrDefault("KeepAliveTimeOut",
+                                                                                                                                      TimeSpan.FromSeconds(130)),
+                                                       },
+                                        MessageBatchSize = computePlanComponent.GetValue("MessageBatchSize", 1),
+                                        AbortAfter       = computePlanComponent.GetValue("AbortAfter",       TimeSpan.Zero),
+                                      };
 
-    services.AddSingleton(computePlanOptions)
-            .AddSingleton(computePlanOptions.WorkerChannel)
+    services.AddSingleton(parsedComputePlane)
+            .AddSingleton(parsedComputePlane.WorkerChannel)
             .AddOption<Components>(configuration,
                                    Components.SettingSection)
             .AddOption<InitWorker>(configuration,
@@ -85,7 +107,8 @@ public static class ServiceCollectionExt
                                               string                  storage,
                                               ILogger                 logger)
   {
-    var settings = configuration.GetRequiredValue<AdapterSettings>($"{Components.SettingSection}:{storage}");
+
+    var settings = ArmoniK.Core.Utils.ConfigurationExt.GetRequiredValue<AdapterSettings>(configuration,$"{Components.SettingSection}:{storage}");
 
     logger.LogInformation("{storage} settings for loading adapter {@settings}",
                           storage,
