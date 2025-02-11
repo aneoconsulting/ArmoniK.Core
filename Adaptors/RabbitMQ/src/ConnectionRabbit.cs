@@ -46,15 +46,16 @@ public class ConnectionRabbit : IConnectionRabbit
   public ConnectionRabbit(Amqp                      options,
                           ILogger<ConnectionRabbit> logger)
   {
-    
     logger_  = logger;
     options_ = options;
     // Log de la configuration utilisée
     logger_.LogInformation("Initializing RabbitMQ connection: Host={host}, Port={port}, TLS={tls}",
-                             options.Host, options.Port, options.Ssl);
+                           options.Host,
+                           options.Port,
+                           options.Ssl);
 
     // On s'assure d'utiliser un nom stable pour la connexion (ici "queue")
-    
+
     factory_ = new ConnectionFactory
                {
                  UserName = options.User,
@@ -63,8 +64,8 @@ public class ConnectionRabbit : IConnectionRabbit
                  Port     = options.Port,
                  Ssl = new SslOption
                        {
-                         Enabled = options.Ssl,
-                         ServerName = options.Host
+                         Enabled    = options.Ssl,
+                         ServerName = options.Host,
                        },
                  DispatchConsumersAsync = true,
                };
@@ -130,16 +131,19 @@ public class ConnectionRabbit : IConnectionRabbit
                                                      ILogger           logger,
                                                      CancellationToken cancellationToken = default)
   {
-    logger.LogInformation("Host : {host} ", options.Host);
-    if (options.Scheme.Equals("AMQPS", StringComparison.OrdinalIgnoreCase))
+    logger.LogInformation("Host : {host} ",
+                          options.Host);
+    if (options.Scheme.Equals("AMQPS",
+                              StringComparison.OrdinalIgnoreCase))
     {
-      factory.Ssl.Enabled = true;
+      factory.Ssl.Enabled    = true;
       factory.Ssl.ServerName = options.Host;
 
       RemoteCertificateValidationCallback? validationCallback = null;
       if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
       {
         validationCallback = CertificateValidator.CreateCallback(options.CaPath,
+                                                                 options.AllowInsecureTls,
                                                                  logger);
       }
       else if (!options.Ssl)
@@ -160,7 +164,8 @@ public class ConnectionRabbit : IConnectionRabbit
     {
       try
       {
-        logger.LogInformation("Attempting to create RabbitMQ connection, try {retry}", retry);
+        logger.LogInformation("Attempting to create RabbitMQ connection, try {retry}",
+                              retry);
 
         var connection = factory.CreateConnection();
         connection.ConnectionShutdown += (_,

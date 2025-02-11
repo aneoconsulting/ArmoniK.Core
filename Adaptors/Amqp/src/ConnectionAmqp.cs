@@ -17,7 +17,6 @@
 
 using System;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -110,12 +109,13 @@ public class ConnectionAmqp : IConnectionAmqp
       if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
       {
         validationCallback = CertificateValidator.CreateCallback(options.CaPath,
+                                                                 options.AllowInsecureTls,
                                                                  logger);
       }
       else if (!options.Ssl)
       {
         logger.LogError("SSL is disabled for ActiveMQ but the scheme is {scheme}",
-                          options.Scheme);
+                        options.Scheme);
       }
       else
       {

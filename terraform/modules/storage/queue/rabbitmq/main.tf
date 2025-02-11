@@ -2,7 +2,6 @@ resource "docker_image" "queue" {
   name         = var.image
   keep_locally = true
 }
-
 resource "docker_container" "queue" {
   name  = "queue"
   image = docker_image.queue.image_id
@@ -12,7 +11,7 @@ resource "docker_container" "queue" {
   }
 
   ports {
-    internal = 5671
+    internal = local.is_windows ? 5672 : 5671
     external = var.exposed_ports.amqp_connector
   }
 
@@ -20,18 +19,17 @@ resource "docker_container" "queue" {
     internal = 15671
     external = var.exposed_ports.admin_interface
   }
-  upload {
-    file    = "/rabbitmq/certs/rabbit.key"
-    content = local_file.key.content
-  }
-  upload {
-    file    = "/rabbitmq/certs/rabbit.crt"
-    content = local_file.cert.content
-  }
+  dynamic "upload" {
+    for_each = local.is_windows ? [] : [
+      { file = "/rabbitmq/certs/rabbit.key", content = local_file.key.content },
+      { file = "/rabbitmq/certs/rabbit.crt", content = local_file.cert.content },
+      { file = "/rabbitmq/certs/ca.pem", content = local_file.ca.content }
+    ]
 
-  upload {
-    file    = "/rabbitmq/certs/ca.pem"
-    content = local_file.ca.content
+    content {
+      file    = upload.value.file
+      content = upload.value.content
+    }
   }
 
   upload {
@@ -44,13 +42,12 @@ resource "docker_container" "queue" {
     source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
   }
   healthcheck {
-    test     = ["CMD-SHELL", "rabbitmqctl status"]
-    interval = "10s"
-    timeout  = "10s"
-    retries  = 10
+    test         = ["CMD-SHELL", "rabbitmq-diagnostics status "]
+    interval     = "10s"
+    timeout      = "10s"
+    retries      = 10
     start_period = "30s"
   }
-  depends_on = [docker_image.queue]
 }
 resource "time_sleep" "wait_for_rabbit" {
   depends_on      = [docker_container.queue]
