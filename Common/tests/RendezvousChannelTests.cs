@@ -247,6 +247,91 @@ public class RendezvousChannelTest
                 Throws.InstanceOf<ChannelClosedException>());
   }
 
+  [Test]
+  [Timeout(10000)]
+  [Repeat(200)]
+  public void WaitReady([Values] bool isReader,
+                        [Values] bool useCancellation)
+  {
+    var queue = new RendezvousChannel<int>();
+
+    var task = Interact(queue,
+                        isReader,
+                        useCancellation,
+                        150,
+                        wait: false);
+
+    Assert.That(() => Interact(queue,
+                               !isReader,
+                               close: true,
+                               wait: true),
+                Throws.Nothing);
+    Assert.That(() => task,
+                Throws.InstanceOf<ChannelClosedException>());
+  }
+
+  [Test]
+  [Timeout(10000)]
+  [Repeat(200)]
+  public void Wait([Values] bool isReader,
+                   [Values] bool useCancellation)
+  {
+    var queue = new RendezvousChannel<int>();
+
+    var task = Interact(queue,
+                        isReader,
+                        useCancellation,
+                        150,
+                        wait: true);
+
+    Assert.That(() => Interact(queue,
+                               !isReader,
+                               close: true,
+                               wait: false),
+                Throws.InstanceOf<TimeoutException>());
+    Assert.That(() => task,
+                Throws.Nothing);
+  }
+
+  [Test]
+  [Timeout(10000)]
+  [Repeat(200)]
+  public void WaitClose([Values] bool isReader,
+                        [Values] bool useCancellation)
+  {
+    var queue = new RendezvousChannel<int>();
+
+    var task = Interact(queue,
+                        isReader,
+                        useCancellation,
+                        150,
+                        wait: true);
+
+    Assert.That(() => Close(queue,
+                            !isReader),
+                Throws.Nothing);
+    Assert.That(() => task,
+                Throws.InstanceOf<ChannelClosedException>());
+  }
+
+  [Test]
+  [Timeout(10000)]
+  [Repeat(200)]
+  public void WaitTimeout([Values] bool isReader,
+                          [Values] bool useCancellation)
+  {
+    var queue = new RendezvousChannel<int>();
+
+    var task = Interact(queue,
+                        isReader,
+                        useCancellation,
+                        15,
+                        wait: true);
+
+    Assert.That(() => task,
+                Throws.InstanceOf(ExceptionType(useCancellation)));
+  }
+
   private static async IAsyncEnumerable<int> ReadAsync(RendezvousChannel<int> queue,
                                                        int                    closeAfter)
   {
@@ -315,7 +400,8 @@ public class RendezvousChannelTest
                                           bool                   isReader,
                                           bool                   useCancellation = false,
                                           int                    timeout         = 0,
-                                          bool                   close           = false)
+                                          bool                   close           = false,
+                                          bool                   wait            = false)
   {
     using var cts = useCancellation
                       ? new CancellationTokenSource(timeout)
@@ -331,18 +417,29 @@ public class RendezvousChannelTest
 
     var x = 3;
 
-    if (isReader)
+    switch ((wait, isReader))
     {
-      x = await queue.ReadAsync(span,
-                                token)
-                     .ConfigureAwait(false);
-    }
-    else
-    {
-      await queue.WriteAsync(x,
-                             span,
-                             token)
-                 .ConfigureAwait(false);
+      case (false, false):
+        await queue.WriteAsync(x,
+                               span,
+                               token)
+                   .ConfigureAwait(false);
+        break;
+      case (false, true):
+        x = await queue.ReadAsync(span,
+                                  token)
+                       .ConfigureAwait(false);
+        break;
+      case (true, false):
+        await queue.WaitForReader(span,
+                                  token)
+                   .ConfigureAwait(false);
+        break;
+      case (true, true):
+        await queue.WaitForWriter(span,
+                                  token)
+                   .ConfigureAwait(false);
+        break;
     }
 
     if (close)
