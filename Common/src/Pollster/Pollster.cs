@@ -351,9 +351,33 @@ public class Pollster : IInitializable
                 await taskHandler.ReleaseAndPostponeTask()
                                  .ConfigureAwait(false);
 
-                if (e is not (TimeoutException or OperationCanceledException))
+                switch (e)
                 {
-                  throw;
+                  // If there is still a running task after the acquire timeout,
+                  // we just wait for the running task to finish before trying to acquire a new task
+                  case TimeoutException:
+                    try
+                    {
+                      // We dispose early the messages in order to avoid blocking them while not trying to acquire their corresponding tasks
+                      // Disposing twice is safe as the second dispose (from the using) will just do nothing.
+                      // ReSharper disable once DisposeOnUsingVariable
+                      await messagesDispose.DisposeAsync()
+                                           .ConfigureAwait(false);
+                      await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
+                                                            exceptionManager_.EarlyCancellationToken)
+                                             .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+
+                    break;
+                  // If the cancellation token has been triggered, we ignore the error and continue right away
+                  case OperationCanceledException:
+                    break;
+                  // In case of any other error, we record the error and continue right away
+                  default:
+                    throw;
                 }
               }
             }
