@@ -37,12 +37,20 @@ resource "docker_container" "queue" {
     content = "[rabbitmq_management ,rabbitmq_management_agent ${local.plug}]."
   }
 
-  upload {
-    file   = "/etc/rabbitmq/conf.d/10-defaults.conf"
-    source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
+  dynamic "upload" {
+    for_each = local.is_windows ? [] : [
+      {
+        file   = "/etc/rabbitmq/conf.d/10-defaults.conf"
+        source = abspath("${path.root}/rabbitmq/rabbitmq.conf")
+      }
+    ]
+    content {
+      file   = upload.value.file
+      source = upload.value.source
+    }
   }
   healthcheck {
-    test         = ["CMD-SHELL", "rabbitmq-diagnostics status "]
+    test         = ["CMD-SHELL", "rabbitmq-diagnostics status"]
     interval     = "10s"
     timeout      = "10s"
     retries      = 10
