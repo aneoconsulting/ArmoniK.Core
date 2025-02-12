@@ -261,7 +261,9 @@ public static class ResultTableExtensions
                                          CancellationToken cancellationToken = default)
     => await resultTable.UpdateOneResult(resultId,
                                          new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                            ResultStatus.DeletedData),
+                                                                            ResultStatus.DeletedData)
+                                                                       .Set(result => result.OpaqueId,
+                                                                            Array.Empty<byte>()),
                                          cancellationToken)
                         .ConfigureAwait(false);
 }
