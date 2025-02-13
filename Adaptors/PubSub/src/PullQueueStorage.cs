@@ -37,7 +37,9 @@ internal class PullQueueStorage : IPullQueueStorage
 {
   private readonly int    ackDeadlinePeriod_;
   private readonly int    ackExtendDeadlineStep_;
+  private readonly bool   exactlyOnceDelivery_;
   private readonly string kmsKeyName_;
+  private readonly bool   messageOrdering_;
 
   private readonly TimeSpan                   messageRetention_;
   private readonly PublisherServiceApiClient  publisher_;
@@ -56,7 +58,9 @@ internal class PullQueueStorage : IPullQueueStorage
     messageRetention_      = options.MessageRetention;
     ackDeadlinePeriod_     = options.AckDeadlinePeriod;
     ackExtendDeadlineStep_ = options.AckExtendDeadlineStep;
+    exactlyOnceDelivery_   = options.ExactlyOnceDelivery;
     kmsKeyName_            = options.KmsKeyName;
+    messageOrdering_       = options.MessageOrdering;
     subscriber_            = subscriber;
     publisher_             = publisher;
     topicName_ = TopicName.FromProjectTopic(options.ProjectId,
@@ -116,7 +120,8 @@ internal class PullQueueStorage : IPullQueueStorage
                                 {
                                   SubscriptionName          = subscriptionName_,
                                   TopicAsTopicName          = topicName_,
-                                  EnableExactlyOnceDelivery = true,
+                                  EnableExactlyOnceDelivery = exactlyOnceDelivery_,
+                                  EnableMessageOrdering     = messageOrdering_,
                                   AckDeadlineSeconds        = ackDeadlinePeriod_,
                                 };
       try
