@@ -59,4 +59,14 @@ internal class PubSub
   ///   Name of the KMS key used to protect messages
   /// </summary>
   public string KmsKeyName { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Option to force the ordering of messages (queue property)
+  /// </summary>
+  public bool MessageOrdering { get; set; } = false;
+
+  /// <summary>
+  ///   Guarantee that messages are not duplicated at Pub/Sub level
+  /// </summary>
+  public bool ExactlyOnceDelivery { get; set; } = false;
 }
