@@ -10,3 +10,8 @@ output "generated_env_vars" {
     "AWS_SECRET_ACCESS_KEY"                                 = "localsecret"
   })
 }
+output "core_mounts" {
+  description = "Volumes that agents and submitters must mount to access the queue"
+  value = {
+  }
+}
