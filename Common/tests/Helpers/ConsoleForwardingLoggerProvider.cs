@@ -22,7 +22,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-internal class ConsoleForwardingLoggerProvider : ILoggerProvider
+public class ConsoleForwardingLoggerProvider : ILoggerProvider
 {
   private readonly ForwardingLoggerProvider provider_;
 
