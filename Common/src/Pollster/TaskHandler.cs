@@ -363,39 +363,6 @@ public sealed class TaskHandler : IAsyncDisposable
           return AcquisitionStatus.TaskIsCancelled;
         case TaskStatus.Processing:
 
-          //temporary version, bypass processing to avoid deadlock
-
-          logger_.LogWarning("Task already in processing on this pod. temporary version, bypass processing to avoid deadlock");
-          messageHandler_.Status = QueueMessageStatus.Processed;
-          return AcquisitionStatus.TaskIsProcessingHere;
-
-          // If OwnerPodId is empty, it means that task was partially started or released
-          // so we put the task in error and retry it somewhere else
-          if (taskData_.OwnerPodId == "")
-          {
-            logger_.LogDebug("Resubmitting task {task} on another pod",
-                             taskData_.TaskId);
-            messageHandler_.Status = QueueMessageStatus.Cancelled;
-
-            await submitter_.CompleteTaskAsync(taskData_,
-                                               sessionData_,
-                                               true,
-                                               new Output(OutputStatus.Error,
-                                                          $"Other pod seems to have released task while keeping {taskData_.Status} status, resubmitting task"),
-                                               CancellationToken.None)
-                            .ConfigureAwait(false);
-
-            // Propagate retried status to TaskHandler
-            taskData_ = taskData_ with
-                        {
-                          Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
-                                     ? TaskStatus.Retried
-                                     : TaskStatus.Error,
-                        };
-
-            return AcquisitionStatus.TaskIsProcessingPodIdEmpty;
-          }
-
           // we check if the task was acquired by this pod
 
           // if the task is acquired by another pod, we check if the task is running on the other pod
