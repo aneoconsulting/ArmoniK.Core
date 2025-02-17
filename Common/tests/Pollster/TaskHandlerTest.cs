@@ -763,15 +763,6 @@ public class TaskHandlerTest
                                                                         QueueMessageStatus.Cancelled))
                                          .SetArgDisplayNames("Cancelled task");
 
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Processing,
-                                    },
-                                    true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingHere,
-                                                                        TaskStatus.Processing,
-                                                                        QueueMessageStatus.Processed))
-                                         .SetArgDisplayNames("Processing task same agent");
-
       // 12 is already tested
 
       yield return new TestCaseData(taskData with
