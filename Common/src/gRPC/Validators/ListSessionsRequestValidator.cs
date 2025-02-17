@@ -37,7 +37,7 @@ public class ListSessionsRequestValidator : AbstractValidator<ListSessionsReques
       .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Page)}");
     RuleFor(request => request.PageSize)
       .NotNull()
-      .GreaterThanOrEqualTo(1)
+      .GreaterThanOrEqualTo(0)
       .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.PageSize)}");
     RuleFor(request => request.Filters)
       .NotNull()

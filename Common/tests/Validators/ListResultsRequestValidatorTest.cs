@@ -142,10 +142,10 @@ public class ListResultsRequestValidatorTest
   }
 
   [Test]
-  public void ListResultsRequestZeroPageSizeShouldFail()
+  public void ListResultsRequestZeroPageSizeShouldBeValid()
   {
     validListResultsRequest_!.PageSize = 0;
-    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
-                             .IsValid);
+    Assert.IsTrue(validator_.Validate(validListResultsRequest_)
+                            .IsValid);
   }
 }

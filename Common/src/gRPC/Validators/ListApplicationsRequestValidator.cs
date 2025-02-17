@@ -37,7 +37,7 @@ public class ListApplicationsRequestValidator : AbstractValidator<ListApplicatio
       .WithName($"{nameof(ListApplicationsRequest)}.{nameof(ListApplicationsRequest.Page)}");
     RuleFor(request => request.PageSize)
       .NotNull()
-      .GreaterThanOrEqualTo(1)
+      .GreaterThanOrEqualTo(0)
       .WithName($"{nameof(ListApplicationsRequest)}.{nameof(ListApplicationsRequest.PageSize)}");
     RuleFor(request => request.Filters)
       .NotNull()

@@ -37,7 +37,7 @@ public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
       .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Page)}");
     RuleFor(request => request.PageSize)
       .NotNull()
-      .GreaterThanOrEqualTo(1)
+      .GreaterThanOrEqualTo(0)
       .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.PageSize)}");
     RuleFor(request => request.Filters)
       .NotNull()
