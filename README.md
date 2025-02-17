@@ -31,16 +31,16 @@ Therefore, features in development or testing that cannot fit within a branch an
 **Deprecated:** The deprecated APIs, plugins and features. Features are flagged for future removal. Only production critical bug fixes will be considered.
 **Work in progress (WIP):** The APIs, plugins and features are not fully implemented and may have some missing parts.
 
-| Plugins  | Type           | Description                                   | Status  |
-|----------|----------------|-----------------------------------------------|---------|
-| RabbitMQ | Queue          | RabbitMQ client using AMQP protocol 0.9.2     | GA      |
-| AMQP     | Queue          | AMQP client using AMQP protocol 1.0.0         | GA      |
-| PubSub   | Queue          | Google PubSub client                          | GA      |
-| SQS      | Queue          | AWS SQS client                                | Preview |
-| Redis    | Object Storage | Redis client used to store binary data        | GA      |
-| Local    | Object Storage | File system used to store binary data         | GA      |
-| S3       | Object Storage | AWS S3 client used to store binary data       | GA      |
-| MongoDB  | Database       | MongoDB client to store ArmoniK internal data | GA      |
+| Plugins  | Type           | Description                                   | Status  | TLS Support    |
+|----------|----------------|-----------------------------------------------|---------|----------------|
+| RabbitMQ | Queue          | RabbitMQ client using AMQP protocol 0.9.2     | GA      | Linux          | 
+| AMQP     | Queue          | AMQP client using AMQP protocol 1.0.0         | GA      | Linux          | 
+| PubSub   | Queue          | Google PubSub client                          | GA      | -              | 
+| SQS      | Queue          | AWS SQS client                                | Preview | -              | 
+| Redis    | Object Storage | Redis client used to store binary data        | GA      | Windows, Linux | 
+| Local    | Object Storage | File system used to store binary data         | GA      | -              | 
+| S3       | Object Storage | AWS S3 client used to store binary data       | GA      | -              | 
+| MongoDB  | Database       | MongoDB client to store ArmoniK internal data | GA      | Windows, Linux |
 
 | APIs                          | Description                                                                         | Status     |
 |-------------------------------|-------------------------------------------------------------------------------------|------------|

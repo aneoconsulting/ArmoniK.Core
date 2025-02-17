@@ -17,7 +17,6 @@
 
 using System;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -25,6 +24,7 @@ using Amqp;
 using Amqp.Framing;
 
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using JetBrains.Annotations;
@@ -105,22 +105,30 @@ public class ConnectionAmqp : IConnectionAmqp
     var connectionFactory = new ConnectionFactory();
     if (options.Scheme.Equals("AMQPS"))
     {
-      connectionFactory.SSL.RemoteCertificateValidationCallback = delegate(object           _,
-                                                                           X509Certificate? _,
-                                                                           X509Chain?       _,
-                                                                           SslPolicyErrors  errors)
-                                                                  {
-                                                                    switch (errors)
-                                                                    {
-                                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
-                                                                      case SslPolicyErrors.None:
-                                                                        return true;
-                                                                      default:
-                                                                        logger.LogError("SSL error : {error}",
-                                                                                        errors);
-                                                                        return false;
-                                                                    }
-                                                                  };
+      RemoteCertificateValidationCallback? validationCallback = null;
+      if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
+      {
+        validationCallback = CertificateValidator.CreateCallback(options.CaPath,
+                                                                 options.AllowInsecureTls,
+                                                                 logger);
+      }
+      else if (!options.Ssl)
+      {
+        logger.LogError("SSL is disabled for ActiveMQ but the scheme is {scheme}",
+                        options.Scheme);
+      }
+      else
+      {
+        logger.LogError("No CA path provided for ActiveMQ");
+      }
+
+      connectionFactory.SSL.RemoteCertificateValidationCallback = validationCallback;
+    }
+    else
+    {
+      logger.LogWarning("SSL is disabled for ActiveMQ");
+      logger.LogWarning("Scheme is {scheme}",
+                        options.Scheme);
     }
 
     var retry = 0;
