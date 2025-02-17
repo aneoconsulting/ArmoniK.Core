@@ -107,6 +107,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{B52DF352
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Queue", "Base\tests\Queue\Queue.csproj", "{214D88B7-D35B-4129-A8F0-54B16AF2D67E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArmoniK.Core.Control.IntentLog", "Control\IntentLog\src\ArmoniK.Core.Control.IntentLog.csproj", "{AA7C6846-4E8D-4753-BA14-588C18953254}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -427,6 +429,14 @@ Global
 		{214D88B7-D35B-4129-A8F0-54B16AF2D67E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{214D88B7-D35B-4129-A8F0-54B16AF2D67E}.Release|x64.ActiveCfg = Release|Any CPU
 		{214D88B7-D35B-4129-A8F0-54B16AF2D67E}.Release|x64.Build.0 = Release|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Debug|x64.Build.0 = Debug|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Release|x64.ActiveCfg = Release|Any CPU
+		{AA7C6846-4E8D-4753-BA14-588C18953254}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -481,6 +491,7 @@ Global
 		{2DC798DD-F147-4245-BD63-E0E6E5BB5E9E} = {2D548C40-6260-4A4E-9C56-E8A80C639E13}
 		{B52DF352-C460-4707-851A-22436174CBAA} = {44FE7EFD-2EAA-49BA-9621-D9EFCB39D50B}
 		{214D88B7-D35B-4129-A8F0-54B16AF2D67E} = {B52DF352-C460-4707-851A-22436174CBAA}
+		{AA7C6846-4E8D-4753-BA14-588C18953254} = {0E809C1E-CBF5-42E4-8624-2E244A52E422}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1285A466-2AF6-43E6-8DCC-2F93A5D5F02E}
