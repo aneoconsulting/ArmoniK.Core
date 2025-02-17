@@ -766,36 +766,6 @@ public class TaskHandlerTest
       yield return new TestCaseData(taskData with
                                     {
                                       Status = TaskStatus.Processing,
-                                      OwnerPodId = "",
-                                    },
-                                    true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingPodIdEmpty,
-                                                                        TaskStatus.Retried,
-                                                                        QueueMessageStatus.Cancelled))
-                                         .SetArgDisplayNames("Processing task");
-
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Processing,
-                                      OwnerPodId = "another",
-                                    },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingButSeemsCrashed,
-                                                                         TaskStatus.Retried,
-                                                                         QueueMessageStatus.Processed))
-                                          .SetArgDisplayNames("Processing task on another agent check false");
-
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Processing,
-                                      OwnerPodId = "another",
-                                    },
-                                    true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingElsewhere,
-                                                                        TaskStatus.Processing,
-                                                                        QueueMessageStatus.Processed))
-                                         .SetArgDisplayNames("Processing task on another agent check true");
-
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Processing,
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingHere,
                                                                         TaskStatus.Processing,

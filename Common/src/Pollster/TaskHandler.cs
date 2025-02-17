@@ -363,6 +363,12 @@ public sealed class TaskHandler : IAsyncDisposable
           return AcquisitionStatus.TaskIsCancelled;
         case TaskStatus.Processing:
 
+          //temporary version, bypass processing to avoid deadlock
+
+          logger_.LogWarning("Task already in processing on this pod. temporary version, bypass processing to avoid deadlock");
+          messageHandler_.Status = QueueMessageStatus.Processed;
+          return AcquisitionStatus.TaskIsProcessingHere;
+
           // If OwnerPodId is empty, it means that task was partially started or released
           // so we put the task in error and retry it somewhere else
           if (taskData_.OwnerPodId == "")
