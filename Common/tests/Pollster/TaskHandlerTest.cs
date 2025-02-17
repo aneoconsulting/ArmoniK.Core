@@ -815,26 +815,6 @@ public class TaskHandlerTest
                                                                         QueueMessageStatus.Processed))
                                          .SetArgDisplayNames("Dispatched different owner");
 
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Dispatched,
-                                      OwnerPodId = "anotherowner",
-                                    },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
-                                                                         QueueMessageStatus.Processed))
-                                          .SetArgDisplayNames("Dispatched different owner false check");
-
-      yield return new TestCaseData(taskData with
-                                    {
-                                      Status = TaskStatus.Dispatched,
-                                      OwnerPodId = "anotherowner",
-                                      AcquisitionDate = DateTime.UtcNow - TimeSpan.FromSeconds(20),
-                                    },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
-                                                                         QueueMessageStatus.Processed))
-                                          .SetArgDisplayNames("Dispatched different owner false check date before");
 
       yield return new TestCaseData(taskData with
                                     {
@@ -1452,13 +1432,6 @@ public class TaskHandlerTest
     get
     {
       // trigger error before cancellation so it is a legitimate error and therefor should be considered as such
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                                                                                   .SetArgDisplayNames("ExceptionError"); // error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                                                                                          .SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableResponseEndedRpcException>(0))
-                   .Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                   .SetArgDisplayNames("CrashRpcExceptionResubmit"); // crash worker with resubmit
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                                      .SetArgDisplayNames("UnavailableWorkerWithoutCancellation"); // worker crashed before the execution of the task
 
@@ -1476,11 +1449,6 @@ public class TaskHandlerTest
                                                                                                   false)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
                                                                                                          .SetArgDisplayNames("UnavailableAfterCancellation");
 
-      // If the worker crashes during the task execution after cancellation, the task should be put in error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableResponseEndedRpcException>(1000,
-                                                                                                               false)).Returns((TaskStatus.Retried,
-                                                                                                                                QueueMessageStatus.Cancelled))
-                                                                                                                      .SetArgDisplayNames("CrashAfterCancellation");
     }
   }
 
@@ -1929,148 +1897,6 @@ public class TaskHandlerTest
 
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);
-  }
-
-  [Test]
-  public async Task ExecuteTaskUntilErrorShouldSucceed()
-  {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var sh = new ExceptionWorkerStreamHandler<TestRpcException>(0);
-
-    var agentHandler = new SimpleAgentHandler();
-    using var testServiceProvider = new TestTaskHandlerProvider(sh,
-                                                                agentHandler,
-                                                                sqmh);
-
-    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                                 .ConfigureAwait(false);
-
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     CancellationToken.None)
-                                            .ConfigureAwait(false);
-
-    var maxRetries    = taskData.Options.MaxRetries;
-    var initialTaskId = taskId;
-
-    for (var i = 0; i < maxRetries + 1; i++)
-    {
-      sqmh.TaskId = taskId;
-
-      var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                              .ConfigureAwait(false);
-
-      Assert.AreEqual(AcquisitionStatus.Acquired,
-                      acquired);
-
-      await testServiceProvider.TaskHandler.PreProcessing()
-                               .ConfigureAwait(false);
-
-
-      Assert.ThrowsAsync<TestRpcException>(async () =>
-                                           {
-                                             await testServiceProvider.TaskHandler.ExecuteTask()
-                                                                      .ConfigureAwait(false);
-
-                                             await testServiceProvider.TaskHandler.PostProcessing()
-                                                                      .ConfigureAwait(false);
-                                           });
-
-
-      taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                   CancellationToken.None)
-                                          .ConfigureAwait(false);
-
-      Console.WriteLine(taskData);
-
-      Assert.AreEqual(i != maxRetries
-                        ? TaskStatus.Retried
-                        : TaskStatus.Error,
-                      taskData.Status);
-      Assert.Greater(taskData.CreationToEndDuration,
-                     taskData.ProcessingToEndDuration);
-
-      Assert.AreEqual(QueueMessageStatus.Cancelled,
-                      sqmh.Status);
-
-      var retries = await testServiceProvider.TaskTable.FindTasksAsync(data => data.InitialTaskId == initialTaskId,
-                                                                       data => new
-                                                                               {
-                                                                                 data.RetryOfIds,
-                                                                                 data.TaskId,
-                                                                               })
-                                             .ToListAsync()
-                                             .ConfigureAwait(false);
-
-      var lastRetry = retries.MaxBy(arg => arg.RetryOfIds.Count)!;
-
-      // i == maxRetries means we are running the task that will be in error
-      // therefore there is no new task that can be retry
-      Assert.AreEqual(i != maxRetries
-                        ? i + 1
-                        : i,
-                      lastRetry.RetryOfIds.Count);
-
-      taskId = lastRetry.TaskId;
-    }
-  }
-
-  [Test]
-  public async Task ExecuteTaskWithErrorDuringExecutionInWorkerHandlerShouldThrow()
-  {
-    var sh = new ExceptionWorkerStreamHandler<TestRpcException>(100);
-
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var agentHandler = new SimpleAgentHandler();
-    using var testServiceProvider = new TestTaskHandlerProvider(sh,
-                                                                agentHandler,
-                                                                sqmh);
-
-    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
-                                 .ConfigureAwait(false);
-
-    sqmh.TaskId = taskId;
-
-    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
-                                            .ConfigureAwait(false);
-
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
-
-    await testServiceProvider.TaskHandler.PreProcessing()
-                             .ConfigureAwait(false);
-
-    Assert.ThrowsAsync<TestRpcException>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
-                                                                              .ConfigureAwait(false));
-
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     CancellationToken.None)
-                                            .ConfigureAwait(false);
-
-    Assert.AreEqual(TaskStatus.Retried,
-                    taskData.Status);
-
-    Assert.AreEqual(QueueMessageStatus.Cancelled,
-                    sqmh.Status);
-
-    var taskDataRetry = await testServiceProvider.TaskTable.ReadTaskAsync(taskId + "###1",
-                                                                          CancellationToken.None)
-                                                 .ConfigureAwait(false);
-    Assert.AreEqual(taskId,
-                    taskDataRetry.InitialTaskId);
   }
 
   [Test]

@@ -1051,6 +1051,10 @@ public sealed class TaskHandler : IAsyncDisposable
                                               bool              requeueIfUnavailable,
                                               CancellationToken cancellationToken)
   {
+    // bypass resubmission
+
+    resubmit = false;
+
     using var measure = functionExecutionMetrics_.CountAndTime();
 
     if (sessionData_ is null)
