@@ -492,9 +492,6 @@ public class Submitter : ISubmitter
                                       Output            output,
                                       CancellationToken cancellationToken = default)
   {
-    // bypass resubmission
-    resubmit = false;
-
     using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
 
     var taskDataEnd = taskData with
