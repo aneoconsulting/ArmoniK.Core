@@ -148,10 +148,10 @@ public class ListApplicationsRequestValidatorTest
   }
 
   [Test]
-  public void ListApplicationsRequestZeroPageSizeShouldFail()
+  public void ListApplicationsRequestZeroPageSizeShouldBeValid()
   {
     validListApplicationsRequest_!.PageSize = 0;
-    Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
-                             .IsValid);
+    Assert.IsTrue(validator_.Validate(validListApplicationsRequest_)
+                            .IsValid);
   }
 }

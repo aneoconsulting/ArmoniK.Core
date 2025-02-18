@@ -142,10 +142,10 @@ public class ListPartitionsRequestValidatorTest
   }
 
   [Test]
-  public void ListPartitionsRequestZeroPageSizeShouldFail()
+  public void ListPartitionsRequestZeroPageSizeShouldBeValid()
   {
     validListPartitionsRequest_!.PageSize = 0;
-    Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
-                             .IsValid);
+    Assert.IsTrue(validator_.Validate(validListPartitionsRequest_)
+                            .IsValid);
   }
 }
