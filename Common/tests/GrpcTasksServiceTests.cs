@@ -50,6 +50,7 @@ public class GrpcTasksServiceTests
     => helper_ = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
                                                                   .AddSingleton<MeterHolder>()
+                                                                  .AddSingleton<Injection.Options.Submitter>()
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
