@@ -52,6 +52,7 @@ public class GrpcResultsService : Results.ResultsBase
   private readonly ILogger<GrpcResultsService>                  logger_;
   private readonly FunctionExecutionMetrics<GrpcResultsService> meter_;
   private readonly IObjectStorage                               objectStorage_;
+  private readonly Injection.Options.Submitter                  options_;
   private readonly IPushQueueStorage                            pushQueueStorage_;
   private readonly IResultTable                                 resultTable_;
   private readonly ISessionTable                                sessionTable_;
@@ -63,6 +64,7 @@ public class GrpcResultsService : Results.ResultsBase
                             IObjectStorage                               objectStorage,
                             IPushQueueStorage                            pushQueueStorage,
                             FunctionExecutionMetrics<GrpcResultsService> meter,
+                            Injection.Options.Submitter                  options,
                             ILogger<GrpcResultsService>                  logger)
   {
     logger_           = logger;
@@ -72,6 +74,7 @@ public class GrpcResultsService : Results.ResultsBase
     objectStorage_    = objectStorage;
     pushQueueStorage_ = pushQueueStorage;
     meter_            = meter;
+    options_          = options;
   }
 
   [RequiresPermission(typeof(GrpcResultsService),
@@ -168,7 +171,8 @@ public class GrpcResultsService : Results.ResultsBase
                                                                   ServerCallContext    context)
   {
     using var measure = meter_.CountAndTime();
-    var results = await request.Results.ParallelSelect(async rc =>
+    var results = await request.Results.ParallelSelect(new ParallelTaskOptions(options_.DegreeOfParallelism),
+                                                       async rc =>
                                                        {
                                                          var resultId = Guid.NewGuid()
                                                                             .ToString();
@@ -203,12 +207,12 @@ public class GrpcResultsService : Results.ResultsBase
                               context.CancellationToken)
                       .ConfigureAwait(false);
 
-    await resultTable_.BulkUpdateResults(results.Select(id => (id.Item1.ResultId, new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                                                                     ResultStatus.Completed)
-                                                                                                                .Set(result => result.OpaqueId,
-                                                                                                                     id.id)
-                                                                                                                .Set(result => result.Size,
-                                                                                                                     id.Item1.Size))),
+    await resultTable_.BulkUpdateResults(results.Select(tuple => (tuple.Item1.ResultId, new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                                                           ResultStatus.Completed)
+                                                                                                                      .Set(result => result.OpaqueId,
+                                                                                                                           tuple.id)
+                                                                                                                      .Set(result => result.Size,
+                                                                                                                           tuple.Item1.Size))),
                                          context.CancellationToken)
                       .ConfigureAwait(false);
 

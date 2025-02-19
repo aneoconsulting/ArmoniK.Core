@@ -51,6 +51,7 @@ public class GrpcTasksService : Task.TasksBase
   private readonly HttpClient                                 httpClient_;
   private readonly ILogger<GrpcTasksService>                  logger_;
   private readonly FunctionExecutionMetrics<GrpcTasksService> meter_;
+  private readonly Injection.Options.Submitter                options_;
   private readonly IPushQueueStorage                          pushQueueStorage_;
   private readonly IResultTable                               resultTable_;
   private readonly ISessionTable                              sessionTable_;
@@ -63,8 +64,9 @@ public class GrpcTasksService : Task.TasksBase
                           IResultTable                               resultTable,
                           IPushQueueStorage                          pushQueueStorage,
                           FunctionExecutionMetrics<GrpcTasksService> meter,
-                          ILogger<GrpcTasksService>                  logger,
-                          HttpClient                                 httpClient)
+                          HttpClient                                 httpClient,
+                          Injection.Options.Submitter                options,
+                          ILogger<GrpcTasksService>                  logger)
   {
     logger_           = logger;
     taskTable_        = taskTable;
@@ -72,6 +74,7 @@ public class GrpcTasksService : Task.TasksBase
     resultTable_      = resultTable;
     pushQueueStorage_ = pushQueueStorage;
     httpClient_       = httpClient;
+    options_          = options;
     meter_            = meter;
 
     taskDetailedMask_ = new TaskDataMask(new List<TaskDataFields>
@@ -294,7 +297,7 @@ public class GrpcTasksService : Task.TasksBase
                                         .ToListAsync()
                                         .ConfigureAwait(false);
 
-      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(10),
+      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
                                         async t =>
                                         {
                                           try
