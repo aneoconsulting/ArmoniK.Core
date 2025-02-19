@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -237,6 +238,40 @@ public class ObjectStorage : IObjectStorage
     => await ids.ParallelForEach(id => TryDeleteAsync(id,
                                                       cancellationToken))
                 .ConfigureAwait(false);
+
+  public async Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
+                                                              CancellationToken   cancellationToken = default)
+    => await ids.ParallelSelect(async id => (id, await ExistsAsync(id,
+                                                                   cancellationToken)
+                                                   .ConfigureAwait(false)))
+                .ToDictionaryAsync(tuple => tuple.id,
+                                   tuple => tuple.Item2,
+                                   cancellationToken)
+                .ConfigureAwait(false);
+
+  private async Task<long?> ExistsAsync(byte[]            id,
+                                        CancellationToken cancellationToken)
+  {
+    try
+    {
+      var key                   = Encoding.UTF8.GetString(id);
+      var objectStorageFullName = $"{objectStorageName_}{key}";
+
+      var metadata = await s3Client_.GetObjectMetadataAsync(new GetObjectMetadataRequest
+                                                            {
+                                                              BucketName = options_.BucketName,
+                                                              Key        = objectStorageFullName,
+                                                            },
+                                                            cancellationToken)
+                                    .ConfigureAwait(false);
+
+      return metadata.ContentLength;
+    }
+    catch (AmazonS3Exception e) when (e.StatusCode == HttpStatusCode.NotFound)
+    {
+      return null;
+    }
+  }
 
   private async Task TryDeleteAsync(byte[]            id,
                                     CancellationToken cancellationToken = default)

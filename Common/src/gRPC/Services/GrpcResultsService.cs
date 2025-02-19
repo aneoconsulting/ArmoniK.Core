@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -420,6 +421,118 @@ public class GrpcResultsService : Results.ResultsBase
     return new GetResultResponse
            {
              Result = result.ToGrpcResultRaw(),
+           };
+  }
+
+  [RequiresPermission(typeof(GrpcResultsService),
+                      nameof(ImportResultsData))]
+  public override async Task<ImportResultsDataResponse> ImportResultsData(ImportResultsDataRequest request,
+                                                                          ServerCallContext        context)
+  {
+    using var measure = meter_.CountAndTime();
+
+    // early exit when there is nothing to do (mostly to please authentication test in which GetResults returns garbage)
+    if (!request.Results.Any())
+    {
+      return new ImportResultsDataResponse();
+    }
+
+    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                          context.CancellationToken)
+                                         .ConfigureAwait(false);
+
+    var resultIds = request.Results.Select(id => id.ResultId)
+                           .ToHashSet();
+
+    var requests = request.Results.ToDictionary(id => id.ResultId,
+                                                id => id.OpaqueId.ToByteArray());
+
+    var dictTask = objectStorage_.GetSizesAsync(requests.Values,
+                                                context.CancellationToken);
+
+    var resultIdsDatabase = await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
+                                                          result => new
+                                                                    {
+                                                                      result.ResultId,
+                                                                      result.Status,
+                                                                    },
+                                                          context.CancellationToken)
+                                              .ToDictionaryAsync(arg => arg.ResultId,
+                                                                 arg => arg.Status)
+                                              .ConfigureAwait(false);
+
+    var dict = await dictTask.ConfigureAwait(false);
+
+    Debug.Assert(dict.Count == request.Results.Count);
+
+#if DEBUG
+    foreach (var opaqueId in requests.Values)
+    {
+      Debug.Assert(dict.ContainsKey(opaqueId));
+    }
+#endif
+
+    if (dict.Values.Any(size => size is null))
+    {
+      logger_.LogError("Opaque ids : {OpaqueIds} does not exist in the object storage",
+                       dict.Where(pair => pair.Value is null)
+                           .Select(pair => pair.Key)
+                           .ToList());
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "OpaqueId not found in the object storage"));
+    }
+
+    var intersection = resultIds.Except(resultIdsDatabase.Select(pair => pair.Key))
+                                .ToList();
+
+    if (intersection.Any())
+    {
+      logger_.LogError("Input result IDs {ResultIds} were not found in the database",
+                       intersection);
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        $"Input result IDs were not found in the database: {intersection}"));
+    }
+
+    if (resultIdsDatabase.Any(pair => pair.Value != ResultStatus.Created))
+    {
+      var invalidResults = resultIdsDatabase.Where(pair => pair.Value != ResultStatus.Created)
+                                            .ToList();
+      logger_.LogError("Imported result should be in {Status} but {ResultIds} were not",
+                       ResultStatus.Created,
+                       invalidResults);
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        $"Imported results should be in {ResultStatus.Created} status, invalid results {invalidResults}"));
+    }
+
+    await resultTable_.BulkUpdateResults(requests.Select(id => (id.Key, new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                                           ResultStatus.Completed)
+                                                                                                      .Set(result => result.OpaqueId,
+                                                                                                           id.Value)
+                                                                                                      .Set(result => result.Size,
+                                                                                                           dict[id.Value]))),
+                                         context.CancellationToken)
+                      .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
+                                                  resultTable_,
+                                                  pushQueueStorage_,
+                                                  sessionData,
+                                                  resultIds,
+                                                  logger_,
+                                                  context.CancellationToken)
+                             .ConfigureAwait(false);
+
+    return new ImportResultsDataResponse
+           {
+             Results =
+             {
+               await resultTable_.GetResults(request.SessionId,
+                                             resultIds,
+                                             context.CancellationToken)
+                                 .Select(result => result.ToGrpcResultRaw())
+                                 .ToListAsync()
+                                 .ConfigureAwait(false),
+             },
            };
   }
 }
