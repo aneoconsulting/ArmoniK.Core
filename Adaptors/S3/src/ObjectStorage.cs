@@ -241,16 +241,16 @@ public class ObjectStorage : IObjectStorage
 
   public async Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
                                                               CancellationToken   cancellationToken = default)
-    => await ids.ParallelSelect(async id => (id, await ExistsAsync(id,
-                                                                   cancellationToken)
+    => await ids.ParallelSelect(async id => (id, await GetSizeAsync(id,
+                                                                    cancellationToken)
                                                    .ConfigureAwait(false)))
                 .ToDictionaryAsync(tuple => tuple.id,
                                    tuple => tuple.Item2,
                                    cancellationToken)
                 .ConfigureAwait(false);
 
-  private async Task<long?> ExistsAsync(byte[]            id,
-                                        CancellationToken cancellationToken)
+  private async Task<long?> GetSizeAsync(byte[]            id,
+                                         CancellationToken cancellationToken)
   {
     try
     {
