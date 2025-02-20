@@ -34,6 +34,7 @@ public static class CertificateValidator
   /// </summary>
   /// <param name="logger">The logger to use for logging validation details.</param>
   /// <param name="authority">The root certificate authority to trust during validation.</param>
+  /// <param name="allowHostMismatch">Ignore HostMismatch error</param>
   /// <returns>
   ///   A <see cref="RemoteCertificateValidationCallback" /> delegate that performs SSL/TLS certificate validation.
   /// </returns>
@@ -64,13 +65,7 @@ public static class CertificateValidator
 
            // We allow host mismatch, so we remove the error
            sslPolicyErrors &= ~SslPolicyErrors.RemoteCertificateNameMismatch;
-           logger.LogInformation("Allowing RemoteCertificateNameMismatch since allowHostMismatch=true");
-         }
-
-         // If there is any error other than untrusted root or partial chain, fail the validation
-         if ((sslPolicyErrors & SslPolicyErrors.RemoteCertificateChainErrors) != 0)
-         {
-           logger.LogWarning("Ignoring SSL validation error: RemoteCertificateChainErrors");
+           logger.LogDebug("Allowing RemoteCertificateNameMismatch since allowHostMismatch=true");
          }
 
          // If there is any errors other than the chain errors and the mismatch, fail the validation
@@ -103,7 +98,7 @@ public static class CertificateValidator
          var isTrusted = chain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
          if (isTrusted)
          {
-           logger.LogInformation("SSL validation succeeded: certificate is trusted");
+           logger.LogDebug("SSL validation succeeded: certificate is trusted");
          }
          else
          {
