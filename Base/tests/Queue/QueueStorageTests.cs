@@ -34,288 +34,296 @@ using Microsoft.Extensions.Logging;
 
 using NUnit.Framework;
 
-using PullQueueStorage = ArmoniK.Core.Adapters.RabbitMQ.PullQueueStorage;
-using PushQueueStorage = ArmoniK.Core.Adapters.RabbitMQ.PushQueueStorage;
-
 namespace ArmoniK.Core.Tests.Queue;
 
 public class QueueStorageTests
 {
-    protected Adapters.QueueCommon.Amqp? Options;
-    protected IPushQueueStorage? PushQueueStorage;
-    protected IPullQueueStorage? PullQueueStorage;
+  protected Adapters.QueueCommon.Amqp? Options;
+  protected IPullQueueStorage?         PullQueueStorage;
+  protected IPushQueueStorage?         PushQueueStorage;
 
-    protected IServiceProvider ServiceProvider;
+  protected IServiceProvider ServiceProvider;
 
-    public static IServiceProvider BuildServiceProvider()
-    {
-        var loggerProvider = new ConsoleForwardingLoggerProvider();
-        var loggerFactory = LoggerFactory.Create(builder =>
-      {
-          builder.AddConsole();
-          builder.AddDebug();
-      });
+  public static IServiceProvider BuildServiceProvider()
+  {
+    var loggerProvider = new ConsoleForwardingLoggerProvider();
+    var loggerFactory = LoggerFactory.Create(builder =>
+                                             {
+                                               builder.AddConsole();
+                                               builder.AddDebug();
+                                             });
 
-        AppDomain.CurrentDomain.AssemblyResolve += new CollocatedAssemblyResolver(loggerFactory.CreateLogger("root")).AssemblyResolve;
-        var configuration = new ConfigurationManager();
+    AppDomain.CurrentDomain.AssemblyResolve += new CollocatedAssemblyResolver(loggerFactory.CreateLogger("root")).AssemblyResolve;
+    var configuration = new ConfigurationManager();
 
 
-        configuration.AddEnvironmentVariables();
+    configuration.AddEnvironmentVariables();
 
-        var serviceCollection = new ServiceCollection();
-        serviceCollection.AddLogging(loggingBuilder =>
-            loggingBuilder.AddConsole()
-                          .AddDebug()
-                          .SetMinimumLevel(LogLevel.Debug));
+    var serviceCollection = new ServiceCollection();
+    serviceCollection.AddLogging(loggingBuilder => loggingBuilder.AddConsole()
+                                                                 .AddDebug()
+                                                                 .SetMinimumLevel(LogLevel.Debug));
 
-        serviceCollection.AddAdapter(configuration, nameof(Components.QueueAdaptorSettings), loggerFactory.CreateLogger("root"));
-        return serviceCollection.BuildServiceProvider();
-    }
-    [SetUp]
-    public void Setup()
-    {
-        ServiceProvider = BuildServiceProvider();
-        PullQueueStorage = ServiceProvider.GetRequiredService<IPullQueueStorage>();
-        PushQueueStorage = ServiceProvider.GetRequiredService<IPushQueueStorage>();
-        Options = ServiceProvider.GetRequiredService<Adapters.QueueCommon.Amqp>();
-    }
+    serviceCollection.AddAdapter(configuration,
+                                 nameof(Components.QueueAdaptorSettings),
+                                 loggerFactory.CreateLogger("root"));
+    return serviceCollection.BuildServiceProvider();
+  }
 
-    #region Tests
-    [Test]
-    public void GetQueueStorageInstanceShouldLoad()
-    {
-        Assert.NotNull(PullQueueStorage);
-        Assert.NotNull(PushQueueStorage);
-    }
+  [SetUp]
+  public void Setup()
+  {
+    ServiceProvider  = BuildServiceProvider();
+    PullQueueStorage = ServiceProvider.GetRequiredService<IPullQueueStorage>();
+    PushQueueStorage = ServiceProvider.GetRequiredService<IPushQueueStorage>();
+    Options          = ServiceProvider.GetRequiredService<Adapters.QueueCommon.Amqp>();
+  }
 
-    [Test]
-    public async Task CreatePushQueueStorageShouldSucceed()
-    {
+  #region Tests
 
-        Assert.That((await PushQueueStorage!.Check(HealthCheckTag.Liveness)
-                                                   .ConfigureAwait(false)).Status, Is.Not.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PushQueueStorage.Check(HealthCheckTag.Readiness)
-                                                  .ConfigureAwait(false)).Status, Is.Not.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PushQueueStorage.Check(HealthCheckTag.Startup)
-                                                  .ConfigureAwait(false)).Status, Is.Not.EqualTo(HealthStatus.Healthy));
+  [Test]
+  public void GetQueueStorageInstanceShouldLoad()
+  {
+    Assert.NotNull(PullQueueStorage);
+    Assert.NotNull(PushQueueStorage);
+  }
 
-        await PushQueueStorage.Init(CancellationToken.None)
-                              .ConfigureAwait(false);
+  [Test]
+  public async Task CreatePushQueueStorageShouldSucceed()
+  {
+    Assert.That((await PushQueueStorage!.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PushQueueStorage.Check(HealthCheckTag.Readiness)
+                                       .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PushQueueStorage.Check(HealthCheckTag.Startup)
+                                       .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
 
-        Assert.That((await PushQueueStorage.Check(HealthCheckTag.Liveness)
-                                               .ConfigureAwait(false)).Status, Is.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PushQueueStorage.Check(HealthCheckTag.Readiness)
-                                               .ConfigureAwait(false)).Status, Is.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PushQueueStorage.Check(HealthCheckTag.Startup)
-                                               .ConfigureAwait(false)).Status, Is.EqualTo(HealthStatus.Healthy));
+    await PushQueueStorage.Init(CancellationToken.None)
+                          .ConfigureAwait(false);
 
-    }
-    [Test]
-    public async Task CreatePullQueueStorageShouldSucceed()
-    {
+    Assert.That((await PushQueueStorage.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PushQueueStorage.Check(HealthCheckTag.Readiness)
+                                       .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PushQueueStorage.Check(HealthCheckTag.Startup)
+                                       .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+  }
 
-        Assert.That((await PullQueueStorage!.Check(HealthCheckTag.Liveness)
-                                                   .ConfigureAwait(false)).Status, Is.Not.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PullQueueStorage.Check(HealthCheckTag.Readiness)
-                                                  .ConfigureAwait(false)).Status, Is.Not.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PullQueueStorage.Check(HealthCheckTag.Startup)
-                                                  .ConfigureAwait(false)).Status, Is.Not.EqualTo(HealthStatus.Healthy));
+  [Test]
+  public async Task CreatePullQueueStorageShouldSucceed()
+  {
+    Assert.That((await PullQueueStorage!.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PullQueueStorage.Check(HealthCheckTag.Readiness)
+                                       .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PullQueueStorage.Check(HealthCheckTag.Startup)
+                                       .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
 
-        await PullQueueStorage.Init(CancellationToken.None)
-                              .ConfigureAwait(false);
+    await PullQueueStorage.Init(CancellationToken.None)
+                          .ConfigureAwait(false);
 
-        Assert.That((await PullQueueStorage.Check(HealthCheckTag.Liveness)
-                                               .ConfigureAwait(false)).Status, Is.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PullQueueStorage.Check(HealthCheckTag.Readiness)
-                                               .ConfigureAwait(false)).Status, Is.EqualTo(HealthStatus.Healthy));
-        Assert.That((await PullQueueStorage.Check(HealthCheckTag.Startup)
-                                               .ConfigureAwait(false)).Status, Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PullQueueStorage.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PullQueueStorage.Check(HealthCheckTag.Readiness)
+                                       .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await PullQueueStorage.Check(HealthCheckTag.Startup)
+                                       .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+  }
 
-    }
+  [Test]
+  public async Task PushMessagesAsyncSucceeds()
+  {
+    await PushQueueStorage!.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
 
-    [Test]
-    public async Task PushMessagesAsyncSucceeds()
-    {
-
-        await PushQueueStorage!.Init(CancellationToken.None)
-                               .ConfigureAwait(false);
-
-        var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+    var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+                                          {
                                             {
-                                              {
-                                                "testOptionKey", "testOptionValue"
-                                              },
+                                              "testOptionKey", "testOptionValue"
                                             },
-                                              TimeSpan.FromHours(2),
-                                              2,
-                                              1,
-                                              "testPartition",
-                                              "testApplication",
-                                              "testVersion",
-                                              "testNamespace",
-                                              "testService",
-                                              "testEngineType");
-        var testMessages = new List<MessageData>
-                         {
-                           new("msg1",
-                               "session1",
-                               testTaskOptions),
-                           new("msg2",
-                               "session1",
-                               testTaskOptions),
-                           new("msg3",
-                               "session1",
-                               testTaskOptions),
-                           new("msg4",
-                               "session1",
-                               testTaskOptions),
-                           new("msg5",
-                               "session1",
-                               testTaskOptions),
-                         };
+                                          },
+                                          TimeSpan.FromHours(2),
+                                          2,
+                                          1,
+                                          "testPartition",
+                                          "testApplication",
+                                          "testVersion",
+                                          "testNamespace",
+                                          "testService",
+                                          "testEngineType");
+    var testMessages = new List<MessageData>
+                       {
+                         new("msg1",
+                             "session1",
+                             testTaskOptions),
+                         new("msg2",
+                             "session1",
+                             testTaskOptions),
+                         new("msg3",
+                             "session1",
+                             testTaskOptions),
+                         new("msg4",
+                             "session1",
+                             testTaskOptions),
+                         new("msg5",
+                             "session1",
+                             testTaskOptions),
+                       };
 
-        await PushQueueStorage.PushMessagesAsync(testMessages,
-                                                 Options!.PartitionId,
-                                                 CancellationToken.None)
-                              .ConfigureAwait(false);
+    await PushQueueStorage.PushMessagesAsync(testMessages,
+                                             Options!.PartitionId,
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
+  }
 
-    }
+  [Test]
+  public async Task PullMessagesAsyncSucceedsOnMultipleCalls()
+  {
+    await PushQueueStorage!.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
+    await PullQueueStorage!.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
 
-    [Test]
-    public async Task PullMessagesAsyncSucceedsOnMultipleCalls()
-    {
-
-        await PushQueueStorage!.Init(CancellationToken.None)
-                               .ConfigureAwait(false);
-        await PullQueueStorage!.Init(CancellationToken.None)
-                               .ConfigureAwait(false);
-
-        var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+    var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+                                          {
                                             {
-                                              {
-                                                "testOptionKey", "testOptionValue"
-                                              },
+                                              "testOptionKey", "testOptionValue"
                                             },
-                                              TimeSpan.FromHours(2),
-                                              2,
-                                              1,
-                                              "testPartition",
-                                              "testApplication",
-                                              "testVersion",
-                                              "testNamespace",
-                                              "testService",
-                                              "testEngineType");
-        var testMessages = new List<MessageData>
-                         {
-                           new("msg1",
-                               "session1",
-                               testTaskOptions),
-                           new("msg2",
-                               "session1",
-                               testTaskOptions),
-                           new("msg3",
-                               "session1",
-                               testTaskOptions),
-                           new("msg4",
-                               "session1",
-                               testTaskOptions),
-                           new("msg5",
-                               "session1",
-                               testTaskOptions),
-                         };
-        /* Push 5 messages to the queue to test the pull */
-        await PushQueueStorage.PushMessagesAsync(testMessages,
-                                                 Options!.PartitionId,
-                                                 CancellationToken.None)
-                              .ConfigureAwait(false);
+                                          },
+                                          TimeSpan.FromHours(2),
+                                          2,
+                                          1,
+                                          "testPartition",
+                                          "testApplication",
+                                          "testVersion",
+                                          "testNamespace",
+                                          "testService",
+                                          "testEngineType");
+    var testMessages = new List<MessageData>
+                       {
+                         new("msg1",
+                             "session1",
+                             testTaskOptions),
+                         new("msg2",
+                             "session1",
+                             testTaskOptions),
+                         new("msg3",
+                             "session1",
+                             testTaskOptions),
+                         new("msg4",
+                             "session1",
+                             testTaskOptions),
+                         new("msg5",
+                             "session1",
+                             testTaskOptions),
+                       };
+    /* Push 5 messages to the queue to test the pull */
+    await PushQueueStorage.PushMessagesAsync(testMessages,
+                                             Options!.PartitionId,
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
 
-        /* Pull 3 messages from the queue, their default status being pending means that
-         they should be pushed again to the queue */
-        var messages = PullQueueStorage.PullMessagesAsync(3,
-                                                          CancellationToken.None);
+    /* Pull 3 messages from the queue, their default status being pending means that
+     they should be pushed again to the queue */
+    var messages = PullQueueStorage.PullMessagesAsync(3,
+                                                      CancellationToken.None);
 
-        await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                          .ConfigureAwait(false))
-        {
-            Assert.That(qmh.Status, Is.EqualTo(QueueMessageStatus.Waiting));
-            await qmh.DisposeAsync()
-                     .ConfigureAwait(false);
-        }
-
-        /* Pull 2 messages from the queue and change their status to processing; this means that
-         these two should be treated as dequeued  by the broker and the remaining three
-         as Pending if the test passes */
-        var messages2 = PullQueueStorage.PullMessagesAsync(2,
-                                                           CancellationToken.None);
-
-        await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
-                                           .ConfigureAwait(false))
-        {
-            Assert.That(qmh.Status, Is.EqualTo(QueueMessageStatus.Waiting));
-            qmh.Status = QueueMessageStatus.Processed;
-            await qmh.DisposeAsync()
-                     .ConfigureAwait(false);
-        }
-    }
-
-    [Test]
-    public async Task PullMessagesAsyncSucceeds()
+    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
+                                      .ConfigureAwait(false))
     {
-
-        await PullQueueStorage!.Init(CancellationToken.None)
-                               .ConfigureAwait(false);
-
-        await PushQueueStorage!.Init(CancellationToken.None)
-                               .ConfigureAwait(false);
-
-        var testTaskOptions = new TaskOptions(new Dictionary<string, string>
-                                            {
-                                              {
-                                                "testOptionKey", "testOptionValue"
-                                              },
-                                            },
-                                              TimeSpan.FromHours(2),
-                                              2,
-                                              1,
-                                              "testPartition",
-                                              "testApplication",
-                                              "testVersion",
-                                              "testNamespace",
-                                              "testService",
-                                              "testEngineType");
-        var testMessages = new List<MessageData>
-                         {
-                           new("msg1",
-                               "session1",
-                               testTaskOptions),
-                           new("msg2",
-                               "session1",
-                               testTaskOptions),
-                           new("msg3",
-                               "session1",
-                               testTaskOptions),
-                           new("msg4",
-                               "session1",
-                               testTaskOptions),
-                           new("msg5",
-                               "session1",
-                               testTaskOptions),
-                         };
-        await PushQueueStorage.PushMessagesAsync(testMessages,
-                                                 Options!.PartitionId,
-                                                 CancellationToken.None)
-                              .ConfigureAwait(false);
-
-        var messages = PullQueueStorage.PullMessagesAsync(5,
-                                                          CancellationToken.None);
-
-        await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                          .ConfigureAwait(false))
-        {
-            qmh!.Status = QueueMessageStatus.Processed;
-            await qmh.DisposeAsync()
-                     .ConfigureAwait(false);
-        }
+      Assert.That(qmh.Status,
+                  Is.EqualTo(QueueMessageStatus.Waiting));
+      await qmh.DisposeAsync()
+               .ConfigureAwait(false);
     }
-    #endregion
+
+    /* Pull 2 messages from the queue and change their status to processing; this means that
+     these two should be treated as dequeued  by the broker and the remaining three
+     as Pending if the test passes */
+    var messages2 = PullQueueStorage.PullMessagesAsync(2,
+                                                       CancellationToken.None);
+
+    await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
+                                       .ConfigureAwait(false))
+    {
+      Assert.That(qmh.Status,
+                  Is.EqualTo(QueueMessageStatus.Waiting));
+      qmh.Status = QueueMessageStatus.Processed;
+      await qmh.DisposeAsync()
+               .ConfigureAwait(false);
+    }
+  }
+
+  [Test]
+  public async Task PullMessagesAsyncSucceeds()
+  {
+    await PullQueueStorage!.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
+
+    await PushQueueStorage!.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
+
+    var testTaskOptions = new TaskOptions(new Dictionary<string, string>
+                                          {
+                                            {
+                                              "testOptionKey", "testOptionValue"
+                                            },
+                                          },
+                                          TimeSpan.FromHours(2),
+                                          2,
+                                          1,
+                                          "testPartition",
+                                          "testApplication",
+                                          "testVersion",
+                                          "testNamespace",
+                                          "testService",
+                                          "testEngineType");
+    var testMessages = new List<MessageData>
+                       {
+                         new("msg1",
+                             "session1",
+                             testTaskOptions),
+                         new("msg2",
+                             "session1",
+                             testTaskOptions),
+                         new("msg3",
+                             "session1",
+                             testTaskOptions),
+                         new("msg4",
+                             "session1",
+                             testTaskOptions),
+                         new("msg5",
+                             "session1",
+                             testTaskOptions),
+                       };
+    await PushQueueStorage.PushMessagesAsync(testMessages,
+                                             Options!.PartitionId,
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
+
+    var messages = PullQueueStorage.PullMessagesAsync(5,
+                                                      CancellationToken.None);
+
+    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
+                                      .ConfigureAwait(false))
+    {
+      qmh!.Status = QueueMessageStatus.Processed;
+      await qmh.DisposeAsync()
+               .ConfigureAwait(false);
+    }
+  }
+
+  #endregion
 }
