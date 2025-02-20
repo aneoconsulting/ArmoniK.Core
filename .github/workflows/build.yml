@@ -115,16 +115,11 @@ jobs:
         queue:
           - activemq
           - rabbitmq
-        projects:
-          - Adaptors/Amqp/tests
-        os:
-          - ubuntu-latest
-        include:
-          - queue: rabbitmq091
-            projects: Adaptors/RabbitMQ/tests
-            os: ubuntu-latest
+          - rabbitmq091
+        project:
+          - Base/tests/Queue
       fail-fast: false
-    runs-on: ${{ matrix.os }}
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
@@ -160,24 +155,24 @@ jobs:
         MONITOR_PREFIX="monitor/build/" tools/monitor.sh \
           dotnet build
 
-    - name: Run tests
+    - name: Set environment variables and run dotnet tests
       run: |
-        MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
-          dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+        cd Base/tests/Queue
+         ./retrieve_envvars_and_run_tests.sh ${{ matrix.queue }}
 
     - name: Test Report
       uses: dorny/test-reporter@v1
       if: success() || failure()
       with:
-        name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
-        path: ${{ matrix.projects }}/TestResults/test-results.trx
+        name: Test - ${{ matrix.queue }} ${{ matrix.project }}
+        path: ${{ matrix.project }}/TestResults/test-results.trx
         reporter: dotnet-trx
     - name: Upload monitor profile
       if: always()
       run: |
         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
         export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
+        project="$(echo ${{ matrix.project }} | sed 's:/:_:')"
         tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz
 
   testsWinOnly:
