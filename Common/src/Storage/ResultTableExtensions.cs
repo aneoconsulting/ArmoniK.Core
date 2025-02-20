@@ -137,6 +137,31 @@ public static class ResultTableExtensions
   }
 
   /// <summary>
+  ///   Complete many results in the database
+  /// </summary>
+  /// <param name="resultTable">Interface to manage results</param>
+  /// <param name="sessionId">id of the session containing the results</param>
+  /// <param name="resultId">Id of the result to complete</param>
+  /// <param name="size">Size of the result to complete</param>
+  /// <param name="opaqueId">Opaque unique identifier representing the object</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The new version of the result metadata
+  /// </returns>
+  /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
+  public static async Task CompleteManyResults(this IResultTable                                          resultTable,
+                                               IEnumerable<(string resultId, long size, byte[] opaqueId)> results,
+                                               CancellationToken                                          cancellationToken = default)
+    => await resultTable.BulkUpdateResults(results.Select(r => (r.resultId, new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                                               ResultStatus.Completed)
+                                                                                                          .Set(result => result.OpaqueId,
+                                                                                                               r.opaqueId)
+                                                                                                          .Set(result => result.Size,
+                                                                                                               r.size))),
+                                           cancellationToken)
+                        .ConfigureAwait(false);
+
+  /// <summary>
   ///   Update result
   /// </summary>
   /// <param name="resultTable">Interface to manage results</param>

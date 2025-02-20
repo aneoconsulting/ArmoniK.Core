@@ -208,13 +208,8 @@ public class GrpcResultsService : Results.ResultsBase
                               context.CancellationToken)
                       .ConfigureAwait(false);
 
-    await resultTable_.BulkUpdateResults(results.Select(tuple => (tuple.Item1.ResultId, new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                                                                           ResultStatus.Completed)
-                                                                                                                      .Set(result => result.OpaqueId,
-                                                                                                                           tuple.id)
-                                                                                                                      .Set(result => result.Size,
-                                                                                                                           tuple.Item1.Size))),
-                                         context.CancellationToken)
+    await resultTable_.CompleteManyResults(results.Select(tuple => (tuple.Item1.ResultId, tuple.Item1.Size, tuple.id)),
+                                           context.CancellationToken)
                       .ConfigureAwait(false);
 
     return new CreateResultsResponse
@@ -504,13 +499,8 @@ public class GrpcResultsService : Results.ResultsBase
                                         $"Imported results should be in {ResultStatus.Created} status, invalid results {invalidResults}"));
     }
 
-    await resultTable_.BulkUpdateResults(requests.Select(id => (id.Key, new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                                                           ResultStatus.Completed)
-                                                                                                      .Set(result => result.OpaqueId,
-                                                                                                           id.Value)
-                                                                                                      .Set(result => result.Size,
-                                                                                                           dict[id.Value]))),
-                                         context.CancellationToken)
+    await resultTable_.CompleteManyResults(requests.Select(tuple => (tuple.Key, dict[tuple.Value]!.Value, tuple.Value)),
+                                           context.CancellationToken)
                       .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
