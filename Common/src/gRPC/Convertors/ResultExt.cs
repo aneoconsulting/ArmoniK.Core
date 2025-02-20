@@ -18,6 +18,7 @@
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Core.Common.Storage;
 
+using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
@@ -42,5 +43,6 @@ public static class ResultExt
          OwnerTaskId = result.OwnerTaskId,
          ResultId    = result.ResultId,
          Size        = result.Size,
+         OpaqueId    = ByteString.CopyFrom(result.OpaqueId),
        };
 }

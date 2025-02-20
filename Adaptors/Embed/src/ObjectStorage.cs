@@ -83,4 +83,10 @@ public class ObjectStorage : IObjectStorage
   public Task TryDeleteAsync(IEnumerable<byte[]> ids,
                              CancellationToken   cancellationToken = default)
     => Task.CompletedTask;
+
+  /// <inheritdoc />
+  public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
+                                                        CancellationToken   cancellationToken = default)
+    => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
+                                                                    id => (long?)id.LongLength));
 }

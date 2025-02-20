@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -199,6 +200,20 @@ public class ObjectStorage : IObjectStorage
         .ConfigureAwait(false);
     }
   }
+
+  /// <inheritdoc />
+  public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
+                                                        CancellationToken   cancellationToken = default)
+    => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
+                                                                    id => GetFileSize(Path.Combine(path_,
+                                                                                                   Encoding.UTF8.GetString(id)))));
+
+
+  private static long? GetFileSize(string filename)
+    => File.Exists(filename)
+         ? new FileInfo(filename).Length
+         : null;
+
 
   public Task<bool> TryDeleteAsync(string            key,
                                    CancellationToken cancellationToken = default)

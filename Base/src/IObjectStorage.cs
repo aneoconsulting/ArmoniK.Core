@@ -71,4 +71,15 @@ public interface IObjectStorage : IInitializable
   /// <exception cref="ObjectDataNotFoundException">the key is not found</exception>
   Task TryDeleteAsync(IEnumerable<byte[]> ids,
                       CancellationToken   cancellationToken = default);
+
+  /// <summary>
+  ///   Check if the given keys are existing in the object storage
+  /// </summary>
+  /// <param name="ids">Opaque unique identifiers representing the objects to check</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   A map giving the results size if it exits, null otherwise
+  /// </returns>
+  Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
+                                                 CancellationToken   cancellationToken = default);
 }

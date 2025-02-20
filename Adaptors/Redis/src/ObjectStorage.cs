@@ -152,6 +152,46 @@ public class ObjectStorage : IObjectStorage
                                                       cancellationToken))
                 .ConfigureAwait(false);
 
+  /// <inheritdoc />
+  public async Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
+                                                              CancellationToken   cancellationToken = default)
+    => await ids.ParallelSelect(async id => (id, await ExistsAsync(id,
+                                                                   cancellationToken)
+                                                   .ConfigureAwait(false)))
+                .ToDictionaryAsync(tuple => tuple.id,
+                                   tuple => tuple.Item2,
+                                   cancellationToken)
+                .ConfigureAwait(false);
+
+  private async Task<long?> ExistsAsync(byte[]            id,
+                                        CancellationToken cancellationToken)
+  {
+    var key = Encoding.UTF8.GetString(id);
+
+
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+                  .ConfigureAwait(false);
+
+    if (!value.HasValue)
+    {
+      return null;
+    }
+
+    var valuesCount = int.Parse(value!);
+    var keys = Enumerable.Range(0,
+                                valuesCount)
+                         .Select(index => new RedisKey(objectStorageName_ + key + "_" + index));
+    long count = 0;
+
+    foreach (var redisKey in keys)
+    {
+      count += await PerformActionWithRetry(() => redis_.StringLengthAsync(redisKey))
+                 .ConfigureAwait(false);
+    }
+
+    return count;
+  }
+
   private async Task TryDeleteAsync(byte[]            id,
                                     CancellationToken cancellationToken = default)
   {

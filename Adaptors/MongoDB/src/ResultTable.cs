@@ -369,6 +369,9 @@ public class ResultTable : IResultTable
                                                              cancellationToken)
                                              .ConfigureAwait(false);
 
+    Logger.LogDebug("Bulk update results matching {@updates}",
+                    bulkUpdates);
+
     return updateResult.MatchedCount;
   }
 
