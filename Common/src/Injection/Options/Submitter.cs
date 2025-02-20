@@ -44,4 +44,9 @@ public class Submitter
   ///   default: false
   /// </summary>
   public bool DeletePayload { get; set; } = false;
+
+  /// <summary>
+  ///   Parallelism used in the control plane when possible. Defaults to the number of threads.
+  /// </summary>
+  public int DegreeOfParallelism { get; set; } = 0;
 }

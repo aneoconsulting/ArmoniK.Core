@@ -52,6 +52,7 @@ public class GrpcResultsService : Results.ResultsBase
   private readonly ILogger<GrpcResultsService>                  logger_;
   private readonly FunctionExecutionMetrics<GrpcResultsService> meter_;
   private readonly IObjectStorage                               objectStorage_;
+  private readonly Injection.Options.Submitter                  options_;
   private readonly IPushQueueStorage                            pushQueueStorage_;
   private readonly IResultTable                                 resultTable_;
   private readonly ISessionTable                                sessionTable_;
@@ -63,6 +64,7 @@ public class GrpcResultsService : Results.ResultsBase
                             IObjectStorage                               objectStorage,
                             IPushQueueStorage                            pushQueueStorage,
                             FunctionExecutionMetrics<GrpcResultsService> meter,
+                            Injection.Options.Submitter                  options,
                             ILogger<GrpcResultsService>                  logger)
   {
     logger_           = logger;
@@ -72,6 +74,7 @@ public class GrpcResultsService : Results.ResultsBase
     objectStorage_    = objectStorage;
     pushQueueStorage_ = pushQueueStorage;
     meter_            = meter;
+    options_          = options;
   }
 
   [RequiresPermission(typeof(GrpcResultsService),
@@ -168,54 +171,61 @@ public class GrpcResultsService : Results.ResultsBase
                                                                   ServerCallContext    context)
   {
     using var measure = meter_.CountAndTime();
-    var results = await request.Results.Select(async rc =>
-                                               {
-                                                 var resultId = Guid.NewGuid()
-                                                                    .ToString();
+    var results = await request.Results.ParallelSelect(new ParallelTaskOptions(options_.DegreeOfParallelism),
+                                                       async rc =>
+                                                       {
+                                                         var resultId = Guid.NewGuid()
+                                                                            .ToString();
 
-                                                 var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
-                                                                                                        {
-                                                                                                          ResultId  = resultId,
-                                                                                                          SessionId = request.SessionId,
-                                                                                                        },
-                                                                                                        new List<ReadOnlyMemory<byte>>
-                                                                                                        {
-                                                                                                          rc.Data.Memory,
-                                                                                                        }.ToAsyncEnumerable(),
-                                                                                                        context.CancellationToken)
-                                                                                      .ConfigureAwait(false);
+                                                         var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                                                                {
+                                                                                                                  ResultId  = resultId,
+                                                                                                                  SessionId = request.SessionId,
+                                                                                                                },
+                                                                                                                new List<ReadOnlyMemory<byte>>
+                                                                                                                {
+                                                                                                                  rc.Data.Memory,
+                                                                                                                }.ToAsyncEnumerable(),
+                                                                                                                context.CancellationToken)
+                                                                                              .ConfigureAwait(false);
 
-                                                 return (new Result(request.SessionId,
-                                                                    resultId,
-                                                                    rc.Name,
-                                                                    "",
-                                                                    request.SessionId,
-                                                                    ResultStatus.Created,
-                                                                    new List<string>(),
-                                                                    DateTime.UtcNow,
-                                                                    size,
-                                                                    Array.Empty<byte>()), id);
-                                               })
-                               .WhenAll()
+                                                         return (new Result(request.SessionId,
+                                                                            resultId,
+                                                                            rc.Name,
+                                                                            "",
+                                                                            request.SessionId,
+                                                                            ResultStatus.Created,
+                                                                            new List<string>(),
+                                                                            DateTime.UtcNow,
+                                                                            size,
+                                                                            Array.Empty<byte>()), id);
+                                                       })
+                               .ToListAsync()
                                .ConfigureAwait(false);
 
     await resultTable_.Create(results.ViewSelect(tuple => tuple.Item1),
                               context.CancellationToken)
                       .ConfigureAwait(false);
 
-    var resultList = await results.Select(async r => await resultTable_.CompleteResult(request.SessionId,
-                                                                                       r.Item1.ResultId,
-                                                                                       r.Item1.Size,
-                                                                                       r.id)
-                                                                       .ConfigureAwait(false))
-                                  .WhenAll()
-                                  .ConfigureAwait(false);
+    await resultTable_.BulkUpdateResults(results.Select(tuple => (tuple.Item1.ResultId, new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                                                           ResultStatus.Completed)
+                                                                                                                      .Set(result => result.OpaqueId,
+                                                                                                                           tuple.id)
+                                                                                                                      .Set(result => result.Size,
+                                                                                                                           tuple.Item1.Size))),
+                                         context.CancellationToken)
+                      .ConfigureAwait(false);
 
     return new CreateResultsResponse
            {
              Results =
              {
-               resultList.Select(r => r.ToGrpcResultRaw()),
+               await resultTable_.GetResults(request.SessionId,
+                                             results.Select(tuple => tuple.Item1.ResultId),
+                                             context.CancellationToken)
+                                 .Select(result => result.ToGrpcResultRaw())
+                                 .ToListAsync()
+                                 .ConfigureAwait(false),
              },
            };
   }
