@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -382,5 +383,121 @@ public class GrpcResultsServiceTests
     Assert.That(result.ToArray(),
                 Is.EqualTo(data.SelectMany(x => x.ToArray())
                                .ToArray()));
+  }
+
+  [Test]
+  public async Task ImportDataShouldTriggerTaskSubmission()
+  {
+    var sessionId = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
+                                                                        {
+                                                                          DefaultTaskOption = new TaskOptions
+                                                                                              {
+                                                                                                MaxRetries = 1,
+                                                                                                Priority   = 2,
+                                                                                                MaxDuration = new Duration
+                                                                                                              {
+                                                                                                                Seconds = 500,
+                                                                                                                Nanos   = 0,
+                                                                                                              },
+                                                                                              },
+                                                                        })
+                                                         .SessionId;
+    var resultClient = new Results.ResultsClient(channel_);
+
+    var resultId = resultClient.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                      {
+                                                        SessionId = sessionId,
+                                                        Results =
+                                                        {
+                                                          new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                          {
+                                                            Name = "Result for import",
+                                                          },
+                                                        },
+                                                      })
+                               .Results.Single()
+                               .ResultId;
+
+    var payloadId = resultClient.CreateResults(new CreateResultsRequest
+                                               {
+                                                 SessionId = sessionId,
+                                                 Results =
+                                                 {
+                                                   new CreateResultsRequest.Types.ResultCreate
+                                                   {
+                                                     Name = "payload",
+                                                     Data = ByteString.CopyFromUtf8("Payload data"),
+                                                   },
+                                                 },
+                                               })
+                                .Results.Single()
+                                .ResultId;
+
+    var taskClient = new Tasks.TasksClient(channel_);
+
+    var taskId = taskClient.SubmitTasks(new SubmitTasksRequest
+                                        {
+                                          SessionId = sessionId,
+                                          TaskCreations =
+                                          {
+                                            new SubmitTasksRequest.Types.TaskCreation
+                                            {
+                                              PayloadId = payloadId,
+                                              DataDependencies =
+                                              {
+                                                resultId,
+                                              },
+                                            },
+                                          },
+                                        })
+                           .TaskInfos.Single()
+                           .TaskId;
+
+    var queueStorage = (SimplePushQueueStorage)helper_!.GetRequiredService<IPushQueueStorage>();
+
+    Assert.That(queueStorage.Messages,
+                Is.Empty);
+
+    var objectStorage = helper_!.GetRequiredService<IObjectStorage>();
+
+    var data = new List<ReadOnlyMemory<byte>>
+               {
+                 new(Encoding.ASCII.GetBytes("data for result")),
+                 new(Encoding.ASCII.GetBytes("data for result")),
+               };
+
+    var (id, size) = await objectStorage.AddOrUpdateAsync(new ObjectData
+                                                          {
+                                                            ResultId  = "",
+                                                            SessionId = "",
+                                                          },
+                                                          data.ToAsyncEnumerable())
+                                        .ConfigureAwait(false);
+
+    var resultData = resultClient.ImportResultsData(new ImportResultsDataRequest
+                                                    {
+                                                      SessionId = sessionId,
+                                                      Results =
+                                                      {
+                                                        new ImportResultsDataRequest.Types.ResultOpaqueId
+                                                        {
+                                                          OpaqueId = ByteString.CopyFrom(id),
+                                                          ResultId = resultId,
+                                                        },
+                                                      },
+                                                    })
+                                 .Results.Single();
+
+    Assert.That(resultData.Status,
+                Is.EqualTo(ResultStatus.Completed));
+    Assert.That(resultData.ResultId,
+                Is.EqualTo(resultId));
+    Assert.That(resultData.Size,
+                Is.EqualTo(size));
+    Assert.That(resultData.OpaqueId.ToByteArray(),
+                Is.EqualTo(id));
+
+    Assert.That(queueStorage.Messages,
+                Contains.Item(taskId));
   }
 }
