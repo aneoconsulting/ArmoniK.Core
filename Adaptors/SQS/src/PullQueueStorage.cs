@@ -43,6 +43,7 @@ internal class PullQueueStorage : IPullQueueStorage
 
   private readonly string                     queueName_;
   private readonly Dictionary<string, string> tags_;
+  private readonly int                        waitTimeSeconds_;
   private          bool                       isInitialized_;
   private          string?                    queueUrl_;
 
@@ -57,6 +58,7 @@ internal class PullQueueStorage : IPullQueueStorage
 
     ackDeadlinePeriod_     = options.AckDeadlinePeriod;
     ackExtendDeadlineStep_ = options.AckExtendDeadlineStep;
+    waitTimeSeconds_       = options.WaitTimeSeconds;
   }
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
@@ -72,6 +74,7 @@ internal class PullQueueStorage : IPullQueueStorage
                                                        QueueUrl            = queueUrl_!,
                                                        MaxNumberOfMessages = nbMessages,
                                                        VisibilityTimeout   = ackDeadlinePeriod_,
+                                                       WaitTimeSeconds     = waitTimeSeconds_,
                                                      },
                                                      cancellationToken)
                                 .ConfigureAwait(false);
