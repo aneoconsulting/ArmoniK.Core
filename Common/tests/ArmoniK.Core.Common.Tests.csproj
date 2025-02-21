@@ -31,7 +31,6 @@
   <ItemGroup>
     <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute" />
   </ItemGroup>
-  
   <ItemGroup>
     <ProjectReference Include="..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
     <ProjectReference Include="..\..\Adaptors\RabbitMQ\src\ArmoniK.Core.Adapters.RabbitMQ.csproj" />
