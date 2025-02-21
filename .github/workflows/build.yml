@@ -157,7 +157,7 @@ jobs:
 
     - name: Set environment variables and run dotnet tests
       run: |
-        cd Base/tests/Queue
+        MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.project }} tools/monitor.sh \
          ./retrieve_envvars_and_run_tests.sh ${{ matrix.queue }}
 
     - name: Test Report
