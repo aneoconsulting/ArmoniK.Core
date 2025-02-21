@@ -83,7 +83,7 @@ public static class CertificateValidator
                              chain.ChainStatus);
            return false;
          }
-
+// Hello World ceci est un test
          var cert = new X509Certificate2(certificate);
          chain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
          chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
