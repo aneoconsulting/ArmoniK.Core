@@ -31,7 +31,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-using Action = ArmoniK.Core.Control.IntentLog.Protocol.Messages.Action;
+using Action = System.Action;
 
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
@@ -46,17 +46,17 @@ public class Connection<T> : IDisposable, IAsyncDisposable
   [PublicAPI]
   public Connection(IServerHandler<T> handler,
                     Stream            stream,
-                    System.Action     onClose,
+                    Action            onClose,
                     ILogger?          logger,
                     CancellationToken cancellationToken)
   {
     logger_ = logger ?? NullLogger.Instance;
     cts_    = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    var responseChannel = Channel.CreateBounded<Response>(1);
+    var responseChannel = Channel.CreateBounded<(Response, bool)>(1);
 
-    eventLoop_ = Task.Run(EventLoop);
-
-
+    eventLoop_ = Task.Factory.StartNew(EventLoop,
+                                       TaskCreationOptions.LongRunning)
+                     .Unwrap();
     return;
 
     async Task EventLoop()
@@ -73,7 +73,7 @@ public class Connection<T> : IDisposable, IAsyncDisposable
       var nextRequest  = NextRequest();
       var nextResponse = NextResponse();
 
-      var mapping = new Dictionary<int, Queue<Task<bool>>>();
+      var mapping = new Dictionary<int, Intent<T>>();
 
       while (!cancellationToken.IsCancellationRequested)
       {
@@ -97,56 +97,23 @@ public class Connection<T> : IDisposable, IAsyncDisposable
             nextRequest = NextRequest();
 
             if (!mapping.TryGetValue(request.IntentId,
-                                     out var queue))
+                                     out var intent))
             {
-              queue                     = new Queue<Task<bool>>();
-              mapping[request.IntentId] = queue;
+              intent = new Intent<T>(this,
+                                     handler,
+                                     logger_,
+                                     responseChannel.Writer,
+                                     cancellationToken);
+              mapping[request.IntentId] = intent;
             }
 
-            queue.Enqueue(Task.Run(ProcessRequest));
-
-            async Task<bool> ProcessRequest()
-            {
-              var response = new Response
-                             {
-                               IntentId = request.IntentId,
-                             };
-
-              try
-              {
-                Func<Connection<T>, int, T?, CancellationToken, Task> f = request.Action switch
-                                                                          {
-                                                                            Action.Open    => handler.OpenAsync,
-                                                                            Action.Amend   => handler.AmendAsync,
-                                                                            Action.Close   => handler.CloseAsync,
-                                                                            Action.Abort   => handler.AbortAsync,
-                                                                            Action.Timeout => handler.TimeoutAsync,
-                                                                            Action.Reset   => handler.ResetAsync,
-                                                                            _              => throw new InvalidOperationException(),
-                                                                          };
-
-
-                await f(this,
-                        request.IntentId,
-                        request.Payload,
-                        cancellationToken)
-                  .ConfigureAwait(false);
-              }
-              catch (Exception e)
-              {
-                response.Error = e.Message;
-              }
-
-              await responseChannel.Writer.WriteAsync(response,
-                                                      cancellationToken)
-                                   .ConfigureAwait(false);
-
-              return request.Action.IsFinal();
-            }
+            await intent.RequestAsync(request,
+                                      cancellationToken)
+                        .ConfigureAwait(false);
           }
           else
           {
-            var response = await nextResponse.ConfigureAwait(false);
+            var (response, final) = await nextResponse.ConfigureAwait(false);
 
 
             logger_.LogDebug("Connection {ConnectionId} send response intent {IntentId} -> {@IntentError}",
@@ -156,21 +123,9 @@ public class Connection<T> : IDisposable, IAsyncDisposable
             nextResponse = NextResponse();
 
             if (mapping.TryGetValue(response.IntentId,
-                                    out var queue) && queue.TryDequeue(out var task))
+                                    out var intent) && final && intent.NbRequests == 0)
             {
-              try
-              {
-                var final = await task.ConfigureAwait(false);
-
-                if (final && queue.Count == 0)
-                {
-                  mapping.Remove(response.IntentId);
-                }
-              }
-              catch (Exception e)
-              {
-                response.Error = e.Message;
-              }
+              mapping.Remove(response.IntentId);
             }
 
             await response.SendAsync(str,
@@ -207,29 +162,8 @@ public class Connection<T> : IDisposable, IAsyncDisposable
         }
       }
 
-      foreach (var (id, queue) in mapping)
+      foreach (var (id, intent) in mapping)
       {
-        var final = false;
-        foreach (var task in queue)
-        {
-          try
-          {
-            final = await task.ConfigureAwait(false);
-          }
-          catch (Exception ex)
-          {
-            logger_.LogError(ex,
-                             "Connection {ConnectionId} error, Intent {IntentId} failed",
-                             Id,
-                             id);
-          }
-        }
-
-        if (final)
-        {
-          continue;
-        }
-
         try
         {
           await handler.ResetAsync(this,
@@ -237,6 +171,8 @@ public class Connection<T> : IDisposable, IAsyncDisposable
                                    null,
                                    cancellationToken)
                        .ConfigureAwait(false);
+          await intent.DisposeAsync()
+                      .ConfigureAwait(false);
         }
         catch (Exception ex)
         {
@@ -257,7 +193,7 @@ public class Connection<T> : IDisposable, IAsyncDisposable
       => Request<T>.ReceiveAsync(stream,
                                  cts_.Token);
 
-    Task<Response> NextResponse()
+    Task<(Response, bool)> NextResponse()
       => responseChannel.Reader.ReadAsync(cts_.Token)
                         .AsTask();
   }
