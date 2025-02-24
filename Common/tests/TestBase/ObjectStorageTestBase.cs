@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
@@ -216,6 +217,18 @@ public class ObjectStorageTestBase
                       data);
       Assert.AreEqual(input.Length,
                       size);
+
+
+      var dict = await ObjectStorage!.GetSizesAsync(new[]
+                                                    {
+                                                      id,
+                                                    }!)
+                                     .ConfigureAwait(false);
+
+      Assert.That(dict.Keys.Count,
+                  Is.EqualTo(1));
+      Assert.That(dict[id],
+                  Is.EqualTo(size));
     }
   }
 
@@ -308,7 +321,18 @@ public class ObjectStorageTestBase
 
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
-      Assert.IsTrue(str.SequenceEqual(""));
+      Assert.AreEqual(string.Empty,
+                      str);
+
+      var dict = await ObjectStorage!.GetSizesAsync(new[]
+                                                    {
+                                                      datakeyEmpty_!,
+                                                    })
+                                     .ConfigureAwait(false);
+      Assert.AreEqual(1,
+                      dict.Count);
+      Assert.AreEqual(0,
+                      dict[datakeyEmpty_!]);
     }
   }
 
@@ -334,6 +358,17 @@ public class ObjectStorageTestBase
                                                              listChunks.ToAsyncEnumerable())
                                            .ConfigureAwait(false);
 
+      var dict = await ObjectStorage!.GetSizesAsync(new[]
+                                                    {
+                                                      id,
+                                                    }!)
+                                     .ConfigureAwait(false);
+
+      Assert.That(dict.Keys.Count,
+                  Is.EqualTo(1));
+      Assert.That(dict[id],
+                  Is.EqualTo(size));
+
       await ObjectStorage!.TryDeleteAsync(new[]
                                           {
                                             id,
@@ -345,6 +380,70 @@ public class ObjectStorageTestBase
                                             id,
                                           })
                           .ConfigureAwait(false);
+    }
+  }
+
+
+  [Test]
+  public async Task ExistsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var dict = await ObjectStorage!.GetSizesAsync(new[]
+                                                    {
+                                                      datakey1_,
+                                                      datakey2_,
+                                                    }!)
+                                     .ConfigureAwait(false);
+
+      Assert.That(dict.Keys.Count,
+                  Is.EqualTo(2));
+      Assert.That(dict[datakey1_!],
+                  Is.GreaterThan(0));
+      Assert.That(dict[datakey2_!],
+                  Is.GreaterThan(0));
+    }
+  }
+
+  [Test]
+  public async Task ExistsWithBigDataShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
+      var chunks  = 10240;
+
+      for (var i = 0; i < chunks; i++)
+      {
+        var bytes  = new byte[chunks];
+        var random = new Random();
+        random.NextBytes(bytes);
+        await channel.Writer.WriteAsync(bytes)
+                     .ConfigureAwait(false);
+      }
+
+      channel.Writer.Complete();
+
+      var (key, size) = await ObjectStorage!.AddOrUpdateAsync(new ObjectData
+                                                              {
+                                                                SessionId = "SessionId",
+                                                                ResultId  = "ResultId",
+                                                              },
+                                                              channel.Reader.ReadAllAsync())
+                                            .ConfigureAwait(false);
+
+      var dict = await ObjectStorage!.GetSizesAsync(new[]
+                                                    {
+                                                      key,
+                                                    }!)
+                                     .ConfigureAwait(false);
+
+      Assert.That(dict.Keys.Count,
+                  Is.EqualTo(1));
+      Assert.That(dict[key],
+                  Is.EqualTo(size));
+      Assert.That(dict[key],
+                  Is.EqualTo(size));
     }
   }
 }

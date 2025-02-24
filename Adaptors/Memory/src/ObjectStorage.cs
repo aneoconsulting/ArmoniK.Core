@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -50,6 +51,7 @@ public class ObjectStorage : IObjectStorage
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
 
+  /// <inheritdoc />
   public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
@@ -70,6 +72,7 @@ public class ObjectStorage : IObjectStorage
     return (Encoding.UTF8.GetBytes(key), array.Count);
   }
 
+  /// <inheritdoc />
 #pragma warning disable CS1998
   public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[] id,
 #pragma warning restore CS1998
@@ -88,6 +91,7 @@ public class ObjectStorage : IObjectStorage
     }
   }
 
+  /// <inheritdoc />
   public Task TryDeleteAsync(IEnumerable<byte[]> ids,
                              CancellationToken   cancellationToken = default)
   {
@@ -100,5 +104,25 @@ public class ObjectStorage : IObjectStorage
     }
 
     return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
+  public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
+                                                        CancellationToken   cancellationToken = default)
+    => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
+                                                                    Exists));
+
+
+  private long? Exists(byte[] id)
+  {
+    var key = Encoding.UTF8.GetString(id);
+
+    if (store_.TryGetValue(key,
+                           out var value))
+    {
+      return value.LongLength;
+    }
+
+    return null;
   }
 }
