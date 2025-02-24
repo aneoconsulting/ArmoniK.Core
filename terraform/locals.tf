@@ -32,3 +32,7 @@ locals {
   partition_list      = { for i in local.partitions : i => merge(var.partition_data, { _id = "${var.partition_data._id}${i}" }) }
   polling_agent_names = toset([for v in module.compute_plane : v.polling_agent_name])
 }
+resource "local_file" "queue_env" {
+  filename = "${path.root}/generated/queue_env.sh"
+  content  = join("\n", [for k, v in local.queue.generated_env_vars : "export ${k}=${v}"])
+}

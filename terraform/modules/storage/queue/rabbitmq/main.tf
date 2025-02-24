@@ -10,7 +10,7 @@ resource "docker_container" "queue" {
   networks_advanced {
     name = var.network
   }
-  env = local.generated_env
+
   ports {
     internal = 5672
     external = var.exposed_ports.amqp_connector

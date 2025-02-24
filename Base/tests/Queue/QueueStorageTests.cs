@@ -54,6 +54,33 @@ public class QueueStorageTests
                                              });
 
     AppDomain.CurrentDomain.AssemblyResolve += new CollocatedAssemblyResolver(loggerFactory.CreateLogger("root")).AssemblyResolve;
+    var className = Environment.GetEnvironmentVariable("Components__QueueAdaptorSettings__ClassName");
+
+    var adapterAbsolutePath = string.Empty;
+
+    // Here we modify the AdaptorAbsolutePath based on the ClassName 
+    switch (className)
+    {
+      case "ArmoniK.Core.Adapters.Amqp.QueueBuilder":
+        adapterAbsolutePath = "../../../../../../Adaptors/Amqp/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.Amqp.dll";
+        break;
+
+      case "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder":
+        adapterAbsolutePath = "../../../../../../Adaptors/RabbitMQ/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.RabbitMQ.dll";
+        break;
+
+      default:
+        throw new InvalidOperationException($"Unknown ClassName: {className}");
+    }
+
+    if (adapterAbsolutePath != null)
+    {
+      Environment.SetEnvironmentVariable("Components__QueueAdaptorSettings__AdapterAbsolutePath",
+                                         adapterAbsolutePath);
+    }
+
+    Environment.SetEnvironmentVariable("Amqp__PartitionId",
+                                       "TestPartition");
     var configuration = new ConfigurationManager();
 
 
@@ -63,7 +90,6 @@ public class QueueStorageTests
     serviceCollection.AddLogging(loggingBuilder => loggingBuilder.AddConsole()
                                                                  .AddDebug()
                                                                  .SetMinimumLevel(LogLevel.Debug));
-
     serviceCollection.AddAdapter(configuration,
                                  nameof(Components.QueueAdaptorSettings),
                                  loggerFactory.CreateLogger("root"));
