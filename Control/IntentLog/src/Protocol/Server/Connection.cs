@@ -91,35 +91,54 @@ public class Connection<T> : IDisposable, IAsyncDisposable
             logger_.LogDebug("Connection {ConnectionId} received request {IntentId}:{IntentAction}:{@IntentPayload}",
                              Id,
                              request.IntentId,
-                             request.Action,
+                             request.Type,
                              request.Payload);
 
             nextRequest = NextRequest();
 
-            if (!mapping.TryGetValue(request.IntentId,
-                                     out var intent))
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (request.Type)
             {
-              intent = new Intent<T>(this,
-                                     handler,
-                                     logger_,
-                                     responseChannel.Writer,
-                                     cancellationToken);
-              mapping[request.IntentId] = intent;
-            }
+              case Request<T>.RequestType.Ping:
+                await new Response
+                  {
+                    IntentId = request.IntentId,
+                    Type     = Response.ResponseType.Pong,
+                    Payload  = request.Payload,
+                  }.SendAsync(str,
+                              cancellationToken)
+                   .ConfigureAwait(false);
+                break;
+              case Request<T>.RequestType.Pong:
+                break;
+              default:
+                if (!mapping.TryGetValue(request.IntentId,
+                                         out var intent))
+                {
+                  intent = new Intent<T>(this,
+                                         handler,
+                                         logger_,
+                                         responseChannel.Writer,
+                                         cancellationToken);
+                  mapping[request.IntentId] = intent;
+                }
 
-            await intent.RequestAsync(request,
-                                      cancellationToken)
-                        .ConfigureAwait(false);
+                await intent.RequestAsync(request,
+                                          cancellationToken)
+                            .ConfigureAwait(false);
+                break;
+            }
           }
           else
           {
             var (response, final) = await nextResponse.ConfigureAwait(false);
 
 
-            logger_.LogDebug("Connection {ConnectionId} send response intent {IntentId} -> {@IntentError}",
+            logger_.LogDebug("Connection {ConnectionId} send response intent {IntentId}:{IntentStatus} -> {@IntentError}",
                              Id,
                              response.IntentId,
-                             response.Error);
+                             response.Type,
+                             response.Payload);
             nextResponse = NextResponse();
 
             if (mapping.TryGetValue(response.IntentId,

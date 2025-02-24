@@ -31,8 +31,6 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-using Action = ArmoniK.Core.Control.IntentLog.Protocol.Messages.Action;
-
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Client;
 
 [PublicAPI]
@@ -110,17 +108,43 @@ public class Client<T> : IDisposable, IAsyncDisposable
           else
           {
             var response = await nextResponse.ConfigureAwait(false);
+
+            logger_.LogDebug("Client received response intent {IntentId}:{IntentStatus} -> {@IntentError}",
+                             response.IntentId,
+                             response.Type,
+                             response.Payload);
+
             nextResponse = NextResponse();
 
-            if (mapping.TryGetValue(response.IntentId,
-                                    out var queue) && queue.TryDequeue(out var tcs))
+            // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
+            switch (response.Type)
             {
-              tcs.TrySetResult(response);
-            }
-            else
-            {
-              logger_.LogError("Client error: Received incorrect intent ID from server: {IntentId}",
-                               response.IntentId);
+              case Response.ResponseType.Ping:
+                await new Request<T>
+                  {
+                    IntentId = response.IntentId,
+                    Type     = Request<T>.RequestType.Pong,
+                    Payload  = (T?)response.Payload,
+                  }.SendAsync(str,
+                              cancellationToken)
+                   .ConfigureAwait(false);
+                break;
+              case Response.ResponseType.Pong:
+                break;
+              default:
+
+                if (mapping.TryGetValue(response.IntentId,
+                                        out var queue) && queue.TryDequeue(out var tcs))
+                {
+                  tcs.TrySetResult(response);
+                }
+                else
+                {
+                  logger_.LogError("Client error: Received incorrect intent ID from server: {IntentId}",
+                                   response.IntentId);
+                }
+
+                break;
             }
           }
         }
@@ -208,7 +232,7 @@ public class Client<T> : IDisposable, IAsyncDisposable
 
                {
                  IntentId = id,
-                 Action   = Action.Open,
+                 Type     = Request<T>.RequestType.Open,
                  Payload  = obj,
                },
                cancellationToken)
@@ -224,7 +248,7 @@ public class Client<T> : IDisposable, IAsyncDisposable
   {
     logger_.LogDebug("Calling intent: {IntentId}:{IntentAction}:{@IntentPayload}",
                      request.IntentId,
-                     request.Action,
+                     request.Type,
                      request.Payload);
     var tcs = new TaskCompletionSource<Response>();
     await requests_.Writer.WriteAsync((request, tcs),
@@ -237,18 +261,18 @@ public class Client<T> : IDisposable, IAsyncDisposable
 
     logger_.LogDebug("Called intent: {IntentId}:{IntentAction}:{@IntentPayload} -> {@IntentError}",
                      request.IntentId,
-                     request.Action,
+                     request.Type,
                      request.Payload,
-                     response.Error);
+                     response.Payload);
 
-    switch (response.Error)
+    switch (response.Payload)
     {
       case null:
         break;
       case Exception e:
         throw e;
       default:
-        throw new Exception($"Unknown response: {response.Error}");
+        throw new Exception($"Unknown response: {response.Payload}");
     }
   }
 

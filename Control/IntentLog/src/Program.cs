@@ -102,13 +102,12 @@ internal class Program
 
     await using var intent = await client.OpenAsync("pouet")
                                          .ConfigureAwait(false);
+    intent.AbortOnDispose("Abort");
     Console.WriteLine("Opened intent");
 
     await intent.AmendAsync("plop")
                 .ConfigureAwait(false);
     Console.WriteLine("Amended intent");
-
-    await Task.Delay(100000);
   }
 
   private static async Task RunServer(ILoggerFactory loggerFactory)

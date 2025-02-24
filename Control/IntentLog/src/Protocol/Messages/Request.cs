@@ -24,26 +24,66 @@ using MessagePack;
 
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 
-[MessagePackObject]
 public class Request<T>
   where T : class
 {
+  public enum RequestType
+  {
+    /// <summary>
+    ///   Ping
+    /// </summary>
+    Ping = 0,
+
+    /// <summary>
+    ///   Pong
+    /// </summary>
+    Pong = 1,
+
+    /// <summary>
+    ///   Open a new intent
+    /// </summary>
+    Open = 2,
+
+    /// <summary>
+    ///   Amend a previously opened intent
+    /// </summary>
+    Amend = 3,
+
+    /// <summary>
+    ///   Close with success a previously opened intent
+    /// </summary>
+    Close = 4,
+
+    /// <summary>
+    ///   Close with error a previously opened intent
+    /// </summary>
+    Abort = 5,
+
+    /// <summary>
+    ///   Client has timed out
+    /// </summary>
+    Timeout = 6,
+
+    /// <summary>
+    ///   Client has forcibly closed the intent
+    /// </summary>
+    Reset = 7,
+  }
+
+
   /// <summary>
   ///   ID of the intent within the connection
   /// </summary>
-  [Key(0)]
   public int IntentId { get; set; }
 
   /// <summary>
-  ///   Action on the intent (eg: Open, Close)
+  ///   Type of the request (eg: Open, Close)
   /// </summary>
-  [Key(1)]
-  public Action Action { get; set; }
+  public RequestType Type { get; set; }
 
   /// <summary>
   ///   Data related to the payload
   /// </summary>
-  [Key(2)]
   public T? Payload { get; set; }
 
   public async Task SendAsync(Stream            stream,
@@ -56,7 +96,7 @@ public class Request<T>
     BitConverter.GetBytes(IntentId)
                 .CopyTo(msg.AsSpan(0,
                                    4));
-    BitConverter.GetBytes((int)Action)
+    BitConverter.GetBytes((int)Type)
                 .CopyTo(msg.AsSpan(4,
                                    4));
     BitConverter.GetBytes(size)
@@ -81,8 +121,8 @@ public class Request<T>
 
     var intentId = BitConverter.ToInt32(header,
                                         0);
-    var action = BitConverter.ToInt32(header,
-                                      4);
+    var requestType = BitConverter.ToInt32(header,
+                                           4);
     var size = BitConverter.ToInt32(header,
                                     8);
     var body = new byte[size];
@@ -96,8 +136,15 @@ public class Request<T>
     return new Request<T>
            {
              IntentId = intentId,
-             Action   = (Action)action,
+             Type     = (RequestType)requestType,
              Payload  = payload,
            };
   }
+}
+
+public static class RequestTypeExtensions
+{
+  public static bool IsFinal<T>(this Request<T>.RequestType type)
+    where T : class
+    => type is Request<T>.RequestType.Close or Request<T>.RequestType.Abort or Request<T>.RequestType.Timeout or Request<T>.RequestType.Reset;
 }

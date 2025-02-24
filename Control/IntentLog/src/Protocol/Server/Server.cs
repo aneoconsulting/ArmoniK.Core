@@ -48,7 +48,7 @@ public class Server<T> : IDisposable, IAsyncDisposable
     cts_    = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
     logger_ = logger ?? NullLogger<Server<T>>.Instance;
 
-    var ipHostInfo = Dns.Resolve(options?.Endpoint ?? Dns.GetHostName());
+    var ipHostInfo = Dns.GetHostEntry(options?.Endpoint ?? Dns.GetHostName());
     var ipAddress  = ipHostInfo.AddressList[0];
     var localEndPoint = new IPEndPoint(ipAddress,
                                        options?.Port ?? 1337);
