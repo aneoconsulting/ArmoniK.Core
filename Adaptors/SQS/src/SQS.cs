@@ -54,4 +54,10 @@ internal class SQS
   ///   Time  in seconds between two modifications of acknowledgment deadline
   /// </summary>
   public int AckExtendDeadlineStep { get; set; } = 60;
+
+  /// <summary>
+  ///   SQS long polling wait time in seconds (1-20).
+  ///   Set to 0 in order to disable long polling.
+  /// </summary>
+  public int WaitTimeSeconds { get; set; } = 20;
 }
