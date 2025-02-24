@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
@@ -238,15 +239,26 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
     try
     {
-      var opaqueIds = await resultTable_.GetResults(result => request.ResultId.Contains(result.ResultId),
-                                                    result => result.OpaqueId,
-                                                    context.CancellationToken)
-                                        .ToListAsync(context.CancellationToken)
-                                        .ConfigureAwait(false);
+      await foreach (var ids in resultTable_.GetResults(result => request.ResultId.Contains(result.ResultId),
+                                                        result => result.OpaqueId,
+                                                        context.CancellationToken)
+                                            .ToChunksAsync(500,
+                                                           Timeout.InfiniteTimeSpan,
+                                                           context.CancellationToken)
+                                            .ConfigureAwait(false))
+      {
+        await objectStorage_.TryDeleteAsync(ids,
+                                            context.CancellationToken)
+                            .ConfigureAwait(false);
+      }
 
-      await objectStorage_.TryDeleteAsync(opaqueIds,
-                                          context.CancellationToken)
-                          .ConfigureAwait(false);
+      await resultTable_.UpdateManyResults(result => request.ResultId.Contains(result.ResultId),
+                                           new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                              ResultStatus.DeletedData)
+                                                                         .Set(result => result.OpaqueId,
+                                                                              Array.Empty<byte>()),
+                                           context.CancellationToken)
+                        .ConfigureAwait(false);
 
       return new DeleteResultsDataResponse
              {
