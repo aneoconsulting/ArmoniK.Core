@@ -62,7 +62,9 @@ public class Server<T> : IDisposable, IAsyncDisposable
     socket.Bind(localEndPoint);
     socket.Listen(100);
 
-    acceptLoop_ = Task.Run(AcceptLoop);
+    acceptLoop_ = Task.Factory.StartNew(AcceptLoop,
+                                        TaskCreationOptions.LongRunning)
+                      .Unwrap();
     return;
 
     async Task AcceptLoop()

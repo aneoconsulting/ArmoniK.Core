@@ -50,10 +50,12 @@ public class Client<T> : IDisposable, IAsyncDisposable
                 ILogger<Client<T>>? logger            = null,
                 CancellationToken   cancellationToken = default)
   {
-    cts_       = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    requests_  = Channel.CreateBounded<(Request<T>, TaskCompletionSource<Response>)>(1);
-    logger_    = logger ?? NullLogger<Client<T>>.Instance;
-    eventLoop_ = Task.Run(EventLoop);
+    cts_      = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    requests_ = Channel.CreateBounded<(Request<T>, TaskCompletionSource<Response>)>(1);
+    logger_   = logger ?? NullLogger<Client<T>>.Instance;
+    eventLoop_ = Task.Factory.StartNew(EventLoop,
+                                       TaskCreationOptions.LongRunning)
+                     .Unwrap();
 
     return;
 

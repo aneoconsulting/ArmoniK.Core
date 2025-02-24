@@ -107,6 +107,8 @@ internal class Program
     await intent.AmendAsync("plop")
                 .ConfigureAwait(false);
     Console.WriteLine("Amended intent");
+
+    await Task.Delay(100000);
   }
 
   private static async Task RunServer(ILoggerFactory loggerFactory)
