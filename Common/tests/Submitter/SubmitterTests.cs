@@ -17,17 +17,13 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Options;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
-using ArmoniK.Core.Adapters.Memory;
-using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
@@ -35,20 +31,11 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
-
-using EphemeralMongo;
 
 using Google.Protobuf.WellKnownTypes;
 
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-
-using MongoDB.Bson;
-using MongoDB.Driver;
 
 using NUnit.Framework;
 
@@ -65,95 +52,16 @@ public class SubmitterTests
   [SetUp]
   public async Task SetUp()
   {
-    var logger = NullLogger.Instance;
-    var options = new MongoRunnerOptions
-                  {
-                    UseSingleNodeReplicaSet = false,
-#pragma warning disable CA2254 // log inputs should be constant
-                    StandardOuputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger = line => logger.LogError(line),
-#pragma warning restore CA2254
-                  };
-
-    runner_ = MongoRunner.Run(options);
-    client_ = new MongoClient(runner_.ConnectionString);
-
-    // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string?> minimalConfig = new()
-                                                {
-                                                  {
-                                                    "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                  },
-                                                  {
-                                                    "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
-                                                  },
-                                                  {
-                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-                                                    DatabaseName
-                                                  },
-                                                  {
-                                                    $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
-                                                    "00:00:10"
-                                                  },
-                                                  {
-                                                    $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "1"
-                                                  },
-                                                  {
-                                                    $"{Injection.Options.Submitter.SettingSection}:{nameof(Injection.Options.Submitter.DefaultPartition)}",
-                                                    DefaultPartition
-                                                  },
-                                                };
-
-    Console.WriteLine(minimalConfig.ToJson());
-
-    var loggerProvider = new ConsoleForwardingLoggerProvider();
-    var loggerFactory  = new LoggerFactory();
-    loggerFactory.AddProvider(loggerProvider);
-
-    var configuration = new ConfigurationManager();
-    configuration.AddInMemoryCollection(minimalConfig);
-
-    var services = new ServiceCollection();
-
     pushQueueStorage_ = new SimplePushQueueStorage();
 
-    services.AddMongoStorages(configuration,
-                              logger)
-            .AddSingleton(ActivitySource)
-            .AddSingleton<IMongoClient>(client_)
-            .AddLogging(builder => builder.AddProvider(loggerProvider))
-            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-            .AddSingleton<IObjectStorage, ObjectStorage>()
-            .AddOption<Injection.Options.Submitter>(configuration,
-                                                    Injection.Options.Submitter.SettingSection)
-            .AddSingleton<IPushQueueStorage>(pushQueueStorage_);
+    provider_ = new TestDatabaseProvider(collection => collection.AddSingleton<IPushQueueStorage>(pushQueueStorage_)
+                                                                 .AddSingleton<ISubmitter, gRPC.Services.Submitter>());
 
-    var provider = services.BuildServiceProvider(new ServiceProviderOptions
-                                                 {
-                                                   ValidateOnBuild = true,
-                                                 });
-
-    submitter_ = provider.GetRequiredService<ISubmitter>();
-
-    var objectStorage = provider.GetRequiredService<IObjectStorage>();
-    await objectStorage.Init(CancellationToken.None)
-                       .ConfigureAwait(false);
-
-    resultTable_ = provider.GetRequiredService<IResultTable>();
-    await resultTable_.Init(CancellationToken.None)
-                      .ConfigureAwait(false);
-
-    sessionTable_ = provider.GetRequiredService<ISessionTable>();
-    await sessionTable_.Init(CancellationToken.None)
-                       .ConfigureAwait(false);
-
-    taskTable_ = provider.GetRequiredService<ITaskTable>();
-    await taskTable_.Init(CancellationToken.None)
-                    .ConfigureAwait(false);
-
-    partitionTable_ = provider.GetRequiredService<IPartitionTable>();
-    await partitionTable_.Init(CancellationToken.None)
-                         .ConfigureAwait(false);
+    partitionTable_ = provider_.GetRequiredService<IPartitionTable>();
+    sessionTable_   = provider_.GetRequiredService<ISessionTable>();
+    submitter_      = provider_.GetRequiredService<ISubmitter>();
+    taskTable_      = provider_.GetRequiredService<ITaskTable>();
+    resultTable_    = provider_.GetRequiredService<IResultTable>();
 
     await partitionTable_.CreatePartitionsAsync(new[]
                                                 {
@@ -170,28 +78,23 @@ public class SubmitterTests
 
   [TearDown]
   public virtual void TearDown()
-  {
-    client_ = null;
-    runner_?.Dispose();
-    submitter_ = null;
-  }
+    => provider_?.Dispose();
 
-  private                 ISubmitter?      submitter_;
-  private                 IMongoRunner?    runner_;
-  private                 MongoClient?     client_;
-  private const           string           DatabaseName     = "ArmoniK_TestDB";
-  private static readonly string           ExpectedOutput1  = "ExpectedOutput1";
-  private static readonly string           ExpectedOutput2  = "ExpectedOutput2";
-  private static readonly string           ExpectedOutput3  = "ExpectedOutput3";
-  private static readonly string           ExpectedOutput4  = "ExpectedOutput4";
-  private static readonly string           ExpectedOutput5  = "ExpectedOutput5";
-  private static readonly string           ExpectedOutput6  = "ExpectedOutput6";
-  private static readonly string           DefaultPartition = "DefaultPartition";
-  private static readonly ActivitySource   ActivitySource   = new("ArmoniK.Core.Common.Tests.Submitter");
-  private                 ISessionTable?   sessionTable_;
-  private                 ITaskTable?      taskTable_;
-  private                 IPartitionTable? partitionTable_;
-  private                 IResultTable?    resultTable_;
+  private                 ISubmitter?             submitter_;
+  private static readonly string                  ExpectedOutput1  = "ExpectedOutput1";
+  private static readonly string                  ExpectedOutput2  = "ExpectedOutput2";
+  private static readonly string                  ExpectedOutput3  = "ExpectedOutput3";
+  private static readonly string                  ExpectedOutput4  = "ExpectedOutput4";
+  private static readonly string                  ExpectedOutput5  = "ExpectedOutput5";
+  private static readonly string                  ExpectedOutput6  = "ExpectedOutput6";
+  private static readonly string                  DefaultPartition = "DefaultPartition";
+  private                 ISessionTable?          sessionTable_;
+  private                 ITaskTable?             taskTable_;
+  private                 IPartitionTable?        partitionTable_;
+  private                 IResultTable?           resultTable_;
+  private                 SimplePushQueueStorage? pushQueueStorage_;
+  private                 TestDatabaseProvider?   provider_;
+
 
   public static readonly TaskOptions DefaultTaskOptionsPart1 = new()
                                                                {
@@ -200,8 +103,6 @@ public class SubmitterTests
                                                                  Priority    = 1,
                                                                  PartitionId = "part1",
                                                                };
-
-  private SimplePushQueueStorage pushQueueStorage_;
 
   private static async Task<(SessionData session, string taskCreating, string taskSubmitted)> InitSubmitter(ISubmitter        submitter,
                                                                                                             IPartitionTable   partitionTable,
@@ -1000,8 +901,8 @@ public class SubmitterTests
 
     await taskTable_!.UpdateOneTask(taskCompleted,
                                     null,
-                                    new Storage.UpdateDefinition<TaskData>().Set(data => data.Status,
-                                                                                 TaskStatus.Dispatched))
+                                    new UpdateDefinition<TaskData>().Set(data => data.Status,
+                                                                         TaskStatus.Dispatched))
                      .ConfigureAwait(false);
 
     Assert.That(taskCompleted,

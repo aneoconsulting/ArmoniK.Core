@@ -67,6 +67,12 @@ internal class MongoDatabaseProvider : IDisposable
                     ReplicaSetSetupTimeout = TimeSpan.FromSeconds(30),
                   };
 
+    var binDir = Environment.GetEnvironmentVariable("EphemeralMongo__BinaryDirectory");
+    if (!string.IsNullOrEmpty(binDir))
+    {
+      options.BinaryDirectory = binDir;
+    }
+
     runner_ = MongoRunner.Run(options);
     var settings = MongoClientSettings.FromUrl(new MongoUrl(runner_.ConnectionString));
 
