@@ -271,7 +271,7 @@ build imageTag dockerFile target="":
   fi
   push_parameter=""
   if [ "{{push}}" == "true" ]; then
-    push_parameter="--push --provenance true --sbom true"
+    push_parameter="--push --provenance true"
   fi
   load_parameter=""
   if [ "{{load}}" == "true" ]; then
