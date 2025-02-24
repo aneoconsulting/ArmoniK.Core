@@ -328,7 +328,6 @@ public sealed class TaskHandler : IAsyncDisposable
           messageHandler_.Status = QueueMessageStatus.Postponed;
           return AcquisitionStatus.TaskIsPending;
         case TaskStatus.Submitted:
-          break;
         case TaskStatus.Dispatched:
           break;
         case TaskStatus.Error:
@@ -371,7 +370,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                                             CancellationToken.None)
                                                                     .ConfigureAwait(false);
 
-          logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId} {otherOwnerPodName},, treating it {processing}",
+          logger_.LogInformation("Task {TaskId} already acquired by {OtherOwnerPodId} {OtherOwnerPodName}, is still processing elsewhere {TaskProcessingElsewhere}",
                                   taskData_.TaskId,
                                   taskData_.OwnerPodId,
                                   taskData_.OwnerPodName,
@@ -597,12 +596,12 @@ public sealed class TaskHandler : IAsyncDisposable
           taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
-          logger_.LogInformation("Task is not running on the other polling agent, status : {status}",
-                                 taskData_.Status);
+          logger_.LogInformation("Task {TaskId} is not running on the other polling agent, status : {Status}",
+                                 taskData_.TaskId, taskData_.Status);
 
           if (taskData_.Status is TaskStatus.Submitted)
           {
-            logger_.LogInformation("Task {task} was dispatched on another pod who crashed, but has been released during acquirement",
+            logger_.LogInformation("Task {TaskId} was dispatched on another pod who crashed, but has been released during acquirement",
                                    taskData_.TaskId);
             messageHandler_.Status = QueueMessageStatus.Postponed;
             // TODO: AcquistionStatus TaskSubmittedButPreviouslyDispatched must be tested
@@ -664,6 +663,9 @@ public sealed class TaskHandler : IAsyncDisposable
 
         // if the task is running elsewhere, then the message is duplicated so we remove it from the queue
         // and do not acquire the task
+
+        logger_.LogInformation("The task {TaskId} with status {TaskStatus} is running on another Pod {OwnerPodId} will be set its QueueMessageStatus=Processed",
+                               taskData_.TaskId, taskData_.Status, taskData_.OwnerPodId);
         messageHandler_.Status = QueueMessageStatus.Processed;
         return AcquisitionStatus.AcquisitionFailedMessageDuplicated;
       }
@@ -729,17 +731,29 @@ public sealed class TaskHandler : IAsyncDisposable
                                  CancellationToken.None)
                     .ConfigureAwait(false);
 
+    TaskStatus         taskStatusToUsed;
+    QueueMessageStatus queueMessageStatusToUsed;
+    if (paused)
+    {
+      taskStatusToUsed = TaskStatus.Paused;
+      queueMessageStatusToUsed = QueueMessageStatus.Processed;
+    }
+    else
+    {
+      taskStatusToUsed = TaskStatus.Submitted;
+      queueMessageStatusToUsed = QueueMessageStatus.Postponed;
+    }
+
     // Propagate submitted status to TaskHandler
     taskData_ = taskData_ with
                 {
-                  Status = paused
-                             ? TaskStatus.Paused
-                             : TaskStatus.Submitted,
+                  Status = taskStatusToUsed
                 };
 
-    messageHandler_.Status = paused
-                               ? QueueMessageStatus.Processed
-                               : QueueMessageStatus.Postponed;
+    messageHandler_.Status = queueMessageStatusToUsed;
+
+    logger_.LogInformation("Releasing task {TaskId} by setting its status {TaskStatus} to  and setting message to {MessageQueueStatus}",
+                           taskData_.TaskId, taskStatusToUsed, queueMessageStatusToUsed);
   }
 
   /// <summary>
