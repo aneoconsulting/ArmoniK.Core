@@ -122,21 +122,20 @@ public class Client<T> : IDisposable, IAsyncDisposable
             }
           }
         }
-        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-        {
-          // Client has been stopped
-          break;
-        }
-        catch (EndOfStreamException)
-        {
-          // Server connection has been closed
-          break;
-        }
         catch (Exception ex)
         {
           exception = ex;
 
-          if (!cancellationToken.IsCancellationRequested && ex is not EndOfStreamException)
+          if (!cancellationToken.IsCancellationRequested && ex is not EndOfStreamException and not IOException
+                                                                                                   {
+                                                                                                     InnerException: SocketException
+                                                                                                                     {
+                                                                                                                       SocketErrorCode: SocketError.ConnectionReset or
+                                                                                                                                        SocketError.NetworkReset or
+                                                                                                                                        SocketError.HostDown or
+                                                                                                                                        SocketError.TimedOut,
+                                                                                                                     },
+                                                                                                   })
           {
             logger_.LogError(ex,
                              "Client error");
@@ -153,7 +152,7 @@ public class Client<T> : IDisposable, IAsyncDisposable
       {
         foreach (var tcs in queue)
         {
-          tcs.TrySetException(exception!);
+          tcs.TrySetException(exception ?? new OperationCanceledException(cancellationToken));
         }
       }
     }
@@ -247,7 +246,7 @@ public class Client<T> : IDisposable, IAsyncDisposable
       case Exception e:
         throw e;
       default:
-        throw new Exception($"Unknown response: {response}");
+        throw new Exception($"Unknown response: {response.Error}");
     }
   }
 
@@ -262,6 +261,10 @@ public class Client<T> : IDisposable, IAsyncDisposable
 
     var socket = new Socket(SocketType.Stream,
                             ProtocolType.Tcp);
+    socket.SetSocketOption(SocketOptionLevel.Socket,
+                           SocketOptionName.ReuseAddress,
+                           true);
+
 
     logger?.LogInformation("Client created {@Endpoint}",
                            socket.LocalEndPoint);

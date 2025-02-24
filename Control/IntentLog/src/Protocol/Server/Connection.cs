@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -183,6 +184,15 @@ public class Connection<T> : IDisposable, IAsyncDisposable
           break;
         }
         catch (EndOfStreamException)
+        {
+          // Connection has been closed by client
+          break;
+        }
+        catch (IOException ioException) when (ioException.InnerException is SocketException
+                                                                            {
+                                                                              SocketErrorCode: SocketError.ConnectionReset or SocketError.NetworkReset or
+                                                                                               SocketError.HostDown or SocketError.TimedOut,
+                                                                            })
         {
           // Connection has been closed by client
           break;
