@@ -24,36 +24,64 @@ using MessagePack;
 
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 
-[MessagePackObject]
 public class Response
 {
+  public enum ResponseType
+  {
+    /// <summary>
+    ///   Ping
+    /// </summary>
+    Ping = 0,
+
+    /// <summary>
+    ///   Pong
+    /// </summary>
+    Pong = 1,
+
+    /// <summary>
+    ///   Intent action has been successful
+    /// </summary>
+    Success = 2,
+
+    /// <summary>
+    ///   Intent action has failed
+    /// </summary>
+    Error = 3,
+  }
+
   /// <summary>
   ///   ID of the intent within the connection
   /// </summary>
-  [Key(0)]
   public int IntentId { get; set; }
 
   /// <summary>
-  ///   Error response in case it is an error
+  ///   Type of the response
   /// </summary>
-  [Key(1)]
-  public object? Error { get; set; }
+  public ResponseType Type { get; set; }
+
+  /// <summary>
+  ///   Paylod of the response
+  /// </summary>
+  public object? Payload { get; set; }
 
   public async Task SendAsync(Stream            stream,
                               CancellationToken cancellationToken = default)
   {
-    var body = MessagePackSerializer.Serialize(Error);
+    var body = MessagePackSerializer.Serialize(Payload);
     var size = body.Length;
-    var msg  = new byte[size + 8];
+    var msg  = new byte[size + 12];
 
     BitConverter.GetBytes(IntentId)
                 .CopyTo(msg.AsSpan(0,
                                    4));
-    BitConverter.GetBytes(size)
+    BitConverter.GetBytes((int)Type)
                 .CopyTo(msg.AsSpan(4,
                                    4));
+    BitConverter.GetBytes(size)
+                .CopyTo(msg.AsSpan(8,
+                                   4));
 
-    body.CopyTo(msg.AsSpan(8,
+    body.CopyTo(msg.AsSpan(12,
                            size));
 
     await stream.WriteAsync(msg,
@@ -64,27 +92,30 @@ public class Response
   public static async Task<Response> ReceiveAsync(Stream            stream,
                                                   CancellationToken cancellationToken = default)
   {
-    var header = new byte[8];
+    var header = new byte[12];
     await stream.ReadExactlyAsync(header,
                                   cancellationToken)
                 .ConfigureAwait(false);
 
     var intentId = BitConverter.ToInt32(header,
                                         0);
-    var size = BitConverter.ToInt32(header,
+    var type = BitConverter.ToInt32(header,
                                     4);
+    var size = BitConverter.ToInt32(header,
+                                    8);
     var body = new byte[size];
 
     await stream.ReadExactlyAsync(body,
                                   cancellationToken)
                 .ConfigureAwait(false);
 
-    var error = MessagePackSerializer.Deserialize<object?>(body);
+    var payload = MessagePackSerializer.Deserialize<object?>(body);
 
     return new Response
            {
              IntentId = intentId,
-             Error    = error,
+             Type     = (ResponseType)type,
+             Payload  = payload,
            };
   }
 }

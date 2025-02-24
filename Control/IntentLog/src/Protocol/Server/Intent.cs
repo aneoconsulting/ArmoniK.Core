@@ -25,8 +25,6 @@ using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
 
-using Action = ArmoniK.Core.Control.IntentLog.Protocol.Messages.Action;
-
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
 public class Intent<T>
@@ -69,15 +67,15 @@ public class Intent<T>
           Exception? exception = null;
           try
           {
-            Func<Connection<T>, int, T?, CancellationToken, Task> f = request.Action switch
+            Func<Connection<T>, int, T?, CancellationToken, Task> f = request.Type switch
                                                                       {
-                                                                        Action.Open    => handler.OpenAsync,
-                                                                        Action.Amend   => handler.AmendAsync,
-                                                                        Action.Close   => handler.CloseAsync,
-                                                                        Action.Abort   => handler.AbortAsync,
-                                                                        Action.Timeout => handler.TimeoutAsync,
-                                                                        Action.Reset   => handler.ResetAsync,
-                                                                        _              => throw new InvalidOperationException(),
+                                                                        Request<T>.RequestType.Open    => handler.OpenAsync,
+                                                                        Request<T>.RequestType.Amend   => handler.AmendAsync,
+                                                                        Request<T>.RequestType.Close   => handler.CloseAsync,
+                                                                        Request<T>.RequestType.Abort   => handler.AbortAsync,
+                                                                        Request<T>.RequestType.Timeout => handler.TimeoutAsync,
+                                                                        Request<T>.RequestType.Reset   => handler.ResetAsync,
+                                                                        _                              => throw new InvalidOperationException(),
                                                                       };
             await f(connection,
                     request.IntentId,
@@ -93,8 +91,11 @@ public class Intent<T>
           await responses.WriteAsync((new Response
                                       {
                                         IntentId = request.IntentId,
-                                        Error    = exception,
-                                      }, request.Action.IsFinal()),
+                                        Type = exception is null
+                                                 ? Response.ResponseType.Success
+                                                 : Response.ResponseType.Error,
+                                        Payload = exception,
+                                      }, request.Type.IsFinal()),
                                      cancellationToken)
                          .ConfigureAwait(false);
         }

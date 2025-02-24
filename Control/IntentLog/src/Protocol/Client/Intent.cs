@@ -26,25 +26,27 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Logging;
 
-using Action = ArmoniK.Core.Control.IntentLog.Protocol.Messages.Action;
-
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Client;
 
 [PublicAPI]
 public class Intent<T> : IDisposable, IAsyncDisposable
   where T : class
 {
-  private readonly int        id_;
-  private readonly ILogger    logger_;
-  private          Client<T>? client_;
+  private readonly int                    id_;
+  private readonly ILogger                logger_;
+  private          Client<T>?             client_;
+  private          T?                     diposeRequestPayload_;
+  private          Request<T>.RequestType disposeRequestType_;
 
   internal Intent(Client<T>? client,
                   ILogger    logger,
                   int        id)
   {
-    client_ = client;
-    logger_ = logger;
-    id_     = id;
+    client_               = client;
+    logger_               = logger;
+    id_                   = id;
+    disposeRequestType_   = Request<T>.RequestType.Close;
+    diposeRequestPayload_ = null;
   }
 
   public async ValueTask DisposeAsync()
@@ -52,7 +54,9 @@ public class Intent<T> : IDisposable, IAsyncDisposable
     await ReleaseUnmanagedResourcesAsync(Interlocked.Exchange(ref client_,
                                                               null),
                                          logger_,
-                                         id_)
+                                         id_,
+                                         Request<T>.RequestType.Reset,
+                                         null)
       .ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
@@ -61,10 +65,35 @@ public class Intent<T> : IDisposable, IAsyncDisposable
     => DisposeAsync()
       .WaitSync();
 
-  private static async Task ReleaseUnmanagedResourcesAsync(Client<T>? client,
-                                                           ILogger    logger,
-                                                           int        id,
-                                                           Action     action = Action.Close)
+  public void CloseOnDispose(T? payload = null)
+  {
+    disposeRequestType_   = Request<T>.RequestType.Close;
+    diposeRequestPayload_ = payload;
+  }
+
+  public void AbortOnDispose(T? payload = null)
+  {
+    disposeRequestType_   = Request<T>.RequestType.Abort;
+    diposeRequestPayload_ = payload;
+  }
+
+  public void ResetOnDispose(T? payload = null)
+  {
+    disposeRequestType_   = Request<T>.RequestType.Reset;
+    diposeRequestPayload_ = payload;
+  }
+
+  public void TimeoutOnDispose(T? payload = null)
+  {
+    disposeRequestType_   = Request<T>.RequestType.Timeout;
+    diposeRequestPayload_ = payload;
+  }
+
+  private static async Task ReleaseUnmanagedResourcesAsync(Client<T>?             client,
+                                                           ILogger                logger,
+                                                           int                    id,
+                                                           Request<T>.RequestType requestType,
+                                                           T?                     payload)
   {
     if (client is null)
     {
@@ -76,8 +105,8 @@ public class Intent<T> : IDisposable, IAsyncDisposable
       await client.Call(new Request<T>
                         {
                           IntentId = id,
-                          Action   = action,
-                          Payload  = null,
+                          Type     = requestType,
+                          Payload  = payload,
                         })
                   .ConfigureAwait(false);
     }
@@ -94,11 +123,12 @@ public class Intent<T> : IDisposable, IAsyncDisposable
                                                                               null),
                                                          logger_,
                                                          id_,
-                                                         Action.Reset));
+                                                         Request<T>.RequestType.Reset,
+                                                         null));
 
-  private async Task CallAsync(Action            action,
-                               T?                obj,
-                               CancellationToken cancellationToken)
+  private async Task CallAsync(Request<T>.RequestType requestType,
+                               T?                     obj,
+                               CancellationToken      cancellationToken)
   {
     ObjectDisposedException.ThrowIf(client_ is null,
                                     this);
@@ -106,13 +136,13 @@ public class Intent<T> : IDisposable, IAsyncDisposable
     await client_.Call(new Request<T>
                        {
                          IntentId = id_,
-                         Action   = action,
+                         Type     = requestType,
                          Payload  = obj,
                        },
                        cancellationToken)
                  .ConfigureAwait(false);
 
-    if (action.IsFinal())
+    if (requestType.IsFinal())
     {
       client_ = null;
       GC.SuppressFinalize(this);
@@ -122,21 +152,21 @@ public class Intent<T> : IDisposable, IAsyncDisposable
   [PublicAPI]
   public Task AmendAsync(T?                obj,
                          CancellationToken cancellationToken = default)
-    => CallAsync(Action.Amend,
+    => CallAsync(Request<T>.RequestType.Amend,
                  obj,
                  cancellationToken);
 
   [PublicAPI]
   public Task AbortAsync(T?                obj,
                          CancellationToken cancellationToken = default)
-    => CallAsync(Action.Abort,
+    => CallAsync(Request<T>.RequestType.Abort,
                  obj,
                  cancellationToken);
 
   [PublicAPI]
   public Task CloseAsync(T?                obj,
                          CancellationToken cancellationToken = default)
-    => CallAsync(Action.Close,
+    => CallAsync(Request<T>.RequestType.Close,
                  obj,
                  cancellationToken);
 }
