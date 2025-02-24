@@ -28,6 +28,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
 
@@ -70,6 +71,12 @@ public class TestDatabaseProvider : IDisposable
                     StandardErrorLogger = line => logger.LogError(line),
 #pragma warning restore CA2254
                   };
+
+    var binDir = Environment.GetEnvironmentVariable("EphemeralMongo__BinaryDirectory");
+    if (!string.IsNullOrEmpty(binDir))
+    {
+      options.BinaryDirectory = binDir;
+    }
 
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var loggerDb       = loggerProvider.CreateLogger("db commands");
@@ -139,6 +146,8 @@ public class TestDatabaseProvider : IDisposable
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
            .AddSingleton<IObjectStorage, ObjectStorage>()
+           .AddOption<Injection.Options.Submitter>(builder.Configuration,
+                                                   Injection.Options.Submitter.SettingSection)
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);

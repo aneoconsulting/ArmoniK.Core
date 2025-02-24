@@ -16,23 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Base.DataStructures;
 
-using EphemeralMongo;
-
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-
-using MongoDB.Driver;
 
 using NUnit.Framework;
 
@@ -41,66 +32,19 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 [TestFixture]
 public class SessionProviderTests
 {
-  [TearDown]
-  public void TearDown()
-  {
-    client_ = null;
-    runner_?.Dispose();
-    provider_?.Dispose();
-    provider_ = null;
-  }
-
   [SetUp]
   public void SetUp()
   {
-    var logger = NullLogger.Instance;
-    var options = new MongoRunnerOptions
-                  {
-                    UseSingleNodeReplicaSet = false,
-#pragma warning disable CA2254 // log inputs should be constant
-                    StandardOuputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger = line => logger.LogError(line),
-#pragma warning restore CA2254
-                  };
-
-    runner_ = MongoRunner.Run(options);
-    client_ = new MongoClient(runner_.ConnectionString);
-
-    // Minimal set of configurations to operate on a toy DB
-    Dictionary<string, string?> minimalConfig = new()
-                                                {
-                                                  {
-                                                    "Components:TableStorage", "ArmoniK.Adapters.MongoDB.TableStorage"
-                                                  },
-                                                  {
-                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
-                                                  },
-                                                  {
-                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:PollingDelay", "00:00:10"
-                                                  },
-                                                };
-
-    var configuration = new ConfigurationManager();
-    configuration.AddInMemoryCollection(minimalConfig);
-
-    var services = new ServiceCollection();
-    services.AddMongoStorages(configuration,
-                              logger);
-    services.AddSingleton(ActivitySource);
-    services.AddTransient<IMongoClient>(_ => client_);
-    services.AddLogging();
-
-    provider_ = services.BuildServiceProvider(new ServiceProviderOptions
-                                              {
-                                                ValidateOnBuild = true,
-                                              });
+    dbProvider_ = new MongoDatabaseProvider();
+    provider_   = dbProvider_.GetServiceProvider();
   }
 
-  private                 MongoClient?     client_;
-  private                 IMongoRunner?    runner_;
-  private const           string           DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource   ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
-  private                 ServiceProvider? provider_;
+  [TearDown]
+  public void TearDown()
+    => dbProvider_?.Dispose();
+
+  private IServiceProvider?      provider_;
+  private MongoDatabaseProvider? dbProvider_;
 
 
   [Test]

@@ -93,6 +93,12 @@ public class TestPollsterProvider : IDisposable
 #pragma warning restore CA2254
                   };
 
+    var binDir = Environment.GetEnvironmentVariable("EphemeralMongo__BinaryDirectory");
+    if (!string.IsNullOrEmpty(binDir))
+    {
+      options.BinaryDirectory = binDir;
+    }
+
     runner_ = MongoRunner.Run(options);
     client_ = new MongoClient(runner_.ConnectionString);
 
