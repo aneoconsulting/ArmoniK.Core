@@ -23,36 +23,35 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
 [PublicAPI]
-public interface IServerHandler<T>
-  where T : class
+public interface IServerHandler
 {
-  public Task OpenAsync(Connection<T>     connection,
+  public Task OpenAsync(Connection        connection,
                         int               intentId,
-                        T?                payload,
+                        byte[]            payload,
                         CancellationToken cancellationToken = default);
 
-  public Task AmendAsync(Connection<T>     connection,
+  public Task AmendAsync(Connection        connection,
                          int               intentId,
-                         T?                payload,
+                         byte[]            payload,
                          CancellationToken cancellationToken = default);
 
-  public Task CloseAsync(Connection<T>     connection,
+  public Task CloseAsync(Connection        connection,
                          int               intentId,
-                         T?                payload,
+                         byte[]            payload,
                          CancellationToken cancellationToken = default);
 
-  public Task AbortAsync(Connection<T>     connection,
+  public Task AbortAsync(Connection        connection,
                          int               intentId,
-                         T?                payload,
+                         byte[]            payload,
                          CancellationToken cancellationToken = default);
 
-  public Task TimeoutAsync(Connection<T>     connection,
+  public Task TimeoutAsync(Connection        connection,
                            int               intentId,
-                           T?                payload,
+                           byte[]            payload,
                            CancellationToken cancellationToken = default);
 
-  public Task ResetAsync(Connection<T>     connection,
+  public Task ResetAsync(Connection        connection,
                          int               intentId,
-                         T?                payload,
+                         byte[]            payload,
                          CancellationToken cancellationToken = default);
 }

@@ -32,21 +32,20 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
 [PublicAPI]
-public class Server<T> : IDisposable, IAsyncDisposable
-  where T : class
+public class Server : IDisposable, IAsyncDisposable
 {
   private readonly ILogger                 logger_;
   private          Task                    acceptLoop_;
   private          CancellationTokenSource cts_;
 
   [PublicAPI]
-  public Server(IServerHandler<T>   handler,
-                Options?            options           = null,
-                ILogger<Server<T>>? logger            = null,
-                CancellationToken   cancellationToken = default)
+  public Server(IServerHandler    handler,
+                Options?          options           = null,
+                ILogger<Server>?  logger            = null,
+                CancellationToken cancellationToken = default)
   {
     cts_    = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    logger_ = logger ?? NullLogger<Server<T>>.Instance;
+    logger_ = logger ?? NullLogger<Server>.Instance;
 
     var ipHostInfo = Dns.GetHostEntry(options?.Endpoint ?? Dns.GetHostName());
     var ipAddress  = ipHostInfo.AddressList[0];
@@ -75,7 +74,7 @@ public class Server<T> : IDisposable, IAsyncDisposable
       // ReSharper disable once VariableHidesOuterVariable
       var cancellationToken = cts_.Token;
 
-      var connections = new ConcurrentDictionary<IntPtr, Connection<T>>();
+      var connections = new ConcurrentDictionary<IntPtr, Connection>();
 
       while (!cancellationToken.IsCancellationRequested)
       {
@@ -97,15 +96,15 @@ public class Server<T> : IDisposable, IAsyncDisposable
             throw;
           }
 
-          Connection<T> connection;
+          Connection connection;
           try
           {
-            connection = new Connection<T>(handler,
-                                           stream,
-                                           () => connections.TryRemove(key,
-                                                                       out _),
-                                           logger_,
-                                           cancellationToken);
+            connection = new Connection(handler,
+                                        stream,
+                                        () => connections.TryRemove(key,
+                                                                    out _),
+                                        logger_,
+                                        cancellationToken);
           }
           catch
           {

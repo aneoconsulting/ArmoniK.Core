@@ -26,57 +26,57 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Control.IntentLog;
 
-internal class ServerHandler : IServerHandler<string>
+internal class ServerHandler : IServerHandler
 {
-  public Task OpenAsync(Connection<string> connection,
-                        int                intentId,
-                        string?            payload,
-                        CancellationToken  cancellationToken = default)
+  public Task OpenAsync(Connection        connection,
+                        int               intentId,
+                        byte[]            payload,
+                        CancellationToken cancellationToken = default)
   {
     Console.WriteLine($"Opening intent: {intentId} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task AmendAsync(Connection<string> connection,
-                         int                intentId,
-                         string?            payload,
-                         CancellationToken  cancellationToken = default)
+  public Task AmendAsync(Connection        connection,
+                         int               intentId,
+                         byte[]            payload,
+                         CancellationToken cancellationToken = default)
   {
     Console.WriteLine($"Amending intent: {intentId} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task CloseAsync(Connection<string> connection,
-                         int                intentId,
-                         string?            payload,
-                         CancellationToken  cancellationToken = default)
+  public Task CloseAsync(Connection        connection,
+                         int               intentId,
+                         byte[]            payload,
+                         CancellationToken cancellationToken = default)
   {
     Console.WriteLine($"Closing intent: {intentId} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task AbortAsync(Connection<string> connection,
-                         int                intentId,
-                         string?            payload,
-                         CancellationToken  cancellationToken = default)
+  public Task AbortAsync(Connection        connection,
+                         int               intentId,
+                         byte[]            payload,
+                         CancellationToken cancellationToken = default)
   {
     Console.WriteLine($"Aborting intent: {intentId} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task TimeoutAsync(Connection<string> connection,
-                           int                intentId,
-                           string?            payload,
-                           CancellationToken  cancellationToken = default)
+  public Task TimeoutAsync(Connection        connection,
+                           int               intentId,
+                           byte[]            payload,
+                           CancellationToken cancellationToken = default)
   {
     Console.WriteLine($"Timeout intent: {intentId} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task ResetAsync(Connection<string> connection,
-                         int                intentId,
-                         string?            payload,
-                         CancellationToken  cancellationToken = default)
+  public Task ResetAsync(Connection        connection,
+                         int               intentId,
+                         byte[]            payload,
+                         CancellationToken cancellationToken = default)
   {
     Console.WriteLine($"Reset intent: {intentId} with payload: {payload}");
     return Task.CompletedTask;
@@ -94,31 +94,31 @@ internal class Program
   private static async Task RunClient(ILoggerFactory loggerFactory)
   {
     Console.WriteLine("Starting client...");
-    await using var client = await Client<string>.ConnectAsync("localhost",
-                                                               1337,
-                                                               logger: loggerFactory.CreateLogger<Client<string>>());
+    await using var client = await Client.ConnectAsync("localhost",
+                                                       1337,
+                                                       logger: loggerFactory.CreateLogger<Client>());
 
     Console.WriteLine("Client connected.");
 
-    await using var intent = await client.OpenAsync("pouet")
+    await using var intent = await client.OpenAsync("pouet"u8.ToArray())
                                          .ConfigureAwait(false);
-    intent.AbortOnDispose("Abort");
+    intent.AbortOnDispose("Abort"u8.ToArray());
     Console.WriteLine("Opened intent");
 
-    await intent.AmendAsync("plop")
+    await intent.AmendAsync("plop"u8.ToArray())
                 .ConfigureAwait(false);
     Console.WriteLine("Amended intent");
   }
 
   private static async Task RunServer(ILoggerFactory loggerFactory)
   {
-    await using var server = new Server<string>(new ServerHandler(),
-                                                new Server<string>.Options
-                                                {
-                                                  Endpoint = "localhost",
-                                                  Port     = 1337,
-                                                },
-                                                loggerFactory.CreateLogger<Server<string>>());
+    await using var server = new Server(new ServerHandler(),
+                                        new Server.Options
+                                        {
+                                          Endpoint = "localhost",
+                                          Port     = 1337,
+                                        },
+                                        loggerFactory.CreateLogger<Server>());
     Console.WriteLine("Listening on port 1337");
     await Task.Delay(Timeout.Infinite)
               .ConfigureAwait(false);
