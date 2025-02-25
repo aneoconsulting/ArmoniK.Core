@@ -63,4 +63,6 @@ public class MongoDB
   public bool Sharding { get; set; }
 
   public string AuthSource { get; set; } = "";
+
+  public string ConnectionStringScheme { get; set; } = "";
 }

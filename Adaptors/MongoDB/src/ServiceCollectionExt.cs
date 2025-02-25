@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Security.Authentication;
 
 using ArmoniK.Api.Common.Utils;
@@ -48,8 +50,8 @@ public static class ServiceCollectionExt
 {
   [PublicAPI]
   public static IServiceCollection AddMongoComponents(this IServiceCollection services,
-                                                      ConfigurationManager    configuration,
-                                                      ILogger                 logger)
+                                                      ConfigurationManager configuration,
+                                                      ILogger logger)
   {
     services.AddMongoClient(configuration,
                             logger);
@@ -60,8 +62,8 @@ public static class ServiceCollectionExt
 
   [PublicAPI]
   public static IServiceCollection AddMongoStorages(this IServiceCollection services,
-                                                    ConfigurationManager    configuration,
-                                                    ILogger                 logger)
+                                                    ConfigurationManager configuration,
+                                                    ILogger logger)
   {
     logger.LogInformation("Configure MongoDB Components");
 
@@ -92,16 +94,16 @@ public static class ServiceCollectionExt
   }
 
   public static IServiceCollection AddMongoClient(this IServiceCollection services,
-                                                  ConfigurationManager    configuration,
-                                                  ILogger                 logger)
+                                                  ConfigurationManager configuration,
+                                                  ILogger logger)
   {
     Options.MongoDB mongoOptions;
     services.AddOption(configuration,
                        Options.MongoDB.SettingSection,
                        out mongoOptions);
     using var _ = logger.BeginNamedScope("MongoDB configuration",
-                                         ("host", mongoOptions.Host),
-                                         ("port", mongoOptions.Port));
+                                         ("host", mongoOptions.Host)/*,
+                                         ("port", mongoOptions.Port)*/);
 
     if (string.IsNullOrEmpty(mongoOptions.Host))
     {
@@ -134,40 +136,58 @@ public static class ServiceCollectionExt
     }
 
     string connectionString;
+    // if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
+    // {
+    //   var template = "mongodb://{0}:{1}/{2}";
+    //   connectionString = string.Format(template,
+    //                                    mongoOptions.Host,
+    //                                    mongoOptions.Port,
+    //                                    mongoOptions.DatabaseName);
+    // }
+    // else
+    // {
+    //   var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
+    //   connectionString = string.Format(template,
+    //                                    mongoOptions.User,
+    //                                    mongoOptions.Password,
+    //                                    mongoOptions.Host,
+    //                                    mongoOptions.Port,
+    //                                    mongoOptions.DatabaseName);
+    // }
+
+    // if (!string.IsNullOrEmpty(mongoOptions.AuthSource))
+    // {
+    //   connectionString = $"{connectionString}?authSource={mongoOptions.AuthSource}";
+    // }
     if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
     {
-      var template = "mongodb://{0}:{1}/{2}";
+      var template = "{0}://{1}/{2}";
       connectionString = string.Format(template,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
+                                              mongoOptions.ConnectionStringScheme,
+                                              mongoOptions.Host,
+                                              mongoOptions.DatabaseName);
     }
     else
     {
-      var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
+      var template = "{0}://{1}:{2}@{3}/{4}";
       connectionString = string.Format(template,
-                                       mongoOptions.User,
-                                       mongoOptions.Password,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
+                                             mongoOptions.ConnectionStringScheme,
+                                             mongoOptions.User,
+                                             mongoOptions.Password,
+                                             mongoOptions.Host,
+                                             mongoOptions.DatabaseName);
     }
-
-    if (!string.IsNullOrEmpty(mongoOptions.AuthSource))
-    {
-      connectionString = $"{connectionString}?authSource={mongoOptions.AuthSource}";
-    }
-
     var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
 
     // Configure the connection settings
-    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
-    settings.UseTls                 = mongoOptions.Tls;
-    settings.DirectConnection       = mongoOptions.DirectConnection;
-    settings.Scheme                 = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+    settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
+    settings.UseTls = mongoOptions.Tls;
+    settings.DirectConnection = mongoOptions.DirectConnection;
+    // settings.Scheme                 = ConnectionStringScheme.MongoDB;
+    settings.Scheme = ConnectionStringScheme.MongoDBPlusSrv;
+    settings.MaxConnectionPoolSize = mongoOptions.MaxConnectionPoolSize;
     settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    // settings.ReplicaSetName         = mongoOptions.ReplicaSet;
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
@@ -176,10 +196,10 @@ public static class ServiceCollectionExt
                                               logger);
 
       settings.SslSettings = new SslSettings
-                             {
-                               EnabledSslProtocols                 = SslProtocols.Tls12,
-                               ServerCertificateValidationCallback = validationCallback,
-                             };
+      {
+        EnabledSslProtocols = SslProtocols.Tls12,
+        ServerCertificateValidationCallback = validationCallback,
+      };
     }
 
     settings.ClusterConfigurator = cb =>
@@ -215,7 +235,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager    configuration)
+                                                                           ConfigurationManager configuration)
   {
     var components = configuration.GetSection(Components.SettingSection);
     if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
@@ -236,7 +256,7 @@ public static class ServiceCollectionExt
   /// <returns>Services</returns>
   [PublicAPI]
   public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager    configuration,
+                                                                  ConfigurationManager configuration,
                                                                   out AuthenticationCache authCache)
   {
     authCache = new AuthenticationCache();
