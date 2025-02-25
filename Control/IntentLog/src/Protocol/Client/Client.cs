@@ -40,7 +40,6 @@ public class Client : IDisposable, IAsyncDisposable
   private readonly Task                                               eventLoop_;
   private readonly ILogger                                            logger_;
   private readonly Channel<(Request, TaskCompletionSource<Response>)> requests_;
-  private          int                                                nextId_;
 
   [PublicAPI]
   public Client(Stream            stream,
@@ -67,7 +66,7 @@ public class Client : IDisposable, IAsyncDisposable
       var nextRequest  = NextRequest();
       var nextResponse = NextResponse();
 
-      var        mapping   = new Dictionary<int, Queue<TaskCompletionSource<Response>>>();
+      var        mapping   = new Dictionary<Guid, Queue<TaskCompletionSource<Response>>>();
       Exception? exception = null;
 
       while (!cancellationToken.IsCancellationRequested)
@@ -118,17 +117,17 @@ public class Client : IDisposable, IAsyncDisposable
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (response.Type)
             {
-              case Response.ResponseType.Ping:
+              case ResponseType.Ping:
                 await new Request
                   {
                     IntentId = response.IntentId,
-                    Type     = Request.RequestType.Pong,
+                    Type     = RequestType.Pong,
                     Payload  = response.Payload,
                   }.SendAsync(str,
                               cancellationToken)
                    .ConfigureAwait(false);
                 break;
-              case Response.ResponseType.Pong:
+              case ResponseType.Pong:
                 break;
               default:
 
@@ -225,13 +224,12 @@ public class Client : IDisposable, IAsyncDisposable
   public async Task<Intent> OpenAsync(byte[]            payload,
                                       CancellationToken cancellationToken = default)
   {
-    var id = Interlocked.Add(ref nextId_,
-                             1);
+    var id = new Guid();
     await Call(new Request
 
                {
                  IntentId = id,
-                 Type     = Request.RequestType.Open,
+                 Type     = RequestType.Open,
                  Payload  = payload,
                },
                cancellationToken)

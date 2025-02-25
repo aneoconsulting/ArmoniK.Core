@@ -39,7 +39,7 @@ public class Intent : IDisposable, IAsyncDisposable
   private readonly Channel<Request>        requests_;
 
   internal Intent(Connection                      connection,
-                  int                             intentId,
+                  Guid                            intentId,
                   IServerHandler                  handler,
                   ILogger                         logger,
                   ChannelWriter<(Response, bool)> responses,
@@ -75,13 +75,13 @@ public class Intent : IDisposable, IAsyncDisposable
           {
             Func<Intent, byte[], CancellationToken, Task> f = request.Type switch
                                                               {
-                                                                Request.RequestType.Open    => handler.OpenAsync,
-                                                                Request.RequestType.Amend   => handler.AmendAsync,
-                                                                Request.RequestType.Close   => handler.CloseAsync,
-                                                                Request.RequestType.Abort   => handler.AbortAsync,
-                                                                Request.RequestType.Timeout => handler.TimeoutAsync,
-                                                                Request.RequestType.Reset   => handler.ResetAsync,
-                                                                _                           => throw new InvalidOperationException(),
+                                                                RequestType.Open    => handler.OpenAsync,
+                                                                RequestType.Amend   => handler.AmendAsync,
+                                                                RequestType.Close   => handler.CloseAsync,
+                                                                RequestType.Abort   => handler.AbortAsync,
+                                                                RequestType.Timeout => handler.TimeoutAsync,
+                                                                RequestType.Reset   => handler.ResetAsync,
+                                                                _                   => throw new InvalidOperationException(),
                                                               };
             await f(this,
                     request.Payload,
@@ -97,8 +97,8 @@ public class Intent : IDisposable, IAsyncDisposable
                                       {
                                         IntentId = request.IntentId,
                                         Type = exception is null
-                                                 ? Response.ResponseType.Success
-                                                 : Response.ResponseType.Error,
+                                                 ? ResponseType.Success
+                                                 : ResponseType.Error,
                                         Payload = Encoding.UTF8.GetBytes(exception?.Message ?? string.Empty),
                                       }, request.Type.IsFinal()),
                                      cancellationToken)
@@ -119,7 +119,7 @@ public class Intent : IDisposable, IAsyncDisposable
   public Connection Connection { get; }
 
   [PublicAPI]
-  public int Id { get; }
+  public Guid Id { get; }
 
 
   public async ValueTask DisposeAsync()
