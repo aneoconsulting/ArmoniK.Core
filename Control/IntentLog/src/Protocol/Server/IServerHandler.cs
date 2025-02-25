@@ -25,33 +25,27 @@ namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 [PublicAPI]
 public interface IServerHandler
 {
-  public Task OpenAsync(Connection        connection,
-                        int               intentId,
+  public Task OpenAsync(Intent            intent,
                         byte[]            payload,
                         CancellationToken cancellationToken = default);
 
-  public Task AmendAsync(Connection        connection,
-                         int               intentId,
+  public Task AmendAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default);
 
-  public Task CloseAsync(Connection        connection,
-                         int               intentId,
+  public Task CloseAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default);
 
-  public Task AbortAsync(Connection        connection,
-                         int               intentId,
+  public Task AbortAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default);
 
-  public Task TimeoutAsync(Connection        connection,
-                           int               intentId,
+  public Task TimeoutAsync(Intent            intent,
                            byte[]            payload,
                            CancellationToken cancellationToken = default);
 
-  public Task ResetAsync(Connection        connection,
-                         int               intentId,
+  public Task ResetAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default);
 }

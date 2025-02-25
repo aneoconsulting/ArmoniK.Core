@@ -115,6 +115,7 @@ public class Connection : IDisposable, IAsyncDisposable
                                          out var intent))
                 {
                   intent = new Intent(this,
+                                      request.IntentId,
                                       handler,
                                       logger_,
                                       responseChannel.Writer,
@@ -184,8 +185,7 @@ public class Connection : IDisposable, IAsyncDisposable
       {
         try
         {
-          await handler.ResetAsync(this,
-                                   id,
+          await handler.ResetAsync(intent,
                                    Array.Empty<byte>(),
                                    cancellationToken)
                        .ConfigureAwait(false);
@@ -216,6 +216,7 @@ public class Connection : IDisposable, IAsyncDisposable
                         .AsTask();
   }
 
+  [PublicAPI]
   public long Id
     => GetHashCode();
 

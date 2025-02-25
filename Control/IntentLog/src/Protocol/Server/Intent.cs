@@ -24,11 +24,14 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 using ArmoniK.Utils;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
-public class Intent
+[PublicAPI]
+public class Intent : IDisposable, IAsyncDisposable
 {
   private readonly CancellationTokenSource cts_;
   private readonly Task                    eventLoop_;
@@ -36,14 +39,17 @@ public class Intent
   private readonly Channel<Request>        requests_;
 
   internal Intent(Connection                      connection,
+                  int                             intentId,
                   IServerHandler                  handler,
                   ILogger                         logger,
                   ChannelWriter<(Response, bool)> responses,
                   CancellationToken               cancellationToken)
   {
-    cts_      = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    logger_   = logger;
-    requests_ = Channel.CreateUnbounded<Request>();
+    Connection = connection;
+    Id         = intentId;
+    cts_       = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    logger_    = logger;
+    requests_  = Channel.CreateUnbounded<Request>();
 
     eventLoop_ = Task.Factory.StartNew(EventLoop,
                                        TaskCreationOptions.LongRunning)
@@ -67,18 +73,17 @@ public class Intent
           Exception? exception = null;
           try
           {
-            Func<Connection, int, byte[], CancellationToken, Task> f = request.Type switch
-                                                                       {
-                                                                         Request.RequestType.Open    => handler.OpenAsync,
-                                                                         Request.RequestType.Amend   => handler.AmendAsync,
-                                                                         Request.RequestType.Close   => handler.CloseAsync,
-                                                                         Request.RequestType.Abort   => handler.AbortAsync,
-                                                                         Request.RequestType.Timeout => handler.TimeoutAsync,
-                                                                         Request.RequestType.Reset   => handler.ResetAsync,
-                                                                         _                           => throw new InvalidOperationException(),
-                                                                       };
-            await f(connection,
-                    request.IntentId,
+            Func<Intent, byte[], CancellationToken, Task> f = request.Type switch
+                                                              {
+                                                                Request.RequestType.Open    => handler.OpenAsync,
+                                                                Request.RequestType.Amend   => handler.AmendAsync,
+                                                                Request.RequestType.Close   => handler.CloseAsync,
+                                                                Request.RequestType.Abort   => handler.AbortAsync,
+                                                                Request.RequestType.Timeout => handler.TimeoutAsync,
+                                                                Request.RequestType.Reset   => handler.ResetAsync,
+                                                                _                           => throw new InvalidOperationException(),
+                                                              };
+            await f(this,
                     request.Payload,
                     cancellationToken)
               .ConfigureAwait(false);
@@ -107,13 +112,14 @@ public class Intent
     }
   }
 
-  public int NbRequests
+  internal int NbRequests
     => requests_.Reader.Count;
 
-  public ValueTask RequestAsync(Request           request,
-                                CancellationToken cancellationToken = default)
-    => requests_.Writer.WriteAsync(request,
-                                   cancellationToken);
+  [PublicAPI]
+  public Connection Connection { get; }
+
+  [PublicAPI]
+  public int Id { get; }
 
 
   public async ValueTask DisposeAsync()
@@ -145,4 +151,9 @@ public class Intent
   public void Dispose()
     => DisposeAsync()
       .WaitSync();
+
+  internal ValueTask RequestAsync(Request           request,
+                                  CancellationToken cancellationToken = default)
+    => requests_.Writer.WriteAsync(request,
+                                   cancellationToken);
 }
