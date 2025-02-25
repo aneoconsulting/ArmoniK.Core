@@ -29,24 +29,23 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Client;
 
 [PublicAPI]
-public class Intent<T> : IDisposable, IAsyncDisposable
-  where T : class
+public class Intent : IDisposable, IAsyncDisposable
 {
-  private readonly int                    id_;
-  private readonly ILogger                logger_;
-  private          Client<T>?             client_;
-  private          T?                     diposeRequestPayload_;
-  private          Request<T>.RequestType disposeRequestType_;
+  private readonly int                 id_;
+  private readonly ILogger             logger_;
+  private          Client?             client_;
+  private          byte[]              diposeRequestPayload_;
+  private          Request.RequestType disposeRequestType_;
 
-  internal Intent(Client<T>? client,
-                  ILogger    logger,
-                  int        id)
+  internal Intent(Client? client,
+                  ILogger logger,
+                  int     id)
   {
     client_               = client;
     logger_               = logger;
     id_                   = id;
-    disposeRequestType_   = Request<T>.RequestType.Close;
-    diposeRequestPayload_ = null;
+    disposeRequestType_   = Request.RequestType.Close;
+    diposeRequestPayload_ = Array.Empty<byte>();
   }
 
   public async ValueTask DisposeAsync()
@@ -55,7 +54,7 @@ public class Intent<T> : IDisposable, IAsyncDisposable
                                                               null),
                                          logger_,
                                          id_,
-                                         Request<T>.RequestType.Reset,
+                                         Request.RequestType.Reset,
                                          null)
       .ConfigureAwait(false);
     GC.SuppressFinalize(this);
@@ -65,35 +64,35 @@ public class Intent<T> : IDisposable, IAsyncDisposable
     => DisposeAsync()
       .WaitSync();
 
-  public void CloseOnDispose(T? payload = null)
+  public void CloseOnDispose(byte[]? payload = null)
   {
-    disposeRequestType_   = Request<T>.RequestType.Close;
-    diposeRequestPayload_ = payload;
+    disposeRequestType_   = Request.RequestType.Close;
+    diposeRequestPayload_ = payload ?? Array.Empty<byte>();
   }
 
-  public void AbortOnDispose(T? payload = null)
+  public void AbortOnDispose(byte[]? payload = null)
   {
-    disposeRequestType_   = Request<T>.RequestType.Abort;
-    diposeRequestPayload_ = payload;
+    disposeRequestType_   = Request.RequestType.Abort;
+    diposeRequestPayload_ = payload ?? Array.Empty<byte>();
   }
 
-  public void ResetOnDispose(T? payload = null)
+  public void ResetOnDispose(byte[]? payload = null)
   {
-    disposeRequestType_   = Request<T>.RequestType.Reset;
-    diposeRequestPayload_ = payload;
+    disposeRequestType_   = Request.RequestType.Reset;
+    diposeRequestPayload_ = payload ?? Array.Empty<byte>();
   }
 
-  public void TimeoutOnDispose(T? payload = null)
+  public void TimeoutOnDispose(byte[]? payload = null)
   {
-    disposeRequestType_   = Request<T>.RequestType.Timeout;
-    diposeRequestPayload_ = payload;
+    disposeRequestType_   = Request.RequestType.Timeout;
+    diposeRequestPayload_ = payload ?? Array.Empty<byte>();
   }
 
-  private static async Task ReleaseUnmanagedResourcesAsync(Client<T>?             client,
-                                                           ILogger                logger,
-                                                           int                    id,
-                                                           Request<T>.RequestType requestType,
-                                                           T?                     payload)
+  private static async Task ReleaseUnmanagedResourcesAsync(Client?             client,
+                                                           ILogger             logger,
+                                                           int                 id,
+                                                           Request.RequestType requestType,
+                                                           byte[]              payload)
   {
     if (client is null)
     {
@@ -102,7 +101,7 @@ public class Intent<T> : IDisposable, IAsyncDisposable
 
     try
     {
-      await client.Call(new Request<T>
+      await client.Call(new Request
                         {
                           IntentId = id,
                           Type     = requestType,
@@ -123,21 +122,21 @@ public class Intent<T> : IDisposable, IAsyncDisposable
                                                                               null),
                                                          logger_,
                                                          id_,
-                                                         Request<T>.RequestType.Reset,
-                                                         null));
+                                                         Request.RequestType.Reset,
+                                                         Array.Empty<byte>()));
 
-  private async Task CallAsync(Request<T>.RequestType requestType,
-                               T?                     obj,
-                               CancellationToken      cancellationToken)
+  private async Task CallAsync(Request.RequestType requestType,
+                               byte[]              payload,
+                               CancellationToken   cancellationToken)
   {
     ObjectDisposedException.ThrowIf(client_ is null,
                                     this);
 
-    await client_.Call(new Request<T>
+    await client_.Call(new Request
                        {
                          IntentId = id_,
                          Type     = requestType,
-                         Payload  = obj,
+                         Payload  = payload,
                        },
                        cancellationToken)
                  .ConfigureAwait(false);
@@ -150,23 +149,23 @@ public class Intent<T> : IDisposable, IAsyncDisposable
   }
 
   [PublicAPI]
-  public Task AmendAsync(T?                obj,
+  public Task AmendAsync(byte[]            payload,
                          CancellationToken cancellationToken = default)
-    => CallAsync(Request<T>.RequestType.Amend,
-                 obj,
+    => CallAsync(Request.RequestType.Amend,
+                 payload,
                  cancellationToken);
 
   [PublicAPI]
-  public Task AbortAsync(T?                obj,
+  public Task AbortAsync(byte[]            payload,
                          CancellationToken cancellationToken = default)
-    => CallAsync(Request<T>.RequestType.Abort,
-                 obj,
+    => CallAsync(Request.RequestType.Abort,
+                 payload,
                  cancellationToken);
 
   [PublicAPI]
-  public Task CloseAsync(T?                obj,
+  public Task CloseAsync(byte[]            payload,
                          CancellationToken cancellationToken = default)
-    => CallAsync(Request<T>.RequestType.Close,
-                 obj,
+    => CallAsync(Request.RequestType.Close,
+                 payload,
                  cancellationToken);
 }

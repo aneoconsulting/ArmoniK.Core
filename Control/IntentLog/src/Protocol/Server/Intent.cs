@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Text;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -27,23 +28,22 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
-public class Intent<T>
-  where T : class
+public class Intent
 {
   private readonly CancellationTokenSource cts_;
   private readonly Task                    eventLoop_;
   private readonly ILogger                 logger_;
-  private readonly Channel<Request<T>>     requests_;
+  private readonly Channel<Request>        requests_;
 
-  internal Intent(Connection<T>                   connection,
-                  IServerHandler<T>               handler,
+  internal Intent(Connection                      connection,
+                  IServerHandler                  handler,
                   ILogger                         logger,
                   ChannelWriter<(Response, bool)> responses,
                   CancellationToken               cancellationToken)
   {
     cts_      = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
     logger_   = logger;
-    requests_ = Channel.CreateUnbounded<Request<T>>();
+    requests_ = Channel.CreateUnbounded<Request>();
 
     eventLoop_ = Task.Factory.StartNew(EventLoop,
                                        TaskCreationOptions.LongRunning)
@@ -67,16 +67,16 @@ public class Intent<T>
           Exception? exception = null;
           try
           {
-            Func<Connection<T>, int, T?, CancellationToken, Task> f = request.Type switch
-                                                                      {
-                                                                        Request<T>.RequestType.Open    => handler.OpenAsync,
-                                                                        Request<T>.RequestType.Amend   => handler.AmendAsync,
-                                                                        Request<T>.RequestType.Close   => handler.CloseAsync,
-                                                                        Request<T>.RequestType.Abort   => handler.AbortAsync,
-                                                                        Request<T>.RequestType.Timeout => handler.TimeoutAsync,
-                                                                        Request<T>.RequestType.Reset   => handler.ResetAsync,
-                                                                        _                              => throw new InvalidOperationException(),
-                                                                      };
+            Func<Connection, int, byte[], CancellationToken, Task> f = request.Type switch
+                                                                       {
+                                                                         Request.RequestType.Open    => handler.OpenAsync,
+                                                                         Request.RequestType.Amend   => handler.AmendAsync,
+                                                                         Request.RequestType.Close   => handler.CloseAsync,
+                                                                         Request.RequestType.Abort   => handler.AbortAsync,
+                                                                         Request.RequestType.Timeout => handler.TimeoutAsync,
+                                                                         Request.RequestType.Reset   => handler.ResetAsync,
+                                                                         _                           => throw new InvalidOperationException(),
+                                                                       };
             await f(connection,
                     request.IntentId,
                     request.Payload,
@@ -94,7 +94,7 @@ public class Intent<T>
                                         Type = exception is null
                                                  ? Response.ResponseType.Success
                                                  : Response.ResponseType.Error,
-                                        Payload = exception,
+                                        Payload = Encoding.UTF8.GetBytes(exception?.Message ?? string.Empty),
                                       }, request.Type.IsFinal()),
                                      cancellationToken)
                          .ConfigureAwait(false);
@@ -110,7 +110,7 @@ public class Intent<T>
   public int NbRequests
     => requests_.Reader.Count;
 
-  public ValueTask RequestAsync(Request<T>        request,
+  public ValueTask RequestAsync(Request           request,
                                 CancellationToken cancellationToken = default)
     => requests_.Writer.WriteAsync(request,
                                    cancellationToken);

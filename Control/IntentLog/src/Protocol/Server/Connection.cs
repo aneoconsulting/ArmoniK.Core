@@ -36,15 +36,14 @@ using Action = System.Action;
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
 [PublicAPI]
-public class Connection<T> : IDisposable, IAsyncDisposable
-  where T : class
+public class Connection : IDisposable, IAsyncDisposable
 {
   private readonly ILogger                 logger_;
   private          CancellationTokenSource cts_;
   private          Task                    eventLoop_;
 
   [PublicAPI]
-  public Connection(IServerHandler<T> handler,
+  public Connection(IServerHandler    handler,
                     Stream            stream,
                     Action            onClose,
                     ILogger?          logger,
@@ -73,7 +72,7 @@ public class Connection<T> : IDisposable, IAsyncDisposable
       var nextRequest  = NextRequest();
       var nextResponse = NextResponse();
 
-      var mapping = new Dictionary<int, Intent<T>>();
+      var mapping = new Dictionary<int, Intent>();
 
       while (!cancellationToken.IsCancellationRequested)
       {
@@ -99,7 +98,7 @@ public class Connection<T> : IDisposable, IAsyncDisposable
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (request.Type)
             {
-              case Request<T>.RequestType.Ping:
+              case Request.RequestType.Ping:
                 await new Response
                   {
                     IntentId = request.IntentId,
@@ -109,17 +108,17 @@ public class Connection<T> : IDisposable, IAsyncDisposable
                               cancellationToken)
                    .ConfigureAwait(false);
                 break;
-              case Request<T>.RequestType.Pong:
+              case Request.RequestType.Pong:
                 break;
               default:
                 if (!mapping.TryGetValue(request.IntentId,
                                          out var intent))
                 {
-                  intent = new Intent<T>(this,
-                                         handler,
-                                         logger_,
-                                         responseChannel.Writer,
-                                         cancellationToken);
+                  intent = new Intent(this,
+                                      handler,
+                                      logger_,
+                                      responseChannel.Writer,
+                                      cancellationToken);
                   mapping[request.IntentId] = intent;
                 }
 
@@ -187,7 +186,7 @@ public class Connection<T> : IDisposable, IAsyncDisposable
         {
           await handler.ResetAsync(this,
                                    id,
-                                   null,
+                                   Array.Empty<byte>(),
                                    cancellationToken)
                        .ConfigureAwait(false);
           await intent.DisposeAsync()
@@ -208,9 +207,9 @@ public class Connection<T> : IDisposable, IAsyncDisposable
                        Id);
     }
 
-    Task<Request<T>> NextRequest()
-      => Request<T>.ReceiveAsync(stream,
-                                 cts_.Token);
+    Task<Request> NextRequest()
+      => Request.ReceiveAsync(stream,
+                              cts_.Token);
 
     Task<(Response, bool)> NextResponse()
       => responseChannel.Reader.ReadAsync(cts_.Token)

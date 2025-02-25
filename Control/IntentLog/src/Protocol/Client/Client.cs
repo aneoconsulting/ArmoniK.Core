@@ -34,23 +34,22 @@ using Microsoft.Extensions.Logging.Abstractions;
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Client;
 
 [PublicAPI]
-public class Client<T> : IDisposable, IAsyncDisposable
-  where T : class
+public class Client : IDisposable, IAsyncDisposable
 {
-  private readonly CancellationTokenSource                               cts_;
-  private readonly Task                                                  eventLoop_;
-  private readonly ILogger                                               logger_;
-  private readonly Channel<(Request<T>, TaskCompletionSource<Response>)> requests_;
-  private          int                                                   nextId_;
+  private readonly CancellationTokenSource                            cts_;
+  private readonly Task                                               eventLoop_;
+  private readonly ILogger                                            logger_;
+  private readonly Channel<(Request, TaskCompletionSource<Response>)> requests_;
+  private          int                                                nextId_;
 
   [PublicAPI]
-  public Client(Stream              stream,
-                ILogger<Client<T>>? logger            = null,
-                CancellationToken   cancellationToken = default)
+  public Client(Stream            stream,
+                ILogger<Client>?  logger            = null,
+                CancellationToken cancellationToken = default)
   {
     cts_      = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    requests_ = Channel.CreateBounded<(Request<T>, TaskCompletionSource<Response>)>(1);
-    logger_   = logger ?? NullLogger<Client<T>>.Instance;
+    requests_ = Channel.CreateBounded<(Request, TaskCompletionSource<Response>)>(1);
+    logger_   = logger ?? NullLogger<Client>.Instance;
     eventLoop_ = Task.Factory.StartNew(EventLoop,
                                        TaskCreationOptions.LongRunning)
                      .Unwrap();
@@ -120,11 +119,11 @@ public class Client<T> : IDisposable, IAsyncDisposable
             switch (response.Type)
             {
               case Response.ResponseType.Ping:
-                await new Request<T>
+                await new Request
                   {
                     IntentId = response.IntentId,
-                    Type     = Request<T>.RequestType.Pong,
-                    Payload  = (T?)response.Payload,
+                    Type     = Request.RequestType.Pong,
+                    Payload  = response.Payload,
                   }.SendAsync(str,
                               cancellationToken)
                    .ConfigureAwait(false);
@@ -187,7 +186,7 @@ public class Client<T> : IDisposable, IAsyncDisposable
       => Response.ReceiveAsync(stream,
                                cts_.Token);
 
-    Task<(Request<T>, TaskCompletionSource<Response>)> NextRequest()
+    Task<(Request, TaskCompletionSource<Response>)> NextRequest()
       => requests_.Reader.ReadAsync(cts_.Token)
                   .AsTask();
   }
@@ -223,27 +222,27 @@ public class Client<T> : IDisposable, IAsyncDisposable
       .WaitSync();
 
   [PublicAPI]
-  public async Task<Intent<T>> OpenAsync(T?                obj,
-                                         CancellationToken cancellationToken = default)
+  public async Task<Intent> OpenAsync(byte[]            payload,
+                                      CancellationToken cancellationToken = default)
   {
     var id = Interlocked.Add(ref nextId_,
                              1);
-    await Call(new Request<T>
+    await Call(new Request
 
                {
                  IntentId = id,
-                 Type     = Request<T>.RequestType.Open,
-                 Payload  = obj,
+                 Type     = Request.RequestType.Open,
+                 Payload  = payload,
                },
                cancellationToken)
       .ConfigureAwait(false);
 
-    return new Intent<T>(this,
-                         logger_,
-                         id);
+    return new Intent(this,
+                      logger_,
+                      id);
   }
 
-  internal async Task Call(Request<T>        request,
+  internal async Task Call(Request           request,
                            CancellationToken cancellationToken = default)
   {
     logger_.LogDebug("Calling intent: {IntentId}:{IntentAction}:{@IntentPayload}",
@@ -269,19 +268,17 @@ public class Client<T> : IDisposable, IAsyncDisposable
     {
       case null:
         break;
-      case Exception e:
-        throw e;
       default:
         throw new Exception($"Unknown response: {response.Payload}");
     }
   }
 
   [PublicAPI]
-  public static async Task<Client<T>> ConnectAsync(string              host,
-                                                   int                 port,
-                                                   Options?            options           = null,
-                                                   ILogger<Client<T>>? logger            = null,
-                                                   CancellationToken   cancellationToken = default)
+  public static async Task<Client> ConnectAsync(string            host,
+                                                int               port,
+                                                Options?          options           = null,
+                                                ILogger<Client>?  logger            = null,
+                                                CancellationToken cancellationToken = default)
   {
     _ = options;
 
@@ -313,9 +310,9 @@ public class Client<T> : IDisposable, IAsyncDisposable
       throw;
     }
 
-    return new Client<T>(stream,
-                         logger,
-                         cancellationToken);
+    return new Client(stream,
+                      logger,
+                      cancellationToken);
   }
 
   public class Options

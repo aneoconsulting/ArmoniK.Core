@@ -24,8 +24,7 @@ using MessagePack;
 
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 
-public class Request<T>
-  where T : class
+public class Request
 {
   public enum RequestType
   {
@@ -84,7 +83,7 @@ public class Request<T>
   /// <summary>
   ///   Data related to the payload
   /// </summary>
-  public T? Payload { get; set; }
+  public byte[] Payload { get; set; } = Array.Empty<byte>();
 
   public async Task SendAsync(Stream            stream,
                               CancellationToken cancellationToken = default)
@@ -111,8 +110,8 @@ public class Request<T>
                 .ConfigureAwait(false);
   }
 
-  public static async Task<Request<T>> ReceiveAsync(Stream            stream,
-                                                    CancellationToken cancellationToken = default)
+  public static async Task<Request> ReceiveAsync(Stream            stream,
+                                                 CancellationToken cancellationToken = default)
   {
     var header = new byte[12];
     await stream.ReadExactlyAsync(header,
@@ -125,15 +124,13 @@ public class Request<T>
                                            4);
     var size = BitConverter.ToInt32(header,
                                     8);
-    var body = new byte[size];
+    var payload = new byte[size];
 
-    await stream.ReadExactlyAsync(body,
+    await stream.ReadExactlyAsync(payload,
                                   cancellationToken)
                 .ConfigureAwait(false);
 
-    var payload = MessagePackSerializer.Deserialize<T>(body);
-
-    return new Request<T>
+    return new Request
            {
              IntentId = intentId,
              Type     = (RequestType)requestType,
@@ -144,7 +141,6 @@ public class Request<T>
 
 public static class RequestTypeExtensions
 {
-  public static bool IsFinal<T>(this Request<T>.RequestType type)
-    where T : class
-    => type is Request<T>.RequestType.Close or Request<T>.RequestType.Abort or Request<T>.RequestType.Timeout or Request<T>.RequestType.Reset;
+  public static bool IsFinal(this Request.RequestType type)
+    => type is Request.RequestType.Close or Request.RequestType.Abort or Request.RequestType.Timeout or Request.RequestType.Reset;
 }
