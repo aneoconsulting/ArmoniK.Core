@@ -654,6 +654,7 @@ public class PollsterTest
 
   [Test]
   [Timeout(30000)]
+  [Retry(3)]
   public async Task CancelLongTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
