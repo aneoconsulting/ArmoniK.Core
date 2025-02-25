@@ -24,61 +24,57 @@ using ArmoniK.Core.Control.IntentLog.Protocol.Server;
 
 using Microsoft.Extensions.Logging;
 
+using Intent = ArmoniK.Core.Control.IntentLog.Protocol.Server.Intent;
+
 namespace ArmoniK.Core.Control.IntentLog;
 
 internal class ServerHandler : IServerHandler
 {
-  public Task OpenAsync(Connection        connection,
-                        int               intentId,
+  public Task OpenAsync(Intent            intent,
                         byte[]            payload,
                         CancellationToken cancellationToken = default)
   {
-    Console.WriteLine($"Opening intent: {intentId} with payload: {payload}");
+    Console.WriteLine($"Opening intent: {intent.Id} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task AmendAsync(Connection        connection,
-                         int               intentId,
+  public Task AmendAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default)
   {
-    Console.WriteLine($"Amending intent: {intentId} with payload: {payload}");
+    Console.WriteLine($"Amending intent: {intent.Id} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task CloseAsync(Connection        connection,
-                         int               intentId,
+  public Task CloseAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default)
   {
-    Console.WriteLine($"Closing intent: {intentId} with payload: {payload}");
+    Console.WriteLine($"Closing intent: {intent.Id} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task AbortAsync(Connection        connection,
-                         int               intentId,
+  public Task AbortAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default)
   {
-    Console.WriteLine($"Aborting intent: {intentId} with payload: {payload}");
+    Console.WriteLine($"Aborting intent: {intent.Id} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task TimeoutAsync(Connection        connection,
-                           int               intentId,
+  public Task TimeoutAsync(Intent            intent,
                            byte[]            payload,
                            CancellationToken cancellationToken = default)
   {
-    Console.WriteLine($"Timeout intent: {intentId} with payload: {payload}");
+    Console.WriteLine($"Timeout intent: {intent.Id} with payload: {payload}");
     return Task.CompletedTask;
   }
 
-  public Task ResetAsync(Connection        connection,
-                         int               intentId,
+  public Task ResetAsync(Intent            intent,
                          byte[]            payload,
                          CancellationToken cancellationToken = default)
   {
-    Console.WriteLine($"Reset intent: {intentId} with payload: {payload}");
+    Console.WriteLine($"Reset intent: {intent.Id} with payload: {payload}");
     return Task.CompletedTask;
   }
 }
