@@ -229,21 +229,11 @@ destroyTargetObject:
 
 # Deploy target: queue standalone
 deployTargetQueue: (init)
-  #!/usr/bin/env bash
-  which_module="module.queue_{{queue}}"
-  if [ {{queue}} = "rabbitmq091" ]; then
-    which_module="module.queue_rabbitmq"
-  fi
-  terraform -chdir=terraform apply -target="${which_module}" -auto-approve
+  terraform -chdir=terraform apply -target=local_file.queue_env -auto-approve
 
 # Destroy target: queue standalone
 destroyTargetQueue:
-  #!/usr/bin/env bash
-  which_module="module.queue_{{queue}}"
-  if [ {{queue}} = "rabbitmq091" ]; then
-    which_module="module.queue_rabbitmq"
-  fi
-  terraform -chdir=terraform destroy -target="${which_module}" -auto-approve
+  terraform -chdir=terraform destroy -target=local_file.queue_env -auto-approve
 
 # Destroy ArmoniK Core
 destroy:
