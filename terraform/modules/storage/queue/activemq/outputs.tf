@@ -12,3 +12,9 @@ output "generated_env_vars" {
     "Amqp__LinkCredit"                                      = "${var.queue_envs.link_credit}"
   })
 }
+output "core_mounts" {
+  description = "Volumes that agents and submitters must mount to access the queue"
+  value = {
+
+  }
+}

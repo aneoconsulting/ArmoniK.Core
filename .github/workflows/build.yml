@@ -156,6 +156,7 @@ jobs:
     - name: Run tests
       run: |
         sed -i "s/queue/localhost/" terraform/generated/queue_env.sh
+        sed -i 's|/rabbitmq/certs/|../../../../../../terraform/generated/queue/certs/|g' terraform/generated/queue_env.sh
         source ./terraform/generated/queue_env.sh 
         MONITOR_PREFIX="monitor/test/" MONITOR_CD="Base/tests/Queue/" tools/monitor.sh \
            dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0

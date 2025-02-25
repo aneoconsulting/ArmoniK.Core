@@ -17,12 +17,12 @@
 
 using System;
 using System.Net.Security;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.QueueCommon;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using JetBrains.Annotations;
@@ -48,12 +48,25 @@ public class ConnectionRabbit : IConnectionRabbit
   {
     logger_  = logger;
     options_ = options;
+    // Log de la configuration utilisée
+    logger_.LogInformation("Initializing RabbitMQ connection: Host={host}, Port={port}, TLS={tls}",
+                           options.Host,
+                           options.Port,
+                           options.Ssl);
+
+    // On s'assure d'utiliser un nom stable pour la connexion (ici "queue")
+
     factory_ = new ConnectionFactory
                {
-                 UserName               = options.User,
-                 Password               = options.Password,
-                 HostName               = options.Host,
-                 Port                   = options.Port,
+                 UserName = options.User,
+                 Password = options.Password,
+                 HostName = options.Host,
+                 Port     = options.Port,
+                 Ssl = new SslOption
+                       {
+                         Enabled    = options.Ssl,
+                         ServerName = options.Host,
+                       },
                  DispatchConsumersAsync = true,
                };
   }
@@ -118,26 +131,32 @@ public class ConnectionRabbit : IConnectionRabbit
                                                      ILogger           logger,
                                                      CancellationToken cancellationToken = default)
   {
-    if (options.Scheme.Equals("AMQPS"))
+    logger.LogInformation("Host : {host} ",
+                          options.Host);
+    if (options.Scheme.Equals("AMQPS",
+                              StringComparison.OrdinalIgnoreCase))
     {
       factory.Ssl.Enabled    = true;
       factory.Ssl.ServerName = options.Host;
-      factory.Ssl.CertificateValidationCallback = delegate(object           _,
-                                                           X509Certificate? _,
-                                                           X509Chain?       _,
-                                                           SslPolicyErrors  errors)
-                                                  {
-                                                    switch (errors)
-                                                    {
-                                                      case SslPolicyErrors.RemoteCertificateNameMismatch when options.AllowHostMismatch:
-                                                      case SslPolicyErrors.None:
-                                                        return true;
-                                                      default:
-                                                        logger.LogError("SSL error : {error}",
-                                                                        errors);
-                                                        return false;
-                                                    }
-                                                  };
+
+      RemoteCertificateValidationCallback? validationCallback = null;
+      if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
+      {
+        validationCallback = CertificateValidator.CreateCallback(options.CaPath,
+                                                                 options.AllowInsecureTls,
+                                                                 logger);
+      }
+      else if (!options.Ssl)
+      {
+        logger.LogError("SSL is disabled for RabbitMQ and your current scheme is {scheme}",
+                        options.Scheme);
+      }
+      else
+      {
+        logger.LogError("No CA path provided for RabbitMQ, SSL validation will not be performed");
+      }
+
+      factory.Ssl.CertificateValidationCallback = validationCallback;
     }
 
     var retry = 0;
@@ -145,6 +164,9 @@ public class ConnectionRabbit : IConnectionRabbit
     {
       try
       {
+        logger.LogInformation("Attempting to create RabbitMQ connection, try {retry}",
+                              retry);
+
         var connection = factory.CreateConnection();
         connection.ConnectionShutdown += (_,
                                           ea) => OnShutDown(ea,
@@ -156,6 +178,7 @@ public class ConnectionRabbit : IConnectionRabbit
                                 ea) => OnShutDown(ea,
                                                   "Channel",
                                                   logger);
+        logger.LogInformation("Connection established successfully.");
         return model;
       }
       catch (Exception ex)

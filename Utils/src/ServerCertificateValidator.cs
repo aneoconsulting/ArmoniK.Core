@@ -125,9 +125,9 @@ public static class CertificateValidator
   {
     if (!File.Exists(caFilePath))
     {
-      logger.LogError("CA certificate Mongo file not found at {path}",
+      logger.LogError("CA certificate file not found at {path}",
                       caFilePath);
-      throw new FileNotFoundException("CA certificate Mongo file not found",
+      throw new FileNotFoundException("CA certificate file not found",
                                       caFilePath);
     }
 

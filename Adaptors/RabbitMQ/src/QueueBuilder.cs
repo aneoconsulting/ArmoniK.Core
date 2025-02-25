@@ -15,9 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Security.Cryptography.X509Certificates;
-
 using ArmoniK.Core.Adapters.QueueCommon;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
@@ -65,30 +62,6 @@ public class QueueBuilder : IDependencyInjectionBuildable
     else
     {
       logger.LogTrace("No credential path provided");
-    }
-
-    if (!string.IsNullOrEmpty(amqpOptions.CaPath))
-    {
-      var localTrustStore       = new X509Store(StoreName.Root);
-      var certificateCollection = new X509Certificate2Collection();
-      try
-      {
-        certificateCollection.ImportFromPemFile(amqpOptions.CaPath);
-        localTrustStore.Open(OpenFlags.ReadWrite);
-        localTrustStore.AddRange(certificateCollection);
-        logger.LogTrace("Imported AMQP certificate from file {path}",
-                        amqpOptions.CaPath);
-      }
-      catch (Exception ex)
-      {
-        logger.LogError("Root certificate import failed: {error}",
-                        ex.Message);
-        throw;
-      }
-      finally
-      {
-        localTrustStore.Close();
-      }
     }
 
     serviceCollection.AddSingletonWithHealthCheck<IConnectionRabbit, ConnectionRabbit>(nameof(IConnectionRabbit));
