@@ -24,33 +24,10 @@ namespace ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 
 public class Response
 {
-  public enum ResponseType
-  {
-    /// <summary>
-    ///   Ping
-    /// </summary>
-    Ping = 0,
-
-    /// <summary>
-    ///   Pong
-    /// </summary>
-    Pong = 1,
-
-    /// <summary>
-    ///   Intent action has been successful
-    /// </summary>
-    Success = 2,
-
-    /// <summary>
-    ///   Intent action has failed
-    /// </summary>
-    Error = 3,
-  }
-
   /// <summary>
   ///   ID of the intent within the connection
   /// </summary>
-  public int IntentId { get; set; }
+  public Guid IntentId { get; set; }
 
   /// <summary>
   ///   Type of the response
@@ -66,19 +43,18 @@ public class Response
                               CancellationToken cancellationToken = default)
   {
     var size = Payload.Length;
-    var msg  = new byte[size + 12];
+    var msg  = new byte[size + 24];
 
-    BitConverter.GetBytes(IntentId)
-                .CopyTo(msg.AsSpan(0,
-                                   4));
+    IntentId.TryWriteBytes(msg.AsSpan(0,
+                                      16));
     BitConverter.GetBytes((int)Type)
-                .CopyTo(msg.AsSpan(4,
+                .CopyTo(msg.AsSpan(16,
                                    4));
     BitConverter.GetBytes(size)
-                .CopyTo(msg.AsSpan(8,
+                .CopyTo(msg.AsSpan(20,
                                    4));
 
-    Payload.CopyTo(msg.AsSpan(12,
+    Payload.CopyTo(msg.AsSpan(24,
                               size));
 
     await stream.WriteAsync(msg,
@@ -89,17 +65,17 @@ public class Response
   public static async Task<Response> ReceiveAsync(Stream            stream,
                                                   CancellationToken cancellationToken = default)
   {
-    var header = new byte[12];
+    var header = new byte[24];
     await stream.ReadExactlyAsync(header,
                                   cancellationToken)
                 .ConfigureAwait(false);
 
-    var intentId = BitConverter.ToInt32(header,
-                                        0);
+    var intentId = new Guid(header.AsSpan(0,
+                                          16));
     var type = BitConverter.ToInt32(header,
-                                    4);
+                                    16);
     var size = BitConverter.ToInt32(header,
-                                    8);
+                                    20);
     var payload = new byte[size];
 
     await stream.ReadExactlyAsync(payload,
@@ -113,4 +89,27 @@ public class Response
              Payload  = payload,
            };
   }
+}
+
+public enum ResponseType
+{
+  /// <summary>
+  ///   Ping
+  /// </summary>
+  Ping = 0,
+
+  /// <summary>
+  ///   Pong
+  /// </summary>
+  Pong = 1,
+
+  /// <summary>
+  ///   Intent action has been successful
+  /// </summary>
+  Success = 2,
+
+  /// <summary>
+  ///   Intent action has failed
+  /// </summary>
+  Error = 3,
 }

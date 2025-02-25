@@ -26,54 +26,10 @@ namespace ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 
 public class Request
 {
-  public enum RequestType
-  {
-    /// <summary>
-    ///   Ping
-    /// </summary>
-    Ping = 0,
-
-    /// <summary>
-    ///   Pong
-    /// </summary>
-    Pong = 1,
-
-    /// <summary>
-    ///   Open a new intent
-    /// </summary>
-    Open = 2,
-
-    /// <summary>
-    ///   Amend a previously opened intent
-    /// </summary>
-    Amend = 3,
-
-    /// <summary>
-    ///   Close with success a previously opened intent
-    /// </summary>
-    Close = 4,
-
-    /// <summary>
-    ///   Close with error a previously opened intent
-    /// </summary>
-    Abort = 5,
-
-    /// <summary>
-    ///   Client has timed out
-    /// </summary>
-    Timeout = 6,
-
-    /// <summary>
-    ///   Client has forcibly closed the intent
-    /// </summary>
-    Reset = 7,
-  }
-
-
   /// <summary>
   ///   ID of the intent within the connection
   /// </summary>
-  public int IntentId { get; set; }
+  public Guid IntentId { get; set; }
 
   /// <summary>
   ///   Type of the request (eg: Open, Close)
@@ -90,19 +46,18 @@ public class Request
   {
     var body = MessagePackSerializer.Serialize(Payload);
     var size = body.Length;
-    var msg  = new byte[size + 12];
+    var msg  = new byte[size + 24];
 
-    BitConverter.GetBytes(IntentId)
-                .CopyTo(msg.AsSpan(0,
-                                   4));
+    IntentId.TryWriteBytes(msg.AsSpan(0,
+                                      16));
     BitConverter.GetBytes((int)Type)
-                .CopyTo(msg.AsSpan(4,
+                .CopyTo(msg.AsSpan(16,
                                    4));
     BitConverter.GetBytes(size)
-                .CopyTo(msg.AsSpan(8,
+                .CopyTo(msg.AsSpan(20,
                                    4));
 
-    body.CopyTo(msg.AsSpan(12,
+    body.CopyTo(msg.AsSpan(24,
                            size));
 
     await stream.WriteAsync(msg,
@@ -113,17 +68,17 @@ public class Request
   public static async Task<Request> ReceiveAsync(Stream            stream,
                                                  CancellationToken cancellationToken = default)
   {
-    var header = new byte[12];
+    var header = new byte[24];
     await stream.ReadExactlyAsync(header,
                                   cancellationToken)
                 .ConfigureAwait(false);
 
-    var intentId = BitConverter.ToInt32(header,
-                                        0);
+    var intentId = new Guid(header.AsSpan(0,
+                                          16));
     var requestType = BitConverter.ToInt32(header,
-                                           4);
+                                           16);
     var size = BitConverter.ToInt32(header,
-                                    8);
+                                    20);
     var payload = new byte[size];
 
     await stream.ReadExactlyAsync(payload,
@@ -139,8 +94,51 @@ public class Request
   }
 }
 
+public enum RequestType
+{
+  /// <summary>
+  ///   Ping
+  /// </summary>
+  Ping = 0,
+
+  /// <summary>
+  ///   Pong
+  /// </summary>
+  Pong = 1,
+
+  /// <summary>
+  ///   Open a new intent
+  /// </summary>
+  Open = 2,
+
+  /// <summary>
+  ///   Amend a previously opened intent
+  /// </summary>
+  Amend = 3,
+
+  /// <summary>
+  ///   Close with success a previously opened intent
+  /// </summary>
+  Close = 4,
+
+  /// <summary>
+  ///   Close with error a previously opened intent
+  /// </summary>
+  Abort = 5,
+
+  /// <summary>
+  ///   Client has timed out
+  /// </summary>
+  Timeout = 6,
+
+  /// <summary>
+  ///   Client has forcibly closed the intent
+  /// </summary>
+  Reset = 7,
+}
+
 public static class RequestTypeExtensions
 {
-  public static bool IsFinal(this Request.RequestType type)
-    => type is Request.RequestType.Close or Request.RequestType.Abort or Request.RequestType.Timeout or Request.RequestType.Reset;
+  public static bool IsFinal(this RequestType type)
+    => type is RequestType.Close or RequestType.Abort or RequestType.Timeout or RequestType.Reset;
 }

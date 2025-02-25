@@ -72,7 +72,7 @@ public class Connection : IDisposable, IAsyncDisposable
       var nextRequest  = NextRequest();
       var nextResponse = NextResponse();
 
-      var mapping = new Dictionary<int, Intent>();
+      var mapping = new Dictionary<Guid, Intent>();
 
       while (!cancellationToken.IsCancellationRequested)
       {
@@ -98,17 +98,17 @@ public class Connection : IDisposable, IAsyncDisposable
             // ReSharper disable once SwitchStatementHandlesSomeKnownEnumValuesWithDefault
             switch (request.Type)
             {
-              case Request.RequestType.Ping:
+              case RequestType.Ping:
                 await new Response
                   {
                     IntentId = request.IntentId,
-                    Type     = Response.ResponseType.Pong,
+                    Type     = ResponseType.Pong,
                     Payload  = request.Payload,
                   }.SendAsync(str,
                               cancellationToken)
                    .ConfigureAwait(false);
                 break;
-              case Request.RequestType.Pong:
+              case RequestType.Pong:
                 break;
               default:
                 if (!mapping.TryGetValue(request.IntentId,
