@@ -78,7 +78,8 @@ internal class PushQueueStorage : IPushQueueStorage
                                     MessageBody = data.TaskId,
                                   })
                   .Chunk(10)
-                  .ParallelForEach(async entries =>
+                  .ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
+                                   async entries =>
                                    {
                                      var entriesList = entries.ToList();
                                      var response = await client_.SendMessageBatchAsync(new SendMessageBatchRequest
