@@ -224,7 +224,7 @@ public class Client : IDisposable, IAsyncDisposable
   public async Task<Intent> OpenAsync(byte[]            payload,
                                       CancellationToken cancellationToken = default)
   {
-    var id = new Guid();
+    var id = Guid.NewGuid();
     await Call(new Request
 
                {
@@ -262,12 +262,9 @@ public class Client : IDisposable, IAsyncDisposable
                      request.Payload,
                      response.Payload);
 
-    switch (response.Payload)
+    if (response.Type is ResponseType.Error)
     {
-      case null:
-        break;
-      default:
-        throw new Exception($"Unknown response: {response.Payload}");
+      throw new Exception($"Unknown response: {response.Payload}");
     }
   }
 
@@ -282,10 +279,13 @@ public class Client : IDisposable, IAsyncDisposable
 
     var socket = new Socket(SocketType.Stream,
                             ProtocolType.Tcp);
-    socket.SetSocketOption(SocketOptionLevel.Socket,
-                           SocketOptionName.ReuseAddress,
-                           true);
 
+    if (OperatingSystem.IsWindows())
+    {
+      socket.SetSocketOption(SocketOptionLevel.Socket,
+                             SocketOptionName.ReuseAddress,
+                             true);
+    }
 
     logger?.LogInformation("Client created {@Endpoint}",
                            socket.LocalEndPoint);

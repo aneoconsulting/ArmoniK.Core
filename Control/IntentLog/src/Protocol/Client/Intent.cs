@@ -54,8 +54,8 @@ public class Intent : IDisposable, IAsyncDisposable
                                                               null),
                                          logger_,
                                          id_,
-                                         RequestType.Reset,
-                                         null)
+                                         disposeRequestType_,
+                                         diposeRequestPayload_)
       .ConfigureAwait(false);
     GC.SuppressFinalize(this);
   }
