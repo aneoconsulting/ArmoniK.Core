@@ -20,8 +20,6 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-using MessagePack;
-
 namespace ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 
 public class Request
@@ -44,8 +42,7 @@ public class Request
   public async Task SendAsync(Stream            stream,
                               CancellationToken cancellationToken = default)
   {
-    var body = MessagePackSerializer.Serialize(Payload);
-    var size = body.Length;
+    var size = Payload.Length;
     var msg  = new byte[size + 24];
 
     IntentId.TryWriteBytes(msg.AsSpan(0,
@@ -57,8 +54,8 @@ public class Request
                 .CopyTo(msg.AsSpan(20,
                                    4));
 
-    body.CopyTo(msg.AsSpan(24,
-                           size));
+    Payload.CopyTo(msg.AsSpan(24,
+                              size));
 
     await stream.WriteAsync(msg,
                             cancellationToken)
@@ -81,9 +78,12 @@ public class Request
                                     20);
     var payload = new byte[size];
 
-    await stream.ReadExactlyAsync(payload,
-                                  cancellationToken)
-                .ConfigureAwait(false);
+    if (size > 0)
+    {
+      await stream.ReadExactlyAsync(payload,
+                                    cancellationToken)
+                  .ConfigureAwait(false);
+    }
 
     return new Request
            {
