@@ -69,13 +69,17 @@ public class Client : IDisposable, IAsyncDisposable
       var        mapping   = new Dictionary<Guid, Queue<TaskCompletionSource<Response>>>();
       Exception? exception = null;
 
-      while (!cancellationToken.IsCancellationRequested)
+      try
       {
-        try
+        while (!cancellationToken.IsCancellationRequested)
         {
-          var task = await Task.WhenAny(nextRequest,
-                                        nextResponse)
-                               .ConfigureAwait(false);
+          logger_.LogTrace("Waiting for a new event");
+          var task = nextRequest.IsCompleted
+                       ? nextRequest
+                       : await Task.WhenAny(nextRequest,
+                                            nextResponse)
+                                   .ConfigureAwait(false);
+          logger_.LogTrace("Received an event");
 
           if (ReferenceEquals(task,
                               nextRequest))
@@ -146,39 +150,75 @@ public class Client : IDisposable, IAsyncDisposable
             }
           }
         }
-        catch (Exception ex)
+      }
+      catch (Exception ex)
+      {
+        exception = ex;
+
+        if (cancellationToken.IsCancellationRequested)
         {
-          exception = ex;
-
-          if (!cancellationToken.IsCancellationRequested && ex is not EndOfStreamException and not IOException
-                                                                                                   {
-                                                                                                     InnerException: SocketException
-                                                                                                                     {
-                                                                                                                       SocketErrorCode: SocketError.ConnectionReset or
-                                                                                                                                        SocketError.NetworkReset or
-                                                                                                                                        SocketError.HostDown or
-                                                                                                                                        SocketError.TimedOut,
-                                                                                                                     },
-                                                                                                   })
-          {
-            logger_.LogError(ex,
-                             "Client error");
-
-            await cts_.CancelAsync()
-                      .ConfigureAwait(false);
-          }
-
-          break;
+          logger_.LogTrace("Client stopping: cancellation requested");
+        }
+        else if (ex is EndOfStreamException and not IOException
+                                                    {
+                                                      InnerException: SocketException
+                                                                      {
+                                                                        SocketErrorCode: SocketError.ConnectionReset or SocketError.NetworkReset or
+                                                                                         SocketError.HostDown or SocketError.TimedOut,
+                                                                      },
+                                                    })
+        {
+          logger_.LogTrace(ex,
+                           "Client stopping: server closed the connection");
+        }
+        else
+        {
+          logger_.LogError(ex,
+                           "Client error");
         }
       }
 
-      foreach (var (_, queue) in mapping)
+      logger_.LogTrace("Client stopping: cancel all on-flight tasks");
+      exception ??= new OperationCanceledException(cancellationToken);
+      requests_.Writer.TryComplete(exception);
+      await cts_.CancelAsync()
+                .ConfigureAwait(false);
+
+      // Cancel callers whose requests have already been sent
+      foreach (var (id, queue) in mapping)
       {
+        logger_.LogTrace("Cancel {NCallers} callers intent {IntentId}",
+                         queue.Count,
+                         id);
         foreach (var tcs in queue)
         {
-          tcs.TrySetException(exception ?? new OperationCanceledException(cancellationToken));
+          tcs.TrySetException(exception);
         }
       }
+
+      // Cancel caller whose request has already been removed from channel, but not yet processed
+      try
+      {
+        var (request, tcs) = await nextRequest.ConfigureAwait(false);
+        logger_.LogTrace("Cancel caller intent {IntentId}",
+                         request.IntentId);
+        tcs.TrySetException(exception);
+      }
+      catch (Exception ex) when (ex is ChannelClosedException or OperationCanceledException)
+      {
+        // Empty on purpose
+      }
+
+      // Cancel callers whose requests are still pending within the queue
+      while (requests_.Reader.TryRead(out var r))
+      {
+        var (request, tcs) = r;
+        logger_.LogTrace("Cancel caller intent {IntentId}",
+                         request.IntentId);
+        tcs.TrySetException(exception);
+      }
+
+      logger_.LogTrace("Client stopped");
     }
 
     Task<Response> NextResponse()
@@ -247,10 +287,20 @@ public class Client : IDisposable, IAsyncDisposable
                      request.IntentId,
                      request.Type,
                      request.Payload);
-    var tcs = new TaskCompletionSource<Response>();
-    await requests_.Writer.WriteAsync((request, tcs),
-                                      cancellationToken)
-                   .ConfigureAwait(false);
+    var tcs = new TaskCompletionSource<Response>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    try
+    {
+      await requests_.Writer.WriteAsync((request, tcs),
+                                        cancellationToken)
+                     .ConfigureAwait(false);
+    }
+    catch (ChannelClosedException ex)
+    {
+      (ex.InnerException ?? ex).RethrowWithStacktrace();
+    }
+
+    logger_.LogTrace("Request sent for processing");
 
     await using var reg = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
 
