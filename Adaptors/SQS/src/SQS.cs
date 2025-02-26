@@ -60,4 +60,9 @@ internal class SQS
   ///   Set to 0 in order to disable long polling.
   /// </summary>
   public int WaitTimeSeconds { get; set; } = 20;
+
+  /// <summary>
+  ///   Parallelism used in the control plane when possible. Defaults to the number of threads.
+  /// </summary>
+  public int DegreeOfParallelism { get; set; } = 0;
 }
