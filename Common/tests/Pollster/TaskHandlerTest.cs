@@ -18,8 +18,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -32,13 +30,11 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 
@@ -1617,165 +1613,6 @@ public class TaskHandlerTest
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);
   }
-
-  [Test]
-  public async Task ExecuteErrorTaskAndAbortChildrenShouldSucceed()
-  {
-    var sqmh = new SimpleQueueMessageHandler
-               {
-                 CancellationToken = CancellationToken.None,
-                 Status            = QueueMessageStatus.Waiting,
-                 MessageId = Guid.NewGuid()
-                                 .ToString(),
-               };
-
-    var sh = new SimpleWorkerStreamHandler
-             {
-               Output = new Output(OutputStatus.Error,
-                                   "Error task to validate child tasks are cancelled properly"),
-             };
-    using var testServiceProvider = new TestTaskHandlerProvider(sh,
-                                                                new SimpleAgentHandler(),
-                                                                sqmh);
-
-    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
-                                         .ConfigureAwait(false);
-
-
-    var sessionData = await testServiceProvider.SessionTable.GetSessionAsync(sessionId)
-                                               .ConfigureAwait(false);
-    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                     CancellationToken.None)
-                                            .ConfigureAwait(false);
-
-    var token = Guid.NewGuid()
-                    .ToString();
-
-    var agent = new Agent(testServiceProvider.GetRequiredService<ISubmitter>(),
-                          testServiceProvider.GetRequiredService<IObjectStorage>(),
-                          testServiceProvider.GetRequiredService<IPushQueueStorage>(),
-                          testServiceProvider.GetRequiredService<IResultTable>(),
-                          testServiceProvider.GetRequiredService<ITaskTable>(),
-                          sessionData,
-                          taskData,
-                          Path.GetTempFileName(),
-                          token,
-                          testServiceProvider.Logger);
-
-    var payloadId = (await agent.CreateResults(token,
-                                               new[]
-                                               {
-                                                 (new ResultCreationRequest(sessionId,
-                                                                            "payload"), new ReadOnlyMemory<byte>(Encoding.UTF8.GetBytes("payload"))),
-                                               },
-                                               CancellationToken.None)
-                                .ConfigureAwait(false)).Single()
-                                                       .ResultId;
-
-    var output = (await agent.CreateResultsMetaData(token,
-                                                    new[]
-                                                    {
-                                                      new ResultCreationRequest(sessionId,
-                                                                                "output"),
-                                                    },
-                                                    CancellationToken.None)
-                             .ConfigureAwait(false)).Single()
-                                                    .ResultId;
-
-    var task = (await agent.SubmitTasks(new List<TaskSubmissionRequest>
-                                        {
-                                          new(payloadId,
-                                              null,
-                                              new List<string>
-                                              {
-                                                output,
-                                              },
-                                              new List<string>()),
-                                        },
-                                        null,
-                                        sessionId,
-                                        token,
-                                        CancellationToken.None)
-                           .ConfigureAwait(false)).Single()
-                                                  .TaskId;
-
-    var agentHandler = new WrapperAgentHandler(agent);
-
-    var taskHandler = new TaskHandler(testServiceProvider.GetRequiredService<ISessionTable>(),
-                                      testServiceProvider.GetRequiredService<ITaskTable>(),
-                                      testServiceProvider.GetRequiredService<IResultTable>(),
-                                      testServiceProvider.GetRequiredService<ISubmitter>(),
-                                      testServiceProvider.GetRequiredService<DataPrefetcher>(),
-                                      sh,
-                                      sqmh,
-                                      testServiceProvider.GetRequiredService<ITaskProcessingChecker>(),
-                                      "ownerpodid",
-                                      "ownerpodname",
-                                      testServiceProvider.GetRequiredService<ActivitySource>(),
-                                      agentHandler,
-                                      testServiceProvider.GetRequiredService<ILogger>(),
-                                      testServiceProvider.GetRequiredService<Injection.Options.Pollster>(),
-                                      () =>
-                                      {
-                                      },
-                                      testServiceProvider.GetRequiredService<ExceptionManager>(),
-                                      testServiceProvider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>());
-
-    sqmh.TaskId = taskId;
-
-    var acquired = await taskHandler.AcquireTask()
-                                    .ConfigureAwait(false);
-
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
-
-    await taskHandler.PreProcessing()
-                     .ConfigureAwait(false);
-
-    await taskHandler.ExecuteTask()
-                     .ConfigureAwait(false);
-
-    await taskHandler.PostProcessing()
-                     .ConfigureAwait(false);
-
-    taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
-                                                                 CancellationToken.None)
-                                        .ConfigureAwait(false);
-
-    Console.WriteLine(taskData);
-
-    Assert.AreEqual(TaskStatus.Error,
-                    taskData.Status);
-    Assert.IsNotNull(taskData.StartDate);
-    Assert.IsNotNull(taskData.EndDate);
-    Assert.IsNotNull(taskData.ProcessingToEndDuration);
-    Assert.IsNotNull(taskData.CreationToEndDuration);
-    Assert.Greater(taskData.CreationToEndDuration,
-                   taskData.ProcessingToEndDuration);
-
-    Assert.AreEqual(QueueMessageStatus.Processed,
-                    sqmh.Status);
-
-    taskData = await testServiceProvider.TaskTable.ReadTaskAsync(task,
-                                                                 CancellationToken.None)
-                                        .ConfigureAwait(false);
-    Console.WriteLine(taskData);
-    Assert.AreEqual(TaskStatus.Cancelled,
-                    taskData.Status);
-
-    var result = await testServiceProvider.ResultTable.GetResult(payloadId)
-                                          .ConfigureAwait(false);
-
-    Assert.AreEqual(ResultStatus.Aborted,
-                    result.Status);
-
-    result = await testServiceProvider.ResultTable.GetResult(output)
-                                      .ConfigureAwait(false);
-
-    Assert.AreEqual(ResultStatus.Aborted,
-                    result.Status);
-  }
-
 
   private class ObjectStorageThrowNotFound : IObjectStorage
   {

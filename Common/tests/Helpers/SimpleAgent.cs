@@ -38,7 +38,7 @@ public class SimpleAgent : IAgent
   public string SessionId
     => "session";
 
-  public Task FinalizeTaskCreation(CancellationToken cancellationToken)
+  public Task CreateResultsAndSubmitChildTasksAsync(CancellationToken cancellationToken)
     => Task.CompletedTask;
 
   public Task<string> GetCommonData(string            token,

@@ -406,7 +406,7 @@ public class AgentTest
                                         CancellationToken.None)
                 .ConfigureAwait(false);
 
-    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+    await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);
 
     var resultData = await holder.ResultTable.GetResult(ExpectedOutput1,
@@ -546,24 +546,17 @@ public class AgentTest
 
     var taskId3 = submit2.Single()
                          .TaskId;
-    var taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
-                                                         CancellationToken.None)
-                                .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData3.Status);
-
-
-    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+    await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);
 
     Assert.AreEqual(3,
                     holder.QueueStorage.Messages[Partition]
                           .Count);
 
-    taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
-                                                     CancellationToken.None)
-                            .ConfigureAwait(false);
+    var taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
+                                                         CancellationToken.None)
+                                .ConfigureAwait(false);
 
     Assert.AreEqual(TaskStatus.Submitted,
                     taskData3.Status);
@@ -596,7 +589,7 @@ public class AgentTest
     Assert.AreEqual(200,
                     submit.Count);
 
-    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+    await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);
   }
 
@@ -662,23 +655,7 @@ public class AgentTest
                                                    CancellationToken.None)
                               .ConfigureAwait(false);
 
-    foreach (var result in results)
-    {
-      Console.WriteLine(result);
-
-      var resultMetadata = await holder.ResultTable.GetResult(result.ResultId,
-                                                              CancellationToken.None)
-                                       .ConfigureAwait(false);
-
-      Assert.AreEqual(result.Name,
-                      resultMetadata.Name);
-      Assert.AreEqual(ResultStatus.Created,
-                      resultMetadata.Status);
-      Assert.AreEqual(holder.TaskData.TaskId,
-                      resultMetadata.CreatedBy);
-    }
-
-    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+    await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);
 
     foreach (var result in results)
@@ -808,7 +785,7 @@ public class AgentTest
                       eokResult.CreatedBy);
     }
 
-    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
+    await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);
 
 
@@ -892,37 +869,22 @@ public class AgentTest
                            .ExpectedOutputKeys.ToList());
     }
 
+    await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
+                .ConfigureAwait(false);
+
     var uploadedResultData = await holder.ResultTable.GetResult(eok.Last()
                                                                    .ResultId)
                                          .ConfigureAwait(false);
-
-    Assert.AreEqual(ResultStatus.Created,
-                    uploadedResultData.Status);
-
-    var taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
-                                                             .TaskId,
-                                                        CancellationToken.None)
-                               .ConfigureAwait(false);
-
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
-
-    await holder.Agent.FinalizeTaskCreation(CancellationToken.None)
-                .ConfigureAwait(false);
-
-    uploadedResultData = await holder.ResultTable.GetResult(eok.Last()
-                                                               .ResultId)
-                                     .ConfigureAwait(false);
 
     Assert.AreEqual(ResultStatus.Completed,
                     uploadedResultData.Status);
     Assert.AreEqual(10,
                     uploadedResultData.Size);
 
-    taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
-                                                         .TaskId,
-                                                    CancellationToken.None)
-                           .ConfigureAwait(false);
+    var taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
+                                                             .TaskId,
+                                                        CancellationToken.None)
+                               .ConfigureAwait(false);
 
     Assert.IsEmpty(taskData.RemainingDataDependencies);
     Assert.AreEqual(TaskStatus.Submitted,

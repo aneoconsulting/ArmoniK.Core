@@ -989,7 +989,7 @@ public sealed class TaskHandler : IAsyncDisposable
       if (output_.Status == OutputStatus.Success)
       {
         logger_.LogDebug("Complete processing of the request");
-        await agent_.FinalizeTaskCreation(CancellationToken.None)
+        await agent_.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                     .ConfigureAwait(false);
       }
 
