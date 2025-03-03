@@ -48,18 +48,18 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public sealed class Agent : IAgent
 {
-  private readonly ConcurrentBag<ICollection<Result>>               createdResults_ = new();
-  private readonly ConcurrentBag<ICollection<TaskCreationRequest>>  createdTasks_   = new();
-  private readonly ILogger                                          logger_;
-  private readonly ConcurrentBag<ICollection<string>>               notifiedResults_ = new();
-  private readonly IObjectStorage                                   objectStorage_;
-  private readonly IPushQueueStorage                                pushQueueStorage_;
-  private readonly ConcurrentBag<(string id, ReadOnlyMemory<byte>)> resultsData_ = new();
-  private readonly IResultTable                                     resultTable_;
-  private readonly SessionData                                      sessionData_;
-  private readonly ISubmitter                                       submitter_;
-  private readonly TaskData                                         taskData_;
-  private readonly ITaskTable                                       taskTable_;
+  private readonly ConcurrentBag<ICollection<Result>>                                 createdResults_ = new();
+  private readonly ConcurrentBag<ICollection<TaskCreationRequest>>                    createdTasks_   = new();
+  private readonly ILogger                                                            logger_;
+  private readonly ConcurrentBag<ICollection<string>>                                 notifiedResults_ = new();
+  private readonly IObjectStorage                                                     objectStorage_;
+  private readonly IPushQueueStorage                                                  pushQueueStorage_;
+  private readonly ConcurrentBag<ICollection<(string id, ReadOnlyMemory<byte> data)>> resultsData_ = new();
+  private readonly IResultTable                                                       resultTable_;
+  private readonly SessionData                                                        sessionData_;
+  private readonly ISubmitter                                                         submitter_;
+  private readonly TaskData                                                           taskData_;
+  private readonly ITaskTable                                                         taskTable_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -273,27 +273,23 @@ public sealed class Agent : IAgent
   {
     ThrowIfInvalidToken(token);
 
-    var results = new List<Result>();
-    foreach (var rc in requests)
-    {
-      var result = new Result(rc.request.SessionId,
-                              Guid.NewGuid()
-                                  .ToString(),
-                              rc.request.Name,
-                              taskData_.TaskId,
-                              "",
-                              ResultStatus.Created,
-                              new List<string>(),
-                              DateTime.UtcNow,
-                              0,
-                              Array.Empty<byte>());
+    var results = requests.Select(tuple => (new Result(tuple.request.SessionId,
+                                                       Guid.NewGuid()
+                                                           .ToString(),
+                                                       tuple.request.Name,
+                                                       taskData_.TaskId,
+                                                       "",
+                                                       ResultStatus.Created,
+                                                       new List<string>(),
+                                                       DateTime.UtcNow,
+                                                       0,
+                                                       Array.Empty<byte>()), tuple.data))
+                          .AsICollection();
 
-      results.Add(result);
-      resultsData_.Add((result.ResultId, rc.data));
-    }
 
-    createdResults_.Add(results);
-    return Task.FromResult<ICollection<Result>>(results);
+    resultsData_.Add(results.ViewSelect(tuple => (tuple.Item1.ResultId, tuple.data)));
+    createdResults_.Add(results.ViewSelect(tuple => tuple.Item1));
+    return Task.FromResult<ICollection<Result>>(results.ViewSelect(tuple => tuple.Item1));
   }
 
   /// <inheritdoc />
@@ -313,26 +309,21 @@ public sealed class Agent : IAgent
   {
     ThrowIfInvalidToken(token);
 
-    var results = new List<Result>();
-    foreach (var rc in requests)
-    {
-      var result = new Result(rc.SessionId,
-                              Guid.NewGuid()
-                                  .ToString(),
-                              rc.Name,
-                              taskData_.TaskId,
-                              "",
-                              ResultStatus.Created,
-                              new List<string>(),
-                              DateTime.UtcNow,
-                              0,
-                              Array.Empty<byte>());
-
-      results.Add(result);
-    }
+    var results = requests.Select(request => new Result(request.SessionId,
+                                                        Guid.NewGuid()
+                                                            .ToString(),
+                                                        request.Name,
+                                                        taskData_.TaskId,
+                                                        "",
+                                                        ResultStatus.Created,
+                                                        new List<string>(),
+                                                        DateTime.UtcNow,
+                                                        0,
+                                                        Array.Empty<byte>()))
+                          .AsICollection();
 
     createdResults_.Add(results);
-    return Task.FromResult<ICollection<Result>>(results);
+    return Task.FromResult(results);
   }
 
   private async Task<Dictionary<string, (byte[] id, long size)>> StoreDataAsync(CancellationToken cancellationToken)
@@ -377,7 +368,7 @@ public sealed class Agent : IAgent
       resultsToComplete[result] = add;
     }
 
-    foreach (var (resultId, memory) in resultsData_)
+    foreach (var (resultId, memory) in resultsData_.SelectMany(x => x))
     {
       var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
                                                       {
