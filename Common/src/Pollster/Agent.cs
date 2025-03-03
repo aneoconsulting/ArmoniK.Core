@@ -48,13 +48,13 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public sealed class Agent : IAgent
 {
-  private readonly ConcurrentBag<Result>                              createdResults_;
-  private readonly ConcurrentBag<TaskCreationRequest>                 createdTasks_;
+  private readonly ConcurrentBag<ICollection<Result>>                 createdResults_ = new();
+  private readonly ConcurrentBag<ICollection<TaskCreationRequest>>    createdTasks_   = new();
   private readonly ILogger                                            logger_;
-  private readonly ConcurrentBag<string>                              notifiedResults_;
+  private readonly ConcurrentBag<ICollection<string>>                 notifiedResults_ = new();
   private readonly IObjectStorage                                     objectStorage_;
   private readonly IPushQueueStorage                                  pushQueueStorage_;
-  private readonly ConcurrentDictionary<string, ReadOnlyMemory<byte>> resultsData_;
+  private readonly ConcurrentDictionary<string, ReadOnlyMemory<byte>> resultsData_ = new();
   private readonly IResultTable                                       resultTable_;
   private readonly SessionData                                        sessionData_;
   private readonly ISubmitter                                         submitter_;
@@ -91,10 +91,6 @@ public sealed class Agent : IAgent
     resultTable_      = resultTable;
     taskTable_        = taskTable;
     logger_           = logger;
-    createdTasks_     = new ConcurrentBag<TaskCreationRequest>();
-    createdResults_   = new ConcurrentBag<Result>();
-    resultsData_      = new ConcurrentDictionary<string, ReadOnlyMemory<byte>>();
-    notifiedResults_  = new ConcurrentBag<string>();
     sessionData_      = sessionData;
     taskData_         = taskData;
     Folder            = folder;
@@ -121,20 +117,24 @@ public sealed class Agent : IAgent
 
     logger_.LogDebug("Create and populate results and submit child tasks");
 
-    await resultTable_.Create(createdResults_.AsICollection(),
+    await resultTable_.Create(createdResults_.SelectMany(x => x)
+                                             .AsICollection(),
                               cancellationToken)
                       .ConfigureAwait(false);
+
+    var createdTasks = createdTasks_.SelectMany(x => x)
+                                    .AsICollection();
 
     await TaskLifeCycleHelper.CreateTasks(taskTable_,
                                           resultTable_,
                                           sessionData_.SessionId,
                                           taskData_.TaskId,
-                                          createdTasks_.AsICollection(),
+                                          createdTasks,
                                           logger_,
                                           cancellationToken)
                              .ConfigureAwait(false);
 
-    await submitter_.FinalizeTaskCreation(createdTasks_,
+    await submitter_.FinalizeTaskCreation(createdTasks,
                                           sessionData_,
                                           taskData_.TaskId,
                                           cancellationToken)
@@ -142,7 +142,7 @@ public sealed class Agent : IAgent
 
     var resultsToComplete = new Dictionary<string, (byte[] id, long size)>();
 
-    foreach (var result in notifiedResults_)
+    foreach (var result in notifiedResults_.SelectMany(x => x))
     {
       await using var fs = new FileStream(Path.Combine(Folder,
                                                        result),
@@ -301,7 +301,8 @@ public sealed class Agent : IAgent
 
     if (requests.Count == 0)
     {
-      return Task.FromResult<ICollection<TaskCreationRequest>>(new List<TaskCreationRequest>());
+      return Task.FromResult(Array.Empty<TaskCreationRequest>()
+                                  .AsICollection());
     }
 
     var createdTasks = requests.Select(creation => new TaskCreationRequest(Guid.NewGuid()
@@ -313,11 +314,7 @@ public sealed class Agent : IAgent
                                                                            creation.DataDependencies))
                                .AsICollection();
 
-    foreach (var createdTask in createdTasks)
-    {
-      createdTasks_.Add(createdTask);
-    }
-
+    createdTasks_.Add(createdTasks);
     return Task.FromResult(createdTasks);
   }
 
@@ -343,11 +340,11 @@ public sealed class Agent : IAgent
                               0,
                               Array.Empty<byte>());
 
-      createdResults_.Add(result);
       results.Add(result);
       resultsData_[result.ResultId] = rc.data;
     }
 
+    createdResults_.Add(results);
     return Task.FromResult<ICollection<Result>>(results);
   }
 
@@ -357,12 +354,7 @@ public sealed class Agent : IAgent
                                                     CancellationToken   cancellationToken)
   {
     ThrowIfInvalidToken(token);
-
-    foreach (var resultId in resultIds)
-    {
-      notifiedResults_.Add(resultId);
-    }
-
+    notifiedResults_.Add(resultIds);
     return Task.FromResult(resultIds);
   }
 
@@ -388,10 +380,10 @@ public sealed class Agent : IAgent
                               0,
                               Array.Empty<byte>());
 
-      createdResults_.Add(result);
       results.Add(result);
     }
 
+    createdResults_.Add(results);
     return Task.FromResult<ICollection<Result>>(results);
   }
 
