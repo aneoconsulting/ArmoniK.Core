@@ -140,61 +140,8 @@ public sealed class Agent : IAgent
                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    var resultsToComplete = new Dictionary<string, (byte[] id, long size)>();
-
-    foreach (var result in notifiedResults_.SelectMany(x => x))
-    {
-      await using var fs = new FileStream(Path.Combine(Folder,
-                                                       result),
-                                          FileMode.OpenOrCreate);
-      var channel = Channel.CreateBounded<ReadOnlyMemory<byte>>(5);
-      var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
-                                                    {
-                                                      ResultId  = result,
-                                                      SessionId = sessionData_.SessionId,
-                                                    },
-                                                    channel.Reader.ReadAllAsync(cancellationToken),
-                                                    cancellationToken);
-
-      int read;
-      do
-      {
-        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
-        read = await fs.ReadAsync(buffer,
-                                  0,
-                                  PayloadConfiguration.MaxChunkSize,
-                                  cancellationToken)
-                       .ConfigureAwait(false);
-        if (read > 0)
-        {
-          await channel.Writer.WriteAsync(buffer.AsMemory(0,
-                                                          read),
-                                          cancellationToken)
-                       .ConfigureAwait(false);
-        }
-      } while (read != 0);
-
-      channel.Writer.Complete();
-
-      var add = await addTask.ConfigureAwait(false);
-      resultsToComplete[result] = add;
-    }
-
-    foreach (var (resultId, memory) in resultsData_)
-    {
-      var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
-                                                      {
-                                                        SessionId = sessionData_.SessionId,
-                                                        ResultId  = resultId,
-                                                      },
-                                                      new List<ReadOnlyMemory<byte>>
-                                                      {
-                                                        memory,
-                                                      }.ToAsyncEnumerable(),
-                                                      cancellationToken)
-                                    .ConfigureAwait(false);
-      resultsToComplete[resultId] = add;
-    }
+    var resultsToComplete = await StoreDataAsync(cancellationToken)
+                              .ConfigureAwait(false);
 
     await resultTable_.CompleteManyResults(resultsToComplete.Select(pair => (pair.Key, pair.Value.size, pair.Value.id)),
                                            cancellationToken)
@@ -209,6 +156,7 @@ public sealed class Agent : IAgent
                                                   cancellationToken)
                              .ConfigureAwait(false);
   }
+
 
   /// <inheritdoc />
   public void Dispose()
@@ -385,6 +333,67 @@ public sealed class Agent : IAgent
 
     createdResults_.Add(results);
     return Task.FromResult<ICollection<Result>>(results);
+  }
+
+  private async Task<Dictionary<string, (byte[] id, long size)>> StoreDataAsync(CancellationToken cancellationToken)
+  {
+    var resultsToComplete = new Dictionary<string, (byte[] id, long size)>();
+
+    foreach (var result in notifiedResults_.SelectMany(x => x))
+    {
+      await using var fs = new FileStream(Path.Combine(Folder,
+                                                       result),
+                                          FileMode.OpenOrCreate);
+      var channel = Channel.CreateBounded<ReadOnlyMemory<byte>>(5);
+      var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                    {
+                                                      ResultId  = result,
+                                                      SessionId = sessionData_.SessionId,
+                                                    },
+                                                    channel.Reader.ReadAllAsync(cancellationToken),
+                                                    cancellationToken);
+
+      int read;
+      do
+      {
+        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
+        read = await fs.ReadAsync(buffer,
+                                  0,
+                                  PayloadConfiguration.MaxChunkSize,
+                                  cancellationToken)
+                       .ConfigureAwait(false);
+        if (read > 0)
+        {
+          await channel.Writer.WriteAsync(buffer.AsMemory(0,
+                                                          read),
+                                          cancellationToken)
+                       .ConfigureAwait(false);
+        }
+      } while (read != 0);
+
+      channel.Writer.Complete();
+
+      var add = await addTask.ConfigureAwait(false);
+      resultsToComplete[result] = add;
+    }
+
+    foreach (var (resultId, memory) in resultsData_)
+    {
+      var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                      {
+                                                        SessionId = sessionData_.SessionId,
+                                                        ResultId  = resultId,
+                                                      },
+                                                      new List<ReadOnlyMemory<byte>>
+                                                      {
+                                                        memory,
+                                                      }.ToAsyncEnumerable(),
+                                                      cancellationToken)
+                                    .ConfigureAwait(false);
+      resultsToComplete[resultId] = add;
+    }
+
+    return resultsToComplete;
   }
 
   private void ThrowIfInvalidToken(string token)
