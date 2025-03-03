@@ -148,7 +148,7 @@ public sealed class Agent : IAgent
                                                        result),
                                           FileMode.OpenOrCreate);
       using var r       = new BinaryReader(fs);
-      var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
+      var       channel = Channel.CreateBounded<ReadOnlyMemory<byte>>(5);
 
       var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
                                                     {
