@@ -147,9 +147,7 @@ public sealed class Agent : IAgent
       await using var fs = new FileStream(Path.Combine(Folder,
                                                        result),
                                           FileMode.OpenOrCreate);
-      using var r       = new BinaryReader(fs);
-      var       channel = Channel.CreateBounded<ReadOnlyMemory<byte>>(5);
-
+      var channel = Channel.CreateBounded<ReadOnlyMemory<byte>>(5);
       var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
                                                     {
                                                       ResultId  = result,
@@ -162,9 +160,11 @@ public sealed class Agent : IAgent
       do
       {
         var buffer = new byte[PayloadConfiguration.MaxChunkSize];
-        read = r.Read(buffer,
-                      0,
-                      PayloadConfiguration.MaxChunkSize);
+        read = await fs.ReadAsync(buffer,
+                                  0,
+                                  PayloadConfiguration.MaxChunkSize,
+                                  cancellationToken)
+                       .ConfigureAwait(false);
         if (read > 0)
         {
           await channel.Writer.WriteAsync(buffer.AsMemory(0,
