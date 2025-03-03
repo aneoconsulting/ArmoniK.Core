@@ -48,18 +48,18 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public sealed class Agent : IAgent
 {
-  private readonly ConcurrentBag<ICollection<Result>>                 createdResults_ = new();
-  private readonly ConcurrentBag<ICollection<TaskCreationRequest>>    createdTasks_   = new();
-  private readonly ILogger                                            logger_;
-  private readonly ConcurrentBag<ICollection<string>>                 notifiedResults_ = new();
-  private readonly IObjectStorage                                     objectStorage_;
-  private readonly IPushQueueStorage                                  pushQueueStorage_;
-  private readonly ConcurrentDictionary<string, ReadOnlyMemory<byte>> resultsData_ = new();
-  private readonly IResultTable                                       resultTable_;
-  private readonly SessionData                                        sessionData_;
-  private readonly ISubmitter                                         submitter_;
-  private readonly TaskData                                           taskData_;
-  private readonly ITaskTable                                         taskTable_;
+  private readonly ConcurrentBag<ICollection<Result>>               createdResults_ = new();
+  private readonly ConcurrentBag<ICollection<TaskCreationRequest>>  createdTasks_   = new();
+  private readonly ILogger                                          logger_;
+  private readonly ConcurrentBag<ICollection<string>>               notifiedResults_ = new();
+  private readonly IObjectStorage                                   objectStorage_;
+  private readonly IPushQueueStorage                                pushQueueStorage_;
+  private readonly ConcurrentBag<(string id, ReadOnlyMemory<byte>)> resultsData_ = new();
+  private readonly IResultTable                                     resultTable_;
+  private readonly SessionData                                      sessionData_;
+  private readonly ISubmitter                                       submitter_;
+  private readonly TaskData                                         taskData_;
+  private readonly ITaskTable                                       taskTable_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -341,7 +341,7 @@ public sealed class Agent : IAgent
                               Array.Empty<byte>());
 
       results.Add(result);
-      resultsData_[result.ResultId] = rc.data;
+      resultsData_.Add((result.ResultId, rc.data));
     }
 
     createdResults_.Add(results);
