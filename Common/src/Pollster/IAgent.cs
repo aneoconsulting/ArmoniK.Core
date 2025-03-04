@@ -46,13 +46,13 @@ public interface IAgent : IDisposable
   string SessionId { get; }
 
   /// <summary>
-  ///   Finalize child task creation after the parent task succeeds
+  ///   Create and populate results and submit child tasks after the parent task succeeds
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task FinalizeTaskCreation(CancellationToken cancellationToken);
+  Task CreateResultsAndSubmitChildTasksAsync(CancellationToken cancellationToken);
 
   /// <summary>
   ///   Get Common data from data storage as file in shared folder

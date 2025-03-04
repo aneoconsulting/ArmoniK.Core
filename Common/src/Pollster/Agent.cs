@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -47,16 +48,18 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public sealed class Agent : IAgent
 {
-  private readonly List<TaskCreationRequest>                  createdTasks_;
-  private readonly ILogger                                    logger_;
-  private readonly IObjectStorage                             objectStorage_;
-  private readonly IPushQueueStorage                          pushQueueStorage_;
-  private readonly IResultTable                               resultTable_;
-  private readonly Dictionary<string, (byte[] id, long size)> sentResults_;
-  private readonly SessionData                                sessionData_;
-  private readonly ISubmitter                                 submitter_;
-  private readonly TaskData                                   taskData_;
-  private readonly ITaskTable                                 taskTable_;
+  private readonly ConcurrentBag<ICollection<Result>>                                 createdResults_ = new();
+  private readonly ConcurrentBag<ICollection<TaskCreationRequest>>                    createdTasks_   = new();
+  private readonly ILogger                                                            logger_;
+  private readonly ConcurrentBag<ICollection<string>>                                 notifiedResults_ = new();
+  private readonly IObjectStorage                                                     objectStorage_;
+  private readonly IPushQueueStorage                                                  pushQueueStorage_;
+  private readonly ConcurrentBag<ICollection<(string id, ReadOnlyMemory<byte> data)>> resultsData_ = new();
+  private readonly IResultTable                                                       resultTable_;
+  private readonly SessionData                                                        sessionData_;
+  private readonly ISubmitter                                                         submitter_;
+  private readonly TaskData                                                           taskData_;
+  private readonly ITaskTable                                                         taskTable_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -88,8 +91,6 @@ public sealed class Agent : IAgent
     resultTable_      = resultTable;
     taskTable_        = taskTable;
     logger_           = logger;
-    createdTasks_     = new List<TaskCreationRequest>();
-    sentResults_      = new Dictionary<string, (byte[] id, long size)>();
     sessionData_      = sessionData;
     taskData_         = taskData;
     Folder            = folder;
@@ -108,39 +109,54 @@ public sealed class Agent : IAgent
 
   /// <inheritdoc />
   /// <exception cref="ArmoniKException"></exception>
-  public async Task FinalizeTaskCreation(CancellationToken cancellationToken)
+  public async Task CreateResultsAndSubmitChildTasksAsync(CancellationToken cancellationToken)
   {
-    using var _ = logger_.BeginNamedScope(nameof(FinalizeTaskCreation),
+    using var _ = logger_.BeginNamedScope(nameof(CreateResultsAndSubmitChildTasksAsync),
                                           ("taskId", taskData_.TaskId),
                                           ("sessionId", sessionData_.SessionId));
 
-    logger_.LogDebug("Finalize child task creation");
+    logger_.LogDebug("Create and populate results and submit child tasks");
 
-    await submitter_.FinalizeTaskCreation(createdTasks_,
+    await resultTable_.Create(createdResults_.SelectMany(x => x)
+                                             .AsICollection(),
+                              cancellationToken)
+                      .ConfigureAwait(false);
+
+    var createdTasks = createdTasks_.SelectMany(x => x)
+                                    .AsICollection();
+
+    await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                          resultTable_,
+                                          sessionData_.SessionId,
+                                          taskData_.TaskId,
+                                          createdTasks,
+                                          logger_,
+                                          cancellationToken)
+                             .ConfigureAwait(false);
+
+    await submitter_.FinalizeTaskCreation(createdTasks,
                                           sessionData_,
                                           taskData_.TaskId,
                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    foreach (var (result, (id, size)) in sentResults_)
-    {
-      await resultTable_.CompleteResult(taskData_.SessionId,
-                                        result,
-                                        size,
-                                        id,
-                                        cancellationToken)
-                        .ConfigureAwait(false);
-    }
+    var resultsToComplete = await StoreDataAsync(cancellationToken)
+                              .ConfigureAwait(false);
+
+    await resultTable_.CompleteManyResults(resultsToComplete.Select(pair => (pair.Key, pair.Value.size, pair.Value.id)),
+                                           cancellationToken)
+                      .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
                                                   resultTable_,
                                                   pushQueueStorage_,
                                                   sessionData_,
-                                                  sentResults_.Keys,
+                                                  resultsToComplete.Keys,
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
   }
+
 
   /// <inheritdoc />
   public void Dispose()
@@ -216,11 +232,11 @@ public sealed class Agent : IAgent
   }
 
   /// <inheritdoc />
-  public async Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
-                                                                  TaskOptions?                       taskOptions,
-                                                                  string                             sessionId,
-                                                                  string                             token,
-                                                                  CancellationToken                  cancellationToken)
+  public Task<ICollection<TaskCreationRequest>> SubmitTasks(ICollection<TaskSubmissionRequest> requests,
+                                                            TaskOptions?                       taskOptions,
+                                                            string                             sessionId,
+                                                            string                             token,
+                                                            CancellationToken                  cancellationToken)
   {
     ThrowIfInvalidToken(token);
 
@@ -233,7 +249,8 @@ public sealed class Agent : IAgent
 
     if (requests.Count == 0)
     {
-      return new List<TaskCreationRequest>();
+      return Task.FromResult(Array.Empty<TaskCreationRequest>()
+                                  .AsICollection());
     }
 
     var createdTasks = requests.Select(creation => new TaskCreationRequest(Guid.NewGuid()
@@ -243,90 +260,82 @@ public sealed class Agent : IAgent
                                                                                              options),
                                                                            creation.ExpectedOutputKeys,
                                                                            creation.DataDependencies))
-                               .ToList();
+                               .AsICollection();
 
-    await TaskLifeCycleHelper.CreateTasks(taskTable_,
-                                          resultTable_,
-                                          sessionId,
-                                          taskData_.TaskId,
-                                          createdTasks,
-                                          logger_,
-                                          cancellationToken)
-                             .ConfigureAwait(false);
-
-    createdTasks_.AddRange(createdTasks);
-
-    return createdTasks;
+    createdTasks_.Add(createdTasks);
+    return Task.FromResult(createdTasks);
   }
 
   /// <inheritdoc />
-  public async Task<ICollection<Result>> CreateResults(string                                                                  token,
-                                                       IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
-                                                       CancellationToken                                                       cancellationToken)
+  public Task<ICollection<Result>> CreateResults(string                                                                  token,
+                                                 IEnumerable<(ResultCreationRequest request, ReadOnlyMemory<byte> data)> requests,
+                                                 CancellationToken                                                       cancellationToken)
   {
     ThrowIfInvalidToken(token);
 
-    var results = await requests.Select(async rc =>
-                                        {
-                                          var result = new Result(rc.request.SessionId,
-                                                                  Guid.NewGuid()
-                                                                      .ToString(),
-                                                                  rc.request.Name,
-                                                                  taskData_.TaskId,
-                                                                  "",
-                                                                  ResultStatus.Created,
-                                                                  new List<string>(),
-                                                                  DateTime.UtcNow,
-                                                                  0,
-                                                                  Array.Empty<byte>());
+    var results = requests.Select(tuple => (new Result(tuple.request.SessionId,
+                                                       Guid.NewGuid()
+                                                           .ToString(),
+                                                       tuple.request.Name,
+                                                       taskData_.TaskId,
+                                                       "",
+                                                       ResultStatus.Created,
+                                                       new List<string>(),
+                                                       DateTime.UtcNow,
+                                                       0,
+                                                       Array.Empty<byte>()), tuple.data))
+                          .AsICollection();
 
-                                          var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
-                                                                                          {
-                                                                                            ResultId  = result.ResultId,
-                                                                                            SessionId = rc.request.SessionId,
-                                                                                          },
-                                                                                          new List<ReadOnlyMemory<byte>>
-                                                                                          {
-                                                                                            rc.data,
-                                                                                          }.ToAsyncEnumerable(),
-                                                                                          cancellationToken)
-                                                                        .ConfigureAwait(false);
 
-                                          return (result, add);
-                                        })
-                                .WhenAll()
-                                .ConfigureAwait(false);
-
-    var ids = results.ViewSelect(tuple => tuple.result);
-
-    await resultTable_.Create(ids,
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    foreach (var result in results)
-    {
-      sentResults_.Add(result.result.ResultId,
-                       result.add);
-    }
-
-    return ids;
+    resultsData_.Add(results.ViewSelect(tuple => (tuple.Item1.ResultId, tuple.data)));
+    createdResults_.Add(results.ViewSelect(tuple => tuple.Item1));
+    return Task.FromResult<ICollection<Result>>(results.ViewSelect(tuple => tuple.Item1));
   }
 
   /// <inheritdoc />
-  public async Task<ICollection<string>> NotifyResultData(string              token,
-                                                          ICollection<string> resultIds,
-                                                          CancellationToken   cancellationToken)
+  public Task<ICollection<string>> NotifyResultData(string              token,
+                                                    ICollection<string> resultIds,
+                                                    CancellationToken   cancellationToken)
+  {
+    ThrowIfInvalidToken(token);
+    notifiedResults_.Add(resultIds);
+    return Task.FromResult(resultIds);
+  }
+
+  /// <inheritdoc />
+  public Task<ICollection<Result>> CreateResultsMetaData(string                             token,
+                                                         IEnumerable<ResultCreationRequest> requests,
+                                                         CancellationToken                  cancellationToken)
   {
     ThrowIfInvalidToken(token);
 
-    foreach (var result in resultIds)
+    var results = requests.Select(request => new Result(request.SessionId,
+                                                        Guid.NewGuid()
+                                                            .ToString(),
+                                                        request.Name,
+                                                        taskData_.TaskId,
+                                                        "",
+                                                        ResultStatus.Created,
+                                                        new List<string>(),
+                                                        DateTime.UtcNow,
+                                                        0,
+                                                        Array.Empty<byte>()))
+                          .AsICollection();
+
+    createdResults_.Add(results);
+    return Task.FromResult(results);
+  }
+
+  private async Task<Dictionary<string, (byte[] id, long size)>> StoreDataAsync(CancellationToken cancellationToken)
+  {
+    var resultsToComplete = new Dictionary<string, (byte[] id, long size)>();
+
+    foreach (var result in notifiedResults_.SelectMany(x => x))
     {
       await using var fs = new FileStream(Path.Combine(Folder,
                                                        result),
                                           FileMode.OpenOrCreate);
-      using var r       = new BinaryReader(fs);
-      var       channel = Channel.CreateUnbounded<ReadOnlyMemory<byte>>();
-
+      var channel = Channel.CreateBounded<ReadOnlyMemory<byte>>(5);
       var addTask = objectStorage_.AddOrUpdateAsync(new ObjectData
                                                     {
                                                       ResultId  = result,
@@ -339,9 +348,11 @@ public sealed class Agent : IAgent
       do
       {
         var buffer = new byte[PayloadConfiguration.MaxChunkSize];
-        read = r.Read(buffer,
-                      0,
-                      PayloadConfiguration.MaxChunkSize);
+        read = await fs.ReadAsync(buffer,
+                                  0,
+                                  PayloadConfiguration.MaxChunkSize,
+                                  cancellationToken)
+                       .ConfigureAwait(false);
         if (read > 0)
         {
           await channel.Writer.WriteAsync(buffer.AsMemory(0,
@@ -354,38 +365,26 @@ public sealed class Agent : IAgent
       channel.Writer.Complete();
 
       var add = await addTask.ConfigureAwait(false);
-      sentResults_.Add(result,
-                       add);
+      resultsToComplete[result] = add;
     }
 
-    return resultIds;
-  }
+    foreach (var (resultId, memory) in resultsData_.SelectMany(x => x))
+    {
+      var add = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                      {
+                                                        SessionId = sessionData_.SessionId,
+                                                        ResultId  = resultId,
+                                                      },
+                                                      new List<ReadOnlyMemory<byte>>
+                                                      {
+                                                        memory,
+                                                      }.ToAsyncEnumerable(),
+                                                      cancellationToken)
+                                    .ConfigureAwait(false);
+      resultsToComplete[resultId] = add;
+    }
 
-  /// <inheritdoc />
-  public async Task<ICollection<Result>> CreateResultsMetaData(string                             token,
-                                                               IEnumerable<ResultCreationRequest> requests,
-                                                               CancellationToken                  cancellationToken)
-  {
-    ThrowIfInvalidToken(token);
-
-    var results = requests.Select(rc => new Result(rc.SessionId,
-                                                   Guid.NewGuid()
-                                                       .ToString(),
-                                                   rc.Name,
-                                                   taskData_.TaskId,
-                                                   "",
-                                                   ResultStatus.Created,
-                                                   new List<string>(),
-                                                   DateTime.UtcNow,
-                                                   0,
-                                                   Array.Empty<byte>()))
-                          .AsICollection();
-
-    await resultTable_.Create(results,
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
-    return results;
+    return resultsToComplete;
   }
 
   private void ThrowIfInvalidToken(string token)

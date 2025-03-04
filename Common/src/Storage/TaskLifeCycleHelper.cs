@@ -123,6 +123,11 @@ public static class TaskLifeCycleHelper
                                        ILogger                          logger,
                                        CancellationToken                cancellationToken = default)
   {
+    if (!taskCreationRequests.Any())
+    {
+      return;
+    }
+
     var parentTaskIds = new List<string>();
     var createdBy     = string.Empty;
 
