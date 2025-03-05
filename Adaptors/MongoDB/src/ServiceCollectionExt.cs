@@ -42,6 +42,8 @@ using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 using static ArmoniK.Core.Utils.CertificateValidator;
 
+using ConfigurationExt = ArmoniK.Core.Utils.ConfigurationExt;
+
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 public static class ServiceCollectionExt
@@ -58,66 +60,19 @@ public static class ServiceCollectionExt
     return services;
   }
 
-  [PublicAPI]
-  public static IServiceCollection AddMongoStorages(this IServiceCollection services,
-                                                    ConfigurationManager    configuration,
-                                                    ILogger                 logger)
+  private static Options.MongoDB GetMongoOptions(this ConfigurationManager configuration,
+                                                 ILogger                   logger)
   {
-    logger.LogInformation("Configure MongoDB Components");
-
-    var components = configuration.GetSection(Components.SettingSection);
-
-    if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
-    {
-      services.AddOption<TableStorage>(configuration,
-                                       TableStorage.SettingSection)
-              .AddSingleton<ITaskTable, TaskTable>()
-              .AddSingleton<ISessionTable, SessionTable>()
-              .AddSingleton<IResultTable, ResultTable>()
-              .AddSingleton<IPartitionTable, PartitionTable>()
-              .AddSingleton<ITaskWatcher, TaskWatcher>()
-              .AddSingleton<IResultWatcher, ResultWatcher>();
-    }
-
-    services.AddOption<Options.MongoDB>(configuration,
-                                        Options.MongoDB.SettingSection,
-                                        out var mongoOptions);
-
-    services.AddSingleton(provider => provider.GetRequiredService<IMongoClient>()
-                                              .GetDatabase(mongoOptions.DatabaseName))
-            .AddSingleton(typeof(MongoCollectionProvider<,>))
-            .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
-
-    return services;
-  }
-
-  public static IServiceCollection AddMongoClient(this IServiceCollection services,
-                                                  ConfigurationManager    configuration,
-                                                  ILogger                 logger)
-  {
-    Options.MongoDB mongoOptions;
-    services.AddOption(configuration,
-                       Options.MongoDB.SettingSection,
-                       out mongoOptions);
-    using var _ = logger.BeginNamedScope("MongoDB configuration",
-                                         ("host", mongoOptions.Host),
-                                         ("port", mongoOptions.Port));
-
-    if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
-    {
-      throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
-                                            $"{nameof(Options.MongoDB.DatabaseName)} is not defined.");
-    }
+    var mongoOptions = ConfigurationExt.GetRequiredValue<Options.MongoDB>(configuration,
+                                                                          Options.MongoDB.SettingSection);
 
     if (!string.IsNullOrEmpty(mongoOptions.CredentialsPath))
     {
       configuration.AddJsonFile(mongoOptions.CredentialsPath,
                                 false,
                                 false);
-
-      services.AddOption(configuration,
-                         Options.MongoDB.SettingSection,
-                         out mongoOptions);
+      mongoOptions = ConfigurationExt.GetRequiredValue<Options.MongoDB>(configuration,
+                                                                        Options.MongoDB.SettingSection);
 
       logger.LogTrace("Loaded mongodb credentials from file {path}",
                       mongoOptions.CredentialsPath);
@@ -127,6 +82,12 @@ public static class ServiceCollectionExt
       logger.LogTrace("No credentials provided");
     }
 
+    return mongoOptions;
+  }
+
+  private static MongoClientSettings GetMongoSettings(Options.MongoDB mongoOptions,
+                                                      ILogger         logger)
+  {
     MongoClientSettings settings;
     if (!string.IsNullOrEmpty(mongoOptions.ConnectionString))
     {
@@ -201,10 +162,22 @@ public static class ServiceCollectionExt
                                      cb.Subscribe(new DiagnosticsActivityEventSubscriber());
                                    };
 
+    return settings;
+  }
+
+  private static IMongoClient CreateMongoClient(IServiceProvider provider,
+                                                ILogger          logger)
+  {
+    var mongoOptions = provider.GetRequiredService<Options.MongoDB>();
+    using var _ = logger.BeginNamedScope("MongoDB configuration",
+                                         ("host", mongoOptions.Host),
+                                         ("port", mongoOptions.Port),
+                                         ("connectionString", mongoOptions.ConnectionString));
+
+    var settings = GetMongoSettings(mongoOptions,
+                                    logger);
 
     var client = new MongoClient(settings);
-
-    services.AddSingleton<IMongoClient>(client);
 
     logger.LogInformation("MongoDB configuration complete");
 
@@ -214,6 +187,56 @@ public static class ServiceCollectionExt
     logger.LogDebug("{Option} {Value}",
                     nameof(mongoOptions.DataRetention),
                     mongoOptions.DataRetention);
+
+    return client;
+  }
+
+  [PublicAPI]
+  public static IServiceCollection AddMongoStorages(this IServiceCollection services,
+                                                    ConfigurationManager    configuration,
+                                                    ILogger                 logger)
+  {
+    logger.LogInformation("Configure MongoDB Components");
+
+    var components = configuration.GetSection(Components.SettingSection);
+
+    if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
+    {
+      services.AddOption<TableStorage>(configuration,
+                                       TableStorage.SettingSection)
+              .AddSingleton<ITaskTable, TaskTable>()
+              .AddSingleton<ISessionTable, SessionTable>()
+              .AddSingleton<IResultTable, ResultTable>()
+              .AddSingleton<IPartitionTable, PartitionTable>()
+              .AddSingleton<ITaskWatcher, TaskWatcher>()
+              .AddSingleton<IResultWatcher, ResultWatcher>();
+    }
+
+    services.TryAddSingleton(_ => configuration.GetMongoOptions(logger));
+
+    services.AddSingleton(provider =>
+                          {
+                            var options = provider.GetRequiredService<Options.MongoDB>();
+
+                            var databaseName = !string.IsNullOrEmpty(options.ConnectionString)
+                                                 ? new MongoUrl(options.ConnectionString).DatabaseName
+                                                 : options.DatabaseName;
+                            return provider.GetRequiredService<IMongoClient>()
+                                           .GetDatabase(databaseName);
+                          })
+            .AddSingleton(typeof(MongoCollectionProvider<,>))
+            .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
+
+    return services;
+  }
+
+  public static IServiceCollection AddMongoClient(this IServiceCollection services,
+                                                  ConfigurationManager    configuration,
+                                                  ILogger                 logger)
+  {
+    services.TryAddSingleton(_ => configuration.GetMongoOptions(logger));
+    services.AddSingleton(provider => CreateMongoClient(provider,
+                                                        logger));
 
     return services;
   }
