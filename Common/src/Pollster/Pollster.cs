@@ -222,6 +222,9 @@ public class Pollster : IInitializable
         .ConfigureAwait(false);
 
       logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
+
+      var acquisitionRetry = 0;
+
       while (!exceptionManager_.EarlyCancellationToken.IsCancellationRequested)
       {
         if (healthCheckFailedResult_ is not null)
@@ -351,9 +354,44 @@ public class Pollster : IInitializable
                 await taskHandler.ReleaseAndPostponeTask()
                                  .ConfigureAwait(false);
 
-                if (e is not (TimeoutException or OperationCanceledException))
+                switch (e)
                 {
-                  throw;
+                  // If there is still a running task after the acquire timeout
+                  case TimeoutException:
+                    // If we still have acquisition retries available, continue right away with the next message
+                    acquisitionRetry += 1;
+                    if (acquisitionRetry < pollsterOptions_.NbAcquisitionRetry)
+                    {
+                      break;
+                    }
+
+                    acquisitionRetry = 0;
+
+                    // Otherwise, we just wait for the running task to finish before trying to acquire a new task
+                    try
+                    {
+                      logger_.LogDebug("Too many acquire timeouts, waiting for processing task to finish");
+
+                      // We dispose early the messages in order to avoid blocking them while not trying to acquire their corresponding tasks
+                      // Disposing twice is safe as the second dispose (from the using) will just do nothing.
+                      // ReSharper disable once DisposeOnUsingVariable
+                      await messagesDispose.DisposeAsync()
+                                           .ConfigureAwait(false);
+                      await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
+                                                            exceptionManager_.EarlyCancellationToken)
+                                             .ConfigureAwait(false);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                    }
+
+                    break;
+                  // If the cancellation token has been triggered, we ignore the error and continue right away
+                  case OperationCanceledException:
+                    break;
+                  // In case of any other error, we record the error and continue right away
+                  default:
+                    throw;
                 }
               }
             }

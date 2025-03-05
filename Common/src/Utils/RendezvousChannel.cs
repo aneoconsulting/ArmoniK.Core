@@ -20,6 +20,8 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
+using ArmoniK.Utils;
+
 namespace ArmoniK.Core.Common.Utils;
 
 /// <summary>
@@ -44,28 +46,34 @@ namespace ArmoniK.Core.Common.Utils;
 /// <typeparam name="T">Items to be sent through the channel</typeparam>
 public class RendezvousChannel<T>
 {
-  private readonly SemaphoreSlim readerSem_;
-  private readonly SemaphoreSlim writerSem_;
-  private          T?            value_;
+  private readonly SemaphoreSlim        readerSem_;
+  private readonly SemaphoreSlim        writerSem_;
+  private          TaskCompletionSource readerReady_;
+  private          T?                   value_;
+  private          TaskCompletionSource writerReady_;
 
   /// <summary>
   ///   Create an instance
   /// </summary>
   public RendezvousChannel()
   {
-    readerSem_ = new SemaphoreSlim(0);
-    writerSem_ = new SemaphoreSlim(0);
+    readerSem_   = new SemaphoreSlim(0);
+    writerSem_   = new SemaphoreSlim(0);
+    readerReady_ = new TaskCompletionSource();
+    writerReady_ = new TaskCompletionSource();
   }
 
   /// <summary>
   ///   Whether the Reader has closed
   /// </summary>
-  public bool IsReaderClosed { get; private set; }
+  public bool IsReaderClosed
+    => readerReady_.Task.Status is TaskStatus.Canceled or TaskStatus.Faulted;
 
   /// <summary>
   ///   Whether the Writer has closed
   /// </summary>
-  public bool IsWriterClosed { get; private set; }
+  public bool IsWriterClosed
+    => writerReady_.Task.Status is TaskStatus.Canceled or TaskStatus.Faulted;
 
   /// <summary>
   ///   Send a value to the consumer
@@ -87,6 +95,10 @@ public class RendezvousChannel<T>
     {
       throw new ChannelClosedException("Writer has been closed");
     }
+
+    // Notify the presence of a writer
+    writerReady_.SetResult();
+    await using var notReady = new Deferrer(() => writerReady_ = new TaskCompletionSource());
 
     value_ = value;
 
@@ -147,6 +159,10 @@ public class RendezvousChannel<T>
       throw new ChannelClosedException("Reader has been closed");
     }
 
+    // Notify the presence of a reader
+    readerReady_.SetResult();
+    await using var notReady = new Deferrer(() => readerReady_ = new TaskCompletionSource());
+
     if (!await readerSem_.WaitAsync(timeout,
                                     cancellationToken)
                          .ConfigureAwait(false))
@@ -179,7 +195,7 @@ public class RendezvousChannel<T>
   /// </summary>
   public void CloseReader()
   {
-    IsReaderClosed = true;
+    readerReady_.SetException(new ChannelClosedException("Reader has been closed"));
     writerSem_.Release();
   }
 
@@ -188,7 +204,39 @@ public class RendezvousChannel<T>
   /// </summary>
   public void CloseWriter()
   {
-    IsWriterClosed = true;
+    writerReady_.SetException(new ChannelClosedException("Writer has been closed"));
     readerSem_.Release();
   }
+
+  /// <summary>
+  ///   Wait for a consumer to be ready
+  /// </summary>
+  /// <param name="timeout">Maximum time to wait for a consumer</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  /// <exception cref="ChannelClosedException">The consumer has been closed</exception>
+  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken" /> has been triggered</exception>
+  /// <exception cref="TimeoutException">No consumer was ready in the allotted time</exception>
+  public Task WaitForReader(TimeSpan          timeout,
+                            CancellationToken cancellationToken = default)
+    => readerReady_.Task.WaitAsync(timeout,
+                                   cancellationToken);
+
+  /// <summary>
+  ///   Wait for a producer to be ready
+  /// </summary>
+  /// <param name="timeout">Maximum time to wait for a producer</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  /// <exception cref="ChannelClosedException">The producer has been closed</exception>
+  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken" /> has been triggered</exception>
+  /// <exception cref="TimeoutException">No producer was ready in the allotted time</exception>
+  public Task WaitForWriter(TimeSpan          timeout,
+                            CancellationToken cancellationToken = default)
+    => writerReady_.Task.WaitAsync(timeout,
+                                   cancellationToken);
 }

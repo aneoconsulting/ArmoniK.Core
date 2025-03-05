@@ -52,6 +52,13 @@ public class Pollster
   public TimeSpan TimeoutBeforeNextAcquisition { get; set; } = TimeSpan.FromSeconds(10);
 
   /// <summary>
+  ///   Number of acquisitions to try during the processing of a previous task.
+  ///   If the processing task is still running after that many acquisitions,
+  ///   the Agent will stop acquiring tasks until the processing task has finished.
+  /// </summary>
+  public int NbAcquisitionRetry { get; set; } = 3;
+
+  /// <summary>
   ///   Shared folder between Agent and Worker
   /// </summary>
   public string SharedCacheFolder { get; set; } = "/cache/shared";
