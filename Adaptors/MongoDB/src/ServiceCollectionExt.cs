@@ -103,12 +103,6 @@ public static class ServiceCollectionExt
                                          ("host", mongoOptions.Host),
                                          ("port", mongoOptions.Port));
 
-    if (string.IsNullOrEmpty(mongoOptions.Host))
-    {
-      throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
-                                            $"{nameof(Options.MongoDB.Host)} is not defined.");
-    }
-
     if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
     {
       throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
@@ -133,41 +127,58 @@ public static class ServiceCollectionExt
       logger.LogTrace("No credentials provided");
     }
 
-    string connectionString;
-    if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
+    MongoClientSettings settings;
+    if (!string.IsNullOrEmpty(mongoOptions.ConnectionString))
     {
-      var template = "mongodb://{0}:{1}/{2}";
-      connectionString = string.Format(template,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
+      settings                  = MongoClientSettings.FromUrl(new MongoUrl(mongoOptions.ConnectionString));
+      settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
     }
     else
     {
-      var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
-      connectionString = string.Format(template,
-                                       mongoOptions.User,
-                                       mongoOptions.Password,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
+      if (string.IsNullOrEmpty(mongoOptions.Host))
+      {
+        throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
+                                              $"{nameof(Options.MongoDB.Host)} is not defined.");
+      }
+
+      string connectionString;
+
+      if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
+      {
+        var template = "mongodb://{0}:{1}/{2}";
+        connectionString = string.Format(template,
+                                         mongoOptions.Host,
+                                         mongoOptions.Port,
+                                         mongoOptions.DatabaseName);
+      }
+      else
+      {
+        var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
+        connectionString = string.Format(template,
+                                         mongoOptions.User,
+                                         mongoOptions.Password,
+                                         mongoOptions.Host,
+                                         mongoOptions.Port,
+                                         mongoOptions.DatabaseName);
+      }
+
+      if (!string.IsNullOrEmpty(mongoOptions.AuthSource))
+      {
+        connectionString = $"{connectionString}?authSource={mongoOptions.AuthSource}";
+      }
+
+      settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+
+      // Configure the connection settings
+      settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
+      settings.UseTls                 = mongoOptions.Tls;
+      settings.DirectConnection       = mongoOptions.DirectConnection;
+      settings.Scheme                 = ConnectionStringScheme.MongoDB;
+      settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+      settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
+      settings.ReplicaSetName         = mongoOptions.ReplicaSet;
     }
 
-    if (!string.IsNullOrEmpty(mongoOptions.AuthSource))
-    {
-      connectionString = $"{connectionString}?authSource={mongoOptions.AuthSource}";
-    }
-
-    var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-
-    // Configure the connection settings
-    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
-    settings.UseTls                 = mongoOptions.Tls;
-    settings.DirectConnection       = mongoOptions.DirectConnection;
-    settings.Scheme                 = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
-    settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
 
     if (!string.IsNullOrEmpty(mongoOptions.CAFile))
     {
