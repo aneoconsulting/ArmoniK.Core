@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Net.Security;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -105,12 +104,11 @@ public class ConnectionAmqp : IConnectionAmqp
     var connectionFactory = new ConnectionFactory();
     if (options.Scheme.Equals("AMQPS"))
     {
-      RemoteCertificateValidationCallback? validationCallback = null;
       if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
       {
-        validationCallback = CertificateValidator.CreateCallback(options.CaPath,
-                                                                 options.AllowInsecureTls,
-                                                                 logger);
+        connectionFactory.SSL.RemoteCertificateValidationCallback = CertificateValidator.CreateCallback(options.CaPath,
+                                                                                                        options.AllowInsecureTls,
+                                                                                                        logger);
       }
       else if (!options.Ssl)
       {
@@ -121,8 +119,6 @@ public class ConnectionAmqp : IConnectionAmqp
       {
         logger.LogError("No CA path provided for ActiveMQ");
       }
-
-      connectionFactory.SSL.RemoteCertificateValidationCallback = validationCallback;
     }
     else
     {
