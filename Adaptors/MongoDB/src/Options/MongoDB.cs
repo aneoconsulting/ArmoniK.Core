@@ -46,6 +46,8 @@ public class MongoDB
 
   public string User { get; set; } = "";
 
+  public string ConnectionString { get; set; } = "";
+
   public string Password { get; set; } = "";
 
   public int MaxRetries { get; set; } = 5;

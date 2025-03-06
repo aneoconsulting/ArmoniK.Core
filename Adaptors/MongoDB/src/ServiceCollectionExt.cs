@@ -42,6 +42,8 @@ using MongoDB.Driver.Core.Extensions.DiagnosticSources;
 
 using static ArmoniK.Core.Utils.CertificateValidator;
 
+using ConfigurationExt = ArmoniK.Core.Utils.ConfigurationExt;
+
 namespace ArmoniK.Core.Adapters.MongoDB;
 
 public static class ServiceCollectionExt
@@ -56,6 +58,137 @@ public static class ServiceCollectionExt
     services.AddMongoStorages(configuration,
                               logger);
     return services;
+  }
+
+  private static Options.MongoDB GetMongoOptions(this ConfigurationManager configuration,
+                                                 ILogger                   logger)
+  {
+    var mongoOptions = ConfigurationExt.GetRequiredValue<Options.MongoDB>(configuration,
+                                                                          Options.MongoDB.SettingSection);
+
+    if (!string.IsNullOrEmpty(mongoOptions.CredentialsPath))
+    {
+      configuration.AddJsonFile(mongoOptions.CredentialsPath,
+                                false,
+                                false);
+      mongoOptions = ConfigurationExt.GetRequiredValue<Options.MongoDB>(configuration,
+                                                                        Options.MongoDB.SettingSection);
+
+      logger.LogTrace("Loaded mongodb credentials from file {path}",
+                      mongoOptions.CredentialsPath);
+    }
+    else
+    {
+      logger.LogTrace("No credentials provided");
+    }
+
+    return mongoOptions;
+  }
+
+  private static MongoClientSettings GetMongoSettings(Options.MongoDB mongoOptions,
+                                                      ILogger         logger)
+  {
+    MongoClientSettings settings;
+    if (!string.IsNullOrEmpty(mongoOptions.ConnectionString))
+    {
+      settings                  = MongoClientSettings.FromUrl(new MongoUrl(mongoOptions.ConnectionString));
+      settings.AllowInsecureTls = mongoOptions.AllowInsecureTls;
+    }
+    else
+    {
+      if (string.IsNullOrEmpty(mongoOptions.Host))
+      {
+        throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
+                                              $"{nameof(Options.MongoDB.Host)} is not defined.");
+      }
+
+      string connectionString;
+
+      if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
+      {
+        var template = "mongodb://{0}:{1}/{2}";
+        connectionString = string.Format(template,
+                                         mongoOptions.Host,
+                                         mongoOptions.Port,
+                                         mongoOptions.DatabaseName);
+      }
+      else
+      {
+        var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
+        connectionString = string.Format(template,
+                                         mongoOptions.User,
+                                         mongoOptions.Password,
+                                         mongoOptions.Host,
+                                         mongoOptions.Port,
+                                         mongoOptions.DatabaseName);
+      }
+
+      if (!string.IsNullOrEmpty(mongoOptions.AuthSource))
+      {
+        connectionString = $"{connectionString}?authSource={mongoOptions.AuthSource}";
+      }
+
+      settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
+
+      // Configure the connection settings
+      settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
+      settings.UseTls                 = mongoOptions.Tls;
+      settings.DirectConnection       = mongoOptions.DirectConnection;
+      settings.Scheme                 = ConnectionStringScheme.MongoDB;
+      settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
+      settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
+      settings.ReplicaSetName         = mongoOptions.ReplicaSet;
+    }
+
+
+    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
+    {
+      var validationCallback = CreateCallback(mongoOptions.CAFile,
+                                              mongoOptions.AllowInsecureTls,
+                                              logger);
+
+      settings.SslSettings = new SslSettings
+                             {
+                               EnabledSslProtocols                 = SslProtocols.Tls12,
+                               ServerCertificateValidationCallback = validationCallback,
+                             };
+    }
+
+    settings.ClusterConfigurator = cb =>
+                                   {
+                                     //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
+                                     //                                                       e.CommandName,
+                                     //                                                       e.Command.ToJson()));
+                                     cb.Subscribe(new DiagnosticsActivityEventSubscriber());
+                                   };
+
+    return settings;
+  }
+
+  private static IMongoClient CreateMongoClient(IServiceProvider provider,
+                                                ILogger          logger)
+  {
+    var mongoOptions = provider.GetRequiredService<Options.MongoDB>();
+    using var _ = logger.BeginNamedScope("MongoDB configuration",
+                                         ("host", mongoOptions.Host),
+                                         ("port", mongoOptions.Port),
+                                         ("connectionString", mongoOptions.ConnectionString));
+
+    var settings = GetMongoSettings(mongoOptions,
+                                    logger);
+
+    var client = new MongoClient(settings);
+
+    logger.LogInformation("MongoDB configuration complete");
+
+    logger.LogDebug("{Option} {Value}",
+                    nameof(mongoOptions.MaxConnectionPoolSize),
+                    mongoOptions.MaxConnectionPoolSize);
+    logger.LogDebug("{Option} {Value}",
+                    nameof(mongoOptions.DataRetention),
+                    mongoOptions.DataRetention);
+
+    return client;
   }
 
   [PublicAPI]
@@ -79,12 +212,18 @@ public static class ServiceCollectionExt
               .AddSingleton<IResultWatcher, ResultWatcher>();
     }
 
-    services.AddOption<Options.MongoDB>(configuration,
-                                        Options.MongoDB.SettingSection,
-                                        out var mongoOptions);
+    services.TryAddSingleton(_ => configuration.GetMongoOptions(logger));
 
-    services.AddSingleton(provider => provider.GetRequiredService<IMongoClient>()
-                                              .GetDatabase(mongoOptions.DatabaseName))
+    services.AddSingleton(provider =>
+                          {
+                            var options = provider.GetRequiredService<Options.MongoDB>();
+
+                            var databaseName = !string.IsNullOrEmpty(options.ConnectionString)
+                                                 ? new MongoUrl(options.ConnectionString).DatabaseName
+                                                 : options.DatabaseName;
+                            return provider.GetRequiredService<IMongoClient>()
+                                           .GetDatabase(databaseName);
+                          })
             .AddSingleton(typeof(MongoCollectionProvider<,>))
             .AddSingletonWithHealthCheck<SessionProvider>($"MongoDB.{nameof(SessionProvider)}");
 
@@ -95,114 +234,9 @@ public static class ServiceCollectionExt
                                                   ConfigurationManager    configuration,
                                                   ILogger                 logger)
   {
-    Options.MongoDB mongoOptions;
-    services.AddOption(configuration,
-                       Options.MongoDB.SettingSection,
-                       out mongoOptions);
-    using var _ = logger.BeginNamedScope("MongoDB configuration",
-                                         ("host", mongoOptions.Host),
-                                         ("port", mongoOptions.Port));
-
-    if (string.IsNullOrEmpty(mongoOptions.Host))
-    {
-      throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
-                                            $"{nameof(Options.MongoDB.Host)} is not defined.");
-    }
-
-    if (string.IsNullOrEmpty(mongoOptions.DatabaseName))
-    {
-      throw new ArgumentOutOfRangeException(Options.MongoDB.SettingSection,
-                                            $"{nameof(Options.MongoDB.DatabaseName)} is not defined.");
-    }
-
-    if (!string.IsNullOrEmpty(mongoOptions.CredentialsPath))
-    {
-      configuration.AddJsonFile(mongoOptions.CredentialsPath,
-                                false,
-                                false);
-
-      services.AddOption(configuration,
-                         Options.MongoDB.SettingSection,
-                         out mongoOptions);
-
-      logger.LogTrace("Loaded mongodb credentials from file {path}",
-                      mongoOptions.CredentialsPath);
-    }
-    else
-    {
-      logger.LogTrace("No credentials provided");
-    }
-
-    string connectionString;
-    if (string.IsNullOrEmpty(mongoOptions.User) || string.IsNullOrEmpty(mongoOptions.Password))
-    {
-      var template = "mongodb://{0}:{1}/{2}";
-      connectionString = string.Format(template,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
-    }
-    else
-    {
-      var template = "mongodb://{0}:{1}@{2}:{3}/{4}";
-      connectionString = string.Format(template,
-                                       mongoOptions.User,
-                                       mongoOptions.Password,
-                                       mongoOptions.Host,
-                                       mongoOptions.Port,
-                                       mongoOptions.DatabaseName);
-    }
-
-    if (!string.IsNullOrEmpty(mongoOptions.AuthSource))
-    {
-      connectionString = $"{connectionString}?authSource={mongoOptions.AuthSource}";
-    }
-
-    var settings = MongoClientSettings.FromUrl(new MongoUrl(connectionString));
-
-    // Configure the connection settings
-    settings.AllowInsecureTls       = mongoOptions.AllowInsecureTls;
-    settings.UseTls                 = mongoOptions.Tls;
-    settings.DirectConnection       = mongoOptions.DirectConnection;
-    settings.Scheme                 = ConnectionStringScheme.MongoDB;
-    settings.MaxConnectionPoolSize  = mongoOptions.MaxConnectionPoolSize;
-    settings.ServerSelectionTimeout = mongoOptions.ServerSelectionTimeout;
-    settings.ReplicaSetName         = mongoOptions.ReplicaSet;
-
-    if (!string.IsNullOrEmpty(mongoOptions.CAFile))
-    {
-      var validationCallback = CreateCallback(mongoOptions.CAFile,
-                                              mongoOptions.AllowInsecureTls,
-                                              logger);
-
-      settings.SslSettings = new SslSettings
-                             {
-                               EnabledSslProtocols                 = SslProtocols.Tls12,
-                               ServerCertificateValidationCallback = validationCallback,
-                             };
-    }
-
-    settings.ClusterConfigurator = cb =>
-                                   {
-                                     //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
-                                     //                                                       e.CommandName,
-                                     //                                                       e.Command.ToJson()));
-                                     cb.Subscribe(new DiagnosticsActivityEventSubscriber());
-                                   };
-
-
-    var client = new MongoClient(settings);
-
-    services.AddSingleton<IMongoClient>(client);
-
-    logger.LogInformation("MongoDB configuration complete");
-
-    logger.LogDebug("{Option} {Value}",
-                    nameof(mongoOptions.MaxConnectionPoolSize),
-                    mongoOptions.MaxConnectionPoolSize);
-    logger.LogDebug("{Option} {Value}",
-                    nameof(mongoOptions.DataRetention),
-                    mongoOptions.DataRetention);
+    services.TryAddSingleton(_ => configuration.GetMongoOptions(logger));
+    services.AddSingleton(provider => CreateMongoClient(provider,
+                                                        logger));
 
     return services;
   }
