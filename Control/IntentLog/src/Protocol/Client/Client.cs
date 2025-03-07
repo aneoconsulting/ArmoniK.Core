@@ -368,3 +368,88 @@ public class Client : IDisposable, IAsyncDisposable
   {
   }
 }
+
+public class Client<TRequest, TResponse> : IDisposable, IAsyncDisposable
+  where TResponse : Exception
+{
+  private readonly Func<byte[], TResponse> decoder_;
+  private readonly Func<TRequest, byte[]>  encoder_;
+  private readonly Client                  inner_;
+
+  [PublicAPI]
+  public Client(Client                  inner,
+                Func<TRequest, byte[]>  encoder,
+                Func<byte[], TResponse> decoder)
+  {
+    inner_   = inner;
+    encoder_ = encoder;
+    decoder_ = decoder;
+  }
+
+  [PublicAPI]
+  public Client(Stream                  stream,
+                Func<TRequest, byte[]>  encoder,
+                Func<byte[], TResponse> decoder,
+                ILogger<Client>?        logger            = null,
+                CancellationToken       cancellationToken = default)
+  {
+    inner_ = new Client(stream,
+                        logger,
+                        cancellationToken);
+    encoder_ = encoder;
+    decoder_ = decoder;
+  }
+
+  public ValueTask DisposeAsync()
+    => inner_.DisposeAsync();
+
+  public void Dispose()
+    => inner_.Dispose();
+
+  [PublicAPI]
+  public async Task<Intent<TRequest, TResponse>> OpenAsync(TRequest          request,
+                                                           CancellationToken cancellationToken = default)
+  {
+    var payload = encoder_(request);
+    try
+    {
+      var intent = await inner_.OpenAsync(payload,
+                                          cancellationToken)
+                               .ConfigureAwait(false);
+      return new Intent<TRequest, TResponse>(intent,
+                                             encoder_,
+                                             decoder_);
+    }
+    catch (ServerError error)
+    {
+      throw decoder_(error.Payload);
+    }
+  }
+
+  [PublicAPI]
+  public static async Task<Client<TRequest, TResponse>> ConnectAsync(string                  host,
+                                                                     int                     port,
+                                                                     Func<TRequest, byte[]>  encoder,
+                                                                     Func<byte[], TResponse> decoder,
+                                                                     Client.Options?         options           = null,
+                                                                     ILogger<Client>?        logger            = null,
+                                                                     CancellationToken       cancellationToken = default)
+  {
+    try
+    {
+      var client = await Client.ConnectAsync(host,
+                                             port,
+                                             options,
+                                             logger,
+                                             cancellationToken)
+                               .ConfigureAwait(false);
+      return new Client<TRequest, TResponse>(client,
+                                             encoder,
+                                             decoder);
+    }
+    catch (ServerError error)
+    {
+      throw decoder(error.Payload);
+    }
+  }
+}

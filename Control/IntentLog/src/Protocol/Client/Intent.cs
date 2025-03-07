@@ -64,24 +64,28 @@ public class Intent : IDisposable, IAsyncDisposable
     => DisposeAsync()
       .WaitSync();
 
+  [PublicAPI]
   public void CloseOnDispose(byte[]? payload = null)
   {
     disposeRequestType_   = RequestType.Close;
     diposeRequestPayload_ = payload ?? Array.Empty<byte>();
   }
 
+  [PublicAPI]
   public void AbortOnDispose(byte[]? payload = null)
   {
     disposeRequestType_   = RequestType.Abort;
     diposeRequestPayload_ = payload ?? Array.Empty<byte>();
   }
 
+  [PublicAPI]
   public void ResetOnDispose(byte[]? payload = null)
   {
     disposeRequestType_   = RequestType.Reset;
     diposeRequestPayload_ = payload ?? Array.Empty<byte>();
   }
 
+  [PublicAPI]
   public void TimeoutOnDispose(byte[]? payload = null)
   {
     disposeRequestType_   = RequestType.Timeout;
@@ -125,9 +129,9 @@ public class Intent : IDisposable, IAsyncDisposable
                                                          RequestType.Reset,
                                                          Array.Empty<byte>()));
 
-  private async Task CallAsync(RequestType       requestType,
-                               byte[]            payload,
-                               CancellationToken cancellationToken)
+  internal async Task CallAsync(RequestType       requestType,
+                                byte[]            payload,
+                                CancellationToken cancellationToken)
   {
     ObjectDisposedException.ThrowIf(client_ is null,
                                     this);
@@ -167,5 +171,97 @@ public class Intent : IDisposable, IAsyncDisposable
                          CancellationToken cancellationToken = default)
     => CallAsync(RequestType.Close,
                  payload,
+                 cancellationToken);
+}
+
+[PublicAPI]
+public class Intent<TRequest, TResponse> : IDisposable, IAsyncDisposable
+  where TResponse : Exception
+{
+  private readonly Func<byte[], TResponse> decoder_;
+  private readonly Func<TRequest, byte[]>  encoder_;
+  private readonly Intent                  inner_;
+
+  internal Intent(Intent                  intent,
+                  Func<TRequest, byte[]>  encoder,
+                  Func<byte[], TResponse> decoder)
+  {
+    inner_   = intent;
+    encoder_ = encoder;
+    decoder_ = decoder;
+  }
+
+  public ValueTask DisposeAsync()
+    => inner_.DisposeAsync();
+
+  public void Dispose()
+    => inner_.Dispose();
+
+  [PublicAPI]
+  public void CloseOnDispose(TRequest request)
+  {
+    var payload = encoder_(request);
+    inner_.CloseOnDispose(payload);
+  }
+
+  [PublicAPI]
+  public void AbortOnDispose(TRequest request)
+  {
+    var payload = encoder_(request);
+    inner_.AbortOnDispose(payload);
+  }
+
+  [PublicAPI]
+  public void ResetOnDispose(TRequest request)
+  {
+    var payload = encoder_(request);
+    inner_.ResetOnDispose(payload);
+  }
+
+  [PublicAPI]
+  public void TimeoutOnDispose(TRequest request)
+  {
+    var payload = encoder_(request);
+    inner_.TimeoutOnDispose(payload);
+  }
+
+  private async Task CallAsync(RequestType       requestType,
+                               TRequest          request,
+                               CancellationToken cancellationToken)
+  {
+    var payload = encoder_(request);
+
+    try
+    {
+      await inner_.CallAsync(requestType,
+                             payload,
+                             cancellationToken)
+                  .ConfigureAwait(false);
+    }
+    catch (ServerError error)
+    {
+      throw decoder_(error.Payload);
+    }
+  }
+
+  [PublicAPI]
+  public Task AmendAsync(TRequest          request,
+                         CancellationToken cancellationToken = default)
+    => CallAsync(RequestType.Amend,
+                 request,
+                 cancellationToken);
+
+  [PublicAPI]
+  public Task AbortAsync(TRequest          request,
+                         CancellationToken cancellationToken = default)
+    => CallAsync(RequestType.Abort,
+                 request,
+                 cancellationToken);
+
+  [PublicAPI]
+  public Task CloseAsync(TRequest          request,
+                         CancellationToken cancellationToken = default)
+    => CallAsync(RequestType.Close,
+                 request,
                  cancellationToken);
 }
