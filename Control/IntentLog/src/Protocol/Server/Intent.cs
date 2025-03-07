@@ -99,7 +99,9 @@ public class Intent : IDisposable, IAsyncDisposable
                                         Type = exception is null
                                                  ? ResponseType.Success
                                                  : ResponseType.Error,
-                                        Payload = Encoding.UTF8.GetBytes(exception?.Message ?? string.Empty),
+                                        Payload = exception is ServerError serverError
+                                                    ? serverError.Payload
+                                                    : Encoding.UTF8.GetBytes(exception?.Message ?? string.Empty),
                                       }, request.Type.IsFinal()),
                                      cancellationToken)
                          .ConfigureAwait(false);

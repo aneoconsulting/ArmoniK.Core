@@ -17,9 +17,11 @@
 
 using System;
 using System.IO;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Control.IntentLog.Protocol;
 using ArmoniK.Core.Control.IntentLog.Protocol.Client;
 using ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 using ArmoniK.Core.Control.IntentLog.Tests.Utils;
@@ -323,7 +325,7 @@ public class ClientTest
     request = await Request.ReceiveAsync(serverStream);
 
     await serverStream.RespondErrorAsync(request.IntentId,
-                                         "Error"u8);
+                                         "Error payload"u8);
 
     Assert.That(() => disposeTask,
                 Throws.Nothing);
@@ -332,7 +334,8 @@ public class ClientTest
                              It.IsAny<EventId>(),
                              It.Is<It.IsAnyType>((x,
                                                   y) => x.ToString()!.StartsWith("Error while releasing intent")),
-                             It.Is<Exception?>(x => x!.Message.StartsWith("Unknown response:")),
+                             It.Is<Exception?>(x => x!.GetType() == typeof(ServerError) && x.Message.StartsWith("Server error for intent") &&
+                                                    Encoding.UTF8.GetString(((ServerError)x).Payload) == "Error payload"),
                              It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                   Times.Once);
     logger.VerifyNoLog(LogLevel.Critical);

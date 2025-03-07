@@ -314,7 +314,8 @@ public class Client : IDisposable, IAsyncDisposable
 
     if (response.Type is ResponseType.Error)
     {
-      throw new Exception($"Unknown response: {response.Payload}");
+      throw new ServerError($"Server error for intent {request.IntentId}:{request.Type}",
+                            response.Payload);
     }
   }
 
