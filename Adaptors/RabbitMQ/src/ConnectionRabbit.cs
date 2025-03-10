@@ -148,12 +148,12 @@ public class ConnectionRabbit : IConnectionRabbit
       }
       else if (!options.Ssl)
       {
-        logger.LogError("SSL is disabled for RabbitMQ and your current scheme is {scheme}",
-                        options.Scheme);
+        logger.LogWarning("SSL is disabled for RabbitMQ and your current scheme is {scheme}",
+                          options.Scheme);
       }
       else
       {
-        logger.LogError("No CA path provided for RabbitMQ, SSL validation will not be performed");
+        logger.LogDebug("No CA path provided for RabbitMQ");
       }
 
       factory.Ssl.CertificateValidationCallback = validationCallback;
