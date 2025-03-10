@@ -112,17 +112,18 @@ public class ConnectionAmqp : IConnectionAmqp
       }
       else if (!options.Ssl)
       {
-        logger.LogError("SSL is disabled for ActiveMQ but the scheme is {scheme}",
-                        options.Scheme);
+        logger.LogWarning("SSL is disabled for ActiveMQ but the scheme is {scheme}",
+                          options.Scheme);
       }
       else
       {
-        logger.LogError("No CA path provided for ActiveMQ");
+        logger.LogDebug("No CA path provided for ActiveMQ");
       }
     }
     else
     {
-      logger.LogWarning("SSL is disabled for ActiveMQ");
+      logger.LogWarning("SSL is disabled for ActiveMQ: {options.Ssl}",
+                        options.Ssl);
       logger.LogWarning("Scheme is {scheme}",
                         options.Scheme);
     }
