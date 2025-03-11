@@ -37,47 +37,62 @@ namespace ArmoniK.Core.Control.IntentLog.Tests;
 [TestFixture(TestOf = typeof(Client))]
 public class ClientTest
 {
+  [SetUp]
+  public void SetUp()
+  {
+    logger_ = new Mock<ILogger<Client>>(MockBehavior.Strict);
+
+    logger_.Setup(m => m.Log(It.Is<LogLevel>(x => x <= LogLevel.Debug),
+                             It.IsAny<EventId>(),
+                             It.IsAny<It.IsAnyType>(),
+                             It.IsAny<Exception?>(),
+                             It.IsAny<Func<It.IsAnyType, Exception?, string>>()));
+
+    var (clientStream, serverStream) = ChannelStream.CreatePair();
+    client_ = new Client(clientStream,
+                         logger_.Object);
+    serverStream_ = serverStream;
+  }
+
+  [TearDown]
+  public async Task TearDown()
+    => await client_.DisposeAsync();
+
+  private Mock<ILogger<Client>> logger_;
+  private Client                client_;
+  private Stream                serverStream_;
+
   [Test]
   [Timeout(1000)]
   public async Task OpenClose()
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
-
-    var intentTask = client.OpenAsync("payload"u8.ToArray());
-    var request    = await Request.ReceiveAsync(serverStream);
+    var intentTask = client_.OpenAsync("payload"u8.ToArray());
+    var request    = await Request.ReceiveAsync(serverStream_);
     Assert.That(request.Type,
                 Is.EqualTo(RequestType.Open));
     Assert.That(request.Payload,
                 Is.EqualTo("payload"u8.ToArray()));
 
-    await serverStream.RespondSuccessAsync(request.IntentId);
+    await serverStream_.RespondSuccessAsync(request.IntentId);
 
     await using var intent = await intentTask.ConfigureAwait(false);
 
     var closeTask = intent.CloseAsync(Array.Empty<byte>());
-    request = await Request.ReceiveAsync(serverStream);
-    await serverStream.RespondSuccessAsync(request.IntentId);
+    request = await Request.ReceiveAsync(serverStream_);
+    await serverStream_.RespondSuccessAsync(request.IntentId);
 
     await closeTask;
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
   [Timeout(1000)]
   public async Task ParallelIntents()
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
-
-    var intentTask1 = client.OpenAsync("payload1"u8.ToArray());
-    var request1    = await Request.ReceiveAsync(serverStream);
-    var intentTask2 = client.OpenAsync("payload2"u8.ToArray());
-    var request2    = await Request.ReceiveAsync(serverStream);
+    var intentTask1 = client_.OpenAsync("payload1"u8.ToArray());
+    var request1    = await Request.ReceiveAsync(serverStream_);
+    var intentTask2 = client_.OpenAsync("payload2"u8.ToArray());
+    var request2    = await Request.ReceiveAsync(serverStream_);
 
     Assert.That(request1.Type,
                 Is.EqualTo(RequestType.Open));
@@ -95,7 +110,7 @@ public class ClientTest
     Assert.That(intentTask2.IsCompleted,
                 Is.False);
 
-    await serverStream.RespondSuccessAsync(request2.IntentId);
+    await serverStream_.RespondSuccessAsync(request2.IntentId);
 
     await Task.Delay(10);
     Assert.That(intentTask1.IsCompleted,
@@ -105,7 +120,7 @@ public class ClientTest
 
     await using var intent2 = await intentTask2;
 
-    await serverStream.RespondSuccessAsync(request1.IntentId);
+    await serverStream_.RespondSuccessAsync(request1.IntentId);
 
     await Task.Delay(10);
     Assert.That(intentTask1.IsCompleted,
@@ -118,15 +133,15 @@ public class ClientTest
     var closeTask1 = intent1.CloseAsync(Array.Empty<byte>());
     var closeTask2 = intent2.CloseAsync(Array.Empty<byte>());
 
-    request1 = await Request.ReceiveAsync(serverStream);
-    request2 = await Request.ReceiveAsync(serverStream);
+    request1 = await Request.ReceiveAsync(serverStream_);
+    request2 = await Request.ReceiveAsync(serverStream_);
 
-    await serverStream.RespondSuccessAsync(request1.IntentId);
-    await serverStream.RespondSuccessAsync(request2.IntentId);
+    await serverStream_.RespondSuccessAsync(request1.IntentId);
+    await serverStream_.RespondSuccessAsync(request2.IntentId);
 
     await Task.WhenAll(closeTask1,
                        closeTask2);
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
@@ -137,15 +152,10 @@ public class ClientTest
   [TestCase(RequestType.Reset)]
   public async Task DisposeIntent(RequestType? type)
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
+    var intentTask = client_.OpenAsync("payload"u8.ToArray());
+    var request    = await Request.ReceiveAsync(serverStream_);
 
-    var intentTask = client.OpenAsync("payload"u8.ToArray());
-    var request    = await Request.ReceiveAsync(serverStream);
-
-    await serverStream.RespondSuccessAsync(request.IntentId);
+    await serverStream_.RespondSuccessAsync(request.IntentId);
 
 
     var intent = await intentTask;
@@ -162,15 +172,15 @@ public class ClientTest
     setOnDispose(disposePayload);
 
     var disposeTask = intent.DisposeAsync();
-    request = await Request.ReceiveAsync(serverStream);
+    request = await Request.ReceiveAsync(serverStream_);
 
     Assert.That(request.Type,
                 Is.EqualTo(type ?? RequestType.Close));
     Assert.That(request.Payload,
                 Is.EqualTo(disposePayload));
-    await serverStream.RespondSuccessAsync(request.IntentId);
+    await serverStream_.RespondSuccessAsync(request.IntentId);
     await disposeTask;
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
@@ -178,7 +188,6 @@ public class ClientTest
   [Repeat(10)]
   public async Task OpenStreamClosed([Values] bool early)
   {
-    var logger = new Mock<ILogger<Client>>();
     var (clientStream, serverStream) = ChannelStream.CreatePair();
 
     if (early)
@@ -187,7 +196,7 @@ public class ClientTest
     }
 
     await using var client = new Client(clientStream,
-                                        logger.Object);
+                                        logger_.Object);
     if (!early)
     {
       serverStream.Close();
@@ -195,7 +204,7 @@ public class ClientTest
 
     Assert.That(() => client.OpenAsync("open"u8.ToArray()),
                 Throws.InstanceOf<EndOfStreamException>());
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
@@ -203,21 +212,16 @@ public class ClientTest
   [Repeat(10)]
   public async Task AmendStreamClosed([Values] bool early)
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
+    var intentTask = client_.OpenAsync("open"u8.ToArray());
+    var request    = await Request.ReceiveAsync(serverStream_);
 
-    var intentTask = client.OpenAsync("open"u8.ToArray());
-    var request    = await Request.ReceiveAsync(serverStream);
-
-    await serverStream.RespondSuccessAsync(request.IntentId);
+    await serverStream_.RespondSuccessAsync(request.IntentId);
 
     var intent = await intentTask;
 
     if (early)
     {
-      serverStream.Close();
+      serverStream_.Close();
     }
 
     var amendTask = intent.AmendAsync("amend"u8.ToArray());
@@ -225,33 +229,28 @@ public class ClientTest
     if (!early)
     {
       await Task.Delay(10);
-      serverStream.Close();
+      serverStream_.Close();
     }
 
 
     Assert.That(() => amendTask,
                 Throws.InstanceOf<EndOfStreamException>());
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
   [Timeout(10000)]
   public async Task OpenFailure()
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
+    var intentTask = client_.OpenAsync("open"u8.ToArray());
+    var request    = await Request.ReceiveAsync(serverStream_);
 
-    var intentTask = client.OpenAsync("open"u8.ToArray());
-    var request    = await Request.ReceiveAsync(serverStream);
-
-    await serverStream.RespondErrorAsync(request.IntentId,
-                                         "Error"u8);
+    await serverStream_.RespondErrorAsync(request.IntentId,
+                                          "Error"u8);
 
     Assert.That(() => intentTask,
                 Throws.Exception);
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
@@ -261,15 +260,10 @@ public class ClientTest
   [TestCase(RequestType.Abort)]
   public async Task IntentFailure(RequestType requestType)
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
+    var intentTask = client_.OpenAsync("open"u8.ToArray());
+    var request    = await Request.ReceiveAsync(serverStream_);
 
-    var intentTask = client.OpenAsync("open"u8.ToArray());
-    var request    = await Request.ReceiveAsync(serverStream);
-
-    await serverStream.RespondSuccessAsync(request.IntentId);
+    await serverStream_.RespondSuccessAsync(request.IntentId);
 
     var intent = await intentTask;
 
@@ -281,14 +275,14 @@ public class ClientTest
                                                         };
     var requestTask = requestFunc("payload"u8.ToArray(),
                                   CancellationToken.None);
-    request = await Request.ReceiveAsync(serverStream);
+    request = await Request.ReceiveAsync(serverStream_);
 
-    await serverStream.RespondErrorAsync(request.IntentId,
-                                         "Error"u8);
+    await serverStream_.RespondErrorAsync(request.IntentId,
+                                          "Error"u8);
 
     Assert.That(() => requestTask,
                 Throws.Exception);
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
@@ -299,16 +293,19 @@ public class ClientTest
   [TestCase(RequestType.Reset)]
   public async Task IntentDisposeFailure(RequestType requestType)
   {
-    var logger = new Mock<ILogger<Client>>();
+    logger_.Setup(m => m.Log(LogLevel.Error,
+                             It.IsAny<EventId>(),
+                             It.Is<It.IsAnyType>((x,
+                                                  y) => x.ToString()!.StartsWith("Error while releasing intent")),
+                             It.Is<Exception?>(x => x!.GetType() == typeof(ServerError) && x.Message.StartsWith("Server error for intent") &&
+                                                    Encoding.UTF8.GetString(((ServerError)x).Payload) == "Error payload"),
+                             It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
+           .Verifiable(Times.Once);
 
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
+    var intentTask = client_.OpenAsync("open"u8.ToArray());
+    var request    = await Request.ReceiveAsync(serverStream_);
 
-    var intentTask = client.OpenAsync("open"u8.ToArray());
-    var request    = await Request.ReceiveAsync(serverStream);
-
-    await serverStream.RespondSuccessAsync(request.IntentId);
+    await serverStream_.RespondSuccessAsync(request.IntentId);
 
     var intent = await intentTask;
 
@@ -322,23 +319,15 @@ public class ClientTest
                                };
     onDispose(""u8.ToArray());
     var disposeTask = intent.DisposeAsync();
-    request = await Request.ReceiveAsync(serverStream);
+    request = await Request.ReceiveAsync(serverStream_);
 
-    await serverStream.RespondErrorAsync(request.IntentId,
-                                         "Error payload"u8);
+    await serverStream_.RespondErrorAsync(request.IntentId,
+                                          "Error payload"u8);
 
     Assert.That(() => disposeTask,
                 Throws.Nothing);
 
-    logger.Verify(m => m.Log(LogLevel.Error,
-                             It.IsAny<EventId>(),
-                             It.Is<It.IsAnyType>((x,
-                                                  y) => x.ToString()!.StartsWith("Error while releasing intent")),
-                             It.Is<Exception?>(x => x!.GetType() == typeof(ServerError) && x.Message.StartsWith("Server error for intent") &&
-                                                    Encoding.UTF8.GetString(((ServerError)x).Payload) == "Error payload"),
-                             It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                  Times.Once);
-    logger.VerifyNoLog(LogLevel.Critical);
+    logger_.Verify();
   }
 
   [Test]
@@ -348,40 +337,37 @@ public class ClientTest
   [TestCase((ResponseType)100)]
   public async Task BadIntent(ResponseType responseType)
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using (var client = new Client(clientStream,
-                                         logger.Object))
-    {
-      await serverStream.RespondAsync(Guid.Empty,
-                                      responseType);
-      await Task.Delay(10);
-    }
-
-    logger.Verify(m => m.Log(LogLevel.Error,
+    var tcs = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    logger_.Setup(m => m.Log(LogLevel.Error,
                              It.IsAny<EventId>(),
                              It.Is<It.IsAnyType>((x,
                                                   y) => x.ToString()!.StartsWith("Client error: Received incorrect intent ID from server:")),
                              It.IsAny<Exception?>(),
-                             It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                  Times.Once);
-    logger.VerifyNoLog(LogLevel.Critical);
+                             It.IsAny<Func<It.IsAnyType, Exception?, string>>()))
+           .Callback(() => tcs.SetResult())
+           .Verifiable(Times.Once);
+
+    var (clientStream, serverStream) = ChannelStream.CreatePair();
+    await using (var client = new Client(clientStream,
+                                         logger_.Object))
+    {
+      await serverStream.RespondAsync(Guid.Empty,
+                                      responseType);
+      await tcs.Task;
+    }
+
+    logger_.Verify();
   }
 
   [Test]
   [Timeout(10000)]
   public async Task Ping()
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
+    await serverStream_.RespondAsync(new Guid("abcdefghijklmnop"u8),
+                                     ResponseType.Ping,
+                                     "Ping payload"u8);
 
-    await serverStream.RespondAsync(new Guid("abcdefghijklmnop"u8),
-                                    ResponseType.Ping,
-                                    "Ping payload"u8);
-
-    var request = await Request.ReceiveAsync(serverStream);
+    var request = await Request.ReceiveAsync(serverStream_);
 
     Assert.That(request.IntentId,
                 Is.EqualTo(new Guid("abcdefghijklmnop"u8)));
@@ -389,56 +375,17 @@ public class ClientTest
                 Is.EqualTo(RequestType.Pong));
     Assert.That(request.Payload,
                 Is.EqualTo("Ping payload"));
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
 
   [Test]
   [Timeout(10000)]
   public async Task Pong()
   {
-    var logger = new Mock<ILogger<Client>>();
-    var (clientStream, serverStream) = ChannelStream.CreatePair();
-    await using var client = new Client(clientStream,
-                                        logger.Object);
-
-    await serverStream.RespondAsync(new Guid("abcdefghijklmnop"u8),
-                                    ResponseType.Pong,
-                                    "Pong payload"u8);
+    await serverStream_.RespondAsync(new Guid("abcdefghijklmnop"u8),
+                                     ResponseType.Pong,
+                                     "Pong payload"u8);
     await Task.Delay(10);
-    logger.VerifyNoLog(LogLevel.Information);
+    logger_.Verify();
   }
-}
-
-public static class StreamExtension
-{
-  public static Task RespondAsync(this Stream        stream,
-                                  Guid               intentId,
-                                  ResponseType       type,
-                                  ReadOnlySpan<byte> payload           = default,
-                                  CancellationToken  cancellationToken = default)
-    => new Response
-       {
-         IntentId = intentId,
-         Type     = type,
-         Payload  = payload.ToArray(),
-       }.SendAsync(stream,
-                   cancellationToken);
-
-  public static Task RespondSuccessAsync(this Stream       stream,
-                                         Guid              intentId,
-                                         CancellationToken cancellationToken = default)
-    => RespondAsync(stream,
-                    intentId,
-                    ResponseType.Success,
-                    cancellationToken: cancellationToken);
-
-  public static Task RespondErrorAsync(this Stream        stream,
-                                       Guid               intentId,
-                                       ReadOnlySpan<byte> payload,
-                                       CancellationToken  cancellationToken = default)
-    => RespondAsync(stream,
-                    intentId,
-                    ResponseType.Error,
-                    payload,
-                    cancellationToken);
 }
