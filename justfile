@@ -340,3 +340,29 @@ healthChecks:
   echo -e "\nHealth Checking Submitter"
   echo -n "  startup: " && curl -sSL localhost:5011/startup 2>/dev/null || echo refused
   echo -n "  liveness: " && curl -sSL localhost:5011/liveness 2>/dev/null || echo refused
+
+# format c# code with jb cleanupcode
+[positional-arguments]
+cleanupcode *args:
+  #! /bin/sh
+
+  SOURCE_DIR="{{source_directory()}}"
+  FILES=
+  for file in "$@"; do
+    file="$(realpath --relative-base="$SOURCE_DIR" "$file")"
+    FILES="${FILES:+$FILES;}$file"
+  done
+  
+  cd "$SOURCE_DIR"
+
+  if [ -z "$FILES" ] ; then
+    FILES=$( (git diff --name-only --diff-filter=AM --cached && git diff --name-only) | sort -u | grep ".*\.cs" | paste -sd';')
+  fi
+
+  if [ -z "$FILES" ] ; then
+    echo "No files to cleanup"
+    exit 0
+  fi
+
+  dotnet build ArmoniK.Core.sln
+  jb cleanupcode --profile="Full Cleanup With Headers" --include="$FILES" ArmoniK.Core.sln --no-build
