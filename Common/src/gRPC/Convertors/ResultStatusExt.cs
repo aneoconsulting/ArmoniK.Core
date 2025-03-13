@@ -21,8 +21,16 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Extension methods for converting between internal and gRPC <see cref="Storage.ResultStatus" /> statuses.
+/// </summary>
 public static class ResultStatusExt
 {
+  /// <summary>
+  ///   Converts the internal <see cref="Storage.ResultStatus" /> to the gRPC <see cref="ResultStatus" />.
+  /// </summary>
+  /// <param name="status">The internal status to convert.</param>
+  /// <returns>The corresponding gRPC status.</returns>
   public static ResultStatus ToGrpcStatus(this Storage.ResultStatus status)
     => status switch
        {
@@ -36,6 +44,11 @@ public static class ResultStatusExt
                                                     null),
        };
 
+  /// <summary>
+  ///   Converts the gRPC <see cref="ResultStatus" /> to the internal <see cref="Storage.ResultStatus" />.
+  /// </summary>
+  /// <param name="status">The gRPC status to convert.</param>
+  /// <returns>The corresponding internal status.</returns>
   public static Storage.ResultStatus ToInternalStatus(this ResultStatus status)
     => status switch
        {
