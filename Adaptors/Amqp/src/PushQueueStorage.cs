@@ -83,7 +83,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
      * If a user tries to enqueue a message with priority larger or equal than MaxInternalQueuePriority, that message is put in a
      * priority queue with an internal priority defined by the arithmetic below */
     var whichQueue       = (priority - 1) / MaxInternalQueuePriority % NbLinks;
-    var internalPriority = (priority - 1) % MaxInternalQueuePriority;
+    var internalPriority = (priority - 1)                            % MaxInternalQueuePriority;
 
     logger_.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internalPriority}",
                      priority,
