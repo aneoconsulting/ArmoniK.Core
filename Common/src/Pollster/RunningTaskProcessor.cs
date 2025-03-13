@@ -30,6 +30,11 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   A background service that processes running tasks from a queue.
+///   It reads task handlers from the running task queue, executes them,
+///   and forwards completed tasks to the post-processing queue.
+/// </summary>
 public class RunningTaskProcessor : BackgroundService
 {
   private readonly ExceptionManager              exceptionManager_;
@@ -37,6 +42,13 @@ public class RunningTaskProcessor : BackgroundService
   private readonly PostProcessingTaskQueue       postProcessingTaskQueue_;
   private readonly RunningTaskQueue              runningTaskQueue_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="RunningTaskProcessor" /> class.
+  /// </summary>
+  /// <param name="runningTaskQueue">The queue containing tasks ready for execution.</param>
+  /// <param name="postProcessingTaskQueue">The queue where completed tasks are forwarded for post-processing.</param>
+  /// <param name="exceptionManager">The manager handling exceptions and cancellation.</param>
+  /// <param name="logger">The logger for this class.</param>
   public RunningTaskProcessor(RunningTaskQueue              runningTaskQueue,
                               PostProcessingTaskQueue       postProcessingTaskQueue,
                               ExceptionManager              exceptionManager,
@@ -48,6 +60,7 @@ public class RunningTaskProcessor : BackgroundService
     exceptionManager_        = exceptionManager;
   }
 
+  /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     await using var closeWriter = new Deferrer(postProcessingTaskQueue_.CloseWriter);
