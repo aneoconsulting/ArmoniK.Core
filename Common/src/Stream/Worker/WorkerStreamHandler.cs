@@ -37,6 +37,9 @@ using Output = ArmoniK.Core.Common.Storage.Output;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
+/// <summary>
+///   Handles the interactions with the worker.
+/// </summary>
 public class WorkerStreamHandler : IWorkerStreamHandler
 {
   private readonly GrpcChannelProvider                     channelProvider_;
@@ -46,6 +49,12 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   private          int                                     retryCheck_;
   private          Api.gRPC.V1.Worker.Worker.WorkerClient? workerClient_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="WorkerStreamHandler" /> class.
+  /// </summary>
+  /// <param name="channelProvider">The gRPC channel provider.</param>
+  /// <param name="optionsInitWorker">The initialization options for the worker.</param>
+  /// <param name="logger">The logger instance.</param>
   public WorkerStreamHandler(GrpcChannelProvider          channelProvider,
                              InitWorker                   optionsInitWorker,
                              ILogger<WorkerStreamHandler> logger)
@@ -55,7 +64,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     logger_            = logger;
   }
 
-
+  /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
   {
     if (isInitialized_)
@@ -98,6 +107,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     throw e;
   }
 
+  /// <inheritdoc />
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
     try
@@ -126,9 +136,11 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     }
   }
 
+  /// <inheritdoc />
   public void Dispose()
     => GC.SuppressFinalize(this);
 
+  /// <inheritdoc />
   public async Task<Output> StartTaskProcessing(TaskData          taskData,
                                                 string            token,
                                                 string            dataFolder,
@@ -173,6 +185,14 @@ public class WorkerStreamHandler : IWorkerStreamHandler
     }
   }
 
+  /// <summary>
+  ///   Checks the health of the worker.
+  /// </summary>
+  /// <param name="cancellationToken">The cancellation token.</param>
+  /// <returns>
+  ///   A task that represents the asynchronous operation. The task result contains a boolean indicating the health
+  ///   status of the worker.
+  /// </returns>
   private Task<bool> CheckWorker(CancellationToken cancellationToken)
   {
     try
