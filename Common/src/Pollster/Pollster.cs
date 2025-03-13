@@ -45,8 +45,13 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Controls the polling and processing of tasks from the queue, manages task execution lifecycle,
+///   and provides health check capabilities.
+/// </summary>
 public class Pollster : IInitializable
 {
+  // Fields documentation
   private readonly ActivitySource                            activitySource_;
   private readonly IAgentHandler                             agentHandler_;
   private readonly DataPrefetcher                            dataPrefetcher_;
@@ -72,7 +77,29 @@ public class Pollster : IInitializable
   private          bool                                      endLoopReached_;
   private          HealthCheckResult?                        healthCheckFailedResult_;
 
-
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="Pollster" /> class.
+  /// </summary>
+  /// <param name="pullQueueStorage">The storage service for pulling tasks from the queue.</param>
+  /// <param name="dataPrefetcher">The service to prefetch data needed for task execution.</param>
+  /// <param name="options">Configuration options for the compute plane.</param>
+  /// <param name="pollsterOptions">Specific options for the pollster behavior.</param>
+  /// <param name="exceptionManager">Manager to handle and record exceptions.</param>
+  /// <param name="activitySource">Source for activity tracking and tracing.</param>
+  /// <param name="logger">Logger for the pollster.</param>
+  /// <param name="loggerFactory">Factory to create loggers for child components.</param>
+  /// <param name="objectStorage">Storage for task-related objects.</param>
+  /// <param name="resultTable">Table to store task results.</param>
+  /// <param name="submitter">Service to submit new tasks.</param>
+  /// <param name="sessionTable">Table to manage sessions.</param>
+  /// <param name="taskTable">Table to store and retrieve task information.</param>
+  /// <param name="taskProcessingChecker">Service to check if tasks can be processed.</param>
+  /// <param name="workerStreamHandler">Handler for worker streams.</param>
+  /// <param name="agentHandler">Handler for agents.</param>
+  /// <param name="runningTaskQueue">Queue for running tasks.</param>
+  /// <param name="identifier">Identifier for the agent running the pollster.</param>
+  /// <param name="meterHolder">Holder for metrics collection.</param>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown when message batch size is less than 1.</exception>
   public Pollster(IPullQueueStorage          pullQueueStorage,
                   DataPrefetcher             dataPrefetcher,
                   ComputePlane               options,
@@ -155,9 +182,17 @@ public class Pollster : IInitializable
                                             meterHolder_.Tags);
   }
 
+  /// <summary>
+  ///   Gets the collection of task IDs that are currently being processed.
+  /// </summary>
   public ICollection<string> TaskProcessing
     => taskProcessingDict_.Keys;
 
+  /// <summary>
+  ///   Initializes the pollster and its dependencies.
+  /// </summary>
+  /// <param name="cancellationToken">Token to cancel the initialization.</param>
+  /// <returns>A task representing the asynchronous initialization operation.</returns>
   public async Task Init(CancellationToken cancellationToken)
     => await Task.WhenAll(pullQueueStorage_.Init(cancellationToken),
                           dataPrefetcher_.Init(cancellationToken),
@@ -168,6 +203,11 @@ public class Pollster : IInitializable
                           taskTable_.Init(cancellationToken))
                  .ConfigureAwait(false);
 
+  /// <summary>
+  ///   Performs health checks on the pollster and its dependencies.
+  /// </summary>
+  /// <param name="tag">The type of health check to perform.</param>
+  /// <returns>The health check result.</returns>
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
     if (healthCheckFailedResult_ is not null)
@@ -205,6 +245,10 @@ public class Pollster : IInitializable
     return result;
   }
 
+  /// <summary>
+  ///   Stops any cancelled tasks that are currently being processed.
+  /// </summary>
+  /// <returns>A task representing the asynchronous operation.</returns>
   public async Task StopCancelledTask()
   {
     foreach (var taskHandler in taskProcessingDict_.Values.ToArray())
@@ -214,6 +258,10 @@ public class Pollster : IInitializable
     }
   }
 
+  /// <summary>
+  ///   Main processing loop for the pollster that fetches and processes tasks.
+  /// </summary>
+  /// <returns>A task representing the asynchronous operation.</returns>
   public async Task MainLoop()
   {
     try
