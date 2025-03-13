@@ -76,16 +76,14 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
       throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
-    /* Priority is handled using multiple queues; there should be at least one queue which
-     * is imposed via the restriction MaxPriority > 1. If a user tries to enqueue a message
-     * with priority larger or equal than MaxInternalQueuePriority, we put that message in
-     * the last queue and set its internal priority MaxInternalQueuePriority.*/
-    var whichQueue = priority < MaxInternalQueuePriority
-                       ? priority / MaxInternalQueuePriority
-                       : NbLinks - 1;
-    var internalPriority = priority < MaxInternalQueuePriority
-                             ? priority % MaxInternalQueuePriority
-                             : MaxInternalQueuePriority;
+    /* AMQP's JDBC supports (0-9) priority range. In order to allow for more levels of priority, we use multiple queues that we
+     * interpret as priority queues, messages in queue_k will be dequeued before messages in queue_j for  k > j. Each priority queue
+     * has its own internal (0-9) priority range provided by the protocol.
+     * There should be at least one priority queue which is imposed via the restriction MaxPriority >= 1.
+     * If a user tries to enqueue a message with priority larger or equal than MaxInternalQueuePriority, that message is put in a
+     * priority queue with an internal priority defined by the arithmetic below */
+    var whichQueue       = (priority - 1) / MaxInternalQueuePriority % NbLinks;
+    var internalPriority = (priority - 1) % MaxInternalQueuePriority;
 
     logger_.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internalPriority}",
                      priority,
