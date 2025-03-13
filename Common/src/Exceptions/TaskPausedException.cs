@@ -21,18 +21,34 @@ using ArmoniK.Core.Base.Exceptions;
 
 namespace ArmoniK.Core.Common.Exceptions;
 
+/// <summary>
+///   Exception that is thrown when a task is paused.
+/// </summary>
 [Serializable]
 public class TaskPausedException : ArmoniKException
 {
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="TaskPausedException" /> class.
+  /// </summary>
   public TaskPausedException()
   {
   }
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="TaskPausedException" /> class with a specified error message.
+  /// </summary>
+  /// <param name="message">The message that describes the error.</param>
   public TaskPausedException(string message)
     : base(message)
   {
   }
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="TaskPausedException" /> class with a specified error message and a
+  ///   reference to the inner exception that is the cause of this exception.
+  /// </summary>
+  /// <param name="message">The message that describes the error.</param>
+  /// <param name="innerException">The exception that is the cause of the current exception.</param>
   public TaskPausedException(string    message,
                              Exception innerException)
     : base(message,
