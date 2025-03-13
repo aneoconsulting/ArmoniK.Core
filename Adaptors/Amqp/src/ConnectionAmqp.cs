@@ -122,7 +122,7 @@ public class ConnectionAmqp : IConnectionAmqp
     }
     else
     {
-      logger.LogWarning("SSL is disabled for ActiveMQ: {options.Ssl}",
+      logger.LogWarning("SSL is disabled for ActiveMQ: {OptionsSsl}",
                         options.Ssl);
       logger.LogWarning("Scheme is {scheme}",
                         options.Scheme);
