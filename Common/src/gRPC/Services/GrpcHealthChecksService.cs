@@ -34,6 +34,9 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   gRPC service for performing health checks.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBase
 {
@@ -42,6 +45,13 @@ public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBa
   private readonly IPushQueueStorage                                 queueStorage_;
   private readonly ITaskTable                                        taskTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcHealthChecksService" /> class.
+  /// </summary>
+  /// <param name="taskTable">The task table for checking database health.</param>
+  /// <param name="objectStorage">The object storage for checking storage health.</param>
+  /// <param name="queueStorage">The queue storage for checking queue health.</param>
+  /// <param name="meter">The metrics for function execution.</param>
   public GrpcHealthChecksService(ITaskTable                                        taskTable,
                                  IObjectStorage                                    objectStorage,
                                  IPushQueueStorage                                 queueStorage,
@@ -53,6 +63,15 @@ public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBa
     meter_         = meter;
   }
 
+  /// <summary>
+  ///   Checks the health of various services.
+  /// </summary>
+  /// <param name="request">The health check request.</param>
+  /// <param name="context">The server call context.</param>
+  /// <returns>
+  ///   A task representing the asynchronous operation, with a <see cref="CheckHealthResponse" /> result containing
+  ///   the health status of services.
+  /// </returns>
   [RequiresPermission(typeof(GrpcHealthChecksService),
                       nameof(CheckHealth))]
   public override async Task<CheckHealthResponse> CheckHealth(CheckHealthRequest request,
