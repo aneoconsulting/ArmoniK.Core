@@ -24,8 +24,21 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Provides extension methods for <see cref="IQueueMessageHandler" /> instances.
+/// </summary>
 public static class QueueMessageHandlerExt
 {
+  /// <summary>
+  ///   Disposes the message handler asynchronously, ignoring any errors that might occur during disposal.
+  /// </summary>
+  /// <param name="message">The message handler to dispose.</param>
+  /// <param name="logger">Optional logger to record any errors that occur during disposal.</param>
+  /// <returns>A <see cref="ValueTask" /> representing the asynchronous operation.</returns>
+  /// <remarks>
+  ///   If an exception occurs during disposal, it will be logged but not propagated.
+  ///   This helps prevent errors in cleanup from affecting the main execution flow.
+  /// </remarks>
   public static async ValueTask DisposeIgnoreErrorAsync(this IQueueMessageHandler message,
                                                         ILogger?                  logger = null)
   {
