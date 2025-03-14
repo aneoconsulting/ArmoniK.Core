@@ -21,8 +21,18 @@ using ArmoniK.Core.Common.Utils;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Represents an identifier for an agent, including the owner's pod ID and pod name.
+/// </summary>
 public class AgentIdentifier
 {
-  public readonly string OwnerPodId   = LocalIpFinder.LocalIpv4Address();
+  /// <summary>
+  ///   Gets the owner's pod ID, which is the local IPv4 address.
+  /// </summary>
+  public readonly string OwnerPodId = LocalIpFinder.LocalIpv4Address();
+
+  /// <summary>
+  ///   Gets the owner's pod name, which is the host name.
+  /// </summary>
   public readonly string OwnerPodName = Dns.GetHostName();
 }
