@@ -108,6 +108,22 @@ public static class ServiceCollectionExt
     return services;
   }
 
+
+  /// <summary>
+  ///   Dynamically load the services from the specified storage that implements <see cref="IDependencyInjectionBuildable" />
+  ///   and add them to the service collection
+  /// </summary>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="configuration">Configuration manager to retrieve adapter settings</param>
+  /// <param name="storage">Storage identifier for the adapter settings</param>
+  /// <param name="logger">Logger instance for logging information</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
+  /// <exception cref="InvalidOperationException">
+  ///   Thrown when the adapter absolute path or class name is null or empty, or when the provided type does not implement
+  ///   <see cref="IDependencyInjectionBuildable" /> interface, or when the type cannot be instantiated.
+  /// </exception>
   public static IServiceCollection AddAdapter(this IServiceCollection services,
                                               ConfigurationManager    configuration,
                                               string                  storage,
