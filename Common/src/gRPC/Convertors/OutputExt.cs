@@ -22,6 +22,9 @@ using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Extension methods for converting between gRPC and internal <see cref="Storage.Output" /> representations.
+/// </summary>
 public static class OutputExt
 {
   /// <summary>
