@@ -29,12 +29,24 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   A background service that handles post-processing of completed tasks.
+///   It reads task handlers from the post-processing queue and finalizes them
+///   by performing result uploading, task submissions, message acknowledgment
+//    and recording the success.
+/// </summary>
 public class PostProcessor : BackgroundService
 {
   private readonly ExceptionManager        exceptionManager_;
   private readonly ILogger<PostProcessor>  logger_;
   private readonly PostProcessingTaskQueue postProcessingTaskQueue_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="PostProcessor" /> class.
+  /// </summary>
+  /// <param name="postProcessingTaskQueue">The queue containing tasks that need post-processing.</param>
+  /// <param name="exceptionManager">The manager handling exceptions and cancellation.</param>
+  /// <param name="logger">The logger for this class.</param>
   public PostProcessor(PostProcessingTaskQueue postProcessingTaskQueue,
                        ExceptionManager        exceptionManager,
                        ILogger<PostProcessor>  logger)
@@ -44,6 +56,7 @@ public class PostProcessor : BackgroundService
     exceptionManager_        = exceptionManager;
   }
 
+  /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     await using var closeReader = new Deferrer(postProcessingTaskQueue_.CloseReader);
