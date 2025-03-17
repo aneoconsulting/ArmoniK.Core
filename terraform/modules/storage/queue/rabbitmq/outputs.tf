@@ -5,7 +5,6 @@ output "generated_env_vars" {
     "Components__QueueAdaptorSettings__AdapterAbsolutePath" = var.protocol == "amqp1_0" ? "/adapters/queue/amqp/ArmoniK.Core.Adapters.Amqp.dll" : "/adapters/queue/rabbit/ArmoniK.Core.Adapters.RabbitMQ.dll"
     "Amqp__User"                                            = "guest" # Default value, to change it we should provide a suitable .conf file
     "Amqp__Password"                                        = "guest" # Default value, to change it we should provide a suitable .conf file
-    "Amqp__Ssl"                                             = !local.is_windows
     "Amqp__Host"                                            = "queue"
     "Amqp__Port"                                            = local.is_windows ? 5672 : 5671
     "Amqp__Scheme"                                          = local.is_windows ? "AMQP" : "AMQPS"

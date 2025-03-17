@@ -37,6 +37,5 @@ public class Amqp
   public int    MaxRetries        { get; set; }
   public int    LinkCredit        { get; set; }
   public int    ParallelismLimit  { get; set; }
-  public bool   Ssl               { get; set; }
   public bool   AllowInsecureTls  { get; set; }
 }

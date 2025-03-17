@@ -49,10 +49,10 @@ public class ConnectionRabbit : IConnectionRabbit
     logger_  = logger;
     options_ = options;
     // Log de la configuration utilisée
-    logger_.LogInformation("Initializing RabbitMQ connection: Host={host}, Port={port}, TLS={tls}",
+    logger_.LogInformation("Initializing RabbitMQ connection: Host={host}, Port={port}, Scheme={scheme}",
                            options.Host,
                            options.Port,
-                           options.Ssl);
+                           options.Scheme);
 
     // On s'assure d'utiliser un nom stable pour la connexion (ici "queue")
 
@@ -64,7 +64,10 @@ public class ConnectionRabbit : IConnectionRabbit
                  Port     = options.Port,
                  Ssl = new SslOption
                        {
-                         Enabled    = options.Ssl,
+                         Enabled = options.Scheme.Equals("AMQPS",
+                                                         StringComparison.OrdinalIgnoreCase)
+                                     ? true
+                                     : false,
                          ServerName = options.Host,
                        },
                  DispatchConsumersAsync = true,
@@ -140,16 +143,11 @@ public class ConnectionRabbit : IConnectionRabbit
       factory.Ssl.ServerName = options.Host;
 
       RemoteCertificateValidationCallback? validationCallback = null;
-      if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
+      if (!string.IsNullOrEmpty(options.CaPath))
       {
         validationCallback = CertificateValidator.CreateCallback(options.CaPath,
                                                                  options.AllowInsecureTls,
                                                                  logger);
-      }
-      else if (!options.Ssl)
-      {
-        logger.LogWarning("SSL is disabled for RabbitMQ and your current scheme is {scheme}",
-                          options.Scheme);
       }
       else
       {

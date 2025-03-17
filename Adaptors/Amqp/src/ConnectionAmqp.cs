@@ -104,16 +104,11 @@ public class ConnectionAmqp : IConnectionAmqp
     var connectionFactory = new ConnectionFactory();
     if (options.Scheme.Equals("AMQPS"))
     {
-      if (options.Ssl && !string.IsNullOrEmpty(options.CaPath))
+      if (!string.IsNullOrEmpty(options.CaPath))
       {
         connectionFactory.SSL.RemoteCertificateValidationCallback = CertificateValidator.CreateCallback(options.CaPath,
                                                                                                         options.AllowInsecureTls,
                                                                                                         logger);
-      }
-      else if (!options.Ssl)
-      {
-        logger.LogWarning("SSL is disabled for ActiveMQ but the scheme is {scheme}",
-                          options.Scheme);
       }
       else
       {
@@ -122,8 +117,6 @@ public class ConnectionAmqp : IConnectionAmqp
     }
     else
     {
-      logger.LogWarning("SSL is disabled for ActiveMQ: {OptionsSsl}",
-                        options.Ssl);
       logger.LogWarning("Scheme is {scheme}",
                         options.Scheme);
     }
