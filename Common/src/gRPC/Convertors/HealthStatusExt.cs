@@ -23,8 +23,18 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Extends <see cref="HealthStatus" /> with methods for converting <see cref="HealthStatus" /> to
+///   <see cref="HealthStatusEnum" />.
+/// </summary>
 internal static class HealthStatusExt
 {
+  /// <summary>
+  ///   Converts a <see cref="HealthStatus" /> to <see cref="HealthStatusEnum" />.
+  /// </summary>
+  /// <param name="status">The <see cref="HealthStatus" /> to convert.</param>
+  /// <returns>The corresponding <see cref="HealthStatusEnum" />.</returns>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown when the HealthStatus is unrecognized.</exception>
   public static HealthStatusEnum ToGrpcHealthStatusEnum(this HealthStatus status)
     => status switch
        {
