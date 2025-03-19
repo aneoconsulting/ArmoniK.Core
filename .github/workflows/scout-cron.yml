@@ -43,7 +43,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     - name: Analyze for critical and high CVEs
-      uses: docker/scout-action@0133ff88fe16d4a412dc4827a8fccbccb6b583e0 # v1
+      uses: docker/scout-action@d341d36d6eebbe05c0b25760c63afa19e8f23269 # v1
       with:
         command: cves
         image: "${{ matrix.image }}:${{ matrix.image }}"
