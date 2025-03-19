@@ -38,9 +38,9 @@ public static class CertificateValidator
   /// <returns>
   ///   A <see cref="RemoteCertificateValidationCallback" /> delegate that performs SSL/TLS certificate validation.
   /// </returns>
-  public static RemoteCertificateValidationCallback ValidationCallback(ILogger          logger,
-                                                                       X509Certificate2 authority,
-                                                                       bool             allowHostMismatch)
+  public static RemoteCertificateValidationCallback ValidationCallback(ILogger                    logger,
+                                                                       X509Certificate2Collection authority,
+                                                                       bool                       allowHostMismatch)
     => (sender,
         certificate,
         chain,
@@ -88,14 +88,14 @@ public static class CertificateValidator
          chain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
          chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
 
-         chain.ChainPolicy.ExtraStore.Add(authority);
+         chain.ChainPolicy.ExtraStore.AddRange(authority);
          if (!chain.Build(cert))
          {
            logger.LogWarning("SSL validation failed: unable to build the certificate chain");
            return false;
          }
 
-         var isTrusted = chain.ChainElements.Any(x => x.Certificate.Thumbprint == authority.Thumbprint);
+         var isTrusted = chain.ChainElements.Any(x => authority.Any(ca => x.Certificate.Thumbprint == ca.Thumbprint));
          if (isTrusted)
          {
            logger.LogDebug("SSL validation succeeded: certificate is trusted");
@@ -112,6 +112,7 @@ public static class CertificateValidator
   ///   Creates a certificate validation callback from a Certificate Authority (CA) file.
   /// </summary>
   /// <param name="caFilePath">The file path to the CA certificate.</param>
+  /// <param name="allowHostMismatch">Do not consider host mismatch between request and certificate as an error</param>
   /// <param name="logger">The logger to use for logging validation details.</param>
   /// <returns>
   ///   A <see cref="RemoteCertificateValidationCallback" /> delegate that performs SSL/TLS certificate validation.
@@ -132,8 +133,9 @@ public static class CertificateValidator
     }
 
     var content   = File.ReadAllText(caFilePath);
-    var authority = X509Certificate2.CreateFromPem(content);
-    logger.LogInformation("Loaded CA certificate from file {path}",
+    var authority = new X509Certificate2Collection();
+    authority.ImportFromPem(content);
+    logger.LogInformation("Loaded CA certificates from file {path}",
                           caFilePath);
     var callback = ValidationCallback(logger,
                                       authority,
