@@ -157,7 +157,9 @@ public static class ResultLifeCycleHelper
                                              string            sessionId,
                                              CancellationToken cancellationToken)
   {
-    await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId && result.OpaqueId.Length > 0,
+    await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId &&
+                                                               (result.Status == ResultStatus.Completed || result.Status == ResultStatus.Created ||
+                                                                result.Status == ResultStatus.Aborted),
                                                      result => result.OpaqueId,
                                                      cancellationToken)
                                          .ToChunksAsync(500,
