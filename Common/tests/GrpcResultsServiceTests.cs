@@ -85,6 +85,20 @@ public class GrpcResultsServiceTests
                                       {
                                         HttpHandler = server.CreateHandler(),
                                       });
+
+    session_ = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
+                                                                   {
+                                                                     DefaultTaskOption = new TaskOptions
+                                                                                         {
+                                                                                           MaxRetries = 1,
+                                                                                           Priority   = 2,
+                                                                                           MaxDuration = new Duration
+                                                                                                         {
+                                                                                                           Seconds = 500,
+                                                                                                           Nanos   = 0,
+                                                                                                         },
+                                                                                         },
+                                                                   });
   }
 
   [TearDown]
@@ -97,30 +111,17 @@ public class GrpcResultsServiceTests
 
   private TestDatabaseProvider? helper_;
   private GrpcChannel?          channel_;
+  private CreateSessionReply?   session_;
 
 
   [Test]
   public void ImportingNonExistingDataShouldFail()
   {
-    var sessionId = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
-                                                                        {
-                                                                          DefaultTaskOption = new TaskOptions
-                                                                                              {
-                                                                                                MaxRetries = 1,
-                                                                                                Priority   = 2,
-                                                                                                MaxDuration = new Duration
-                                                                                                              {
-                                                                                                                Seconds = 500,
-                                                                                                                Nanos   = 0,
-                                                                                                              },
-                                                                                              },
-                                                                        })
-                                                         .SessionId;
     var resultClient = new Results.ResultsClient(channel_);
 
     var resultId = resultClient.CreateResultsMetaData(new CreateResultsMetaDataRequest
                                                       {
-                                                        SessionId = sessionId,
+                                                        SessionId = session_!.SessionId,
                                                         Results =
                                                         {
                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
@@ -136,7 +137,7 @@ public class GrpcResultsServiceTests
                                          {
                                            resultClient.ImportResultsData(new ImportResultsDataRequest
                                                                           {
-                                                                            SessionId = sessionId,
+                                                                            SessionId = session_!.SessionId,
                                                                             Results =
                                                                             {
                                                                               new ImportResultsDataRequest.Types.ResultOpaqueId
@@ -156,20 +157,6 @@ public class GrpcResultsServiceTests
   [Test]
   public async Task ImportingNonExistingResultShouldFail()
   {
-    var sessionId = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
-                                                                        {
-                                                                          DefaultTaskOption = new TaskOptions
-                                                                                              {
-                                                                                                MaxRetries = 1,
-                                                                                                Priority   = 2,
-                                                                                                MaxDuration = new Duration
-                                                                                                              {
-                                                                                                                Seconds = 500,
-                                                                                                                Nanos   = 0,
-                                                                                                              },
-                                                                                              },
-                                                                        })
-                                                         .SessionId;
     var resultClient = new Results.ResultsClient(channel_);
 
     var objectStorage = helper_!.GetRequiredService<IObjectStorage>();
@@ -192,7 +179,7 @@ public class GrpcResultsServiceTests
                                          {
                                            resultClient.ImportResultsData(new ImportResultsDataRequest
                                                                           {
-                                                                            SessionId = sessionId,
+                                                                            SessionId = session_!.SessionId,
                                                                             Results =
                                                                             {
                                                                               new ImportResultsDataRequest.Types.ResultOpaqueId
@@ -212,25 +199,11 @@ public class GrpcResultsServiceTests
   [Test]
   public async Task ImportingCompletedResultShouldFail()
   {
-    var sessionId = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
-                                                                        {
-                                                                          DefaultTaskOption = new TaskOptions
-                                                                                              {
-                                                                                                MaxRetries = 1,
-                                                                                                Priority   = 2,
-                                                                                                MaxDuration = new Duration
-                                                                                                              {
-                                                                                                                Seconds = 500,
-                                                                                                                Nanos   = 0,
-                                                                                                              },
-                                                                                              },
-                                                                        })
-                                                         .SessionId;
     var resultClient = new Results.ResultsClient(channel_);
 
     var resultId = resultClient.CreateResults(new CreateResultsRequest
                                               {
-                                                SessionId = sessionId,
+                                                SessionId = session_!.SessionId,
                                                 Results =
                                                 {
                                                   new CreateResultsRequest.Types.ResultCreate
@@ -262,7 +235,7 @@ public class GrpcResultsServiceTests
                                          {
                                            resultClient.ImportResultsData(new ImportResultsDataRequest
                                                                           {
-                                                                            SessionId = sessionId,
+                                                                            SessionId = session_!.SessionId,
                                                                             Results =
                                                                             {
                                                                               new ImportResultsDataRequest.Types.ResultOpaqueId
@@ -282,25 +255,11 @@ public class GrpcResultsServiceTests
   [Test]
   public async Task ImportDataShouldSucceed()
   {
-    var sessionId = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
-                                                                        {
-                                                                          DefaultTaskOption = new TaskOptions
-                                                                                              {
-                                                                                                MaxRetries = 1,
-                                                                                                Priority   = 2,
-                                                                                                MaxDuration = new Duration
-                                                                                                              {
-                                                                                                                Seconds = 500,
-                                                                                                                Nanos   = 0,
-                                                                                                              },
-                                                                                              },
-                                                                        })
-                                                         .SessionId;
     var resultClient = new Results.ResultsClient(channel_);
 
     var resultId = resultClient.CreateResultsMetaData(new CreateResultsMetaDataRequest
                                                       {
-                                                        SessionId = sessionId,
+                                                        SessionId = session_!.SessionId,
                                                         Results =
                                                         {
                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
@@ -330,7 +289,7 @@ public class GrpcResultsServiceTests
 
     var resultData = resultClient.ImportResultsData(new ImportResultsDataRequest
                                                     {
-                                                      SessionId = sessionId,
+                                                      SessionId = session_!.SessionId,
                                                       Results =
                                                       {
                                                         new ImportResultsDataRequest.Types.ResultOpaqueId
@@ -369,7 +328,7 @@ public class GrpcResultsServiceTests
     var stream = resultClient.DownloadResultData(new DownloadResultDataRequest
                                                  {
                                                    ResultId  = resultId,
-                                                   SessionId = sessionId,
+                                                   SessionId = session_!.SessionId,
                                                  });
 
     var result = new List<byte>();
@@ -388,25 +347,11 @@ public class GrpcResultsServiceTests
   [Test]
   public async Task ImportDataShouldTriggerTaskSubmission()
   {
-    var sessionId = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
-                                                                        {
-                                                                          DefaultTaskOption = new TaskOptions
-                                                                                              {
-                                                                                                MaxRetries = 1,
-                                                                                                Priority   = 2,
-                                                                                                MaxDuration = new Duration
-                                                                                                              {
-                                                                                                                Seconds = 500,
-                                                                                                                Nanos   = 0,
-                                                                                                              },
-                                                                                              },
-                                                                        })
-                                                         .SessionId;
     var resultClient = new Results.ResultsClient(channel_);
 
     var resultId = resultClient.CreateResultsMetaData(new CreateResultsMetaDataRequest
                                                       {
-                                                        SessionId = sessionId,
+                                                        SessionId = session_!.SessionId,
                                                         Results =
                                                         {
                                                           new CreateResultsMetaDataRequest.Types.ResultCreate
@@ -420,7 +365,7 @@ public class GrpcResultsServiceTests
 
     var payloadId = resultClient.CreateResults(new CreateResultsRequest
                                                {
-                                                 SessionId = sessionId,
+                                                 SessionId = session_!.SessionId,
                                                  Results =
                                                  {
                                                    new CreateResultsRequest.Types.ResultCreate
@@ -437,7 +382,7 @@ public class GrpcResultsServiceTests
 
     var taskId = taskClient.SubmitTasks(new SubmitTasksRequest
                                         {
-                                          SessionId = sessionId,
+                                          SessionId = session_.SessionId,
                                           TaskCreations =
                                           {
                                             new SubmitTasksRequest.Types.TaskCreation
@@ -476,7 +421,7 @@ public class GrpcResultsServiceTests
 
     var resultData = resultClient.ImportResultsData(new ImportResultsDataRequest
                                                     {
-                                                      SessionId = sessionId,
+                                                      SessionId = session_!.SessionId,
                                                       Results =
                                                       {
                                                         new ImportResultsDataRequest.Types.ResultOpaqueId
@@ -499,5 +444,59 @@ public class GrpcResultsServiceTests
 
     Assert.That(queueStorage.Messages,
                 Contains.Item(taskId));
+  }
+
+  [Test]
+  public async Task PurgeDataShouldSucceed()
+  {
+    var objectStorage = helper_!.GetRequiredService<IObjectStorage>();
+
+    var resultClient = new Results.ResultsClient(channel_);
+
+    var opaqueId = resultClient.CreateResults(new CreateResultsRequest
+                                              {
+                                                SessionId = session_!.SessionId,
+                                                Results =
+                                                {
+                                                  new CreateResultsRequest.Types.ResultCreate
+                                                  {
+                                                    Name = "Result for purge",
+                                                    Data = ByteString.CopyFromUtf8("Completed result for purge"),
+                                                  },
+                                                },
+                                              })
+                               .Results.Single()
+                               .OpaqueId.ToByteArray();
+
+    var sizes = await objectStorage.GetSizesAsync(new[]
+                                                  {
+                                                    opaqueId,
+                                                  })
+                                   .ConfigureAwait(false);
+
+    Assert.That(sizes[opaqueId],
+                Is.GreaterThan(0));
+
+    var sessionClient = new Sessions.SessionsClient(channel_);
+
+
+    sessionClient.CloseSession(new CloseSessionRequest
+                               {
+                                 SessionId = session_.SessionId,
+                               });
+
+    sessionClient.PurgeSession(new PurgeSessionRequest
+                               {
+                                 SessionId = session_.SessionId,
+                               });
+
+    sizes = await objectStorage.GetSizesAsync(new[]
+                                              {
+                                                opaqueId,
+                                              })
+                               .ConfigureAwait(false);
+
+    Assert.That(sizes[opaqueId],
+                Is.Null);
   }
 }

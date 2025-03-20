@@ -317,9 +317,9 @@ public static class SessionTableExtensions
     {
       case SessionStatus.Running:
       case SessionStatus.Paused:
+        throw new UnreachableException($"Session status should be {SessionStatus.Closed} but is {session.Status}");
       case SessionStatus.Purged:
       case SessionStatus.Cancelled:
-        throw new UnreachableException($"Session status should be {SessionStatus.Closed} but is {session.Status}");
       case SessionStatus.Closed:
         throw new InvalidSessionTransitionException($"Cannot close a session with status {session.Status}");
       case SessionStatus.Deleted:
@@ -375,11 +375,11 @@ public static class SessionTableExtensions
                                 .ConfigureAwait(false);
     switch (session.Status)
     {
-      case SessionStatus.Running:
       case SessionStatus.Closed:
-      case SessionStatus.Paused:
       case SessionStatus.Cancelled:
         throw new UnreachableException($"Session status should be {SessionStatus.Purged} but is {session.Status}");
+      case SessionStatus.Paused:
+      case SessionStatus.Running:
       case SessionStatus.Purged:
         throw new InvalidSessionTransitionException($"Cannot purge a session with status {session.Status}");
       case SessionStatus.Deleted:
