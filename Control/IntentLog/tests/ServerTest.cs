@@ -26,6 +26,7 @@ using ArmoniK.Core.Control.IntentLog.Protocol.Client;
 using ArmoniK.Core.Control.IntentLog.Protocol.Messages;
 using ArmoniK.Core.Control.IntentLog.Protocol.Server;
 using ArmoniK.Core.Control.IntentLog.Tests.Utils;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Logging;
 

@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Utils\src\ArmoniK.Core.Utils.csproj"/>
     <ProjectReference Include="..\src\ArmoniK.Core.Control.IntentLog.csproj"/>
   </ItemGroup>
 

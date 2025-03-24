@@ -23,14 +23,22 @@ using System.Threading.Tasks;
 
 using ArmoniK.Utils;
 
-namespace ArmoniK.Core.Control.IntentLog.Tests.Utils;
+namespace ArmoniK.Core.Utils;
 
+/// <summary>
+///   Converts channels into <see cref="Stream" />
+/// </summary>
 public class ChannelStream : Stream
 {
   private readonly ChannelReader<byte[]> reader_;
   private readonly ChannelWriter<byte[]> writer_;
   private          ReadOnlyMemory<byte>  currentRead_;
 
+  /// <summary>
+  ///   Creates a new <see cref="Stream" /> from a pair <see cref="ChannelReader{T}" /> / <see cref="ChannelWriter{T}" />.
+  /// </summary>
+  /// <param name="reader">Channel where bytes are read from.</param>
+  /// <param name="writer">Channel where bytes are written to.</param>
   public ChannelStream(ChannelReader<byte[]> reader,
                        ChannelWriter<byte[]> writer)
   {
@@ -39,34 +47,42 @@ public class ChannelStream : Stream
     currentRead_ = ReadOnlyMemory<byte>.Empty;
   }
 
+  /// <inheritdoc />
   public override bool CanRead
     => true;
 
+  /// <inheritdoc />
   public override bool CanSeek
     => false;
 
+  /// <inheritdoc />
   public override bool CanWrite
     => true;
 
+  /// <inheritdoc />
   public override long Length
     => throw new NotSupportedException();
 
+  /// <inheritdoc />
   public override long Position
   {
     get => throw new NotSupportedException();
     set => throw new NotSupportedException();
   }
 
+  /// <inheritdoc />
   public override void Flush()
   {
   }
 
+  /// <inheritdoc />
   public override int Read(byte[] buffer,
                            int    offset,
                            int    count)
     => Read(buffer.AsSpan(offset,
                           count));
 
+  /// <inheritdoc />
   public override int Read(Span<byte> buffer)
   {
     WaitForBuffer()
@@ -74,6 +90,7 @@ public class ChannelStream : Stream
     return ReadBuffer(buffer);
   }
 
+  /// <inheritdoc />
   public override Task<int> ReadAsync(byte[]            buffer,
                                       int               offset,
                                       int               count,
@@ -83,6 +100,7 @@ public class ChannelStream : Stream
                  cancellationToken)
       .AsTask();
 
+  /// <inheritdoc />
   public override ValueTask<int> ReadAsync(Memory<byte>      buffer,
                                            CancellationToken cancellationToken = new())
   {
@@ -105,20 +123,29 @@ public class ChannelStream : Stream
     }
   }
 
+  /// <summary>
+  ///   Wait for a new buffer to be ready if the current buffer is empty.
+  /// </summary>
+  /// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+  /// <returns>A task that represents the asynchronous wait operation.</returns>
   private ValueTask WaitForBuffer(CancellationToken cancellationToken = default)
   {
-    return reader_.Completion.IsCompleted
+    // If the current read buffer is not empty or the reader has been closed, we return immediately
+    return !currentRead_.IsEmpty || reader_.Completion.IsCompleted
              ? new ValueTask()
-             : Core();
+             : Core(this,
+                    cancellationToken);
 
-    async ValueTask Core()
+    // Asynchronous implementation of the method
+    static async ValueTask Core(ChannelStream     self,
+                                CancellationToken cancellationToken)
     {
       try
       {
-        while (currentRead_.IsEmpty)
+        while (self.currentRead_.IsEmpty)
         {
-          currentRead_ = await reader_.ReadAsync(cancellationToken)
-                                      .ConfigureAwait(false);
+          self.currentRead_ = await self.reader_.ReadAsync(cancellationToken)
+                                        .ConfigureAwait(false);
         }
       }
       catch (ChannelClosedException)
@@ -128,12 +155,18 @@ public class ChannelStream : Stream
     }
   }
 
+  /// <summary>
+  ///   Reads the current read buffer and write as much as possible into the provided <paramref name="buffer" />.
+  /// </summary>
+  /// <param name="buffer">Where the read bytes should be written to.</param>
+  /// <returns>The number of bytes read.</returns>
   private int ReadBuffer(Span<byte> buffer)
   {
     var read = 0;
 
     while (!buffer.IsEmpty && !currentRead_.IsEmpty)
     {
+      // Current read buffer is smaller than target buffer
       if (currentRead_.Length < buffer.Length)
       {
         read += currentRead_.Length;
@@ -141,6 +174,8 @@ public class ChannelStream : Stream
         currentRead_.Span.CopyTo(buffer);
         buffer       = buffer[currentRead_.Length..];
         currentRead_ = ReadOnlyMemory<byte>.Empty;
+
+        // Get the next read buffer if it is synchronously available
         if (reader_.TryRead(out var remaining))
         {
           currentRead_ = remaining;
@@ -148,6 +183,7 @@ public class ChannelStream : Stream
       }
       else
       {
+        // Fill the target buffer from the current read buffer
         read += buffer.Length;
 
         currentRead_.Span[..buffer.Length]
@@ -160,24 +196,28 @@ public class ChannelStream : Stream
     return read;
   }
 
+  /// <inheritdoc />
   public override long Seek(long       offset,
                             SeekOrigin origin)
     => throw new NotSupportedException();
 
+  /// <inheritdoc />
   public override void SetLength(long value)
     => throw new NotSupportedException();
 
-
+  /// <inheritdoc />
   public override void Write(byte[] buffer,
                              int    offset,
                              int    count)
     => Write(buffer.AsSpan(offset,
                            count));
 
+  /// <inheritdoc />
   public override void Write(ReadOnlySpan<byte> buffer)
     => writer_.WriteAsync(buffer.ToArray())
               .WaitSync();
 
+  /// <inheritdoc />
   public override Task WriteAsync(byte[]            buffer,
                                   int               offset,
                                   int               count,
@@ -187,15 +227,22 @@ public class ChannelStream : Stream
                   cancellationToken)
       .AsTask();
 
+  /// <inheritdoc />
   public override void Close()
     => writer_.Complete();
 
+  /// <inheritdoc />
   public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer,
                                        CancellationToken    cancellationToken = new())
     => writer_.WriteAsync(buffer.ToArray(),
                           cancellationToken);
 
-
+  /// <summary>
+  ///   Creates a pair of <see cref="ChannelStream" /> that are bound together.
+  ///   Everything written into one can be read from the other.
+  /// </summary>
+  /// <param name="capacity">Number of writes that is buffered by the underlying <see cref="Channel{T}" />.</param>
+  /// <returns>The pair of stream.</returns>
   public static (ChannelStream, ChannelStream) CreatePair(int capacity = 0)
   {
     var chan1 = capacity <= 0

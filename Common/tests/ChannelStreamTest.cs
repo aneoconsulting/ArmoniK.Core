@@ -1,7 +1,7 @@
 // This file is part of the ArmoniK project
-// 
-// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
-// 
+//
+// Copyright (C) ANEO, 2021-2025. All rights reserved.
+//
 // This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
@@ -19,11 +19,11 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Control.IntentLog.Tests.Utils;
+using ArmoniK.Core.Utils;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Control.IntentLog.Tests;
+namespace ArmoniK.Core.Common.Tests;
 
 [TestFixture(TestOf = typeof(ChannelStream))]
 public class ChannelStreamTest
@@ -33,11 +33,14 @@ public class ChannelStreamTest
   public async Task Stream()
   {
     var (reader, writer) = ChannelStream.CreatePair();
-    await writer.WriteAsync("Hello"u8.ToArray());
-    await writer.WriteAsync(" world!"u8.ToArray());
+    await writer.WriteAsync("Hello"u8.ToArray())
+                .ConfigureAwait(false);
+    await writer.WriteAsync(" world!"u8.ToArray())
+                .ConfigureAwait(false);
     var buffer = new byte[16];
 
-    var read = await reader.ReadAsync(buffer);
+    var read = await reader.ReadAsync(buffer)
+                           .ConfigureAwait(false);
 
     Assert.That(read,
                 Is.EqualTo(12));
@@ -45,14 +48,16 @@ public class ChannelStreamTest
                 Is.EqualTo("Hello world!"));
 
     var readTask = reader.ReadAsync(buffer);
-    await Task.Delay(10);
+    await Task.Delay(10)
+              .ConfigureAwait(false);
 
     Assert.That(readTask.IsCompleted,
                 Is.False);
 
-    await writer.WriteAsync("This is a long sentence."u8.ToArray());
+    await writer.WriteAsync("This is a long sentence."u8.ToArray())
+                .ConfigureAwait(false);
 
-    read = await readTask;
+    read = await readTask.ConfigureAwait(false);
     Assert.That(read,
                 Is.EqualTo(16));
     Assert.That(Encoding.UTF8.GetString(buffer),
@@ -60,7 +65,8 @@ public class ChannelStreamTest
 
     writer.Close();
 
-    read = await reader.ReadAsync(buffer);
+    read = await reader.ReadAsync(buffer)
+                       .ConfigureAwait(false);
     Assert.That(Encoding.UTF8.GetString(buffer[..8]),
                 Is.EqualTo("entence."));
     Assert.That(read,
