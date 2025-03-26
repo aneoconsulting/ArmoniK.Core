@@ -38,6 +38,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Provides gRPC services for managing sessions in the ArmoniK system.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSessionsService : Sessions.SessionsBase
 {
@@ -51,6 +54,18 @@ public class GrpcSessionsService : Sessions.SessionsBase
   private readonly Injection.Options.Submitter                   submitterOptions_;
   private readonly ITaskTable                                    taskTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcSessionsService" /> class.
+  /// </summary>
+  /// <param name="sessionTable">The session table for managing session data.</param>
+  /// <param name="partitionTable">The partition table for managing partitions.</param>
+  /// <param name="objectStorage">The object storage for storing session-related data.</param>
+  /// <param name="resultTable">The result table for managing session results.</param>
+  /// <param name="taskTable">The task table for managing tasks associated with sessions.</param>
+  /// <param name="pushQueueStorage">The interface to push tasks in the queue.</param>
+  /// <param name="submitterOptions">The submitter options for session configuration.</param>
+  /// <param name="meter">The metrics for function execution monitoring.</param>
+  /// <param name="logger">The logger for logging information and errors.</param>
   public GrpcSessionsService(ISessionTable                                 sessionTable,
                              IPartitionTable                               partitionTable,
                              IObjectStorage                                objectStorage,
@@ -72,6 +87,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     meter_            = meter;
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(CancelSession))]
   public override async Task<CancelSessionResponse> CancelSession(CancelSessionRequest request,
@@ -124,6 +140,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(GetSession))]
   public override async Task<GetSessionResponse> GetSession(GetSessionRequest request,
@@ -162,6 +179,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(ListSessions))]
   public override async Task<ListSessionsResponse> ListSessions(ListSessionsRequest request,
@@ -209,6 +227,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(CreateSession))]
   public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
@@ -251,6 +270,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(PauseSession))]
   public override async Task<PauseSessionResponse> PauseSession(PauseSessionRequest request,
@@ -301,6 +321,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
   }
 
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(CloseSession))]
   public override async Task<CloseSessionResponse> CloseSession(CloseSessionRequest request,
@@ -356,6 +377,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(PurgeSession))]
   public override async Task<PurgeSessionResponse> PurgeSession(PurgeSessionRequest request,
@@ -415,6 +437,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(DeleteSession))]
   public override async Task<DeleteSessionResponse> DeleteSession(DeleteSessionRequest request,
@@ -492,6 +515,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(ResumeSession))]
   public override async Task<ResumeSessionResponse> ResumeSession(ResumeSessionRequest request,
@@ -542,6 +566,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSessionsService),
                       nameof(StopSubmission))]
   public override async Task<StopSubmissionResponse> StopSubmission(StopSubmissionRequest request,
