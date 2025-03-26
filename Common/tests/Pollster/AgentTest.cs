@@ -181,7 +181,8 @@ public class AgentTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                            new Result(sessionData.SessionId,
                                       DataDependency2,
                                       "",
@@ -191,7 +192,8 @@ public class AgentTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                            new Result(Session,
                                       ExpectedOutput1,
                                       "",
@@ -201,7 +203,8 @@ public class AgentTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                            new Result(Session,
                                       ExpectedOutput2,
                                       "",
@@ -211,7 +214,8 @@ public class AgentTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                          },
                          CancellationToken.None)
                  .Wait();
@@ -623,7 +627,8 @@ public class AgentTest
                                           new List<string>(),
                                           DateTime.UtcNow,
                                           size,
-                                          id),
+                                          id,
+                                          false),
                                     })
                 .ConfigureAwait(false);
 

@@ -174,17 +174,19 @@ public static class EnumFieldExt
   public static Expression<Func<Result, object?>> ToField(this ResultRawEnumField enumField)
     => enumField switch
        {
-         ResultRawEnumField.SessionId   => result => result.SessionId,
-         ResultRawEnumField.Name        => result => result.Name,
-         ResultRawEnumField.CreatedBy   => result => result.CreatedBy,
-         ResultRawEnumField.OwnerTaskId => result => result.OwnerTaskId,
-         ResultRawEnumField.Status      => result => result.Status,
-         ResultRawEnumField.CreatedAt   => result => result.CreationDate,
-         ResultRawEnumField.ResultId    => result => result.ResultId,
-         ResultRawEnumField.Size        => result => result.Size,
-         ResultRawEnumField.CompletedAt => throw new ArgumentOutOfRangeException(nameof(enumField)),
-         ResultRawEnumField.Unspecified => throw new ArgumentOutOfRangeException(nameof(enumField)),
-         _                              => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         ResultRawEnumField.SessionId      => result => result.SessionId,
+         ResultRawEnumField.Name           => result => result.Name,
+         ResultRawEnumField.CreatedBy      => result => result.CreatedBy,
+         ResultRawEnumField.OwnerTaskId    => result => result.OwnerTaskId,
+         ResultRawEnumField.Status         => result => result.Status,
+         ResultRawEnumField.CreatedAt      => result => result.CreationDate,
+         ResultRawEnumField.ResultId       => result => result.ResultId,
+         ResultRawEnumField.Size           => result => result.Size,
+         ResultRawEnumField.OpaqueId       => result => result.OpaqueId,
+         ResultRawEnumField.ManualDeletion => result => result.ManualDeletion,
+         ResultRawEnumField.CompletedAt    => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         ResultRawEnumField.Unspecified    => throw new ArgumentOutOfRangeException(nameof(enumField)),
+         _                                 => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };
 
   /// <summary>

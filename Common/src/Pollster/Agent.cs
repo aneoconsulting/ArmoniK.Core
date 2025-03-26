@@ -283,7 +283,8 @@ public sealed class Agent : IAgent
                                                        new List<string>(),
                                                        DateTime.UtcNow,
                                                        0,
-                                                       Array.Empty<byte>()), tuple.data))
+                                                       Array.Empty<byte>(),
+                                                       false), tuple.data))
                           .AsICollection();
 
 
@@ -319,7 +320,8 @@ public sealed class Agent : IAgent
                                                         new List<string>(),
                                                         DateTime.UtcNow,
                                                         0,
-                                                        Array.Empty<byte>()))
+                                                        Array.Empty<byte>(),
+                                                        false))
                           .AsICollection();
 
     createdResults_.Add(results);

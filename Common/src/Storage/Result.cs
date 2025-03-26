@@ -32,6 +32,7 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="CreationDate">Date of creation of the current object.</param>
 /// <param name="Size">Size of the result.</param>
 /// <param name="OpaqueId">Opaque Identifier used by the object storage to refer to this result's data</param>
+/// <param name="ManualDeletion">If the user is responsible for the deletion of the data in the underlying object storage</param>
 public record Result(string       SessionId,
                      string       ResultId,
                      string       Name,
@@ -41,7 +42,8 @@ public record Result(string       SessionId,
                      List<string> DependentTasks,
                      DateTime     CreationDate,
                      long         Size,
-                     byte[]       OpaqueId)
+                     byte[]       OpaqueId,
+                     bool         ManualDeletion)
 {
   /// <summary>
   ///   Creates a copy of a <see cref="Result" /> and modify it according to given updates

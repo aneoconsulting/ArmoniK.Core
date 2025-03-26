@@ -159,7 +159,7 @@ public static class ResultLifeCycleHelper
   {
     await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId &&
                                                                (result.Status == ResultStatus.Completed || result.Status == ResultStatus.Created ||
-                                                                result.Status == ResultStatus.Aborted),
+                                                                result.Status == ResultStatus.Aborted) && !result.ManualDeletion,
                                                      result => result.OpaqueId,
                                                      cancellationToken)
                                          .ToChunksAsync(500,
@@ -172,7 +172,7 @@ public static class ResultLifeCycleHelper
                          .ConfigureAwait(false);
     }
 
-    await resultTable.UpdateManyResults(result => result.SessionId == sessionId,
+    await resultTable.UpdateManyResults(result => result.SessionId == sessionId && !result.ManualDeletion,
                                         new UpdateDefinition<Result>().Set(result => result.Status,
                                                                            ResultStatus.DeletedData)
                                                                       .Set(result => result.OpaqueId,

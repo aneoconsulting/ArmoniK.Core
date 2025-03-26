@@ -151,7 +151,8 @@ public class GrpcResultsService : Results.ResultsBase
                                                           new List<string>(),
                                                           DateTime.UtcNow,
                                                           0,
-                                                          Array.Empty<byte>()))
+                                                          Array.Empty<byte>(),
+                                                          rc.ManualDeletion))
                          .ToList();
 
     await resultTable_.Create(results,
@@ -200,7 +201,8 @@ public class GrpcResultsService : Results.ResultsBase
                                                                             new List<string>(),
                                                                             DateTime.UtcNow,
                                                                             size,
-                                                                            Array.Empty<byte>()), id);
+                                                                            Array.Empty<byte>(),
+                                                                            rc.ManualDeletion), id);
                                                        })
                                .ToListAsync()
                                .ConfigureAwait(false);
@@ -235,7 +237,7 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
     try
     {
-      await foreach (var ids in resultTable_.GetResults(result => request.ResultId.Contains(result.ResultId),
+      await foreach (var ids in resultTable_.GetResults(result => request.ResultId.Contains(result.ResultId) && !result.ManualDeletion,
                                                         result => result.OpaqueId,
                                                         context.CancellationToken)
                                             .ToChunksAsync(500,
@@ -248,7 +250,7 @@ public class GrpcResultsService : Results.ResultsBase
                             .ConfigureAwait(false);
       }
 
-      await resultTable_.UpdateManyResults(result => request.ResultId.Contains(result.ResultId),
+      await resultTable_.UpdateManyResults(result => request.ResultId.Contains(result.ResultId) && !result.ManualDeletion,
                                            new UpdateDefinition<Result>().Set(result => result.Status,
                                                                               ResultStatus.DeletedData)
                                                                          .Set(result => result.OpaqueId,

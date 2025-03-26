@@ -113,7 +113,8 @@ public class DataPrefetcherTest
                                                             new List<string>(),
                                                             DateTime.UtcNow,
                                                             100,
-                                                            Encoding.UTF8.GetBytes(s))))
+                                                            Encoding.UTF8.GetBytes(s),
+                                                            false)))
                    .ToAsyncEnumerable();
 
     public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,

@@ -150,7 +150,8 @@ public class TaskLifeCycleHelperTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                            new Result(sessionData.SessionId,
                                       DataDependency2,
                                       "",
@@ -160,7 +161,8 @@ public class TaskLifeCycleHelperTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                            new Result(Session,
                                       ExpectedOutput1,
                                       "",
@@ -170,7 +172,8 @@ public class TaskLifeCycleHelperTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                            new Result(Session,
                                       ExpectedOutput2,
                                       "",
@@ -180,7 +183,8 @@ public class TaskLifeCycleHelperTest
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                          },
                          CancellationToken.None)
                  .Wait();
@@ -328,7 +332,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                     new(sessionId,
                         Guid.NewGuid()
                             .ToString(),
@@ -339,7 +344,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                     new(sessionId,
                         Guid.NewGuid()
                             .ToString(),
@@ -350,7 +356,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                     new(sessionId,
                         Guid.NewGuid()
                             .ToString(),
@@ -361,7 +368,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                   };
 
     await holder.ResultTable.Create(results)
@@ -516,7 +524,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                     new(sessionId,
                         Guid.NewGuid()
                             .ToString(),
@@ -527,7 +536,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                     new(sessionId,
                         Guid.NewGuid()
                             .ToString(),
@@ -538,7 +548,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                     new(sessionId,
                         Guid.NewGuid()
                             .ToString(),
@@ -549,7 +560,8 @@ public class TaskLifeCycleHelperTest
                         new List<string>(),
                         DateTime.UtcNow,
                         0,
-                        Array.Empty<byte>()),
+                        Array.Empty<byte>(),
+                        false),
                   };
 
     await holder.ResultTable.Create(results)

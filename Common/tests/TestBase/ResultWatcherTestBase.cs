@@ -61,7 +61,8 @@ public class ResultWatcherTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsNotAvailable",
                                            "",
@@ -74,7 +75,8 @@ public class ResultWatcherTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsCreated",
                                            "",
@@ -87,7 +89,8 @@ public class ResultWatcherTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsCreated2",
                                            "",
@@ -100,7 +103,8 @@ public class ResultWatcherTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsCreated3",
                                            "",
@@ -113,7 +117,8 @@ public class ResultWatcherTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId2",
                                            "ResultIsCreated4",
                                            "",
@@ -126,7 +131,8 @@ public class ResultWatcherTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                               })
                       .ConfigureAwait(false);
   }
@@ -202,7 +208,8 @@ public class ResultWatcherTestBase
                                                   new[]
                                                   {
                                                     (byte)1,
-                                                  });
+                                                  },
+                                                  false);
 
   private static readonly Result NewResult2 = new("SessionId",
                                                   "NewResult2",
@@ -216,7 +223,8 @@ public class ResultWatcherTestBase
                                                   new[]
                                                   {
                                                     (byte)1,
-                                                  });
+                                                  },
+                                                  false);
 
   private static readonly Result NewResult3 = new("SessionId2",
                                                   "NewResult3",
@@ -230,7 +238,8 @@ public class ResultWatcherTestBase
                                                   new[]
                                                   {
                                                     (byte)1,
-                                                  });
+                                                  },
+                                                  false);
 
   private NewResult ResultToNewResult(Result result)
     => new(result.SessionId,

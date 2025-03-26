@@ -191,7 +191,8 @@ public class WatchToGrpcTests
                                           new[]
                                           {
                                             (byte)1,
-                                          }),
+                                          },
+                                          false),
                                new Result("SessionId",
                                           "ResultIsNotAvailable",
                                           "",
@@ -204,7 +205,8 @@ public class WatchToGrpcTests
                                           new[]
                                           {
                                             (byte)1,
-                                          }),
+                                          },
+                                          false),
                                new Result("SessionId",
                                           "ResultIsCreated",
                                           "",
@@ -217,7 +219,8 @@ public class WatchToGrpcTests
                                           new[]
                                           {
                                             (byte)1,
-                                          }),
+                                          },
+                                          false),
                                new Result("SessionId",
                                           "ResultIsCreated2",
                                           "",
@@ -230,7 +233,8 @@ public class WatchToGrpcTests
                                           new[]
                                           {
                                             (byte)1,
-                                          }),
+                                          },
+                                          false),
                                new Result("SessionId",
                                           "ResultIsCompletedWithDependents",
                                           "",
@@ -247,7 +251,8 @@ public class WatchToGrpcTests
                                           new[]
                                           {
                                             (byte)1,
-                                          }),
+                                          },
+                                          false),
                              })
                      .ConfigureAwait(false);
 

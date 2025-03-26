@@ -42,7 +42,8 @@ public class ToResultFilterTest
                                         new List<string>(),
                                         DateTime.UtcNow,
                                         0,
-                                        Array.Empty<byte>());
+                                        Array.Empty<byte>(),
+                                        false);
 
   private static readonly ListResultsRequest.Types.Sort Sort = new()
                                                                {

@@ -95,7 +95,8 @@ internal class BsonSerializerTest
                            (byte)1,
                            (byte)2,
                            (byte)3,
-                         });
+                         },
+                         false);
 
     var serialized = rdm.ToBson();
 
@@ -120,6 +121,8 @@ internal class BsonSerializerTest
     Assert.AreEqual(rdm.CreationDate,
                     deserialized.CreationDate);
     Assert.IsTrue(rdm.OpaqueId.SequenceEqual(deserialized.OpaqueId));
+    Assert.AreEqual(rdm.ManualDeletion,
+                    deserialized.ManualDeletion);
   }
 
   [Test]

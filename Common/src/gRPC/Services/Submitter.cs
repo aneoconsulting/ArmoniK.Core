@@ -478,7 +478,8 @@ public class Submitter : ISubmitter
                                                              new List<string>(),
                                                              DateTime.UtcNow,
                                                              r.size,
-                                                             r.id))
+                                                             r.id,
+                                                             false))
                                       .AsICollection(),
                               cancellationToken)
                       .ConfigureAwait(false);
@@ -522,28 +523,31 @@ public class Submitter : ISubmitter
 
         if (submitterOptions_.DeletePayload)
         {
-          var opaqueId = (await resultTable_.GetResult(taskData.PayloadId,
-                                                       CancellationToken.None)
-                                            .ConfigureAwait(false)).OpaqueId;
+          var payloadData = await resultTable_.GetResult(taskData.PayloadId,
+                                                         CancellationToken.None)
+                                              .ConfigureAwait(false);
 
-          //Discard value is used to remove warnings CS4014 !!
-          _ = Task.Factory.StartNew(async () =>
-                                    {
-                                      await objectStorage_.TryDeleteAsync(new[]
-                                                                          {
-                                                                            opaqueId,
-                                                                          },
-                                                                          CancellationToken.None)
-                                                          .ConfigureAwait(false);
-                                    },
-                                    cancellationToken);
+          if (!payloadData.ManualDeletion)
+          {
+            //Discard value is used to remove warnings CS4014 !!
+            _ = Task.Factory.StartNew(async () =>
+                                      {
+                                        await objectStorage_.TryDeleteAsync(new[]
+                                                                            {
+                                                                              payloadData.OpaqueId,
+                                                                            },
+                                                                            CancellationToken.None)
+                                                            .ConfigureAwait(false);
+                                      },
+                                      cancellationToken);
 
-          await resultTable_.MarkAsDeleted(taskData.PayloadId,
-                                           CancellationToken.None)
-                            .ConfigureAwait(false);
+            await resultTable_.MarkAsDeleted(taskData.PayloadId,
+                                             CancellationToken.None)
+                              .ConfigureAwait(false);
 
-          logger_.LogInformation("Remove input payload of {task}",
-                                 taskData.TaskId);
+            logger_.LogInformation("Remove input payload of {task}",
+                                   taskData.TaskId);
+          }
         }
 
         break;
@@ -612,29 +616,32 @@ public class Submitter : ISubmitter
                         .ConfigureAwait(false);
 
 
-        var payloadOpaqueId = (await resultTable_.GetResult(taskData.PayloadId,
-                                                            CancellationToken.None)
-                                                 .ConfigureAwait(false)).OpaqueId;
+        var payloadData2 = await resultTable_.GetResult(taskData.PayloadId,
+                                                        CancellationToken.None)
+                                             .ConfigureAwait(false);
 
-        //Discard value is used to remove warnings CS4014 !!
-        _ = Task.Factory.StartNew(async () =>
-                                  {
-                                    await objectStorage_.TryDeleteAsync(new[]
-                                                                        {
-                                                                          payloadOpaqueId,
-                                                                        },
-                                                                        CancellationToken.None)
-                                                        .ConfigureAwait(false);
-                                  },
-                                  cancellationToken);
+        if (!payloadData2.ManualDeletion)
+        {
+          //Discard value is used to remove warnings CS4014 !!
+          _ = Task.Factory.StartNew(async () =>
+                                    {
+                                      await objectStorage_.TryDeleteAsync(new[]
+                                                                          {
+                                                                            payloadData2.OpaqueId,
+                                                                          },
+                                                                          CancellationToken.None)
+                                                          .ConfigureAwait(false);
+                                    },
+                                    cancellationToken);
 
 
-        logger_.LogInformation("Remove input payload of {task}",
-                               taskData.TaskId);
+          logger_.LogInformation("Remove input payload of {task}",
+                                 taskData.TaskId);
 
-        await resultTable_.MarkAsDeleted(taskData.PayloadId,
-                                         CancellationToken.None)
-                          .ConfigureAwait(false);
+          await resultTable_.MarkAsDeleted(taskData.PayloadId,
+                                           CancellationToken.None)
+                            .ConfigureAwait(false);
+        }
 
         await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
                                                          resultTable_,

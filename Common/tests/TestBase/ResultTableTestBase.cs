@@ -64,7 +64,8 @@ public class ResultTableTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsNotAvailable",
                                            "",
@@ -77,7 +78,8 @@ public class ResultTableTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsCreated",
                                            "",
@@ -90,7 +92,8 @@ public class ResultTableTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsCreated2",
                                            "",
@@ -103,7 +106,8 @@ public class ResultTableTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                                 new Result("SessionId",
                                            "ResultIsCompletedWithDependents",
                                            "",
@@ -120,7 +124,8 @@ public class ResultTableTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                               })
                       .ConfigureAwait(false);
   }
@@ -227,7 +232,8 @@ public class ResultTableTestBase
                                            new[]
                                            {
                                              (byte)1,
-                                           }),
+                                           },
+                                           false),
                               })
                       .ConfigureAwait(false);
 
@@ -261,7 +267,8 @@ public class ResultTableTestBase
                                                                                     new[]
                                                                                     {
                                                                                       (byte)1,
-                                                                                    }),
+                                                                                    },
+                                                                                    false),
                                                                        })
                                                                .ConfigureAwait(false);
                                            });
@@ -365,7 +372,8 @@ public class ResultTableTestBase
                                                             new List<string>(),
                                                             DateTime.Today,
                                                             id.Length,
-                                                            Encoding.ASCII.GetBytes(id)))
+                                                            Encoding.ASCII.GetBytes(id),
+                                                            false))
                                    .AsICollection())
                         .ConfigureAwait(false);
       var results = await ResultTable!.GetResults("SessionId",
@@ -403,7 +411,8 @@ public class ResultTableTestBase
                                                             new List<string>(),
                                                             DateTime.Today,
                                                             id.Length,
-                                                            Encoding.ASCII.GetBytes(id)))
+                                                            Encoding.ASCII.GetBytes(id),
+                                                            false))
                                    .AsICollection())
                         .ConfigureAwait(false);
 
@@ -644,7 +653,8 @@ public class ResultTableTestBase
                                              new List<string>(),
                                              DateTime.UtcNow,
                                              0,
-                                             Array.Empty<byte>()),
+                                             Array.Empty<byte>(),
+                                             false),
                                 })
                         .ConfigureAwait(false);
 
@@ -759,7 +769,8 @@ public class ResultTableTestBase
                                       new List<string>(),
                                       DateTime.UtcNow,
                                       0,
-                                      Array.Empty<byte>()),
+                                      Array.Empty<byte>(),
+                                      false),
                                 },
                                 CancellationToken.None)
                         .ConfigureAwait(false);

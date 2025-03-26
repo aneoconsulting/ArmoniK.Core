@@ -453,28 +453,49 @@ public class GrpcResultsServiceTests
 
     var resultClient = new Results.ResultsClient(channel_);
 
-    var opaqueId = resultClient.CreateResults(new CreateResultsRequest
-                                              {
-                                                SessionId = session_!.SessionId,
-                                                Results =
-                                                {
-                                                  new CreateResultsRequest.Types.ResultCreate
-                                                  {
-                                                    Name = "Result for purge",
-                                                    Data = ByteString.CopyFromUtf8("Completed result for purge"),
-                                                  },
-                                                },
-                                              })
-                               .Results.Single()
-                               .OpaqueId.ToByteArray();
+    var results = resultClient.CreateResults(new CreateResultsRequest
+                                             {
+                                               SessionId = session_!.SessionId,
+                                               Results =
+                                               {
+                                                 new CreateResultsRequest.Types.ResultCreate
+                                                 {
+                                                   Name = "ResultPurge1",
+                                                   Data = ByteString.CopyFromUtf8("Completed result for purge"),
+                                                 },
+                                                 new CreateResultsRequest.Types.ResultCreate
+                                                 {
+                                                   Name           = "ResultPurge2",
+                                                   Data           = ByteString.CopyFromUtf8("Completed result for purge but manual deletion is false"),
+                                                   ManualDeletion = true,
+                                                 },
+                                               },
+                                             })
+                              .Results;
+
+    var r1 = results.Single(raw => raw.Name == "ResultPurge1");
+    var r2 = results.Single(raw => raw.Name == "ResultPurge2");
+
+    var opaqueIdDeleted = r1.OpaqueId.ToByteArray();
+    var opaqueIdManual  = r2.OpaqueId.ToByteArray();
+
+    Assert.That(opaqueIdDeleted,
+                !Is.EqualTo(opaqueIdManual));
+    Assert.That(r1.ManualDeletion,
+                Is.False);
+    Assert.That(r2.ManualDeletion,
+                Is.True);
 
     var sizes = await objectStorage.GetSizesAsync(new[]
                                                   {
-                                                    opaqueId,
+                                                    opaqueIdDeleted,
+                                                    opaqueIdManual,
                                                   })
                                    .ConfigureAwait(false);
 
-    Assert.That(sizes[opaqueId],
+    Assert.That(sizes[opaqueIdDeleted],
+                Is.GreaterThan(0));
+    Assert.That(sizes[opaqueIdManual],
                 Is.GreaterThan(0));
 
     var sessionClient = new Sessions.SessionsClient(channel_);
@@ -492,11 +513,15 @@ public class GrpcResultsServiceTests
 
     sizes = await objectStorage.GetSizesAsync(new[]
                                               {
-                                                opaqueId,
+                                                opaqueIdDeleted,
+                                                opaqueIdManual,
                                               })
                                .ConfigureAwait(false);
 
-    Assert.That(sizes[opaqueId],
+    Assert.That(sizes[opaqueIdDeleted],
                 Is.Null);
+    // Results with manual deletion = true should not be deleted after purge
+    Assert.That(sizes[opaqueIdManual],
+                Is.GreaterThan(0));
   }
 }
