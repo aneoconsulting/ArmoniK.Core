@@ -33,6 +33,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   The gRPC service implementation for managing partitions in the ArmoniK system.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcPartitionsService : Partitions.PartitionsBase
 {
@@ -40,6 +43,12 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   private readonly FunctionExecutionMetrics<GrpcPartitionsService> meter_;
   private readonly IPartitionTable                                 partitionTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcPartitionsService" /> class.
+  /// </summary>
+  /// <param name="partitionTable">The partition table used for managing partitions.</param>
+  /// <param name="meter">The metrics object for measuring function execution.</param>
+  /// <param name="logger">The logger instance for logging information.</param>
   public GrpcPartitionsService(IPartitionTable                                 partitionTable,
                                FunctionExecutionMetrics<GrpcPartitionsService> meter,
                                ILogger<GrpcPartitionsService>                  logger)
@@ -49,6 +58,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
     meter_          = meter;
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcPartitionsService),
                       nameof(GetPartition))]
   public override async Task<GetPartitionResponse> GetPartition(GetPartitionRequest request,
@@ -80,6 +90,7 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   }
 
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcPartitionsService),
                       nameof(ListPartitions))]
   public override async Task<ListPartitionsResponse> ListPartitions(ListPartitionsRequest request,
