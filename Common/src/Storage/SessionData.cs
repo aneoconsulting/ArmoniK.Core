@@ -22,6 +22,22 @@ using ArmoniK.Core.Base.DataStructures;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Represents the data associated with a session in the ArmoniK system.
+/// </summary>
+/// <param name="SessionId">The unique identifier for the session.</param>
+/// <param name="Status">The current status of the session.</param>
+/// <param name="ClientSubmission">Indicates if clients can still submit tasks in the session.</param>
+/// <param name="WorkerSubmission">Indicates if workers can still submit tasks in the session.</param>
+/// <param name="CreationDate">The date and time when the session was created.</param>
+/// <param name="CancellationDate">The date and time when the session was canceled, if applicable.</param>
+/// <param name="ClosureDate">The date and time when the session was closed, if applicable.</param>
+/// <param name="PurgeDate">The date and time when the session was purged, if applicable.</param>
+/// <param name="DeletionDate">The date and time when the session was deleted, if applicable.</param>
+/// <param name="DeletionTtl">The time-to-live for the session deletion, if applicable.</param>
+/// <param name="Duration">The duration of the session, if applicable.</param>
+/// <param name="PartitionIds">The list of partition IDs associated with the session.</param>
+/// <param name="Options">The task options associated with the session.</param>
 public record SessionData(string        SessionId,
                           SessionStatus Status,
                           bool          ClientSubmission,
@@ -36,6 +52,14 @@ public record SessionData(string        SessionId,
                           IList<string> PartitionIds,
                           TaskOptions   Options)
 {
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="SessionData" /> class with the specified session ID, status, partition
+  ///   IDs, and task options.
+  /// </summary>
+  /// <param name="sessionId">The unique identifier for the session.</param>
+  /// <param name="status">The current status of the session.</param>
+  /// <param name="partitionIds">The list of partition IDs associated with the session.</param>
+  /// <param name="options">The task options associated with the session.</param>
   public SessionData(string        sessionId,
                      SessionStatus status,
                      IList<string> partitionIds,
