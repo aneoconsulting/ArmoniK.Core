@@ -26,8 +26,22 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Provides extension methods for building gRPC task requests.
+/// </summary>
 public static class GrpcSubmitterExtensions
 {
+  /// <summary>
+  ///   Builds a sequence of <see cref="TaskRequest" /> objects from an asynchronous enumerator of
+  ///   <see cref="CreateLargeTaskRequest" />.
+  /// </summary>
+  /// <param name="enumerator">The asynchronous enumerator of <see cref="CreateLargeTaskRequest" />.</param>
+  /// <param name="cancellationToken">The cancellation token to observe while waiting for the next element.</param>
+  /// <returns>An asynchronous enumerable of <see cref="TaskRequest" /> objects.</returns>
+  /// <exception cref="InvalidOperationException">
+  ///   Thrown if the input sequence is in an invalid state, such as missing expected output keys, data dependencies, or
+  ///   chunks.
+  /// </exception>
   public static async IAsyncEnumerable<TaskRequest> BuildRequests(this                     IAsyncEnumerator<CreateLargeTaskRequest> enumerator,
                                                                   [EnumeratorCancellation] CancellationToken                        cancellationToken)
   {
