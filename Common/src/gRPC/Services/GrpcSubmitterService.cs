@@ -38,6 +38,9 @@ using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Represents the old and deprecated gRPC service for handling task submission-related operations in the ArmoniK system.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
@@ -47,6 +50,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   private readonly ISubmitter                    submitter_;
   private readonly ITaskTable                    taskTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcSubmitterService" /> class.
+  /// </summary>
+  /// <param name="submitter">The submitter instance for handling task submissions.</param>
+  /// <param name="taskTable">The task table for managing tasks.</param>
+  /// <param name="sessionTable">The session table for managing sessions.</param>
+  /// <param name="resultTable">The result table for managing task inputs and outputs.</param>
+  /// <param name="logger">The logger instance for logging information.</param>
   public GrpcSubmitterService(ISubmitter                    submitter,
                               ITaskTable                    taskTable,
                               ISessionTable                 sessionTable,
@@ -90,6 +101,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CancelSession))]
   [Obsolete]
@@ -126,6 +138,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CancelTasks))]
   [Obsolete]
@@ -196,6 +209,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(CreateSmallTasks))]
   [Obsolete]
@@ -489,6 +503,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(TryGetTaskOutput))]
   [Obsolete]
@@ -531,6 +546,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(WaitForAvailability))]
   [Obsolete($"{nameof(ISubmitter.WaitForAvailabilityAsync)} is obsolete")]
@@ -573,6 +589,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetTaskStatus))]
   [Obsolete]
@@ -619,6 +636,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(GetResultStatus))]
   [Obsolete($"{nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterBase.GetResultStatus)} is obsolete")]
@@ -665,6 +683,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(ListTasks))]
   [Obsolete]
@@ -707,6 +726,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
                       nameof(ListSessions))]
   [Obsolete]
