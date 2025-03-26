@@ -40,23 +40,36 @@ using Agent = ArmoniK.Api.gRPC.V1.Agent.Agent;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Represents the gRPC service for interacting with the agent.
+/// </summary>
 [IgnoreAuthentication]
 public class GrpcAgentService : Agent.AgentBase
 {
   private IAgent? agent_;
 
+  /// <summary>
+  ///   Adds the given <see cref="IAgent" /> thus making the worker able to interact with it.
+  /// </summary>
+  /// <param name="agent">The agent to start the service with.</param>
+  /// <returns>A completed task.</returns>
   public Task Start(IAgent agent)
   {
     agent_ = agent;
     return Task.CompletedTask;
   }
 
+  /// <summary>
+  ///   Removes the underlying <see cref="IAgent" /> thus making the worker unable to interact with the agent.
+  /// </summary>
+  /// <returns>A completed task.</returns>
   public Task Stop()
   {
     agent_ = null;
     return Task.CompletedTask;
   }
 
+  /// <inheritdoc />
   public override async Task<CreateTaskReply> CreateTask(IAsyncStreamReader<CreateTaskRequest> requestStream,
                                                          ServerCallContext                     context)
   {
@@ -244,6 +257,7 @@ public class GrpcAgentService : Agent.AgentBase
            };
   }
 
+  /// <inheritdoc />
   public override async Task<DataResponse> GetCommonData(DataRequest       request,
                                                          ServerCallContext context)
   {
@@ -263,6 +277,7 @@ public class GrpcAgentService : Agent.AgentBase
                            "No task is accepting request");
   }
 
+  /// <inheritdoc />
   public override async Task<DataResponse> GetResourceData(DataRequest       request,
                                                            ServerCallContext context)
   {
@@ -282,6 +297,7 @@ public class GrpcAgentService : Agent.AgentBase
                            "No task is accepting request");
   }
 
+  /// <inheritdoc />
   public override async Task<DataResponse> GetDirectData(DataRequest       request,
                                                          ServerCallContext context)
   {
@@ -301,6 +317,7 @@ public class GrpcAgentService : Agent.AgentBase
                            "No task is accepting request");
   }
 
+  /// <inheritdoc />
   public override async Task<NotifyResultDataResponse> NotifyResultData(NotifyResultDataRequest request,
                                                                         ServerCallContext       context)
   {
@@ -325,6 +342,7 @@ public class GrpcAgentService : Agent.AgentBase
                            "No task is accepting request");
   }
 
+  /// <inheritdoc />
   public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                                   ServerCallContext            context)
   {
@@ -357,6 +375,7 @@ public class GrpcAgentService : Agent.AgentBase
                            "No task is accepting request");
   }
 
+  /// <inheritdoc />
   public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
                                                               ServerCallContext  context)
   {
@@ -399,6 +418,7 @@ public class GrpcAgentService : Agent.AgentBase
                            "No task is accepting request");
   }
 
+  /// <inheritdoc />
   public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                                   ServerCallContext    context)
   {
