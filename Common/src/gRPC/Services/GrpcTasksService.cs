@@ -45,6 +45,9 @@ using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Provides gRPC services for managing tasks in the ArmoniK system.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Task.TasksBase
 {
@@ -59,6 +62,17 @@ public class GrpcTasksService : Task.TasksBase
   private readonly TaskDataMask                               taskSummaryMask_;
   private readonly ITaskTable                                 taskTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcTasksService" /> class.
+  /// </summary>
+  /// <param name="taskTable">The task table for managing tasks.</param>
+  /// <param name="sessionTable">The session table for managing sessions.</param>
+  /// <param name="resultTable">The result table for managing task inputs and outputs.</param>
+  /// <param name="pushQueueStorage">The interface to push tasks in the queue.</param>
+  /// <param name="meter">The metrics for function execution.</param>
+  /// <param name="httpClient">The HTTP client for making requests.</param>
+  /// <param name="options">The submitter options for task submission.</param>
+  /// <param name="logger">The logger for logging information.</param>
   public GrpcTasksService(ITaskTable                                 taskTable,
                           ISessionTable                              sessionTable,
                           IResultTable                               resultTable,
@@ -141,6 +155,7 @@ public class GrpcTasksService : Task.TasksBase
                                         new List<TaskOptionsFields>());
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcTasksService),
                       nameof(GetTask))]
   public override async Task<GetTaskResponse> GetTask(GetTaskRequest    request,
@@ -180,6 +195,7 @@ public class GrpcTasksService : Task.TasksBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcTasksService),
                       nameof(ListTasks))]
   public override async Task<ListTasksResponse> ListTasks(ListTasksRequest  request,
@@ -234,6 +250,7 @@ public class GrpcTasksService : Task.TasksBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcTasksService),
                       nameof(GetResultIds))]
   public override async Task<GetResultIdsResponse> GetResultIds(GetResultIdsRequest request,
@@ -277,6 +294,7 @@ public class GrpcTasksService : Task.TasksBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcTasksService),
                       nameof(CancelTasks))]
   public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
@@ -361,6 +379,7 @@ public class GrpcTasksService : Task.TasksBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcTasksService),
                       nameof(CountTasksByStatus))]
   public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
@@ -401,6 +420,7 @@ public class GrpcTasksService : Task.TasksBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcTasksService),
                       nameof(ListTasksDetailed))]
   public override async Task<ListTasksDetailedResponse> ListTasksDetailed(ListTasksRequest  request,
@@ -455,6 +475,7 @@ public class GrpcTasksService : Task.TasksBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcTasksService),
                       nameof(SubmitTasks))]
   public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
