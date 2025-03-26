@@ -35,6 +35,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Provides gRPC services for managing applications.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcApplicationsService : Applications.ApplicationsBase
 {
@@ -42,6 +45,12 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   private readonly FunctionExecutionMetrics<GrpcApplicationsService> meter_;
   private readonly ITaskTable                                        taskTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcApplicationsService" /> class.
+  /// </summary>
+  /// <param name="taskTable">The task table for managing tasks related to the application.</param>
+  /// <param name="meter">The metrics for function execution.</param>
+  /// <param name="logger">The logger instance for logging information.</param>
   public GrpcApplicationsService(ITaskTable                                        taskTable,
                                  FunctionExecutionMetrics<GrpcApplicationsService> meter,
                                  ILogger<GrpcApplicationsService>                  logger)
@@ -51,6 +60,7 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
     meter_     = meter;
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcApplicationsService),
                       nameof(ListApplications))]
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
