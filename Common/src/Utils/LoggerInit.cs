@@ -31,11 +31,18 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace ArmoniK.Core.Common.Utils;
 
+/// <summary>
+///   Initializes and configures logging for the application using Serilog.
+/// </summary>
 public class LoggerInit
 {
   private readonly ILogger logger_;
   private readonly Logger  loggerConfiguration_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="LoggerInit" /> class.
+  /// </summary>
+  /// <param name="configuration">The configuration object used to set up Serilog.</param>
   public LoggerInit(IConfiguration configuration)
   {
     var instanceId = Guid.NewGuid()
@@ -55,12 +62,24 @@ public class LoggerInit
                            .CreateLogger("root");
   }
 
+  /// <summary>
+  ///   Configures the logging builder to use the Serilog logger.
+  /// </summary>
+  /// <param name="loggingBuilder">The logging builder to configure.</param>
   public void Configure(ILoggingBuilder loggingBuilder)
     => loggingBuilder.AddSerilog(loggerConfiguration_);
 
+  /// <summary>
+  ///   Gets the Serilog logger configuration instance.
+  /// </summary>
+  /// <returns>The Serilog <see cref="Logger" /> instance.</returns>
   public Logger GetSerilogConf()
     => loggerConfiguration_;
 
+  /// <summary>
+  ///   Gets the Microsoft.Extensions.Logging logger instance.
+  /// </summary>
+  /// <returns>The <see cref="ILogger" /> instance.</returns>
   public ILogger GetLogger()
     => logger_;
 }
