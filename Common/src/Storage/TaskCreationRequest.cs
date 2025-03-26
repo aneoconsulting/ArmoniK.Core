@@ -21,6 +21,20 @@ using ArmoniK.Core.Base.DataStructures;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Represents a request to create a task with specific options, payload, and dependencies.
+/// </summary>
+/// <param name="TaskId">The unique identifier for the task.</param>
+/// <param name="PayloadId">The identifier for the payload associated with the task.</param>
+/// <param name="Options">The options specifying the task's configuration.</param>
+/// <param name="ExpectedOutputKeys">
+///   The collection of <see cref="Result" /> unique identifier expected as output from the
+///   task.
+/// </param>
+/// <param name="DataDependencies">
+///   The collection of <see cref="Result" /> unique identifier dependencies required by the
+///   task.
+/// </param>
 public record TaskCreationRequest(string              TaskId,
                                   string              PayloadId,
                                   TaskOptions         Options,
