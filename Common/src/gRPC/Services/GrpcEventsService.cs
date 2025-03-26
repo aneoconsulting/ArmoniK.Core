@@ -32,6 +32,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   The gRPC service implementation for subscribing to events in the ArmoniK system.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcEventsService : Events.EventsBase
 {
@@ -42,6 +45,15 @@ public class GrpcEventsService : Events.EventsBase
   private readonly ITaskTable                                  taskTable_;
   private readonly ITaskWatcher                                taskWatcher_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcEventsService" /> class.
+  /// </summary>
+  /// <param name="taskTable">The task table for managing tasks.</param>
+  /// <param name="taskWatcher">The task watcher for monitoring task events.</param>
+  /// <param name="resultTable">The result table for managing results.</param>
+  /// <param name="resultWatcher">The result watcher for monitoring result events.</param>
+  /// <param name="meter">The metrics for function execution.</param>
+  /// <param name="logger">The logger for logging information.</param>
   public GrpcEventsService(ITaskTable                                  taskTable,
                            ITaskWatcher                                taskWatcher,
                            IResultTable                                resultTable,
@@ -57,6 +69,7 @@ public class GrpcEventsService : Events.EventsBase
     meter_         = meter;
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcEventsService),
                       nameof(GetEvents))]
   public override async Task GetEvents(EventSubscriptionRequest                       request,
