@@ -126,7 +126,7 @@ public class ObjectStorage : IObjectStorage
 
     if (!value.HasValue)
     {
-      throw new ObjectDataNotFoundException("Key not found");
+      throw new ObjectDataNotFoundException($"Key {key} not found");
     }
 
     var valuesCount = int.Parse(value!);
