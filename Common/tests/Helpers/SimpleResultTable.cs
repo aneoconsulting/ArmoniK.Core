@@ -72,7 +72,8 @@ public class SimpleResultTable : IResultTable
              new byte[]
              {
                42,
-             }),
+             },
+             false),
        }.Select(convertor.Compile())
         .ToAsyncEnumerable();
 
@@ -96,7 +97,8 @@ public class SimpleResultTable : IResultTable
                               new byte[]
                               {
                                 42,
-                              }),
+                              },
+                              false),
                         }.AsEnumerable(), 1));
 
   public Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
@@ -118,7 +120,8 @@ public class SimpleResultTable : IResultTable
                                   new byte[]
                                   {
                                     42,
-                                  }));
+                                  },
+                                  false));
 
   public Task<long> UpdateManyResults(Expression<Func<Result, bool>> filter,
                                       UpdateDefinition<Result>       updates,

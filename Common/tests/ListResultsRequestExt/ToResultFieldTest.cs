@@ -39,7 +39,8 @@ public class ToResultFieldTest
                                               new List<string>(),
                                               DateTime.UtcNow,
                                               0,
-                                              Array.Empty<byte>());
+                                              Array.Empty<byte>(),
+                                              false);
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
@@ -60,6 +61,10 @@ public class ToResultFieldTest
                       Result.SessionId);
     yield return Case(ResultRawEnumField.Size,
                       Result.Size);
+    yield return Case(ResultRawEnumField.OpaqueId,
+                      Result.OpaqueId);
+    yield return Case(ResultRawEnumField.ManualDeletion,
+                      Result.ManualDeletion);
   }
 
   private static TestCaseData Case(ResultRawEnumField field,

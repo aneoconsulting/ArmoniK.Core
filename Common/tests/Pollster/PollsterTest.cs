@@ -116,7 +116,8 @@ public class PollsterTest
                                           new List<string>(),
                                           DateTime.UtcNow,
                                           0,
-                                          Array.Empty<byte>()),
+                                          Array.Empty<byte>(),
+                                          false),
                                new Result(sessionId,
                                           ExpectedOutput2,
                                           "",
@@ -126,7 +127,8 @@ public class PollsterTest
                                           new List<string>(),
                                           DateTime.UtcNow,
                                           0,
-                                          Array.Empty<byte>()),
+                                          Array.Empty<byte>(),
+                                          false),
                              },
                              token)
                      .ConfigureAwait(false);
@@ -537,7 +539,8 @@ public class PollsterTest
                                                               new List<string>(),
                                                               DateTime.UtcNow,
                                                               0,
-                                                              Array.Empty<byte>()),
+                                                              Array.Empty<byte>(),
+                                                              false),
                                                  },
                                                  CancellationToken.None)
                              .ConfigureAwait(false);

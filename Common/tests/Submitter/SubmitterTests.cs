@@ -154,7 +154,8 @@ public class SubmitterTests
                                           new List<string>(),
                                           DateTime.UtcNow,
                                           0,
-                                          Array.Empty<byte>()),
+                                          Array.Empty<byte>(),
+                                          false),
                                new Result(sessionId,
                                           ExpectedOutput2,
                                           "",
@@ -164,7 +165,8 @@ public class SubmitterTests
                                           new List<string>(),
                                           DateTime.UtcNow,
                                           0,
-                                          Array.Empty<byte>()),
+                                          Array.Empty<byte>(),
+                                          false),
                                new Result(sessionId,
                                           ExpectedOutput6,
                                           "",
@@ -174,7 +176,8 @@ public class SubmitterTests
                                           new List<string>(),
                                           DateTime.UtcNow,
                                           0,
-                                          Array.Empty<byte>()),
+                                          Array.Empty<byte>(),
+                                          false),
                              },
                              token)
                      .ConfigureAwait(false);
@@ -277,7 +280,8 @@ public class SubmitterTests
                                           new List<string>(),
                                           DateTime.UtcNow,
                                           0,
-                                          Array.Empty<byte>()),
+                                          Array.Empty<byte>(),
+                                          false),
                              },
                              token)
                      .ConfigureAwait(false);
@@ -999,7 +1003,8 @@ public class SubmitterTests
                                             new List<string>(),
                                             DateTime.UtcNow,
                                             0,
-                                            Array.Empty<byte>()),
+                                            Array.Empty<byte>(),
+                                            false),
                                  new Result(session.SessionId,
                                             ExpectedOutput5,
                                             "",
@@ -1009,7 +1014,8 @@ public class SubmitterTests
                                             new List<string>(),
                                             DateTime.UtcNow,
                                             0,
-                                            Array.Empty<byte>()),
+                                            Array.Empty<byte>(),
+                                            false),
                                },
                                CancellationToken.None)
                        .ConfigureAwait(false);
@@ -1108,7 +1114,8 @@ public class SubmitterTests
                                             new List<string>(),
                                             DateTime.UtcNow,
                                             0,
-                                            Array.Empty<byte>()),
+                                            Array.Empty<byte>(),
+                                            false),
                                },
                                CancellationToken.None)
                        .ConfigureAwait(false);
@@ -1173,7 +1180,8 @@ public class SubmitterTests
                                             new List<string>(),
                                             DateTime.UtcNow,
                                             0,
-                                            Array.Empty<byte>()),
+                                            Array.Empty<byte>(),
+                                            false),
                                },
                                CancellationToken.None)
                        .ConfigureAwait(false);

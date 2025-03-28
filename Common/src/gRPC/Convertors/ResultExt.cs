@@ -35,14 +35,15 @@ public static class ResultExt
   public static ResultRaw ToGrpcResultRaw(this Result result)
     => new()
        {
-         SessionId   = result.SessionId,
-         Status      = result.Status.ToGrpcStatus(),
-         CreatedAt   = Timestamp.FromDateTime(result.CreationDate),
-         Name        = result.Name,
-         CreatedBy   = result.CreatedBy,
-         OwnerTaskId = result.OwnerTaskId,
-         ResultId    = result.ResultId,
-         Size        = result.Size,
-         OpaqueId    = ByteString.CopyFrom(result.OpaqueId),
+         SessionId      = result.SessionId,
+         Status         = result.Status.ToGrpcStatus(),
+         CreatedAt      = Timestamp.FromDateTime(result.CreationDate),
+         Name           = result.Name,
+         CreatedBy      = result.CreatedBy,
+         OwnerTaskId    = result.OwnerTaskId,
+         ResultId       = result.ResultId,
+         Size           = result.Size,
+         OpaqueId       = ByteString.CopyFrom(result.OpaqueId),
+         ManualDeletion = result.ManualDeletion,
        };
 }
