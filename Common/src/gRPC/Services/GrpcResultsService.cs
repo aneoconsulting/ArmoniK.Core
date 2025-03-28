@@ -48,6 +48,9 @@ using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   The gRPC service implementation for managing results in the ArmoniK system.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcResultsService : Results.ResultsBase
 {
@@ -60,6 +63,17 @@ public class GrpcResultsService : Results.ResultsBase
   private readonly ISessionTable                                sessionTable_;
   private readonly ITaskTable                                   taskTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcResultsService" /> class.
+  /// </summary>
+  /// <param name="resultTable">The result table for managing results.</param>
+  /// <param name="taskTable">The task table for managing tasks.</param>
+  /// <param name="sessionTable">The session table for managing sessions.</param>
+  /// <param name="objectStorage">The object storage for storing result data.</param>
+  /// <param name="pushQueueStorage">The interface to push tasks into the queue.</param>
+  /// <param name="meter">The metrics for function execution.</param>
+  /// <param name="options">The submitter options for configuration.</param>
+  /// <param name="logger">The logger for logging information.</param>
   public GrpcResultsService(IResultTable                                 resultTable,
                             ITaskTable                                   taskTable,
                             ISessionTable                                sessionTable,
@@ -79,6 +93,7 @@ public class GrpcResultsService : Results.ResultsBase
     options_          = options;
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(GetOwnerTaskId))]
   public override async Task<GetOwnerTaskIdResponse> GetOwnerTaskId(GetOwnerTaskIdRequest request,
@@ -106,6 +121,7 @@ public class GrpcResultsService : Results.ResultsBase
            };
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(ListResults))]
   public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
@@ -135,6 +151,7 @@ public class GrpcResultsService : Results.ResultsBase
            };
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(CreateResultsMetaData))]
   public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
@@ -167,6 +184,7 @@ public class GrpcResultsService : Results.ResultsBase
            };
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(CreateResults))]
   public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
@@ -227,6 +245,7 @@ public class GrpcResultsService : Results.ResultsBase
            };
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(DeleteResultsData))]
   public override async Task<DeleteResultsDataResponse> DeleteResultsData(DeleteResultsDataRequest request,
@@ -280,6 +299,7 @@ public class GrpcResultsService : Results.ResultsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(DownloadResultData))]
   public override async Task DownloadResultData(DownloadResultDataRequest                       request,
@@ -319,6 +339,7 @@ public class GrpcResultsService : Results.ResultsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(GetServiceConfiguration))]
   public override Task<ResultsServiceConfigurationResponse> GetServiceConfiguration(Empty             request,
@@ -332,6 +353,7 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(UploadResultData))]
   public override async Task<UploadResultDataResponse> UploadResultData(IAsyncStreamReader<UploadResultDataRequest> requestStream,
@@ -415,6 +437,7 @@ public class GrpcResultsService : Results.ResultsBase
     }
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(GetResult))]
   public override async Task<GetResultResponse> GetResult(GetResultRequest  request,
@@ -431,6 +454,7 @@ public class GrpcResultsService : Results.ResultsBase
            };
   }
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcResultsService),
                       nameof(ImportResultsData))]
   public override async Task<ImportResultsDataResponse> ImportResultsData(ImportResultsDataRequest request,
