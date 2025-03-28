@@ -28,15 +28,25 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Service to provide version information for the API and Core components.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcVersionsService : Versions.VersionsBase
 {
+  /// <summary>
+  ///   The version of the Core component.
+  /// </summary>
   public static readonly string CoreVersion = FileVersionInfo.GetVersionInfo(typeof(GrpcVersionsService).Assembly.Location)
                                                              .ProductVersion ?? "Unknown";
 
+  /// <summary>
+  ///   The version of the API component.
+  /// </summary>
   public static readonly string ApiVersion = FileVersionInfo.GetVersionInfo(typeof(Versions.VersionsBase).Assembly.Location)
                                                             .ProductVersion ?? "Unknown";
 
+  /// <inheritdoc />
   [RequiresPermission(typeof(GrpcVersionsService),
                       nameof(ListVersions))]
   public override Task<ListVersionsResponse> ListVersions(ListVersionsRequest request,
