@@ -33,6 +33,9 @@ using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   The gRPC service that provides methods for user authentication and authorization.
+/// </summary>
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
@@ -40,6 +43,11 @@ public class GrpcAuthService : Authentication.AuthenticationBase
   private readonly bool                                      requireAuthentication_;
   private readonly bool                                      requireAuthorization_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcAuthService" /> class.
+  /// </summary>
+  /// <param name="options">The options monitor for authenticator configuration.</param>
+  /// <param name="meter">The metrics object for function execution.</param>
   public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions>     options,
                          FunctionExecutionMetrics<GrpcAuthService> meter)
   {
@@ -48,6 +56,7 @@ public class GrpcAuthService : Authentication.AuthenticationBase
     meter_                 = meter;
   }
 
+  /// <inheritdoc />
   [IgnoreAuthorization]
   public override Task<GetCurrentUserResponse> GetCurrentUser(GetCurrentUserRequest request,
                                                               ServerCallContext     context)
