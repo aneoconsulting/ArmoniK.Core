@@ -67,4 +67,9 @@ public class Pollster
   ///   Internal cache for data
   /// </summary>
   public string InternalCacheFolder { get; set; } = "/cache/internal";
+
+  /// <summary>
+  /// 
+  /// </summary>
+  public string PartitionId { get; set; } = "";
 }

@@ -39,6 +39,7 @@ internal class PullQueueStorage : IPullQueueStorage
   private readonly int    ackExtendDeadlineStep_;
   private readonly bool   exactlyOnceDelivery_;
   private readonly string kmsKeyName_;
+  private readonly string partitionId_;
   private readonly bool   messageOrdering_;
 
   private readonly TimeSpan                   messageRetention_;
@@ -52,8 +53,8 @@ internal class PullQueueStorage : IPullQueueStorage
                           PublisherServiceApiClient  publisher,
                           PubSub                     options)
   {
-    var topic = $"a{options.Prefix}-{options.PartitionId}";
-    var sub   = $"a{options.Prefix}-{options.PartitionId}-ak-sub";
+    var topic = $"a{options.Prefix}-{partitionId_}";
+    var sub   = $"a{options.Prefix}-{partitionId_}-ak-sub";
 
     messageRetention_      = options.MessageRetention;
     ackDeadlinePeriod_     = options.AckDeadlinePeriod;

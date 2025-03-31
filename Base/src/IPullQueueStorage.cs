@@ -33,6 +33,6 @@ public interface IPullQueueStorage : IQueueStorage
   /// <returns>
   ///   Enumerator allowing async iteration over the message queue
   /// </returns>
-  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int               nbMessages,
                                                            CancellationToken cancellationToken = default);
 }

@@ -59,6 +59,7 @@ public class Pollster : IInitializable
   private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
   private readonly int                                       messageBatchSize_;
+  private readonly string                                    partitionId_;
   private readonly MeterHolder                               meterHolder_;
   private readonly IObjectStorage                            objectStorage_;
   private readonly string                                    ownerPodId_;
@@ -292,7 +293,7 @@ public class Pollster : IInitializable
 
         try
         {
-          await using var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
+          await using var messages = pullQueueStorage_.PullMessagesAsync(partitionId_, messageBatchSize_,
                                                                          exceptionManager_.EarlyCancellationToken)
                                                       .GetAsyncEnumerator(exceptionManager_.EarlyCancellationToken);
 
