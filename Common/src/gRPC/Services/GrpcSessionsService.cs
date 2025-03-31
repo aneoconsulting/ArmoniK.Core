@@ -38,9 +38,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   Provides gRPC services for managing sessions in the ArmoniK system.
-/// </summary>
+/// <inheritdoc cref="Sessions" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSessionsService : Sessions.SessionsBase
 {

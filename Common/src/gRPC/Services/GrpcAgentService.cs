@@ -40,9 +40,7 @@ using Agent = ArmoniK.Api.gRPC.V1.Agent.Agent;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   Represents the gRPC service for interacting with the agent.
-/// </summary>
+/// <inheritdoc cref="Api.gRPC.V1.Agent.Agent" />
 [IgnoreAuthentication]
 public class GrpcAgentService : Agent.AgentBase
 {

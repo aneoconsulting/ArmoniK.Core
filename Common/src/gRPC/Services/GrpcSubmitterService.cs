@@ -38,9 +38,7 @@ using Output = ArmoniK.Api.gRPC.V1.Output;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   Represents the old and deprecated gRPC service for handling task submission-related operations in the ArmoniK system.
-/// </summary>
+/// <inheritdoc cref="Api.gRPC.V1.Submitter.Submitter" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
