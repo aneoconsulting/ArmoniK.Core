@@ -34,9 +34,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   gRPC service for performing health checks.
-/// </summary>
+/// <inheritdoc cref="HealthChecksService" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBase
 {

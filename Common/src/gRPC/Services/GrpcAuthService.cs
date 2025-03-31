@@ -33,9 +33,7 @@ using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   The gRPC service that provides methods for user authentication and authorization.
-/// </summary>
+/// <inheritdoc cref="Authentication" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {

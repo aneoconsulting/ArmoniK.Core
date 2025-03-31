@@ -48,9 +48,7 @@ using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   The gRPC service implementation for managing results in the ArmoniK system.
-/// </summary>
+/// <inheritdoc cref="Results" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcResultsService : Results.ResultsBase
 {

@@ -32,9 +32,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   The gRPC service implementation for subscribing to events in the ArmoniK system.
-/// </summary>
+/// <inheritdoc cref="Events" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcEventsService : Events.EventsBase
 {

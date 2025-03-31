@@ -28,9 +28,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   Service to provide version information for the API and Core components.
-/// </summary>
+/// <inheritdoc cref="Versions" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcVersionsService : Versions.VersionsBase
 {
