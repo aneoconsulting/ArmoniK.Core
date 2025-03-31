@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -42,6 +43,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
+  private readonly ActivitySource                activitySource_;
   private readonly ILogger<GrpcSubmitterService> logger_;
   private readonly IResultTable                  resultTable_;
   private readonly ISessionTable                 sessionTable_;
@@ -51,22 +53,25 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <summary>
   ///   Initializes a new instance of the <see cref="GrpcSubmitterService" /> class.
   /// </summary>
+  /// <param name="activitySource">Activity source</param>
   /// <param name="submitter">The submitter instance for handling task submissions.</param>
   /// <param name="taskTable">The task table for managing tasks.</param>
   /// <param name="sessionTable">The session table for managing sessions.</param>
   /// <param name="resultTable">The result table for managing task inputs and outputs.</param>
   /// <param name="logger">The logger instance for logging information.</param>
-  public GrpcSubmitterService(ISubmitter                    submitter,
+  public GrpcSubmitterService(ActivitySource                activitySource,
+                              ISubmitter                    submitter,
                               ITaskTable                    taskTable,
                               ISessionTable                 sessionTable,
                               IResultTable                  resultTable,
                               ILogger<GrpcSubmitterService> logger)
   {
-    submitter_    = submitter;
-    taskTable_    = taskTable;
-    sessionTable_ = sessionTable;
-    resultTable_  = resultTable;
-    logger_       = logger;
+    activitySource_ = activitySource;
+    submitter_      = submitter;
+    taskTable_      = taskTable;
+    sessionTable_   = sessionTable;
+    resultTable_    = resultTable;
+    logger_         = logger;
   }
 
 
@@ -287,6 +292,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
                                                                ServerCallContext                          context)
   {
+    using var activity = activitySource_.StartActivity($"{nameof(CreateLargeTasks)}");
     try
     {
       await using var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
@@ -309,6 +315,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
       }
 
       var sessionTask = sessionTable_.GetSessionAsync(first.InitRequest.SessionId);
+
+      logger_.LogInformation("Start creating tasks");
       var requests = await submitter_.CreateTasks(first.InitRequest.SessionId,
                                                   first.InitRequest.SessionId,
                                                   first.InitRequest.TaskOptions.ToNullableTaskOptions(),
@@ -317,11 +325,13 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                      .ConfigureAwait(false);
 
       var sessionData = await sessionTask.ConfigureAwait(false);
+      logger_.LogInformation("Finalize task creations");
       await submitter_.FinalizeTaskCreation(requests,
                                             sessionData,
                                             first.InitRequest.SessionId,
                                             context.CancellationToken)
                       .ConfigureAwait(false);
+      logger_.LogInformation("Tasks created");
 
       return new CreateTaskReply
              {

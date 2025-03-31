@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -66,6 +67,7 @@ public class GrpcSubmitterServiceTests
   {
   }
 
+  private readonly ActivitySource      activitySource_   = new("test");
   private readonly Mock<IResultTable>  mockResultTable_  = new();
   private readonly Mock<ISessionTable> mockSessionTable_ = new();
   private readonly Mock<ITaskTable>    mockTaskTable_    = new();
@@ -94,7 +96,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => Task.CompletedTask);
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -126,7 +129,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -165,7 +169,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -204,7 +209,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new ResultNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -243,7 +249,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new ObjectDataNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -282,7 +289,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -321,7 +329,8 @@ public class GrpcSubmitterServiceTests
                                                             CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -360,7 +369,8 @@ public class GrpcSubmitterServiceTests
                                                     It.IsAny<CancellationToken>()))
         .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -394,7 +404,8 @@ public class GrpcSubmitterServiceTests
                                                     It.IsAny<CancellationToken>()))
         .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -429,7 +440,8 @@ public class GrpcSubmitterServiceTests
         .Returns(() => Task.FromResult(new Output(OutputStatus.Success,
                                                   "")));
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -457,7 +469,8 @@ public class GrpcSubmitterServiceTests
         .Returns(() => Task.FromResult(new Output(OutputStatus.Error,
                                                   "Test Error")));
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -483,7 +496,8 @@ public class GrpcSubmitterServiceTests
                                                                        CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -517,7 +531,8 @@ public class GrpcSubmitterServiceTests
                                                   DataChunkMaxSize = 32,
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -541,7 +556,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => Task.CompletedTask);
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -568,7 +584,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -602,7 +619,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -636,7 +654,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new SessionNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -672,7 +691,8 @@ public class GrpcSubmitterServiceTests
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromResult<long>(1));
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -704,7 +724,8 @@ public class GrpcSubmitterServiceTests
                                                       It.IsAny<CancellationToken>()))
         .Throws<ArmoniKException>();
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -743,7 +764,8 @@ public class GrpcSubmitterServiceTests
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => throw new InvalidAsynchronousStateException());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -785,7 +807,8 @@ public class GrpcSubmitterServiceTests
                                                   SessionId = string.Empty,
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -816,7 +839,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new InvalidOperationException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -854,7 +878,8 @@ public class GrpcSubmitterServiceTests
                                                              CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -913,7 +938,8 @@ public class GrpcSubmitterServiceTests
                                    new Base.DataStructures.TaskOptions()),
                              }.ToAsyncEnumerable);
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable.Object,
                                            mockResultTable_.Object,
@@ -959,7 +985,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1012,7 +1039,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1078,7 +1106,8 @@ public class GrpcSubmitterServiceTests
                                    new Base.DataStructures.TaskOptions()),
                              }.ToAsyncEnumerable);
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable.Object,
                                            mockResultTable_.Object,
@@ -1119,7 +1148,8 @@ public class GrpcSubmitterServiceTests
                  .Returns(() => Task.FromResult(Array.Empty<TaskCreationRequest>()
                                                      .AsICollection()));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1156,7 +1186,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1204,7 +1235,8 @@ public class GrpcSubmitterServiceTests
                                                            CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1259,7 +1291,8 @@ public class GrpcSubmitterServiceTests
                                                   },
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1299,7 +1332,8 @@ public class GrpcSubmitterServiceTests
                                                                  CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1342,7 +1376,8 @@ public class GrpcSubmitterServiceTests
                                                                  CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1389,7 +1424,8 @@ public class GrpcSubmitterServiceTests
                                                   Ok = new Empty(),
                                                 }));
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1417,7 +1453,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1452,7 +1489,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1487,7 +1525,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1522,7 +1561,8 @@ public class GrpcSubmitterServiceTests
                                                                         CancellationToken.None))
                  .Returns(() => throw new ResultNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1561,7 +1601,8 @@ public class GrpcSubmitterServiceTests
                                           Storage.TaskStatus.Completed),
                        }.ToAsyncEnumerable());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1591,7 +1632,8 @@ public class GrpcSubmitterServiceTests
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1627,7 +1669,8 @@ public class GrpcSubmitterServiceTests
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1663,7 +1706,8 @@ public class GrpcSubmitterServiceTests
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1702,7 +1746,8 @@ public class GrpcSubmitterServiceTests
                          "TaskId",
                        }.ToAsyncEnumerable());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1737,7 +1782,8 @@ public class GrpcSubmitterServiceTests
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new Exception());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1776,7 +1822,8 @@ public class GrpcSubmitterServiceTests
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new ArmoniKException());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
@@ -1816,7 +1863,8 @@ public class GrpcSubmitterServiceTests
                                                      It.IsAny<CancellationToken>()))
         .Returns(() => throw new TaskNotFoundException());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mock.Object,
@@ -1858,7 +1906,8 @@ public class GrpcSubmitterServiceTests
                                             ResultStatus.Completed),
                        }.ToAsyncEnumerable());
 
-    var service = new GrpcSubmitterService(mockSubmitter_.Object,
+    var service = new GrpcSubmitterService(activitySource_,
+                                           mockSubmitter_.Object,
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mock.Object,
