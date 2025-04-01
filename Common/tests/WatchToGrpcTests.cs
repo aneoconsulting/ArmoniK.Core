@@ -187,6 +187,7 @@ public class WatchToGrpcTests
                                           ResultStatus.Completed,
                                           new List<string>(),
                                           DateTime.Today,
+                                          DateTime.Today,
                                           1,
                                           new[]
                                           {
@@ -200,6 +201,7 @@ public class WatchToGrpcTests
                                           "OwnerId",
                                           ResultStatus.Aborted,
                                           new List<string>(),
+                                          DateTime.Today,
                                           DateTime.Today,
                                           1,
                                           new[]
@@ -215,6 +217,7 @@ public class WatchToGrpcTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.Today,
+                                          null,
                                           1,
                                           new[]
                                           {
@@ -229,6 +232,7 @@ public class WatchToGrpcTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.Today,
+                                          null,
                                           1,
                                           new[]
                                           {
@@ -246,6 +250,7 @@ public class WatchToGrpcTests
                                             "Dependent1",
                                             "Dependent2",
                                           },
+                                          DateTime.Today,
                                           DateTime.Today,
                                           1,
                                           new[]

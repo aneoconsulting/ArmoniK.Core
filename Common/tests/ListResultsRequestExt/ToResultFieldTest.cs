@@ -38,17 +38,19 @@ public class ToResultFieldTest
                                               ResultStatus.Created,
                                               new List<string>(),
                                               DateTime.UtcNow,
+                                              null,
                                               0,
                                               Array.Empty<byte>(),
                                               false);
 
   public static IEnumerable<TestCaseData> TestCasesInvoke()
   {
-    // TODO add completedDate
     yield return Case(ResultRawEnumField.Status,
                       Result.Status);
     yield return Case(ResultRawEnumField.CreatedAt,
                       Result.CreationDate);
+    yield return Case(ResultRawEnumField.CompletedAt,
+                      Result.CompletionDate);
     yield return Case(ResultRawEnumField.Name,
                       Result.Name);
     yield return Case(ResultRawEnumField.CreatedBy,

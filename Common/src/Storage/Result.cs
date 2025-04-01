@@ -30,6 +30,7 @@ namespace ArmoniK.Core.Common.Storage;
 /// <param name="Status">Status of the result (can be Created, Completed or Aborted)</param>
 /// <param name="DependentTasks">List of tasks that depend on this result.</param>
 /// <param name="CreationDate">Date of creation of the current object.</param>
+/// <param name="CompletionDate">Date of completion of the current object.</param>
 /// <param name="Size">Size of the result.</param>
 /// <param name="OpaqueId">Opaque Identifier used by the object storage to refer to this result's data</param>
 /// <param name="ManualDeletion">If the user is responsible for the deletion of the data in the underlying object storage</param>
@@ -41,6 +42,7 @@ public record Result(string       SessionId,
                      ResultStatus Status,
                      List<string> DependentTasks,
                      DateTime     CreationDate,
+                     DateTime?    CompletionDate,
                      long         Size,
                      byte[]       OpaqueId,
                      bool         ManualDeletion)

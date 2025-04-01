@@ -88,7 +88,7 @@ public static class ListResultsRequestExt
             break;
           case FilterField.ValueConditionOneofCase.FilterDate:
             exprAnd = exprAnd.ExpressionAnd(filterField.FilterDate.Operator.ToFilter(filterField.Field.ToField(),
-                                                                                     filterField.FilterDate.Value.ToDateTime()));
+                                                                                     filterField.FilterDate.Value?.ToDateTime()));
             break;
           case FilterField.ValueConditionOneofCase.FilterArray:
             exprAnd = exprAnd.ExpressionAnd(filterField.FilterArray.Operator.ToFilter(filterField.Field.ToField(),

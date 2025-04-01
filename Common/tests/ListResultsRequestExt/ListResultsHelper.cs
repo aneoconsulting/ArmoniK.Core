@@ -107,7 +107,7 @@ public static class ListResultsHelper
 
   public static FilterField CreateListResultsFilterDate(ResultRawEnumField field,
                                                         FilterDateOperator op,
-                                                        DateTime           value)
+                                                        DateTime?          value)
     => new()
        {
          Field = new ResultField
@@ -120,7 +120,9 @@ public static class ListResultsHelper
          FilterDate = new FilterDate
                       {
                         Operator = op,
-                        Value    = FromDateTime(value),
+                        Value = value is not null
+                                  ? FromDateTime(value.Value)
+                                  : null,
                       },
        };
 

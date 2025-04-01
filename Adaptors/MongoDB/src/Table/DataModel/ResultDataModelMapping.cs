@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -50,6 +51,9 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetDefaultValue(new List<string>());
                                               cm.MapProperty(nameof(Result.CreationDate))
                                                 .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.CompletionDate))
+                                                .SetIsRequired(false)
+                                                .SetDefaultValue((DateTime?)null);
                                               cm.MapProperty(nameof(Result.Size))
                                                 .SetIgnoreIfDefault(true)
                                                 .SetDefaultValue(0);
@@ -67,6 +71,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                                                 model.Status,
                                                                                 model.DependentTasks,
                                                                                 model.CreationDate,
+                                                                                model.CompletionDate,
                                                                                 model.Size,
                                                                                 model.OpaqueId,
                                                                                 model.ManualDeletion));
@@ -90,6 +95,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                         IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
                         IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
                                                                  expireAfter: options.DataRetention),
+                        IndexHelper.CreateAscendingIndex<Result>(model => model.CompletionDate),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
