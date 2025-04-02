@@ -112,6 +112,7 @@ public class DataPrefetcherTest
                                                             ResultStatus.Completed,
                                                             new List<string>(),
                                                             DateTime.UtcNow,
+                                                            DateTime.UtcNow,
                                                             100,
                                                             Encoding.UTF8.GetBytes(s),
                                                             false)))

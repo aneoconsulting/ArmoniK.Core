@@ -180,11 +180,11 @@ public static class EnumFieldExt
          ResultRawEnumField.OwnerTaskId    => result => result.OwnerTaskId,
          ResultRawEnumField.Status         => result => result.Status,
          ResultRawEnumField.CreatedAt      => result => result.CreationDate,
+         ResultRawEnumField.CompletedAt    => result => result.CompletionDate,
          ResultRawEnumField.ResultId       => result => result.ResultId,
          ResultRawEnumField.Size           => result => result.Size,
          ResultRawEnumField.OpaqueId       => result => result.OpaqueId,
          ResultRawEnumField.ManualDeletion => result => result.ManualDeletion,
-         ResultRawEnumField.CompletedAt    => throw new ArgumentOutOfRangeException(nameof(enumField)),
          ResultRawEnumField.Unspecified    => throw new ArgumentOutOfRangeException(nameof(enumField)),
          _                                 => throw new ArgumentOutOfRangeException(nameof(enumField)),
        };

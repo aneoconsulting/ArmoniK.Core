@@ -60,6 +60,7 @@ public class ResultTableTestBase
                                            ResultStatus.Completed,
                                            new List<string>(),
                                            DateTime.Today,
+                                           DateTime.Today,
                                            1,
                                            new[]
                                            {
@@ -73,6 +74,7 @@ public class ResultTableTestBase
                                            "OwnerId",
                                            ResultStatus.Aborted,
                                            new List<string>(),
+                                           DateTime.Today,
                                            DateTime.Today,
                                            1,
                                            new[]
@@ -88,6 +90,7 @@ public class ResultTableTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           null,
                                            1,
                                            new[]
                                            {
@@ -102,6 +105,7 @@ public class ResultTableTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           null,
                                            1,
                                            new[]
                                            {
@@ -119,6 +123,7 @@ public class ResultTableTestBase
                                              "Dependent1",
                                              "Dependent2",
                                            },
+                                           DateTime.Today,
                                            DateTime.Today,
                                            1,
                                            new[]
@@ -228,6 +233,7 @@ public class ResultTableTestBase
                                            ResultStatus.Completed,
                                            new List<string>(),
                                            DateTime.Today,
+                                           DateTime.Today,
                                            1,
                                            new[]
                                            {
@@ -263,6 +269,7 @@ public class ResultTableTestBase
                                                                                     ResultStatus.Unspecified,
                                                                                     new List<string>(),
                                                                                     DateTime.Today,
+                                                                                    null,
                                                                                     1,
                                                                                     new[]
                                                                                     {
@@ -350,6 +357,9 @@ public class ResultTableTestBase
                       result.Size);
       Assert.AreEqual(id,
                       result.OpaqueId);
+      Assert.AreEqual(ResultStatus.Completed,
+                      result.Status);
+      Assert.NotNull(result.CompletionDate);
     }
   }
 
@@ -370,6 +380,7 @@ public class ResultTableTestBase
                                                             "OwnerId",
                                                             ResultStatus.Completed,
                                                             new List<string>(),
+                                                            DateTime.Today,
                                                             DateTime.Today,
                                                             id.Length,
                                                             Encoding.ASCII.GetBytes(id),
@@ -409,6 +420,7 @@ public class ResultTableTestBase
                                                             "OwnerId",
                                                             ResultStatus.Completed,
                                                             new List<string>(),
+                                                            DateTime.Today,
                                                             DateTime.Today,
                                                             id.Length,
                                                             Encoding.ASCII.GetBytes(id),
@@ -652,6 +664,7 @@ public class ResultTableTestBase
                                              ResultStatus.Created,
                                              new List<string>(),
                                              DateTime.UtcNow,
+                                             null,
                                              0,
                                              Array.Empty<byte>(),
                                              false),
@@ -768,6 +781,7 @@ public class ResultTableTestBase
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      null,
                                       0,
                                       Array.Empty<byte>(),
                                       false),

@@ -165,6 +165,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                           ResultStatus.Created,
                                                           new List<string>(),
                                                           DateTime.UtcNow,
+                                                          null,
                                                           0,
                                                           Array.Empty<byte>(),
                                                           rc.ManualDeletion))
@@ -208,6 +209,8 @@ public class GrpcResultsService : Results.ResultsBase
                                                                                                                 context.CancellationToken)
                                                                                               .ConfigureAwait(false);
 
+                                                         var now = DateTime.UtcNow;
+
                                                          return (new Result(request.SessionId,
                                                                             resultId,
                                                                             rc.Name,
@@ -215,7 +218,8 @@ public class GrpcResultsService : Results.ResultsBase
                                                                             request.SessionId,
                                                                             ResultStatus.Created,
                                                                             new List<string>(),
-                                                                            DateTime.UtcNow,
+                                                                            now,
+                                                                            null,
                                                                             size,
                                                                             Array.Empty<byte>(),
                                                                             rc.ManualDeletion), id);

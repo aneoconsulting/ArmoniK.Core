@@ -41,6 +41,7 @@ public class ToResultFilterTest
                                         ResultStatus.Created,
                                         new List<string>(),
                                         DateTime.UtcNow,
+                                        null,
                                         0,
                                         Array.Empty<byte>(),
                                         false);
@@ -136,6 +137,16 @@ public class ToResultFilterTest
                                                                         DateTime.UtcNow));
     yield return CaseFalse(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CreatedAt,
                                                                          FilterDateOperator.Before,
+                                                                         DateTime.UtcNow));
+
+    yield return CaseTrue(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CompletedAt,
+                                                                        FilterDateOperator.Equal,
+                                                                        null));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CompletedAt,
+                                                                         FilterDateOperator.BeforeOrEqual,
+                                                                         DateTime.UtcNow));
+    yield return CaseFalse(ListResultsHelper.CreateListResultsFilterDate(ResultRawEnumField.CompletedAt,
+                                                                         FilterDateOperator.AfterOrEqual,
                                                                          DateTime.UtcNow));
 
     yield return CaseTrue(ListResultsHelper.CreateListResultsFilterNumber(ResultRawEnumField.Size,

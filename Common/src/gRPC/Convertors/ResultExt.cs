@@ -45,5 +45,8 @@ public static class ResultExt
          Size           = result.Size,
          OpaqueId       = ByteString.CopyFrom(result.OpaqueId),
          ManualDeletion = result.ManualDeletion,
+         CompletedAt = result.CompletionDate is not null
+                         ? Timestamp.FromDateTime(result.CompletionDate.Value)
+                         : null,
        };
 }
