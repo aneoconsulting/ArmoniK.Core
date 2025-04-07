@@ -237,7 +237,8 @@ internal static class Program
                                                                                                    {
                                                                                                      MaxDuration = Duration.FromTimeSpan(benchOptions.MaxDuration),
                                                                                                      MaxRetries  = 2,
-                                                                                                     Priority    = 1,
+                                                                                                     Priority = int.Max(benchOptions.TaskPriority,
+                                                                                                                        1),
                                                                                                      PartitionId = benchOptions.Partition,
                                                                                                      Options =
                                                                                                      {
