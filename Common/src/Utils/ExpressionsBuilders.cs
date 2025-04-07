@@ -23,8 +23,23 @@ using System.Reflection;
 
 namespace ArmoniK.Core.Common.Utils;
 
+/// <summary>
+///   Provides utility methods for building LINQ expressions to filter data models based on field values.
+/// </summary>
 public static class ExpressionsBuilders
 {
+  /// <summary>
+  ///   Builds a filter expression for a field based on a list of values.
+  /// </summary>
+  /// <typeparam name="TData">The type of the data model.</typeparam>
+  /// <typeparam name="TField">The type of the field to filter.</typeparam>
+  /// <param name="expression">An expression representing the field to filter.</param>
+  /// <param name="values">The list of values to filter by.</param>
+  /// <param name="include">
+  ///   If true, filter represented by <paramref name="expression" /> is a whitelist; otherwise, it is a
+  ///   blacklist.
+  /// </param>
+  /// <returns>An expression that can be used to filter the data.</returns>
   public static Expression<Func<TData, bool>> FieldFilterExpression<TData, TField>(Expression<Func<TData, TField>> expression,
                                                                                    IList<TField>                   values,
                                                                                    bool                            include = true)
@@ -39,7 +54,19 @@ public static class ExpressionsBuilders
                                                             x);
   }
 
-
+  /// <summary>
+  ///   Builds an internal filter expression for a field based on a list of values.
+  /// </summary>
+  /// <typeparam name="TData">The type of the data model.</typeparam>
+  /// <typeparam name="TField">The type of the field to filter.</typeparam>
+  /// <param name="expression">An expression representing the field to filter.</param>
+  /// <param name="values">The list of values to filter by.</param>
+  /// <param name="include">
+  ///   If true, filter represented by <paramref name="expression" /> is a whitelist; otherwise, it is a
+  ///   blacklist.
+  /// </param>
+  /// <param name="x">The parameter expression representing the data model.</param>
+  /// <returns>An expression that can be used to filter the data.</returns>
   public static Expression FieldFilterInternal<TData, TField>(Expression<Func<TData, TField>> expression,
                                                               IList<TField>                   values,
                                                               bool                            include,
@@ -83,6 +110,19 @@ public static class ExpressionsBuilders
              : Expression.Not(body);
   }
 
+  /// <summary>
+  ///   Builds an internal filter expression for a collection field based on a list of values.
+  /// </summary>
+  /// <typeparam name="TData">The type of the data model.</typeparam>
+  /// <typeparam name="TField">The type of the elements in the collection field to filter.</typeparam>
+  /// <param name="expression">An expression representing the collection field to filter.</param>
+  /// <param name="values">The list of values to filter by.</param>
+  /// <param name="include">
+  ///   If true, filter represented by <paramref name="expression" /> is a whitelist; otherwise, it is a
+  ///   blacklist.
+  /// </param>
+  /// <param name="x">The parameter expression representing the data model.</param>
+  /// <returns>An expression that can be used to filter the data.</returns>
   public static Expression FieldFilterInternal<TData, TField>(Expression<Func<TData, IEnumerable<TField>>> expression,
                                                               IList<TField>                                values,
                                                               bool                                         include,
