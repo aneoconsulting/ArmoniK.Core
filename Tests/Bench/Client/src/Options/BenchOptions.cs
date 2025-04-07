@@ -129,4 +129,9 @@ public class BenchOptions
   ///   Task Max Duration given to Task Options
   /// </summary>
   public TimeSpan MaxDuration { get; set; } = TimeSpan.FromHours(1);
+
+  /// <summary>
+  ///   Priority to use to send all the tasks
+  /// </summary>
+  public int TaskPriority { get; set; } = 1;
 }
