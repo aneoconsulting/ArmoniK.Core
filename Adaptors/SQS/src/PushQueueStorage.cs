@@ -62,26 +62,33 @@ internal class PushQueueStorage : IPushQueueStorage
       throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
-    var queueName = client_.GetQueueName(options_,
-                                         partitionId);
-
-    var queueUrl = await cache_.GetOrCreateAsync(queueName,
-                                                 _ => client_.GetOrCreateQueueUrlAsync(queueName,
-                                                                                       options_.Tags,
-                                                                                       cancellationToken))
-                               .ConfigureAwait(false);
-
-    await messages.Select(data => new SendMessageBatchRequestEntry
-                                  {
-                                    Id = Guid.NewGuid()
-                                             .ToString(),
-                                    MessageBody = data.TaskId,
-                                  })
-                  .Chunk(10)
+    await messages.GroupBy(m => m.Options.Priority)
+                  .ToAsyncEnumerable()
+                  .SelectMany(group => group.Chunk(10)
+                                            .ToAsyncEnumerable()
+                                            .SelectAwait(async chunk =>
+                                                         {
+                                                           var queueName = client_.GetQueueName(options_,
+                                                                                                group.Key,
+                                                                                                partitionId);
+                                                           var queueUrl = await cache_.GetOrCreateAsync(queueName,
+                                                                                                        _ => client_.GetOrCreateQueueUrlAsync(queueName,
+                                                                                                                                              options_.Tags,
+                                                                                                                                              cancellationToken))
+                                                                                      .ConfigureAwait(false);
+                                                           return (queueUrl, chunk);
+                                                         }))
                   .ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
                                    async entries =>
                                    {
-                                     var entriesList = entries.ToList();
+                                     var (queueUrl, chunk) = entries;
+                                     var entriesList = chunk.Select(data => new SendMessageBatchRequestEntry
+                                                                            {
+                                                                              Id = Guid.NewGuid()
+                                                                                       .ToString(),
+                                                                              MessageBody = data.TaskId,
+                                                                            })
+                                                            .ToList();
                                      var response = await client_.SendMessageBatchAsync(new SendMessageBatchRequest
                                                                                         {
                                                                                           QueueUrl = queueUrl,
@@ -92,9 +99,10 @@ internal class PushQueueStorage : IPushQueueStorage
 
                                      if (logger_.IsEnabled(LogLevel.Debug))
                                      {
-                                       logger_.LogDebug("pushed {messages}, {statusCode}, {responseMetadata}",
+                                       logger_.LogDebug("pushed {messages} onto {QueueUrl}, {statusCode}, {responseMetadata}",
                                                         entriesList.Select(entry => entry.Id)
                                                                    .ToList(),
+                                                        queueUrl,
                                                         response.HttpStatusCode,
                                                         response.ResponseMetadata);
                                      }
@@ -127,7 +135,8 @@ internal class PushQueueStorage : IPushQueueStorage
   }
 
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(options_.MaxPriority,
+               1);
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(isInitialized_

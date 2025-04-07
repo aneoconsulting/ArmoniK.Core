@@ -78,7 +78,7 @@ public static class TaskLifeCycleHelper
                                           $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {localOptions.PartitionId}");
     }
 
-    if (localOptions.Priority >= maxPriority)
+    if (localOptions.Priority > maxPriority)
     {
       var exception = new RpcException(new Status(StatusCode.InvalidArgument,
                                                   $"Max priority is {maxPriority}"));
