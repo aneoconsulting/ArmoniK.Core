@@ -24,11 +24,6 @@ internal class SQS
   public const string SettingSection = nameof(SQS);
 
   /// <summary>
-  ///   Partition from which tasks are pulled by the polling agent
-  /// </summary>
-  public string PartitionId { get; set; } = string.Empty;
-
-  /// <summary>
   ///   AWS endpoint containing the SQS instance
   /// </summary>
   // ReSharper disable once InconsistentNaming

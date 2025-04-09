@@ -293,7 +293,8 @@ public class Pollster : IInitializable
 
         try
         {
-          await using var messages = pullQueueStorage_.PullMessagesAsync(partitionId_, messageBatchSize_,
+          await using var messages = pullQueueStorage_.PullMessagesAsync(pollsterOptions_.PartitionId,
+            messageBatchSize_,
                                                                          exceptionManager_.EarlyCancellationToken)
                                                       .GetAsyncEnumerator(exceptionManager_.EarlyCancellationToken);
 
