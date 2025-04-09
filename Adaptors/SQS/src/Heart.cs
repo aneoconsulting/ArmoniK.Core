@@ -57,7 +57,6 @@ public class Heart
   public async Task Stop()
   {
     stoppedHeartCts_?.Cancel();
-    stoppedHeartCts_ = null;
     try
     {
       if (runningTask_ != null)
