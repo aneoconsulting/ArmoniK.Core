@@ -316,6 +316,12 @@ public static class TaskTableExtensions
                                                       bool                paused            = false,
                                                       CancellationToken   cancellationToken = default)
   {
+    taskTable.Logger.LogDebug("Mark tasks {@TaskIds} as {Status}",
+                              taskIds,
+                              paused
+                                ? TaskStatus.Paused
+                                : TaskStatus.Submitted);
+
     var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Pending,
                                               new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
                                                                                    paused
