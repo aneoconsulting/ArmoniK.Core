@@ -117,13 +117,14 @@ public sealed class Agent : IAgent
 
     logger_.LogDebug("Create and populate results and submit child tasks");
 
-    await resultTable_.Create(createdResults_.SelectMany(x => x)
-                                             .AsICollection(),
-                              cancellationToken)
-                      .ConfigureAwait(false);
-
+    var createdResults = createdResults_.SelectMany(x => x)
+                                        .AsICollection();
     var createdTasks = createdTasks_.SelectMany(x => x)
                                     .AsICollection();
+
+    await resultTable_.Create(createdResults,
+                              cancellationToken)
+                      .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.CreateTasks(taskTable_,
                                           resultTable_,
@@ -155,6 +156,37 @@ public sealed class Agent : IAgent
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
+
+
+    var subtaskOutputIds = createdTasks.SelectMany(task => task.ExpectedOutputKeys)
+                                       .ToHashSet();
+
+    var completedResultIds = resultsToComplete.Keys.ToHashSet();
+
+    var missingOutputIds = taskData_.ExpectedOutputIds.Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                    .AsICollection();
+
+    var orphanIds = createdResults.Select(result => result.ResultId)
+                                  .Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                  .AsICollection();
+
+
+    if (completedResultIds.Count == 0)
+    {
+      logger_.LogWarning("No result was completed");
+    }
+
+    if (missingOutputIds.Count > 0)
+    {
+      logger_.LogError("Expected output results were neither completed nor delegated to subtask: {@ResultIds}",
+                       missingOutputIds);
+    }
+
+    if (orphanIds.Count > 0)
+    {
+      logger_.LogError("New results were neither completed nor delegated to subtask: {@ResultIds}",
+                       orphanIds);
+    }
   }
 
 
