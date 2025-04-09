@@ -143,7 +143,7 @@ public sealed class Agent : IAgent
     var resultsToComplete = await StoreDataAsync(cancellationToken)
                               .ConfigureAwait(false);
 
-    await resultTable_.CompleteManyResults(resultsToComplete.Select(pair => (pair.Key, pair.Value.size, pair.Value.id)),
+    await resultTable_.CompleteManyResults(resultsToComplete.ViewSelect(pair => (pair.Key, pair.Value.size, pair.Value.id)),
                                            cancellationToken)
                       .ConfigureAwait(false);
 

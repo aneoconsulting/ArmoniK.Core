@@ -231,7 +231,7 @@ public class GrpcResultsService : Results.ResultsBase
                               context.CancellationToken)
                       .ConfigureAwait(false);
 
-    await resultTable_.CompleteManyResults(results.Select(tuple => (tuple.Item1.ResultId, tuple.Item1.Size, tuple.id)),
+    await resultTable_.CompleteManyResults(results.ViewSelect(tuple => (tuple.Item1.ResultId, tuple.Item1.Size, tuple.id)),
                                            context.CancellationToken)
                       .ConfigureAwait(false);
 
@@ -539,7 +539,7 @@ public class GrpcResultsService : Results.ResultsBase
                                         $"Imported results should be in {ResultStatus.Created} status, invalid results {invalidResults}"));
     }
 
-    await resultTable_.CompleteManyResults(requests.Select(tuple => (tuple.Key, dict[tuple.Value]!.Value, tuple.Value)),
+    await resultTable_.CompleteManyResults(requests.ViewSelect(tuple => (tuple.Key, dict[tuple.Value]!.Value, tuple.Value)),
                                            context.CancellationToken)
                       .ConfigureAwait(false);
 
