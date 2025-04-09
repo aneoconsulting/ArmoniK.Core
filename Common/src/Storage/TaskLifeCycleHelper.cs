@@ -450,8 +450,9 @@ public static class TaskLifeCycleHelper
     // Find all tasks whose dependencies are now complete in order to start them.
     // Multiple agents can see the same task as ready and will try to start it multiple times.
     // This is benign as it will be handled during dequeue with message deduplication.
-    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Pending &&
-                                                            data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId)                                      &&
+                                                            (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
+                                                            data.RemainingDataDependencies == new Dictionary<string, bool>(),
                                                     data => new MessageData(data.TaskId,
                                                                             data.SessionId,
                                                                             data.Options),

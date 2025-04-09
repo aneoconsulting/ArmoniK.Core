@@ -322,7 +322,7 @@ public static class TaskTableExtensions
                                 ? TaskStatus.Paused
                                 : TaskStatus.Submitted);
 
-    var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Pending,
+    var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && (tdm.Status == TaskStatus.Creating || tdm.Status == TaskStatus.Pending),
                                               new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
                                                                                    paused
                                                                                      ? TaskStatus.Paused
