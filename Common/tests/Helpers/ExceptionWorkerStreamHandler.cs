@@ -32,16 +32,21 @@ public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
 {
   private readonly bool acceptCancellation_;
   private readonly int  delay_;
+  private readonly bool healthy_;
 
   public ExceptionWorkerStreamHandler(int  delay,
-                                      bool acceptCancellation = true)
+                                      bool acceptCancellation = true,
+                                      bool healthy            = true)
   {
     delay_              = delay;
     acceptCancellation_ = acceptCancellation;
+    healthy_            = healthy;
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult(HealthCheckResult.Healthy());
+    => Task.FromResult(healthy_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy());
 
   public Task Init(CancellationToken cancellationToken)
     => Task.CompletedTask;

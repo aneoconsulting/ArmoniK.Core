@@ -19,13 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -34,9 +33,11 @@ using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
@@ -842,6 +843,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("taskId", messageHandler_.TaskId),
                                           ("sessionId", taskData_.SessionId));
+    var checkTask = workerStreamHandler_.Check(HealthCheckTag.Liveness);
 
     try
     {
@@ -867,6 +869,8 @@ public sealed class TaskHandler : IAsyncDisposable
                     PodTtl = DateTime.UtcNow,
                     FetchedDate = fetchedDate_,
                   };
+
+
       // Status update should not be cancelled
       // Task will be marked as processing then start
       await taskTable_.StartTask(taskData_,
@@ -903,6 +907,22 @@ public sealed class TaskHandler : IAsyncDisposable
                                     taskData_,
                                     earlyCts_.Token)
         .ConfigureAwait(false);
+    }
+
+    var check = await checkTask.ConfigureAwait(false);
+    logger_.LogDebug("Checked worker {@Status}",
+                     check.Status);
+    if (check.Status is HealthStatus.Unhealthy)
+    {
+      await ReleaseAndPostponeTask()
+        .ConfigureAwait(false);
+      if (check.Exception is null)
+      {
+        throw new WorkerDownException();
+      }
+
+      throw new WorkerDownException("Worker was down with: ",
+                                    check.Exception);
     }
 
     try
@@ -1059,69 +1079,40 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
+    else if (cancellationToken.IsCancellationRequested && e is OperationCanceledException)
+    {
+      logger_.LogWarning(e,
+                         "Cancellation triggered, task cancelled here and re executed elsewhere");
+
+      await ReleaseAndPostponeTask()
+        .ConfigureAwait(false);
+    }
     else
     {
-      var connectionEnded = e is RpcException
-                                 {
-                                   StatusCode: StatusCode.Unavailable,
-                                   InnerException: HttpRequestException
-                                                   {
-                                                     InnerException: HttpIOException
-                                                                     {
-                                                                       HttpRequestError: HttpRequestError.ResponseEnded,
-                                                                     },
-                                                   },
-                                 };
+      logger_.LogError(e,
+                       "Error during task execution: {Decision}",
+                       resubmit
+                         ? "retrying task"
+                         : "cancelling task");
 
       var isWorkerDown = e is RpcException re && IsStatusFatal(re.StatusCode);
-
-      // worker crash during cancellation should be treated as error meaning an explicit retry
-      // cancellation and worker down should be treated as implicit retry
-      if (!connectionEnded && (cancellationToken.IsCancellationRequested || (requeueIfUnavailable && isWorkerDown)))
-      {
-        if (cancellationToken.IsCancellationRequested)
-        {
-          logger_.LogWarning(e,
-                             "Cancellation triggered, task cancelled here and re executed elsewhere");
-        }
-        else
-        {
-          logger_.LogWarning(e,
-                             "Worker not available, task cancelled here and re executed elsewhere");
-        }
-
-        await ReleaseAndPostponeTask()
-          .ConfigureAwait(false);
-      }
-      else
-      {
-        logger_.LogError(e,
-                         "Error during task execution: {Decision}",
-                         resubmit
-                           ? "retrying task"
-                           : "cancelling task");
-
-        await submitter_.CompleteTaskAsync(taskData,
-                                           sessionData_,
-                                           resubmit,
-                                           new Output(OutputStatus.Error,
-                                                      isWorkerDown
-                                                        ? $"Worker associated to scheduling agent {ownerPodName_} is down with error: \n{e.Message}"
-                                                        : e.Message),
-                                           CancellationToken.None)
-                        .ConfigureAwait(false);
+      await submitter_.CompleteTaskAsync(taskData,
+                                         sessionData_,
+                                         resubmit,
+                                         new Output(OutputStatus.Error,
+                                                    isWorkerDown
+                                                      ? $"Worker associated to scheduling agent {ownerPodName_} is down with error: \n{e.Message}"
+                                                      : e.Message),
+                                         CancellationToken.None)
+                      .ConfigureAwait(false);
 
 
-        messageHandler_.Status = resubmit
-                                   ? QueueMessageStatus.Cancelled
-                                   : QueueMessageStatus.Processed;
-      }
+      messageHandler_.Status = resubmit
+                                 ? QueueMessageStatus.Cancelled
+                                 : QueueMessageStatus.Processed;
     }
 
-    // Rethrow enable the recording of the error by the Pollster Main loop
-    // Keep the stack trace for the rethrown exception
-    ExceptionDispatchInfo.Capture(e)
-                         .Throw();
+    e.RethrowWithStacktrace();
   }
 
   internal static bool IsStatusFatal(StatusCode statusCode)
