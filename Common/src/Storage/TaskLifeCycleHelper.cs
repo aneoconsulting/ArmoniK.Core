@@ -294,6 +294,9 @@ public static class TaskLifeCycleHelper
                                                                               ILogger                          logger,
                                                                               CancellationToken                cancellationToken)
   {
+    using var scope = logger.BeginScope("Prepare task dependencies for {@TaskIds}",
+                                        taskRequests.ViewSelect(req => req.TaskId));
+
     var allDependencies       = new HashSet<string>();
     var completedDependencies = new List<string>();
 
@@ -303,6 +306,9 @@ public static class TaskLifeCycleHelper
       allDependencies.UnionWith(request.DataDependencies);
       allDependencies.Add(request.PayloadId);
     }
+
+    logger.LogDebug("Check Result status for results {@ResultIds}",
+                    allDependencies);
 
     // Get the dependencies that are already completed to avoid tracking already completed results
     await foreach (var resultId in resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
@@ -412,6 +418,9 @@ public static class TaskLifeCycleHelper
                                                ILogger             logger,
                                                CancellationToken   cancellationToken = default)
   {
+    using var activity = logger.BeginScope("Resolving dependencies for {@ResultIds}",
+                                           results);
+
     logger.LogDebug("Submit tasks which new data are available");
 
     // Get all tasks that depend on the results that were completed by the given results (removing duplicates)
@@ -427,11 +436,8 @@ public static class TaskLifeCycleHelper
       return;
     }
 
-    if (logger.IsEnabled(LogLevel.Debug))
-    {
-      logger.LogDebug("Dependent Tasks Dictionary {@dependents}",
-                      dependentTasks);
-    }
+    logger.LogDebug("Dependent Tasks Dictionary {@dependents}",
+                    dependentTasks);
 
     // Remove all results that were completed by the current task from their dependents.
     // This will try to remove more results than strictly necessary.
@@ -444,14 +450,19 @@ public static class TaskLifeCycleHelper
     // Find all tasks whose dependencies are now complete in order to start them.
     // Multiple agents can see the same task as ready and will try to start it multiple times.
     // This is benign as it will be handled during dequeue with message deduplication.
-    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId) && data.Status == TaskStatus.Pending &&
-                                                            data.RemainingDataDependencies                      == new Dictionary<string, bool>(),
+    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId)                                      &&
+                                                            (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
+                                                            data.RemainingDataDependencies == new Dictionary<string, bool>(),
                                                     data => new MessageData(data.TaskId,
                                                                             data.SessionId,
                                                                             data.Options),
                                                     cancellationToken)
                                     .ToListAsync(cancellationToken)
                                     .ConfigureAwait(false);
+
+    logger.LogDebug("Check tasks status for tasks {@TaskIds}, found {@ReadyTasks}",
+                    dependentTasks,
+                    readyTasks);
 
     await EnqueueReadyTasks(taskTable,
                             pushQueueStorage,

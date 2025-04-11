@@ -380,6 +380,10 @@ public class TaskTable : ITaskTable
       update = update.Unset(data => data.RemainingDataDependencies[key]);
     }
 
+    Logger.LogDebug("Remove data dependencies {@ResultIds} for tasks {@TaskIds}",
+                    dependenciesToRemove,
+                    taskIds);
+
     await taskCollection.UpdateManyAsync(data => taskIds.Contains(data.TaskId),
                                          update,
                                          cancellationToken: cancellationToken)
