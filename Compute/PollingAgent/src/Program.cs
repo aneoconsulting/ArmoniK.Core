@@ -201,12 +201,13 @@ public static class Program
       app.MapGet("/taskprocessing",
                  async () =>
                  {
-                   var pollster = app.Services.GetRequiredService<Common.Pollster.Pollster>();
+                   var pollster  = app.Services.GetRequiredService<Common.Pollster.Pollster>();
+                   var exManager = app.Services.GetRequiredService<ExceptionManager>();
 
                    var check = await pollster.Check(HealthCheckTag.Liveness)
                                              .ConfigureAwait(false);
 
-                   if (check.Status == HealthStatus.Unhealthy)
+                   if (check.Status == HealthStatus.Unhealthy || exManager.LateCancellationToken.IsCancellationRequested)
                    {
                      return "";
                    }
