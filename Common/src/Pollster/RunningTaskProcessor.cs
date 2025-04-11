@@ -107,6 +107,12 @@ public class RunningTaskProcessor : BackgroundService
       {
         break;
       }
+      catch (WorkerDownException e)
+      {
+        exceptionManager_.FatalError(logger_,
+                                     e,
+                                     "Fatal error while executing task");
+      }
       catch (Exception e)
       {
         exceptionManager_.RecordError(logger_,
