@@ -1,6 +1,6 @@
 variable "image" {
   type    = string
-  default = "rabbitmq:3-management"
+  default = "rabbitmq:4-management"
 }
 
 variable "network" {
