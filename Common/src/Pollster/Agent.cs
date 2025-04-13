@@ -126,6 +126,13 @@ public sealed class Agent : IAgent
                               cancellationToken)
                       .ConfigureAwait(false);
 
+    var resultsToComplete = await StoreDataAsync(cancellationToken)
+                              .ConfigureAwait(false);
+
+    await resultTable_.CompleteManyResults(resultsToComplete.ViewSelect(pair => (pair.Key, pair.Value.size, pair.Value.id)),
+                                           cancellationToken)
+                      .ConfigureAwait(false);
+
     await TaskLifeCycleHelper.CreateTasks(taskTable_,
                                           resultTable_,
                                           sessionData_.SessionId,
@@ -140,13 +147,6 @@ public sealed class Agent : IAgent
                                           taskData_.TaskId,
                                           cancellationToken)
                     .ConfigureAwait(false);
-
-    var resultsToComplete = await StoreDataAsync(cancellationToken)
-                              .ConfigureAwait(false);
-
-    await resultTable_.CompleteManyResults(resultsToComplete.ViewSelect(pair => (pair.Key, pair.Value.size, pair.Value.id)),
-                                           cancellationToken)
-                      .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
                                                   resultTable_,

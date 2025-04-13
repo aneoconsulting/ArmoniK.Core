@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -902,5 +903,49 @@ public class AgentTest
     Assert.IsEmpty(taskData.RemainingDataDependencies);
     Assert.AreEqual(TaskStatus.Submitted,
                     taskData.Status);
+  }
+
+  [Test]
+  public async Task SubmitTasksDuplicateResult()
+  {
+    using var holder = new AgentHolder();
+
+    var payload = await holder.Agent.CreateResults(holder.Token,
+                                                   new[]
+                                                   {
+                                                     (new ResultCreationRequest(holder.Session,
+                                                                                "Payload"), new ReadOnlyMemory<byte>("Payload"u8.ToArray())),
+                                                   },
+                                                   CancellationToken.None)
+                              .ConfigureAwait(false);
+
+    var reply = await holder.Agent.SubmitTasks(new[]
+                                               {
+                                                 new TaskSubmissionRequest(payload.Single()
+                                                                                  .ResultId,
+                                                                           null,
+                                                                           Array.Empty<string>(),
+                                                                           Array.Empty<string>()),
+                                               },
+                                               null,
+                                               holder.Session,
+                                               holder.Token,
+                                               CancellationToken.None)
+                            .ConfigureAwait(false);
+
+    // Create the result before finalizing the task to create a failure
+    await holder.ResultTable.Create(new[]
+                                    {
+                                      payload.Single(),
+                                    })
+                .ConfigureAwait(false);
+
+    Assert.That(() => holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None),
+                Throws.TypeOf<ArmoniKException>());
+
+    Assert.That(() => holder.TaskTable.ReadTaskAsync(reply.Single()
+                                                          .TaskId,
+                                                     CancellationToken.None),
+                Throws.TypeOf<TaskNotFoundException>());
   }
 }
