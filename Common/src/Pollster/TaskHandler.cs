@@ -811,11 +811,18 @@ public sealed class TaskHandler : IAsyncDisposable
                            .ConfigureAwait(false);
       fetchedDate_ = DateTime.UtcNow;
     }
-    catch (Exception e)
+    catch (ObjectDataNotFoundException e)
     {
       await HandleErrorRequeueAsync(e,
                                     taskData_,
                                     earlyCts_.Token)
+        .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      await HandleErrorResubmitAsync(e,
+                                     taskData_,
+                                     earlyCts_.Token)
         .ConfigureAwait(false);
     }
   }

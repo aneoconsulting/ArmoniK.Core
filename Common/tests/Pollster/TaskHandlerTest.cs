@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -1632,36 +1631,16 @@ public class TaskHandlerTest
                     sqmh.Status);
   }
 
-  private class ObjectStorageThrowNotFound : IObjectStorage
-  {
-    public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => Task.FromResult(HealthCheckResult.Healthy());
-
-    public Task Init(CancellationToken cancellationToken)
-      => Task.CompletedTask;
-
-    public IAsyncEnumerable<byte[]> GetValuesAsync(byte[]            id,
-                                                   CancellationToken cancellationToken = default)
-      => throw new ObjectDataNotFoundException();
-
-    public Task TryDeleteAsync(IEnumerable<byte[]> ids,
-                               CancellationToken   cancellationToken = default)
-      => Task.CompletedTask;
-
-    public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
-                                                          CancellationToken   cancellationToken = default)
-      => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
-                                                                      _ => (long?)null));
-
-    public Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
-                                                         IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                                         CancellationToken                      cancellationToken = default)
-      => Task.FromResult<(byte[] id, long size)>((Encoding.UTF8.GetBytes("forty-two"), 42));
-  }
-
   [Test]
-  public async Task PreprocessingShouldThrow()
+  public async Task PreprocessingShouldThrow([Values] bool notFound)
   {
+    Exception exception = notFound
+                            ? new ObjectDataNotFoundException()
+                            : new ApplicationException();
+    var objectStorage = new Mock<IObjectStorage>();
+    objectStorage.Setup(os => os.GetValuesAsync(It.IsAny<byte[]>(),
+                                                It.IsAny<CancellationToken>()))
+                 .Throws(exception);
     var sqmh = new SimpleQueueMessageHandler
                {
                  CancellationToken = CancellationToken.None,
@@ -1677,7 +1656,7 @@ public class TaskHandlerTest
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
                                                                 sqmh,
-                                                                objectStorage: new ObjectStorageThrowNotFound());
+                                                                objectStorage: objectStorage.Object);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
@@ -1687,10 +1666,11 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
-    Assert.ThrowsAsync<ObjectDataNotFoundException>(() => testServiceProvider.TaskHandler.PreProcessing());
+    Assert.That(() => testServiceProvider.TaskHandler.PreProcessing(),
+                Throws.TypeOf(exception.GetType()));
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
                                                                      CancellationToken.None)
@@ -1698,11 +1678,18 @@ public class TaskHandlerTest
 
     Console.WriteLine(taskData);
 
-    Assert.AreEqual(TaskStatus.Error,
-                    taskData.Status);
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(taskData.Status,
+                                  Is.EqualTo(notFound
+                                               ? TaskStatus.Error
+                                               : TaskStatus.Retried));
 
-    Assert.AreEqual(QueueMessageStatus.Processed,
-                    sqmh.Status);
+                      Assert.That(sqmh.Status,
+                                  Is.EqualTo(notFound
+                                               ? QueueMessageStatus.Processed
+                                               : QueueMessageStatus.Cancelled));
+                    });
   }
 
   [Test]
