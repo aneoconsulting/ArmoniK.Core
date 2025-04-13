@@ -90,7 +90,9 @@ jobs:
       uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3
 
     - name: Setup just
-      run: sudo snap install --edge --classic just
+      uses: taiki-e/install-action@be7c31b6745feec79dec5eb79178466c0670bb2d # v2
+      with:
+        tool: just
 
     - name: login
       run: echo ${{ secrets.DOCKER_HUB_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_LOGIN }} --password-stdin
