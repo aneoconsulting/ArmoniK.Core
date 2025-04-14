@@ -38,13 +38,13 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   if os_family() == "windows" {
     '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12" }'
   } else {
-    '{ name = "rabbitmq", image = "rabbitmq:3-management" }'
+    '{ name = "rabbitmq", image = "rabbitmq:4-management" }'
   }
 } else if queue == "rabbitmq091" {
   if os_family() == "windows" {
     '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12", protocol = "amqp0_9_1" }'
   } else {
-    '{ name = "rabbitmq", image = "rabbitmq:3-management", protocol = "amqp0_9_1" }'
+    '{ name = "rabbitmq", image = "rabbitmq:4-management", protocol = "amqp0_9_1" }'
   }
 } else if queue == "artemis" {
   '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
