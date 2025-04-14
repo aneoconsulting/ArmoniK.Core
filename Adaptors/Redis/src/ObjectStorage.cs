@@ -230,7 +230,7 @@ public class ObjectStorage : IObjectStorage
         return await action()
                  .ConfigureAwait(false);
       }
-      catch (RedisTimeoutException ex)
+      catch (Exception ex) when (ex is RedisTimeoutException or RedisConnectionException)
       {
         if (retryCount + 1 >= redisOptions_.MaxRetry)
         {
