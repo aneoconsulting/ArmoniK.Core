@@ -29,6 +29,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -555,29 +556,38 @@ public class Submitter : ISubmitter
 
         break;
       case OutputStatus.Error:
-        // TODO FIXME: nothing will resubmit the task if there is a crash there
+        // If multiple pods are retrying the same task, they will all trying to create the retry.
+        // The submission of the retry being idem-potent, there is no issue to have it processed multiple times.
         if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
         {
-          // not done means that another pod put this task in retry so we do not need to do it a second time
-          // so nothing to do
-          if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
-                                                  output.Error,
-                                                  cancellationToken)
-                               .ConfigureAwait(false))
-          {
-            return;
-          }
+          // Change current task status to Retried
+          await taskTable_.SetTaskRetryAsync(taskDataEnd,
+                                             output.Error,
+                                             cancellationToken)
+                          .ConfigureAwait(false);
 
           logger_.LogWarning("Resubmit {task}",
                              taskData.TaskId);
 
-          var newTaskId = await taskTable_.RetryTask(taskData,
-                                                     cancellationToken)
-                                          .ConfigureAwait(false);
+          string retryId;
 
+          try
+          {
+            // Submit a new task that is a retry of current task
+            retryId = await taskTable_.RetryTask(taskData,
+                                                 cancellationToken)
+                                      .ConfigureAwait(false);
+          }
+          catch (TaskAlreadyExistsException)
+          {
+            // If the retry task already exist, we just continue as-if we just submitted it
+            retryId = taskData.RetryId();
+          }
+
+          // Submit retry task into the queue
           await FinalizeTaskCreation(new List<TaskCreationRequest>
                                      {
-                                       new(newTaskId,
+                                       new(retryId,
                                            taskData.PayloadId,
                                            taskData.Options,
                                            taskData.ExpectedOutputIds,
