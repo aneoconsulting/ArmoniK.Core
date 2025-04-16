@@ -312,6 +312,49 @@ public sealed class TaskHandler : IAsyncDisposable
       sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
                                                          CancellationToken.None)
                                         .ConfigureAwait(false);
+
+      if (sessionData_.Status is SessionStatus.Cancelled or SessionStatus.Deleted or SessionStatus.Closed or SessionStatus.Purged &&
+          taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
+      {
+        logger_.LogInformation("Task is being cancelled because its session is {sessionStatus}",
+                               sessionData_.Status);
+
+        messageHandler_.Status = QueueMessageStatus.Cancelled;
+        taskData_ = taskData_ with
+                    {
+                      EndDate = DateTime.UtcNow,
+                      CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
+                    };
+        await taskTable_.SetTaskCanceledAsync(taskData_,
+                                              CancellationToken.None)
+                        .ConfigureAwait(false);
+
+        await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+                                                         resultTable_,
+                                                         new[]
+                                                         {
+                                                           messageHandler_.TaskId,
+                                                         },
+                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}",
+                                                         CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+        // Propagate cancelled status to TaskHandler
+        taskData_ = taskData_ with
+                    {
+                      Status = TaskStatus.Cancelled,
+                    };
+
+        return AcquisitionStatus.SessionNotExecutable;
+      }
+
+      if (sessionData_.Status == SessionStatus.Paused)
+      {
+        logger_.LogDebug("Session paused; message deleted");
+        messageHandler_.Status = QueueMessageStatus.Processed;
+        return AcquisitionStatus.SessionPaused;
+      }
+
       switch (taskData_.Status)
       {
         case TaskStatus.Cancelling:
@@ -577,48 +620,6 @@ public sealed class TaskHandler : IAsyncDisposable
           logger_.LogCritical("Task was in an unknown state {state}",
                               taskData_.Status);
           throw new ArgumentException(nameof(taskData_));
-      }
-
-      if (sessionData_.Status is SessionStatus.Cancelled or SessionStatus.Deleted or SessionStatus.Closed or SessionStatus.Purged &&
-          taskData_.Status is not (TaskStatus.Cancelled or TaskStatus.Completed or TaskStatus.Error))
-      {
-        logger_.LogInformation("Task is being cancelled because its session is {sessionStatus}",
-                               sessionData_.Status);
-
-        messageHandler_.Status = QueueMessageStatus.Cancelled;
-        taskData_ = taskData_ with
-                    {
-                      EndDate = DateTime.UtcNow,
-                      CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
-                    };
-        await taskTable_.SetTaskCanceledAsync(taskData_,
-                                              CancellationToken.None)
-                        .ConfigureAwait(false);
-
-        await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                         resultTable_,
-                                                         new[]
-                                                         {
-                                                           messageHandler_.TaskId,
-                                                         },
-                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}",
-                                                         CancellationToken.None)
-                                   .ConfigureAwait(false);
-
-        // Propagate cancelled status to TaskHandler
-        taskData_ = taskData_ with
-                    {
-                      Status = TaskStatus.Cancelled,
-                    };
-
-        return AcquisitionStatus.SessionNotExecutable;
-      }
-
-      if (sessionData_.Status == SessionStatus.Paused)
-      {
-        logger_.LogDebug("Session paused; message deleted");
-        messageHandler_.Status = QueueMessageStatus.Processed;
-        return AcquisitionStatus.SessionPaused;
       }
 
       if (earlyCts_.IsCancellationRequested)
