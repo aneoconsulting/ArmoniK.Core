@@ -581,7 +581,7 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.TaskIsCancelling,
+    Assert.AreEqual(AcquisitionStatus.SessionNotExecutable,
                     acquired);
     Assert.AreEqual(taskId,
                     testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
