@@ -39,7 +39,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -199,22 +198,9 @@ public static class Program
                           });
 
       app.MapGet("/taskprocessing",
-                 async () =>
-                 {
-                   var pollster  = app.Services.GetRequiredService<Common.Pollster.Pollster>();
-                   var exManager = app.Services.GetRequiredService<ExceptionManager>();
-
-                   var check = await pollster.Check(HealthCheckTag.Liveness)
-                                             .ConfigureAwait(false);
-
-                   if (check.Status == HealthStatus.Unhealthy || exManager.LateCancellationToken.IsCancellationRequested)
-                   {
-                     return "";
-                   }
-
-                   return string.Join(",",
-                                      pollster.TaskProcessing);
-                 });
+                 () => string.Join(",",
+                                   app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                      .TaskProcessing));
 
       app.MapGet("/stopcancelledtask",
                  () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
