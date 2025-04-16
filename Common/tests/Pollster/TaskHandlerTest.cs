@@ -804,7 +804,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingElsewhere,
                                                                         TaskStatus.Processing,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Processing task on another agent check true");
 
       yield return new TestCaseData(taskData with
@@ -813,7 +813,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingHere,
                                                                         TaskStatus.Processing,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Processing task same agent");
 
       // 12 is already tested
@@ -846,7 +846,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
                                                                         TaskStatus.Submitted,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Submitted task with another owner");
 
       yield return new TestCaseData(taskData with
@@ -856,7 +856,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
                                                                         TaskStatus.Dispatched,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Dispatched different owner");
 
       yield return new TestCaseData(taskData with
@@ -866,7 +866,7 @@ public class TaskHandlerTest
                                     },
                                     false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
                                                                          TaskStatus.Retried,
-                                                                         QueueMessageStatus.Processed))
+                                                                         QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check");
 
       yield return new TestCaseData(taskData with
@@ -877,7 +877,7 @@ public class TaskHandlerTest
                                     },
                                     false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
                                                                          TaskStatus.Retried,
-                                                                         QueueMessageStatus.Processed))
+                                                                         QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check date before");
 
       yield return new TestCaseData(taskData with
@@ -886,7 +886,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedProcessingHere,
                                                                         TaskStatus.Submitted,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Submitted task with same owner");
 
 

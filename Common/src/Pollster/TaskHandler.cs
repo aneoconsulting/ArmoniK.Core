@@ -57,6 +57,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
   private readonly CancellationTokenSource               lateCts_;
   private readonly ILogger                               logger_;
+  private readonly TimeSpan                              messageDuplicationDelay_;
   private readonly IQueueMessageHandler                  messageHandler_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
@@ -68,6 +69,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly string                                token_;
   private readonly IWorkerStreamHandler                  workerStreamHandler_;
   private          IAgent?                               agent_;
+  private          TimeSpan?                             delayMessage_;
   private          DateTime?                             fetchedDate_;
   private          Action?                               onDispose_;
   private          Output?                               output_;
@@ -129,7 +131,8 @@ public sealed class TaskHandler : IAsyncDisposable
     folder_ = Path.Combine(pollsterOptions.SharedCacheFolder,
                            token_);
     Directory.CreateDirectory(folder_);
-    delayBeforeAcquisition_ = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
+    delayBeforeAcquisition_  = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
+    messageDuplicationDelay_ = pollsterOptions.MessageDuplicationDelay;
 
     earlyCts_ = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.EarlyCancellationToken);
     lateCts_  = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.LateCancellationToken);
@@ -183,8 +186,34 @@ public sealed class TaskHandler : IAsyncDisposable
 
     logger_.LogDebug("MessageHandler status is {Status}",
                      messageHandler_.Status);
-    await messageHandler_.DisposeIgnoreErrorAsync(logger_)
-                         .ConfigureAwait(false);
+
+    if (delayMessage_ is not null)
+    {
+      logger_.LogDebug("MessageHandler will be delayed for {MessageDelay} with status {Status}",
+                       delayMessage_,
+                       messageHandler_.Status);
+
+      _ = Task.Run(async () =>
+                   {
+                     await Task.Delay(delayMessage_.Value)
+                               .ConfigureAwait(false);
+
+                     using var _ = logger_.BeginNamedScope("DelayedReleaseTaskHandler",
+                                                           ("taskId", messageHandler_.TaskId),
+                                                           ("messageHandler", messageHandler_.MessageId),
+                                                           ("sessionId", taskData_?.SessionId ?? ""));
+
+                     logger_.LogDebug("MessageHandler is released after delay with status {Status}",
+                                      messageHandler_.Status);
+                     await messageHandler_.DisposeIgnoreErrorAsync(logger_)
+                                          .ConfigureAwait(false);
+                   });
+    }
+    else
+    {
+      await messageHandler_.DisposeIgnoreErrorAsync(logger_)
+                           .ConfigureAwait(false);
+    }
   }
 
   /// <summary>
@@ -452,13 +481,25 @@ public sealed class TaskHandler : IAsyncDisposable
             // task is processing elsewhere so message is duplicated
             else
             {
-              messageHandler_.Status = QueueMessageStatus.Processed;
+              // if the task is running elsewhere, we delayed the release of the message to let time
+              // for the other pod to either complete the task, or finish crashing.
+              // If the other pod is still processing the task the next time, it will loop on this check
+              // until the pod finishes or crashes.
+              logger_.LogInformation("Task {taskId} is still processing by {OtherOwnerPodId}, delay the requeue of the message for {MessageDelay}",
+                                     taskData_.TaskId,
+                                     taskData_.OwnerPodId,
+                                     messageDuplicationDelay_);
+              delayMessage_          = messageDuplicationDelay_;
+              messageHandler_.Status = QueueMessageStatus.Postponed;
               return AcquisitionStatus.TaskIsProcessingElsewhere;
             }
           }
 
-          logger_.LogWarning("Task already in processing on this pod. This scenario should be managed earlier. Message likely duplicated. Removing it from queue");
-          messageHandler_.Status = QueueMessageStatus.Processed;
+          logger_.LogInformation("Task {taskId} is still processing on this pod, delay the requeue of the message for {MessageDelay}",
+                                 taskData_.TaskId,
+                                 messageDuplicationDelay_);
+          delayMessage_          = messageDuplicationDelay_;
+          messageHandler_.Status = QueueMessageStatus.Postponed;
           return AcquisitionStatus.TaskIsProcessingHere;
         case TaskStatus.Retried:
           logger_.LogInformation("Task is in retry ; retry task should be executed");
@@ -649,6 +690,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
           if (taskData_.Status is TaskStatus.Dispatched && taskData_.AcquisitionDate + delayBeforeAcquisition_ > DateTime.UtcNow)
           {
+            delayMessage_          = taskData_.AcquisitionDate + delayBeforeAcquisition_ - DateTime.UtcNow;
             messageHandler_.Status = QueueMessageStatus.Postponed;
             logger_.LogDebug("Wait to exceed acquisition timeout before resubmitting task");
             return AcquisitionStatus.AcquisitionFailedTimeoutNotExceeded;
@@ -700,16 +742,26 @@ public sealed class TaskHandler : IAsyncDisposable
           }
         }
 
-        // if the task is running elsewhere, then the message is duplicated so we remove it from the queue
-        // and do not acquire the task
-        messageHandler_.Status = QueueMessageStatus.Processed;
+        // if the task is running elsewhere, we delayed the release of the message to let time
+        // for the other pod to either complete the task, or finish crashing.
+        // If the other pod is still processing the task the next time, it will loop on this check
+        // until the pod finishes or crashes.
+        logger_.LogInformation("Task {taskId} is still processing by {OtherOwnerPodId}, delay the requeue of the message for {MessageDelay}",
+                               taskData_.TaskId,
+                               taskData_.OwnerPodId,
+                               messageDuplicationDelay_);
+        delayMessage_          = messageDuplicationDelay_;
+        messageHandler_.Status = QueueMessageStatus.Postponed;
         return AcquisitionStatus.AcquisitionFailedMessageDuplicated;
       }
 
       if (taskData_.OwnerPodId == ownerPodId_ && taskData_.Status != TaskStatus.Dispatched)
       {
-        logger_.LogInformation("Task is already managed by this agent; message likely to be duplicated");
-        messageHandler_.Status = QueueMessageStatus.Processed;
+        logger_.LogInformation("Task {taskId} is still processing on this pod, delay the requeue of the message for {MessageDelay}",
+                               taskData_.TaskId,
+                               messageDuplicationDelay_);
+        delayMessage_          = messageDuplicationDelay_;
+        messageHandler_.Status = QueueMessageStatus.Postponed;
         return AcquisitionStatus.AcquisitionFailedProcessingHere;
       }
 
