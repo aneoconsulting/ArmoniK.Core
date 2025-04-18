@@ -159,6 +159,12 @@ public enum AcquisitionStatus
   AcquisitionFailedProcessingHere,
 
   /// <summary>
+  ///   Task acquisition failed and task status is <see cref="TaskStatus.Processing" /> but the other pod does not seem to be
+  ///   processing it
+  /// </summary>
+  AcquisitionFailedProcessingCrashed,
+
+  /// <summary>
   ///   Task not acquired because cancellation token triggered precondition are ok
   /// </summary>
   CancelledAfterPreconditions,

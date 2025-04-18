@@ -172,6 +172,8 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),
+                                                     provider.GetRequiredService<IPushQueueStorage>(),
+                                                     provider.GetRequiredService<IObjectStorage>(),
                                                      provider.GetRequiredService<ISubmitter>(),
                                                      provider.GetRequiredService<DataPrefetcher>(),
                                                      workerStreamHandler,
@@ -183,6 +185,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                      agentHandler,
                                                      provider.GetRequiredService<ILogger>(),
                                                      provider.GetRequiredService<Injection.Options.Pollster>(),
+                                                     provider.GetRequiredService<Injection.Options.Submitter>(),
                                                      () =>
                                                      {
                                                      },
