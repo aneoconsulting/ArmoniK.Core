@@ -155,6 +155,7 @@ public static class ResultTableExtensions
   /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
   public static async Task CompleteManyResults(this IResultTable                                          resultTable,
                                                ICollection<(string resultId, long size, byte[] opaqueId)> results,
+                                               string                                                     completedBy,
                                                CancellationToken                                          cancellationToken = default)
   {
     if (results.Count == 0)
@@ -169,6 +170,8 @@ public static class ResultTableExtensions
                                                                                                             r.opaqueId)
                                                                                                        .Set(result => result.Size,
                                                                                                             r.size)
+                                                                                                       .Set(result => result.CompletedBy,
+                                                                                                            completedBy)
                                                                                                        .Set(result => result.CompletionDate,
                                                                                                             now))),
                                         cancellationToken)
@@ -202,6 +205,8 @@ public static class ResultTableExtensions
                                                                                        size)
                                                                                   .Set(result => result.OpaqueId,
                                                                                        opaqueId)
+                                                                                  .Set(result => result.CompletedBy,
+                                                                                       ownerTaskId)
                                                                                   .Set(result => result.CompletionDate,
                                                                                        DateTime.UtcNow),
                                                     cancellationToken)

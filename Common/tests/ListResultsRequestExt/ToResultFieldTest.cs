@@ -34,6 +34,7 @@ public class ToResultFieldTest
                                               "ResultId",
                                               "Name",
                                               "CreatedBy",
+                                              "CompletedBy",
                                               "OwnerTaskId",
                                               ResultStatus.Created,
                                               new List<string>(),
