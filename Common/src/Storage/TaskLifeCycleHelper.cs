@@ -779,4 +779,87 @@ public static class TaskLifeCycleHelper
         throw new ArgumentOutOfRangeException();
     }
   }
+
+  public static async Task<TaskStatus> HandleTaskCrashedWhileProcessing(ITaskTable        taskTable,
+                                                                        IResultTable      resultTable,
+                                                                        IObjectStorage    objectStorage,
+                                                                        IPushQueueStorage pushQueueStorage,
+                                                                        Submitter         options,
+                                                                        SessionData       sessionData,
+                                                                        TaskData          taskData,
+                                                                        ILogger           logger,
+                                                                        CancellationToken cancellationToken)
+  {
+    var subtasks = await taskTable.FindTasksAsync(td => td.CreatedBy == taskData.TaskId && td.InitialTaskId == td.TaskId,
+                                                  td => new
+                                                        {
+                                                          td.TaskId,
+                                                          td.Status,
+                                                          td.PayloadId,
+                                                          td.Options,
+                                                          td.ExpectedOutputIds,
+                                                          td.DataDependencies,
+                                                        },
+                                                  cancellationToken)
+                                  .ToListAsync(cancellationToken)
+                                  .ConfigureAwait(false);
+
+    if (subtasks.All(td => td.Status is TaskStatus.Creating or TaskStatus.Pending))
+    {
+      logger.LogDebug("Resubmitting task {task} on another pod, and cancel subtasks",
+                      taskData.TaskId);
+      await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
+                                      cancellationToken)
+                     .ConfigureAwait(false);
+
+      await CompleteTaskAsync(taskTable,
+                              resultTable,
+                              objectStorage,
+                              pushQueueStorage,
+                              options,
+                              taskData,
+                              sessionData,
+                              true,
+                              new Output(OutputStatus.Error,
+                                         "Other pod seems to have crashed, resubmitting task"),
+                              logger,
+                              CancellationToken.None)
+        .ConfigureAwait(false);
+
+      return taskData.RetryOfIds.Count < taskData.Options.MaxRetries
+               ? TaskStatus.Retried
+               : TaskStatus.Error;
+    }
+
+    var results = await resultTable.GetResults(r => r.CompletedBy == taskData.TaskId,
+                                               r => r.ResultId,
+                                               cancellationToken)
+                                   .ToListAsync(cancellationToken)
+                                   .ConfigureAwait(false);
+
+    await FinalizeTaskCreation(taskTable,
+                               resultTable,
+                               pushQueueStorage,
+                               subtasks.ViewSelect(td => new TaskCreationRequest(td.TaskId,
+                                                                                 td.PayloadId,
+                                                                                 td.Options,
+                                                                                 td.ExpectedOutputIds,
+                                                                                 td.DataDependencies)),
+                               sessionData,
+                               taskData.TaskId,
+                               logger,
+                               cancellationToken)
+      .ConfigureAwait(false);
+
+    await ResolveDependencies(taskTable,
+                              resultTable,
+                              pushQueueStorage,
+                              sessionData,
+                              results,
+                              logger,
+                              cancellationToken)
+      .ConfigureAwait(false);
+
+    return TaskStatus.Completed;
+  }
 }
