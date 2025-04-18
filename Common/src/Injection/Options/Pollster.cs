@@ -73,4 +73,9 @@ public class Pollster
   ///   delays the message release to the queue.
   /// </summary>
   public TimeSpan MessageDuplicationDelay { get; set; } = TimeSpan.FromMinutes(2);
+
+  /// <summary>
+  ///   The delay after the agent has verified the other agent crashed before retrying the task.
+  /// </summary>
+  public TimeSpan ProcessingCrashedDelay { get; set; } = TimeSpan.FromSeconds(10);
 }

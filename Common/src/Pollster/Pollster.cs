@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2025. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -43,6 +43,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
@@ -67,10 +69,12 @@ public class Pollster : IInitializable
   private readonly Counter<int>                              pipeliningCounter_;
   private readonly Injection.Options.Pollster                pollsterOptions_;
   private readonly IPullQueueStorage                         pullQueueStorage_;
+  private readonly IPushQueueStorage                         pushQueueStorage_;
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
   private readonly ISessionTable                             sessionTable_;
   private readonly ISubmitter                                submitter_;
+  private readonly Submitter                                 submitterOptions_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
   private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
   private readonly ITaskTable                                taskTable_;
@@ -82,9 +86,11 @@ public class Pollster : IInitializable
   ///   Initializes a new instance of the <see cref="Pollster" /> class.
   /// </summary>
   /// <param name="pullQueueStorage">The storage service for pulling tasks from the queue.</param>
+  /// <param name="pushQueueStorage">The storage service for pushing tasks into the queue.</param>
   /// <param name="dataPrefetcher">The service to prefetch data needed for task execution.</param>
   /// <param name="options">Configuration options for the compute plane.</param>
   /// <param name="pollsterOptions">Specific options for the pollster behavior.</param>
+  /// <param name="submitterOptions">Specific options for the submitter behavior.</param>
   /// <param name="exceptionManager">Manager to handle and record exceptions.</param>
   /// <param name="activitySource">Source for activity tracking and tracing.</param>
   /// <param name="logger">Logger for the pollster.</param>
@@ -103,9 +109,11 @@ public class Pollster : IInitializable
   /// <param name="healthCheckRecord">Record for the health check of the application.</param>
   /// <exception cref="ArgumentOutOfRangeException">Thrown when message batch size is less than 1.</exception>
   public Pollster(IPullQueueStorage          pullQueueStorage,
+                  IPushQueueStorage          pushQueueStorage,
                   DataPrefetcher             dataPrefetcher,
                   ComputePlane               options,
                   Injection.Options.Pollster pollsterOptions,
+                  Submitter                  submitterOptions,
                   ExceptionManager           exceptionManager,
                   ActivitySource             activitySource,
                   ILogger<Pollster>          logger,
@@ -133,6 +141,7 @@ public class Pollster : IInitializable
     loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;
     pullQueueStorage_      = pullQueueStorage;
+    pushQueueStorage_      = pushQueueStorage;
     exceptionManager_      = exceptionManager;
     dataPrefetcher_        = dataPrefetcher;
     pollsterOptions_       = pollsterOptions;
@@ -147,6 +156,7 @@ public class Pollster : IInitializable
     agentHandler_          = agentHandler;
     runningTaskQueue_      = runningTaskQueue;
     meterHolder_           = meterHolder;
+    submitterOptions_      = submitterOptions;
     healthCheckRecord_     = healthCheckRecord;
     ownerPodId_            = identifier.OwnerPodId;
     ownerPodName_          = identifier.OwnerPodName;
@@ -342,6 +352,8 @@ public class Pollster : IInitializable
             var taskHandler = new TaskHandler(sessionTable_,
                                               taskTable_,
                                               resultTable_,
+                                              pushQueueStorage_,
+                                              objectStorage_,
                                               submitter_,
                                               dataPrefetcher_,
                                               workerStreamHandler_,
@@ -353,6 +365,7 @@ public class Pollster : IInitializable
                                               agentHandler_,
                                               taskHandlerLogger,
                                               pollsterOptions_,
+                                              submitterOptions_,
                                               () =>
                                               {
                                                 taskProcessingDict_.TryRemove(message.TaskId,
