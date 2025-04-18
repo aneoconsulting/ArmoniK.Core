@@ -80,6 +80,7 @@ internal class BsonSerializerTest
                          "ResultId",
                          "Name",
                          "CreatedBy",
+                         "CompletedBy",
                          "OwnerTaskId",
                          ResultStatus.Completed,
                          new List<string>

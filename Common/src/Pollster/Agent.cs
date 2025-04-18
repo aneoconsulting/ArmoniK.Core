@@ -130,6 +130,7 @@ public sealed class Agent : IAgent
                               .ConfigureAwait(false);
 
     await resultTable_.CompleteManyResults(resultsToComplete.ViewSelect(pair => (pair.Key, pair.Value.size, pair.Value.id)),
+                                           taskData_.TaskId,
                                            cancellationToken)
                       .ConfigureAwait(false);
 
@@ -313,6 +314,7 @@ public sealed class Agent : IAgent
                                                        tuple.request.Name,
                                                        taskData_.TaskId,
                                                        "",
+                                                       "",
                                                        ResultStatus.Created,
                                                        new List<string>(),
                                                        now,
@@ -350,6 +352,7 @@ public sealed class Agent : IAgent
                                                             .ToString(),
                                                         request.Name,
                                                         taskData_.TaskId,
+                                                        "",
                                                         "",
                                                         ResultStatus.Created,
                                                         new List<string>(),
