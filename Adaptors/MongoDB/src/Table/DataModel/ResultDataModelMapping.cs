@@ -42,6 +42,9 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.CreatedBy))
                                                 .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.CompletedBy))
+                                                .SetIsRequired(false)
+                                                .SetDefaultValue("");
                                               cm.MapProperty(nameof(Result.OwnerTaskId))
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Status))
@@ -67,6 +70,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                                                 model.ResultId,
                                                                                 model.Name,
                                                                                 model.CreatedBy,
+                                                                                model.CompletedBy,
                                                                                 model.OwnerTaskId,
                                                                                 model.Status,
                                                                                 model.DependentTasks,
@@ -92,6 +96,8 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
     var indexModels = new[]
                       {
                         IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.CreatedBy),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.CompletedBy),
                         IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
                         IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
                                                                  expireAfter: options.DataRetention),

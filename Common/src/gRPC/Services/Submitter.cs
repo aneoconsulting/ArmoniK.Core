@@ -475,6 +475,9 @@ public class Submitter : ISubmitter
                                                              parentTaskId.Equals(sessionId)
                                                                ? ""
                                                                : parentTaskId,
+                                                             parentTaskId.Equals(sessionId)
+                                                               ? ""
+                                                               : parentTaskId,
                                                              parentTaskId,
                                                              ResultStatus.Completed,
                                                              new List<string>(),
