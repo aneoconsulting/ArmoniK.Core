@@ -1828,6 +1828,75 @@ public class TaskHandlerTest
   }
 
   [Test]
+  public async Task ExecuteTaskCancellationToken([Values] bool rpc)
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    Exception exception = new OperationCanceledException();
+    if (rpc)
+    {
+      exception = new RpcException(new Status(StatusCode.Cancelled,
+                                              "Cancelled",
+                                              exception));
+    }
+
+    var mock = new Mock<IWorkerStreamHandler>();
+    mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<CancellationToken>()))
+        .Returns(() => Task.FromException<Output>(exception));
+    mock.Setup(handler => handler.Check(It.IsAny<HealthCheckTag>()))
+        .Returns(() => Task.FromResult(HealthCheckResult.Healthy()));
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(mock.Object,
+                                                                agentHandler,
+                                                                sqmh);
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    // Trigger early and later cancellation tokens
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.That(() => testServiceProvider.TaskHandler.ExecuteTask(),
+                Throws.InstanceOf(exception.GetType()));
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(taskData.Status,
+                                  Is.EqualTo(TaskStatus.Submitted));
+                      Assert.That(sqmh.Status,
+                                  Is.EqualTo(QueueMessageStatus.Postponed));
+                    });
+  }
+
+  [Test]
   public async Task ExecuteTaskUntilErrorShouldSucceed()
   {
     var sqmh = new SimpleQueueMessageHandler
