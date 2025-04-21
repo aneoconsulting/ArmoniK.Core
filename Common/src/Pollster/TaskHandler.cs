@@ -1015,7 +1015,7 @@ public sealed class TaskHandler : IAsyncDisposable
                   };
       await HandleErrorResubmitAsync(e,
                                      taskData_,
-                                     earlyCts_.Token)
+                                     lateCts_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -1122,7 +1122,10 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
-    else if (cancellationToken.IsCancellationRequested && e is OperationCanceledException)
+    else if (cancellationToken.IsCancellationRequested && e is OperationCanceledException or RpcException
+                                                                                             {
+                                                                                               InnerException: OperationCanceledException,
+                                                                                             })
     {
       logger_.LogWarning(e,
                          "Cancellation triggered, task cancelled here and re executed elsewhere");
