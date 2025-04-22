@@ -1122,13 +1122,21 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
-    else if (cancellationToken.IsCancellationRequested && e is OperationCanceledException or RpcException
-                                                                                             {
-                                                                                               InnerException: OperationCanceledException,
-                                                                                             })
+    else if (e is OperationCanceledException or RpcException
+                                                {
+                                                  InnerException: OperationCanceledException,
+                                                })
     {
-      logger_.LogWarning(e,
-                         "Cancellation triggered, task cancelled here and re executed elsewhere");
+      if (cancellationToken.IsCancellationRequested)
+      {
+        logger_.LogWarning(e,
+                           "Cancellation triggered, task cancelled here and re executed elsewhere");
+      }
+      else
+      {
+        logger_.LogError(e,
+                         "Task cancelled here and re executed elsewhere, but cancellation was not requested");
+      }
 
       await ReleaseAndPostponeTask()
         .ConfigureAwait(false);
