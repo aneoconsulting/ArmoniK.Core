@@ -194,6 +194,7 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
+           .AddSingleton<HealthCheckRecord>()
            .AddSingleton(workerStreamHandler)
            .AddSingleton(agentHandler)
            .AddSingleton(pullQueueStorage);

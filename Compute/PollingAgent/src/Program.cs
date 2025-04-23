@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
@@ -39,6 +40,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -111,6 +113,8 @@ public static class Program
              .AddSingleton(new ExceptionManager.Options(pollsterOptions.GraceDelay,
                                                         pollsterOptions.MaxErrorAllowed))
              .AddSingleton<ExceptionManager>()
+             .AddSingleton<HealthCheckRecord>()
+             .AddSingleton<IHealthCheckPublisher, HealthCheckRecord.Publisher>()
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<MeterHolder>()
