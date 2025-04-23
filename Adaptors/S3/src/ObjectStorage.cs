@@ -103,38 +103,11 @@ public class ObjectStorage : IObjectStorage
     var key                   = Encoding.UTF8.GetString(id);
     var objectStorageFullName = $"{objectStorageName_}{key}";
 
-    try
-    {
-      await s3Client_.GetObjectAsync(options_.BucketName,
-                                     objectStorageFullName,
-                                     cancellationToken)
-                     .ConfigureAwait(false);
-    }
-    catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
-    {
-      logger_.LogError("The key {Key} was not found",
-                       key);
-      throw new ObjectDataNotFoundException("Key not found");
-    }
+    using var objectResponse = await GetObjectStream(objectStorageFullName,
+                                                     cancellationToken)
+                                 .ConfigureAwait(false);
 
-    var metaDataRequest = new GetObjectMetadataRequest
-                          {
-                            Key        = objectStorageFullName,
-                            BucketName = options_.BucketName,
-                          };
-    var objectMetaData = await s3Client_.GetObjectMetadataAsync(metaDataRequest,
-                                                                cancellationToken)
-                                        .ConfigureAwait(false);
-    var contentLength = objectMetaData.ContentLength;
-
-    var getObjectRequest = new GetObjectRequest
-                           {
-                             BucketName = options_.BucketName,
-                             Key        = objectStorageFullName,
-                           };
-    var objectResponse = await s3Client_.GetObjectAsync(getObjectRequest,
-                                                        cancellationToken)
-                                        .ConfigureAwait(false);
+    var  contentLength  = objectResponse.ContentLength;
     var  responseStream = objectResponse.ResponseStream;
     long totalBytesRead = 0;
     while (totalBytesRead < contentLength)
@@ -248,6 +221,54 @@ public class ObjectStorage : IObjectStorage
                                    tuple => tuple.Item2,
                                    cancellationToken)
                 .ConfigureAwait(false);
+
+  private async Task<GetObjectResponse> GetObjectStream(string            key,
+                                                        CancellationToken cancellationToken)
+  {
+    var getObjectRequest = new GetObjectRequest
+                           {
+                             BucketName = options_.BucketName,
+                             Key        = key,
+                           };
+
+    for (var retryCount = 0; retryCount < options_.MaxRetry; retryCount++)
+    {
+      try
+      {
+        return await s3Client_.GetObjectAsync(getObjectRequest,
+                                              cancellationToken)
+                              .ConfigureAwait(false);
+      }
+      catch (AmazonS3Exception ex) when (ex.ErrorCode == "NoSuchKey")
+      {
+        logger_.LogError("The key {Key} was not found",
+                         key);
+        throw new ObjectDataNotFoundException("Key not found");
+      }
+      catch (AmazonS3Exception ex)
+      {
+        if (retryCount + 1 >= options_.MaxRetry)
+        {
+          logger_.LogError(ex,
+                           "A AmazonS3Exception occurred {RetryCount} times for the same action",
+                           options_.MaxRetry);
+          throw;
+        }
+
+        var retryDelay = (retryCount + 1) * (retryCount + 1) * options_.MsAfterRetry;
+        logger_.LogWarning(ex,
+                           "A AmazonS3Exception occurred {RetryCount}/{MaxRetry}, retry in {RetryDelay} ms",
+                           retryCount,
+                           options_.MaxRetry,
+                           retryDelay);
+        await Task.Delay(retryDelay,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
+    }
+
+    throw new AmazonS3Exception("A AmazonS3Exception occurred");
+  }
 
   private async Task<long?> GetSizeAsync(byte[]            id,
                                          CancellationToken cancellationToken)

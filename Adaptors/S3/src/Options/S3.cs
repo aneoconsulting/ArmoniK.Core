@@ -48,6 +48,16 @@ public class S3
   public bool UseChecksum { get; set; } = true;
 
   /// <summary>
+  ///   Number of retry in case of a connection error
+  /// </summary>
+  public int MaxRetry { get; set; } = 5;
+
+  /// <summary>
+  ///   Delay in milliseconds after an error
+  /// </summary>
+  public int MsAfterRetry { get; set; } = 500;
+
+  /// <summary>
   ///   Get a copy of the options with confidential fields removed
   /// </summary>
   /// <returns>Confidential copy</returns>
