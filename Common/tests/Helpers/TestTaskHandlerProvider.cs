@@ -169,6 +169,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<ExceptionManager.Options>()
            .AddSingleton<ExceptionManager>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
+           .AddSingleton<HealthCheckRecord>()
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),
@@ -187,7 +188,8 @@ public class TestTaskHandlerProvider : IDisposable
                                                      {
                                                      },
                                                      provider.GetRequiredService<ExceptionManager>(),
-                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
+                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>(),
+                                                     provider.GetRequiredService<HealthCheckRecord>()))
            .AddSingleton<DataPrefetcher>();
 
     if (taskProcessingChecker is not null)
