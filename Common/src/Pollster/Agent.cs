@@ -117,6 +117,8 @@ public sealed class Agent : IAgent
 
     logger_.LogDebug("Create and populate results and submit child tasks");
 
+    ResultSanityCheck();
+
     var createdResults = createdResults_.SelectMany(x => x)
                                         .AsICollection();
     var createdTasks = createdTasks_.SelectMany(x => x)
@@ -157,39 +159,7 @@ public sealed class Agent : IAgent
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
-
-
-    var subtaskOutputIds = createdTasks.SelectMany(task => task.ExpectedOutputKeys)
-                                       .ToHashSet();
-
-    var completedResultIds = resultsToComplete.Keys.ToHashSet();
-
-    var missingOutputIds = taskData_.ExpectedOutputIds.Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
-                                    .AsICollection();
-
-    var orphanIds = createdResults.Select(result => result.ResultId)
-                                  .Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
-                                  .AsICollection();
-
-
-    if (completedResultIds.Count == 0)
-    {
-      logger_.LogWarning("No result was completed");
-    }
-
-    if (missingOutputIds.Count > 0)
-    {
-      logger_.LogError("Expected output results were neither completed nor delegated to subtask: {@ResultIds}",
-                       missingOutputIds);
-    }
-
-    if (orphanIds.Count > 0)
-    {
-      logger_.LogError("New results were neither completed nor delegated to subtask: {@ResultIds}",
-                       orphanIds);
-    }
   }
-
 
   /// <inheritdoc />
   public void Dispose()
@@ -365,6 +335,47 @@ public sealed class Agent : IAgent
 
     createdResults_.Add(results);
     return Task.FromResult(results);
+  }
+
+  /// <summary>
+  ///   Check created and completed results, as well as created tasks to ensure
+  ///   all expected results were either produced or delegated.
+  /// </summary>
+  private void ResultSanityCheck()
+  {
+    var subtaskOutputIds = createdTasks_.SelectMany(x => x)
+                                        .SelectMany(task => task.ExpectedOutputKeys)
+                                        .ToHashSet();
+
+    var completedResultIds = resultsData_.SelectMany(x => x)
+                                         .Select(x => x.id)
+                                         .Concat(notifiedResults_.SelectMany(x => x))
+                                         .ToHashSet();
+
+    var missingOutputIds = taskData_.ExpectedOutputIds.Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                    .AsICollection();
+
+    var orphanIds = createdResults_.SelectMany(x => x)
+                                   .Select(result => result.ResultId)
+                                   .Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                   .AsICollection();
+
+    if (completedResultIds.Count == 0)
+    {
+      logger_.LogWarning("No result was completed");
+    }
+
+    if (missingOutputIds.Count > 0)
+    {
+      logger_.LogError("Expected output results were neither completed nor delegated to subtask: {@ResultIds}",
+                       missingOutputIds);
+    }
+
+    if (orphanIds.Count > 0)
+    {
+      logger_.LogError("New results were neither completed nor delegated to subtask: {@ResultIds}",
+                       orphanIds);
+    }
   }
 
   private async Task<Dictionary<string, (byte[] id, long size)>> StoreDataAsync(CancellationToken cancellationToken)

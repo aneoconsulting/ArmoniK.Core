@@ -792,14 +792,20 @@ public static class TaskLifeCycleHelper
                                                                         ILogger           logger,
                                                                         CancellationToken cancellationToken)
   {
+    logger.LogDebug("Other pod has crashed while processing {TaskId}. Wait {ProcessingCrashedDelay} to ensure crashing pod {OtherPodId} has finished what it was doing, and check subtasks status",
+                    taskData.TaskId,
+                    processingCrashedDelay,
+                    taskData.OwnerPodId);
+
     await Task.Delay(processingCrashedDelay,
                      cancellationToken)
               .ConfigureAwait(false);
 
-    logger.LogDebug("Other pod has crashed while processing {TaskId}. Waited {ProcessingCrashedDelay} to ensure crashing pod {OtherPodId} has finished what it was doing, and check subtasks status",
-                    taskData.TaskId,
-                    processingCrashedDelay,
-                    taskData.OwnerPodId);
+    var resultTask = new AsyncLazy<List<string>>(() => resultTable.GetResults(r => r.CompletedBy == taskData.TaskId,
+                                                                              r => r.ResultId,
+                                                                              cancellationToken)
+                                                                  .ToListAsync(cancellationToken)
+                                                                  .AsTask());
 
     var subtasks = await taskTable.FindTasksAsync(td => td.CreatedBy == taskData.TaskId && td.InitialTaskId == td.TaskId,
                                                   td => new
@@ -815,73 +821,99 @@ public static class TaskLifeCycleHelper
                                   .ToListAsync(cancellationToken)
                                   .ConfigureAwait(false);
 
-    // If there is no subtask or they are all in creating, we are guaranteed that no subtask has started,
-    // So we can safely cancel the subtasks, and retry the current task.
-    if (subtasks.All(td => td.Status is TaskStatus.Creating))
+    if (logger.IsEnabled(LogLevel.Debug))
     {
-      logger.LogInformation("Resubmitting task {TaskId} on another pod, and cancel subtasks",
-                            taskData.TaskId);
-      await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
-                                      cancellationToken)
-                     .ConfigureAwait(false);
-
-      await CompleteTaskAsync(taskTable,
-                              resultTable,
-                              objectStorage,
-                              pushQueueStorage,
-                              options,
-                              taskData,
-                              sessionData,
-                              true,
-                              new Output(OutputStatus.Error,
-                                         "Other pod seems to have crashed, resubmitting task"),
-                              logger,
-                              cancellationToken)
-        .ConfigureAwait(false);
-
-      return taskData.RetryOfIds.Count < taskData.Options.MaxRetries
-               ? TaskStatus.Retried
-               : TaskStatus.Error;
+      logger.LogDebug("Task {TaskId} that was processing on {OtherPodId} created tasks {@Tasks} and completed results {@Results}",
+                      taskData.TaskId,
+                      taskData.OwnerPodId,
+                      subtasks,
+                      await resultTask);
     }
+
+    var    resubmit = true;
+    string errorMessage;
 
     // If at least one task is not creating, it means that it has potentially been submitted, and might have started.
     // It also means that we created all subtasks and completed all the results of the current task.
     // Therefore, we can safely finish the completion of the current task on behalf of the pod that has crashed.
-    logger.LogInformation("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
-                          taskData.TaskId);
+    if (subtasks.Any(td => td.Status is not TaskStatus.Creating))
+    {
+      logger.LogInformation("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
+                            taskData.TaskId);
 
-    var results = await resultTable.GetResults(r => r.CompletedBy == taskData.TaskId,
-                                               r => r.ResultId,
-                                               cancellationToken)
-                                   .ToListAsync(cancellationToken)
-                                   .ConfigureAwait(false);
+      try
+      {
+        var results = await resultTask;
 
-    // If a subtask is not Creating nor pending, it means that all ready subtasks were pushed to the queue.
-    // However, if a result has been completed in the meantime, its dependents would not have been pushed to the queue.
-    // So we need to go through all the FinalizeTaskCreation to submit all tasks that are ready.
-    await FinalizeTaskCreation(taskTable,
-                               resultTable,
-                               pushQueueStorage,
-                               subtasks.ViewSelect(td => new TaskCreationRequest(td.TaskId,
+        // If a subtask is not creating nor pending, it means that all ready subtasks were pushed to the queue.
+        // However, if a result has been completed in the meantime, its dependents would not have been pushed to the queue.
+        // So we need to go through all the FinalizeTaskCreation to submit all tasks that are ready.
+        await FinalizeTaskCreation(taskTable,
+                                   resultTable,
+                                   pushQueueStorage,
+                                   subtasks.Where(td => td.Status is TaskStatus.Creating or TaskStatus.Pending)
+                                           .Select(td => new TaskCreationRequest(td.TaskId,
                                                                                  td.PayloadId,
                                                                                  td.Options,
                                                                                  td.ExpectedOutputIds,
-                                                                                 td.DataDependencies)),
-                               sessionData,
-                               taskData.TaskId,
-                               logger,
-                               cancellationToken)
-      .ConfigureAwait(false);
+                                                                                 td.DataDependencies))
+                                           .AsICollection(),
+                                   sessionData,
+                                   taskData.TaskId,
+                                   logger,
+                                   cancellationToken)
+          .ConfigureAwait(false);
 
-    await ResolveDependencies(taskTable,
-                              resultTable,
-                              pushQueueStorage,
-                              sessionData,
-                              results,
-                              logger,
-                              cancellationToken)
-      .ConfigureAwait(false);
+        await ResolveDependencies(taskTable,
+                                  resultTable,
+                                  pushQueueStorage,
+                                  sessionData,
+                                  results,
+                                  logger,
+                                  cancellationToken)
+          .ConfigureAwait(false);
 
+
+        await CompleteTaskAsync(taskTable,
+                                resultTable,
+                                objectStorage,
+                                pushQueueStorage,
+                                options,
+                                taskData,
+                                sessionData,
+                                resubmit,
+                                new Output(OutputStatus.Success,
+                                           ""),
+                                logger,
+                                cancellationToken)
+          .ConfigureAwait(false);
+
+        return TaskStatus.Completed;
+      }
+      catch (Exception ex)
+      {
+        resubmit     = ex is not ObjectDataNotFoundException;
+        errorMessage = $"Post-processing error: {ex.Message}";
+
+        logger.LogError(ex,
+                        "Error while post-processing {TaskId} on behalf of previous pod {OtherPodId}",
+                        taskData.TaskId,
+                        taskData.OwnerPodId);
+      }
+    }
+    else
+    {
+      // If there is no subtask or they are all in creating, we are guaranteed that no subtask has started,
+      // So we can safely cancel the subtasks, and retry the current task.
+      errorMessage = "Other pod seems to have crashed, resubmitting task";
+
+      logger.LogInformation("Resubmitting task {TaskId} on another pod, and cancel subtasks",
+                            taskData.TaskId);
+    }
+
+    await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
+                                    cancellationToken)
+                   .ConfigureAwait(false);
 
     await CompleteTaskAsync(taskTable,
                             resultTable,
@@ -890,13 +922,15 @@ public static class TaskLifeCycleHelper
                             options,
                             taskData,
                             sessionData,
-                            true,
-                            new Output(OutputStatus.Success,
-                                       ""),
+                            resubmit,
+                            new Output(OutputStatus.Error,
+                                       errorMessage),
                             logger,
                             cancellationToken)
       .ConfigureAwait(false);
 
-    return TaskStatus.Completed;
+    return taskData.RetryOfIds.Count < taskData.Options.MaxRetries
+             ? TaskStatus.Retried
+             : TaskStatus.Error;
   }
 }
