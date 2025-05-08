@@ -1,24 +1,25 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -40,6 +41,7 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -55,15 +57,20 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly CancellationTokenSource               earlyCts_;
   private readonly string                                folder_;
   private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
+  private readonly HealthCheckRecord                     healthCheckRecord_;
   private readonly CancellationTokenSource               lateCts_;
   private readonly ILogger                               logger_;
   private readonly TimeSpan                              messageDuplicationDelay_;
   private readonly IQueueMessageHandler                  messageHandler_;
+  private readonly IObjectStorage                        objectStorage_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
+  private readonly TimeSpan                              processingCrashedDelay_;
+  private readonly IPushQueueStorage                     pushQueueStorage_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
   private readonly ISubmitter                            submitter_;
+  private readonly Submitter                             submitterOptions_;
   private readonly ITaskProcessingChecker                taskProcessingChecker_;
   private readonly ITaskTable                            taskTable_;
   private readonly string                                token_;
@@ -79,6 +86,8 @@ public sealed class TaskHandler : IAsyncDisposable
   public TaskHandler(ISessionTable                         sessionTable,
                      ITaskTable                            taskTable,
                      IResultTable                          resultTable,
+                     IPushQueueStorage                     pushQueueStorage,
+                     IObjectStorage                        objectStorage,
                      ISubmitter                            submitter,
                      DataPrefetcher                        dataPrefetcher,
                      IWorkerStreamHandler                  workerStreamHandler,
@@ -90,13 +99,17 @@ public sealed class TaskHandler : IAsyncDisposable
                      IAgentHandler                         agentHandler,
                      ILogger                               logger,
                      Injection.Options.Pollster            pollsterOptions,
+                     Submitter                             submitterOptions,
                      Action                                onDispose,
                      ExceptionManager                      exceptionManager,
-                     FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics)
+                     FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
+                     HealthCheckRecord                     healthCheckRecord)
   {
     sessionTable_             = sessionTable;
     taskTable_                = taskTable;
     resultTable_              = resultTable;
+    pushQueueStorage_         = pushQueueStorage;
+    objectStorage_            = objectStorage;
     messageHandler_           = messageHandler;
     taskProcessingChecker_    = taskProcessingChecker;
     submitter_                = submitter;
@@ -107,6 +120,8 @@ public sealed class TaskHandler : IAsyncDisposable
     logger_                   = logger;
     onDispose_                = onDispose;
     functionExecutionMetrics_ = functionExecutionMetrics;
+    healthCheckRecord_        = healthCheckRecord;
+    submitterOptions_         = submitterOptions;
     ownerPodId_               = ownerPodId;
     ownerPodName_             = ownerPodName;
     taskData_                 = null;
@@ -133,6 +148,7 @@ public sealed class TaskHandler : IAsyncDisposable
     Directory.CreateDirectory(folder_);
     delayBeforeAcquisition_  = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
     messageDuplicationDelay_ = pollsterOptions.MessageDuplicationDelay;
+    processingCrashedDelay_  = pollsterOptions.ProcessingCrashedDelay;
 
     earlyCts_ = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.EarlyCancellationToken);
     lateCts_  = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.LateCancellationToken);
@@ -499,22 +515,22 @@ public sealed class TaskHandler : IAsyncDisposable
 
               if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
               {
-                logger_.LogDebug("Resubmitting task {task} on another pod",
-                                 taskData_.TaskId);
-                await submitter_.CompleteTaskAsync(taskData_,
-                                                   sessionData_,
-                                                   true,
-                                                   new Output(OutputStatus.Error,
-                                                              "Other pod seems to have crashed, resubmitting task"),
-                                                   CancellationToken.None)
-                                .ConfigureAwait(false);
+                var status = await TaskLifeCycleHelper.HandleTaskCrashedWhileProcessing(taskTable_,
+                                                                                        resultTable_,
+                                                                                        objectStorage_,
+                                                                                        pushQueueStorage_,
+                                                                                        submitterOptions_,
+                                                                                        processingCrashedDelay_,
+                                                                                        sessionData_,
+                                                                                        taskData_,
+                                                                                        logger_,
+                                                                                        CancellationToken.None)
+                                                      .ConfigureAwait(false);
 
                 // Propagate retried status to TaskHandler
                 taskData_ = taskData_ with
                             {
-                              Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
-                                         ? TaskStatus.Retried
-                                         : TaskStatus.Error,
+                              Status = status,
                             };
 
                 messageHandler_.Status = QueueMessageStatus.Processed;
@@ -699,23 +715,25 @@ public sealed class TaskHandler : IAsyncDisposable
 
           if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
           {
-            logger_.LogDebug("Resubmitting task {task} on another pod",
-                             taskData_.TaskId);
-            await submitter_.CompleteTaskAsync(taskData_,
-                                               sessionData_,
-                                               true,
-                                               new Output(OutputStatus.Error,
-                                                          "Other pod seems to have crashed, resubmitting task"),
-                                               CancellationToken.None)
-                            .ConfigureAwait(false);
+            var status = await TaskLifeCycleHelper.HandleTaskCrashedWhileProcessing(taskTable_,
+                                                                                    resultTable_,
+                                                                                    objectStorage_,
+                                                                                    pushQueueStorage_,
+                                                                                    submitterOptions_,
+                                                                                    processingCrashedDelay_,
+                                                                                    sessionData_,
+                                                                                    taskData_,
+                                                                                    logger_,
+                                                                                    CancellationToken.None)
+                                                  .ConfigureAwait(false);
 
             // Propagate retried status to TaskHandler
             taskData_ = taskData_ with
                         {
-                          Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
-                                     ? TaskStatus.Retried
-                                     : TaskStatus.Error,
+                          Status = status,
                         };
+            messageHandler_.Status = QueueMessageStatus.Processed;
+            return AcquisitionStatus.AcquisitionFailedProcessingCrashed;
           }
 
 
@@ -1015,7 +1033,7 @@ public sealed class TaskHandler : IAsyncDisposable
                   };
       await HandleErrorResubmitAsync(e,
                                      taskData_,
-                                     earlyCts_.Token)
+                                     lateCts_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -1122,13 +1140,58 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
-    else if (cancellationToken.IsCancellationRequested && e is OperationCanceledException)
+    else if (e is OperationCanceledException or RpcException
+                                                {
+                                                  InnerException: OperationCanceledException,
+                                                })
     {
-      logger_.LogWarning(e,
-                         "Cancellation triggered, task cancelled here and re executed elsewhere");
+      var report = healthCheckRecord_.LastCheck();
 
-      await ReleaseAndPostponeTask()
-        .ConfigureAwait(false);
+      logger_.LogDebug(e,
+                       "Cancellation detected {CancellationRequested}, agent health is {@HealthReport}",
+                       cancellationToken.IsCancellationRequested,
+                       report.Entries.Select(kv => new KeyValuePair<string, HealthStatus>(kv.Key,
+                                                                                          kv.Value.Status))
+                             .ToDictionary());
+
+
+      if (report.Status is HealthStatus.Healthy)
+      {
+        if (cancellationToken.IsCancellationRequested)
+        {
+          logger_.LogWarning(e,
+                             "Cancellation triggered, task cancelled here and re executed elsewhere");
+        }
+        else
+        {
+          logger_.LogError(e,
+                           "Task cancelled here and re executed elsewhere, but cancellation was not requested");
+        }
+
+        await ReleaseAndPostponeTask()
+          .ConfigureAwait(false);
+      }
+      else
+      {
+        logger_.LogError(e,
+                         "Agent is stopping while unhealthy: {@HealthReport}",
+                         report.Entries.Select(kv => new KeyValuePair<string, HealthStatus>(kv.Key,
+                                                                                            kv.Value.Status))
+                               .ToDictionary());
+
+        await submitter_.CompleteTaskAsync(taskData,
+                                           sessionData_,
+                                           resubmit,
+                                           new Output(OutputStatus.Error,
+                                                      $"Agent is stopping while unhealthy: {report.Entries}"),
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+
+
+        messageHandler_.Status = resubmit
+                                   ? QueueMessageStatus.Cancelled
+                                   : QueueMessageStatus.Processed;
+      }
     }
     else
     {

@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -34,6 +34,7 @@ public class ToResultFieldTest
                                               "ResultId",
                                               "Name",
                                               "CreatedBy",
+                                              "CompletedBy",
                                               "OwnerTaskId",
                                               ResultStatus.Created,
                                               new List<string>(),
@@ -83,18 +84,18 @@ public class ToResultFieldTest
                                               object?        expected)
   {
     var func = new ListResultsRequest
+      {
+        Filters = new Filters(),
+        Sort = new ListResultsRequest.Types.Sort
                {
-                 Filters = new Filters(),
-                 Sort = new ListResultsRequest.Types.Sort
-                        {
-                          Field = new ResultField
-                                  {
-                                    ResultRawField = field,
-                                  },
-                          Direction = SortDirection.Asc,
-                        },
-               }.Sort.ToField()
-                .Compile();
+                 Field = new ResultField
+                         {
+                           ResultRawField = field,
+                         },
+                 Direction = SortDirection.Asc,
+               },
+      }.Sort.ToField()
+       .Compile();
 
     Assert.AreEqual(expected,
                     func.Invoke(Result));

@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -42,6 +42,9 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.CreatedBy))
                                                 .SetIsRequired(true);
+                                              cm.MapProperty(nameof(Result.CompletedBy))
+                                                .SetIsRequired(false)
+                                                .SetDefaultValue("");
                                               cm.MapProperty(nameof(Result.OwnerTaskId))
                                                 .SetIsRequired(true);
                                               cm.MapProperty(nameof(Result.Status))
@@ -67,6 +70,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
                                                                                 model.ResultId,
                                                                                 model.Name,
                                                                                 model.CreatedBy,
+                                                                                model.CompletedBy,
                                                                                 model.OwnerTaskId,
                                                                                 model.Status,
                                                                                 model.DependentTasks,
@@ -92,6 +96,8 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
     var indexModels = new[]
                       {
                         IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.CreatedBy),
+                        IndexHelper.CreateHashedIndex<Result>(model => model.CompletedBy),
                         IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
                         IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
                                                                  expireAfter: options.DataRetention),

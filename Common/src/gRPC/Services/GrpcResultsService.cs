@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -162,6 +162,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                           rc.Name,
                                                           "",
                                                           "",
+                                                          "",
                                                           ResultStatus.Created,
                                                           new List<string>(),
                                                           DateTime.UtcNow,
@@ -215,6 +216,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                                             resultId,
                                                                             rc.Name,
                                                                             "",
+                                                                            "",
                                                                             request.SessionId,
                                                                             ResultStatus.Created,
                                                                             new List<string>(),
@@ -232,6 +234,7 @@ public class GrpcResultsService : Results.ResultsBase
                       .ConfigureAwait(false);
 
     await resultTable_.CompleteManyResults(results.ViewSelect(tuple => (tuple.Item1.ResultId, tuple.Item1.Size, tuple.id)),
+                                           "",
                                            context.CancellationToken)
                       .ConfigureAwait(false);
 
@@ -540,6 +543,7 @@ public class GrpcResultsService : Results.ResultsBase
     }
 
     await resultTable_.CompleteManyResults(requests.ViewSelect(tuple => (tuple.Key, dict[tuple.Value]!.Value, tuple.Value)),
+                                           "",
                                            context.CancellationToken)
                       .ConfigureAwait(false);
 

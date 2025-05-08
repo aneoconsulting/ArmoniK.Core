@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -155,6 +155,7 @@ public static class ResultTableExtensions
   /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
   public static async Task CompleteManyResults(this IResultTable                                          resultTable,
                                                ICollection<(string resultId, long size, byte[] opaqueId)> results,
+                                               string                                                     completedBy,
                                                CancellationToken                                          cancellationToken = default)
   {
     if (results.Count == 0)
@@ -169,6 +170,8 @@ public static class ResultTableExtensions
                                                                                                             r.opaqueId)
                                                                                                        .Set(result => result.Size,
                                                                                                             r.size)
+                                                                                                       .Set(result => result.CompletedBy,
+                                                                                                            completedBy)
                                                                                                        .Set(result => result.CompletionDate,
                                                                                                             now))),
                                         cancellationToken)
@@ -202,6 +205,8 @@ public static class ResultTableExtensions
                                                                                        size)
                                                                                   .Set(result => result.OpaqueId,
                                                                                        opaqueId)
+                                                                                  .Set(result => result.CompletedBy,
+                                                                                       ownerTaskId)
                                                                                   .Set(result => result.CompletionDate,
                                                                                        DateTime.UtcNow),
                                                     cancellationToken)

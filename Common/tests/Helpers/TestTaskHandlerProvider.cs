@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -169,9 +169,12 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<ExceptionManager.Options>()
            .AddSingleton<ExceptionManager>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
+           .AddSingleton<HealthCheckRecord>()
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),
+                                                     provider.GetRequiredService<IPushQueueStorage>(),
+                                                     provider.GetRequiredService<IObjectStorage>(),
                                                      provider.GetRequiredService<ISubmitter>(),
                                                      provider.GetRequiredService<DataPrefetcher>(),
                                                      workerStreamHandler,
@@ -183,11 +186,13 @@ public class TestTaskHandlerProvider : IDisposable
                                                      agentHandler,
                                                      provider.GetRequiredService<ILogger>(),
                                                      provider.GetRequiredService<Injection.Options.Pollster>(),
+                                                     provider.GetRequiredService<Injection.Options.Submitter>(),
                                                      () =>
                                                      {
                                                      },
                                                      provider.GetRequiredService<ExceptionManager>(),
-                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
+                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>(),
+                                                     provider.GetRequiredService<HealthCheckRecord>()))
            .AddSingleton<DataPrefetcher>();
 
     if (taskProcessingChecker is not null)

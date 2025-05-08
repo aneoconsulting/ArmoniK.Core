@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Concurrent;
@@ -117,6 +117,8 @@ public sealed class Agent : IAgent
 
     logger_.LogDebug("Create and populate results and submit child tasks");
 
+    ResultSanityCheck();
+
     var createdResults = createdResults_.SelectMany(x => x)
                                         .AsICollection();
     var createdTasks = createdTasks_.SelectMany(x => x)
@@ -130,6 +132,7 @@ public sealed class Agent : IAgent
                               .ConfigureAwait(false);
 
     await resultTable_.CompleteManyResults(resultsToComplete.ViewSelect(pair => (pair.Key, pair.Value.size, pair.Value.id)),
+                                           taskData_.TaskId,
                                            cancellationToken)
                       .ConfigureAwait(false);
 
@@ -156,39 +159,7 @@ public sealed class Agent : IAgent
                                                   logger_,
                                                   cancellationToken)
                              .ConfigureAwait(false);
-
-
-    var subtaskOutputIds = createdTasks.SelectMany(task => task.ExpectedOutputKeys)
-                                       .ToHashSet();
-
-    var completedResultIds = resultsToComplete.Keys.ToHashSet();
-
-    var missingOutputIds = taskData_.ExpectedOutputIds.Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
-                                    .AsICollection();
-
-    var orphanIds = createdResults.Select(result => result.ResultId)
-                                  .Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
-                                  .AsICollection();
-
-
-    if (completedResultIds.Count == 0)
-    {
-      logger_.LogWarning("No result was completed");
-    }
-
-    if (missingOutputIds.Count > 0)
-    {
-      logger_.LogError("Expected output results were neither completed nor delegated to subtask: {@ResultIds}",
-                       missingOutputIds);
-    }
-
-    if (orphanIds.Count > 0)
-    {
-      logger_.LogError("New results were neither completed nor delegated to subtask: {@ResultIds}",
-                       orphanIds);
-    }
   }
-
 
   /// <inheritdoc />
   public void Dispose()
@@ -313,6 +284,7 @@ public sealed class Agent : IAgent
                                                        tuple.request.Name,
                                                        taskData_.TaskId,
                                                        "",
+                                                       "",
                                                        ResultStatus.Created,
                                                        new List<string>(),
                                                        now,
@@ -351,6 +323,7 @@ public sealed class Agent : IAgent
                                                         request.Name,
                                                         taskData_.TaskId,
                                                         "",
+                                                        "",
                                                         ResultStatus.Created,
                                                         new List<string>(),
                                                         DateTime.UtcNow,
@@ -362,6 +335,47 @@ public sealed class Agent : IAgent
 
     createdResults_.Add(results);
     return Task.FromResult(results);
+  }
+
+  /// <summary>
+  ///   Check created and completed results, as well as created tasks to ensure
+  ///   all expected results were either produced or delegated.
+  /// </summary>
+  private void ResultSanityCheck()
+  {
+    var subtaskOutputIds = createdTasks_.SelectMany(x => x)
+                                        .SelectMany(task => task.ExpectedOutputKeys)
+                                        .ToHashSet();
+
+    var completedResultIds = resultsData_.SelectMany(x => x)
+                                         .Select(x => x.id)
+                                         .Concat(notifiedResults_.SelectMany(x => x))
+                                         .ToHashSet();
+
+    var missingOutputIds = taskData_.ExpectedOutputIds.Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                    .AsICollection();
+
+    var orphanIds = createdResults_.SelectMany(x => x)
+                                   .Select(result => result.ResultId)
+                                   .Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                   .AsICollection();
+
+    if (completedResultIds.Count == 0)
+    {
+      logger_.LogWarning("No result was completed");
+    }
+
+    if (missingOutputIds.Count > 0)
+    {
+      logger_.LogError("Expected output results were neither completed nor delegated to subtask: {@ResultIds}",
+                       missingOutputIds);
+    }
+
+    if (orphanIds.Count > 0)
+    {
+      logger_.LogError("New results were neither completed nor delegated to subtask: {@ResultIds}",
+                       orphanIds);
+    }
   }
 
   private async Task<Dictionary<string, (byte[] id, long size)>> StoreDataAsync(CancellationToken cancellationToken)

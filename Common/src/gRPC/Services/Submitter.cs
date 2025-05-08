@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
@@ -475,6 +475,9 @@ public class Submitter : ISubmitter
                                                              parentTaskId.Equals(sessionId)
                                                                ? ""
                                                                : parentTaskId,
+                                                             parentTaskId.Equals(sessionId)
+                                                               ? ""
+                                                               : parentTaskId,
                                                              parentTaskId,
                                                              ResultStatus.Completed,
                                                              new List<string>(),
@@ -508,157 +511,18 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
 
-    var taskDataEnd = taskData with
-                      {
-                        EndDate = DateTime.UtcNow,
-                        CreationToEndDuration = DateTime.UtcNow   - taskData.CreationDate,
-                        ProcessingToEndDuration = DateTime.UtcNow - taskData.StartDate,
-                        ReceivedToEndDuration = DateTime.UtcNow   - taskData.ReceptionDate,
-                      };
-
-    switch (output.Status)
-    {
-      case OutputStatus.Success:
-        await taskTable_.SetTaskSuccessAsync(taskDataEnd,
-                                             cancellationToken)
-                        .ConfigureAwait(false);
-
-
-        if (submitterOptions_.DeletePayload)
-        {
-          var payloadData = await resultTable_.GetResult(taskData.PayloadId,
-                                                         CancellationToken.None)
-                                              .ConfigureAwait(false);
-
-          if (!payloadData.ManualDeletion)
-          {
-            //Discard value is used to remove warnings CS4014 !!
-            _ = Task.Factory.StartNew(async () =>
-                                      {
-                                        await objectStorage_.TryDeleteAsync(new[]
-                                                                            {
-                                                                              payloadData.OpaqueId,
-                                                                            },
-                                                                            CancellationToken.None)
-                                                            .ConfigureAwait(false);
-                                      },
-                                      cancellationToken);
-
-            await resultTable_.MarkAsDeleted(taskData.PayloadId,
-                                             CancellationToken.None)
-                              .ConfigureAwait(false);
-
-            logger_.LogInformation("Remove input payload of {task}",
-                                   taskData.TaskId);
-          }
-        }
-
-        break;
-      case OutputStatus.Error:
-        // TODO FIXME: nothing will resubmit the task if there is a crash there
-        if (resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries)
-        {
-          // not done means that another pod put this task in retry so we do not need to do it a second time
-          // so nothing to do
-          if (!await taskTable_.SetTaskRetryAsync(taskDataEnd,
-                                                  output.Error,
-                                                  cancellationToken)
-                               .ConfigureAwait(false))
-          {
-            return;
-          }
-
-          logger_.LogWarning("Resubmit {task}",
-                             taskData.TaskId);
-
-          var newTaskId = await taskTable_.RetryTask(taskData,
-                                                     cancellationToken)
-                                          .ConfigureAwait(false);
-
-          await FinalizeTaskCreation(new List<TaskCreationRequest>
-                                     {
-                                       new(newTaskId,
-                                           taskData.PayloadId,
-                                           taskData.Options,
-                                           taskData.ExpectedOutputIds,
-                                           taskData.DataDependencies),
-                                     },
-                                     sessionData,
-                                     taskData.TaskId,
-                                     cancellationToken)
-            .ConfigureAwait(false);
-        }
-        else
-        {
-          // not done means that another pod put this task in error so we do not need to do it a second time
-          // so nothing to do
-          if (!await taskTable_.SetTaskErrorAsync(taskDataEnd,
-                                                  output.Error,
-                                                  cancellationToken)
-                               .ConfigureAwait(false))
-          {
-            return;
-          }
-
-          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                           resultTable_,
-                                                           new[]
-                                                           {
-                                                             taskData.TaskId,
-                                                           },
-                                                           "One of the input data is aborted.",
-                                                           CancellationToken.None)
-                                     .ConfigureAwait(false);
-        }
-
-        break;
-      case OutputStatus.Timeout:
-        await taskTable_.SetTaskTimeoutAsync(taskDataEnd,
-                                             output,
-                                             cancellationToken)
-                        .ConfigureAwait(false);
-
-
-        var payloadData2 = await resultTable_.GetResult(taskData.PayloadId,
-                                                        CancellationToken.None)
-                                             .ConfigureAwait(false);
-
-        if (!payloadData2.ManualDeletion)
-        {
-          //Discard value is used to remove warnings CS4014 !!
-          _ = Task.Factory.StartNew(async () =>
-                                    {
-                                      await objectStorage_.TryDeleteAsync(new[]
-                                                                          {
-                                                                            payloadData2.OpaqueId,
-                                                                          },
-                                                                          CancellationToken.None)
-                                                          .ConfigureAwait(false);
-                                    },
-                                    cancellationToken);
-
-
-          logger_.LogInformation("Remove input payload of {task}",
-                                 taskData.TaskId);
-
-          await resultTable_.MarkAsDeleted(taskData.PayloadId,
-                                           CancellationToken.None)
-                            .ConfigureAwait(false);
-        }
-
-        await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                         resultTable_,
-                                                         new[]
-                                                         {
-                                                           taskData.TaskId,
-                                                         },
-                                                         "One of the dependent tasks timed out.",
-                                                         CancellationToken.None)
-                                   .ConfigureAwait(false);
-        break;
-      default:
-        throw new ArgumentOutOfRangeException();
-    }
+    await TaskLifeCycleHelper.CompleteTaskAsync(taskTable_,
+                                                resultTable_,
+                                                objectStorage_,
+                                                pushQueueStorage_,
+                                                submitterOptions_,
+                                                taskData,
+                                                sessionData,
+                                                resubmit,
+                                                output,
+                                                logger_,
+                                                cancellationToken)
+                             .ConfigureAwait(false);
   }
 
   /// <inheritdoc />

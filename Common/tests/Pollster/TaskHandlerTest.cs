@@ -1,19 +1,19 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR.All rights reserved.
 // 
-// This program is free software: you can redistribute it and/or modify
+// This program is free software:you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+// along with this program.If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections;
@@ -139,6 +139,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -148,6 +149,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "DataDep",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -163,6 +165,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -172,6 +175,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "ExpectedOutput2",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -187,6 +191,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -199,6 +204,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -208,6 +214,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "payload",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -362,6 +369,7 @@ public class TaskHandlerTest
                         "Payload1",
                         "",
                         "",
+                        "",
                         ResultStatus.Completed,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -373,6 +381,7 @@ public class TaskHandlerTest
                         Guid.NewGuid()
                             .ToString(),
                         "Result1",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -390,53 +399,43 @@ public class TaskHandlerTest
     var tasks = new List<TaskCreationRequest>
                 {
                   new("TaskRetry2",
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       options,
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
+                        results[1].ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+Creating",
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       options,
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
+                        results[1].ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+Submitted",
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       options,
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
+                        results[1].ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+NotFound",
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       options,
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
+                        results[1].ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+Pending",
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       options,
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
+                        results[1].ResultId,
                       },
                       new List<string>()),
                 };
@@ -1303,10 +1302,10 @@ public class TaskHandlerTest
                        cancellationToken)
                 .ConfigureAwait(false);
       var enumerable = new[]
-                       {
-                         sessionData_!,
-                       }.Select(selector.Compile())
-                        .ToAsyncEnumerable();
+        {
+          sessionData_!,
+        }.Select(selector.Compile())
+         .ToAsyncEnumerable();
 
       await foreach (var d in enumerable.ConfigureAwait(false))
       {
@@ -1825,6 +1824,75 @@ public class TaskHandlerTest
 
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);
+  }
+
+  [Test]
+  public async Task ExecuteTaskCancellationToken([Values] bool rpc)
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    Exception exception = new OperationCanceledException();
+    if (rpc)
+    {
+      exception = new RpcException(new Status(StatusCode.Cancelled,
+                                              "Cancelled",
+                                              exception));
+    }
+
+    var mock = new Mock<IWorkerStreamHandler>();
+    mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<CancellationToken>()))
+        .Returns(() => Task.FromException<Output>(exception));
+    mock.Setup(handler => handler.Check(It.IsAny<HealthCheckTag>()))
+        .Returns(() => Task.FromResult(HealthCheckResult.Healthy()));
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(mock.Object,
+                                                                agentHandler,
+                                                                sqmh);
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    // Trigger early and later cancellation tokens
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.That(() => testServiceProvider.TaskHandler.ExecuteTask(),
+                Throws.InstanceOf(exception.GetType()));
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(taskData.Status,
+                                  Is.EqualTo(TaskStatus.Submitted));
+                      Assert.That(sqmh.Status,
+                                  Is.EqualTo(QueueMessageStatus.Postponed));
+                    });
   }
 
   [Test]
