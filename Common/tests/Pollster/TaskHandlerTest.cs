@@ -390,43 +390,53 @@ public class TaskHandlerTest
     var tasks = new List<TaskCreationRequest>
                 {
                   new("TaskRetry2",
-                      results[0].ResultId,
+                      results[0]
+                        .ResultId,
                       options,
                       new List<string>
                       {
-                        results[1].ResultId,
+                        results[1]
+                          .ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+Creating",
-                      results[0].ResultId,
+                      results[0]
+                        .ResultId,
                       options,
                       new List<string>
                       {
-                        results[1].ResultId,
+                        results[1]
+                          .ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+Submitted",
-                      results[0].ResultId,
+                      results[0]
+                        .ResultId,
                       options,
                       new List<string>
                       {
-                        results[1].ResultId,
+                        results[1]
+                          .ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+NotFound",
-                      results[0].ResultId,
+                      results[0]
+                        .ResultId,
                       options,
                       new List<string>
                       {
-                        results[1].ResultId,
+                        results[1]
+                          .ResultId,
                       },
                       new List<string>()),
                   new("TaskRetry2+Pending",
-                      results[0].ResultId,
+                      results[0]
+                        .ResultId,
                       options,
                       new List<string>
                       {
-                        results[1].ResultId,
+                        results[1]
+                          .ResultId,
                       },
                       new List<string>()),
                 };
@@ -1293,10 +1303,10 @@ public class TaskHandlerTest
                        cancellationToken)
                 .ConfigureAwait(false);
       var enumerable = new[]
-        {
-          sessionData_!,
-        }.Select(selector.Compile())
-         .ToAsyncEnumerable();
+                       {
+                         sessionData_!,
+                       }.Select(selector.Compile())
+                        .ToAsyncEnumerable();
 
       await foreach (var d in enumerable.ConfigureAwait(false))
       {

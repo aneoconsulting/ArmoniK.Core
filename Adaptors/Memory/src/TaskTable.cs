@@ -287,7 +287,7 @@ public class TaskTable : ITaskTable
     return taskId2TaskData_.AsQueryable()
                            .Select(pair => pair.Value)
                            .Where(data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                          data.RemainingDataDependencies == new Dictionary<string, bool>())
+                                          data.RemainingDataDependencies.Count == 0)
                            .Select(selector)
                            .ToAsyncEnumerable();
   }

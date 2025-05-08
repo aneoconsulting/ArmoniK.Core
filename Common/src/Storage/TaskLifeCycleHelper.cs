@@ -380,14 +380,15 @@ public static class TaskLifeCycleHelper
     // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
     // and both will queue the task.
     // This is benign as it will be handled during dequeue with message deduplication.
-    return await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
-                                                                completedDependencies,
-                                                                data => new MessageData(data.TaskId,
-                                                                                        data.SessionId,
-                                                                                        data.Options),
-                                                                cancellationToken)
-                          .ToListAsync(cancellationToken)
-                          .ConfigureAwait(false);
+    var x = await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
+                                                                 completedDependencies,
+                                                                 data => new MessageData(data.TaskId,
+                                                                                         data.SessionId,
+                                                                                         data.Options),
+                                                                 cancellationToken)
+                           .ToListAsync(cancellationToken)
+                           .ConfigureAwait(false);
+    return x;
   }
 
   /// <summary>
