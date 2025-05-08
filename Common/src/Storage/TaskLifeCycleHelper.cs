@@ -235,7 +235,6 @@ public static class TaskLifeCycleHelper
     var prepareTaskDependencies = PrepareTaskDependencies(taskTable,
                                                           resultTable,
                                                           taskRequests,
-                                                          sessionData.SessionId,
                                                           logger,
                                                           cancellationToken);
 
@@ -281,7 +280,6 @@ public static class TaskLifeCycleHelper
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskRequests">Tasks requests to finalize</param>
-  /// <param name="sessionId">Session Id of the completed results</param>
   /// <param name="logger">Logger used to produce logs</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
@@ -290,7 +288,6 @@ public static class TaskLifeCycleHelper
   private static async Task<ICollection<MessageData>> PrepareTaskDependencies(ITaskTable                       taskTable,
                                                                               IResultTable                     resultTable,
                                                                               ICollection<TaskCreationRequest> taskRequests,
-                                                                              string                           sessionId,
                                                                               ILogger                          logger,
                                                                               CancellationToken                cancellationToken)
   {
@@ -383,18 +380,14 @@ public static class TaskLifeCycleHelper
     // If the agent completes the dependencies _before_ the GetResults, both will try to remove it,
     // and both will queue the task.
     // This is benign as it will be handled during dequeue with message deduplication.
-    await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
-                                                         completedDependencies,
-                                                         cancellationToken)
-                   .ConfigureAwait(false);
-
-    // Return all the tasks that are ready and shall be enqueued
-    return taskRequests.Where(request => !taskDependencies[request.TaskId]
-                                           .Any(resultId => allDependencies.Contains(resultId)))
-                       .Select(request => new MessageData(request.TaskId,
-                                                          sessionId,
-                                                          request.Options))
-                       .AsICollection();
+    return await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
+                                                                completedDependencies,
+                                                                data => new MessageData(data.TaskId,
+                                                                                        data.SessionId,
+                                                                                        data.Options),
+                                                                cancellationToken)
+                          .ToListAsync(cancellationToken)
+                          .ConfigureAwait(false);
   }
 
   /// <summary>
@@ -442,21 +435,14 @@ public static class TaskLifeCycleHelper
     // Remove all results that were completed by the current task from their dependents.
     // This will try to remove more results than strictly necessary.
     // This is completely safe and should be optimized by the DB.
-    await taskTable.RemoveRemainingDataDependenciesAsync(dependentTasks,
-                                                         results,
-                                                         cancellationToken)
-                   .ConfigureAwait(false);
-
-    // Find all tasks whose dependencies are now complete in order to start them.
     // Multiple agents can see the same task as ready and will try to start it multiple times.
     // This is benign as it will be handled during dequeue with message deduplication.
-    var readyTasks = await taskTable.FindTasksAsync(data => dependentTasks.Contains(data.TaskId)                                      &&
-                                                            (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                                            data.RemainingDataDependencies == new Dictionary<string, bool>(),
-                                                    data => new MessageData(data.TaskId,
-                                                                            data.SessionId,
-                                                                            data.Options),
-                                                    cancellationToken)
+    var readyTasks = await taskTable.RemoveRemainingDataDependenciesAsync(dependentTasks,
+                                                                          results,
+                                                                          data => new MessageData(data.TaskId,
+                                                                                                  data.SessionId,
+                                                                                                  data.Options),
+                                                                          cancellationToken)
                                     .ToListAsync(cancellationToken)
                                     .ConfigureAwait(false);
 

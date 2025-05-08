@@ -2185,24 +2185,35 @@ public class TaskTableTestBase
                                    })
                       .ConfigureAwait(false);
 
-      await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
-                                                           {
-                                                             taskId,
-                                                           },
-                                                           new[]
-                                                           {
-                                                             dd1,
-                                                             dd2,
-                                                             "PayloadId",
-                                                           },
-                                                           CancellationToken.None)
-                     .ConfigureAwait(false);
+      var readyTasks = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                            {
+                                                                              taskId,
+                                                                            },
+                                                                            new[]
+                                                                            {
+                                                                              dd1,
+                                                                              dd2,
+                                                                              "PayloadId",
+                                                                            },
+                                                                            td => td.TaskId,
+                                                                            CancellationToken.None)
+                                      .ToListAsync(CancellationToken.None)
+                                      .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync(taskId,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
-      Assert.IsEmpty(taskData.RemainingDataDependencies);
+      Assert.Multiple(() =>
+                      {
+                        Assert.That(readyTasks,
+                                    Is.EquivalentTo(new[]
+                                                    {
+                                                      taskId,
+                                                    }));
+                        Assert.That(taskData.RemainingDataDependencies,
+                                    Is.Empty);
+                      });
     }
   }
 
@@ -2241,24 +2252,37 @@ public class TaskTableTestBase
                                    })
                       .ConfigureAwait(false);
 
-      await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
-                                                           {
-                                                             taskId,
-                                                           },
-                                                           new[]
-                                                           {
-                                                             "PayloadId",
-                                                             dd1,
-                                                           },
-                                                           CancellationToken.None)
-                     .ConfigureAwait(false);
+      var readyTasks = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                            {
+                                                                              taskId,
+                                                                            },
+                                                                            new[]
+                                                                            {
+                                                                              "PayloadId",
+                                                                              dd1,
+                                                                            },
+                                                                            td => td.TaskId,
+                                                                            CancellationToken.None)
+                                      .ToListAsync(CancellationToken.None)
+                                      .ConfigureAwait(false);
 
       var taskData = await TaskTable.ReadTaskAsync(taskId,
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
-      Assert.IsEmpty(taskData.RemainingDataDependencies);
-      Assert.IsEmpty(taskData.DataDependencies);
+      Assert.Multiple(() =>
+                      {
+                        Assert.That(readyTasks,
+                                    Is.EqualTo(new[]
+                                               {
+                                                 taskId,
+                                               }));
+
+                        Assert.That(taskData.RemainingDataDependencies,
+                                    Is.Empty);
+                        Assert.That(taskData.DataDependencies,
+                                    Is.Empty);
+                      });
     }
   }
 }

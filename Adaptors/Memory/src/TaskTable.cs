@@ -256,9 +256,10 @@ public class TaskTable : ITaskTable
                                                                                      .Take(pageSize), ordered.Count()));
   }
 
-  public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
-                                                   ICollection<string> dependenciesToRemove,
-                                                   CancellationToken   cancellationToken = default)
+  public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
+                                                                     ICollection<string>           dependenciesToRemove,
+                                                                     Expression<Func<TaskData, T>> selector,
+                                                                     CancellationToken             cancellationToken = default)
   {
     using var _ = Logger.LogFunction();
 
@@ -283,7 +284,12 @@ public class TaskTable : ITaskTable
                                    });
     }
 
-    return Task.CompletedTask;
+    return taskId2TaskData_.AsQueryable()
+                           .Select(pair => pair.Value)
+                           .Where(data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
+                                          data.RemainingDataDependencies == new Dictionary<string, bool>())
+                           .Select(selector)
+                           .ToAsyncEnumerable();
   }
 
   /// <inheritdoc />
