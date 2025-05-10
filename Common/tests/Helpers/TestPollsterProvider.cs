@@ -27,6 +27,7 @@ using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
@@ -41,6 +42,7 @@ using EphemeralMongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -64,6 +66,7 @@ public class TestPollsterProvider : IDisposable
   public readonly ExceptionManager ExceptionManager;
 
   private readonly TimeSpan?                graceDelay_;
+  public readonly  HealthCheckRecord        HealthCheckRecord;
   public readonly  IHostApplicationLifetime Lifetime;
   private readonly IObjectStorage           objectStorage_;
   public readonly  IPartitionTable          PartitionTable;
@@ -205,15 +208,19 @@ public class TestPollsterProvider : IDisposable
     app_ = builder.Build();
     app_.Start();
 
-    ResultTable      = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable        = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable   = app_.Services.GetRequiredService<IPartitionTable>();
-    SessionTable     = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter        = app_.Services.GetRequiredService<ISubmitter>();
-    Pollster         = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
-    objectStorage_   = app_.Services.GetRequiredService<IObjectStorage>();
-    ExceptionManager = app_.Services.GetRequiredService<ExceptionManager>();
-    Lifetime         = app_.Lifetime;
+    ResultTable       = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable         = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable    = app_.Services.GetRequiredService<IPartitionTable>();
+    SessionTable      = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter         = app_.Services.GetRequiredService<ISubmitter>();
+    Pollster          = app_.Services.GetRequiredService<Common.Pollster.Pollster>();
+    objectStorage_    = app_.Services.GetRequiredService<IObjectStorage>();
+    ExceptionManager  = app_.Services.GetRequiredService<ExceptionManager>();
+    HealthCheckRecord = app_.Services.GetRequiredService<HealthCheckRecord>();
+    Lifetime          = app_.Lifetime;
+
+    HealthCheckRecord.Record(HealthCheckTag.Liveness,
+                             HealthStatus.Healthy);
 
     ResultTable.Init(CancellationToken.None)
                .Wait();
