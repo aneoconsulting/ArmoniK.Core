@@ -1248,10 +1248,11 @@ public class TaskHandlerTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
-                                                     ICollection<string> dependenciesToRemove,
-                                                     CancellationToken   cancellationToken = default)
-      => Task.CompletedTask;
+    public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
+                                                                       ICollection<string>           dependenciesToRemove,
+                                                                       Expression<Func<TaskData, T>> selector,
+                                                                       CancellationToken             cancellationToken = default)
+      => AsyncEnumerable.Empty<T>();
   }
 
   public class WaitSessionTable : ISessionTable

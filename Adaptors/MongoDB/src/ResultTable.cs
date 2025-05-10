@@ -118,9 +118,9 @@ public class ResultTable : IResultTable
                                                             cancellationToken)
                                             .ConfigureAwait(false);
 
-    if (writeResult.ModifiedCount != dependencies.Count)
+    if (writeResult.MatchedCount != dependencies.Count)
     {
-      throw new ResultNotFoundException($"One of the input result was not found: expected: {dependencies.Count}, found: {writeResult.ModifiedCount}");
+      throw new ResultNotFoundException($"One of the input result was not found: expected: {dependencies.Count}, found: {writeResult.MatchedCount}");
     }
   }
 
