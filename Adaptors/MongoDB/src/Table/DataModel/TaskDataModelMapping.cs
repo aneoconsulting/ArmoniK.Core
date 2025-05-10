@@ -195,6 +195,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.SessionId),
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.OwnerPodId),
                         IndexHelper.CreateHashedIndex<TaskData>(model => model.InitialTaskId),
+                        IndexHelper.CreateHashedIndex<TaskData>(model => model.CreatedBy),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
                                                                    expireAfter: options.DataRetention),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.SubmittedDate),

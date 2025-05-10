@@ -162,6 +162,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                           rc.Name,
                                                           "",
                                                           "",
+                                                          "",
                                                           ResultStatus.Created,
                                                           new List<string>(),
                                                           DateTime.UtcNow,
@@ -215,6 +216,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                                             resultId,
                                                                             rc.Name,
                                                                             "",
+                                                                            "",
                                                                             request.SessionId,
                                                                             ResultStatus.Created,
                                                                             new List<string>(),
@@ -232,6 +234,7 @@ public class GrpcResultsService : Results.ResultsBase
                       .ConfigureAwait(false);
 
     await resultTable_.CompleteManyResults(results.ViewSelect(tuple => (tuple.Item1.ResultId, tuple.Item1.Size, tuple.id)),
+                                           "",
                                            context.CancellationToken)
                       .ConfigureAwait(false);
 
@@ -540,6 +543,7 @@ public class GrpcResultsService : Results.ResultsBase
     }
 
     await resultTable_.CompleteManyResults(requests.ViewSelect(tuple => (tuple.Key, dict[tuple.Value]!.Value, tuple.Value)),
+                                           "",
                                            context.CancellationToken)
                       .ConfigureAwait(false);
 

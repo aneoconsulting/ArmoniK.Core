@@ -288,6 +288,11 @@ public static class TaskTableExtensions
                                                  ICollection<string> taskIds,
                                                  CancellationToken   cancellationToken = default)
   {
+    if (taskIds.Count == 0)
+    {
+      return 0;
+    }
+
     var res = await taskTable.UpdateManyTasks(data => taskIds.Contains(data.TaskId) &&
                                                       !(data.Status == TaskStatus.Cancelled || data.Status == TaskStatus.Cancelling || data.Status == TaskStatus.Error ||
                                                         data.Status == TaskStatus.Completed || data.Status == TaskStatus.Retried || data.Status == TaskStatus.Timeout),
