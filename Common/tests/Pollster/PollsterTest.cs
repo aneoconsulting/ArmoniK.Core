@@ -608,7 +608,7 @@ public class PollsterTest
   [Test]
   [Timeout(10000)]
   [Retry(3)]
-  public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit()
+  public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit([Values] bool healthy)
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new WaitWorkerStreamHandler(1000000);
@@ -639,21 +639,30 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
+    testServiceProvider.HealthCheckRecord.Record(HealthCheckTag.Liveness,
+                                                 healthy
+                                                   ? HealthStatus.Healthy
+                                                   : HealthStatus.Unhealthy);
+
     var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMilliseconds(300));
 
-    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
-    Assert.DoesNotThrowAsync(() => stop);
-    Assert.False(testServiceProvider.ExceptionManager.Failed);
+    Assert.That(() => testServiceProvider.Pollster.MainLoop(),
+                Throws.Nothing);
+    Assert.That(() => stop,
+                Throws.Nothing);
+    Assert.That(testServiceProvider.ExceptionManager.Failed,
+                Is.False);
 
     // wait to exceed grace delay and see that task is properly resubmitted
     await Task.Delay(TimeSpan.FromMilliseconds(200),
                      CancellationToken.None)
               .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
-                                                                      CancellationToken.None)
-                                             .ConfigureAwait(false));
+    Assert.That(() => testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                  CancellationToken.None),
+                Is.EqualTo(healthy
+                             ? TaskStatus.Submitted
+                             : TaskStatus.Retried));
 
     testServiceProvider.AssertFailAfterError(5);
   }

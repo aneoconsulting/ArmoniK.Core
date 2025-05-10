@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -55,6 +56,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly CancellationTokenSource               earlyCts_;
   private readonly string                                folder_;
   private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
+  private readonly HealthCheckRecord                     healthCheckRecord_;
   private readonly CancellationTokenSource               lateCts_;
   private readonly ILogger                               logger_;
   private readonly TimeSpan                              messageDuplicationDelay_;
@@ -92,7 +94,8 @@ public sealed class TaskHandler : IAsyncDisposable
                      Injection.Options.Pollster            pollsterOptions,
                      Action                                onDispose,
                      ExceptionManager                      exceptionManager,
-                     FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics)
+                     FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
+                     HealthCheckRecord                     healthCheckRecord)
   {
     sessionTable_             = sessionTable;
     taskTable_                = taskTable;
@@ -107,6 +110,7 @@ public sealed class TaskHandler : IAsyncDisposable
     logger_                   = logger;
     onDispose_                = onDispose;
     functionExecutionMetrics_ = functionExecutionMetrics;
+    healthCheckRecord_        = healthCheckRecord;
     ownerPodId_               = ownerPodId;
     ownerPodName_             = ownerPodName;
     taskData_                 = null;
@@ -1015,7 +1019,7 @@ public sealed class TaskHandler : IAsyncDisposable
                   };
       await HandleErrorResubmitAsync(e,
                                      taskData_,
-                                     earlyCts_.Token)
+                                     lateCts_.Token)
         .ConfigureAwait(false);
     }
   }
@@ -1122,13 +1126,58 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
     }
-    else if (cancellationToken.IsCancellationRequested && e is OperationCanceledException)
+    else if (e is OperationCanceledException or RpcException
+                                                {
+                                                  InnerException: OperationCanceledException,
+                                                })
     {
-      logger_.LogWarning(e,
-                         "Cancellation triggered, task cancelled here and re executed elsewhere");
+      var report = healthCheckRecord_.LastCheck();
 
-      await ReleaseAndPostponeTask()
-        .ConfigureAwait(false);
+      logger_.LogDebug(e,
+                       "Cancellation detected {CancellationRequested}, agent health is {@HealthReport}",
+                       cancellationToken.IsCancellationRequested,
+                       report.Entries.Select(kv => new KeyValuePair<string, HealthStatus>(kv.Key,
+                                                                                          kv.Value.Status))
+                             .ToDictionary());
+
+
+      if (report.Status is HealthStatus.Healthy)
+      {
+        if (cancellationToken.IsCancellationRequested)
+        {
+          logger_.LogWarning(e,
+                             "Cancellation triggered, task cancelled here and re executed elsewhere");
+        }
+        else
+        {
+          logger_.LogError(e,
+                           "Task cancelled here and re executed elsewhere, but cancellation was not requested");
+        }
+
+        await ReleaseAndPostponeTask()
+          .ConfigureAwait(false);
+      }
+      else
+      {
+        logger_.LogError(e,
+                         "Agent is stopping while unhealthy: {@HealthReport}",
+                         report.Entries.Select(kv => new KeyValuePair<string, HealthStatus>(kv.Key,
+                                                                                            kv.Value.Status))
+                               .ToDictionary());
+
+        await submitter_.CompleteTaskAsync(taskData,
+                                           sessionData_,
+                                           resubmit,
+                                           new Output(OutputStatus.Error,
+                                                      $"Agent is stopping while unhealthy: {report.Entries}"),
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+
+
+        messageHandler_.Status = resubmit
+                                   ? QueueMessageStatus.Cancelled
+                                   : QueueMessageStatus.Processed;
+      }
     }
     else
     {
