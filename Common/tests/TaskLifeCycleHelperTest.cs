@@ -758,6 +758,7 @@ public class TaskLifeCycleHelperTest
                         "Payload",
                         "",
                         "",
+                        "",
                         ResultStatus.Completed,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -769,6 +770,7 @@ public class TaskLifeCycleHelperTest
                         Guid.NewGuid()
                             .ToString(),
                         "DataDependency1",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -784,6 +786,7 @@ public class TaskLifeCycleHelperTest
                         "DataDependency2",
                         "",
                         "",
+                        "",
                         ResultStatus.Created,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -795,6 +798,7 @@ public class TaskLifeCycleHelperTest
                         Guid.NewGuid()
                             .ToString(),
                         "Output",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,

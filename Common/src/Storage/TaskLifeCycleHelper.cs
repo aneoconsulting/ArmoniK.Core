@@ -599,6 +599,21 @@ public static class TaskLifeCycleHelper
     return sessionData;
   }
 
+  /// <summary>
+  ///   Complete the task depending on the given output
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="objectStorage">Interface to manage object data</param>
+  /// <param name="pushQueueStorage">Interface to push messages to the queue</param>
+  /// <param name="options">Submitter options</param>
+  /// <param name="sessionData">Data of the session</param>
+  /// <param name="taskData">Data of the task</param>
+  /// <param name="resubmit">Whether the task should be retried in case of error</param>
+  /// <param name="output">Whether the task has completed successfully</param>
+  /// <param name="logger">Logger</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>The status of the processed task</returns>
   public static async Task CompleteTaskAsync(ITaskTable        taskTable,
                                              IResultTable      resultTable,
                                              IObjectStorage    objectStorage,
@@ -768,6 +783,23 @@ public static class TaskLifeCycleHelper
     }
   }
 
+  /// <summary>
+  ///   Either finish completion of task if crashing pod was advanced enough, or retry task otherwise
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="objectStorage">Interface to manage object data</param>
+  /// <param name="pushQueueStorage">Interface to push messages to the queue</param>
+  /// <param name="options">Submitter options</param>
+  /// <param name="processingCrashedDelay">
+  ///   The delay after the agent has verified the other agent crashed before retrying the
+  ///   task
+  /// </param>
+  /// <param name="sessionData">Data of the session</param>
+  /// <param name="taskData">Data of the task</param>
+  /// <param name="logger">Logger</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>The status of the processed task</returns>
   public static async Task<TaskStatus> HandleTaskCrashedWhileProcessing(ITaskTable        taskTable,
                                                                         IResultTable      resultTable,
                                                                         IObjectStorage    objectStorage,

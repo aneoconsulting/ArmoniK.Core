@@ -159,8 +159,8 @@ public enum AcquisitionStatus
   AcquisitionFailedProcessingHere,
 
   /// <summary>
-  ///   Task acquisition failed and task status is <see cref="TaskStatus.Processing" /> but the other pod does not seem to be
-  ///   processing it
+  ///   Task acquisition failed and task status is <see cref="TaskStatus.Processing" /> but the other agent does not seem to
+  ///   be processing it
   /// </summary>
   AcquisitionFailedProcessingCrashed,
 
