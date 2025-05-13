@@ -219,7 +219,7 @@ public class Pollster : IInitializable
       return healthCheckFailedResult_ ?? HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
     }
 
-    if (endLoopReached_)
+    if (endLoopReached_ && tag != HealthCheckTag.Liveness)
     {
       return HealthCheckResult.Unhealthy("End of main loop reached, no more tasks will be executed.");
     }
@@ -480,6 +480,9 @@ public class Pollster : IInitializable
     }
     catch (Exception e)
     {
+      healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Error in pollster",
+                                                             e);
+
       exceptionManager_.FatalError(logger_,
                                    e,
                                    "Error in pollster: Stop the application");
