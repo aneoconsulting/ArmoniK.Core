@@ -153,6 +153,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          null,
                                           0,
                                           Array.Empty<byte>(),
                                           false),
@@ -164,6 +165,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          null,
                                           0,
                                           Array.Empty<byte>(),
                                           false),
@@ -175,6 +177,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          null,
                                           0,
                                           Array.Empty<byte>(),
                                           false),
@@ -279,6 +282,7 @@ public class SubmitterTests
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          null,
                                           0,
                                           Array.Empty<byte>(),
                                           false),
@@ -812,6 +816,7 @@ public class SubmitterTests
 
     Assert.AreEqual(ResultStatus.Aborted,
                     result.Status);
+    Assert.NotNull(result.CompletionDate);
   }
 
   [Test]
@@ -1002,6 +1007,7 @@ public class SubmitterTests
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
+                                            null,
                                             0,
                                             Array.Empty<byte>(),
                                             false),
@@ -1013,6 +1019,7 @@ public class SubmitterTests
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
+                                            null,
                                             0,
                                             Array.Empty<byte>(),
                                             false),
@@ -1113,6 +1120,7 @@ public class SubmitterTests
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
+                                            null,
                                             0,
                                             Array.Empty<byte>(),
                                             false),
@@ -1179,6 +1187,7 @@ public class SubmitterTests
                                             ResultStatus.Created,
                                             new List<string>(),
                                             DateTime.UtcNow,
+                                            null,
                                             0,
                                             Array.Empty<byte>(),
                                             false),

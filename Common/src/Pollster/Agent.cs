@@ -273,6 +273,8 @@ public sealed class Agent : IAgent
   {
     ThrowIfInvalidToken(token);
 
+    var now = DateTime.UtcNow;
+
     var results = requests.Select(tuple => (new Result(tuple.request.SessionId,
                                                        Guid.NewGuid()
                                                            .ToString(),
@@ -281,7 +283,8 @@ public sealed class Agent : IAgent
                                                        "",
                                                        ResultStatus.Created,
                                                        new List<string>(),
-                                                       DateTime.UtcNow,
+                                                       now,
+                                                       now,
                                                        0,
                                                        Array.Empty<byte>(),
                                                        false), tuple.data))
@@ -319,6 +322,7 @@ public sealed class Agent : IAgent
                                                         ResultStatus.Created,
                                                         new List<string>(),
                                                         DateTime.UtcNow,
+                                                        null,
                                                         0,
                                                         Array.Empty<byte>(),
                                                         false))

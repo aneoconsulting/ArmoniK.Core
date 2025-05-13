@@ -45,9 +45,7 @@ using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   Provides gRPC services for managing tasks in the ArmoniK system.
-/// </summary>
+/// <inheritdoc cref="Task" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Task.TasksBase
 {

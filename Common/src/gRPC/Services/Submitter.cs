@@ -465,6 +465,8 @@ public class Submitter : ISubmitter
     var payloadSizes = await payloadUploadTasks.WhenAll()
                                                .ConfigureAwait(false);
 
+    var now = DateTime.UtcNow;
+
     await resultTable_.Create(requests.Zip(payloadSizes,
                                            (request,
                                             r) => new Result(sessionId,
@@ -476,7 +478,8 @@ public class Submitter : ISubmitter
                                                              parentTaskId,
                                                              ResultStatus.Completed,
                                                              new List<string>(),
-                                                             DateTime.UtcNow,
+                                                             now,
+                                                             now,
                                                              r.size,
                                                              r.id,
                                                              false))

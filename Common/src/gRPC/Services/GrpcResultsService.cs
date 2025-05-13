@@ -48,9 +48,7 @@ using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   The gRPC service implementation for managing results in the ArmoniK system.
-/// </summary>
+/// <inheritdoc cref="Results" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcResultsService : Results.ResultsBase
 {
@@ -167,6 +165,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                           ResultStatus.Created,
                                                           new List<string>(),
                                                           DateTime.UtcNow,
+                                                          null,
                                                           0,
                                                           Array.Empty<byte>(),
                                                           rc.ManualDeletion))
@@ -210,6 +209,8 @@ public class GrpcResultsService : Results.ResultsBase
                                                                                                                 context.CancellationToken)
                                                                                               .ConfigureAwait(false);
 
+                                                         var now = DateTime.UtcNow;
+
                                                          return (new Result(request.SessionId,
                                                                             resultId,
                                                                             rc.Name,
@@ -217,7 +218,8 @@ public class GrpcResultsService : Results.ResultsBase
                                                                             request.SessionId,
                                                                             ResultStatus.Created,
                                                                             new List<string>(),
-                                                                            DateTime.UtcNow,
+                                                                            now,
+                                                                            null,
                                                                             size,
                                                                             Array.Empty<byte>(),
                                                                             rc.ManualDeletion), id);

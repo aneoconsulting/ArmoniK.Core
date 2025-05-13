@@ -122,7 +122,9 @@ public static class ResultLifeCycleHelper
     var count = await resultTable
                       .UpdateManyResults(result => resultIds.Contains(result.ResultId) && taskIds.Contains(result.OwnerTaskId) && result.Status == ResultStatus.Created,
                                          new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                            ResultStatus.Aborted),
+                                                                            ResultStatus.Aborted)
+                                                                       .Set(result => result.CompletionDate,
+                                                                            DateTime.UtcNow),
                                          cancellationToken)
                       .ConfigureAwait(false);
 

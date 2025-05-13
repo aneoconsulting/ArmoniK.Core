@@ -180,6 +180,7 @@ public class AgentTest
                                       ResultStatus.Completed,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      DateTime.UtcNow,
                                       0,
                                       Array.Empty<byte>(),
                                       false),
@@ -190,6 +191,7 @@ public class AgentTest
                                       "",
                                       ResultStatus.Completed,
                                       new List<string>(),
+                                      DateTime.UtcNow,
                                       DateTime.UtcNow,
                                       0,
                                       Array.Empty<byte>(),
@@ -202,6 +204,7 @@ public class AgentTest
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      null,
                                       0,
                                       Array.Empty<byte>(),
                                       false),
@@ -213,6 +216,7 @@ public class AgentTest
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
+                                      null,
                                       0,
                                       Array.Empty<byte>(),
                                       false),
@@ -421,6 +425,7 @@ public class AgentTest
                     resultData.ResultId);
     Assert.AreEqual(ResultStatus.Completed,
                     resultData.Status);
+    Assert.NotNull(resultData.CompletionDate);
     Assert.AreEqual(holder.TaskData.TaskId,
                     resultData.OwnerTaskId);
     Assert.AreEqual(data.Length,
@@ -626,6 +631,7 @@ public class AgentTest
                                           ResultStatus.Completed,
                                           new List<string>(),
                                           DateTime.UtcNow,
+                                          DateTime.UtcNow,
                                           size,
                                           id,
                                           false),
@@ -675,6 +681,7 @@ public class AgentTest
                       resultMetadata.Name);
       Assert.AreEqual(ResultStatus.Completed,
                       resultMetadata.Status);
+      Assert.NotNull(resultMetadata.CompletionDate);
       Assert.AreEqual(7,
                       resultMetadata.Size);
 
@@ -883,6 +890,7 @@ public class AgentTest
 
     Assert.AreEqual(ResultStatus.Completed,
                     uploadedResultData.Status);
+    Assert.NotNull(uploadedResultData.CompletionDate);
     Assert.AreEqual(10,
                     uploadedResultData.Size);
 

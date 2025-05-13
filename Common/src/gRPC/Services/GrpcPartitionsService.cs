@@ -33,9 +33,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   The gRPC service implementation for managing partitions in the ArmoniK system.
-/// </summary>
+/// <inheritdoc cref="Partitions" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcPartitionsService : Partitions.PartitionsBase
 {

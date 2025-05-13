@@ -89,6 +89,8 @@ internal class BsonSerializerTest
                          },
                          DateTime.Parse("2022-02-15 8:55:05.954")
                                  .ToUniversalTime(),
+                         DateTime.Parse("2025-04-01 15:04:36.723")
+                                 .ToUniversalTime(),
                          3,
                          new[]
                          {
@@ -120,6 +122,8 @@ internal class BsonSerializerTest
                     deserialized.DependentTasks);
     Assert.AreEqual(rdm.CreationDate,
                     deserialized.CreationDate);
+    Assert.AreEqual(rdm.CompletionDate,
+                    deserialized.CompletionDate);
     Assert.IsTrue(rdm.OpaqueId.SequenceEqual(deserialized.OpaqueId));
     Assert.AreEqual(rdm.ManualDeletion,
                     deserialized.ManualDeletion);

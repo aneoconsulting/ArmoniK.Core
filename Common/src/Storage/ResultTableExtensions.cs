@@ -47,7 +47,9 @@ public static class ResultTableExtensions
   {
     await resultTable.UpdateManyResults(result => result.OwnerTaskId == ownerTaskId,
                                         new UpdateDefinition<Result>().Set(data => data.Status,
-                                                                           ResultStatus.Aborted),
+                                                                           ResultStatus.Aborted)
+                                                                      .Set(data => data.CompletionDate,
+                                                                           DateTime.UtcNow),
                                         cancellationToken)
                      .ConfigureAwait(false);
 
@@ -120,7 +122,9 @@ public static class ResultTableExtensions
                                                                                  .Set(data => data.Size,
                                                                                       size)
                                                                                  .Set(data => data.OpaqueId,
-                                                                                      opaqueId),
+                                                                                      opaqueId)
+                                                                                 .Set(data => data.CompletionDate,
+                                                                                      DateTime.UtcNow),
                                                    cancellationToken)
                                   .ConfigureAwait(false);
 
@@ -152,14 +156,19 @@ public static class ResultTableExtensions
   public static async Task CompleteManyResults(this IResultTable                                          resultTable,
                                                IEnumerable<(string resultId, long size, byte[] opaqueId)> results,
                                                CancellationToken                                          cancellationToken = default)
-    => await resultTable.BulkUpdateResults(results.Select(r => (r.resultId, new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                                                               ResultStatus.Completed)
-                                                                                                          .Set(result => result.OpaqueId,
-                                                                                                               r.opaqueId)
-                                                                                                          .Set(result => result.Size,
-                                                                                                               r.size))),
-                                           cancellationToken)
-                        .ConfigureAwait(false);
+  {
+    var now = DateTime.UtcNow;
+    await resultTable.BulkUpdateResults(results.Select(r => (r.resultId, new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                                            ResultStatus.Completed)
+                                                                                                       .Set(result => result.OpaqueId,
+                                                                                                            r.opaqueId)
+                                                                                                       .Set(result => result.Size,
+                                                                                                            r.size)
+                                                                                                       .Set(result => result.CompletionDate,
+                                                                                                            now))),
+                                        cancellationToken)
+                     .ConfigureAwait(false);
+  }
 
   /// <summary>
   ///   Update result
@@ -187,7 +196,9 @@ public static class ResultTableExtensions
                                                                                   .Set(result => result.Size,
                                                                                        size)
                                                                                   .Set(result => result.OpaqueId,
-                                                                                       opaqueId),
+                                                                                       opaqueId)
+                                                                                  .Set(result => result.CompletionDate,
+                                                                                       DateTime.UtcNow),
                                                     cancellationToken)
                                  .ConfigureAwait(false);
 

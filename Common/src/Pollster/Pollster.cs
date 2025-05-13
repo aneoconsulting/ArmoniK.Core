@@ -59,7 +59,6 @@ public class Pollster : IInitializable
   private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
   private readonly int                                       messageBatchSize_;
-  private readonly string                                    partitionId_;
   private readonly MeterHolder                               meterHolder_;
   private readonly IObjectStorage                            objectStorage_;
   private readonly string                                    ownerPodId_;
@@ -127,10 +126,11 @@ public class Pollster : IInitializable
                                             $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
-    if (pollsterOptions.PartitionId == null)
+    if (string.IsNullOrEmpty(pollsterOptions.PartitionId))
     {
-      throw new Exception();
-        }
+      throw new ArgumentException("pollsterOptions.PartitionId is not set", nameof(pollsterOptions.PartitionId));
+    }
+
     logger_                = logger;
     loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;

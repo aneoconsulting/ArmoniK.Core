@@ -35,9 +35,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
-/// <summary>
-///   Provides gRPC services for managing applications.
-/// </summary>
+/// <inheritdoc cref="Applications" />
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcApplicationsService : Applications.ApplicationsBase
 {

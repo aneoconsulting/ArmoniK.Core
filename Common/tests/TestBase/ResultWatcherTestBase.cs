@@ -57,6 +57,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Completed,
                                            new List<string>(),
                                            DateTime.Today,
+                                           DateTime.Today,
                                            1,
                                            new[]
                                            {
@@ -70,6 +71,7 @@ public class ResultWatcherTestBase
                                            "OwnerId",
                                            ResultStatus.Aborted,
                                            new List<string>(),
+                                           DateTime.Today,
                                            DateTime.Today,
                                            1,
                                            new[]
@@ -85,6 +87,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           null,
                                            1,
                                            new[]
                                            {
@@ -99,6 +102,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           null,
                                            1,
                                            new[]
                                            {
@@ -113,6 +117,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           null,
                                            1,
                                            new[]
                                            {
@@ -127,6 +132,7 @@ public class ResultWatcherTestBase
                                            ResultStatus.Created,
                                            new List<string>(),
                                            DateTime.Today,
+                                           null,
                                            1,
                                            new[]
                                            {
@@ -204,6 +210,7 @@ public class ResultWatcherTestBase
                                                   ResultStatus.Created,
                                                   new List<string>(),
                                                   DateTime.Today,
+                                                  null,
                                                   1,
                                                   new[]
                                                   {
@@ -219,6 +226,7 @@ public class ResultWatcherTestBase
                                                   ResultStatus.Created,
                                                   new List<string>(),
                                                   DateTime.Today,
+                                                  null,
                                                   1,
                                                   new[]
                                                   {
@@ -234,6 +242,7 @@ public class ResultWatcherTestBase
                                                   ResultStatus.Created,
                                                   new List<string>(),
                                                   DateTime.Today,
+                                                  null,
                                                   1,
                                                   new[]
                                                   {
