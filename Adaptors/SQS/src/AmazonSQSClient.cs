@@ -51,14 +51,9 @@ internal static class AmazonSqsClientExt
 
   public static string GetQueueName(this AmazonSQSClient client,
                                     SQS                  options,
-                                    string?              partition = null)
+                                    string              partition)
   {
     _ = client;
-
-    if (string.IsNullOrEmpty(partition))
-    {
-      partition = options.PartitionId;
-    }
 
     return string.IsNullOrEmpty(options.Prefix)
              ? partition

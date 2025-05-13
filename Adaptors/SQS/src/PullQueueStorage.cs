@@ -41,7 +41,6 @@ internal class PullQueueStorage : IPullQueueStorage
   // ReSharper disable once NotAccessedField.Local
   private readonly ILogger<PullQueueStorage> logger_;
 
-  private readonly string                     queueName_;
   private readonly Dictionary<string, string> tags_;
   private readonly int                        waitTimeSeconds_;
   private          bool                       isInitialized_;
@@ -53,7 +52,6 @@ internal class PullQueueStorage : IPullQueueStorage
   {
     client_    = client;
     logger_    = logger;
-    queueName_ = client.GetQueueName(options);
     tags_      = options.Tags;
 
     ackDeadlinePeriod_     = options.AckDeadlinePeriod;
@@ -61,23 +59,37 @@ internal class PullQueueStorage : IPullQueueStorage
     waitTimeSeconds_       = options.WaitTimeSeconds;
   }
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
   {
+    if (string.IsNullOrEmpty(partitionId))
+    {
+      throw new ArgumentOutOfRangeException(
+                                            $"{nameof(partitionId)} is not defined.");
+    }
+
     if (!isInitialized_)
     {
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
+    if (queueUrl_ == null)
+    {
+      queueUrl_ = await client_.GetOrCreateQueueUrlAsync(partitionId,
+                                                   tags_,
+                                                   cancellationToken)
+                         .ConfigureAwait(false);
+    }
+
     var messages = await client_.ReceiveMessageAsync(new ReceiveMessageRequest
-                                                     {
-                                                       QueueUrl            = queueUrl_!,
-                                                       MaxNumberOfMessages = nbMessages,
-                                                       VisibilityTimeout   = ackDeadlinePeriod_,
-                                                       WaitTimeSeconds     = waitTimeSeconds_,
-                                                     },
-                                                     cancellationToken)
-                                .ConfigureAwait(false);
+      {
+        QueueUrl = queueUrl_!,
+        MaxNumberOfMessages = nbMessages,
+        VisibilityTimeout = ackDeadlinePeriod_,
+        WaitTimeSeconds = waitTimeSeconds_,
+      },
+                                                       cancellationToken)
+                                  .ConfigureAwait(false);
 
     foreach (var message in messages.Messages)
     {
@@ -95,17 +107,14 @@ internal class PullQueueStorage : IPullQueueStorage
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy("Plugin is not yet initialized."));
 
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
-      queueUrl_ = await client_.GetOrCreateQueueUrlAsync(queueName_,
-                                                         tags_,
-                                                         cancellationToken)
-                               .ConfigureAwait(false);
-
       isInitialized_ = true;
     }
+
+    return Task.CompletedTask;
   }
 
   public int MaxPriority
