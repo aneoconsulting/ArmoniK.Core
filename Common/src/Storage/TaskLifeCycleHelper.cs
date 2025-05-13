@@ -820,8 +820,8 @@ public static class TaskLifeCycleHelper
                      cancellationToken)
               .ConfigureAwait(false);
 
-    var resultTask = new AsyncLazy<List<string>>(() => resultTable.GetResults(r => r.CompletedBy == taskData.TaskId,
-                                                                              r => r.ResultId,
+    var resultTask = new AsyncLazy<List<Result>>(() => resultTable.GetResults(r => r.CompletedBy == taskData.TaskId,
+                                                                              r => r,
                                                                               cancellationToken)
                                                                   .ToListAsync(cancellationToken)
                                                                   .AsTask());
@@ -855,7 +855,30 @@ public static class TaskLifeCycleHelper
     // If at least one task is not creating, it means that it has potentially been submitted, and might have started.
     // It also means that we created all subtasks and completed all the results of the current task.
     // Therefore, we can safely finish the completion of the current task on behalf of the pod that has crashed.
-    if (subtasks.Any(td => td.Status is not TaskStatus.Creating))
+    var committed = subtasks.Any(td => td.Status is not TaskStatus.Creating);
+
+    // If no tasks were created, we look for all the tasks that depends on completed results
+    if (subtasks.Count == 0)
+    {
+      var results = await resultTask;
+
+      var dependentTaskIds = results.SelectMany(r => r.DependentTasks)
+                                    .ToHashSet();
+      var dependentTasks = await taskTable.FindTasksAsync(td => dependentTaskIds.Contains(td.TaskId),
+                                                          td => td,
+                                                          cancellationToken)
+                                          .ToListAsync(cancellationToken)
+                                          .ConfigureAwait(false);
+
+      // If at least one dependent task remaining data dependencies does not contain any of the completed results,
+      // it means that it has potentially been submitted, and might have started.
+      // It also means that we completed all the results of the current task.
+      // Therefore, we can safely finish the completion of the current task on behalf of the pod that has crashed.
+      committed = dependentTasks.Any(td => !td.RemainingDataDependencies.Keys.ToHashSet()
+                                              .Overlaps(results.ViewSelect(r => r.ResultId)));
+    }
+
+    if (committed)
     {
       logger.LogInformation("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
                             taskData.TaskId);
@@ -887,7 +910,7 @@ public static class TaskLifeCycleHelper
                                   resultTable,
                                   pushQueueStorage,
                                   sessionData,
-                                  results,
+                                  results.ViewSelect(r => r.ResultId),
                                   logger,
                                   cancellationToken)
           .ConfigureAwait(false);

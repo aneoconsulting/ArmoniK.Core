@@ -396,20 +396,16 @@ public class TaskLifeCycleHelperTest
                 {
                   new(Guid.NewGuid()
                           .ToString(),
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       holder.Options.ToTaskOptions(),
                       new List<string>
                       {
-                        results[3]
-                          .ResultId,
+                        results[3].ResultId,
                       },
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
-                        results[2]
-                          .ResultId,
+                        results[1].ResultId,
+                        results[2].ResultId,
                       }),
                 };
 
@@ -450,8 +446,7 @@ public class TaskLifeCycleHelperTest
 
     // complete first data dependency
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[1]
-                                              .ResultId,
+                                            results[1].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("first data dependency"))
                 .ConfigureAwait(false);
@@ -462,8 +457,7 @@ public class TaskLifeCycleHelperTest
                                                   sessionData,
                                                   new List<string>
                                                   {
-                                                    results[1]
-                                                      .ResultId,
+                                                    results[1].ResultId,
                                                   },
                                                   NullLogger.Instance)
                              .ConfigureAwait(false);
@@ -479,8 +473,7 @@ public class TaskLifeCycleHelperTest
 
     // complete second data dependency
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[2]
-                                              .ResultId,
+                                            results[2].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("second data dependency"))
                 .ConfigureAwait(false);
@@ -491,8 +484,7 @@ public class TaskLifeCycleHelperTest
                                                   sessionData,
                                                   new List<string>
                                                   {
-                                                    results[2]
-                                                      .ResultId,
+                                                    results[2].ResultId,
                                                   },
                                                   NullLogger.Instance)
                              .ConfigureAwait(false);
@@ -596,20 +588,16 @@ public class TaskLifeCycleHelperTest
                 {
                   new(Guid.NewGuid()
                           .ToString(),
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       holder.Options.ToTaskOptions(),
                       new List<string>
                       {
-                        results[3]
-                          .ResultId,
+                        results[3].ResultId,
                       },
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
-                        results[2]
-                          .ResultId,
+                        results[1].ResultId,
+                        results[2].ResultId,
                       }),
                 };
 
@@ -650,14 +638,12 @@ public class TaskLifeCycleHelperTest
 
     // complete first data dependency
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[1]
-                                              .ResultId,
+                                            results[1].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("first data dependency"))
                 .ConfigureAwait(false);
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[2]
-                                              .ResultId,
+                                            results[2].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("second data dependency"))
                 .ConfigureAwait(false);
@@ -667,10 +653,8 @@ public class TaskLifeCycleHelperTest
                                                   sessionData,
                                                   new List<string>
                                                   {
-                                                    results[1]
-                                                      .ResultId,
-                                                    results[2]
-                                                      .ResultId,
+                                                    results[1].ResultId,
+                                                    results[2].ResultId,
                                                   },
                                                   NullLogger.Instance)
                              .ConfigureAwait(false);
@@ -817,20 +801,16 @@ public class TaskLifeCycleHelperTest
                 {
                   new(Guid.NewGuid()
                           .ToString(),
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       holder.Options.ToTaskOptions(),
                       new List<string>
                       {
-                        results[3]
-                          .ResultId,
+                        results[3].ResultId,
                       },
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
-                        results[2]
-                          .ResultId,
+                        results[1].ResultId,
+                        results[2].ResultId,
                       }),
                 };
 
@@ -853,10 +833,8 @@ public class TaskLifeCycleHelperTest
 
     await Task.WhenAll(FinalizeTask(),
                        FinalizeTask(),
-                       CompleteResult(results[1]
-                                        .ResultId),
-                       CompleteResult(results[2]
-                                        .ResultId))
+                       CompleteResult(results[1].ResultId),
+                       CompleteResult(results[2].ResultId))
               .ConfigureAwait(false);
 
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)
@@ -993,6 +971,13 @@ public class TaskLifeCycleHelperTest
   {
     using var holder = new Holder();
 
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      handler.Status = QueueMessageStatus.Processed;
+      await handler.DisposeAsync()
+                   .ConfigureAwait(false);
+    }
+
     var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
                                                                holder.PartitionTable,
                                                                new List<string>
@@ -1109,6 +1094,21 @@ public class TaskLifeCycleHelperTest
                                           holder.TaskTable.Logger)
                              .ConfigureAwait(false);
 
+    await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                   holder.ResultTable,
+                                                   holder.PushQueueStorage,
+                                                   initTasks,
+                                                   sessionData,
+                                                   "root",
+                                                   holder.TaskTable.Logger)
+                             .ConfigureAwait(false);
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      Assert.That(handler.TaskId,
+                  Is.EqualTo("root"));
+    }
+
     await holder.TaskTable.UpdateOneTask("root",
                                          null,
                                          new UpdateDefinition<TaskData>().Set(td => td.Status,
@@ -1192,16 +1192,63 @@ public class TaskLifeCycleHelperTest
                                                 td => td)
                        .ConfigureAwait(false);
 
-    var completionCommited = crashState >= CrashState.DependenciesResolved || (subtask && crashState >= CrashState.TasksFinalized);
+    var committed = crashState >= CrashState.DependenciesResolved || (subtask && crashState >= CrashState.TasksFinalized);
+
+    var taskA = await holder.TaskTable.ReadTaskAsync("A",
+                                                     td => td)
+                            .ConfigureAwait(false);
+    var taskB = await holder.TaskTable.FindTasksAsync(td => td.TaskId == "B",
+                                                      td => td)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+
+    var output = await holder.ResultTable.GetResult("output")
+                             .ConfigureAwait(false);
+
+    var messages = new List<string>();
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      messages.Add(handler.TaskId);
+    }
 
     Assert.Multiple(() =>
                     {
                       Assert.That(task.Status,
                                   Is.EqualTo(status));
                       Assert.That(status,
-                                  Is.EqualTo(completionCommited
+                                  Is.EqualTo(committed
                                                ? TaskStatus.Completed
                                                : TaskStatus.Retried));
+                      Assert.That(taskA.Status,
+                                  Is.EqualTo(committed
+                                               ? TaskStatus.Submitted
+                                               : TaskStatus.Pending));
+
+                      Assert.That(taskB,
+                                  crashState >= CrashState.TasksCreated || !subtask
+                                    ? Has.ItemAt(0)
+                                         .Property("Status")
+                                         .EqualTo(committed || !subtask
+                                                    ? TaskStatus.Pending
+                                                    : TaskStatus.Cancelling)
+                                    : Is.Empty);
+
+                      Assert.That(output.Status,
+                                  Is.EqualTo(ResultStatus.Created));
+                      Assert.That(output.OwnerTaskId,
+                                  Is.EqualTo(committed || !subtask
+                                               ? "B"
+                                               : "root###1"));
+
+                      Assert.That(messages,
+                                  Has.Member(committed
+                                               ? "A"
+                                               : "root###1")
+                                     .And.No.Member(committed
+                                                      ? "root###1"
+                                                      : "A")
+                                     .And.No.Member("root"));
                     });
   }
 }
