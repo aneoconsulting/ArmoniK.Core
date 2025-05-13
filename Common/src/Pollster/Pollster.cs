@@ -127,6 +127,10 @@ public class Pollster : IInitializable
                                             $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
+    if (pollsterOptions.PartitionId == null)
+    {
+      throw new Exception();
+        }
     logger_                = logger;
     loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;
