@@ -428,6 +428,9 @@ public class Pollster : IInitializable
                       // We dispose early the messages in order to avoid blocking them while not trying to acquire their corresponding tasks
                       // Disposing twice is safe as the second dispose (from the using) will just do nothing.
                       // ReSharper disable once DisposeOnUsingVariable
+                      await taskHandlerDispose.DisposeAsync()
+                                              .ConfigureAwait(false);
+                      // ReSharper disable once DisposeOnUsingVariable
                       await messagesDispose.DisposeAsync()
                                            .ConfigureAwait(false);
                       await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
