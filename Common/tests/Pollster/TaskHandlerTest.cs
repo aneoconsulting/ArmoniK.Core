@@ -873,8 +873,8 @@ public class TaskHandlerTest
                                       Status = TaskStatus.Dispatched,
                                       OwnerPodId = "anotherowner",
                                     },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
+                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedDispatchedCrashed,
+                                                                         TaskStatus.Submitted,
                                                                          QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check");
 
@@ -884,8 +884,8 @@ public class TaskHandlerTest
                                       OwnerPodId = "anotherowner",
                                       AcquisitionDate = DateTime.UtcNow - TimeSpan.FromSeconds(20),
                                     },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
+                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedDispatchedCrashed,
+                                                                         TaskStatus.Submitted,
                                                                          QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check date before");
 

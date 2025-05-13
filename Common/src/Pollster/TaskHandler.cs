@@ -713,7 +713,17 @@ public sealed class TaskHandler : IAsyncDisposable
             return AcquisitionStatus.AcquisitionFailedTimeoutNotExceeded;
           }
 
-          if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
+          if (taskData_.Status is TaskStatus.Dispatched)
+          {
+            logger_.LogInformation("Task {taskId} is still dispatched on {OtherOwnerPodId}, but other pod seems to have crashed. Release the task",
+                                   taskData_.TaskId,
+                                   taskData_.OwnerPodId);
+            await ReleaseAndPostponeTask()
+              .ConfigureAwait(false);
+            return AcquisitionStatus.AcquisitionFailedDispatchedCrashed;
+          }
+
+          if (taskData_.Status is TaskStatus.Processing or TaskStatus.Processed)
           {
             var status = await TaskLifeCycleHelper.HandleTaskCrashedWhileProcessing(taskTable_,
                                                                                     resultTable_,

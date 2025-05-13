@@ -154,6 +154,12 @@ public enum AcquisitionStatus
   AcquisitionFailedMessageDuplicated,
 
   /// <summary>
+  ///   Task acquisition failed and task status is <see cref="TaskStatus.Dispatched" /> but the other agent does not seem to
+  ///   be processing it
+  /// </summary>
+  AcquisitionFailedDispatchedCrashed,
+
+  /// <summary>
   ///   Task acquisition failed and task is being processed here
   /// </summary>
   AcquisitionFailedProcessingHere,
