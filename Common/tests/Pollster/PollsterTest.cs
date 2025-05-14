@@ -112,6 +112,7 @@ public class PollsterTest
                                           "",
                                           "",
                                           "",
+                                          "",
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
@@ -121,6 +122,7 @@ public class PollsterTest
                                           false),
                                new Result(sessionId,
                                           ExpectedOutput2,
+                                          "",
                                           "",
                                           "",
                                           "",
@@ -534,6 +536,7 @@ public class PollsterTest
                                                  {
                                                    new Result(sessionId,
                                                               expectedOutput3,
+                                                              "",
                                                               "",
                                                               "",
                                                               "",

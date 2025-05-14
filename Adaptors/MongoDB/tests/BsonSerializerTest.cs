@@ -80,6 +80,7 @@ internal class BsonSerializerTest
                          "ResultId",
                          "Name",
                          "CreatedBy",
+                         "CompletedBy",
                          "OwnerTaskId",
                          ResultStatus.Completed,
                          new List<string>
@@ -110,6 +111,10 @@ internal class BsonSerializerTest
                     deserialized.SessionId);
     Assert.AreEqual(rdm.Name,
                     deserialized.Name);
+    Assert.AreEqual(rdm.CreatedBy,
+                    deserialized.CreatedBy);
+    Assert.AreEqual(rdm.CompletedBy,
+                    deserialized.CompletedBy);
     Assert.AreEqual(rdm.OwnerTaskId,
                     deserialized.OwnerTaskId);
     Assert.AreEqual(rdm.Status,

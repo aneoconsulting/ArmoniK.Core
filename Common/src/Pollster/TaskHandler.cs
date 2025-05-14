@@ -41,6 +41,7 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
@@ -61,11 +62,15 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly ILogger                               logger_;
   private readonly TimeSpan                              messageDuplicationDelay_;
   private readonly IQueueMessageHandler                  messageHandler_;
+  private readonly IObjectStorage                        objectStorage_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
+  private readonly TimeSpan                              processingCrashedDelay_;
+  private readonly IPushQueueStorage                     pushQueueStorage_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
   private readonly ISubmitter                            submitter_;
+  private readonly Submitter                             submitterOptions_;
   private readonly ITaskProcessingChecker                taskProcessingChecker_;
   private readonly ITaskTable                            taskTable_;
   private readonly string                                token_;
@@ -81,6 +86,8 @@ public sealed class TaskHandler : IAsyncDisposable
   public TaskHandler(ISessionTable                         sessionTable,
                      ITaskTable                            taskTable,
                      IResultTable                          resultTable,
+                     IPushQueueStorage                     pushQueueStorage,
+                     IObjectStorage                        objectStorage,
                      ISubmitter                            submitter,
                      DataPrefetcher                        dataPrefetcher,
                      IWorkerStreamHandler                  workerStreamHandler,
@@ -92,6 +99,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      IAgentHandler                         agentHandler,
                      ILogger                               logger,
                      Injection.Options.Pollster            pollsterOptions,
+                     Submitter                             submitterOptions,
                      Action                                onDispose,
                      ExceptionManager                      exceptionManager,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
@@ -100,6 +108,8 @@ public sealed class TaskHandler : IAsyncDisposable
     sessionTable_             = sessionTable;
     taskTable_                = taskTable;
     resultTable_              = resultTable;
+    pushQueueStorage_         = pushQueueStorage;
+    objectStorage_            = objectStorage;
     messageHandler_           = messageHandler;
     taskProcessingChecker_    = taskProcessingChecker;
     submitter_                = submitter;
@@ -110,6 +120,7 @@ public sealed class TaskHandler : IAsyncDisposable
     logger_                   = logger;
     onDispose_                = onDispose;
     functionExecutionMetrics_ = functionExecutionMetrics;
+    submitterOptions_         = submitterOptions;
     healthCheckRecord_        = healthCheckRecord;
     ownerPodId_               = ownerPodId;
     ownerPodName_             = ownerPodName;
@@ -137,6 +148,7 @@ public sealed class TaskHandler : IAsyncDisposable
     Directory.CreateDirectory(folder_);
     delayBeforeAcquisition_  = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
     messageDuplicationDelay_ = pollsterOptions.MessageDuplicationDelay;
+    processingCrashedDelay_  = pollsterOptions.ProcessingCrashedDelay;
 
     earlyCts_ = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.EarlyCancellationToken);
     lateCts_  = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.LateCancellationToken);
@@ -503,22 +515,22 @@ public sealed class TaskHandler : IAsyncDisposable
 
               if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
               {
-                logger_.LogDebug("Resubmitting task {task} on another pod",
-                                 taskData_.TaskId);
-                await submitter_.CompleteTaskAsync(taskData_,
-                                                   sessionData_,
-                                                   true,
-                                                   new Output(OutputStatus.Error,
-                                                              "Other pod seems to have crashed, resubmitting task"),
-                                                   CancellationToken.None)
-                                .ConfigureAwait(false);
+                var status = await TaskLifeCycleHelper.HandleTaskCrashedWhileProcessing(taskTable_,
+                                                                                        resultTable_,
+                                                                                        objectStorage_,
+                                                                                        pushQueueStorage_,
+                                                                                        submitterOptions_,
+                                                                                        processingCrashedDelay_,
+                                                                                        sessionData_,
+                                                                                        taskData_,
+                                                                                        logger_,
+                                                                                        CancellationToken.None)
+                                                      .ConfigureAwait(false);
 
                 // Propagate retried status to TaskHandler
                 taskData_ = taskData_ with
                             {
-                              Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
-                                         ? TaskStatus.Retried
-                                         : TaskStatus.Error,
+                              Status = status,
                             };
 
                 messageHandler_.Status = QueueMessageStatus.Processed;
@@ -701,25 +713,37 @@ public sealed class TaskHandler : IAsyncDisposable
             return AcquisitionStatus.AcquisitionFailedTimeoutNotExceeded;
           }
 
-          if (taskData_.Status is TaskStatus.Processing or TaskStatus.Dispatched or TaskStatus.Processed)
+          if (taskData_.Status is TaskStatus.Dispatched)
           {
-            logger_.LogDebug("Resubmitting task {task} on another pod",
-                             taskData_.TaskId);
-            await submitter_.CompleteTaskAsync(taskData_,
-                                               sessionData_,
-                                               true,
-                                               new Output(OutputStatus.Error,
-                                                          "Other pod seems to have crashed, resubmitting task"),
-                                               CancellationToken.None)
-                            .ConfigureAwait(false);
+            logger_.LogInformation("Task {taskId} is still dispatched on {OtherOwnerPodId}, but other pod seems to have crashed. Release the task",
+                                   taskData_.TaskId,
+                                   taskData_.OwnerPodId);
+            await ReleaseAndPostponeTask()
+              .ConfigureAwait(false);
+            return AcquisitionStatus.AcquisitionFailedDispatchedCrashed;
+          }
+
+          if (taskData_.Status is TaskStatus.Processing or TaskStatus.Processed)
+          {
+            var status = await TaskLifeCycleHelper.HandleTaskCrashedWhileProcessing(taskTable_,
+                                                                                    resultTable_,
+                                                                                    objectStorage_,
+                                                                                    pushQueueStorage_,
+                                                                                    submitterOptions_,
+                                                                                    processingCrashedDelay_,
+                                                                                    sessionData_,
+                                                                                    taskData_,
+                                                                                    logger_,
+                                                                                    CancellationToken.None)
+                                                  .ConfigureAwait(false);
 
             // Propagate retried status to TaskHandler
             taskData_ = taskData_ with
                         {
-                          Status = taskData_.RetryOfIds.Count < taskData_.Options.MaxRetries
-                                     ? TaskStatus.Retried
-                                     : TaskStatus.Error,
+                          Status = status,
                         };
+            messageHandler_.Status = QueueMessageStatus.Processed;
+            return AcquisitionStatus.AcquisitionFailedProcessingCrashed;
           }
 
 

@@ -139,6 +139,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -148,6 +149,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "DataDep",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -163,6 +165,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -172,6 +175,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "ExpectedOutput2",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -187,6 +191,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -199,6 +204,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -208,6 +214,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "payload",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -362,6 +369,7 @@ public class TaskHandlerTest
                         "Payload1",
                         "",
                         "",
+                        "",
                         ResultStatus.Completed,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -373,6 +381,7 @@ public class TaskHandlerTest
                         Guid.NewGuid()
                             .ToString(),
                         "Result1",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -864,8 +873,8 @@ public class TaskHandlerTest
                                       Status = TaskStatus.Dispatched,
                                       OwnerPodId = "anotherowner",
                                     },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
+                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedDispatchedCrashed,
+                                                                         TaskStatus.Submitted,
                                                                          QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check");
 
@@ -875,8 +884,8 @@ public class TaskHandlerTest
                                       OwnerPodId = "anotherowner",
                                       AcquisitionDate = DateTime.UtcNow - TimeSpan.FromSeconds(20),
                                     },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
+                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedDispatchedCrashed,
+                                                                         TaskStatus.Submitted,
                                                                          QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check date before");
 
