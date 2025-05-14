@@ -103,6 +103,9 @@ public class ResultTable : IResultTable
       return;
     }
 
+    Logger.LogDebug("Add task dependencies: {@Dependencies}",
+                    dependencies);
+
     var dependencyRequests = dependencies.Select(dependency => new UpdateManyModel<Result>(Builders<Result>.Filter.Where(result => dependency.Key == result.ResultId),
                                                                                            Builders<Result>.Update.AddToSetEach(result => result.DependentTasks,
                                                                                                                                 dependency.Value)));
@@ -115,9 +118,9 @@ public class ResultTable : IResultTable
                                                             cancellationToken)
                                             .ConfigureAwait(false);
 
-    if (writeResult.ModifiedCount != dependencies.Count)
+    if (writeResult.MatchedCount != dependencies.Count)
     {
-      throw new ResultNotFoundException($"One of the input result was not found: expected: {dependencies.Count}, found: {writeResult.ModifiedCount}");
+      throw new ResultNotFoundException($"One of the input result was not found: expected: {dependencies.Count}, found: {writeResult.MatchedCount}");
     }
   }
 

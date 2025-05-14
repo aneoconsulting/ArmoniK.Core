@@ -112,6 +112,7 @@ public class PollsterTest
                                           "",
                                           "",
                                           "",
+                                          "",
                                           ResultStatus.Created,
                                           new List<string>(),
                                           DateTime.UtcNow,
@@ -121,6 +122,7 @@ public class PollsterTest
                                           false),
                                new Result(sessionId,
                                           ExpectedOutput2,
+                                          "",
                                           "",
                                           "",
                                           "",
@@ -278,7 +280,8 @@ public class PollsterTest
 
     public int MaxPriority { get; }
 
-    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int               nbMessages,
+    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string            partitionId,
+                                                                    int               nbMessages,
                                                                     CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
   }
@@ -390,7 +393,8 @@ public class PollsterTest
     var mockPullQueueStorage = new Mock<IPullQueueStorage>();
     var mockAgentHandler     = new Mock<IAgentHandler>();
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync("partitionId" , It.IsAny<int>(),
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync("partitionId",
+                                                                    It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
                         .Returns(() => new List<IQueueMessageHandler>
                                        {
@@ -537,6 +541,7 @@ public class PollsterTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -608,7 +613,7 @@ public class PollsterTest
   [Test]
   [Timeout(10000)]
   [Retry(3)]
-  public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit()
+  public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit([Values] bool healthy)
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new WaitWorkerStreamHandler(1000000);
@@ -639,21 +644,30 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
+    testServiceProvider.HealthCheckRecord.Record(HealthCheckTag.Liveness,
+                                                 healthy
+                                                   ? HealthStatus.Healthy
+                                                   : HealthStatus.Unhealthy);
+
     var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMilliseconds(300));
 
-    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
-    Assert.DoesNotThrowAsync(() => stop);
-    Assert.False(testServiceProvider.ExceptionManager.Failed);
+    Assert.That(() => testServiceProvider.Pollster.MainLoop(),
+                Throws.Nothing);
+    Assert.That(() => stop,
+                Throws.Nothing);
+    Assert.That(testServiceProvider.ExceptionManager.Failed,
+                Is.False);
 
     // wait to exceed grace delay and see that task is properly resubmitted
     await Task.Delay(TimeSpan.FromMilliseconds(200),
                      CancellationToken.None)
               .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
-                                                                      CancellationToken.None)
-                                             .ConfigureAwait(false));
+    Assert.That(() => testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                  CancellationToken.None),
+                Is.EqualTo(healthy
+                             ? TaskStatus.Submitted
+                             : TaskStatus.Retried));
 
     testServiceProvider.AssertFailAfterError(5);
   }
@@ -752,7 +766,8 @@ public class PollsterTest
       {
         // Failing PullQueueStorage
         var mockPullQueueStorageFail = new Mock<IPullQueueStorage>();
-        mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync("partitionId", It.IsAny<int>(),
+        mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync("partitionId",
+                                                                            It.IsAny<int>(),
                                                                             It.IsAny<CancellationToken>()))
                                 .Throws(new ApplicationException("Failed queue"));
 
@@ -848,7 +863,8 @@ public class PollsterTest
     var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMilliseconds(300));
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
-    Assert.DoesNotThrowAsync(() => stop);
+    Assert.That(() => stop,
+                Throws.InstanceOf<OperationCanceledException>());
 
     Assert.AreEqual(TaskStatus.Submitted,
                     await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
@@ -857,6 +873,7 @@ public class PollsterTest
     Assert.AreEqual(Array.Empty<string>(),
                     testServiceProvider.Pollster.TaskProcessing);
 
-    testServiceProvider.AssertFailAfterError(5);
+    testServiceProvider.AssertFailAfterError(0);
+    Assert.True(testServiceProvider.ExceptionManager.Failed);
   }
 }

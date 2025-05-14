@@ -288,6 +288,11 @@ public static class TaskTableExtensions
                                                  ICollection<string> taskIds,
                                                  CancellationToken   cancellationToken = default)
   {
+    if (taskIds.Count == 0)
+    {
+      return 0;
+    }
+
     var res = await taskTable.UpdateManyTasks(data => taskIds.Contains(data.TaskId) &&
                                                       !(data.Status == TaskStatus.Cancelled || data.Status == TaskStatus.Cancelling || data.Status == TaskStatus.Error ||
                                                         data.Status == TaskStatus.Completed || data.Status == TaskStatus.Retried || data.Status == TaskStatus.Timeout),
@@ -316,7 +321,13 @@ public static class TaskTableExtensions
                                                       bool                paused            = false,
                                                       CancellationToken   cancellationToken = default)
   {
-    var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && tdm.Status == TaskStatus.Pending,
+    taskTable.Logger.LogDebug("Mark tasks {@TaskIds} as {Status}",
+                              taskIds,
+                              paused
+                                ? TaskStatus.Paused
+                                : TaskStatus.Submitted);
+
+    var res = await taskTable.UpdateManyTasks(tdm => taskIds.Contains(tdm.TaskId) && (tdm.Status == TaskStatus.Creating || tdm.Status == TaskStatus.Pending),
                                               new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
                                                                                    paused
                                                                                      ? TaskStatus.Paused
@@ -328,10 +339,21 @@ public static class TaskTableExtensions
 
     if (res != taskIds.Count)
     {
-      taskTable.Logger.LogWarning("Mismatch between {modified} and {expected} for {tasks} during Finalize task creation",
-                                  res,
-                                  taskIds.Count,
-                                  taskIds);
+      var missingTasks = taskIds as HashSet<string> ?? taskIds.ToHashSet();
+      await foreach (var taskId in taskTable.FindTasksAsync(tdm => taskIds.Contains(tdm.TaskId),
+                                                            tdm => tdm.TaskId,
+                                                            cancellationToken)
+                                            .ConfigureAwait(false))
+      {
+        missingTasks.Remove(taskId);
+      }
+
+      if (missingTasks.Any())
+      {
+        // TODO: throw TaskNotFoundException instead
+        taskTable.Logger.LogError("Could not find {@Tasks} tasks during Finalize task creation",
+                                  missingTasks);
+      }
     }
 
     return res;

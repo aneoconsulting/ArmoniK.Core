@@ -16,5 +16,9 @@ ArmoniK.Core documentation
    content/0.installation/*
    content/1.concepts/*
    content/2.dependencies/*
+   content/services/usage.md
+   content/services/tasks_service.md
+   content/services/results_service.md
+   content/services/sessions_service.md
    content/csharp/index.rst
 

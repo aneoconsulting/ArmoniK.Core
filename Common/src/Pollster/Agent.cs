@@ -117,13 +117,24 @@ public sealed class Agent : IAgent
 
     logger_.LogDebug("Create and populate results and submit child tasks");
 
-    await resultTable_.Create(createdResults_.SelectMany(x => x)
-                                             .AsICollection(),
+    ResultSanityCheck();
+
+    var createdResults = createdResults_.SelectMany(x => x)
+                                        .AsICollection();
+    var createdTasks = createdTasks_.SelectMany(x => x)
+                                    .AsICollection();
+
+    await resultTable_.Create(createdResults,
                               cancellationToken)
                       .ConfigureAwait(false);
 
-    var createdTasks = createdTasks_.SelectMany(x => x)
-                                    .AsICollection();
+    var resultsToComplete = await StoreDataAsync(cancellationToken)
+                              .ConfigureAwait(false);
+
+    await resultTable_.CompleteManyResults(resultsToComplete.ViewSelect(pair => (pair.Key, pair.Value.size, pair.Value.id)),
+                                           taskData_.TaskId,
+                                           cancellationToken)
+                      .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.CreateTasks(taskTable_,
                                           resultTable_,
@@ -140,13 +151,6 @@ public sealed class Agent : IAgent
                                           cancellationToken)
                     .ConfigureAwait(false);
 
-    var resultsToComplete = await StoreDataAsync(cancellationToken)
-                              .ConfigureAwait(false);
-
-    await resultTable_.CompleteManyResults(resultsToComplete.Select(pair => (pair.Key, pair.Value.size, pair.Value.id)),
-                                           cancellationToken)
-                      .ConfigureAwait(false);
-
     await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
                                                   resultTable_,
                                                   pushQueueStorage_,
@@ -156,7 +160,6 @@ public sealed class Agent : IAgent
                                                   cancellationToken)
                              .ConfigureAwait(false);
   }
-
 
   /// <inheritdoc />
   public void Dispose()
@@ -281,6 +284,7 @@ public sealed class Agent : IAgent
                                                        tuple.request.Name,
                                                        taskData_.TaskId,
                                                        "",
+                                                       "",
                                                        ResultStatus.Created,
                                                        new List<string>(),
                                                        now,
@@ -319,6 +323,7 @@ public sealed class Agent : IAgent
                                                         request.Name,
                                                         taskData_.TaskId,
                                                         "",
+                                                        "",
                                                         ResultStatus.Created,
                                                         new List<string>(),
                                                         DateTime.UtcNow,
@@ -330,6 +335,47 @@ public sealed class Agent : IAgent
 
     createdResults_.Add(results);
     return Task.FromResult(results);
+  }
+
+  /// <summary>
+  ///   Check created and completed results, as well as created tasks to ensure
+  ///   all expected results were either produced or delegated.
+  /// </summary>
+  private void ResultSanityCheck()
+  {
+    var subtaskOutputIds = createdTasks_.SelectMany(x => x)
+                                        .SelectMany(task => task.ExpectedOutputKeys)
+                                        .ToHashSet();
+
+    var completedResultIds = resultsData_.SelectMany(x => x)
+                                         .Select(x => x.id)
+                                         .Concat(notifiedResults_.SelectMany(x => x))
+                                         .ToHashSet();
+
+    var missingOutputIds = taskData_.ExpectedOutputIds.Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                    .AsICollection();
+
+    var orphanIds = createdResults_.SelectMany(x => x)
+                                   .Select(result => result.ResultId)
+                                   .Where(resultId => !subtaskOutputIds.Contains(resultId) && !completedResultIds.Contains(resultId))
+                                   .AsICollection();
+
+    if (completedResultIds.Count == 0)
+    {
+      logger_.LogWarning("No result was completed");
+    }
+
+    if (missingOutputIds.Count > 0)
+    {
+      logger_.LogError("Expected output results were neither completed nor delegated to subtask: {@ResultIds}",
+                       missingOutputIds);
+    }
+
+    if (orphanIds.Count > 0)
+    {
+      logger_.LogError("New results were neither completed nor delegated to subtask: {@ResultIds}",
+                       orphanIds);
+    }
   }
 
   private async Task<Dictionary<string, (byte[] id, long size)>> StoreDataAsync(CancellationToken cancellationToken)

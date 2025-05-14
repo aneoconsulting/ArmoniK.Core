@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -146,6 +147,7 @@ public class TaskLifeCycleHelperTest
                                       "",
                                       "",
                                       "",
+                                      "",
                                       ResultStatus.Completed,
                                       new List<string>(),
                                       DateTime.UtcNow,
@@ -155,6 +157,7 @@ public class TaskLifeCycleHelperTest
                                       false),
                            new Result(sessionData.SessionId,
                                       DataDependency2,
+                                      "",
                                       "",
                                       "",
                                       "",
@@ -170,6 +173,7 @@ public class TaskLifeCycleHelperTest
                                       "",
                                       "",
                                       "",
+                                      "",
                                       ResultStatus.Created,
                                       new List<string>(),
                                       DateTime.UtcNow,
@@ -179,6 +183,7 @@ public class TaskLifeCycleHelperTest
                                       false),
                            new Result(Session,
                                       ExpectedOutput2,
+                                      "",
                                       "",
                                       "",
                                       "",
@@ -332,6 +337,7 @@ public class TaskLifeCycleHelperTest
                         "Payload",
                         "",
                         "",
+                        "",
                         ResultStatus.Completed,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -343,6 +349,7 @@ public class TaskLifeCycleHelperTest
                         Guid.NewGuid()
                             .ToString(),
                         "DataDependency1",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -358,6 +365,7 @@ public class TaskLifeCycleHelperTest
                         "DataDependency2",
                         "",
                         "",
+                        "",
                         ResultStatus.Created,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -369,6 +377,7 @@ public class TaskLifeCycleHelperTest
                         Guid.NewGuid()
                             .ToString(),
                         "Output",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -528,6 +537,7 @@ public class TaskLifeCycleHelperTest
                         "Payload",
                         "",
                         "",
+                        "",
                         ResultStatus.Completed,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -539,6 +549,7 @@ public class TaskLifeCycleHelperTest
                         Guid.NewGuid()
                             .ToString(),
                         "DataDependency1",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -554,6 +565,7 @@ public class TaskLifeCycleHelperTest
                         "DataDependency2",
                         "",
                         "",
+                        "",
                         ResultStatus.Created,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -565,6 +577,7 @@ public class TaskLifeCycleHelperTest
                         Guid.NewGuid()
                             .ToString(),
                         "Output",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -712,8 +725,191 @@ public class TaskLifeCycleHelperTest
       }
     }
 
-    Assert.AreEqual(2,
+    Assert.AreEqual(0,
                     count);
+  }
+
+  [Test]
+  [Repeat(10)]
+  [SuppressMessage("ReSharper",
+                   "AccessToDisposedClosure")]
+  public async Task FinalizeRace()
+  {
+    using var holder = new Holder();
+
+    var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
+                                                               holder.PartitionTable,
+                                                               new List<string>
+                                                               {
+                                                                 Holder.Partition,
+                                                               },
+                                                               holder.Options.ToTaskOptions(),
+                                                               Holder.Partition)
+                                                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+    var results = new List<Result>
+                  {
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Payload",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Completed,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "DataDependency1",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        null,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "DataDependency2",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        null,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Output",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        null,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                  };
+
+    await holder.ResultTable.Create(results)
+                .ConfigureAwait(false);
+
+    var tasks = new List<TaskCreationRequest>
+                {
+                  new(Guid.NewGuid()
+                          .ToString(),
+                      results[0]
+                        .ResultId,
+                      holder.Options.ToTaskOptions(),
+                      new List<string>
+                      {
+                        results[3]
+                          .ResultId,
+                      },
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                        results[2]
+                          .ResultId,
+                      }),
+                };
+
+    var taskId = tasks.Single()
+                      .TaskId;
+
+    await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                          holder.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          tasks,
+                                          holder.TaskTable.Logger)
+                             .ConfigureAwait(false);
+
+    var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                               .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskData.Status);
+
+    await Task.WhenAll(FinalizeTask(),
+                       FinalizeTask(),
+                       CompleteResult(results[1]
+                                        .ResultId),
+                       CompleteResult(results[2]
+                                        .ResultId))
+              .ConfigureAwait(false);
+
+    taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                           .ConfigureAwait(false);
+
+    var count = 0;
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      if (handler.TaskId == taskId)
+      {
+        count++;
+      }
+    }
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(taskData.Status,
+                                  Is.EqualTo(TaskStatus.Submitted));
+                      Assert.That(taskData.RemainingDataDependencies,
+                                  Is.Empty);
+                      Assert.That(count,
+                                  Is.GreaterThanOrEqualTo(1));
+                    });
+
+    return;
+
+    async Task CompleteResult(string resultId)
+    {
+      await holder.ResultTable.CompleteResult(sessionId,
+                                              resultId,
+                                              resultId.Length,
+                                              Encoding.UTF8.GetBytes(resultId))
+                  .ConfigureAwait(false);
+      await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
+                                                    holder.ResultTable,
+                                                    holder.PushQueueStorage,
+                                                    sessionData,
+                                                    new List<string>
+                                                    {
+                                                      resultId,
+                                                    },
+                                                    holder.TaskTable.Logger)
+                               .ConfigureAwait(false);
+    }
+
+    Task FinalizeTask()
+      => TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                  holder.ResultTable,
+                                                  holder.PushQueueStorage,
+                                                  tasks,
+                                                  sessionData,
+                                                  sessionId,
+                                                  NullLogger.Instance);
   }
 
   [Test]
@@ -779,5 +975,302 @@ public class TaskLifeCycleHelperTest
                 Is.Null);
     Assert.That(taskData.Status,
                 Is.EqualTo(TaskStatus.Submitted));
+  }
+
+  public enum CrashState
+  {
+    Processing,
+    ResultsCreated,
+    ResultsCompleted,
+    TasksCreated,
+    TasksFinalized,
+    DependenciesResolved,
+  }
+
+  [Test]
+  public async Task HandleCrashedWhileProcessing([Values] CrashState crashState,
+                                                 [Values] bool       subtask)
+  {
+    using var holder = new Holder();
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      handler.Status = QueueMessageStatus.Processed;
+      await handler.DisposeAsync()
+                   .ConfigureAwait(false);
+    }
+
+    var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
+                                                               holder.PartitionTable,
+                                                               new List<string>
+                                                               {
+                                                                 Holder.Partition,
+                                                               },
+                                                               holder.Options.ToTaskOptions(),
+                                                               Holder.Partition)
+                                                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+    var resultTemplate = new Result(sessionId,
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    ResultStatus.Created,
+                                    new List<string>(),
+                                    DateTime.UtcNow,
+                                    DateTime.UtcNow,
+                                    0,
+                                    Array.Empty<byte>(),
+                                    false);
+
+    var initResults = new List<Result>
+                      {
+                        resultTemplate with
+                        {
+                          ResultId = "payloadRoot",
+                          Status = ResultStatus.Completed,
+                        },
+                        resultTemplate with
+                        {
+                          ResultId = "output",
+                        },
+                        resultTemplate with
+                        {
+                          ResultId = "payloadA",
+                          CreatedBy = "root",
+                          CompletedBy = "root",
+                        },
+                        resultTemplate with
+                        {
+                          ResultId = "intermediary",
+                          CreatedBy = "root",
+                        },
+                      };
+
+    var submitResults = new List<Result>
+                        {
+                          resultTemplate with
+                          {
+                            ResultId = "payloadB",
+                            CreatedBy = "root",
+                            CompletedBy = "root",
+                          },
+                        };
+
+    var initTasks = new List<TaskCreationRequest>
+                    {
+                      new("root",
+                          "payloadRoot",
+                          holder.Options.ToTaskOptions(),
+                          new List<string>
+                          {
+                            "output",
+                          },
+                          new List<string>()),
+                      new("A",
+                          "payloadA",
+                          holder.Options.ToTaskOptions(),
+                          new List<string>
+                          {
+                            "intermediary",
+                          },
+                          new List<string>()),
+                    };
+
+    var submitTasks = new List<TaskCreationRequest>
+                      {
+                        new("B",
+                            "payloadB",
+                            holder.Options.ToTaskOptions(),
+                            new List<string>
+                            {
+                              "output",
+                            },
+                            new List<string>
+                            {
+                              "intermediary",
+                            }),
+                      };
+
+    if (!subtask)
+    {
+      initResults.AddRange(submitResults);
+      initTasks.AddRange(submitTasks);
+
+      submitResults.Clear();
+      submitTasks.Clear();
+    }
+
+    await holder.ResultTable.Create(initResults)
+                .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                          holder.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          initTasks,
+                                          holder.TaskTable.Logger)
+                             .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                   holder.ResultTable,
+                                                   holder.PushQueueStorage,
+                                                   initTasks,
+                                                   sessionData,
+                                                   "root",
+                                                   holder.TaskTable.Logger)
+                             .ConfigureAwait(false);
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      Assert.That(handler.TaskId,
+                  Is.EqualTo("root"));
+    }
+
+    await holder.TaskTable.UpdateOneTask("root",
+                                         null,
+                                         new UpdateDefinition<TaskData>().Set(td => td.Status,
+                                                                              TaskStatus.Processing)
+                                                                         .Set(td => td.OwnerPodId,
+                                                                              "ownerpodid"))
+                .ConfigureAwait(false);
+
+
+    if (crashState >= CrashState.ResultsCreated)
+    {
+      await holder.ResultTable.Create(submitResults)
+                  .ConfigureAwait(false);
+    }
+
+
+    if (crashState >= CrashState.ResultsCompleted)
+    {
+      await holder.ResultTable.CompleteManyResults(new List<(string resultId, long size, byte[] opaqueId)>
+                                                   {
+                                                     ("payloadA", 0, ""u8.ToArray()),
+                                                     ("payloadB", 0, ""u8.ToArray()),
+                                                   },
+                                                   "root")
+                  .ConfigureAwait(false);
+    }
+
+    if (crashState >= CrashState.TasksCreated)
+    {
+      await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                            holder.ResultTable,
+                                            sessionId,
+                                            "root",
+                                            submitTasks,
+                                            holder.TaskTable.Logger)
+                               .ConfigureAwait(false);
+    }
+
+    if (crashState >= CrashState.TasksFinalized)
+    {
+      await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                     holder.ResultTable,
+                                                     holder.PushQueueStorage,
+                                                     submitTasks,
+                                                     sessionData,
+                                                     "root",
+                                                     holder.TaskTable.Logger)
+                               .ConfigureAwait(false);
+    }
+
+    if (crashState >= CrashState.DependenciesResolved)
+    {
+      await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
+                                                    holder.ResultTable,
+                                                    holder.PushQueueStorage,
+                                                    sessionData,
+                                                    new List<string>
+                                                    {
+                                                      "payloadA",
+                                                    },
+                                                    holder.TaskTable.Logger)
+                               .ConfigureAwait(false);
+    }
+
+    var task = await holder.TaskTable.ReadTaskAsync("root",
+                                                    td => td)
+                           .ConfigureAwait(false);
+
+    var status = await TaskLifeCycleHelper.HandleTaskCrashedWhileProcessing(holder.TaskTable,
+                                                                            holder.ResultTable,
+                                                                            holder.ObjectStorage,
+                                                                            holder.PushQueueStorage,
+                                                                            new Injection.Options.Submitter(),
+                                                                            TimeSpan.Zero,
+                                                                            sessionData,
+                                                                            task,
+                                                                            holder.TaskTable.Logger,
+                                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+    task = await holder.TaskTable.ReadTaskAsync("root",
+                                                td => td)
+                       .ConfigureAwait(false);
+
+    var committed = crashState >= CrashState.DependenciesResolved || (subtask && crashState >= CrashState.TasksFinalized);
+
+    var taskA = await holder.TaskTable.ReadTaskAsync("A",
+                                                     td => td)
+                            .ConfigureAwait(false);
+    var taskB = await holder.TaskTable.FindTasksAsync(td => td.TaskId == "B",
+                                                      td => td)
+                            .ToListAsync()
+                            .ConfigureAwait(false);
+
+    var output = await holder.ResultTable.GetResult("output")
+                             .ConfigureAwait(false);
+
+    var messages = new List<string>();
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      messages.Add(handler.TaskId);
+    }
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(task.Status,
+                                  Is.EqualTo(status));
+                      Assert.That(status,
+                                  Is.EqualTo(committed
+                                               ? TaskStatus.Completed
+                                               : TaskStatus.Retried));
+                      Assert.That(taskA.Status,
+                                  Is.EqualTo(committed
+                                               ? TaskStatus.Submitted
+                                               : TaskStatus.Pending));
+
+                      Assert.That(taskB,
+                                  crashState >= CrashState.TasksCreated || !subtask
+                                    ? Has.ItemAt(0)
+                                         .Property("Status")
+                                         .EqualTo(committed || !subtask
+                                                    ? TaskStatus.Pending
+                                                    : TaskStatus.Cancelling)
+                                    : Is.Empty);
+
+                      Assert.That(output.Status,
+                                  Is.EqualTo(ResultStatus.Created));
+                      Assert.That(output.OwnerTaskId,
+                                  Is.EqualTo(committed || !subtask
+                                               ? "B"
+                                               : "root###1"));
+
+                      Assert.That(messages,
+                                  Has.Member(committed
+                                               ? "A"
+                                               : "root###1")
+                                     .And.No.Member(committed
+                                                      ? "root###1"
+                                                      : "A")
+                                     .And.No.Member("root"));
+                    });
   }
 }

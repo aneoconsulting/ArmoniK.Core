@@ -33,7 +33,6 @@ using ArmoniK.Utils;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class PullQueueStorage : QueueStorage, IPullQueueStorage
@@ -42,8 +41,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   private readonly ILogger<PullQueueStorage> logger_;
 
 
-  private ConcurrentDictionary<string, AsyncLazy<IReceiverLink>[]> receivers_;
-  private ConcurrentDictionary<string, AsyncLazy<ISenderLink>[]> senders_;
+  private readonly ConcurrentDictionary<string, AsyncLazy<IReceiverLink>[]> receivers_;
+  private readonly ConcurrentDictionary<string, AsyncLazy<ISenderLink>[]>   senders_;
 
   public PullQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -51,11 +50,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     : base(options,
            connectionAmqp)
   {
-
-
     logger_    = logger;
-    receivers_ = new();
-    senders_   = new();
+    receivers_ = new ConcurrentDictionary<string, AsyncLazy<IReceiverLink>[]>();
+    senders_   = new ConcurrentDictionary<string, AsyncLazy<ISenderLink>[]>();
   }
 
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -73,15 +70,15 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var nbPulledMessage = 0;
 
     if (string.IsNullOrEmpty(partitionId))
     {
-      throw new ArgumentOutOfRangeException(
-                                            $"{nameof(partitionId)} is not defined.");
+      throw new ArgumentException($"{nameof(partitionId)} is not defined.");
     }
 
     if (!IsInitialized)
@@ -89,21 +86,26 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    var receiversArray = receivers_.GetOrAdd(partitionId, _ =>
-    Enumerable.Range(0, NbLinks)
-              .Select(i => CreateReceiver(partitionId, ConnectionAmqp, i))
-              .ToArray()
-);
-    var sendersArray = senders_.GetOrAdd(partitionId, _ => Enumerable.Range(0,NbLinks)
-    .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(new Session(await ConnectionAmqp.GetConnectionAsync()
-                                                                                                                              .ConfigureAwait(false)),
-                                                                                              $"{partitionId}###SenderLink{i}",
-                                                                                              $"{partitionId}###q{i}")))
-                           .ToArray());
+    var receiversArray = receivers_.GetOrAdd(partitionId,
+                                             _ => Enumerable.Range(0,
+                                                                   NbLinks)
+                                                            .Select(i => CreateReceiver(partitionId,
+                                                                                        ConnectionAmqp,
+                                                                                        i))
+                                                            .ToArray());
+    var sendersArray = senders_.GetOrAdd(partitionId,
+                                         _ => Enumerable.Range(0,
+                                                               NbLinks)
+                                                        .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(new Session(await ConnectionAmqp
+                                                                                                                                             .GetConnectionAsync()
+                                                                                                                                             .ConfigureAwait(false)),
+                                                                                                                           $"{partitionId}###SenderLink{i}",
+                                                                                                                           $"{partitionId}###q{i}")))
+                                                        .ToArray());
     var senders = await sendersArray.Select(lazy => lazy.Value)
-                               .WhenAll();
+                                    .WhenAll();
     var receivers = await receiversArray.Select(lazy => lazy.Value)
-                               .WhenAll();
+                                        .WhenAll();
 
     while (nbPulledMessage < nbMessages)
     {
@@ -131,8 +133,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                cancellationToken)
                         .ConfigureAwait(false);
 
-              receiversArray[i] = CreateReceiver(partitionId, ConnectionAmqp,
-                                             i);
+              receiversArray[i] = CreateReceiver(partitionId,
+                                                 ConnectionAmqp,
+                                                 i);
               logger_.LogDebug(e,
                                "Exception while receiving message; receiver replaced");
             }
@@ -173,7 +176,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     }
   }
 
-  private AsyncLazy<IReceiverLink> CreateReceiver(string partitionId, IConnectionAmqp connection,
+  private AsyncLazy<IReceiverLink> CreateReceiver(string          partitionId,
+                                                  IConnectionAmqp connection,
                                                   int             link)
     => new(async () =>
            {

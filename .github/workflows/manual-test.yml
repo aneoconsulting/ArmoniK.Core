@@ -33,8 +33,9 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
+        uses: taiki-e/install-action@86c23eed46c17b80677df6d8151545ce3e236c61 # v2
+        with:
+          tool: just
 
       - name: Minio Server UP
         if: ${{ matrix.projects }} == "Adaptors/S3/tests"

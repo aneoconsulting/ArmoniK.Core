@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -106,7 +107,7 @@ public class TaskTable : ITaskTable
                                      .Project(selector)
                                      .SingleAsync(cancellationToken)
                                      .ConfigureAwait(false);
-      Logger.LogDebug("Read {id} matching {condition} returns {task}",
+      Logger.LogDebug("Read {id} matching {condition} returns {@task}",
                       taskId,
                       selector,
                       task);
@@ -355,11 +356,13 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public async Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskIds,
-                                                         ICollection<string> dependenciesToRemove,
-                                                         CancellationToken   cancellationToken = default)
+  public async IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>                        taskIds,
+                                                                           ICollection<string>                        dependenciesToRemove,
+                                                                           Expression<Func<TaskData, T>>              selector,
+                                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var activity       = activitySource_.StartActivity($"{nameof(RemoveRemainingDataDependenciesAsync)}");
+    var       sessionHandle  = sessionProvider_.Get();
     var       taskCollection = taskCollectionProvider_.Get();
 
     // MongoDB driver does not support to unset a list, so Unset should be called multiple times.
@@ -368,7 +371,7 @@ public class TaskTable : ITaskTable
     using var deps = dependenciesToRemove.GetEnumerator();
     if (!deps.MoveNext())
     {
-      return;
+      yield break;
     }
 
 
@@ -380,10 +383,26 @@ public class TaskTable : ITaskTable
       update = update.Unset(data => data.RemainingDataDependencies[key]);
     }
 
-    await taskCollection.UpdateManyAsync(data => taskIds.Contains(data.TaskId),
+    Logger.LogDebug("Remove data dependencies {@ResultIds} for tasks {@TaskIds}",
+                    dependenciesToRemove,
+                    taskIds);
+
+    await taskCollection.UpdateManyAsync(sessionHandle,
+                                         data => taskIds.Contains(data.TaskId),
                                          update,
                                          cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
+
+    var readyTasks = taskCollection.Find(sessionHandle,
+                                         data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
+                                                 data.RemainingDataDependencies == new Dictionary<string, bool>())
+                                   .Project(selector)
+                                   .ToAsyncEnumerable(cancellationToken);
+
+    await foreach (var task in readyTasks.ConfigureAwait(false))
+    {
+      yield return task;
+    }
   }
 
   /// <inheritdoc />

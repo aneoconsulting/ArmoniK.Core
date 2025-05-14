@@ -21,7 +21,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -140,6 +139,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -149,6 +149,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "DataDep",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -164,6 +165,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -173,6 +175,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "ExpectedOutput2",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -188,6 +191,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -200,6 +204,7 @@ public class TaskHandlerTest
                                                               "",
                                                               "",
                                                               "",
+                                                              "",
                                                               ResultStatus.Created,
                                                               new List<string>(),
                                                               DateTime.UtcNow,
@@ -209,6 +214,7 @@ public class TaskHandlerTest
                                                               false),
                                                    new Result(sessionId,
                                                               "payload",
+                                                              "",
                                                               "",
                                                               "",
                                                               "",
@@ -363,6 +369,7 @@ public class TaskHandlerTest
                         "Payload1",
                         "",
                         "",
+                        "",
                         ResultStatus.Completed,
                         new List<string>(),
                         DateTime.UtcNow,
@@ -374,6 +381,7 @@ public class TaskHandlerTest
                         Guid.NewGuid()
                             .ToString(),
                         "Result1",
+                        "",
                         "",
                         "",
                         ResultStatus.Created,
@@ -582,7 +590,7 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.TaskIsCancelling,
+    Assert.AreEqual(AcquisitionStatus.SessionNotExecutable,
                     acquired);
     Assert.AreEqual(taskId,
                     testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
@@ -805,7 +813,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingElsewhere,
                                                                         TaskStatus.Processing,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Processing task on another agent check true");
 
       yield return new TestCaseData(taskData with
@@ -814,7 +822,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingHere,
                                                                         TaskStatus.Processing,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Processing task same agent");
 
       // 12 is already tested
@@ -847,7 +855,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
                                                                         TaskStatus.Submitted,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Submitted task with another owner");
 
       yield return new TestCaseData(taskData with
@@ -857,7 +865,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
                                                                         TaskStatus.Dispatched,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Dispatched different owner");
 
       yield return new TestCaseData(taskData with
@@ -865,9 +873,9 @@ public class TaskHandlerTest
                                       Status = TaskStatus.Dispatched,
                                       OwnerPodId = "anotherowner",
                                     },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
-                                                                         QueueMessageStatus.Processed))
+                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedDispatchedCrashed,
+                                                                         TaskStatus.Submitted,
+                                                                         QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check");
 
       yield return new TestCaseData(taskData with
@@ -876,9 +884,9 @@ public class TaskHandlerTest
                                       OwnerPodId = "anotherowner",
                                       AcquisitionDate = DateTime.UtcNow - TimeSpan.FromSeconds(20),
                                     },
-                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedMessageDuplicated,
-                                                                         TaskStatus.Retried,
-                                                                         QueueMessageStatus.Processed))
+                                    false).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedDispatchedCrashed,
+                                                                         TaskStatus.Submitted,
+                                                                         QueueMessageStatus.Postponed))
                                           .SetArgDisplayNames("Dispatched different owner false check date before");
 
       yield return new TestCaseData(taskData with
@@ -887,7 +895,7 @@ public class TaskHandlerTest
                                     },
                                     true).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedProcessingHere,
                                                                         TaskStatus.Submitted,
-                                                                        QueueMessageStatus.Processed))
+                                                                        QueueMessageStatus.Postponed))
                                          .SetArgDisplayNames("Submitted task with same owner");
 
 
@@ -1249,10 +1257,11 @@ public class TaskHandlerTest
                                                                                                CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
-    public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
-                                                     ICollection<string> dependenciesToRemove,
-                                                     CancellationToken   cancellationToken = default)
-      => Task.CompletedTask;
+    public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
+                                                                       ICollection<string>           dependenciesToRemove,
+                                                                       Expression<Func<TaskData, T>> selector,
+                                                                       CancellationToken             cancellationToken = default)
+      => AsyncEnumerable.Empty<T>();
   }
 
   public class WaitSessionTable : ISessionTable
@@ -1497,42 +1506,75 @@ public class TaskHandlerTest
     get
     {
       // trigger error before cancellation so it is a legitimate error and therefor should be considered as such
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                                                                                   .SetArgDisplayNames("ExceptionError"); // error
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0)).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                                                                                          .SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableResponseEndedRpcException>(0))
-                   .Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
-                   .SetArgDisplayNames("CrashRpcExceptionResubmit"); // crash worker with resubmit
-      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
-                                                                                                     .SetArgDisplayNames("UnavailableWorkerWithoutCancellation"); // worker crashed before the execution of the task
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(0),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("ExceptionError"); // error
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(0),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("RpcExceptionResubmit"); // error with resubmit
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableResponseEndedRpcException>(0),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("CrashRpcExceptionResubmit"); // crash worker with resubmit
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(0),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("CrashingWorkerWithoutCancellation"); // worker crashed during the execution of the task
+
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(1000,
+                                                                                                  true,
+                                                                                                  false),
+                                    typeof(WorkerDownException),
+                                    true).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
+                                         .SetArgDisplayNames("UnavailableWorkerWithoutCancellation"); // worker crashed before the execution of the task
 
 
       // trigger error after cancellation and therefore should be considered as cancelled task and resend into queue
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(1000,
-                                                                                false)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
-                                                                                       .SetArgDisplayNames("ExceptionTaskCancellation");
+                                                                                false),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("ExceptionTaskCancellation");
+
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(1000),
+                                    typeof(OperationCanceledException),
+                                    true).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
+                                         .SetArgDisplayNames("ExceptionTaskAcceptCancellationHealthy");
+
+      yield return new TestCaseData(new ExceptionWorkerStreamHandler<Exception>(1000),
+                                    typeof(OperationCanceledException),
+                                    false).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                          .SetArgDisplayNames("ExceptionTaskAcceptCancellationUnhealthy");
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestRpcException>(1000,
-                                                                                       false)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
-                                                                                              .SetArgDisplayNames("RpcExceptionTaskCancellation");
+                                                                                       false),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("RpcExceptionTaskCancellation");
 
       // If the worker becomes unavailable during the task execution after cancellation, the task should be resubmitted
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableRpcException>(1000,
-                                                                                                  false)).Returns((TaskStatus.Submitted, QueueMessageStatus.Postponed))
-                                                                                                         .SetArgDisplayNames("UnavailableAfterCancellation");
+                                                                                                  false),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("UnavailableAfterCancellation");
 
       // If the worker crashes during the task execution after cancellation, the task should be put in error
       yield return new TestCaseData(new ExceptionWorkerStreamHandler<TestUnavailableResponseEndedRpcException>(1000,
-                                                                                                               false)).Returns((TaskStatus.Retried,
-                                                                                                                                QueueMessageStatus.Cancelled))
-                                                                                                                      .SetArgDisplayNames("CrashAfterCancellation");
+                                                                                                               false),
+                                    null,
+                                    true).Returns((TaskStatus.Retried, QueueMessageStatus.Cancelled))
+                                         .SetArgDisplayNames("CrashAfterCancellation");
     }
   }
 
   [Test]
   [TestCaseSource(nameof(TestCaseOuptut))]
   public async Task<(TaskStatus taskStatus, QueueMessageStatus messageStatus)> ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(
-    ExceptionWorkerStreamHandler<TEx> workerStreamHandler)
+    ExceptionWorkerStreamHandler<TEx> workerStreamHandler,
+    Type?                             expectedException,
+    bool                              healthy)
     where TEx : Exception, new()
   {
     var sqmh = new SimpleQueueMessageHandler
@@ -1549,6 +1591,11 @@ public class TaskHandlerTest
                                                                 agentHandler,
                                                                 sqmh,
                                                                 graceDelay: TimeSpan.FromMilliseconds(10));
+
+    testServiceProvider.HealthCheckRecord.Record(HealthCheckTag.Liveness,
+                                                 healthy
+                                                   ? HealthStatus.Healthy
+                                                   : HealthStatus.Unhealthy);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
@@ -1567,8 +1614,9 @@ public class TaskHandlerTest
     cancellationTokenSource.Token.Register(() => testServiceProvider.Lifetime.StopApplication());
     cancellationTokenSource.CancelAfter(TimeSpan.FromMilliseconds(500));
 
-    Assert.ThrowsAsync<TEx>(async () => await testServiceProvider.TaskHandler.ExecuteTask()
-                                                                 .ConfigureAwait(false));
+
+    Assert.That(() => testServiceProvider.TaskHandler.ExecuteTask(),
+                Throws.InstanceOf(expectedException ?? typeof(TEx)));
 
     return (await testServiceProvider.TaskTable.GetTaskStatus(taskId,
                                                               CancellationToken.None)
@@ -1632,36 +1680,16 @@ public class TaskHandlerTest
                     sqmh.Status);
   }
 
-  private class ObjectStorageThrowNotFound : IObjectStorage
-  {
-    public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => Task.FromResult(HealthCheckResult.Healthy());
-
-    public Task Init(CancellationToken cancellationToken)
-      => Task.CompletedTask;
-
-    public IAsyncEnumerable<byte[]> GetValuesAsync(byte[]            id,
-                                                   CancellationToken cancellationToken = default)
-      => throw new ObjectDataNotFoundException();
-
-    public Task TryDeleteAsync(IEnumerable<byte[]> ids,
-                               CancellationToken   cancellationToken = default)
-      => Task.CompletedTask;
-
-    public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
-                                                          CancellationToken   cancellationToken = default)
-      => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
-                                                                      _ => (long?)null));
-
-    public Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
-                                                         IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                                         CancellationToken                      cancellationToken = default)
-      => Task.FromResult<(byte[] id, long size)>((Encoding.UTF8.GetBytes("forty-two"), 42));
-  }
-
   [Test]
-  public async Task PreprocessingShouldThrow()
+  public async Task PreprocessingShouldThrow([Values] bool notFound)
   {
+    Exception exception = notFound
+                            ? new ObjectDataNotFoundException()
+                            : new ApplicationException();
+    var objectStorage = new Mock<IObjectStorage>();
+    objectStorage.Setup(os => os.GetValuesAsync(It.IsAny<byte[]>(),
+                                                It.IsAny<CancellationToken>()))
+                 .Throws(exception);
     var sqmh = new SimpleQueueMessageHandler
                {
                  CancellationToken = CancellationToken.None,
@@ -1677,7 +1705,7 @@ public class TaskHandlerTest
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
                                                                 sqmh,
-                                                                objectStorage: new ObjectStorageThrowNotFound());
+                                                                objectStorage: objectStorage.Object);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
@@ -1687,10 +1715,11 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
-    Assert.ThrowsAsync<ObjectDataNotFoundException>(() => testServiceProvider.TaskHandler.PreProcessing());
+    Assert.That(() => testServiceProvider.TaskHandler.PreProcessing(),
+                Throws.TypeOf(exception.GetType()));
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
                                                                      CancellationToken.None)
@@ -1698,11 +1727,18 @@ public class TaskHandlerTest
 
     Console.WriteLine(taskData);
 
-    Assert.AreEqual(TaskStatus.Error,
-                    taskData.Status);
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(taskData.Status,
+                                  Is.EqualTo(notFound
+                                               ? TaskStatus.Error
+                                               : TaskStatus.Retried));
 
-    Assert.AreEqual(QueueMessageStatus.Processed,
-                    sqmh.Status);
+                      Assert.That(sqmh.Status,
+                                  Is.EqualTo(notFound
+                                               ? QueueMessageStatus.Processed
+                                               : QueueMessageStatus.Cancelled));
+                    });
   }
 
   [Test]
@@ -1774,6 +1810,8 @@ public class TaskHandlerTest
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromResult(new Output(OutputStatus.Timeout,
                                                   "Deadline Exceeded")));
+    mock.Setup(handler => handler.Check(It.IsAny<HealthCheckTag>()))
+        .Returns(() => Task.FromResult(HealthCheckResult.Healthy()));
 
     var agentHandler = new SimpleAgentHandler();
     using var testServiceProvider = new TestTaskHandlerProvider(mock.Object,
@@ -1817,6 +1855,85 @@ public class TaskHandlerTest
 
     Assert.AreEqual(QueueMessageStatus.Processed,
                     sqmh.Status);
+  }
+
+  [Test]
+  public async Task ExecuteTaskCancellationToken([Values] bool rpc,
+                                                 [Values] bool healthy)
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    Exception exception = new OperationCanceledException();
+    if (rpc)
+    {
+      exception = new RpcException(new Status(StatusCode.Cancelled,
+                                              "Cancelled",
+                                              exception));
+    }
+
+    var mock = new Mock<IWorkerStreamHandler>();
+    mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<string>(),
+                                                      It.IsAny<CancellationToken>()))
+        .Returns(() => Task.FromException<Output>(exception));
+    mock.Setup(handler => handler.Check(It.IsAny<HealthCheckTag>()))
+        .Returns(() => Task.FromResult(HealthCheckResult.Healthy()));
+
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(mock.Object,
+                                                                agentHandler,
+                                                                sqmh);
+
+    testServiceProvider.HealthCheckRecord.Record(HealthCheckTag.Liveness,
+                                                 healthy
+                                                   ? HealthStatus.Healthy
+                                                   : HealthStatus.Unhealthy);
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    // Trigger early and later cancellation tokens
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.That(() => testServiceProvider.TaskHandler.ExecuteTask(),
+                Throws.InstanceOf(exception.GetType()));
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(taskData.Status,
+                                  Is.EqualTo(healthy
+                                               ? TaskStatus.Submitted
+                                               : TaskStatus.Retried));
+                      Assert.That(sqmh.Status,
+                                  Is.EqualTo(healthy
+                                               ? QueueMessageStatus.Postponed
+                                               : QueueMessageStatus.Cancelled));
+                    });
   }
 
   [Test]

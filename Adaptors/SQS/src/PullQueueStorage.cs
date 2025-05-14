@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,38 +35,35 @@ namespace ArmoniK.Core.Adapters.SQS;
 
 internal class PullQueueStorage : IPullQueueStorage
 {
-  private readonly int             ackDeadlinePeriod_;
-  private readonly int             ackExtendDeadlineStep_;
   private readonly AmazonSQSClient client_;
 
   // ReSharper disable once NotAccessedField.Local
   private readonly ILogger<PullQueueStorage> logger_;
 
-  private readonly Dictionary<string, string> tags_;
-  private readonly int                        waitTimeSeconds_;
-  private          bool                       isInitialized_;
-  private          string?                    queueUrl_;
+  private readonly SQS      options_;
+  private readonly string[] queueUrls_;
+  private          bool     isInitialized_;
 
   public PullQueueStorage(AmazonSQSClient           client,
                           SQS                       options,
                           ILogger<PullQueueStorage> logger)
   {
-    client_    = client;
-    logger_    = logger;
-    tags_      = options.Tags;
-
-    ackDeadlinePeriod_     = options.AckDeadlinePeriod;
-    ackExtendDeadlineStep_ = options.AckExtendDeadlineStep;
-    waitTimeSeconds_       = options.WaitTimeSeconds;
+    options_ = options;
+    client_  = client;
+    logger_  = logger;
+    queueUrls_ = new string[int.Max(options.MaxPriority,
+                                    1)];
+    logger_.LogDebug("Created SQS PullQueueStorage with options {@SqsOptions}",
+                     options_);
   }
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     if (string.IsNullOrEmpty(partitionId))
     {
-      throw new ArgumentOutOfRangeException(
-                                            $"{nameof(partitionId)} is not defined.");
+      throw new ArgumentException($"{nameof(partitionId)} is not defined.");
     }
 
     if (!isInitialized_)
@@ -73,32 +71,53 @@ internal class PullQueueStorage : IPullQueueStorage
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    if (queueUrl_ == null)
+    for (var i = 0; i < queueUrls_.Length; i++)
     {
-      queueUrl_ = await client_.GetOrCreateQueueUrlAsync(partitionId,
-                                                   tags_,
-                                                   cancellationToken)
-                         .ConfigureAwait(false);
+      logger_.LogDebug("Initialize queue #{SqsPriority} with options {@SqsOptions}",
+                       i,
+                       options_);
+      var queueName = client_.GetQueueName(options_,
+                                           i + 1,
+                                           partitionId);
+      queueUrls_[i] = await client_.GetOrCreateQueueUrlAsync(queueName,
+                                                             options_.Tags,
+                                                             cancellationToken)
+                                   .ConfigureAwait(false);
     }
 
-    var messages = await client_.ReceiveMessageAsync(new ReceiveMessageRequest
-      {
-        QueueUrl = queueUrl_!,
-        MaxNumberOfMessages = nbMessages,
-        VisibilityTimeout = ackDeadlinePeriod_,
-        WaitTimeSeconds = waitTimeSeconds_,
-      },
+    foreach (var queueUrl in queueUrls_.Reverse())
+    {
+      logger_.LogDebug("Try pulling {NbMessages} from {QueueUrl} with options {@SqsOptions}",
+                       nbMessages,
+                       queueUrl,
+                       options_);
+
+      var messages = await client_.ReceiveMessageAsync(new ReceiveMessageRequest
+                                                       {
+                                                         QueueUrl            = queueUrl,
+                                                         MaxNumberOfMessages = nbMessages,
+                                                         VisibilityTimeout   = options_.AckDeadlinePeriod,
+                                                         WaitTimeSeconds     = options_.WaitTimeSeconds,
+                                                       },
                                                        cancellationToken)
                                   .ConfigureAwait(false);
 
-    foreach (var message in messages.Messages)
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-      yield return new QueueMessageHandler(message,
-                                           client_,
-                                           queueUrl_!,
-                                           ackDeadlinePeriod_,
-                                           ackExtendDeadlineStep_);
+      if (messages?.Messages?.Count is null or 0)
+      {
+        continue;
+      }
+
+      foreach (var message in messages.Messages)
+      {
+        cancellationToken.ThrowIfCancellationRequested();
+        yield return new QueueMessageHandler(message,
+                                             client_,
+                                             queueUrl,
+                                             options_.AckDeadlinePeriod,
+                                             options_.WaitTimeSeconds);
+      }
+
+      yield break;
     }
   }
 
@@ -118,5 +137,6 @@ internal class PullQueueStorage : IPullQueueStorage
   }
 
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(options_.MaxPriority,
+               1);
 }

@@ -154,9 +154,15 @@ public static class ResultTableExtensions
   /// </returns>
   /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
   public static async Task CompleteManyResults(this IResultTable                                          resultTable,
-                                               IEnumerable<(string resultId, long size, byte[] opaqueId)> results,
+                                               ICollection<(string resultId, long size, byte[] opaqueId)> results,
+                                               string                                                     completedBy,
                                                CancellationToken                                          cancellationToken = default)
   {
+    if (results.Count == 0)
+    {
+      return;
+    }
+
     var now = DateTime.UtcNow;
     await resultTable.BulkUpdateResults(results.Select(r => (r.resultId, new UpdateDefinition<Result>().Set(result => result.Status,
                                                                                                             ResultStatus.Completed)
@@ -164,6 +170,8 @@ public static class ResultTableExtensions
                                                                                                             r.opaqueId)
                                                                                                        .Set(result => result.Size,
                                                                                                             r.size)
+                                                                                                       .Set(result => result.CompletedBy,
+                                                                                                            completedBy)
                                                                                                        .Set(result => result.CompletionDate,
                                                                                                             now))),
                                         cancellationToken)
@@ -197,6 +205,8 @@ public static class ResultTableExtensions
                                                                                        size)
                                                                                   .Set(result => result.OpaqueId,
                                                                                        opaqueId)
+                                                                                  .Set(result => result.CompletedBy,
+                                                                                       ownerTaskId)
                                                                                   .Set(result => result.CompletionDate,
                                                                                        DateTime.UtcNow),
                                                     cancellationToken)

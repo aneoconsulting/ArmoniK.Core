@@ -69,7 +69,17 @@ public class Pollster
   public string InternalCacheFolder { get; set; } = "/cache/internal";
 
   /// <summary>
-  /// 
+  ///   Identifier of the queue partition
   /// </summary>
   public string PartitionId { get; set; } = "";
+
+  /// When a message is detected to be duplicated during the acquisition,
+  /// delays the message release to the queue.
+  /// </summary>
+  public TimeSpan MessageDuplicationDelay { get; set; } = TimeSpan.FromMinutes(2);
+
+  /// <summary>
+  ///   The delay after the agent has verified the other agent crashed before retrying the task.
+  /// </summary>
+  public TimeSpan ProcessingCrashedDelay { get; set; } = TimeSpan.FromSeconds(10);
 }

@@ -43,6 +43,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
@@ -56,6 +58,7 @@ public class Pollster : IInitializable
   private readonly IAgentHandler                             agentHandler_;
   private readonly DataPrefetcher                            dataPrefetcher_;
   private readonly ExceptionManager                          exceptionManager_;
+  private readonly HealthCheckRecord                         healthCheckRecord_;
   private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
   private readonly int                                       messageBatchSize_;
@@ -66,10 +69,12 @@ public class Pollster : IInitializable
   private readonly Counter<int>                              pipeliningCounter_;
   private readonly Injection.Options.Pollster                pollsterOptions_;
   private readonly IPullQueueStorage                         pullQueueStorage_;
+  private readonly IPushQueueStorage                         pushQueueStorage_;
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
   private readonly ISessionTable                             sessionTable_;
   private readonly ISubmitter                                submitter_;
+  private readonly Submitter                                 submitterOptions_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
   private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
   private readonly ITaskTable                                taskTable_;
@@ -81,9 +86,11 @@ public class Pollster : IInitializable
   ///   Initializes a new instance of the <see cref="Pollster" /> class.
   /// </summary>
   /// <param name="pullQueueStorage">The storage service for pulling tasks from the queue.</param>
+  /// <param name="pushQueueStorage">The storage service for pushing tasks into the queue.</param>
   /// <param name="dataPrefetcher">The service to prefetch data needed for task execution.</param>
   /// <param name="options">Configuration options for the compute plane.</param>
   /// <param name="pollsterOptions">Specific options for the pollster behavior.</param>
+  /// <param name="submitterOptions">Specific options for the submitter behavior.</param>
   /// <param name="exceptionManager">Manager to handle and record exceptions.</param>
   /// <param name="activitySource">Source for activity tracking and tracing.</param>
   /// <param name="logger">Logger for the pollster.</param>
@@ -99,11 +106,14 @@ public class Pollster : IInitializable
   /// <param name="runningTaskQueue">Queue for running tasks.</param>
   /// <param name="identifier">Identifier for the agent running the pollster.</param>
   /// <param name="meterHolder">Holder for metrics collection.</param>
+  /// <param name="healthCheckRecord">Record for the health check of the application.</param>
   /// <exception cref="ArgumentOutOfRangeException">Thrown when message batch size is less than 1.</exception>
   public Pollster(IPullQueueStorage          pullQueueStorage,
+                  IPushQueueStorage          pushQueueStorage,
                   DataPrefetcher             dataPrefetcher,
                   ComputePlane               options,
                   Injection.Options.Pollster pollsterOptions,
+                  Submitter                  submitterOptions,
                   ExceptionManager           exceptionManager,
                   ActivitySource             activitySource,
                   ILogger<Pollster>          logger,
@@ -118,7 +128,8 @@ public class Pollster : IInitializable
                   IAgentHandler              agentHandler,
                   RunningTaskQueue           runningTaskQueue,
                   AgentIdentifier            identifier,
-                  MeterHolder                meterHolder)
+                  MeterHolder                meterHolder,
+                  HealthCheckRecord          healthCheckRecord)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -128,13 +139,15 @@ public class Pollster : IInitializable
 
     if (string.IsNullOrEmpty(pollsterOptions.PartitionId))
     {
-      throw new ArgumentException("pollsterOptions.PartitionId is not set", nameof(pollsterOptions.PartitionId));
+      throw new ArgumentException("pollsterOptions.PartitionId is not set",
+                                  nameof(pollsterOptions.PartitionId));
     }
 
     logger_                = logger;
     loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;
     pullQueueStorage_      = pullQueueStorage;
+    pushQueueStorage_      = pushQueueStorage;
     exceptionManager_      = exceptionManager;
     dataPrefetcher_        = dataPrefetcher;
     pollsterOptions_       = pollsterOptions;
@@ -149,6 +162,8 @@ public class Pollster : IInitializable
     agentHandler_          = agentHandler;
     runningTaskQueue_      = runningTaskQueue;
     meterHolder_           = meterHolder;
+    submitterOptions_      = submitterOptions;
+    healthCheckRecord_     = healthCheckRecord;
     ownerPodId_            = identifier.OwnerPodId;
     ownerPodName_          = identifier.OwnerPodName;
 
@@ -220,7 +235,7 @@ public class Pollster : IInitializable
       return healthCheckFailedResult_ ?? HealthCheckResult.Unhealthy("Health Check failed previously so this polling agent should be destroyed.");
     }
 
-    if (endLoopReached_)
+    if (endLoopReached_ && tag != HealthCheckTag.Liveness)
     {
       return HealthCheckResult.Unhealthy("End of main loop reached, no more tasks will be executed.");
     }
@@ -298,7 +313,7 @@ public class Pollster : IInitializable
         try
         {
           await using var messages = pullQueueStorage_.PullMessagesAsync(pollsterOptions_.PartitionId,
-            messageBatchSize_,
+                                                                         messageBatchSize_,
                                                                          exceptionManager_.EarlyCancellationToken)
                                                       .GetAsyncEnumerator(exceptionManager_.EarlyCancellationToken);
 
@@ -344,6 +359,8 @@ public class Pollster : IInitializable
             var taskHandler = new TaskHandler(sessionTable_,
                                               taskTable_,
                                               resultTable_,
+                                              pushQueueStorage_,
+                                              objectStorage_,
                                               submitter_,
                                               dataPrefetcher_,
                                               workerStreamHandler_,
@@ -355,6 +372,7 @@ public class Pollster : IInitializable
                                               agentHandler_,
                                               taskHandlerLogger,
                                               pollsterOptions_,
+                                              submitterOptions_,
                                               () =>
                                               {
                                                 taskProcessingDict_.TryRemove(message.TaskId,
@@ -362,7 +380,8 @@ public class Pollster : IInitializable
                                                 pipeliningCounter_.Add(-1);
                                               },
                                               exceptionManager_,
-                                              new FunctionExecutionMetrics<TaskHandler>(meterHolder_));
+                                              new FunctionExecutionMetrics<TaskHandler>(meterHolder_),
+                                              healthCheckRecord_);
             pipeliningCounter_.Add(1);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
             messageDispose.Reset();
@@ -429,6 +448,9 @@ public class Pollster : IInitializable
                       // We dispose early the messages in order to avoid blocking them while not trying to acquire their corresponding tasks
                       // Disposing twice is safe as the second dispose (from the using) will just do nothing.
                       // ReSharper disable once DisposeOnUsingVariable
+                      await taskHandlerDispose.DisposeAsync()
+                                              .ConfigureAwait(false);
+                      // ReSharper disable once DisposeOnUsingVariable
                       await messagesDispose.DisposeAsync()
                                            .ConfigureAwait(false);
                       await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
@@ -481,6 +503,9 @@ public class Pollster : IInitializable
     }
     catch (Exception e)
     {
+      healthCheckFailedResult_ = HealthCheckResult.Unhealthy("Error in pollster",
+                                                             e);
+
       exceptionManager_.FatalError(logger_,
                                    e,
                                    "Error in pollster: Stop the application");

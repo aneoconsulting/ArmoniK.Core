@@ -55,7 +55,8 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
 
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     while (nbMessages > 0 && queues_.Any())

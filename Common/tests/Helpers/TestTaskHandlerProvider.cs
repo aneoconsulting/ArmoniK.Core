@@ -25,6 +25,7 @@ using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
@@ -39,6 +40,7 @@ using EphemeralMongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -54,6 +56,7 @@ public class TestTaskHandlerProvider : IDisposable
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
   private readonly        WebApplication    app_;
   private readonly        IMongoClient      client_;
+  public readonly         HealthCheckRecord HealthCheckRecord;
   public readonly         ILogger           Logger;
   private readonly        LoggerFactory     loggerFactory_;
   private readonly        IObjectStorage    objectStorage_;
@@ -169,9 +172,12 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<ExceptionManager.Options>()
            .AddSingleton<ExceptionManager>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
+           .AddSingleton<HealthCheckRecord>()
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),
+                                                     provider.GetRequiredService<IPushQueueStorage>(),
+                                                     provider.GetRequiredService<IObjectStorage>(),
                                                      provider.GetRequiredService<ISubmitter>(),
                                                      provider.GetRequiredService<DataPrefetcher>(),
                                                      workerStreamHandler,
@@ -183,11 +189,13 @@ public class TestTaskHandlerProvider : IDisposable
                                                      agentHandler,
                                                      provider.GetRequiredService<ILogger>(),
                                                      provider.GetRequiredService<Injection.Options.Pollster>(),
+                                                     provider.GetRequiredService<Injection.Options.Submitter>(),
                                                      () =>
                                                      {
                                                      },
                                                      provider.GetRequiredService<ExceptionManager>(),
-                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>()))
+                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>(),
+                                                     provider.GetRequiredService<HealthCheckRecord>()))
            .AddSingleton<DataPrefetcher>();
 
     if (taskProcessingChecker is not null)
@@ -219,15 +227,19 @@ public class TestTaskHandlerProvider : IDisposable
 
     app_ = builder.Build();
 
-    ResultTable      = app_.Services.GetRequiredService<IResultTable>();
-    TaskTable        = app_.Services.GetRequiredService<ITaskTable>();
-    PartitionTable   = app_.Services.GetRequiredService<IPartitionTable>();
-    SessionTable     = app_.Services.GetRequiredService<ISessionTable>();
-    Submitter        = app_.Services.GetRequiredService<ISubmitter>();
-    TaskHandler      = app_.Services.GetRequiredService<TaskHandler>();
-    Lifetime         = app_.Services.GetRequiredService<IHostApplicationLifetime>();
-    objectStorage_   = app_.Services.GetRequiredService<IObjectStorage>();
-    PushQueueStorage = app_.Services.GetRequiredService<IPushQueueStorage>();
+    ResultTable       = app_.Services.GetRequiredService<IResultTable>();
+    TaskTable         = app_.Services.GetRequiredService<ITaskTable>();
+    PartitionTable    = app_.Services.GetRequiredService<IPartitionTable>();
+    SessionTable      = app_.Services.GetRequiredService<ISessionTable>();
+    Submitter         = app_.Services.GetRequiredService<ISubmitter>();
+    TaskHandler       = app_.Services.GetRequiredService<TaskHandler>();
+    Lifetime          = app_.Services.GetRequiredService<IHostApplicationLifetime>();
+    objectStorage_    = app_.Services.GetRequiredService<IObjectStorage>();
+    PushQueueStorage  = app_.Services.GetRequiredService<IPushQueueStorage>();
+    HealthCheckRecord = app_.Services.GetRequiredService<HealthCheckRecord>();
+
+    HealthCheckRecord.Record(HealthCheckTag.Liveness,
+                             HealthStatus.Healthy);
 
     ResultTable.Init(CancellationToken.None)
                .Wait();

@@ -41,11 +41,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                           ILogger<PullQueueStorage> logger)
     : base(options,
            connectionRabbit)
-  {
-    logger_ = logger;
-
-
-  }
+    => logger_ = logger;
 
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
     => ConnectionRabbit.Check(tag);
@@ -56,17 +52,16 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                           .ConfigureAwait(false);
 
 
-
     IsInitialized = true;
   }
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     if (string.IsNullOrEmpty(partitionId))
     {
-      throw new ArgumentOutOfRangeException(
-                                            $"{nameof(partitionId)} is not defined.");
+      throw new ArgumentException($"{nameof(partitionId)} is not defined.");
     }
 
     var nbPulledMessage = 0;
@@ -100,7 +95,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       cancellationToken.ThrowIfCancellationRequested();
 
       connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
-                                             .ConfigureAwait(false);
+                                         .ConfigureAwait(false);
 
       var message = connection.BasicGet(partitionId,
                                         false);

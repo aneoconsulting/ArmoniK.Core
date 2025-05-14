@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
@@ -112,6 +113,8 @@ public static class Program
              .AddSingleton(new ExceptionManager.Options(pollsterOptions.GraceDelay,
                                                         pollsterOptions.MaxErrorAllowed))
              .AddSingleton<ExceptionManager>()
+             .AddSingleton<HealthCheckRecord>()
+             .AddSingleton<IHealthCheckPublisher, HealthCheckRecord.Publisher>()
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<MeterHolder>()
@@ -199,21 +202,9 @@ public static class Program
                           });
 
       app.MapGet("/taskprocessing",
-                 async () =>
-                 {
-                   var pollster = app.Services.GetRequiredService<Common.Pollster.Pollster>();
-
-                   var check = await pollster.Check(HealthCheckTag.Liveness)
-                                             .ConfigureAwait(false);
-
-                   if (check.Status == HealthStatus.Unhealthy)
-                   {
-                     return "";
-                   }
-
-                   return string.Join(",",
-                                      pollster.TaskProcessing);
-                 });
+                 () => string.Join(",",
+                                   app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                                      .TaskProcessing));
 
       app.MapGet("/stopcancelledtask",
                  () => app.Services.GetRequiredService<Common.Pollster.Pollster>()

@@ -25,7 +25,6 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 
 using Google.Cloud.PubSub.V1;
-using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
@@ -43,9 +42,9 @@ internal class PullQueueStorage : IPullQueueStorage
   private readonly bool   messageOrdering_;
 
   private readonly TimeSpan                   messageRetention_;
+  private readonly string                     prefix_;
+  private readonly string                     project_;
   private readonly PublisherServiceApiClient  publisher_;
-  private readonly string prefix_;
-  private readonly string project_;
   private readonly SubscriberServiceApiClient subscriber_;
   private          bool                       isInitialized_;
 
@@ -53,8 +52,6 @@ internal class PullQueueStorage : IPullQueueStorage
                           PublisherServiceApiClient  publisher,
                           PubSub                     options)
   {
-
-
     messageRetention_      = options.MessageRetention;
     ackDeadlinePeriod_     = options.AckDeadlinePeriod;
     ackExtendDeadlineStep_ = options.AckExtendDeadlineStep;
@@ -63,12 +60,12 @@ internal class PullQueueStorage : IPullQueueStorage
     messageOrdering_       = options.MessageOrdering;
     subscriber_            = subscriber;
     publisher_             = publisher;
-    prefix_ = options.Prefix;
-    project_ = options.ProjectId;
-
+    prefix_                = options.Prefix;
+    project_               = options.ProjectId;
   }
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId, int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     if (!isInitialized_)
@@ -77,30 +74,30 @@ internal class PullQueueStorage : IPullQueueStorage
     }
 
     var topic = $"a{prefix_}-{partitionId}";
-    var sub = $"a{prefix_}-{partitionId}-ak-sub";
+    var sub   = $"a{prefix_}-{partitionId}-ak-sub";
 
     var topicName = TopicName.FromProjectTopic(project_,
-                                        topic);
+                                               topic);
     var subscriptionName = SubscriptionName.FromProjectSubscription(project_,
-                                                                 sub);
+                                                                    sub);
     PullResponse messages;
     try
     {
       messages = await subscriber_.PullAsync(subscriptionName,
-                                           nbMessages,
-                                           cancellationToken)
-                                .ConfigureAwait(false);
+                                             nbMessages,
+                                             cancellationToken)
+                                  .ConfigureAwait(false);
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
     {
       try
       {
         await publisher_.CreateTopicAsync(new Topic
-        {
-          MessageRetentionDuration = Duration.FromTimeSpan(messageRetention_),
-          TopicName = topicName,
-          KmsKeyName = kmsKeyName_,
-        })
+                                          {
+                                            MessageRetentionDuration = Duration.FromTimeSpan(messageRetention_),
+                                            TopicName                = topicName,
+                                            KmsKeyName               = kmsKeyName_,
+                                          })
                         .ConfigureAwait(false);
       }
       catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
@@ -108,13 +105,13 @@ internal class PullQueueStorage : IPullQueueStorage
       }
 
       var subscriptionRequest = new Subscription
-      {
-        SubscriptionName = subscriptionName,
-        TopicAsTopicName = topicName,
-        EnableExactlyOnceDelivery = exactlyOnceDelivery_,
-        EnableMessageOrdering = messageOrdering_,
-        AckDeadlineSeconds = ackDeadlinePeriod_,
-      };
+                                {
+                                  SubscriptionName          = subscriptionName,
+                                  TopicAsTopicName          = topicName,
+                                  EnableExactlyOnceDelivery = exactlyOnceDelivery_,
+                                  EnableMessageOrdering     = messageOrdering_,
+                                  AckDeadlineSeconds        = ackDeadlinePeriod_,
+                                };
       try
       {
         await subscriber_.CreateSubscriptionAsync(subscriptionRequest)
@@ -125,9 +122,9 @@ internal class PullQueueStorage : IPullQueueStorage
       }
 
       messages = await subscriber_.PullAsync(subscriptionName,
-                                     nbMessages,
-                                     cancellationToken)
-                          .ConfigureAwait(false);
+                                             nbMessages,
+                                             cancellationToken)
+                                  .ConfigureAwait(false);
     }
 
     foreach (var message in messages.ReceivedMessages)
@@ -139,7 +136,6 @@ internal class PullQueueStorage : IPullQueueStorage
                                            ackDeadlinePeriod_,
                                            ackExtendDeadlineStep_);
     }
-
   }
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)

@@ -194,10 +194,11 @@ public class SimpleTaskTable : ITaskTable
                                                                                                    TaskOptions.ApplicationService),
                                                                                  }, 1));
 
-  public Task RemoveRemainingDataDependenciesAsync(ICollection<string> taskId,
-                                                   ICollection<string> dependenciesToRemove,
-                                                   CancellationToken   cancellationToken = default)
-    => Task.CompletedTask;
+  public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
+                                                                     ICollection<string>           dependenciesToRemove,
+                                                                     Expression<Func<TaskData, T>> selector,
+                                                                     CancellationToken             cancellationToken = default)
+    => AsyncEnumerable.Empty<T>();
 
   public Task<TaskData?> UpdateOneTask(string                            taskId,
                                        Expression<Func<TaskData, bool>>? filter,

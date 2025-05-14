@@ -17,37 +17,40 @@
 
 using System;
 
-namespace ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Base.Exceptions;
+
+namespace ArmoniK.Core.Common.Exceptions;
 
 /// <summary>
-///   Base exception for exceptions in ArmoniK core
+///   Exception that is thrown when the agent detects the worker is down.
 /// </summary>
 [Serializable]
-public class ArmoniKException : Exception
+public class WorkerDownException : ArmoniKException
 {
   /// <summary>
-  ///   Initializes a new instance of the <see cref="ArmoniKException" />
+  ///   Initializes a new instance of the <see cref="WorkerDownException" /> class.
   /// </summary>
-  public ArmoniKException()
+  public WorkerDownException()
   {
   }
 
   /// <summary>
-  ///   Initializes a new instance of the <see cref="ArmoniKException" /> with the specified error message
+  ///   Initializes a new instance of the <see cref="WorkerDownException" /> class with a specified error message.
   /// </summary>
-  /// <param name="message">The error message</param>
-  public ArmoniKException(string message)
+  /// <param name="message">The message that describes the error.</param>
+  public WorkerDownException(string message)
     : base(message)
   {
   }
 
   /// <summary>
-  ///   Initializes a new instance of the <see cref="ArmoniKException" /> with the specified error message and an exception
+  ///   Initializes a new instance of the <see cref="WorkerDownException" /> class with a specified error message and a
+  ///   reference to the inner exception that is the cause of this exception.
   /// </summary>
-  /// <param name="message">The error message</param>
-  /// <param name="innerException">The inner exception that triggered this exception</param>
-  public ArmoniKException(string     message,
-                          Exception? innerException)
+  /// <param name="message">The message that describes the error.</param>
+  /// <param name="innerException">The exception that is the cause of the current exception.</param>
+  public WorkerDownException(string     message,
+                             Exception? innerException)
     : base(message,
            innerException)
   {

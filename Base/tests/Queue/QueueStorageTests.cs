@@ -263,7 +263,8 @@ public class QueueStorageTests
 
     /* Pull 3 messages from the queue, their default status being pending means that
      they should be pushed again to the queue */
-    var messages = PullQueueStorage.PullMessagesAsync("testPartition", 3,
+    var messages = PullQueueStorage.PullMessagesAsync("testPartition",
+                                                      3,
                                                       CancellationToken.None);
 
     await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
@@ -278,7 +279,8 @@ public class QueueStorageTests
     /* Pull 2 messages from the queue and change their status to processing; this means that
      these two should be treated as dequeued  by the broker and the remaining three
      as Pending if the test passes */
-    var messages2 = PullQueueStorage.PullMessagesAsync("testPartition", 2,
+    var messages2 = PullQueueStorage.PullMessagesAsync("testPartition",
+                                                       2,
                                                        CancellationToken.None);
 
     await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
@@ -339,7 +341,8 @@ public class QueueStorageTests
                                              CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var messages = PullQueueStorage.PullMessagesAsync("testPartition", 5,
+    var messages = PullQueueStorage.PullMessagesAsync("testPartition",
+                                                      5,
                                                       CancellationToken.None);
 
     await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
@@ -353,4 +356,3 @@ public class QueueStorageTests
 
   #endregion
 }
-

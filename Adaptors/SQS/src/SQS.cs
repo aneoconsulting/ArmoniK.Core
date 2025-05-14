@@ -60,4 +60,9 @@ internal class SQS
   ///   Parallelism used in the control plane when possible. Defaults to the number of threads.
   /// </summary>
   public int DegreeOfParallelism { get; set; } = 0;
+
+  /// <summary>
+  ///   Number of priority levels supported. Each priority level will create its own SQS topic.
+  /// </summary>
+  public int MaxPriority { get; set; } = 0;
 }
