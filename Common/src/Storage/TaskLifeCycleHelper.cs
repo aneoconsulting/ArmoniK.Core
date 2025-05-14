@@ -953,9 +953,39 @@ public static class TaskLifeCycleHelper
                             taskData.TaskId);
     }
 
-    await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
-                                    cancellationToken)
-                   .ConfigureAwait(false);
+    if (subtasks.Any())
+    {
+      var utcNow = DateTime.UtcNow;
+      var subtaskIds = subtasks.Select(td => td.TaskId)
+                               .ToList();
+
+      var message = $"Task {taskData.TaskId} has been retried because pod {taskData.OwnerPodId} seems to have crashed";
+
+      await resultTable.UpdateManyResults(td => taskData.ExpectedOutputIds.Contains(td.ResultId),
+                                          new UpdateDefinition<Result>().Set(td => td.OwnerTaskId,
+                                                                             taskData.TaskId),
+                                          cancellationToken)
+                       .ConfigureAwait(false);
+
+      await taskTable.UpdateManyTasks(td => subtaskIds.Contains(td.TaskId),
+                                      new UpdateDefinition<TaskData>().Set(td => td.Status,
+                                                                           TaskStatus.Cancelled)
+                                                                      .Set(td => td.EndDate,
+                                                                           utcNow)
+                                                                      .Set(td => td.Output,
+                                                                           new Output(OutputStatus.Error,
+                                                                                      message)),
+                                      cancellationToken)
+                     .ConfigureAwait(false);
+
+
+      await ResultLifeCycleHelper.AbortTasksAndResults(taskTable,
+                                                       resultTable,
+                                                       subtaskIds,
+                                                       message,
+                                                       cancellationToken)
+                                 .ConfigureAwait(false);
+    }
 
     await CompleteTaskAsync(taskTable,
                             resultTable,

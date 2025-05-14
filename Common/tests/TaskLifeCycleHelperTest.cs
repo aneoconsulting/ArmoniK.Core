@@ -1036,7 +1036,7 @@ public class TaskLifeCycleHelperTest
                         },
                         resultTemplate with
                         {
-                          ResultId = "output",
+                          ResultId = "outputRoot",
                         },
                         resultTemplate with
                         {
@@ -1057,7 +1057,11 @@ public class TaskLifeCycleHelperTest
                           {
                             ResultId = "payloadB",
                             CreatedBy = "root",
-                            CompletedBy = "root",
+                          },
+                          resultTemplate with
+                          {
+                            ResultId = "outputB",
+                            CreatedBy = "root",
                           },
                         };
 
@@ -1068,7 +1072,7 @@ public class TaskLifeCycleHelperTest
                           holder.Options.ToTaskOptions(),
                           new List<string>
                           {
-                            "output",
+                            "outputRoot",
                           },
                           new List<string>()),
                       new("A",
@@ -1088,7 +1092,8 @@ public class TaskLifeCycleHelperTest
                             holder.Options.ToTaskOptions(),
                             new List<string>
                             {
-                              "output",
+                              "outputRoot",
+                              "outputB",
                             },
                             new List<string>
                             {
@@ -1224,8 +1229,13 @@ public class TaskLifeCycleHelperTest
                             .ToListAsync()
                             .ConfigureAwait(false);
 
-    var output = await holder.ResultTable.GetResult("output")
-                             .ConfigureAwait(false);
+    var outputRoot = await holder.ResultTable.GetResult("outputRoot")
+                                 .ConfigureAwait(false);
+
+    var outputB = await holder.ResultTable.GetResults(r => r.ResultId == "outputB",
+                                                      r => r)
+                              .ToListAsync()
+                              .ConfigureAwait(false);
 
     var messages = new List<string>();
 
@@ -1253,12 +1263,25 @@ public class TaskLifeCycleHelperTest
                                          .Property("Status")
                                          .EqualTo(committed || !subtask
                                                     ? TaskStatus.Pending
-                                                    : TaskStatus.Cancelling)
+                                                    : TaskStatus.Cancelled)
                                     : Is.Empty);
 
-                      Assert.That(output.Status,
+                      Assert.That(outputB,
+                                  crashState >= CrashState.ResultsCreated || !subtask
+                                    ? Has.ItemAt(0)
+                                         .Property("Status")
+                                         .EqualTo((subtask, crashState) switch
+                                                  {
+                                                    (false, _)                           => ResultStatus.Created,
+                                                    (true, < CrashState.TasksCreated)    => ResultStatus.Created,
+                                                    (true, < CrashState.TasksFinalized)  => ResultStatus.Aborted,
+                                                    (true, >= CrashState.TasksFinalized) => ResultStatus.Created,
+                                                  })
+                                    : Is.Empty);
+
+                      Assert.That(outputRoot.Status,
                                   Is.EqualTo(ResultStatus.Created));
-                      Assert.That(output.OwnerTaskId,
+                      Assert.That(outputRoot.OwnerTaskId,
                                   Is.EqualTo(committed || !subtask
                                                ? "B"
                                                : "root###1"));
