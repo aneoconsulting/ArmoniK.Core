@@ -30,6 +30,7 @@ using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -1056,12 +1057,10 @@ public class TaskLifeCycleHelperTest
                           resultTemplate with
                           {
                             ResultId = "payloadB",
-                            CreatedBy = "root",
                           },
                           resultTemplate with
                           {
                             ResultId = "outputB",
-                            CreatedBy = "root",
                           },
                         };
 
@@ -1147,7 +1146,10 @@ public class TaskLifeCycleHelperTest
 
     if (crashState >= CrashState.ResultsCreated)
     {
-      await holder.ResultTable.Create(submitResults)
+      await holder.ResultTable.Create(submitResults.ViewSelect(r => r with
+                                                                    {
+                                                                      CreatedBy = "root",
+                                                                    }))
                   .ConfigureAwait(false);
     }
 
@@ -1270,13 +1272,9 @@ public class TaskLifeCycleHelperTest
                                   crashState >= CrashState.ResultsCreated || !subtask
                                     ? Has.ItemAt(0)
                                          .Property("Status")
-                                         .EqualTo((subtask, crashState) switch
-                                                  {
-                                                    (false, _)                           => ResultStatus.Created,
-                                                    (true, < CrashState.TasksCreated)    => ResultStatus.Created,
-                                                    (true, < CrashState.TasksFinalized)  => ResultStatus.Aborted,
-                                                    (true, >= CrashState.TasksFinalized) => ResultStatus.Created,
-                                                  })
+                                         .EqualTo(committed || !subtask
+                                                    ? ResultStatus.Created
+                                                    : ResultStatus.Aborted)
                                     : Is.Empty);
 
                       Assert.That(outputRoot.Status,
