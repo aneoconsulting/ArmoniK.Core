@@ -351,8 +351,8 @@ public sealed class TaskHandler : IAsyncDisposable
                                                          {
                                                            messageHandler_.TaskId,
                                                          },
-                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}",
-                                                         CancellationToken.None)
+                                                         reason:
+                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}")
                                    .ConfigureAwait(false);
 
         // Propagate cancelled status to TaskHandler
@@ -390,8 +390,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                            {
                                                              messageHandler_.TaskId,
                                                            },
-                                                           $"Task {messageHandler_.TaskId} has been cancelled",
-                                                           CancellationToken.None)
+                                                           reason: $"Task {messageHandler_.TaskId} has been cancelled:\n{taskData_.Output.Error}")
                                      .ConfigureAwait(false);
 
           // Propagate cancelled status to TaskHandler
@@ -430,8 +429,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                            {
                                                              messageHandler_.TaskId,
                                                            },
-                                                           $"Task {messageHandler_.TaskId} was on error",
-                                                           CancellationToken.None)
+                                                           reason: $"Task {messageHandler_.TaskId} was on error:\n{taskData_.Output.Error}")
                                      .ConfigureAwait(false);
           return AcquisitionStatus.TaskIsError;
         case TaskStatus.Timeout:
@@ -447,8 +445,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                            {
                                                              messageHandler_.TaskId,
                                                            },
-                                                           $"Task {messageHandler_.TaskId} was cancelled",
-                                                           CancellationToken.None)
+                                                           reason: $"Task {messageHandler_.TaskId} was cancelled:\n{taskData_.Output.Error}")
                                      .ConfigureAwait(false);
           return AcquisitionStatus.TaskIsCancelled;
         case TaskStatus.Processing:
@@ -764,8 +761,8 @@ public sealed class TaskHandler : IAsyncDisposable
                                                              {
                                                                messageHandler_.TaskId,
                                                              },
-                                                             $"Task {messageHandler_.TaskId} has been cancelled while acquired on another pod",
-                                                             CancellationToken.None)
+                                                             reason:
+                                                             $"Task {messageHandler_.TaskId} has been cancelled while acquired on another pod:\n{taskData_.Output.Error}")
                                        .ConfigureAwait(false);
             return AcquisitionStatus.AcquisitionFailedTaskCancelling;
           }

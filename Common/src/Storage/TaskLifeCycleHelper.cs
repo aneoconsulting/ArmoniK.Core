@@ -728,8 +728,7 @@ public static class TaskLifeCycleHelper
                                                            {
                                                              taskData.TaskId,
                                                            },
-                                                           "One of the input data is aborted.",
-                                                           CancellationToken.None)
+                                                           reason: $"Task {taskData.TaskId} failed:\n{output.Error}")
                                      .ConfigureAwait(false);
         }
 
@@ -774,8 +773,7 @@ public static class TaskLifeCycleHelper
                                                          {
                                                            taskData.TaskId,
                                                          },
-                                                         "One of the dependent tasks timed out.",
-                                                         CancellationToken.None)
+                                                         reason: $"Task {taskData.TaskId} timed-out:\n{output.Error}")
                                    .ConfigureAwait(false);
         break;
       default:
@@ -811,6 +809,8 @@ public static class TaskLifeCycleHelper
                                                                         ILogger           logger,
                                                                         CancellationToken cancellationToken)
   {
+    var retry = taskData.RetryOfIds.Count < taskData.Options.MaxRetries;
+
     logger.LogDebug("Other pod has crashed while processing {TaskId}. Wait {ProcessingCrashedDelay} to ensure crashing pod {OtherPodId} has finished what it was doing, and check subtasks status",
                     taskData.TaskId,
                     processingCrashedDelay,
@@ -947,55 +947,42 @@ public static class TaskLifeCycleHelper
     {
       // If there is no subtask or they are all in creating, we are guaranteed that no subtask has started,
       // So we can safely cancel the subtasks, and retry the current task.
-      errorMessage = "Other pod seems to have crashed, resubmitting task";
 
-      logger.LogInformation("Resubmitting task {TaskId} on another pod, and cancel subtasks",
-                            taskData.TaskId);
+      var action = retry
+                     ? "retried"
+                     : "aborted";
+      errorMessage = $"Task {taskData.TaskId} has been {action} because pod {taskData.OwnerPodId} seems to have crashed";
+
+      logger.LogInformation("{Action} task {TaskId} on another pod, and cancel subtasks",
+                            taskData.TaskId,
+                            retry
+                              ? "Retry"
+                              : "Abort");
     }
 
-    var utcNow = DateTime.UtcNow;
-
-    if (subtasks.Any())
-    {
-      var subtaskIds = subtasks.Select(td => td.TaskId)
-                               .ToList();
-
-      var message = $"Task {taskData.TaskId} has been retried because pod {taskData.OwnerPodId} seems to have crashed";
-
-      // Revert ExpectedOutputIds to current task to avoid aborting them while aborting subtasks
-      await resultTable.UpdateManyResults(td => taskData.ExpectedOutputIds.Contains(td.ResultId),
-                                          new UpdateDefinition<Result>().Set(td => td.OwnerTaskId,
-                                                                             taskData.TaskId),
-                                          cancellationToken)
-                       .ConfigureAwait(false);
-
-      // Cancel subtasks
-      // As subtasks have not been started, there is no tasks that depends on these subtasks that would need to be aborted.
-      await taskTable.UpdateManyTasks(td => subtaskIds.Contains(td.TaskId),
-                                      new UpdateDefinition<TaskData>().Set(td => td.Status,
-                                                                           TaskStatus.Cancelled)
-                                                                      .Set(td => td.EndDate,
-                                                                           utcNow)
-                                                                      .Set(td => td.Output,
-                                                                           new Output(OutputStatus.Error,
-                                                                                      message)),
-                                      cancellationToken)
-                     .ConfigureAwait(false);
-    }
-
-    // Abort all results that have been created by the current task
-    // As subtasks have not been started, there is no tasks that depends on these results that would need to be aborted.
-    await resultTable.UpdateManyResults(r => r.CreatedBy == taskData.TaskId && r.Status == ResultStatus.Created,
-                                        new UpdateDefinition<Result>().Set(r => r.Status,
-                                                                           ResultStatus.Aborted)
-                                                                      .Set(r => r.CompletionDate,
-                                                                           utcNow)
-                                                                      .Set(r => r.CompletedBy,
+    // Revert ExpectedOutputIds to current task to avoid aborting them while aborting subtasks
+    await resultTable.UpdateManyResults(td => taskData.ExpectedOutputIds.Contains(td.ResultId),
+                                        new UpdateDefinition<Result>().Set(td => td.OwnerTaskId,
                                                                            taskData.TaskId),
                                         cancellationToken)
                      .ConfigureAwait(false);
 
-    // Retry of abort the current task
+    var resultsToAbort = await resultTable.GetResults(r => r.CreatedBy == taskData.TaskId,
+                                                      r => r.ResultId,
+                                                      cancellationToken)
+                                          .ToListAsync(cancellationToken)
+                                          .ConfigureAwait(false);
+
+    await ResultLifeCycleHelper.AbortTasksAndResults(taskTable,
+                                                     resultTable,
+                                                     subtasks.ViewSelect(td => td.TaskId),
+                                                     resultsToAbort,
+                                                     errorMessage,
+                                                     TaskStatus.Cancelled,
+                                                     cancellationToken)
+                               .ConfigureAwait(false);
+
+    // Retry or abort the current task
     await CompleteTaskAsync(taskTable,
                             resultTable,
                             objectStorage,
@@ -1010,7 +997,7 @@ public static class TaskLifeCycleHelper
                             cancellationToken)
       .ConfigureAwait(false);
 
-    return taskData.RetryOfIds.Count < taskData.Options.MaxRetries
+    return retry
              ? TaskStatus.Retried
              : TaskStatus.Error;
   }

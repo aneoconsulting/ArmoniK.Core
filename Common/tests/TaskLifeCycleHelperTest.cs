@@ -1280,7 +1280,7 @@ public class TaskLifeCycleHelperTest
                       Assert.That(outputRoot.Status,
                                   Is.EqualTo(ResultStatus.Created));
                       Assert.That(outputRoot.OwnerTaskId,
-                                  Is.EqualTo(committed || !subtask
+                                  Is.EqualTo(committed
                                                ? "B"
                                                : "root###1"));
 
