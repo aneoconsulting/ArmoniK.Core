@@ -280,7 +280,8 @@ public class PollsterTest
 
     public int MaxPriority { get; }
 
-    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string            partitionId,
+                                                                    int               nbMessages,
                                                                     CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
   }
@@ -392,7 +393,8 @@ public class PollsterTest
     var mockPullQueueStorage = new Mock<IPullQueueStorage>();
     var mockAgentHandler     = new Mock<IAgentHandler>();
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync("partitionId",
+                                                                    It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
                         .Returns(() => new List<IQueueMessageHandler>
                                        {
@@ -764,7 +766,8 @@ public class PollsterTest
       {
         // Failing PullQueueStorage
         var mockPullQueueStorageFail = new Mock<IPullQueueStorage>();
-        mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync(It.IsAny<int>(),
+        mockPullQueueStorageFail.Setup(storage => storage.PullMessagesAsync("partitionId",
+                                                                            It.IsAny<int>(),
                                                                             It.IsAny<CancellationToken>()))
                                 .Throws(new ApplicationException("Failed queue"));
 
