@@ -30,6 +30,7 @@ using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -1036,7 +1037,7 @@ public class TaskLifeCycleHelperTest
                         },
                         resultTemplate with
                         {
-                          ResultId = "output",
+                          ResultId = "outputRoot",
                         },
                         resultTemplate with
                         {
@@ -1056,8 +1057,10 @@ public class TaskLifeCycleHelperTest
                           resultTemplate with
                           {
                             ResultId = "payloadB",
-                            CreatedBy = "root",
-                            CompletedBy = "root",
+                          },
+                          resultTemplate with
+                          {
+                            ResultId = "outputB",
                           },
                         };
 
@@ -1068,7 +1071,7 @@ public class TaskLifeCycleHelperTest
                           holder.Options.ToTaskOptions(),
                           new List<string>
                           {
-                            "output",
+                            "outputRoot",
                           },
                           new List<string>()),
                       new("A",
@@ -1088,7 +1091,8 @@ public class TaskLifeCycleHelperTest
                             holder.Options.ToTaskOptions(),
                             new List<string>
                             {
-                              "output",
+                              "outputRoot",
+                              "outputB",
                             },
                             new List<string>
                             {
@@ -1142,7 +1146,10 @@ public class TaskLifeCycleHelperTest
 
     if (crashState >= CrashState.ResultsCreated)
     {
-      await holder.ResultTable.Create(submitResults)
+      await holder.ResultTable.Create(submitResults.ViewSelect(r => r with
+                                                                    {
+                                                                      CreatedBy = "root",
+                                                                    }))
                   .ConfigureAwait(false);
     }
 
@@ -1224,8 +1231,13 @@ public class TaskLifeCycleHelperTest
                             .ToListAsync()
                             .ConfigureAwait(false);
 
-    var output = await holder.ResultTable.GetResult("output")
-                             .ConfigureAwait(false);
+    var outputRoot = await holder.ResultTable.GetResult("outputRoot")
+                                 .ConfigureAwait(false);
+
+    var outputB = await holder.ResultTable.GetResults(r => r.ResultId == "outputB",
+                                                      r => r)
+                              .ToListAsync()
+                              .ConfigureAwait(false);
 
     var messages = new List<string>();
 
@@ -1253,13 +1265,22 @@ public class TaskLifeCycleHelperTest
                                          .Property("Status")
                                          .EqualTo(committed || !subtask
                                                     ? TaskStatus.Pending
-                                                    : TaskStatus.Cancelling)
+                                                    : TaskStatus.Cancelled)
                                     : Is.Empty);
 
-                      Assert.That(output.Status,
+                      Assert.That(outputB,
+                                  crashState >= CrashState.ResultsCreated || !subtask
+                                    ? Has.ItemAt(0)
+                                         .Property("Status")
+                                         .EqualTo(committed || !subtask
+                                                    ? ResultStatus.Created
+                                                    : ResultStatus.Aborted)
+                                    : Is.Empty);
+
+                      Assert.That(outputRoot.Status,
                                   Is.EqualTo(ResultStatus.Created));
-                      Assert.That(output.OwnerTaskId,
-                                  Is.EqualTo(committed || !subtask
+                      Assert.That(outputRoot.OwnerTaskId,
+                                  Is.EqualTo(committed
                                                ? "B"
                                                : "root###1"));
 
