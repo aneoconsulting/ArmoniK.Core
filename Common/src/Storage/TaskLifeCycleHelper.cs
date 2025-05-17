@@ -604,65 +604,6 @@ public static class TaskLifeCycleHelper
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="objectStorage">Interface to manage object data</param>
-  /// <param name="pushQueueStorage">Interface to push messages to the queue</param>
-  /// <param name="options">Submitter options</param>
-  /// <param name="sessionData">Data of the session</param>
-  /// <param name="taskData">Data of the task</param>
-  /// <param name="resubmit">Whether the task should be retried in case of error</param>
-  /// <param name="output">Whether the task has completed successfully</param>
-  /// <param name="logger">Logger</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>The status of the processed task</returns>
-  public static Task<TaskData> CompleteTaskAsync(ITaskTable        taskTable,
-                                                 IResultTable      resultTable,
-                                                 IObjectStorage    objectStorage,
-                                                 IPushQueueStorage pushQueueStorage,
-                                                 Submitter         options,
-                                                 TaskData          taskData,
-                                                 SessionData       sessionData,
-                                                 bool              resubmit,
-                                                 Output            output,
-                                                 ILogger           logger,
-                                                 CancellationToken cancellationToken = default)
-    => (output.Status, resubmit) switch
-       {
-         (OutputStatus.Success, _) => CompleteTaskAsync(taskTable,
-                                                        resultTable,
-                                                        objectStorage,
-                                                        options,
-                                                        taskData,
-                                                        logger,
-                                                        cancellationToken),
-         (OutputStatus.Error, true) => AbortOrRetryTaskAsync(taskTable,
-                                                             resultTable,
-                                                             objectStorage,
-                                                             pushQueueStorage,
-                                                             options,
-                                                             taskData,
-                                                             sessionData,
-                                                             null,
-                                                             output.Error,
-                                                             logger,
-                                                             cancellationToken),
-         (OutputStatus.Timeout or OutputStatus.Error, _) => AbortTaskAsync(taskTable,
-                                                                           resultTable,
-                                                                           objectStorage,
-                                                                           options,
-                                                                           taskData,
-                                                                           output.Status,
-                                                                           output.Error,
-                                                                           logger,
-                                                                           cancellationToken),
-         _ => throw new ArgumentOutOfRangeException(),
-       };
-
-
-  /// <summary>
-  ///   Complete the task depending on the given output
-  /// </summary>
-  /// <param name="taskTable">Interface to manage task states</param>
-  /// <param name="resultTable">Interface to manage result states</param>
-  /// <param name="objectStorage">Interface to manage object data</param>
   /// <param name="options">Submitter options</param>
   /// <param name="taskData">Data of the task</param>
   /// <param name="logger">Logger</param>
@@ -676,11 +617,10 @@ public static class TaskLifeCycleHelper
                                                        ILogger           logger,
                                                        CancellationToken cancellationToken = default)
   {
-    taskData = taskData.WithEndDate();
-
-    await taskTable.SetTaskSuccessAsync(taskData,
-                                        cancellationToken)
-                   .ConfigureAwait(false);
+    taskData = await taskTable.EndTaskAsync(taskData,
+                                            TaskStatus.Completed,
+                                            cancellationToken: cancellationToken)
+                              .ConfigureAwait(false);
 
 
     if (options.DeletePayload)
@@ -694,62 +634,8 @@ public static class TaskLifeCycleHelper
                             taskData.TaskId);
     }
 
-    return taskData with
-           {
-             Status = TaskStatus.Completed,
-             Output = new Output(OutputStatus.Success,
-                                 ""),
-           };
+    return taskData;
   }
-
-  /// <summary>
-  ///   Retry the task if all retries have not been consumed, or abort otherwise
-  /// </summary>
-  /// <param name="taskTable">Interface to manage task states</param>
-  /// <param name="resultTable">Interface to manage result states</param>
-  /// <param name="objectStorage">Interface to manage object data</param>
-  /// <param name="pushQueueStorage">Interface to push messages to the queue</param>
-  /// <param name="options">Submitter options</param>
-  /// <param name="taskData">Data of the task</param>
-  /// <param name="sessionData">Data of the session</param>
-  /// <param name="subtasks">
-  ///   Ids of the tasks that have been created by the current task. If null, they will be fetched from
-  ///   the TaskTable
-  /// </param>
-  /// <param name="errorMessage">Error message to record in the task output</param>
-  /// <param name="logger">Logger</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>The status of the processed task</returns>
-  public static Task<TaskData> AbortOrRetryTaskAsync(ITaskTable           taskTable,
-                                                     IResultTable         resultTable,
-                                                     IObjectStorage       objectStorage,
-                                                     IPushQueueStorage    pushQueueStorage,
-                                                     Submitter            options,
-                                                     TaskData             taskData,
-                                                     SessionData          sessionData,
-                                                     ICollection<string>? subtasks,
-                                                     string               errorMessage,
-                                                     ILogger              logger,
-                                                     CancellationToken    cancellationToken = default)
-    => taskData.RetryOfIds.Count < taskData.Options.MaxRetries
-         ? RetryTaskAsync(taskTable,
-                          resultTable,
-                          pushQueueStorage,
-                          taskData,
-                          sessionData,
-                          subtasks,
-                          errorMessage,
-                          logger,
-                          cancellationToken)
-         : AbortTaskAsync(taskTable,
-                          resultTable,
-                          objectStorage,
-                          options,
-                          taskData,
-                          OutputStatus.Error,
-                          errorMessage,
-                          logger,
-                          cancellationToken);
 
   /// <summary>
   ///   Retry the task if all retries have not been consumed, or abort otherwise
@@ -777,8 +663,6 @@ public static class TaskLifeCycleHelper
                                                     ILogger              logger,
                                                     CancellationToken    cancellationToken = default)
   {
-    taskData = taskData.WithEndDate();
-
     subtasks ??= await taskTable.FindTasksAsync(td => td.CreatedBy == taskData.TaskId && td.InitialTaskId == td.TaskId,
                                                 td => td.TaskId,
                                                 cancellationToken)
@@ -808,10 +692,11 @@ public static class TaskLifeCycleHelper
                                .ConfigureAwait(false);
 
     // Change current task status to Retried
-    await taskTable.SetTaskRetryAsync(taskData,
-                                      errorMessage,
-                                      cancellationToken)
-                   .ConfigureAwait(false);
+    taskData = await taskTable.EndTaskAsync(taskData,
+                                            TaskStatus.Retried,
+                                            errorMessage,
+                                            cancellationToken)
+                              .ConfigureAwait(false);
 
     logger.LogWarning("Resubmit {task}",
                       taskData.TaskId);
@@ -849,12 +734,7 @@ public static class TaskLifeCycleHelper
                                cancellationToken)
       .ConfigureAwait(false);
 
-    return taskData with
-           {
-             Status = TaskStatus.Retried,
-             Output = new Output(OutputStatus.Error,
-                                 errorMessage),
-           };
+    return taskData;
   }
 
   /// <summary>
@@ -880,8 +760,6 @@ public static class TaskLifeCycleHelper
                                                     ILogger           logger,
                                                     CancellationToken cancellationToken = default)
   {
-    taskData = taskData.WithEndDate();
-
     var (taskStatus, reason) = status switch
                                {
                                  OutputStatus.Error   => (TaskStatus.Error, "failed"),
@@ -902,24 +780,10 @@ public static class TaskLifeCycleHelper
                             taskData.TaskId);
     }
 
-    var updated = await taskTable.UpdateOneTask(taskData.TaskId,
-                                                null,
-                                                new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                                     new Output(status,
-                                                                                                errorMessage))
-                                                                                .Set(data => data.Status,
-                                                                                     taskStatus)
-                                                                                .Set(tdm => tdm.EndDate,
-                                                                                     taskData.EndDate)
-                                                                                .Set(tdm => tdm.ProcessedDate,
-                                                                                     taskData.ProcessedDate)
-                                                                                .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                                     taskData.ReceivedToEndDuration)
-                                                                                .Set(tdm => tdm.CreationToEndDuration,
-                                                                                     taskData.CreationToEndDuration)
-                                                                                .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                                     taskData.ProcessingToEndDuration),
-                                                cancellationToken: cancellationToken)
+    var updated = await taskTable.EndTaskAsync(taskData,
+                                               taskStatus,
+                                               errorMessage,
+                                               cancellationToken)
                                  .ConfigureAwait(false);
 
     await ResultLifeCycleHelper.AbortTasksAndResults(taskTable,
@@ -932,27 +796,8 @@ public static class TaskLifeCycleHelper
                                                      cancellationToken: cancellationToken)
                                .ConfigureAwait(false);
 
-    if (updated is null)
-    {
-      throw new TaskNotFoundException($"Task {taskData.TaskId} not found");
-    }
-
     return updated;
   }
-
-  /// <summary>
-  ///   Create a copy of the task data with the end date set
-  /// </summary>
-  /// <param name="taskData">Task data</param>
-  /// <returns>Updated task data</returns>
-  private static TaskData WithEndDate(this TaskData taskData)
-    => taskData with
-       {
-         EndDate = DateTime.UtcNow,
-         CreationToEndDuration = DateTime.UtcNow   - taskData.CreationDate,
-         ProcessingToEndDuration = DateTime.UtcNow - taskData.StartDate,
-         ReceivedToEndDuration = DateTime.UtcNow   - taskData.ReceptionDate,
-       };
 
 
   /// <summary>
@@ -1023,7 +868,6 @@ public static class TaskLifeCycleHelper
                       await resultTask);
     }
 
-    var    resubmit = true;
     string errorMessage;
 
     // If at least one task is not creating, it means that it has potentially been submitted, and might have started.
@@ -1093,13 +937,8 @@ public static class TaskLifeCycleHelper
         await CompleteTaskAsync(taskTable,
                                 resultTable,
                                 objectStorage,
-                                pushQueueStorage,
                                 options,
                                 taskData,
-                                sessionData,
-                                resubmit,
-                                new Output(OutputStatus.Success,
-                                           ""),
                                 logger,
                                 cancellationToken)
           .ConfigureAwait(false);
@@ -1108,8 +947,8 @@ public static class TaskLifeCycleHelper
       }
       catch (Exception ex)
       {
-        resubmit     = ex is not ObjectDataNotFoundException;
-        errorMessage = $"Post-processing error: {ex.Message}";
+        retry        &= ex is not ObjectDataNotFoundException;
+        errorMessage =  $"Post-processing error: {ex.Message}";
 
         logger.LogError(ex,
                         "Error while post-processing {TaskId} on behalf of previous pod {OtherPodId}",
@@ -1157,22 +996,26 @@ public static class TaskLifeCycleHelper
                                .ConfigureAwait(false);
 
     // Retry or abort the current task
-    await CompleteTaskAsync(taskTable,
-                            resultTable,
-                            objectStorage,
-                            pushQueueStorage,
-                            options,
-                            taskData,
-                            sessionData,
-                            resubmit,
-                            new Output(OutputStatus.Error,
-                                       errorMessage),
-                            logger,
-                            cancellationToken)
-      .ConfigureAwait(false);
+    var updateTask = retry
+                       ? RetryTaskAsync(taskTable,
+                                        resultTable,
+                                        pushQueueStorage,
+                                        taskData,
+                                        sessionData,
+                                        subtasks.ViewSelect(td => td.TaskId),
+                                        errorMessage,
+                                        logger,
+                                        cancellationToken)
+                       : AbortTaskAsync(taskTable,
+                                        resultTable,
+                                        objectStorage,
+                                        options,
+                                        taskData,
+                                        OutputStatus.Error,
+                                        errorMessage,
+                                        logger,
+                                        cancellationToken);
 
-    return retry
-             ? TaskStatus.Retried
-             : TaskStatus.Error;
+    return (await updateTask.ConfigureAwait(false)).Status;
   }
 }

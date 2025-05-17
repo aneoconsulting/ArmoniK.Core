@@ -336,14 +336,11 @@ public sealed class TaskHandler : IAsyncDisposable
                                sessionData_.Status);
 
         messageHandler_.Status = QueueMessageStatus.Cancelled;
-        taskData_ = taskData_ with
-                    {
-                      EndDate = DateTime.UtcNow,
-                      CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
-                    };
-        await taskTable_.SetTaskCanceledAsync(taskData_,
-                                              CancellationToken.None)
-                        .ConfigureAwait(false);
+
+        // Propagate cancelled status to TaskHandler
+        taskData_ = await taskTable_.EndTaskAsync(taskData_,
+                                                  TaskStatus.Cancelled)
+                                    .ConfigureAwait(false);
 
         await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
                                                          resultTable_,
@@ -354,12 +351,6 @@ public sealed class TaskHandler : IAsyncDisposable
                                                          reason:
                                                          $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}")
                                    .ConfigureAwait(false);
-
-        // Propagate cancelled status to TaskHandler
-        taskData_ = taskData_ with
-                    {
-                      Status = TaskStatus.Cancelled,
-                    };
 
         return AcquisitionStatus.SessionNotExecutable;
       }
@@ -376,14 +367,12 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Cancelling:
           logger_.LogInformation("Task is being cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          taskData_ = taskData_ with
-                      {
-                        EndDate = DateTime.UtcNow,
-                        CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
-                      };
-          await taskTable_.SetTaskCanceledAsync(taskData_,
-                                                CancellationToken.None)
-                          .ConfigureAwait(false);
+
+          // Propagate cancelled status to TaskHandler
+          taskData_ = await taskTable_.EndTaskAsync(taskData_,
+                                                    TaskStatus.Cancelled)
+                                      .ConfigureAwait(false);
+
           await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
                                                            resultTable_,
                                                            new[]
@@ -392,12 +381,6 @@ public sealed class TaskHandler : IAsyncDisposable
                                                            },
                                                            reason: $"Task {messageHandler_.TaskId} has been cancelled:\n{taskData_.Output.Error}")
                                      .ConfigureAwait(false);
-
-          // Propagate cancelled status to TaskHandler
-          taskData_ = taskData_ with
-                      {
-                        Status = TaskStatus.Cancelled,
-                      };
 
           return AcquisitionStatus.TaskIsCancelling;
         case TaskStatus.Completed:
@@ -747,14 +730,9 @@ public sealed class TaskHandler : IAsyncDisposable
           if (taskData_.Status is TaskStatus.Cancelling)
           {
             messageHandler_.Status = QueueMessageStatus.Cancelled;
-            taskData_ = taskData_ with
-                        {
-                          EndDate = DateTime.UtcNow,
-                          CreationToEndDuration = DateTime.UtcNow - taskData_.CreationDate,
-                        };
-            await taskTable_.SetTaskCanceledAsync(taskData_,
-                                                  CancellationToken.None)
-                            .ConfigureAwait(false);
+            taskData_ = await taskTable_.EndTaskAsync(taskData_,
+                                                      TaskStatus.Cancelled)
+                                        .ConfigureAwait(false);
             await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
                                                              resultTable_,
                                                              new[]
