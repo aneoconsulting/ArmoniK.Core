@@ -205,24 +205,34 @@ public sealed class TaskHandler : IAsyncDisposable
 
     if (delayMessage_ is not null)
     {
-      logger_.LogDebug("MessageHandler will be delayed for {MessageDelay} with status {Status}",
-                       delayMessage_,
+      logger_.LogDebug("MessageHandler will be delayed with status {Status}",
                        messageHandler_.Status);
 
       _ = Task.Run(async () =>
                    {
-                     await Task.Delay(delayMessage_.Value)
-                               .ConfigureAwait(false);
-
                      using var _ = logger_.BeginNamedScope("DelayedReleaseTaskHandler",
                                                            ("taskId", messageHandler_.TaskId),
                                                            ("messageHandler", messageHandler_.MessageId),
                                                            ("sessionId", taskData_?.SessionId ?? ""));
 
-                     logger_.LogDebug("MessageHandler is released after delay with status {Status}",
-                                      messageHandler_.Status);
-                     await messageHandler_.DisposeIgnoreErrorAsync(logger_)
-                                          .ConfigureAwait(false);
+                     await using var deferrer = new Deferrer(() =>
+                                                             {
+                                                               logger_
+                                                                 .LogDebug("Other pod is not processing anymore {Task}: MessageHandler is released with status {Status}",
+                                                                           taskData_.TaskId,
+                                                                           messageHandler_.Status);
+                                                               return messageHandler_.DisposeIgnoreErrorAsync(logger_);
+                                                             });
+
+                     do
+                     {
+                       await Task.Delay(delayMessage_.Value,
+                                        earlyCts_.Token)
+                                 .ConfigureAwait(false);
+                     } while (await taskProcessingChecker_.Check(taskData_.TaskId,
+                                                                 taskData_.OwnerPodId,
+                                                                 earlyCts_.Token)
+                                                          .ConfigureAwait(false));
                    });
     }
     else
