@@ -29,6 +29,7 @@ internal static class AmazonSqsClientExt
   public static async Task<string> GetOrCreateQueueUrlAsync(this AmazonSQSClient       client,
                                                             string                     queueName,
                                                             Dictionary<string, string> tags,
+                                                            Dictionary<string, string> attributes,
                                                             CancellationToken          cancellationToken)
   {
     try
@@ -41,8 +42,9 @@ internal static class AmazonSqsClientExt
     {
       return (await client.CreateQueueAsync(new CreateQueueRequest
                                             {
-                                              QueueName = queueName,
-                                              Tags      = tags,
+                                              QueueName  = queueName,
+                                              Tags       = tags,
+                                              Attributes = attributes,
                                             },
                                             cancellationToken)
                           .ConfigureAwait(false)).QueueUrl;
