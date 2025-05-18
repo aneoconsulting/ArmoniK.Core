@@ -2202,4 +2202,69 @@ public class TaskHandlerTest
     Assert.AreEqual(QueueMessageStatus.Cancelled,
                     sqmh.Status);
   }
+
+  [Test]
+  public async Task LoopCheckOtherAgent()
+  {
+    var checkResult           = true;
+    var tcs                   = new TaskCompletionSource();
+    var taskProcessingChecker = new Mock<ITaskProcessingChecker>();
+    taskProcessingChecker.Setup(checker => checker.Check(It.IsAny<string>(),
+                                                         It.IsAny<string>(),
+                                                         It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(() => checkResult);
+
+    var qmh = new Mock<IQueueMessageHandler>().SetupProperty(m => m.Status,
+                                                             QueueMessageStatus.Waiting);
+
+    using var testServiceProvider = new TestTaskHandlerProvider(queueStorage: qmh.Object,
+                                                                taskProcessingChecker: taskProcessingChecker.Object,
+                                                                messageDuplicationDelay: TimeSpan.FromMilliseconds(1));
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+    qmh.Setup(m => m.TaskId)
+       .Returns(taskId);
+
+
+    await testServiceProvider.TaskTable.UpdateOneTask(taskId,
+                                                      null,
+                                                      new UpdateDefinition<TaskData>().Set(td => td.OwnerPodId,
+                                                                                           "other")
+                                                                                      .Set(td => td.OwnerPodName,
+                                                                                           "other")
+                                                                                      .Set(td => td.Status,
+                                                                                           TaskStatus.Processing))
+                             .ConfigureAwait(false);
+
+    qmh.Setup(m => m.DisposeAsync())
+       .Callback(() => tcs.TrySetResult());
+    var acquisitionStatus = await testServiceProvider.TaskHandler.AcquireTask()
+                                                     .ConfigureAwait(false);
+
+    Assert.That(acquisitionStatus,
+                Is.EqualTo(AcquisitionStatus.TaskIsProcessingElsewhere));
+    Assert.That(qmh.Object.Status,
+                Is.EqualTo(QueueMessageStatus.Postponed));
+    Assert.That(tcs.Task.IsCompleted,
+                Is.False);
+
+    await testServiceProvider.TaskHandler.DisposeAsync()
+                             .ConfigureAwait(false);
+
+    await Task.Delay(50)
+              .ConfigureAwait(false);
+
+    Assert.That(tcs.Task.IsCompleted,
+                Is.False);
+
+    checkResult = false;
+
+    await tcs.Task.WaitAsync(TimeSpan.FromSeconds(1))
+             .ConfigureAwait(false);
+
+    qmh.Verify(q => q.DisposeAsync(),
+               Times.Once);
+  }
 }
