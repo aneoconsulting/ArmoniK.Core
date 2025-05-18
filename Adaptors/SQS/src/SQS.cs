@@ -70,4 +70,16 @@ internal class SQS
   ///   Number of priority levels supported. Each priority level will create its own SQS topic.
   /// </summary>
   public int MaxPriority { get; set; } = 0;
+
+  /// <summary>
+  ///   Attributes of the created SQS
+  /// </summary>
+  /// <remarks>
+  ///   Attributes reference can be found in
+  ///   <a
+  ///     href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html#SQS-CreateQueue-request-Attributes">
+  ///     AWS documentation
+  ///   </a>
+  /// </remarks>
+  public Dictionary<string, string> Attributes { get; set; } = new();
 }
