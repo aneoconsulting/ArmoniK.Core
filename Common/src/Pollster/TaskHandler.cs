@@ -542,74 +542,20 @@ public sealed class TaskHandler : IAsyncDisposable
           return AcquisitionStatus.TaskIsProcessingHere;
         case TaskStatus.Retried:
           logger_.LogInformation("Task is in retry ; retry task should be executed");
+
+          await TaskLifeCycleHelper.RetryTaskAsync(taskTable_,
+                                                   resultTable_,
+                                                   pushQueueStorage_,
+                                                   taskData_,
+                                                   sessionData_,
+                                                   null,
+                                                   taskData_.Output.Error,
+                                                   logger_,
+                                                   lateCts_.Token)
+                                   .ConfigureAwait(false);
           messageHandler_.Status = QueueMessageStatus.Poisonous;
-          var retryId = taskData_.RetryId();
 
-          TaskData retryData;
-          var      taskNotFound = false;
-          var      taskExists   = false;
-          try
-          {
-            retryData = await taskTable_.ReadTaskAsync(retryId,
-                                                       lateCts_.Token)
-                                        .ConfigureAwait(false);
-          }
-          catch (TaskNotFoundException)
-          {
-            logger_.LogWarning("Retried task {task} was not found in the database; resubmit it",
-                               retryId);
-            taskNotFound = true;
-            try
-            {
-              await taskTable_.RetryTask(taskData_,
-                                         CancellationToken.None)
-                              .ConfigureAwait(false);
-            }
-            catch (TaskAlreadyExistsException)
-            {
-              logger_.LogWarning("Retried task {task} already exists; finalize creation if needed",
-                                 retryId);
-              taskExists = true;
-            }
-
-            retryData = await taskTable_.ReadTaskAsync(retryId,
-                                                       CancellationToken.None)
-                                        .ConfigureAwait(false);
-          }
-
-          if (retryData.Status is TaskStatus.Creating or TaskStatus.Pending or TaskStatus.Submitted)
-          {
-            logger_.LogWarning("Retried task {task} is in {status}; trying to finalize task creation",
-                               retryId,
-                               retryData.Status);
-            await submitter_.FinalizeTaskCreation(new List<TaskCreationRequest>
-                                                  {
-                                                    new(retryId,
-                                                        retryData.PayloadId,
-                                                        retryData.Options,
-                                                        retryData.ExpectedOutputIds,
-                                                        retryData.DataDependencies),
-                                                  },
-                                                  sessionData_,
-                                                  taskData_.TaskId,
-                                                  CancellationToken.None)
-                            .ConfigureAwait(false);
-          }
-          else
-          {
-            logger_.LogInformation("Retried task {task} is in {status}; nothing done",
-                                   retryId,
-                                   retryData.Status);
-          }
-
-          return (taskNotFound, taskExists, retryData.Status) switch
-                 {
-                   (false, false, TaskStatus.Submitted)                       => AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted,
-                   (false, false, TaskStatus.Creating)                        => AcquisitionStatus.TaskIsRetriedAndRetryIsCreating,
-                   (false, false, TaskStatus.Pending)                         => AcquisitionStatus.TaskIsRetriedAndRetryIsPending,
-                   (true, false, TaskStatus.Submitted or TaskStatus.Creating) => AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
-                   _                                                          => AcquisitionStatus.TaskIsRetried,
-                 };
+          return AcquisitionStatus.TaskIsRetried;
 
         case TaskStatus.Unspecified:
         default:

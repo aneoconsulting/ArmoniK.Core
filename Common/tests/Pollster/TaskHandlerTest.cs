@@ -993,21 +993,14 @@ public class TaskHandlerTest
   {
     get
     {
-      yield return new TestCaseData("TaskRetry2").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetried,
-                                                                                TaskStatus.Retried,
-                                                                                QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+Creating").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsCreating,
-                                                                                         TaskStatus.Retried,
-                                                                                         QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+Submitted").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted,
-                                                                                          TaskStatus.Retried,
-                                                                                          QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+NotFound").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
-                                                                                         TaskStatus.Retried,
-                                                                                         QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+Pending").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsPending,
-                                                                                        TaskStatus.Retried,
-                                                                                        QueueMessageStatus.Poisonous));
+      var expected = new AcquireTaskReturn(AcquisitionStatus.TaskIsRetried,
+                                           TaskStatus.Retried,
+                                           QueueMessageStatus.Poisonous);
+      yield return new TestCaseData("TaskRetry2").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+Creating").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+Submitted").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+NotFound").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+Pending").Returns(expected);
     }
   }
 
