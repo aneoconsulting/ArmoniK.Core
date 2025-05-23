@@ -213,4 +213,42 @@ public static class ResultLifeCycleHelper
                                         cancellationToken)
                      .ConfigureAwait(false);
   }
+
+  /// <summary>
+  ///   Delete the result
+  /// </summary>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="objectStorage">Interface to manage objects</param>
+  /// <param name="resultId">ID of the result to delete</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  public static async Task DeleteResultAsync(IResultTable      resultTable,
+                                             IObjectStorage    objectStorage,
+                                             string            resultId,
+                                             CancellationToken cancellationToken)
+  {
+    var result = await resultTable.GetResult(resultId,
+                                             cancellationToken)
+                                  .ConfigureAwait(false);
+
+    if (result.ManualDeletion)
+    {
+      return;
+    }
+
+    //Discard value is used to remove warnings CS4014 !!
+    _ = Task.Factory.StartNew(async () =>
+                              {
+                                await objectStorage.TryDeleteAsync(new[]
+                                                                   {
+                                                                     result.OpaqueId,
+                                                                   },
+                                                                   CancellationToken.None)
+                                                   .ConfigureAwait(false);
+                              },
+                              cancellationToken);
+
+    await resultTable.MarkAsDeleted(resultId,
+                                    cancellationToken)
+                     .ConfigureAwait(false);
+  }
 }

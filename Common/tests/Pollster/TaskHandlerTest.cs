@@ -470,8 +470,9 @@ public class TaskHandlerTest
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2")
                                             .ConfigureAwait(false);
 
-    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
-                                                          "Error for test : retried")
+    await testServiceProvider.TaskTable.EndTaskAsync(taskData,
+                                                     TaskStatus.Retried,
+                                                     "Error for test : retried")
                              .ConfigureAwait(false);
 
     var newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
@@ -501,8 +502,9 @@ public class TaskHandlerTest
     taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+Submitted")
                                         .ConfigureAwait(false);
 
-    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
-                                                          "Error for test : submitted")
+    await testServiceProvider.TaskTable.EndTaskAsync(taskData,
+                                                     TaskStatus.Retried,
+                                                     "Error for test : submitted")
                              .ConfigureAwait(false);
 
     newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
@@ -528,8 +530,9 @@ public class TaskHandlerTest
     taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+Creating")
                                         .ConfigureAwait(false);
 
-    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
-                                                          "Error for test : creating")
+    await testServiceProvider.TaskTable.EndTaskAsync(taskData,
+                                                     TaskStatus.Retried,
+                                                     "Error for test : creating")
                              .ConfigureAwait(false);
 
     newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
@@ -539,16 +542,18 @@ public class TaskHandlerTest
     taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+NotFound")
                                         .ConfigureAwait(false);
 
-    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
-                                                          "Error for test : not found")
+    await testServiceProvider.TaskTable.EndTaskAsync(taskData,
+                                                     TaskStatus.Retried,
+                                                     "Error for test : not found")
                              .ConfigureAwait(false);
 
 
     taskData = await testServiceProvider.TaskTable.ReadTaskAsync("TaskRetry2+Pending")
                                         .ConfigureAwait(false);
 
-    await testServiceProvider.TaskTable.SetTaskRetryAsync(taskData,
-                                                          "Error for test : pending")
+    await testServiceProvider.TaskTable.EndTaskAsync(taskData,
+                                                     TaskStatus.Retried,
+                                                     "Error for test : pending")
                              .ConfigureAwait(false);
 
     newTaskId = await testServiceProvider.TaskTable.RetryTask(taskData)
@@ -988,21 +993,14 @@ public class TaskHandlerTest
   {
     get
     {
-      yield return new TestCaseData("TaskRetry2").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetried,
-                                                                                TaskStatus.Retried,
-                                                                                QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+Creating").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsCreating,
-                                                                                         TaskStatus.Retried,
-                                                                                         QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+Submitted").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsSubmitted,
-                                                                                          TaskStatus.Retried,
-                                                                                          QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+NotFound").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsNotFound,
-                                                                                         TaskStatus.Retried,
-                                                                                         QueueMessageStatus.Poisonous));
-      yield return new TestCaseData("TaskRetry2+Pending").Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsRetriedAndRetryIsPending,
-                                                                                        TaskStatus.Retried,
-                                                                                        QueueMessageStatus.Poisonous));
+      var expected = new AcquireTaskReturn(AcquisitionStatus.TaskIsRetried,
+                                           TaskStatus.Retried,
+                                           QueueMessageStatus.Poisonous);
+      yield return new TestCaseData("TaskRetry2").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+Creating").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+Submitted").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+NotFound").Returns(expected);
+      yield return new TestCaseData("TaskRetry2+Pending").Returns(expected);
     }
   }
 

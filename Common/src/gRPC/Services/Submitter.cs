@@ -511,18 +511,37 @@ public class Submitter : ISubmitter
   {
     using var activity = activitySource_.StartActivity($"{nameof(CompleteTaskAsync)}");
 
-    await TaskLifeCycleHelper.CompleteTaskAsync(taskTable_,
-                                                resultTable_,
-                                                objectStorage_,
-                                                pushQueueStorage_,
-                                                submitterOptions_,
-                                                taskData,
-                                                sessionData,
-                                                resubmit,
-                                                output,
-                                                logger_,
-                                                cancellationToken)
-                             .ConfigureAwait(false);
+    var task = (output.Status, resubmit && taskData.RetryOfIds.Count < taskData.Options.MaxRetries) switch
+               {
+                 (OutputStatus.Success, _) => TaskLifeCycleHelper.CompleteTaskAsync(taskTable_,
+                                                                                    resultTable_,
+                                                                                    objectStorage_,
+                                                                                    submitterOptions_,
+                                                                                    taskData,
+                                                                                    logger_,
+                                                                                    cancellationToken),
+                 (OutputStatus.Error, true) => TaskLifeCycleHelper.RetryTaskAsync(taskTable_,
+                                                                                  resultTable_,
+                                                                                  pushQueueStorage_,
+                                                                                  taskData,
+                                                                                  sessionData,
+                                                                                  null,
+                                                                                  output.Error,
+                                                                                  logger_,
+                                                                                  cancellationToken),
+                 (OutputStatus.Timeout or OutputStatus.Error, _) => TaskLifeCycleHelper.AbortTaskAsync(taskTable_,
+                                                                                                       resultTable_,
+                                                                                                       objectStorage_,
+                                                                                                       submitterOptions_,
+                                                                                                       taskData,
+                                                                                                       output.Status,
+                                                                                                       output.Error,
+                                                                                                       logger_,
+                                                                                                       cancellationToken),
+                 _ => throw new ArgumentOutOfRangeException(),
+               };
+
+    await task.ConfigureAwait(false);
   }
 
   /// <inheritdoc />

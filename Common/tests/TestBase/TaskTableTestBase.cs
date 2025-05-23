@@ -701,13 +701,8 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      await TaskTable!.SetTaskSuccessAsync(taskProcessingData_ with
-                                           {
-                                             EndDate = DateTime.UtcNow,
-                                             CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
-                                             ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
-                                           },
-                                           CancellationToken.None)
+      await TaskTable!.EndTaskAsync(taskProcessingData_,
+                                    TaskStatus.Completed)
                       .ConfigureAwait(false);
 
       var resStatus = await TaskTable!.GetTaskStatus(taskProcessingData_.TaskId,
@@ -735,14 +730,9 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      await TaskTable!.SetTaskErrorAsync(taskProcessingData_ with
-                                         {
-                                           EndDate = DateTime.UtcNow,
-                                           CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
-                                           ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
-                                         },
-                                         "Testing SetTaskError",
-                                         CancellationToken.None)
+      await TaskTable!.EndTaskAsync(taskProcessingData_,
+                                    TaskStatus.Error,
+                                    "Testing SetTaskError")
                       .ConfigureAwait(false);
 
       var resStatus = await TaskTable!.GetTaskStatus("TaskProcessingId",
@@ -768,13 +758,8 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      await TaskTable!.SetTaskCanceledAsync(taskProcessingData_ with
-                                            {
-                                              EndDate = DateTime.UtcNow,
-                                              CreationToEndDuration = DateTime.UtcNow   - taskProcessingData_.EndDate,
-                                              ProcessingToEndDuration = DateTime.UtcNow - taskProcessingData_.StartDate,
-                                            },
-                                            CancellationToken.None)
+      await TaskTable!.EndTaskAsync(taskProcessingData_,
+                                    TaskStatus.Cancelled)
                       .ConfigureAwait(false);
 
       var resStatus = await TaskTable!.GetTaskStatus("TaskProcessingId",
