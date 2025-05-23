@@ -23,10 +23,6 @@ internal class PubSub
 {
   public const string SettingSection = nameof(PubSub);
 
-  /// <summary>
-  ///   Partition from which tasks are pulled by the polling agent
-  /// </summary>
-  public string PartitionId { get; set; } = string.Empty;
 
   /// <summary>
   ///   GCP project id containing the PubSub instance

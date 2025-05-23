@@ -28,11 +28,13 @@ public interface IPullQueueStorage : IQueueStorage
   /// <summary>
   ///   Gets messages from the queue
   /// </summary>
+  /// <param name="partitionId">ArmoniK partition name</param>
   /// <param name="nbMessages">Number of messages to retrieve</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Enumerator allowing async iteration over the message queue
   /// </returns>
-  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int               nbMessages,
+  IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string            partitionId,
+                                                           int               nbMessages,
                                                            CancellationToken cancellationToken = default);
 }
