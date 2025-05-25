@@ -63,7 +63,8 @@ public class TestPollsterProvider : IDisposable
                    "CA2213: Disposable fields must be disposed")]
   public readonly ExceptionManager ExceptionManager;
 
-  private readonly TimeSpan?                graceDelay_;
+  private readonly TimeSpan? graceDelay_;
+
   public readonly  HealthCheckRecord        HealthCheckRecord;
   public readonly  IHostApplicationLifetime Lifetime;
   private readonly IObjectStorage           objectStorage_;
