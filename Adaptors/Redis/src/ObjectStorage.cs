@@ -39,8 +39,8 @@ public class ObjectStorage : IObjectStorage
 {
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
-  private readonly IDatabaseAsync         redis_;
   private readonly Options.Redis          redisOptions_;
+  private readonly IDatabaseAsync         redis_;
   private          bool                   isInitialized_;
 
   /// <summary>

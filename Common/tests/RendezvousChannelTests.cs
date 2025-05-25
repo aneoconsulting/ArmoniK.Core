@@ -417,7 +417,7 @@ public class RendezvousChannelTest
 
     var x = 3;
 
-    switch ((wait, isReader))
+    switch (wait, isReader)
     {
       case (false, false):
         await queue.WriteAsync(x,

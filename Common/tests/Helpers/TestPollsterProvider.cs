@@ -58,24 +58,25 @@ public class TestPollsterProvider : IDisposable
 {
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
-  private readonly        WebApplication app_;
-  private readonly        IMongoClient   client_;
 
   [SuppressMessage("Usage",
                    "CA2213: Disposable fields must be disposed")]
   public readonly ExceptionManager ExceptionManager;
 
-  private readonly TimeSpan?                graceDelay_;
   public readonly  HealthCheckRecord        HealthCheckRecord;
   public readonly  IHostApplicationLifetime Lifetime;
-  private readonly IObjectStorage           objectStorage_;
   public readonly  IPartitionTable          PartitionTable;
   public readonly  Common.Pollster.Pollster Pollster;
   public readonly  IResultTable             ResultTable;
-  private readonly IMongoRunner             runner_;
   public readonly  ISessionTable            SessionTable;
   public readonly  ISubmitter               Submitter;
   public readonly  ITaskTable               TaskTable;
+  private readonly WebApplication           app_;
+  private readonly IMongoClient             client_;
+
+  private readonly TimeSpan?      graceDelay_;
+  private readonly IObjectStorage objectStorage_;
+  private readonly IMongoRunner   runner_;
 
 
   public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
