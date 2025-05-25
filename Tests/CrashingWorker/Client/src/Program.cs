@@ -233,7 +233,8 @@ internal static class Program
                                                                                {
                                                                                  resultId,
                                                                                },
-                                                                               CancellationToken.None)
+                                                                               parallelism: 1,
+                                                                               cancellationToken: CancellationToken.None)
                                                           .ConfigureAwait(false);
                                             }
                                             catch (Exception)
