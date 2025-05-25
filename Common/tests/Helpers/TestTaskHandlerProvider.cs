@@ -54,20 +54,20 @@ public class TestTaskHandlerProvider : IDisposable
 {
   private const           string            DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
-  private readonly        WebApplication    app_;
-  private readonly        IMongoClient      client_;
   public readonly         HealthCheckRecord HealthCheckRecord;
   public readonly         ILogger           Logger;
-  private readonly        LoggerFactory     loggerFactory_;
-  private readonly        IObjectStorage    objectStorage_;
   public readonly         IPartitionTable   PartitionTable;
   public readonly         IPushQueueStorage PushQueueStorage;
   public readonly         IResultTable      ResultTable;
-  private readonly        IMongoRunner      runner_;
   public readonly         ISessionTable     SessionTable;
   public readonly         ISubmitter        Submitter;
   public readonly         TaskHandler       TaskHandler;
   public readonly         ITaskTable        TaskTable;
+  private readonly        WebApplication    app_;
+  private readonly        IMongoClient      client_;
+  private readonly        LoggerFactory     loggerFactory_;
+  private readonly        IObjectStorage    objectStorage_;
+  private readonly        IMongoRunner      runner_;
 
 
   public IHostApplicationLifetime Lifetime;
