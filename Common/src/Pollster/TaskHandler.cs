@@ -55,6 +55,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly DataPrefetcher                        dataPrefetcher_;
   private readonly TimeSpan                              delayBeforeAcquisition_;
   private readonly CancellationTokenSource               earlyCts_;
+  private readonly ExceptionManager                      exceptionManager_;
   private readonly string                                folder_;
   private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
   private readonly HealthCheckRecord                     healthCheckRecord_;
@@ -105,6 +106,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
                      HealthCheckRecord                     healthCheckRecord)
   {
+    exceptionManager_         = exceptionManager;
     sessionTable_             = sessionTable;
     taskTable_                = taskTable;
     resultTable_              = resultTable;
@@ -205,24 +207,50 @@ public sealed class TaskHandler : IAsyncDisposable
 
     if (delayMessage_ is not null)
     {
-      logger_.LogDebug("MessageHandler will be delayed for {MessageDelay} with status {Status}",
-                       delayMessage_,
-                       messageHandler_.Status);
-
       _ = Task.Run(async () =>
                    {
-                     await Task.Delay(delayMessage_.Value)
-                               .ConfigureAwait(false);
-
                      using var _ = logger_.BeginNamedScope("DelayedReleaseTaskHandler",
                                                            ("taskId", messageHandler_.TaskId),
                                                            ("messageHandler", messageHandler_.MessageId),
                                                            ("sessionId", taskData_?.SessionId ?? ""));
 
-                     logger_.LogDebug("MessageHandler is released after delay with status {Status}",
-                                      messageHandler_.Status);
-                     await messageHandler_.DisposeIgnoreErrorAsync(logger_)
-                                          .ConfigureAwait(false);
+                     try
+                     {
+                       do
+                       {
+                         logger_.LogDebug("MessageHandler will be delayed for {MessageDelay} with status {Status}",
+                                          delayMessage_.Value,
+                                          messageHandler_.Status);
+                         await Task.Delay(delayMessage_.Value,
+                                          exceptionManager_.EarlyCancellationToken)
+                                   .ConfigureAwait(false);
+                       } while (await taskProcessingChecker_.Check(taskData_.TaskId,
+                                                                   taskData_.OwnerPodId,
+                                                                   exceptionManager_.EarlyCancellationToken)
+                                                            .ConfigureAwait(false));
+
+                       logger_.LogDebug("Other pod is not processing anymore {Task}: MessageHandler is released with status {Status}",
+                                        taskData_.TaskId,
+                                        messageHandler_.Status);
+                     }
+                     catch (OperationCanceledException)
+                     {
+                       logger_.LogDebug("Agent stopping: MessageHandler for {Task} is released with status {Status}",
+                                        taskData_.TaskId,
+                                        messageHandler_.Status);
+                     }
+                     catch (Exception ex)
+                     {
+                       logger_.LogError(ex,
+                                        "Error while checking other pod for {Task}: MessageHandler is released with status {Status}",
+                                        taskData_.TaskId,
+                                        messageHandler_.Status);
+                     }
+                     finally
+                     {
+                       await messageHandler_.DisposeIgnoreErrorAsync(logger_)
+                                            .ConfigureAwait(false);
+                     }
                    });
     }
     else
