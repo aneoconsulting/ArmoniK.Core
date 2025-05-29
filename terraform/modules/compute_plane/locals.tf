@@ -6,8 +6,7 @@ locals {
     "Pollster__SharedCacheFolder=${var.polling_agent.shared_data}/shared",
     "InitWorker__WorkerCheckRetries=${var.polling_agent.worker_check_retries}",
     "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_delay}",
-    "Amqp__PartitionId=TestPartition${local.partition_chooser}",
-    "PubSub__PartitionId=TestPartition${local.partition_chooser}",
+    "Pollster__PartitionId=TestPartition${local.partition_chooser}",
   ]
   worker_tcp    = format("%s://%s:%s", "http", "${var.worker.name}${var.replica_counter}", "10667")
   worker_socket = format("%s/%s", var.polling_agent.shared_socket, "armonik_worker.sock")

@@ -137,6 +137,12 @@ public class Pollster : IInitializable
                                             $"The minimum value for {nameof(ComputePlane.MessageBatchSize)} is 1.");
     }
 
+    if (string.IsNullOrEmpty(pollsterOptions.PartitionId))
+    {
+      throw new ArgumentException("pollsterOptions.PartitionId is not set",
+                                  nameof(pollsterOptions.PartitionId));
+    }
+
     logger_                = logger;
     loggerFactory_         = loggerFactory;
     activitySource_        = activitySource;
@@ -306,7 +312,8 @@ public class Pollster : IInitializable
 
         try
         {
-          await using var messages = pullQueueStorage_.PullMessagesAsync(messageBatchSize_,
+          await using var messages = pullQueueStorage_.PullMessagesAsync(pollsterOptions_.PartitionId,
+                                                                         messageBatchSize_,
                                                                          exceptionManager_.EarlyCancellationToken)
                                                       .GetAsyncEnumerator(exceptionManager_.EarlyCancellationToken);
 

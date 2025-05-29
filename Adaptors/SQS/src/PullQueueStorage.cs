@@ -57,14 +57,33 @@ internal class PullQueueStorage : IPullQueueStorage
                      options_);
   }
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
   {
+    if (string.IsNullOrEmpty(partitionId))
+    {
+      throw new ArgumentException($"{nameof(partitionId)} is not defined.");
+    }
+
     if (!isInitialized_)
     {
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
+    for (var i = 0; i < queueUrls_.Length; i++)
+    {
+      logger_.LogDebug("Initialize queue #{SqsPriority} with options {@SqsOptions}",
+                       i,
+                       options_);
+      var queueName = client_.GetQueueName(options_,
+                                           i + 1,
+                                           partitionId);
+      queueUrls_[i] = await client_.GetOrCreateQueueUrlAsync(queueName,
+                                                             options_.Tags,
+                                                             cancellationToken)
+                                   .ConfigureAwait(false);
+    }
 
     foreach (var queueUrl in queueUrls_.Reverse())
     {
@@ -107,26 +126,14 @@ internal class PullQueueStorage : IPullQueueStorage
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy("Plugin is not yet initialized."));
 
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
     if (!isInitialized_)
     {
-      for (var i = 0; i < queueUrls_.Length; i++)
-      {
-        logger_.LogDebug("Initialize queue #{SqsPriority} with options {@SqsOptions}",
-                         i,
-                         options_);
-        var queueName = client_.GetQueueName(options_,
-                                             i + 1,
-                                             options_.PartitionId);
-        queueUrls_[i] = await client_.GetOrCreateQueueUrlAsync(queueName,
-                                                               options_.Tags,
-                                                               cancellationToken)
-                                     .ConfigureAwait(false);
-      }
-
       isInitialized_ = true;
     }
+
+    return Task.CompletedTask;
   }
 
   public int MaxPriority
