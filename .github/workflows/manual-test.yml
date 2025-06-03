@@ -33,7 +33,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@86c23eed46c17b80677df6d8151545ce3e236c61 # v2
+        uses: taiki-e/install-action@7bf3bbf3104a2e9a77906ccbdf6d4aa6a87b0210 # v2
         with:
           tool: just
 
