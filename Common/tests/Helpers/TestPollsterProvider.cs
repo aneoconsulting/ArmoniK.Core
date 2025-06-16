@@ -138,6 +138,9 @@ public class TestPollsterProvider : IDisposable
                                                                                                                                                         .ToString()
                                                   },
                                                   {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.PartitionId)}", "DefaultPartition"
+                                                  },
+                                                  {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.TimeoutBeforeNextAcquisition)}",
                                                     acquireTimeout is null
                                                       ? TimeSpan.FromSeconds(10)

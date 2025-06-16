@@ -43,7 +43,8 @@ public class SimplePullQueueStorageChannel : IPullQueueStorage, IPushQueueStorag
   public int MaxPriority
     => 10;
 
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     foreach (var _ in Enumerable.Range(0,

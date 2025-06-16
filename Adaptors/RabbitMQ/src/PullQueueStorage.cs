@@ -41,15 +41,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                           ILogger<PullQueueStorage> logger)
     : base(options,
            connectionRabbit)
-  {
-    logger_ = logger;
-
-    if (string.IsNullOrEmpty(options.PartitionId))
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(Options.PartitionId)} is not defined.");
-    }
-  }
+    => logger_ = logger;
 
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
     => ConnectionRabbit.Check(tag);
@@ -58,6 +50,21 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   {
     await ConnectionRabbit.Init(cancellationToken)
                           .ConfigureAwait(false);
+
+
+    IsInitialized = true;
+  }
+
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  {
+    var nbPulledMessage = 0;
+
+    if (!IsInitialized)
+    {
+      throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
+    }
 
     var queueArgs = new Dictionary<string, object>
                     {
@@ -72,33 +79,20 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     var connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
                                            .ConfigureAwait(false);
 
-    connection.QueueDeclare(Options!.PartitionId,
+    connection.QueueDeclare(partitionId,
                             false, /* to survive broker restart */
                             false, /* used by multiple connections */
                             false, /* not deleted when last consumer unsubscribes (if it has had one) */
                             queueArgs);
 
-    IsInitialized = true;
-  }
-
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
-                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
-  {
-    var nbPulledMessage = 0;
-
-    if (!IsInitialized)
-    {
-      throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
-    }
-
     while (nbPulledMessage < nbMessages)
     {
       cancellationToken.ThrowIfCancellationRequested();
 
-      var connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
-                                             .ConfigureAwait(false);
+      connection = await ConnectionRabbit.GetConnectionAsync(cancellationToken)
+                                         .ConfigureAwait(false);
 
-      var message = connection.BasicGet(Options.PartitionId,
+      var message = connection.BasicGet(partitionId,
                                         false);
 
       if (message is null)

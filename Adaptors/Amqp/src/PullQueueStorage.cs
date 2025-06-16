@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -39,8 +40,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   private readonly TimeSpan                  baseDelay_ = TimeSpan.FromMilliseconds(100);
   private readonly ILogger<PullQueueStorage> logger_;
 
-  private AsyncLazy<IReceiverLink>[] receivers_;
-  private AsyncLazy<ISenderLink>[]   senders_;
+
+  private readonly ConcurrentDictionary<string, AsyncLazy<IReceiverLink>[]> receivers_;
+  private readonly ConcurrentDictionary<string, AsyncLazy<ISenderLink>[]>   senders_;
 
   public PullQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -48,15 +50,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     : base(options,
            connectionAmqp)
   {
-    if (string.IsNullOrEmpty(options.PartitionId))
-    {
-      throw new ArgumentOutOfRangeException(nameof(options),
-                                            $"{nameof(QueueCommon.Amqp.PartitionId)} is not defined.");
-    }
-
     logger_    = logger;
-    receivers_ = Array.Empty<AsyncLazy<IReceiverLink>>();
-    senders_   = Array.Empty<AsyncLazy<ISenderLink>>();
+    receivers_ = new ConcurrentDictionary<string, AsyncLazy<IReceiverLink>[]>();
+    senders_   = new ConcurrentDictionary<string, AsyncLazy<ISenderLink>[]>();
   }
 
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -69,33 +65,13 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       await ConnectionAmqp.Init(cancellationToken)
                           .ConfigureAwait(false);
 
-      receivers_ = Enumerable.Range(0,
-                                    NbLinks)
-                             .Select(i => CreateReceiver(ConnectionAmqp,
-                                                         i))
-                             .ToArray();
-
-      senders_ = Enumerable.Range(0,
-                                  NbLinks)
-                           .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(new Session(await ConnectionAmqp.GetConnectionAsync()
-                                                                                                                              .ConfigureAwait(false)),
-                                                                                              $"{Options.PartitionId}###SenderLink{i}",
-                                                                                              $"{Options.PartitionId}###q{i}")))
-                           .ToArray();
-
-      var senders = senders_.Select(lazy => lazy.Value)
-                            .WhenAll();
-      var receivers = receivers_.Select(lazy => lazy.Value)
-                                .WhenAll();
-      await Task.WhenAll(senders,
-                         receivers)
-                .ConfigureAwait(false);
       IsInitialized = true;
     }
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var nbPulledMessage = 0;
@@ -105,10 +81,26 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
+    var receiversArray = receivers_.GetOrAdd(partitionId,
+                                             _ => Enumerable.Range(0,
+                                                                   NbLinks)
+                                                            .Select(i => CreateReceiver(partitionId,
+                                                                                        ConnectionAmqp,
+                                                                                        i))
+                                                            .ToArray());
+    var sendersArray = senders_.GetOrAdd(partitionId,
+                                         _ => Enumerable.Range(0,
+                                                               NbLinks)
+                                                        .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(new Session(await ConnectionAmqp
+                                                                                                                                             .GetConnectionAsync()
+                                                                                                                                             .ConfigureAwait(false)),
+                                                                                                                           $"{partitionId}###SenderLink{i}",
+                                                                                                                           $"{partitionId}###q{i}")))
+                                                        .ToArray());
     while (nbPulledMessage < nbMessages)
     {
       var currentNbMessages = nbPulledMessage;
-      for (var i = receivers_.Length - 1; i >= 0; --i)
+      for (var i = receiversArray.Length - 1; i >= 0; --i)
       {
         cancellationToken.ThrowIfCancellationRequested();
         Message?       message  = null;
@@ -118,7 +110,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
         {
           try
           {
-            receiver = await receivers_[i];
+            receiver = await receiversArray[i];
             message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
             break;
@@ -131,8 +123,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                cancellationToken)
                         .ConfigureAwait(false);
 
-              receivers_[i] = CreateReceiver(ConnectionAmqp,
-                                             i);
+              receiversArray[i] = CreateReceiver(partitionId,
+                                                 ConnectionAmqp,
+                                                 i);
               logger_.LogDebug(e,
                                "Exception while receiving message; receiver replaced");
             }
@@ -155,7 +148,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 
         nbPulledMessage++;
 
-        var sender = await senders_[i];
+        var sender = await sendersArray[i];
 
         yield return new QueueMessageHandler(message,
                                              sender,
@@ -173,14 +166,15 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     }
   }
 
-  private AsyncLazy<IReceiverLink> CreateReceiver(IConnectionAmqp connection,
+  private AsyncLazy<IReceiverLink> CreateReceiver(string          partitionId,
+                                                  IConnectionAmqp connection,
                                                   int             link)
     => new(async () =>
            {
              var rl = new ReceiverLink(new Session(await connection.GetConnectionAsync()
                                                                    .ConfigureAwait(false)),
-                                       $"{Options.PartitionId}###ReceiverLink{link}",
-                                       $"{Options.PartitionId}###q{link}");
+                                       $"{partitionId}###ReceiverLink{link}",
+                                       $"{partitionId}###q{link}");
 
              /* linkCredit_: the maximum number of messages the
                                        * remote peer can send to the receiver.
