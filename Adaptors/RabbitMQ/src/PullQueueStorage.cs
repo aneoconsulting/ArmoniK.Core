@@ -59,11 +59,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                         int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    if (string.IsNullOrEmpty(partitionId))
-    {
-      throw new ArgumentException($"{nameof(partitionId)} is not defined.");
-    }
-
     var nbPulledMessage = 0;
 
     if (!IsInitialized)

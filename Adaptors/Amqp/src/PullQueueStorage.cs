@@ -76,11 +76,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
   {
     var nbPulledMessage = 0;
 
-    if (string.IsNullOrEmpty(partitionId))
-    {
-      throw new ArgumentException($"{nameof(partitionId)} is not defined.");
-    }
-
     if (!IsInitialized)
     {
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
@@ -102,11 +97,6 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                                                            $"{partitionId}###SenderLink{i}",
                                                                                                                            $"{partitionId}###q{i}")))
                                                         .ToArray());
-    var senders = await sendersArray.Select(lazy => lazy.Value)
-                                    .WhenAll();
-    var receivers = await receiversArray.Select(lazy => lazy.Value)
-                                        .WhenAll();
-
     while (nbPulledMessage < nbMessages)
     {
       var currentNbMessages = nbPulledMessage;

@@ -61,11 +61,6 @@ internal class PullQueueStorage : IPullQueueStorage
                                                                         int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    if (string.IsNullOrEmpty(partitionId))
-    {
-      throw new ArgumentException($"{nameof(partitionId)} is not defined.");
-    }
-
     if (!isInitialized_)
     {
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
