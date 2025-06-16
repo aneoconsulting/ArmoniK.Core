@@ -76,6 +76,7 @@ internal class PullQueueStorage : IPullQueueStorage
                                            partitionId);
       queueUrls_[i] = await client_.GetOrCreateQueueUrlAsync(queueName,
                                                              options_.Tags,
+                                                             options_.Attributes,
                                                              cancellationToken)
                                    .ConfigureAwait(false);
     }

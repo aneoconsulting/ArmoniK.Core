@@ -358,9 +358,9 @@ public class TaskWatcherTestBase
                                 cancellationToken)
                    .ConfigureAwait(false);
 
-    await taskTable.SetTaskErrorAsync(TaskProcessingData,
-                                      "Testing SetTaskError",
-                                      CancellationToken.None)
+    await taskTable.EndTaskAsync(TaskProcessingData,
+                                 TaskStatus.Error,
+                                 "Testing SetTaskError")
                    .ConfigureAwait(false);
 
     await taskTable.AcquireTask(TaskSubmittedData with

@@ -74,6 +74,7 @@ internal class PushQueueStorage : IPushQueueStorage
                                                            var queueUrl = await cache_.GetOrCreateAsync(queueName,
                                                                                                         _ => client_.GetOrCreateQueueUrlAsync(queueName,
                                                                                                                                               options_.Tags,
+                                                                                                                                              options_.Attributes,
                                                                                                                                               cancellationToken))
                                                                                       .ConfigureAwait(false);
                                                            return (queueUrl, chunk);

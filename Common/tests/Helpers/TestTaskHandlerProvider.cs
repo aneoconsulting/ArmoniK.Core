@@ -73,14 +73,15 @@ public class TestTaskHandlerProvider : IDisposable
   public IHostApplicationLifetime Lifetime;
 
 
-  public TestTaskHandlerProvider(IWorkerStreamHandler    workerStreamHandler,
-                                 IAgentHandler           agentHandler,
-                                 IQueueMessageHandler    queueStorage,
-                                 ITaskTable?             inputTaskTable        = null,
-                                 ISessionTable?          inputSessionTable     = null,
-                                 ITaskProcessingChecker? taskProcessingChecker = null,
-                                 IObjectStorage?         objectStorage         = null,
-                                 TimeSpan?               graceDelay            = null)
+  public TestTaskHandlerProvider(IWorkerStreamHandler?   workerStreamHandler     = null,
+                                 IAgentHandler?          agentHandler            = null,
+                                 IQueueMessageHandler?   queueStorage            = null,
+                                 ITaskTable?             inputTaskTable          = null,
+                                 ISessionTable?          inputSessionTable       = null,
+                                 ITaskProcessingChecker? taskProcessingChecker   = null,
+                                 IObjectStorage?         objectStorage           = null,
+                                 TimeSpan?               graceDelay              = null,
+                                 TimeSpan?               messageDuplicationDelay = null)
   {
     var logger = NullLogger.Instance;
 
@@ -142,6 +143,12 @@ public class TestTaskHandlerProvider : IDisposable
                                                     Path.Combine(Path.GetTempPath(),
                                                                  "internal")
                                                   },
+                                                  {
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.MessageDuplicationDelay)}",
+                                                    messageDuplicationDelay is null
+                                                      ? "00:00:05"
+                                                      : messageDuplicationDelay.ToString()
+                                                  },
                                                 };
 
     Console.WriteLine(minimalConfig.ToJson());
@@ -180,13 +187,13 @@ public class TestTaskHandlerProvider : IDisposable
                                                      provider.GetRequiredService<IObjectStorage>(),
                                                      provider.GetRequiredService<ISubmitter>(),
                                                      provider.GetRequiredService<DataPrefetcher>(),
-                                                     workerStreamHandler,
-                                                     queueStorage,
+                                                     workerStreamHandler ?? new SimpleWorkerStreamHandler(),
+                                                     queueStorage        ?? new SimpleQueueMessageHandler(),
                                                      provider.GetRequiredService<ITaskProcessingChecker>(),
                                                      "ownerpodid",
                                                      "ownerpodname",
                                                      provider.GetRequiredService<ActivitySource>(),
-                                                     agentHandler,
+                                                     agentHandler ?? new SimpleAgentHandler(),
                                                      provider.GetRequiredService<ILogger>(),
                                                      provider.GetRequiredService<Injection.Options.Pollster>(),
                                                      provider.GetRequiredService<Injection.Options.Submitter>(),

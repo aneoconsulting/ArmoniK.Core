@@ -1101,7 +1101,7 @@ public class SubmitterTests
 
     Assert.AreEqual(TaskStatus.Error,
                     taskData.Status);
-    Assert.AreEqual("One of the input data is aborted.",
+    Assert.AreEqual($"Task {abortedTask} failed:\nThis error should be propagated to other tasks",
                     taskData.Output.Error);
   }
 

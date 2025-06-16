@@ -55,203 +55,51 @@ public static class TaskTableExtensions
   /// </remarks>
   /// <param name="taskTable">Interface to manage tasks lifecycle</param>
   /// <param name="taskData">Metadata of the task to tag as succeeded</param>
+  /// <param name="status">The status to set</param>
+  /// <param name="errorMessage">The error message in case of error</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public static Task SetTaskCanceledAsync(this ITaskTable   taskTable,
-                                          TaskData          taskData,
-                                          CancellationToken cancellationToken = default)
-    => taskTable.UpdateOneTask(taskData.TaskId,
-                               new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                    new Output(Error: "",
-                                                                               Status: OutputStatus.Error))
-                                                               .Set(data => data.Status,
-                                                                    TaskStatus.Cancelled)
-                                                               .Set(tdm => tdm.EndDate,
-                                                                    taskData.EndDate)
-                                                               .Set(tdm => tdm.ProcessedDate,
-                                                                    taskData.ProcessedDate)
-                                                               .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                    taskData.ReceivedToEndDuration)
-                                                               .Set(tdm => tdm.CreationToEndDuration,
-                                                                    taskData.CreationToEndDuration)
-                                                               .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                    taskData.ProcessingToEndDuration),
-                               cancellationToken);
-
-  /// <summary>
-  ///   Tag a task as errored and populate its output with an
-  ///   error message
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
-  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
-  ///   - <see cref="TaskData.Output" />: Output of the task
-  /// </remarks>
-  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
-  /// <param name="taskData">Metadata of the task to mark as errored</param>
-  /// <param name="errorDetail">Error message to be inserted in task's output</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   A boolean representing whether the status has been updated
-  /// </returns>
-  public static async Task<bool> SetTaskErrorAsync(this ITaskTable   taskTable,
-                                                   TaskData          taskData,
-                                                   string            errorDetail,
-                                                   CancellationToken cancellationToken = default)
+  public static async Task<TaskData> EndTaskAsync(this ITaskTable   taskTable,
+                                                  TaskData          taskData,
+                                                  TaskStatus        status,
+                                                  string?           errorMessage      = null,
+                                                  CancellationToken cancellationToken = default)
   {
-    var task = await taskTable.UpdateOneTask(taskData.TaskId,
-                                             new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                                  new Output(Error: errorDetail,
-                                                                                             Status: OutputStatus.Error))
-                                                                             .Set(data => data.Status,
-                                                                                  TaskStatus.Error)
-                                                                             .Set(tdm => tdm.EndDate,
-                                                                                  taskData.EndDate)
-                                                                             .Set(tdm => tdm.ProcessedDate,
-                                                                                  taskData.ProcessedDate)
-                                                                             .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                                  taskData.ReceivedToEndDuration)
-                                                                             .Set(tdm => tdm.CreationToEndDuration,
-                                                                                  taskData.CreationToEndDuration)
-                                                                             .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                                  taskData.ProcessingToEndDuration),
-                                             cancellationToken)
-                              .ConfigureAwait(false);
+    var endTime = DateTime.UtcNow;
+    var outputStatus = status switch
+                       {
+                         TaskStatus.Completed => OutputStatus.Success,
+                         TaskStatus.Cancelled => OutputStatus.Error,
+                         TaskStatus.Error     => OutputStatus.Error,
+                         TaskStatus.Retried   => OutputStatus.Error,
+                         TaskStatus.Timeout   => OutputStatus.Timeout,
+                         _                    => throw new ArgumentOutOfRangeException(),
+                       };
 
-    return task.Status != TaskStatus.Error;
-  }
+    var updated = await taskTable.UpdateOneTask(taskData.TaskId,
+                                                null,
+                                                new UpdateDefinition<TaskData>().Set(data => data.Output,
+                                                                                     new Output(Error: errorMessage ?? "",
+                                                                                                Status: outputStatus))
+                                                                                .Set(data => data.Status,
+                                                                                     status)
+                                                                                .Set(tdm => tdm.EndDate,
+                                                                                     endTime)
+                                                                                .Set(tdm => tdm.ProcessedDate,
+                                                                                     taskData.ProcessedDate)
+                                                                                .Set(tdm => tdm.ReceivedToEndDuration,
+                                                                                     endTime - taskData.ReceptionDate)
+                                                                                .Set(tdm => tdm.CreationToEndDuration,
+                                                                                     endTime - taskData.CreationDate)
+                                                                                .Set(tdm => tdm.ProcessingToEndDuration,
+                                                                                     endTime - taskData.StartDate),
+                                                false,
+                                                cancellationToken)
+                                 .ConfigureAwait(false);
 
-  /// <summary>
-  ///   Change the status of the task to succeeded
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
-  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
-  ///   - <see cref="TaskData.Output" />: Output of the task
-  /// </remarks>
-  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
-  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   Task representing the asynchronous execution of the method
-  /// </returns>
-  public static Task SetTaskSuccessAsync(this ITaskTable   taskTable,
-                                         TaskData          taskData,
-                                         CancellationToken cancellationToken = default)
-    => taskTable.UpdateOneTask(taskData.TaskId,
-                               new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                    new Output(Error: "",
-                                                                               Status: OutputStatus.Success))
-                                                               .Set(data => data.Status,
-                                                                    TaskStatus.Completed)
-                                                               .Set(tdm => tdm.EndDate,
-                                                                    taskData.EndDate)
-                                                               .Set(tdm => tdm.ProcessedDate,
-                                                                    taskData.ProcessedDate)
-                                                               .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                    taskData.ReceivedToEndDuration)
-                                                               .Set(tdm => tdm.CreationToEndDuration,
-                                                                    taskData.CreationToEndDuration)
-                                                               .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                    taskData.ProcessingToEndDuration),
-                               cancellationToken);
-
-
-  /// <summary>
-  ///   Change the status of the task to retry
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
-  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
-  ///   - <see cref="TaskData.Output" />: Output of the task
-  /// </remarks>
-  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
-  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
-  /// <param name="errorDetail">Error message to be inserted in task's output</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   A boolean representing whether the status has been updated
-  /// </returns>
-  public static async Task<bool> SetTaskRetryAsync(this ITaskTable   taskTable,
-                                                   TaskData          taskData,
-                                                   string            errorDetail,
-                                                   CancellationToken cancellationToken = default)
-  {
-    var task = await taskTable.UpdateOneTask(taskData.TaskId,
-                                             new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                                  new Output(Error: errorDetail,
-                                                                                             Status: OutputStatus.Error))
-                                                                             .Set(data => data.Status,
-                                                                                  TaskStatus.Retried)
-                                                                             .Set(tdm => tdm.EndDate,
-                                                                                  taskData.EndDate)
-                                                                             .Set(tdm => tdm.ProcessedDate,
-                                                                                  taskData.ProcessedDate)
-                                                                             .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                                  taskData.ReceivedToEndDuration)
-                                                                             .Set(tdm => tdm.CreationToEndDuration,
-                                                                                  taskData.CreationToEndDuration)
-                                                                             .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                                  taskData.ProcessingToEndDuration),
-                                             cancellationToken)
-                              .ConfigureAwait(false);
-
-    return task.Status != TaskStatus.Retried;
-  }
-
-  /// <summary>
-  ///   Change the status of the task to retry
-  /// </summary>
-  /// <remarks>
-  ///   Updates:
-  ///   - <see cref="TaskData.Status" />: New status of the task
-  ///   - <see cref="TaskData.EndDate" />: Date when the task ends
-  ///   - <see cref="TaskData.CreationToEndDuration" />: Duration between the creation and the end of the task
-  ///   - <see cref="TaskData.ProcessingToEndDuration" />: Duration between the start and the end of the task
-  ///   - <see cref="TaskData.Output" />: Output of the task
-  /// </remarks>
-  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
-  /// <param name="taskData">Metadata of the task to tag as succeeded</param>
-  /// <param name="output">Task Output</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   A boolean representing whether the status has been updated
-  /// </returns>
-  public static async Task<bool> SetTaskTimeoutAsync(this ITaskTable   taskTable,
-                                                     TaskData          taskData,
-                                                     Output            output,
-                                                     CancellationToken cancellationToken = default)
-  {
-    var task = await taskTable.UpdateOneTask(taskData.TaskId,
-                                             new UpdateDefinition<TaskData>().Set(data => data.Output,
-                                                                                  output)
-                                                                             .Set(data => data.Status,
-                                                                                  TaskStatus.Timeout)
-                                                                             .Set(tdm => tdm.EndDate,
-                                                                                  taskData.EndDate)
-                                                                             .Set(tdm => tdm.ProcessedDate,
-                                                                                  taskData.ProcessedDate)
-                                                                             .Set(tdm => tdm.ReceivedToEndDuration,
-                                                                                  taskData.ReceivedToEndDuration)
-                                                                             .Set(tdm => tdm.CreationToEndDuration,
-                                                                                  taskData.CreationToEndDuration)
-                                                                             .Set(tdm => tdm.ProcessingToEndDuration,
-                                                                                  taskData.ProcessingToEndDuration),
-                                             cancellationToken)
-                              .ConfigureAwait(false);
-
-    return task.Status != TaskStatus.Timeout;
+    return updated ?? throw new TaskNotFoundException($"Could not end task {taskData.TaskId} with status {status}: task not found");
   }
 
   /// <summary>
@@ -516,29 +364,6 @@ public static class TaskTableExtensions
 
     return newTaskId;
   }
-
-  /// <summary>
-  ///   Update one task with the given new values
-  /// </summary>
-  /// <param name="taskTable">Interface to manage tasks lifecycle</param>
-  /// <param name="taskId">Id of the tasks to be updated</param>
-  /// <param name="updates">Collection of fields to update and their new value</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>
-  ///   The task metadata before the update
-  /// </returns>
-  /// <exception cref="TaskNotFoundException">task not found</exception>
-  private static async Task<TaskData> UpdateOneTask(this ITaskTable            taskTable,
-                                                    string                     taskId,
-                                                    UpdateDefinition<TaskData> updates,
-                                                    CancellationToken          cancellationToken = default)
-    => await taskTable.UpdateOneTask(taskId,
-                                     null,
-                                     updates,
-                                     true,
-                                     cancellationToken)
-                      .ConfigureAwait(false) ?? throw new TaskNotFoundException($"Task not found {taskId}");
-
 
   /// <summary>
   ///   Acquire the task to process it on the current agent

@@ -30,6 +30,7 @@ using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -977,6 +978,76 @@ public class TaskLifeCycleHelperTest
                 Is.EqualTo(TaskStatus.Submitted));
   }
 
+  [Test]
+  public async Task RetryRace([Values] TaskStatus status,
+                              [Values(2,
+                                      3,
+                                      4)]
+                              int concurrency)
+  {
+    using var holder = new Holder();
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      handler.Status = QueueMessageStatus.Processed;
+      await handler.DisposeAsync()
+                   .ConfigureAwait(false);
+    }
+
+    var taskData = await holder.TaskTable.FindTasksAsync(data => data.DataDependencies == new List<string>(),
+                                                         data => data)
+                               .FirstAsync()
+                               .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(holder.Session)
+                                  .ConfigureAwait(false);
+
+    taskData = await holder.TaskTable.UpdateOneTask(taskData.TaskId,
+                                                    null,
+                                                    new UpdateDefinition<TaskData>().Set(td => td.Status,
+                                                                                         status))
+                           .ConfigureAwait(false)!;
+
+    Assert.That(() => Enumerable.Range(0,
+                                       concurrency)
+                                .Select(_ => TaskLifeCycleHelper.RetryTaskAsync(holder.TaskTable,
+                                                                                holder.ResultTable,
+                                                                                holder.PushQueueStorage,
+                                                                                taskData,
+                                                                                sessionData,
+                                                                                null,
+                                                                                "task has been retried",
+                                                                                holder.TaskTable.Logger))
+                                .WhenAll(),
+                Throws.Nothing);
+
+    taskData = await holder.TaskTable.ReadTaskAsync(taskData.TaskId)
+                           .ConfigureAwait(false);
+    var retryTaskData = await holder.TaskTable.ReadTaskAsync(taskData.RetryId())
+                                    .ConfigureAwait(false);
+
+    var messages = new List<IQueueMessageHandler>();
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      messages.Add(handler);
+    }
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(taskData.Status,
+                                  Is.EqualTo(TaskStatus.Retried));
+                      Assert.That(retryTaskData.Status,
+                                  Is.EqualTo(TaskStatus.Submitted));
+                      Assert.That(retryTaskData.RetryOfIds,
+                                  Has.Member(taskData.TaskId));
+                      Assert.That(messages,
+                                  Has.Count.InRange(1,
+                                                    concurrency)
+                                     .And.All.Property("TaskId")
+                                     .EqualTo(retryTaskData.TaskId));
+                    });
+  }
+
   public enum CrashState
   {
     Processing,
@@ -1036,7 +1107,7 @@ public class TaskLifeCycleHelperTest
                         },
                         resultTemplate with
                         {
-                          ResultId = "output",
+                          ResultId = "outputRoot",
                         },
                         resultTemplate with
                         {
@@ -1056,8 +1127,10 @@ public class TaskLifeCycleHelperTest
                           resultTemplate with
                           {
                             ResultId = "payloadB",
-                            CreatedBy = "root",
-                            CompletedBy = "root",
+                          },
+                          resultTemplate with
+                          {
+                            ResultId = "outputB",
                           },
                         };
 
@@ -1068,7 +1141,7 @@ public class TaskLifeCycleHelperTest
                           holder.Options.ToTaskOptions(),
                           new List<string>
                           {
-                            "output",
+                            "outputRoot",
                           },
                           new List<string>()),
                       new("A",
@@ -1088,7 +1161,8 @@ public class TaskLifeCycleHelperTest
                             holder.Options.ToTaskOptions(),
                             new List<string>
                             {
-                              "output",
+                              "outputRoot",
+                              "outputB",
                             },
                             new List<string>
                             {
@@ -1142,7 +1216,10 @@ public class TaskLifeCycleHelperTest
 
     if (crashState >= CrashState.ResultsCreated)
     {
-      await holder.ResultTable.Create(submitResults)
+      await holder.ResultTable.Create(submitResults.ViewSelect(r => r with
+                                                                    {
+                                                                      CreatedBy = "root",
+                                                                    }))
                   .ConfigureAwait(false);
     }
 
@@ -1224,8 +1301,13 @@ public class TaskLifeCycleHelperTest
                             .ToListAsync()
                             .ConfigureAwait(false);
 
-    var output = await holder.ResultTable.GetResult("output")
-                             .ConfigureAwait(false);
+    var outputRoot = await holder.ResultTable.GetResult("outputRoot")
+                                 .ConfigureAwait(false);
+
+    var outputB = await holder.ResultTable.GetResults(r => r.ResultId == "outputB",
+                                                      r => r)
+                              .ToListAsync()
+                              .ConfigureAwait(false);
 
     var messages = new List<string>();
 
@@ -1253,13 +1335,22 @@ public class TaskLifeCycleHelperTest
                                          .Property("Status")
                                          .EqualTo(committed || !subtask
                                                     ? TaskStatus.Pending
-                                                    : TaskStatus.Cancelling)
+                                                    : TaskStatus.Cancelled)
                                     : Is.Empty);
 
-                      Assert.That(output.Status,
+                      Assert.That(outputB,
+                                  crashState >= CrashState.ResultsCreated || !subtask
+                                    ? Has.ItemAt(0)
+                                         .Property("Status")
+                                         .EqualTo(committed || !subtask
+                                                    ? ResultStatus.Created
+                                                    : ResultStatus.Aborted)
+                                    : Is.Empty);
+
+                      Assert.That(outputRoot.Status,
                                   Is.EqualTo(ResultStatus.Created));
-                      Assert.That(output.OwnerTaskId,
-                                  Is.EqualTo(committed || !subtask
+                      Assert.That(outputRoot.OwnerTaskId,
+                                  Is.EqualTo(committed
                                                ? "B"
                                                : "root###1"));
 
