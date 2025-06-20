@@ -98,18 +98,18 @@ public class ToSessionDataFieldTest
                                               object?         expected)
   {
     var func = new ListSessionsRequest
+      {
+        Filters = new Filters(),
+        Sort = new ListSessionsRequest.Types.Sort
                {
-                 Filters = new Filters(),
-                 Sort = new ListSessionsRequest.Types.Sort
-                        {
-                          Direction = SortDirection.Asc,
-                          Field = new SessionField
-                                  {
-                                    SessionRawField = field,
-                                  },
-                        },
-               }.Sort.ToField()
-                .Compile();
+                 Direction = SortDirection.Asc,
+                 Field = new SessionField
+                         {
+                           SessionRawField = field,
+                         },
+               },
+      }.Sort.ToField()
+       .Compile();
 
     Assert.AreEqual(expected,
                     func.Invoke(SessionData));

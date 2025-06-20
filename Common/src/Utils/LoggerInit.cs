@@ -36,8 +36,8 @@ namespace ArmoniK.Core.Common.Utils;
 /// </summary>
 public class LoggerInit
 {
-  private readonly ILogger logger_;
   private readonly Logger  loggerConfiguration_;
+  private readonly ILogger logger_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="LoggerInit" /> class.

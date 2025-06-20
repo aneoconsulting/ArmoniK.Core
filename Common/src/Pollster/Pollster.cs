@@ -59,8 +59,8 @@ public class Pollster : IInitializable
   private readonly DataPrefetcher                            dataPrefetcher_;
   private readonly ExceptionManager                          exceptionManager_;
   private readonly HealthCheckRecord                         healthCheckRecord_;
-  private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
+  private readonly ILogger<Pollster>                         logger_;
   private readonly int                                       messageBatchSize_;
   private readonly MeterHolder                               meterHolder_;
   private readonly IObjectStorage                            objectStorage_;
@@ -73,8 +73,8 @@ public class Pollster : IInitializable
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
   private readonly ISessionTable                             sessionTable_;
-  private readonly ISubmitter                                submitter_;
   private readonly Submitter                                 submitterOptions_;
+  private readonly ISubmitter                                submitter_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
   private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
   private readonly ITaskTable                                taskTable_;
