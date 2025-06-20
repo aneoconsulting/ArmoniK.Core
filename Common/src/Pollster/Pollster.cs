@@ -194,6 +194,7 @@ public class Pollster : IInitializable
                                             "Seconds",
                                             "Start time of the oldest task still processing by the Pollster",
                                             meterHolder_.Tags);
+    exceptionManager.Register();
   }
 
   /// <summary>
