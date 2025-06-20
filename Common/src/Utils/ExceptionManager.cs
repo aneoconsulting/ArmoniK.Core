@@ -48,7 +48,9 @@ public class ExceptionManager : IDisposable
 
   private readonly ILogger? logger_;
   private readonly int      maxError_;
+  private          int      maxRegisteredApplications_;
   private          int      nbError_;
+  private          int      registeredApplications_;
 
   /// <summary>
   ///   Build an ExceptionManager
@@ -91,9 +93,12 @@ public class ExceptionManager : IDisposable
                                              }));
 
 
-    maxError_ = options.MaxError ?? int.MaxValue / 2;
-    logger_   = logger;
+    maxError_                  = options.MaxError ?? int.MaxValue / 2;
+    logger_                    = logger;
+    registeredApplications_    = 0;
+    maxRegisteredApplications_ = 0;
   }
+
 
   /// <summary>
   ///   CancellationToken that is triggered as soon as the application is stopped,
@@ -219,6 +224,15 @@ public class ExceptionManager : IDisposable
   }
 
   /// <summary>
+  ///   Registers a class that will that has to call <see cref="Stop" /> to trigger application stop.
+  /// </summary>
+  public void Register()
+  {
+    Interlocked.Increment(ref registeredApplications_);
+    Interlocked.Increment(ref maxRegisteredApplications_);
+  }
+
+  /// <summary>
   ///   Decrease the number of recorded errors to indicate that the application is behaving correctly.
   /// </summary>
   /// <param name="logger">Logger used to log the success</param>
@@ -274,15 +288,29 @@ public class ExceptionManager : IDisposable
                    [StructuredMessageTemplate] string    message,
                    params                      object?[] args)
   {
-    if (applicationLifetime_.ApplicationStopping.IsCancellationRequested)
-    {
-      return;
-    }
+    var registeredApplications = Interlocked.Decrement(ref registeredApplications_);
 
     logger ??= logger_;
 
-    earlyCts_.Cancel();
-    applicationLifetime_.StopApplication();
+    if (registeredApplications == maxRegisteredApplications_ - 1)
+    {
+      if (string.IsNullOrWhiteSpace(message))
+      {
+        message = "Application shutdown has been asked";
+      }
+
+      // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+      logger?.LogInformation(message,
+                             args);
+
+      earlyCts_.Cancel();
+    }
+
+
+    if (registeredApplications != 0)
+    {
+      return;
+    }
 
     if (string.IsNullOrWhiteSpace(message))
     {
@@ -292,6 +320,8 @@ public class ExceptionManager : IDisposable
     // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
     logger?.LogInformation(message,
                            args);
+
+    applicationLifetime_.StopApplication();
   }
 
   /// <summary>

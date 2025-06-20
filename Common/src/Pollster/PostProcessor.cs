@@ -54,6 +54,7 @@ public class PostProcessor : BackgroundService
     postProcessingTaskQueue_ = postProcessingTaskQueue;
     logger_                  = logger;
     exceptionManager_        = exceptionManager;
+    exceptionManager.Register();
   }
 
   /// <inheritdoc />
@@ -99,6 +100,7 @@ public class PostProcessor : BackgroundService
       }
     }
 
-    logger_.LogWarning("End of task post processor; no more tasks will be finalized");
+    exceptionManager_.Stop(logger_,
+                           "End of task post processor; no more tasks will be finalized");
   }
 }
