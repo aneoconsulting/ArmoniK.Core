@@ -58,6 +58,7 @@ public class RunningTaskProcessor : BackgroundService
     postProcessingTaskQueue_ = postProcessingTaskQueue;
     logger_                  = logger;
     exceptionManager_        = exceptionManager;
+    exceptionManager.Register();
   }
 
   /// <inheritdoc />
@@ -121,6 +122,7 @@ public class RunningTaskProcessor : BackgroundService
       }
     }
 
-    logger_.LogWarning("End of running task processor; no more tasks will be executed");
+    exceptionManager_.Stop(logger_,
+                           "End of running task processor; no more tasks will be executed");
   }
 }
