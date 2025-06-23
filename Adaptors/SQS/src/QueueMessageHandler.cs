@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,6 +25,8 @@ using Amazon.SQS.Model;
 
 using ArmoniK.Core.Base;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Adapters.SQS;
 
 internal class QueueMessageHandler : IQueueMessageHandler
@@ -31,14 +34,17 @@ internal class QueueMessageHandler : IQueueMessageHandler
   private readonly int             ackDeadlinePeriod_;
   private readonly Heart           autoExtendAckDeadline_;
   private readonly AmazonSQSClient client_;
+  private readonly ILogger         logger_;
   private readonly string          queueUrl_;
   private readonly string          receiptHandle_;
+  private          StackTrace?     stackTrace_;
 
   public QueueMessageHandler(Message         message,
                              AmazonSQSClient client,
                              string          queueUrl,
                              int             ackDeadlinePeriod,
-                             int             ackExtendDeadlineStep)
+                             int             ackExtendDeadlineStep,
+                             ILogger         logger)
   {
     MessageId          = message.MessageId;
     TaskId             = message.Body;
@@ -48,6 +54,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
     queueUrl_          = queueUrl;
     receiptHandle_     = message.ReceiptHandle;
     ackDeadlinePeriod_ = ackDeadlinePeriod;
+    logger_            = logger;
+    stackTrace_        = new StackTrace(true);
     autoExtendAckDeadline_ = new Heart(ModifyAckDeadline,
                                        TimeSpan.FromSeconds(ackExtendDeadlineStep),
                                        CancellationToken);
@@ -58,6 +66,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
+    stackTrace_ = null;
+
     await autoExtendAckDeadline_.Stop()
                                 .ConfigureAwait(false);
 
@@ -93,6 +103,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
       default:
         throw new ArgumentOutOfRangeException();
     }
+
+    GC.SuppressFinalize(this);
   }
 
   /// <inheritdoc />
@@ -118,4 +130,22 @@ internal class QueueMessageHandler : IQueueMessageHandler
                                               ReceiptHandle     = receiptHandle_,
                                             },
                                             cancellationToken);
+
+  ~QueueMessageHandler()
+  {
+    if (stackTrace_ is null)
+    {
+      return;
+    }
+
+    logger_.LogError("QueueMessageHandler for Message {MessageId} and Task {TaskId} was not disposed: Created {MessageCreationStackTrace}",
+                     MessageId,
+                     TaskId,
+                     stackTrace_);
+
+    DisposeAsync()
+      .AsTask()
+      .GetAwaiter()
+      .GetResult();
+  }
 }

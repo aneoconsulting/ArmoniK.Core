@@ -161,6 +161,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                              sender,
                                              receiver!,
                                              Encoding.UTF8.GetString(message.Body as byte[] ?? throw new InvalidOperationException("Error while deserializing message")),
+                                             logger_,
                                              cancellationToken);
 
         break;
@@ -183,10 +184,10 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                        $"{Options.PartitionId}###q{link}");
 
              /* linkCredit_: the maximum number of messages the
-                                       * remote peer can send to the receiver.
-                                       * With the goal of minimizing/deactivating
-                                       * prefetching, a value of 1 gave us the desired
-                                       * behavior. We pick a default value of 2 to have "some cache". */
+              * remote peer can send to the receiver.
+              * With the goal of minimizing/deactivating
+              * prefetching, a value of 1 gave us the desired
+              * behavior. We pick a default value of 2 to have "some cache". */
              rl.SetCredit(Options.LinkCredit);
              return rl;
            });

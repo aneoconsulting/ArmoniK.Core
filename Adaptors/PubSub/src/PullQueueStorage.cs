@@ -30,16 +30,18 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.PubSub;
 
 internal class PullQueueStorage : IPullQueueStorage
 {
-  private readonly int    ackDeadlinePeriod_;
-  private readonly int    ackExtendDeadlineStep_;
-  private readonly bool   exactlyOnceDelivery_;
-  private readonly string kmsKeyName_;
-  private readonly bool   messageOrdering_;
+  private readonly int     ackDeadlinePeriod_;
+  private readonly int     ackExtendDeadlineStep_;
+  private readonly bool    exactlyOnceDelivery_;
+  private readonly string  kmsKeyName_;
+  private readonly ILogger logger_;
+  private readonly bool    messageOrdering_;
 
   private readonly TimeSpan                   messageRetention_;
   private readonly PublisherServiceApiClient  publisher_;
@@ -50,7 +52,8 @@ internal class PullQueueStorage : IPullQueueStorage
 
   public PullQueueStorage(SubscriberServiceApiClient subscriber,
                           PublisherServiceApiClient  publisher,
-                          PubSub                     options)
+                          PubSub                     options,
+                          ILogger<PullQueueStorage>  logger)
   {
     var topic = $"a{options.Prefix}-{options.PartitionId}";
     var sub   = $"a{options.Prefix}-{options.PartitionId}-ak-sub";
@@ -67,6 +70,7 @@ internal class PullQueueStorage : IPullQueueStorage
                                             topic);
     subscriptionName_ = SubscriptionName.FromProjectSubscription(options.ProjectId,
                                                                  sub);
+    logger_ = logger;
   }
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(int                                        nbMessages,
@@ -89,7 +93,8 @@ internal class PullQueueStorage : IPullQueueStorage
                                            subscriber_,
                                            subscriptionName_,
                                            ackDeadlinePeriod_,
-                                           ackExtendDeadlineStep_);
+                                           ackExtendDeadlineStep_,
+                                           logger_);
     }
   }
 
