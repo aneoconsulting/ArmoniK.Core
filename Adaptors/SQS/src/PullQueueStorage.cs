@@ -37,8 +37,7 @@ internal class PullQueueStorage : IPullQueueStorage
 {
   private readonly AmazonSQSClient client_;
 
-  // ReSharper disable once NotAccessedField.Local
-  private readonly ILogger<PullQueueStorage> logger_;
+  private readonly ILogger logger_;
 
   private readonly SQS      options_;
   private readonly string[] queueUrls_;
@@ -110,7 +109,8 @@ internal class PullQueueStorage : IPullQueueStorage
                                              client_,
                                              queueUrl,
                                              options_.AckDeadlinePeriod,
-                                             options_.WaitTimeSeconds);
+                                             options_.WaitTimeSeconds,
+                                             logger_);
       }
 
       yield break;
