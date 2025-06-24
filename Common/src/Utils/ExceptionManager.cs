@@ -48,7 +48,6 @@ public class ExceptionManager : IDisposable
 
   private readonly ILogger? logger_;
   private readonly int      maxError_;
-  private          int      maxRegisteredApplications_;
   private          int      nbError_;
   private          int      registeredApplications_;
 
@@ -85,7 +84,7 @@ public class ExceptionManager : IDisposable
 
     disposables_.Add(lateCts_.Token.Register(() =>
                                              {
-                                               if (!applicationLifetime_.ApplicationStopped.IsCancellationRequested)
+                                               if (!applicationLifetime_.ApplicationStopping.IsCancellationRequested)
                                                {
                                                  logger_?.LogInformation("Grace delay has expired");
                                                  applicationLifetime_.StopApplication();
@@ -93,10 +92,9 @@ public class ExceptionManager : IDisposable
                                              }));
 
 
-    maxError_                  = options.MaxError ?? int.MaxValue / 2;
-    logger_                    = logger;
-    registeredApplications_    = 0;
-    maxRegisteredApplications_ = 0;
+    maxError_               = options.MaxError ?? int.MaxValue / 2;
+    logger_                 = logger;
+    registeredApplications_ = 0;
   }
 
 
@@ -224,13 +222,10 @@ public class ExceptionManager : IDisposable
   }
 
   /// <summary>
-  ///   Registers a class that will that has to call <see cref="Stop" /> to trigger application stop.
+  ///   Registers a class that has to call <see cref="Stop" /> to trigger application stop.
   /// </summary>
   public void Register()
-  {
-    Interlocked.Increment(ref registeredApplications_);
-    Interlocked.Increment(ref maxRegisteredApplications_);
-  }
+    => Interlocked.Increment(ref registeredApplications_);
 
   /// <summary>
   ///   Decrease the number of recorded errors to indicate that the application is behaving correctly.
@@ -280,8 +275,8 @@ public class ExceptionManager : IDisposable
   ///     If <paramref name="logger" /> is null, the logger of <code>this</code> is used.
   ///   </para>
   ///   <para>
-  ///     The only difference with stopping the application directly is the log message.
-  ///     Using this function indicates the reason of the shutdown, instead of indicating an external shutdown.
+  ///     Triggers the early Cts, and if all the recorded component have stopped, triggers the late Cts and stop the
+  ///     application lifetime.
   ///   </para>
   /// </remarks>
   public void Stop(ILogger?                              logger,
@@ -292,36 +287,35 @@ public class ExceptionManager : IDisposable
 
     logger ??= logger_;
 
-    if (registeredApplications == maxRegisteredApplications_ - 1)
-    {
-      if (string.IsNullOrWhiteSpace(message))
-      {
-        message = "Application shutdown has been asked";
-      }
-
-      // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
-      logger?.LogInformation(message,
-                             args);
-
-      earlyCts_.Cancel();
-    }
-
-
-    if (registeredApplications != 0)
-    {
-      return;
-    }
-
     if (string.IsNullOrWhiteSpace(message))
     {
       message = "Application shutdown has been triggered internally";
     }
 
-    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+#pragma warning disable CA2254
     logger?.LogInformation(message,
                            args);
+#pragma warning restore CA2254
 
+    if (!earlyCts_.IsCancellationRequested)
+    {
+      logger?.LogInformation("Early CancellationToken has been triggered due to internal stopping request");
+
+      earlyCts_.Cancel();
+    }
+
+    if (registeredApplications > 0 || lateCts_.IsCancellationRequested)
+    {
+      return;
+    }
+
+    logger?.LogInformation("Late CancellationToken has been triggered due to internal stopping request");
+
+    // Application stopping before triggering the late cancellation token
+    // ensures that grace delay expiration is not logged
     applicationLifetime_.StopApplication();
+
+    lateCts_.Cancel();
   }
 
   /// <summary>
