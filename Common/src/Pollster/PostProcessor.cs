@@ -54,12 +54,12 @@ public class PostProcessor : BackgroundService
     postProcessingTaskQueue_ = postProcessingTaskQueue;
     logger_                  = logger;
     exceptionManager_        = exceptionManager;
-    exceptionManager.Register();
   }
 
   /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    exceptionManager_.Register();
     await using var closeReader = new Deferrer(postProcessingTaskQueue_.CloseReader);
 
     while (!exceptionManager_.LateCancellationToken.IsCancellationRequested)

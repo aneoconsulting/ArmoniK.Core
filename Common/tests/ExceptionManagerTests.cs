@@ -332,10 +332,11 @@ public class ExceptionManagerTests
     await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
     await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
     await using var d2 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(2));
-    await using var d3 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(3));
-    await using var d4 = em.LateCancellationToken.Register(() => events.Enqueue(4));
+    await using var d3 = em.LateCancellationToken.Register(() => events.Enqueue(3));
+    await using var d4 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(4));
 
     lifetime_.NotifyStarted();
+    em.Register();
 
     await Task.Delay(10)
               .ConfigureAwait(false);
@@ -345,8 +346,8 @@ public class ExceptionManagerTests
 
     try
     {
-      await lifetime_.ApplicationStopping.AsTask()
-                     .ConfigureAwait(false);
+      await em.LateCancellationToken.AsTask()
+              .ConfigureAwait(false);
     }
     catch (OperationCanceledException)
     {
