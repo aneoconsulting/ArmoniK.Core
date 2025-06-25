@@ -59,6 +59,7 @@ public class PostProcessor : BackgroundService
   /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    exceptionManager_.Register();
     await using var closeReader = new Deferrer(postProcessingTaskQueue_.CloseReader);
 
     while (!exceptionManager_.LateCancellationToken.IsCancellationRequested)
@@ -99,6 +100,7 @@ public class PostProcessor : BackgroundService
       }
     }
 
-    logger_.LogWarning("End of task post processor; no more tasks will be finalized");
+    exceptionManager_.Stop(logger_,
+                           "End of task post processor; no more tasks will be finalized");
   }
 }

@@ -63,6 +63,7 @@ public class RunningTaskProcessor : BackgroundService
   /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
+    exceptionManager_.Register();
     await using var closeWriter = new Deferrer(postProcessingTaskQueue_.CloseWriter);
     await using var closeReader = new Deferrer(runningTaskQueue_.CloseReader);
 
@@ -121,6 +122,7 @@ public class RunningTaskProcessor : BackgroundService
       }
     }
 
-    logger_.LogWarning("End of running task processor; no more tasks will be executed");
+    exceptionManager_.Stop(logger_,
+                           "End of running task processor; no more tasks will be executed");
   }
 }

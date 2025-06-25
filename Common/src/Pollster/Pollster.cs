@@ -280,6 +280,7 @@ public class Pollster : IInitializable
   {
     try
     {
+      exceptionManager_.Register();
       await Init(exceptionManager_.EarlyCancellationToken)
         .ConfigureAwait(false);
 
@@ -490,9 +491,6 @@ public class Pollster : IInitializable
                                         "Error while processing the messages from the queue");
         }
       }
-
-      exceptionManager_.Stop(logger_,
-                             "End of Pollster main loop: Stop the application");
     }
     catch (Exception e)
     {
@@ -505,6 +503,8 @@ public class Pollster : IInitializable
     }
     finally
     {
+      exceptionManager_.Stop(logger_,
+                             "End of Pollster main loop: Stop the application");
       runningTaskQueue_.CloseWriter();
       endLoopReached_ = true;
     }
