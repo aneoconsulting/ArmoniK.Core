@@ -235,7 +235,7 @@ public static class ResultLifeCycleHelper
       return;
     }
 
-    //Discard value is used to remove warnings CS4014 !!
+    // Discard value is used to remove warnings CS4014 !!
     _ = Task.Factory.StartNew(async () =>
                               {
                                 await objectStorage.TryDeleteAsync(new[]

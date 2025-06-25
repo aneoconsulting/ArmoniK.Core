@@ -54,8 +54,8 @@ public sealed class Agent : IAgent
   private readonly ConcurrentBag<ICollection<string>>                                 notifiedResults_ = new();
   private readonly IObjectStorage                                                     objectStorage_;
   private readonly IPushQueueStorage                                                  pushQueueStorage_;
-  private readonly ConcurrentBag<ICollection<(string id, ReadOnlyMemory<byte> data)>> resultsData_ = new();
   private readonly IResultTable                                                       resultTable_;
+  private readonly ConcurrentBag<ICollection<(string id, ReadOnlyMemory<byte> data)>> resultsData_ = new();
   private readonly SessionData                                                        sessionData_;
   private readonly ISubmitter                                                         submitter_;
   private readonly TaskData                                                           taskData_;

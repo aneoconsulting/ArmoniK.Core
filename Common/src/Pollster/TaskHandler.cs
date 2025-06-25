@@ -48,9 +48,9 @@ namespace ArmoniK.Core.Common.Pollster;
 
 public sealed class TaskHandler : IAsyncDisposable
 {
-  private readonly Activity?                             activity_;
   private readonly ActivityContext                       activityContext_;
   private readonly ActivitySource                        activitySource_;
+  private readonly Activity?                             activity_;
   private readonly IAgentHandler                         agentHandler_;
   private readonly DataPrefetcher                        dataPrefetcher_;
   private readonly TimeSpan                              delayBeforeAcquisition_;
@@ -70,8 +70,8 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IPushQueueStorage                     pushQueueStorage_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
-  private readonly ISubmitter                            submitter_;
   private readonly Submitter                             submitterOptions_;
+  private readonly ISubmitter                            submitter_;
   private readonly ITaskProcessingChecker                taskProcessingChecker_;
   private readonly ITaskTable                            taskTable_;
   private readonly string                                token_;

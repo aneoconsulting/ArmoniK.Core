@@ -49,12 +49,12 @@ public class TestPollingAgentProvider : IDisposable
 {
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
+  public readonly         ISubmitter     Submitter;
   private readonly        WebApplication app_;
   private readonly        LoggerFactory  loggerFactory_;
 
   private readonly Task         pollsterRunningTask_;
   private readonly IMongoRunner runner_;
-  public readonly  ISubmitter   Submitter;
 
 
   public TestPollingAgentProvider(IWorkerStreamHandler workerStreamHandler)

@@ -156,7 +156,7 @@ public static class ServiceCollectionExt
 
     settings.ClusterConfigurator = cb =>
                                    {
-                                     //cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
+                                     // cb.Subscribe<CommandStartedEvent>(e => logger.LogTrace("{CommandName} - {Command}",
                                      //                                                       e.CommandName,
                                      //                                                       e.Command.ToJson()));
                                      cb.Subscribe(new DiagnosticsActivityEventSubscriber());

@@ -125,7 +125,7 @@ public static class Program
         ActivitySource.AddActivityListener(new ActivityListener
                                            {
                                              ShouldListenTo = _ => true,
-                                             //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+                                             // Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
                                              ActivityStopped = activity =>
                                                                {
                                                                  foreach (var (key, value) in activity.Baggage)
