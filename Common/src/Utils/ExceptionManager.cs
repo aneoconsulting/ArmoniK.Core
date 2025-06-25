@@ -49,6 +49,7 @@ public class ExceptionManager : IDisposable
   private readonly ILogger? logger_;
   private readonly int      maxError_;
   private          int      nbError_;
+  private          int      registeredApplications_;
 
   /// <summary>
   ///   Build an ExceptionManager
@@ -83,7 +84,7 @@ public class ExceptionManager : IDisposable
 
     disposables_.Add(lateCts_.Token.Register(() =>
                                              {
-                                               if (!applicationLifetime_.ApplicationStopped.IsCancellationRequested)
+                                               if (!applicationLifetime_.ApplicationStopping.IsCancellationRequested)
                                                {
                                                  logger_?.LogInformation("Grace delay has expired");
                                                  applicationLifetime_.StopApplication();
@@ -91,9 +92,11 @@ public class ExceptionManager : IDisposable
                                              }));
 
 
-    maxError_ = options.MaxError ?? int.MaxValue / 2;
-    logger_   = logger;
+    maxError_               = options.MaxError ?? int.MaxValue / 2;
+    logger_                 = logger;
+    registeredApplications_ = 0;
   }
+
 
   /// <summary>
   ///   CancellationToken that is triggered as soon as the application is stopped,
@@ -219,6 +222,12 @@ public class ExceptionManager : IDisposable
   }
 
   /// <summary>
+  ///   Registers a class that has to call <see cref="Stop" /> to trigger application stop.
+  /// </summary>
+  public void Register()
+    => Interlocked.Increment(ref registeredApplications_);
+
+  /// <summary>
   ///   Decrease the number of recorded errors to indicate that the application is behaving correctly.
   /// </summary>
   /// <param name="logger">Logger used to log the success</param>
@@ -266,32 +275,47 @@ public class ExceptionManager : IDisposable
   ///     If <paramref name="logger" /> is null, the logger of <code>this</code> is used.
   ///   </para>
   ///   <para>
-  ///     The only difference with stopping the application directly is the log message.
-  ///     Using this function indicates the reason of the shutdown, instead of indicating an external shutdown.
+  ///     Triggers the early Cts, and if all the recorded component have stopped, triggers the late Cts and stop the
+  ///     application lifetime.
   ///   </para>
   /// </remarks>
   public void Stop(ILogger?                              logger,
                    [StructuredMessageTemplate] string    message,
                    params                      object?[] args)
   {
-    if (applicationLifetime_.ApplicationStopping.IsCancellationRequested)
-    {
-      return;
-    }
+    var registeredApplications = Interlocked.Decrement(ref registeredApplications_);
 
     logger ??= logger_;
-
-    earlyCts_.Cancel();
-    applicationLifetime_.StopApplication();
 
     if (string.IsNullOrWhiteSpace(message))
     {
       message = "Application shutdown has been triggered internally";
     }
 
-    // ReSharper disable once TemplateIsNotCompileTimeConstantProblem
+#pragma warning disable CA2254
     logger?.LogInformation(message,
                            args);
+#pragma warning restore CA2254
+
+    if (!earlyCts_.IsCancellationRequested)
+    {
+      logger?.LogInformation("Early CancellationToken has been triggered due to internal stopping request");
+
+      earlyCts_.Cancel();
+    }
+
+    if (registeredApplications > 0 || lateCts_.IsCancellationRequested)
+    {
+      return;
+    }
+
+    logger?.LogInformation("Late CancellationToken has been triggered due to internal stopping request");
+
+    // Application stopping before triggering the late cancellation token
+    // ensures that grace delay expiration is not logged
+    applicationLifetime_.StopApplication();
+
+    lateCts_.Cancel();
   }
 
   /// <summary>
