@@ -33,8 +33,8 @@ namespace ArmoniK.Core.Adapters.RabbitMQ;
 
 public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
-  private const    int                       Delay = 20;
-  private readonly ILogger<PullQueueStorage> logger_;
+  private const    int     Delay = 20;
+  private readonly ILogger logger_;
 
   public PullQueueStorage(Amqp                      options,
                           IConnectionRabbit         connectionRabbit,
@@ -113,6 +113,7 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
       yield return new QueueMessageHandler(ConnectionRabbit,
                                            message,
                                            Encoding.UTF8.GetString(message.Body.ToArray()),
+                                           logger_,
                                            cancellationToken);
     }
   }
