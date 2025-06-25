@@ -16,12 +16,15 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 
 using Google.Cloud.PubSub.V1;
+
+using Microsoft.Extensions.Logging;
 
 using Encoding = System.Text.Encoding;
 
@@ -32,14 +35,17 @@ internal class QueueMessageHandler : IQueueMessageHandler
   private readonly int                        ackDeadlinePeriod_;
   private readonly string                     ackId_;
   private readonly Heart                      autoExtendAckDeadline_;
+  private readonly ILogger                    logger_;
   private readonly SubscriberServiceApiClient subscriberServiceApiClient_;
   private readonly SubscriptionName           subscriptionName_;
+  private          StackTrace?                stackTrace_;
 
   public QueueMessageHandler(ReceivedMessage            message,
                              SubscriberServiceApiClient subscriberServiceApiClient,
                              SubscriptionName           subscriptionName,
                              int                        ackDeadlinePeriod,
-                             int                        ackExtendDeadlineStep)
+                             int                        ackExtendDeadlineStep,
+                             ILogger                    logger)
   {
     subscriberServiceApiClient_ = subscriberServiceApiClient;
     subscriptionName_           = subscriptionName;
@@ -49,6 +55,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
     Status                      = QueueMessageStatus.Running;
     ackId_                      = message.AckId;
     ackDeadlinePeriod_          = ackDeadlinePeriod;
+    logger_                     = logger;
+    stackTrace_                 = new StackTrace(true);
     autoExtendAckDeadline_ = new Heart(ModifyAckDeadline,
                                        TimeSpan.FromSeconds(ackExtendDeadlineStep),
                                        CancellationToken);
@@ -58,6 +66,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
 
   public async ValueTask DisposeAsync()
   {
+    stackTrace_ = null;
+
     await autoExtendAckDeadline_.Stop()
                                 .ConfigureAwait(false);
 
@@ -91,6 +101,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
       default:
         throw new ArgumentOutOfRangeException();
     }
+
+    GC.SuppressFinalize(this);
   }
 
   public CancellationToken  CancellationToken { get; set; }
@@ -106,4 +118,22 @@ internal class QueueMessageHandler : IQueueMessageHandler
                                                             ackId_,
                                                           },
                                                           ackDeadlinePeriod_);
+
+  ~QueueMessageHandler()
+  {
+    if (stackTrace_ is null)
+    {
+      return;
+    }
+
+    logger_.LogError("QueueMessageHandler for Message {MessageId} and Task {TaskId} was not disposed: Created {MessageCreationStackTrace}",
+                     MessageId,
+                     TaskId,
+                     stackTrace_);
+
+    DisposeAsync()
+      .AsTask()
+      .GetAwaiter()
+      .GetResult();
+  }
 }

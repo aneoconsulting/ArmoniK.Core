@@ -16,33 +16,42 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 using Amqp;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Utils;
+
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
 
 public class QueueMessageHandler : IQueueMessageHandler
 {
+  private readonly ILogger       logger_;
   private readonly Message       message_;
   private readonly IReceiverLink receiver_;
   private readonly ISenderLink   sender_;
+  private          StackTrace?   stackTrace_;
 
   public QueueMessageHandler(Message           message,
                              ISenderLink       sender,
                              IReceiverLink     receiver,
                              string            taskId,
+                             ILogger           logger,
                              CancellationToken cancellationToken)
   {
     message_          = message;
     sender_           = sender;
     receiver_         = receiver;
     TaskId            = taskId;
+    logger_           = logger;
     CancellationToken = cancellationToken;
     ReceptionDateTime = DateTime.UtcNow;
+    stackTrace_       = new StackTrace(true);
   }
 
   /// <inheritdoc />
@@ -64,6 +73,7 @@ public class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public ValueTask DisposeAsync()
   {
+    stackTrace_ = null;
     switch (Status)
     {
       case QueueMessageStatus.Postponed:
@@ -88,5 +98,21 @@ public class QueueMessageHandler : IQueueMessageHandler
     GC.SuppressFinalize(this);
 
     return new ValueTask();
+  }
+
+  ~QueueMessageHandler()
+  {
+    if (stackTrace_ is null)
+    {
+      return;
+    }
+
+    logger_.LogError("QueueMessageHandler for Message {MessageId} and Task {TaskId} was not disposed: Created {MessageCreationStackTrace}",
+                     MessageId,
+                     TaskId,
+                     stackTrace_);
+
+    DisposeAsync()
+      .WaitSync();
   }
 }

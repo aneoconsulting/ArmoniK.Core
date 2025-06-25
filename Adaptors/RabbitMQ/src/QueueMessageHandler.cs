@@ -16,10 +16,13 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
+
+using Microsoft.Extensions.Logging;
 
 using RabbitMQ.Client;
 
@@ -29,16 +32,21 @@ public class QueueMessageHandler : IQueueMessageHandler
 {
   private readonly BasicGetResult    basicGetResult_;
   private readonly IConnectionRabbit channel_;
+  private readonly ILogger           logger_;
+  private          StackTrace?       stackTrace_;
 
   public QueueMessageHandler(IConnectionRabbit channel,
                              BasicGetResult    basicGetResult,
                              string            taskId,
+                             ILogger           logger,
                              CancellationToken cancellationToken)
   {
     TaskId            = taskId;
     basicGetResult_   = basicGetResult;
     CancellationToken = cancellationToken;
     channel_          = channel;
+    logger_           = logger;
+    stackTrace_       = new StackTrace(true);
     ReceptionDateTime = DateTime.UtcNow;
   }
 
@@ -60,6 +68,8 @@ public class QueueMessageHandler : IQueueMessageHandler
 
   public async ValueTask DisposeAsync()
   {
+    stackTrace_ = null;
+
     var connection = await channel_.GetConnectionAsync(CancellationToken.None)
                                    .ConfigureAwait(false);
 
@@ -96,5 +106,23 @@ public class QueueMessageHandler : IQueueMessageHandler
     }
 
     GC.SuppressFinalize(this);
+  }
+
+  ~QueueMessageHandler()
+  {
+    if (stackTrace_ is null)
+    {
+      return;
+    }
+
+    logger_.LogError("QueueMessageHandler for Message {MessageId} and Task {TaskId} was not disposed: Created {MessageCreationStackTrace}",
+                     MessageId,
+                     TaskId,
+                     stackTrace_);
+
+    DisposeAsync()
+      .AsTask()
+      .GetAwaiter()
+      .GetResult();
   }
 }

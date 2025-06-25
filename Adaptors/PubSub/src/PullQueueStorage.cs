@@ -30,16 +30,18 @@ using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.PubSub;
 
 internal class PullQueueStorage : IPullQueueStorage
 {
-  private readonly int    ackDeadlinePeriod_;
-  private readonly int    ackExtendDeadlineStep_;
-  private readonly bool   exactlyOnceDelivery_;
-  private readonly string kmsKeyName_;
-  private readonly bool   messageOrdering_;
+  private readonly int     ackDeadlinePeriod_;
+  private readonly int     ackExtendDeadlineStep_;
+  private readonly bool    exactlyOnceDelivery_;
+  private readonly string  kmsKeyName_;
+  private readonly ILogger logger_;
+  private readonly bool    messageOrdering_;
 
   private readonly TimeSpan                   messageRetention_;
   private readonly string                     prefix_;
@@ -50,7 +52,8 @@ internal class PullQueueStorage : IPullQueueStorage
 
   public PullQueueStorage(SubscriberServiceApiClient subscriber,
                           PublisherServiceApiClient  publisher,
-                          PubSub                     options)
+                          PubSub                     options,
+                          ILogger<PullQueueStorage>  logger)
   {
     messageRetention_      = options.MessageRetention;
     ackDeadlinePeriod_     = options.AckDeadlinePeriod;
@@ -62,6 +65,7 @@ internal class PullQueueStorage : IPullQueueStorage
     publisher_             = publisher;
     prefix_                = options.Prefix;
     project_               = options.ProjectId;
+    logger_                = logger;
   }
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
@@ -134,7 +138,8 @@ internal class PullQueueStorage : IPullQueueStorage
                                            subscriber_,
                                            subscriptionName,
                                            ackDeadlinePeriod_,
-                                           ackExtendDeadlineStep_);
+                                           ackExtendDeadlineStep_,
+                                           logger_);
     }
   }
 
