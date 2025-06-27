@@ -20,68 +20,68 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Adapters.QueueCommon;
 
 /// <summary>
-/// Represents the configuration settings for the AMQP (Advanced Message Queuing Protocol) connection.
+///   Represents the configuration settings for the AMQP (Advanced Message Queuing Protocol) connection.
 /// </summary>
 [PublicAPI]
 public class Amqp
 {
   /// <summary>
-  /// The name of the configuration section for AMQP settings.
+  ///   The name of the configuration section for AMQP settings.
   /// </summary>
   public const string SettingSection = nameof(Amqp);
 
   /// <summary>
-  /// Gets or sets the hostname of the AMQP server.
+  ///   Gets or sets the hostname of the AMQP server.
   /// </summary>
   public string Host { get; set; } = "";
 
   /// <summary>
-  /// Gets or sets the path to the credentials file for authentication.
+  ///   Gets or sets the path to the credentials file for authentication.
   /// </summary>
   public string CredentialsPath { get; set; } = "";
 
   /// <summary>
-  ///  Username for connecting to the AMQP server.
+  ///   Username for connecting to the AMQP server.
   /// </summary>
   public string User { get; set; } = "";
 
   /// <summary>
-  /// Password for connecting to the AMQP server.
+  ///   Password for connecting to the AMQP server.
   /// </summary>
   public string Password { get; set; } = "";
 
   /// <summary>
-  /// Scheme (protocol) used for the connection (e.g., "amqp", "amqps").
+  ///   Scheme (protocol) used for the connection (e.g., "amqp", "amqps").
   /// </summary>
   public string Scheme { get; set; } = "";
 
   /// <summary>
-  /// Path to the Certificate Authority (CA) file for TLS connections.
+  ///   Path to the Certificate Authority (CA) file for TLS connections.
   /// </summary>
   public string CaPath { get; set; } = "";
 
   /// <summary>
-  /// Port number for the AMQP server connection.
+  ///   Port number for the AMQP server connection.
   /// </summary>
   public int Port { get; set; }
 
   /// <summary>
-  /// Maximum priority level for messages in the queue.
+  ///   Maximum priority level for messages in the queue.
   /// </summary>
   public int MaxPriority { get; set; }
 
   /// <summary>
-  /// Whether to allow host name mismatches in TLS certificates.
+  ///   Whether to allow host name mismatches in TLS certificates.
   /// </summary>
   public bool AllowHostMismatch { get; set; }
 
   /// <summary>
-  /// Maximum number of retry attempts for failed operations.
+  ///   Maximum number of retry attempts for failed operations.
   /// </summary>
   public int MaxRetries { get; set; }
 
   /// <summary>
-  /// Link credit for flow control in the AMQP connection. The minimum valued supported is 1
+  ///   Link credit for flow control in the AMQP connection. The minimum valued supported is 1
   ///   For more details see:
   ///   <a
   ///     href="https: //www.rabbitmq.com/blog/2024/09/02/amqp-flow-control">
@@ -90,14 +90,14 @@ public class Amqp
   public int LinkCredit { get; set; }
 
   /// <summary>
-  /// Limit on the level of parallelism for operations.
-  /// If parallelismLimit is 0, the number of threads is used as the limit.
-  /// If parallelismLimit is negative, no limit is enforced.
+  ///   Limit on the level of parallelism for operations.
+  ///   If parallelismLimit is 0, the number of threads is used as the limit.
+  ///   If parallelismLimit is negative, no limit is enforced.
   /// </summary>
   public int ParallelismLimit { get; set; }
 
   /// <summary>
-  /// Whether to allow insecure TLS connections.
+  ///   Whether to allow insecure TLS connections.
   /// </summary>
   public bool AllowInsecureTls { get; set; }
 }
