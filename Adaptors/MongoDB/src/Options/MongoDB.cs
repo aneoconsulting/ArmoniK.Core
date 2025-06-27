@@ -81,6 +81,10 @@ public class MongoDB
 
   /// <summary>
   ///   Connection string for the MongoDB server.
+  ///   If not null or empty, the MongoClientSettings are derived from it.
+  ///   Other connection options like Host, Port, User, Password and DataBaseName are ignored in this case. That is,
+  ///   the connection options provided in the ConnectionString take precedence over the  connection options defined
+  ///   in this class.
   /// </summary>
   public string ConnectionString { get; set; } = "";
 
