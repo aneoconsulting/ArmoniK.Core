@@ -24,9 +24,22 @@ namespace ArmoniK.Core.Adapters.MongoDB.Options;
 [PublicAPI]
 public class TableStorage
 {
+  /// <summary>
+  ///   The configuration section path used to retrieve settings related to MongoDB table storage.
+  /// </summary>
   public const string SettingSection = nameof(MongoDB) + ":" + nameof(TableStorage);
 
+  /// <summary>
+  ///   Minimum delay between polling attempts.
+  ///   This defines the shortest interval the system will wait before
+  ///   polling again, used as the initial delay.
+  /// </summary>
   public TimeSpan PollingDelayMin { get; set; } = TimeSpan.FromSeconds(1);
 
+  /// <summary>
+  ///   Maximum delay between polling attempts.
+  ///   This defines the upper bound for any exponential backoff
+  ///   strategy applied during polling retries.
+  /// </summary>
   public TimeSpan PollingDelayMax { get; set; } = TimeSpan.FromMinutes(5);
 }

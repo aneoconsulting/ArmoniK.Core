@@ -17,9 +17,19 @@
 
 namespace ArmoniK.Core.Common.Injection.Options;
 
+/// <summary>
+///   Represents configuration settings for an adapter.
+/// </summary>
 public class AdapterSettings
 {
+  /// <summary>
+  ///   Absolute file system path of the adapter's plugin assembly in the container
+  /// </summary>
   public string AdapterAbsolutePath { get; set; } = "";
 
+  /// <summary>
+  ///   Fully qualified name of the adapter class that implements the
+  ///   <see cref="ArmoniK.Core.Base.IDependencyInjectionBuildable" /> interface
+  /// </summary>
   public string ClassName { get; set; } = "";
 }
