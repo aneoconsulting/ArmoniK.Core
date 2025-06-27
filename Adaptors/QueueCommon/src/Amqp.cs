@@ -90,7 +90,6 @@ public class Amqp
   ///   For more details see:
   ///   <a
   ///     href="https: //www.rabbitmq.com/blog/2024/09/02/amqp-flow-control">
-  ///     AWS documentation
   ///   </a>
   /// </summary>
   public int LinkCredit { get; set; }
