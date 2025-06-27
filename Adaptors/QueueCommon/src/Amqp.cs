@@ -31,12 +31,12 @@ public class Amqp
   public const string SettingSection = nameof(Amqp);
 
   /// <summary>
-  ///   Gets or sets the hostname of the AMQP server.
+  ///   Hostname of the AMQP server.
   /// </summary>
   public string Host { get; set; } = "";
 
   /// <summary>
-  ///   Gets or sets the path to the credentials file for authentication.
+  ///   Path to the credentials file for authentication.
   /// </summary>
   public string CredentialsPath { get; set; } = "";
 
