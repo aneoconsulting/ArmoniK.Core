@@ -24,108 +24,108 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Adapters.MongoDB.Options;
 
 /// <summary>
-/// Represents the configuration settings for connecting to a MongoDB database.
+///   Represents the configuration settings for connecting to a MongoDB database.
 /// </summary>
 [PublicAPI]
 public class MongoDB
 {
   /// <summary>
-  /// The name of the configuration section for MongoDB settings.
+  ///   The name of the configuration section for MongoDB settings.
   /// </summary>
   public const string SettingSection = nameof(MongoDB);
 
   /// <summary>
-  /// Whether to use TLS for the connection.
+  ///   Whether to use TLS for the connection.
   /// </summary>
   public bool Tls { get; set; }
 
   /// <summary>
-  /// Whether to allow insecure TLS connections.
+  ///   Whether to allow insecure TLS connections.
   /// </summary>
   public bool AllowInsecureTls { get; set; }
 
   /// <summary>
-  /// Whether to connect directly to the MongoDB server, bypassing the replica set.
+  ///   Whether to connect directly to the MongoDB server, bypassing the replica set.
   /// </summary>
   public bool DirectConnection { get; set; }
 
   /// <summary>
-  /// Name of the replica set to connect to.
+  ///   Name of the replica set to connect to.
   /// </summary>
   public string ReplicaSet { get; set; } = "";
 
   /// <summary>
-  /// Hostname of the MongoDB server.
+  ///   Hostname of the MongoDB server.
   /// </summary>
   public string Host { get; set; } = "";
 
   /// <summary>
-  /// Port number for the MongoDB server connection.
+  ///   Port number for the MongoDB server connection.
   /// </summary>
   public int Port { get; set; }
 
   /// <summary>
-  /// Path to the Certificate Authority (CA) file for TLS connections.
+  ///   Path to the Certificate Authority (CA) file for TLS connections.
   /// </summary>
   public string CAFile { get; set; } = "";
 
   /// <summary>
-  /// Path to the credentials file for authentication.
+  ///   Path to the credentials file for authentication.
   /// </summary>
   public string CredentialsPath { get; set; } = "";
 
   /// <summary>
-  /// Username for connecting to the MongoDB server.
+  ///   Username for connecting to the MongoDB server.
   /// </summary>
   public string User { get; set; } = "";
 
   /// <summary>
-  /// Connection string for the MongoDB server.
+  ///   Connection string for the MongoDB server.
   /// </summary>
   public string ConnectionString { get; set; } = "";
 
   /// <summary>
-  /// Password for connecting to the MongoDB server.
+  ///   Password for connecting to the MongoDB server.
   /// </summary>
   public string Password { get; set; } = "";
 
   /// <summary>
-  /// Maximum number of retry attempts for failed operations.
+  ///   Maximum number of retry attempts for failed operations.
   /// </summary>
   public int MaxRetries { get; set; } = 5;
 
   /// <summary>
-  /// Name of the database to connect to.
+  ///   Name of the database to connect to.
   /// </summary>
   public string DatabaseName { get; set; } = "ArmoniK";
 
   /// <summary>
-  /// Duration for which data should be retained in the database.
+  ///   Duration for which data should be retained in the database.
   /// </summary>
   public TimeSpan DataRetention { get; set; } = TimeSpan.MaxValue;
 
   /// <summary>
-  /// Table storage configuration.
+  ///   Table storage configuration.
   /// </summary>
   public TableStorage TableStorage { get; set; } = new();
 
   /// <summary>
-  /// Maximum size of the connection pool.
+  ///   Maximum size of the connection pool.
   /// </summary>
   public int MaxConnectionPoolSize { get; set; } = 500;
 
   /// <summary>
-  /// Timeout duration for server selection.
+  ///   Timeout duration for server selection.
   /// </summary>
   public TimeSpan ServerSelectionTimeout { get; set; } = TimeSpan.FromMinutes(2);
 
   /// <summary>
-  /// Whether sharding is enabled for the database.
+  ///   Whether sharding is enabled for the database.
   /// </summary>
   public bool Sharding { get; set; }
 
   /// <summary>
-  /// Authentication source for the MongoDB connection.
+  ///   Authentication source for the MongoDB connection.
   /// </summary>
   public string AuthSource { get; set; } = "";
 }
