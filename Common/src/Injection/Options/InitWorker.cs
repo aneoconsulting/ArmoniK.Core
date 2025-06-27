@@ -29,6 +29,13 @@ public class InitWorker
   /// </summary>
   public const string SettingSection = nameof(InitWorker);
 
-  public int      WorkerCheckRetries { get; set; } = 10;
-  public TimeSpan WorkerCheckDelay   { get; set; } = TimeSpan.FromSeconds(2);
+  /// <summary>
+  ///   Number of times the worker should retry a failed check before giving up.
+  /// </summary>
+  public int WorkerCheckRetries { get; set; } = 10;
+
+  /// <summary>
+  ///   Delay duration between each retry attempt.
+  /// </summary>
+  public TimeSpan WorkerCheckDelay { get; set; } = TimeSpan.FromSeconds(2);
 }
