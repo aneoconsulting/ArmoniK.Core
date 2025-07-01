@@ -116,7 +116,8 @@ jobs:
         queue:
           - activemq
           - rabbitmq
-          - rabbitmq091       
+          - rabbitmq091
+          - nats
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -346,6 +347,7 @@ jobs:
           - activemq
           - rabbitmq
           - rabbitmq091
+          - nats
         log-level:
           - Information
           - Verbose
@@ -445,30 +447,35 @@ jobs:
           - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: unixdomainsocket }
           - { queue: pubsub, object: redis, log-level: Information, socket_type: unixdomainsocket }
           - { queue: sqs, object: redis, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: nats, object: redis, log-level: Information, socket_type: unixdomainsocket }
 
           - { queue: activemq, object: redis, log-level: Information, socket_type: tcp }
           - { queue: rabbitmq, object: redis, log-level: Information, socket_type: tcp }
           - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: tcp }
           - { queue: pubsub, object: redis, log-level: Information, socket_type: tcp }
           - { queue: sqs, object: redis, log-level: Information, socket_type: tcp }
+          - { queue: nats, object: redis, log-level: Information, socket_type: tcp }
 
           - { queue: activemq, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
           - { queue: rabbitmq, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
           - { queue: rabbitmq091, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
           - { queue: pubsub, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
           - { queue: sqs, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
+          - { queue: nats, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
 
           - { queue: activemq, object: minio, log-level: Information, socket_type: unixdomainsocket }
           - { queue: rabbitmq, object: minio, log-level: Information, socket_type: unixdomainsocket }
           - { queue: rabbitmq091, object: minio, log-level: Information, socket_type: unixdomainsocket }
           - { queue: pubsub, object: minio, log-level: Information, socket_type: unixdomainsocket }
           - { queue: sqs, object: minio, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: nats, object: minio, log-level: Information, socket_type: unixdomainsocket }
 
           - { queue: activemq, object: embed, log-level: Information, socket_type: unixdomainsocket }
           - { queue: rabbitmq, object: embed, log-level: Information, socket_type: unixdomainsocket }
           - { queue: rabbitmq091, object: embed, log-level: Information, socket_type: unixdomainsocket }
           - { queue: pubsub, object: embed, log-level: Information, socket_type: unixdomainsocket }
           - { queue: sqs, object: embed, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: nats, object: embed, log-level: Information, socket_type: unixdomainsocket }
 
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket }
 

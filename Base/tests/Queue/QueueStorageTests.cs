@@ -69,6 +69,10 @@ public class QueueStorageTests
         adapterAbsolutePath = "../../../../../../Adaptors/RabbitMQ/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.RabbitMQ.dll";
         break;
 
+      case "ArmoniK.Core.Adapters.Nats.QueueBuilder":
+        adapterAbsolutePath = "../../../../../../Adaptors/Nats/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.Nats.dll";
+        break;
+
       default:
         throw new InvalidOperationException($"Unknown ClassName: {className}");
     }
