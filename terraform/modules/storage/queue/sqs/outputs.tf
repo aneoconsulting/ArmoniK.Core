@@ -9,7 +9,7 @@ output "generated_env_vars" {
     "AWS_ACCESS_KEY_ID"                                     = "localkey"
     "AWS_SECRET_ACCESS_KEY"                                 = "localsecret"
     "SQS__WaitTimeSeconds"                                  = "0"
-    "SQS__MaxPrioriry"                                      = "9"
+    "SQS__MaxPriority"                                      = "9"
   })
 }
 output "core_mounts" {

@@ -38,9 +38,8 @@ namespace ArmoniK.Core.Tests.Queue;
 
 public class QueueStorageTests
 {
-  protected Adapters.QueueCommon.Amqp? Options;
-  protected IPullQueueStorage?         PullQueueStorage;
-  protected IPushQueueStorage?         PushQueueStorage;
+  protected IPullQueueStorage? PullQueueStorage;
+  protected IPushQueueStorage? PushQueueStorage;
 
   protected IServiceProvider ServiceProvider;
 
@@ -69,6 +68,14 @@ public class QueueStorageTests
         adapterAbsolutePath = "../../../../../../Adaptors/RabbitMQ/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.RabbitMQ.dll";
         break;
 
+      case "ArmoniK.Core.Adapters.SQS.QueueBuilder":
+        adapterAbsolutePath = "../../../../../../Adaptors/SQS/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.SQS.dll";
+        break;
+
+      case "ArmoniK.Core.Adapters.PubSub.QueueBuilder":
+        adapterAbsolutePath = "../../../../../../Adaptors/PubSub/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.PubSub.dll";
+        break;
+
       default:
         throw new InvalidOperationException($"Unknown ClassName: {className}");
     }
@@ -79,8 +86,6 @@ public class QueueStorageTests
                                          adapterAbsolutePath);
     }
 
-    Environment.SetEnvironmentVariable("Amqp__PartitionId",
-                                       "TestPartition");
     var configuration = new ConfigurationManager();
 
 
@@ -102,7 +107,6 @@ public class QueueStorageTests
     ServiceProvider  = BuildServiceProvider();
     PullQueueStorage = ServiceProvider.GetRequiredService<IPullQueueStorage>();
     PushQueueStorage = ServiceProvider.GetRequiredService<IPushQueueStorage>();
-    Options          = ServiceProvider.GetRequiredService<Adapters.QueueCommon.Amqp>();
   }
 
   #region Tests
