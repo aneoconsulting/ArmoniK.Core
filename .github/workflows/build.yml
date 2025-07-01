@@ -116,7 +116,9 @@ jobs:
         queue:
           - activemq
           - rabbitmq
-          - rabbitmq091       
+          - rabbitmq091
+          - sqs
+          - pubsub     
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -346,6 +348,8 @@ jobs:
           - activemq
           - rabbitmq
           - rabbitmq091
+          - sqs
+          - pubsub
         log-level:
           - Information
           - Verbose
