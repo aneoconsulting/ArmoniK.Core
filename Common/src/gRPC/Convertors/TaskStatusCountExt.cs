@@ -20,6 +20,9 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Extension methods for converting between internal and gRPC <see cref="StatusCount" /> statuses.
+/// </summary>
 public static class TaskStatusCountExt
 {
   /// <summary>
