@@ -23,6 +23,9 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Provides extension methods for converting <see cref="Result" /> objects to gRPC-generated types.
+/// </summary>
 public static class ResultExt
 {
   /// <summary>
