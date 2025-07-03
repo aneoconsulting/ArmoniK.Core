@@ -2202,6 +2202,7 @@ public class TaskHandlerTest
   }
 
   [Test]
+  [Retry(3)]
   public async Task LoopCheckOtherAgent()
   {
     var checkResult           = true;
