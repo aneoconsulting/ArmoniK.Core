@@ -18,7 +18,6 @@
 using System;
 
 using ArmoniK.Api.gRPC.V1;
-using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Convertors;
 
 using Google.Protobuf.Collections;
@@ -27,7 +26,7 @@ using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
 
-[TestFixture(TestOf = typeof(RpcExt))]
+[TestFixture(TestOf = typeof(TaskOptions))]
 public class TaskOptionsTests
 {
   private readonly TaskOptions? options_ = null;
