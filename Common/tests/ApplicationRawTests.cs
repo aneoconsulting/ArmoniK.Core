@@ -19,13 +19,12 @@ using System.Collections.Generic;
 using System.Linq;
 
 using ArmoniK.Api.gRPC.V1.Applications;
-using ArmoniK.Core.Common.gRPC;
 
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests;
 
-[TestFixture(TestOf = typeof(RpcExt))]
+[TestFixture(TestOf = typeof(ApplicationRaw))]
 public class ApplicationRawTests
 {
   private const string Name    = "name";
