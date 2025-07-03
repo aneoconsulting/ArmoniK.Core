@@ -46,12 +46,14 @@ public record NewTask(string              SessionId,
                       IEnumerable<string> RetryOfIds,
                       TaskStatus          Status)
 {
+  /// <inheritdoc />
   public virtual bool Equals(NewTask? other)
     => !ReferenceEquals(null,
                         other) && SessionId.Equals(other.SessionId) && TaskId.Equals(other.TaskId) && OriginTaskId.Equals(other.OriginTaskId) &&
        PayloadId.Equals(other.PayloadId) && ParentTaskIds.SequenceEqual(other.ParentTaskIds) && ExpectedOutputKeys.SequenceEqual(other.ExpectedOutputKeys) &&
        DataDependencies.SequenceEqual(other.DataDependencies) && RetryOfIds.SequenceEqual(other.RetryOfIds) && Status == other.Status;
 
+  /// <inheritdoc />
   public override int GetHashCode()
   {
     var hashCode = new HashCode();
