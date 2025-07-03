@@ -8,6 +8,7 @@ output "generated_env_vars" {
     "SQS__Tags__deployment"                                 = "docker"
     "AWS_ACCESS_KEY_ID"                                     = "localkey"
     "AWS_SECRET_ACCESS_KEY"                                 = "localsecret"
+    "SQS__MaxPriority"                                      = "9"
   })
 }
 output "core_mounts" {
