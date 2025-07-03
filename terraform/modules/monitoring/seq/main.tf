@@ -12,7 +12,8 @@ resource "docker_container" "seq" {
   }
 
   env = [
-    "ACCEPT_EULA=Y"
+    "ACCEPT_EULA=Y",
+    "SEQ_FIRSTRUN_NOAUTHENTICATION=true"
   ]
 
   ports {
