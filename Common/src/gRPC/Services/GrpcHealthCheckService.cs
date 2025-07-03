@@ -21,6 +21,9 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Control.Submitter;
 
+/// <summary>
+///   Implements the gRPC health check service for the ArmoniK's Control Plane component.
+/// </summary>
 public class GrpcHealthCheckService : GrpcHealthCheckServiceBase
 {
   /// <inheritdoc />
