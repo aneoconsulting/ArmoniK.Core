@@ -27,6 +27,14 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Provides extension methods for the <see cref="ITaskTable" /> interface to support gRPC operations.
+/// </summary>
+/// <remarks>
+///   This static class provides methods that bridge between the internal task table operations
+///   and the gRPC API, enabling operations like counting, listing, updating, and canceling tasks
+///   based on gRPC-based filter criteria.
+/// </remarks>
 public static class TaskTableExt
 {
   /// <summary>
