@@ -24,14 +24,23 @@ using static Google.Protobuf.WellKnownTypes.Timestamp;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Provides extension methods for converting <see cref="TaskDataHolder" /> objects to their gRPC representations.
+/// </summary>
+/// <remarks>
+///   This static class contains conversion methods to transform internal task data structures into
+///   their corresponding gRPC protocol representation, facilitating communication between
+///   the core services and external clients or workers. It supports converting to both detailed
+///   and summary task representations.
+/// </remarks>
 public static class TaskDataHolderExt
 {
   /// <summary>
   ///   Conversion operator from <see cref="TaskDataHolder" /> to <see cref="TaskDetailed" />
   /// </summary>
-  /// <param name="taskData">The input task data</param>
+  /// <param name="taskData">The input task data to convert</param>
   /// <returns>
-  ///   The converted task data
+  ///   The task data converted to gRPC detailed format with all available information
   /// </returns>
   public static TaskDetailed ToTaskDetailed(this TaskDataHolder taskData)
     => new()
@@ -111,10 +120,14 @@ public static class TaskDataHolderExt
   /// <summary>
   ///   Conversion operator from <see cref="TaskDataHolder" /> to gRPC <see cref="TaskSummary" />
   /// </summary>
-  /// <param name="taskDataSummary">The input task data</param>
+  /// <param name="taskDataSummary">The input task data to convert</param>
   /// <returns>
-  ///   The converted task data
+  ///   The task data converted to gRPC summary format with essential information
   /// </returns>
+  /// <remarks>
+  ///   The summary format contains fewer details than <see cref="TaskDetailed" /> and uses counts
+  ///   instead of full collections for dependencies and related tasks.
+  /// </remarks>
   public static TaskSummary ToTaskSummary(this TaskDataHolder taskDataSummary)
     => new()
        {
