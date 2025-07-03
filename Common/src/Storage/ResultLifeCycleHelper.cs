@@ -185,6 +185,21 @@ public static class ResultLifeCycleHelper
       .ConfigureAwait(false);
   }
 
+  /// <summary>
+  ///   Delete all results for a given session
+  /// </summary>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="objectStorage">Interface to manage objects</param>
+  /// <param name="sessionId">ID of the session to purge</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <remarks>
+  ///   This method will delete all results that are in the Completed, Created or Aborted state and their deletion is managed
+  ///   by ArmoniK.
+  ///   It will also delete the associated objects in the object storage.
+  /// </remarks>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
   public static async Task PurgeResultsAsync(IResultTable      resultTable,
                                              IObjectStorage    objectStorage,
                                              string            sessionId,
