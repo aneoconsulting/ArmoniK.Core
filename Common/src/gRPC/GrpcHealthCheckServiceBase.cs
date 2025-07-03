@@ -30,11 +30,17 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 namespace ArmoniK.Core.Common.gRPC;
 
 [PublicAPI]
+/// <inheritdoc cref="Health" />
 public abstract class GrpcHealthCheckServiceBase : Health.HealthBase
 {
   private readonly string[]           grpcServices_;
   private readonly HealthCheckService healthCheckService_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="GrpcHealthCheckServiceBase" /> class.
+  /// </summary>
+  /// <param name="healthCheckService">The ASP.NET Core health check service to use for health status reporting.</param>
+  /// <param name="grpcServices">An array of gRPC service names that this health check service supports.</param>
   protected GrpcHealthCheckServiceBase(HealthCheckService healthCheckService,
                                        string[]           grpcServices)
   {
@@ -42,6 +48,7 @@ public abstract class GrpcHealthCheckServiceBase : Health.HealthBase
     grpcServices_       = grpcServices;
   }
 
+  /// <inheritdoc />
   public override async Task<HealthCheckResponse> Check(HealthCheckRequest request,
                                                         ServerCallContext  context)
   {
