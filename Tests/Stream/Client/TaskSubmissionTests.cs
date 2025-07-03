@@ -183,7 +183,8 @@ internal class TaskSubmissionTests
     var eventClient = new Events.EventsClient(channel_);
     await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
                                           results.Results.ViewSelect(result => result.ResultId),
-                                          CancellationToken.None)
+                                          parallelism: 1,
+                                          cancellationToken: CancellationToken.None)
                      .ConfigureAwait(false);
 
     taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
@@ -319,7 +320,8 @@ internal class TaskSubmissionTests
                                           {
                                             resultId,
                                           },
-                                          CancellationToken.None)
+                                          parallelism: 1,
+                                          cancellationToken: CancellationToken.None)
                      .ConfigureAwait(false);
 
     taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
@@ -421,7 +423,8 @@ internal class TaskSubmissionTests
     var eventClient = new Events.EventsClient(channel_);
     await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
                                           results.Results.ViewSelect(result => result.ResultId),
-                                          CancellationToken.None)
+                                          parallelism: 1,
+                                          cancellationToken: CancellationToken.None)
                      .ConfigureAwait(false);
 
     var taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
