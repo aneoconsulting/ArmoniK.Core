@@ -24,13 +24,31 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.Meter;
 
+/// <summary>
+///   Holds and manages meter instances for collecting metrics in ArmoniK components.
+/// </summary>
+/// <remarks>
+///   This class serves as a central holder for metrics instrumentation, providing
+///   a common meter instance with consistent tags to be used across the application.
+///   It helps to maintain identity and context for metrics collected from different
+///   agent instances by incorporating agent identification in the metric tags.
+/// </remarks>
 [UsedImplicitly]
 public class MeterHolder
 {
-  public const      string                               Name = $"ArmoniK.Core.{nameof(MeterHolder)}";
+  /// <summary>
+  ///   The name of the meter instance used for metrics collection.
+  /// </summary>
+  public const string Name = $"ArmoniK.Core.{nameof(MeterHolder)}";
+
   internal readonly System.Diagnostics.Metrics.Meter     Meter;
   internal readonly IReadOnlyDictionary<string, object?> Tags;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="MeterHolder" /> class.
+  /// </summary>
+  /// <param name="meterFactory">The factory used to create meter instances.</param>
+  /// <param name="identifier">The agent identifier containing pod information.</param>
   public MeterHolder(IMeterFactory   meterFactory,
                      AgentIdentifier identifier)
   {
