@@ -23,6 +23,13 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Provides extension methods for the <see cref="ISessionTable" /> interface to support gRPC operations.
+/// </summary>
+/// <remarks>
+///   This static class provides methods that bridge between the internal session table operations
+///   and the gRPC API, particularly for filtering and listing sessions based on gRPC request parameters.
+/// </remarks>
 public static class SessionTableExt
 {
   /// <summary>
