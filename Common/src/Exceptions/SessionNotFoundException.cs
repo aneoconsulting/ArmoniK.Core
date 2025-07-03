@@ -34,6 +34,10 @@ public class SessionNotFoundException : ArmoniKException
   {
   }
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="SessionNotFoundException" /> class.
+  /// </summary>
+  /// <param name="deleted">Indicates whether the session was deleted.</param>
   public SessionNotFoundException(bool deleted)
     => Deleted = deleted;
 
