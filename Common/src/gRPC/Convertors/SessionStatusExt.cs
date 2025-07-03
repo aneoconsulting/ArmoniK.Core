@@ -21,8 +21,22 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Provides extension methods for converting between internal <see cref="Storage.SessionStatus" /> and
+///   gRPC <see cref="SessionStatus" /> enumeration values.
+/// </summary>
+/// <remarks>
+///   This static class facilitates bidirectional conversion between the internal representation
+///   of session status and the gRPC protocol representation used for external communication.
+/// </remarks>
 public static class SessionStatusExt
 {
+  /// <summary>
+  ///   Converts an internal session status to its corresponding gRPC representation.
+  /// </summary>
+  /// <param name="status">The internal session status to convert.</param>
+  /// <returns>The equivalent gRPC session status.</returns>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown when the input status is not recognized.</exception>
   public static SessionStatus ToGrpcStatus(this Storage.SessionStatus status)
     => status switch
        {
@@ -38,6 +52,12 @@ public static class SessionStatusExt
                                                     null),
        };
 
+  /// <summary>
+  ///   Converts a gRPC session status to its corresponding internal representation.
+  /// </summary>
+  /// <param name="status">The gRPC session status to convert.</param>
+  /// <returns>The equivalent internal session status.</returns>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown when the input status is not recognized.</exception>
   public static Storage.SessionStatus ToInternalStatus(this SessionStatus status)
     => status switch
        {
