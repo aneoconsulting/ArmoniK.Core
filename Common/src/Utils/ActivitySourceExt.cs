@@ -20,6 +20,9 @@ using System.Runtime.CompilerServices;
 
 namespace ArmoniK.Core.Common.Utils;
 
+/// <summary>
+///   Provides extension methods for <see cref="ActivitySource" /> class to enhance tracing capabilities.
+/// </summary>
 public static class ActivitySourceExt
 {
   /// <summary>
