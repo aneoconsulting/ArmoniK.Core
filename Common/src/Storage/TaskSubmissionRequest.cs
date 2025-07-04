@@ -21,6 +21,18 @@ using ArmoniK.Core.Base.DataStructures;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Represents a request for task submission, containing all necessary information to create a task.
+/// </summary>
+/// <remarks>
+///   This record encapsulates the data needed for task creation, including its payload identifier,
+///   execution options, expected outputs, and data dependencies. It serves as an intermediate
+///   representation between client requests and internal task creation.
+/// </remarks>
+/// <param name="PayloadId">The identifier for the task's payload data.</param>
+/// <param name="Options">Optional task options that override session defaults.</param>
+/// <param name="ExpectedOutputKeys">Collection of keys for results that this task is expected to produce.</param>
+/// <param name="DataDependencies">Collection of data identifiers that this task depends on.</param>
 public record TaskSubmissionRequest(string              PayloadId,
                                     TaskOptions?        Options,
                                     ICollection<string> ExpectedOutputKeys,
