@@ -26,9 +26,20 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
+/// <summary>
+///   Defines the interface for handling communication with worker processes.
+/// </summary>
 [PublicAPI]
 public interface IWorkerStreamHandler : IInitializable, IDisposable
 {
+  /// <summary>
+  ///   Sends a task to a worker for processing and waits for its completion.
+  /// </summary>
+  /// <param name="taskData">The task data containing all information needed to process the task.</param>
+  /// <param name="token">Authentication token for the worker.</param>
+  /// <param name="dataFolder">The path to the folder where task data can be stored.</param>
+  /// <param name="cancellationToken">Token to cancel the task processing.</param>
+  /// <returns>The output of the task processing, including status and any error information.</returns>
   public Task<Output> StartTaskProcessing(TaskData          taskData,
                                           string            token,
                                           string            dataFolder,
