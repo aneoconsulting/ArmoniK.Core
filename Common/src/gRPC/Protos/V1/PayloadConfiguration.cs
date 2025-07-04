@@ -19,7 +19,18 @@
 
 namespace ArmoniK.Api.gRPC.V1;
 
+/// <summary>
+///   Provides configuration constants for payload data transfer in the gRPC API.
+/// </summary>
 public static class PayloadConfiguration
 {
+  /// <summary>
+  ///   The maximum size in bytes for a single payload chunk.
+  /// </summary>
+  /// <remarks>
+  ///   When transferring large payloads over gRPC, data is split into chunks to
+  ///   optimize network transmission. This constant defines the maximum size
+  ///   for each individual chunk (approximately 82KB).
+  /// </remarks>
   public const int MaxChunkSize = 84000;
 }
