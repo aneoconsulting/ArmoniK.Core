@@ -19,6 +19,9 @@ using System.Diagnostics;
 
 namespace ArmoniK.Core.Common.Utils;
 
+/// <summary>
+///   Provides extension methods for <see cref="Activity" /> class to enhance tracing capabilities.
+/// </summary>
 public static class ActivityExt
 {
   /// <summary>
