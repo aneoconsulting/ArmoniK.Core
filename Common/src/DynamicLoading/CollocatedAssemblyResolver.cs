@@ -24,12 +24,21 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.DynamicLoading;
 
+/// <summary>
+///   Resolves assemblies located in the same directory as the requesting assembly or this resolver.
+///   Maintains a list of directories where assemblies are likely to be found and attempts to load from them.
+/// </summary>
 public class CollocatedAssemblyResolver
 {
   private static readonly ConcurrentDictionary<string, bool> PathDictionary = new();
   private readonly        ILogger                            logger_;
 
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="CollocatedAssemblyResolver" /> class,
+  ///   setting up known directories for assembly resolution.
+  /// </summary>
+  /// <param name="logger">The logger to record debug and warning messages.</param>
   public CollocatedAssemblyResolver(ILogger logger)
   {
     GetLoadDirectories();
@@ -56,6 +65,12 @@ public class CollocatedAssemblyResolver
     PathDictionary[Path.GetDirectoryName(typeof(CollocatedAssemblyResolver).Assembly.Location)!] = true;
   }
 
+  /// <summary>
+  ///   Attempts to resolve an assembly by searching the directories at the requesting assembly's location.
+  /// </summary>
+  /// <param name="sender">The source of the event (unused).</param>
+  /// <param name="args">Contextual information about the assembly to resolve.</param>
+  /// <returns>The resolved assembly if found; otherwise, <c>null</c>.</returns>
   public Assembly? AssemblyResolve(object?          sender,
                                    ResolveEventArgs args)
   {
