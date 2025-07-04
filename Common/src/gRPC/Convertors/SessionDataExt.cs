@@ -22,6 +22,14 @@ using Google.Protobuf.WellKnownTypes;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Provides extension methods for converting between <see cref="SessionData" /> and gRPC message types.
+/// </summary>
+/// <remarks>
+///   This static class contains conversion methods that transform internal session data structures
+///   into their corresponding gRPC protocol representation, facilitating communication between
+///   the core services and external clients or workers.
+/// </remarks>
 public static class SessionDataExt
 {
   /// <summary>
@@ -29,7 +37,7 @@ public static class SessionDataExt
   /// </summary>
   /// <param name="sessionData">The input status count</param>
   /// <returns>
-  ///   The converted status count
+  ///   The session data converted to gRPC format
   /// </returns>
   public static SessionRaw ToGrpcSessionRaw(this SessionData sessionData)
     => new()
