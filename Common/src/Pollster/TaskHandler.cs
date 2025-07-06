@@ -761,6 +761,24 @@ public sealed class TaskHandler : IAsyncDisposable
       messageHandler_.Status = QueueMessageStatus.Processed;
       return AcquisitionStatus.TaskNotFound;
     }
+    catch (SessionNotFoundException e)
+    {
+      messageHandler_.Status = QueueMessageStatus.Processed;
+
+      logger_.LogWarning(e,
+                         "SessionId for the task coming from message queue was not found, delete message from queue and abort task");
+      await TaskLifeCycleHelper.AbortTaskAsync(taskTable_,
+                                               resultTable_,
+                                               objectStorage_,
+                                               submitterOptions_,
+                                               taskData_,
+                                               OutputStatus.Error,
+                                               "Session was not found",
+                                               logger_)
+                               .ConfigureAwait(false);
+
+      return AcquisitionStatus.SessionNotFound;
+    }
   }
 
   /// <summary>
