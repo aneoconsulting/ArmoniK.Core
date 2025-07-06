@@ -1439,6 +1439,44 @@ public class TaskHandlerTest
   }
 
   [Test]
+  public async Task AcquireTaskFromDeletedSessionShouldFail()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
+    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
+                                                                mockAgentHandler.Object,
+                                                                sqmh);
+
+    var (taskId, _, _, _, sessionId) = await InitProviderRunnableTask(testServiceProvider)
+                                         .ConfigureAwait(false);
+
+    await testServiceProvider.SessionTable.DeleteSessionAsync(sessionId)
+                             .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.SessionNotFound));
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
+                                            .ConfigureAwait(false);
+
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Error));
+  }
+
+  [Test]
   public async Task AcquireNotReadyTaskShouldFail()
   {
     var sqmh = new SimpleQueueMessageHandler
