@@ -21,8 +21,22 @@ using ArmoniK.Api.gRPC.V1;
 
 namespace ArmoniK.Core.Common.gRPC.Convertors;
 
+/// <summary>
+///   Provides extension methods for converting between internal <see cref="Storage.TaskStatus" /> and
+///   gRPC <see cref="TaskStatus" /> enumeration values.
+/// </summary>
+/// <remarks>
+///   This static class facilitates bidirectional conversion between the internal representation
+///   of task status and the gRPC protocol representation used for external communication.
+/// </remarks>
 public static class TaskStatusExt
 {
+  /// <summary>
+  ///   Converts an internal task status to its corresponding gRPC representation.
+  /// </summary>
+  /// <param name="status">The internal task status to convert.</param>
+  /// <returns>The equivalent gRPC task status.</returns>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown when the input status is not recognized.</exception>
   public static TaskStatus ToGrpcStatus(this Storage.TaskStatus status)
     => status switch
        {
@@ -45,6 +59,12 @@ public static class TaskStatusExt
                                                     null),
        };
 
+  /// <summary>
+  ///   Converts a gRPC task status to its corresponding internal representation.
+  /// </summary>
+  /// <param name="status">The gRPC task status to convert.</param>
+  /// <returns>The equivalent internal task status.</returns>
+  /// <exception cref="ArgumentOutOfRangeException">Thrown when the input status is not recognized.</exception>
   public static Storage.TaskStatus ToInternalStatus(this TaskStatus status)
     => status switch
        {
