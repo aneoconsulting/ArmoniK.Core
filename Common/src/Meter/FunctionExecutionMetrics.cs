@@ -26,6 +26,15 @@ using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.Meter;
 
+/// <summary>
+///   Provides metrics collection for function execution, tracking both count and duration.
+/// </summary>
+/// <typeparam name="TIns">The type whose methods will be measured.</typeparam>
+/// <remarks>
+///   This class creates and manages counters and histograms for method calls,
+///   allowing automatic instrumentation of methods with minimal code changes.
+///   The metrics include both invocation counts and execution durations.
+/// </remarks>
 public class FunctionExecutionMetrics<TIns>
 {
   private readonly string                                                                          className_;
@@ -33,6 +42,10 @@ public class FunctionExecutionMetrics<TIns>
   private readonly System.Diagnostics.Metrics.Meter                                                meter_;
   private readonly IReadOnlyDictionary<string, object?>                                            tags_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="FunctionExecutionMetrics{TIns}" /> class.
+  /// </summary>
+  /// <param name="holder">The meter holder that provides the meter and common tags.</param>
   public FunctionExecutionMetrics(MeterHolder holder)
   {
     className_ = typeof(TIns).Name;
@@ -40,7 +53,23 @@ public class FunctionExecutionMetrics<TIns>
     tags_      = holder.Tags;
   }
 
-
+  /// <summary>
+  ///   Creates metrics for a method call and starts timing its execution.
+  /// </summary>
+  /// <param name="callerName">
+  ///   The name of the calling method, automatically populated by the compiler
+  ///   when using the <see cref="CallerMemberNameAttribute" />.
+  /// </param>
+  /// <returns>
+  ///   An <see cref="IDisposable" /> that, when disposed, will record the method's completion
+  ///   and update the relevant metrics.
+  /// </returns>
+  /// <remarks>
+  ///   This method is designed to be used with a using statement at the start of a method:
+  ///   <code>
+  /// using var _ = metrics.CountAndTime();
+  /// </code>
+  /// </remarks>
   public IDisposable CountAndTime([CallerMemberName] string callerName = "")
   {
     var ins = instruments_.GetOrAdd(callerName,
