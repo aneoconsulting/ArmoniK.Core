@@ -35,6 +35,7 @@ public interface IObjectStorage : IInitializable
   ///   Add the given data in the storage at the given key
   ///   Update data if it already exists
   /// </summary>
+  /// <param name="data">Miscellaneous data related to the object</param>
   /// <param name="valueChunks">Chunks of data that will be stored in the Object Storage</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>

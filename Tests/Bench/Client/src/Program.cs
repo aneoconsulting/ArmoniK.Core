@@ -500,7 +500,8 @@ internal static class Program
 
     await channelPool.WithInstanceAsync(async channel => await new Events.EventsClient(channel).WaitForResultsAsync(createSessionReply.SessionId,
                                                                                                                     results,
-                                                                                                                    CancellationToken.None)
+                                                                                                                    parallelism: benchOptions.DegreeOfParallelism,
+                                                                                                                    cancellationToken: CancellationToken.None)
                                                                                                .ConfigureAwait(false),
                                         CancellationToken.None)
                      .ConfigureAwait(false);

@@ -51,8 +51,8 @@ public class ExceptionManagerTests
   public void TearDown()
     => lifetime_.StopApplication();
 
-  private ApplicationLifetime lifetime_;
-  private ILoggerFactory      loggerFactory_;
+  private ApplicationLifetime lifetime_      = null!;
+  private ILoggerFactory      loggerFactory_ = null!;
 
   [Test]
   [Timeout(100)]
