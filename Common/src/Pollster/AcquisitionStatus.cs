@@ -151,6 +151,11 @@ public enum AcquisitionStatus
   TaskNotFound,
 
   /// <summary>
+  ///   Task not acquired because session metadata are not found in database
+  /// </summary>
+  SessionNotFound,
+
+  /// <summary>
   ///   Task is paused but still in the queue
   /// </summary>
   TaskIsPaused,
