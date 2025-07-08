@@ -49,7 +49,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
     MessageId          = message.MessageId;
     TaskId             = message.Body;
     ReceptionDateTime  = DateTime.UtcNow;
-    Status             = QueueMessageStatus.Running;
+    Status             = QueueMessageStatus.Waiting;
     client_            = client;
     queueUrl_          = queueUrl;
     receiptHandle_     = message.ReceiptHandle;

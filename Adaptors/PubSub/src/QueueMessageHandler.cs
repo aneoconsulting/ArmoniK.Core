@@ -52,7 +52,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
     MessageId                   = message.Message.MessageId;
     TaskId                      = Encoding.UTF8.GetString(message.Message.Data.ToByteArray());
     ReceptionDateTime           = DateTime.UtcNow;
-    Status                      = QueueMessageStatus.Running;
+    Status                      = QueueMessageStatus.Waiting;
     ackId_                      = message.AckId;
     ackDeadlinePeriod_          = ackDeadlinePeriod;
     logger_                     = logger;
