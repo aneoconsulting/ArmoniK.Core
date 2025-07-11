@@ -112,7 +112,7 @@ public static class Program
              .AddSingleton(pollsterOptions)
              .AddSingleton(new ExceptionManager.Options(pollsterOptions.GraceDelay,
                                                         pollsterOptions.MaxErrorAllowed))
-             .AddSingleton<ExceptionManager>()
+             .AddSingletonWithHealthCheck<ExceptionManager>(nameof(ExceptionManager))
              .AddSingleton<HealthCheckRecord>()
              .AddSingleton<IHealthCheckPublisher, HealthCheckRecord.Publisher>()
              .AddSingleton<IAgentHandler, AgentHandler>()

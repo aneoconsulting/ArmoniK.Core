@@ -102,7 +102,7 @@ public static class Program
              .AddSingleton(sp => new ExceptionManager.Options(TimeSpan.Zero,
                                                               sp.GetRequiredService<Common.Injection.Options.Submitter>()
                                                                 .MaxErrorAllowed))
-             .AddSingleton<ExceptionManager>()
+             .AddSingletonWithHealthCheck<ExceptionManager>(nameof(ExceptionManager))
              .AddGrpcReflection()
              .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()
