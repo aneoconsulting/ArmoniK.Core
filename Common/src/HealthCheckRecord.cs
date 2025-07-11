@@ -57,7 +57,7 @@ public class HealthCheckRecord
     }
 
     return new HealthReport(new Dictionary<string, HealthReportEntry>(),
-                            HealthStatus.Unhealthy,
+                            HealthStatus.Healthy,
                             TimeSpan.Zero);
   }
 

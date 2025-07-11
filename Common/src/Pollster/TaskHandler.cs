@@ -1125,14 +1125,17 @@ public sealed class TaskHandler : IAsyncDisposable
       var report = healthCheckRecord_.LastCheck();
 
       logger_.LogDebug(e,
-                       "Cancellation detected {CancellationRequested}, agent health is {@HealthReport}",
+                       "Cancellation detected {CancellationRequested}, agent health is {@HealthReport}, application is {ApplicationStatus}",
                        cancellationToken.IsCancellationRequested,
                        report.Entries.Select(kv => new KeyValuePair<string, HealthStatus>(kv.Key,
                                                                                           kv.Value.Status))
-                             .ToDictionary());
+                             .ToDictionary(),
+                       exceptionManager_.Failed
+                         ? "Failed"
+                         : "Running");
 
 
-      if (report.Status is HealthStatus.Healthy)
+      if (report.Status is HealthStatus.Healthy && !exceptionManager_.Failed)
       {
         if (cancellationToken.IsCancellationRequested)
         {
@@ -1151,7 +1154,7 @@ public sealed class TaskHandler : IAsyncDisposable
       else
       {
         logger_.LogError(e,
-                         "Agent is stopping while unhealthy: {@HealthReport}",
+                         "Agent is stopping while unhealthy or failed: {@HealthReport}",
                          report.Entries.Select(kv => new KeyValuePair<string, HealthStatus>(kv.Key,
                                                                                             kv.Value.Status))
                                .ToDictionary());
