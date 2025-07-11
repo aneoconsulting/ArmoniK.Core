@@ -25,7 +25,6 @@ using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
@@ -40,7 +39,6 @@ using EphemeralMongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -244,9 +242,6 @@ public class TestTaskHandlerProvider : IDisposable
     objectStorage_    = app_.Services.GetRequiredService<IObjectStorage>();
     PushQueueStorage  = app_.Services.GetRequiredService<IPushQueueStorage>();
     HealthCheckRecord = app_.Services.GetRequiredService<HealthCheckRecord>();
-
-    HealthCheckRecord.Record(HealthCheckTag.Liveness,
-                             HealthStatus.Healthy);
 
     ResultTable.Init(CancellationToken.None)
                .Wait();
