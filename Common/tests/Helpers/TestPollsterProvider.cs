@@ -27,7 +27,6 @@ using ArmoniK.Api.Common.Options;
 using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
@@ -42,7 +41,6 @@ using EphemeralMongo;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -221,9 +219,6 @@ public class TestPollsterProvider : IDisposable
     ExceptionManager  = app_.Services.GetRequiredService<ExceptionManager>();
     HealthCheckRecord = app_.Services.GetRequiredService<HealthCheckRecord>();
     Lifetime          = app_.Lifetime;
-
-    HealthCheckRecord.Record(HealthCheckTag.Liveness,
-                             HealthStatus.Healthy);
 
     ResultTable.Init(CancellationToken.None)
                .Wait();
