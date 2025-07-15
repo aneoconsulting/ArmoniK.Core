@@ -186,6 +186,9 @@ internal class TaskSubmissionTests
                                           CancellationToken.None)
                      .ConfigureAwait(false);
 
+    await Task.Delay(50)
+              .ConfigureAwait(false);
+
     taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
                                               {
                                                 TaskId = tasks.TaskInfos.Single()
@@ -322,6 +325,9 @@ internal class TaskSubmissionTests
                                           CancellationToken.None)
                      .ConfigureAwait(false);
 
+    await Task.Delay(50)
+              .ConfigureAwait(false);
+
     taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
                                               {
                                                 TaskId = tasks.TaskInfos.Single()
@@ -423,6 +429,9 @@ internal class TaskSubmissionTests
                                           results.Results.ViewSelect(result => result.ResultId),
                                           CancellationToken.None)
                      .ConfigureAwait(false);
+
+    await Task.Delay(50)
+              .ConfigureAwait(false);
 
     var taskData = await tasksClient.GetTaskAsync(new GetTaskRequest
                                                   {
