@@ -55,7 +55,7 @@ jobs:
         echo RELASE   => ${{ steps.release.outputs.version }} >> $GITHUB_STEP_SUMMARY
 
     - name: Validate tag
-      run : test ${{ steps.release.outputs.version }} == ${{ github.ref_name }}
+      run : test "${{ steps.release.outputs.version }}" == "${{ github.ref_name }}" -o "${{ vars.OVERRIDE_RELEASE_VERSION }}" == "${{ github.ref_name }}"
 
     - name: Delete tag if invalid
       if: failure() || cancelled()
