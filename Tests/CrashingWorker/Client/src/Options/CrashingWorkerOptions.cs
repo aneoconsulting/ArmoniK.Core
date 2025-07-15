@@ -31,4 +31,44 @@ public class CrashingWorkerOptions
   ///   Partition in which to submit the tasks
   /// </summary>
   public string Partition { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Type of the crash to simulate
+  /// </summary>
+  /// <remarks>
+  ///   Possible values:
+  ///   - success
+  ///   - error
+  ///   - exception
+  ///   - rpc-cancelled
+  ///   - rpc-unknown
+  ///   - rpc-invalid-argument
+  ///   - rpc-deadline-exceeded
+  ///   - rpc-not-found
+  ///   - rpc-already-exists
+  ///   - rpc-permission-denied
+  ///   - rpc-resource-exhausted
+  ///   - rpc-failed-precondition
+  ///   - rpc-aborted
+  ///   - rpc-out-of-range
+  ///   - rpc-unimplemented
+  ///   - rpc-internal
+  ///   - rpc-unavailable
+  ///   - rpc-data-loss
+  ///   - rpc-unauthenticated
+  ///   - exit
+  ///   - kill
+  ///   - crash
+  /// </remarks>
+  public string Type { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Number of tasks to submit
+  /// </summary>
+  public int NbTasks { get; set; } = 10;
+
+  /// <summary>
+  ///   Number of allowed retries
+  /// </summary>
+  public int Retry { get; set; } = 3;
 }

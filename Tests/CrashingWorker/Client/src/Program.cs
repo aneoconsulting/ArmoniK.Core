@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -53,9 +54,14 @@ namespace ArmoniK.Samples.CrashingWorker.Client;
 
 internal static class Program
 {
-  private static async Task Main()
+  private static async Task Main(string[] args)
   {
-    var builder       = new ConfigurationBuilder().AddEnvironmentVariables();
+    var builder = new ConfigurationBuilder().SetBasePath(Directory.GetCurrentDirectory())
+                                            .AddJsonFile("appsettings.json",
+                                                         true,
+                                                         false)
+                                            .AddEnvironmentVariables()
+                                            .AddCommandLine(args);
     var configuration = builder.Build();
     var seriLogger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
                                               .Enrich.FromLogContext()
@@ -87,8 +93,14 @@ internal static class Program
                                                                              {
                                                                                DefaultTaskOption = new TaskOptions
                                                                                                    {
+                                                                                                     Options =
+                                                                                                     {
+                                                                                                       {
+                                                                                                         "type", testOptions.Type
+                                                                                                       },
+                                                                                                     },
                                                                                                      MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
-                                                                                                     MaxRetries  = 2,
+                                                                                                     MaxRetries  = testOptions.Retry,
                                                                                                      Priority    = 1,
                                                                                                      PartitionId = testOptions.Partition,
                                                                                                    },
@@ -117,7 +129,7 @@ internal static class Program
                                 Environment.Exit(0);
                               };
 
-    var nTasks = 10;
+    var nTasks = testOptions.NbTasks;
 
     // create payloads
     var payloadIds = await channelPool.WithInstanceAsync(async channel =>
