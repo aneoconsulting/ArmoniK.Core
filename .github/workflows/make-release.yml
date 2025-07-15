@@ -67,7 +67,7 @@ jobs:
     needs:
       - versionning
     env:
-      VERSION: ${{ needs.versionning.outputs.release }}
+      VERSION: ${{ github.ref_name }}
     strategy:
       fail-fast: true
       matrix:
@@ -106,7 +106,7 @@ jobs:
     needs:
       - versionning
     env:
-      VERSION: ${{ needs.versionning.outputs.release }}
+      VERSION: ${{ github.ref_name }}
     steps:
     - name: Checkout
       uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
