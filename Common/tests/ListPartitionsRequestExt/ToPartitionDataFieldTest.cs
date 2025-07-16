@@ -72,46 +72,46 @@ public class ToPartitionDataFieldTest
                                               object?           expected)
   {
     var func = new ListPartitionsRequest
-               {
-                 Filters = new Filters
-                           {
-                             Or =
-                             {
-                               new FiltersAnd
-                               {
-                                 And =
-                                 {
-                                   new FilterField
-                                   {
-                                     Field = new PartitionField
-                                             {
-                                               PartitionRawField = new PartitionRawField
-                                                                   {
-                                                                     Field = PartitionRawEnumField.Id,
-                                                                   },
-                                             },
-                                     FilterString = new FilterString
-                                                    {
-                                                      Operator = FilterStringOperator.Equal,
-                                                      Value    = "PartitionId",
-                                                    },
-                                   },
-                                 },
-                               },
-                             },
-                           },
-
-
-                 Sort = new ListPartitionsRequest.Types.Sort
+      {
+        Filters = new Filters
+                  {
+                    Or =
+                    {
+                      new FiltersAnd
+                      {
+                        And =
                         {
-                          Direction = SortDirection.Asc,
-                          Field = new PartitionField
-                                  {
-                                    PartitionRawField = field,
-                                  },
+                          new FilterField
+                          {
+                            Field = new PartitionField
+                                    {
+                                      PartitionRawField = new PartitionRawField
+                                                          {
+                                                            Field = PartitionRawEnumField.Id,
+                                                          },
+                                    },
+                            FilterString = new FilterString
+                                           {
+                                             Operator = FilterStringOperator.Equal,
+                                             Value    = "PartitionId",
+                                           },
+                          },
                         },
-               }.Sort.ToField()
-                .Compile();
+                      },
+                    },
+                  },
+
+
+        Sort = new ListPartitionsRequest.Types.Sort
+               {
+                 Direction = SortDirection.Asc,
+                 Field = new PartitionField
+                         {
+                           PartitionRawField = field,
+                         },
+               },
+      }.Sort.ToField()
+       .Compile();
 
     Assert.AreEqual(expected,
                     func.Invoke(PartitionData));

@@ -95,12 +95,12 @@ public class IdSerializer : SerializerBase<string>
   {
     var hash = value.GetHashCode();
     return ObjectId.Parse(Convert.ToHexString(new List<int>
-                                              {
-                                                hash,
-                                                hash,
-                                                hash,
-                                              }.SelectMany(BitConverter.GetBytes)
-                                               .ToArray()))
+                                                {
+                                                  hash,
+                                                  hash,
+                                                  hash,
+                                                }.SelectMany(BitConverter.GetBytes)
+                                                 .ToArray()))
                    .ToString();
   }
 }

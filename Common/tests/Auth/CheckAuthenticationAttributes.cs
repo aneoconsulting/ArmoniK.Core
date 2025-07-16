@@ -39,7 +39,7 @@ public class CheckAuthenticationAttributes
   /// </summary>
   /// <returns>List of test case data for each gRPC services</returns>
   public static List<TestCaseData> GetAllServices()
-    //Get all types in the assembly
+    // Get all types in the assembly
     => new(typeof(GrpcAuthService).Assembly.GetTypes()
                                   // Keep only the ones in the same namespace as the authentication service
                                   .Where(t => string.Equals(t.Namespace,

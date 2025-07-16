@@ -423,16 +423,14 @@ public class AuthenticationIntegrationTest
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationIdHeader,
                   (int)impersonate < 0
                     ? "DoesntExist"
-                    : Identities[(int)impersonate]
-                      .UserId);
+                    : Identities[(int)impersonate].UserId);
     }
     else if (impersonationType == ImpersonationType.ImpersonateUsername)
     {
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationUsernameHeader,
                   (int)impersonate < 0
                     ? "DoesntExist"
-                    : Identities[(int)impersonate]
-                      .UserName);
+                    : Identities[(int)impersonate].UserName);
     }
 
     return headers;
@@ -800,7 +798,7 @@ public class AuthenticationIntegrationTest
                                             impersonationType,
                                             impersonate);
         yield return new TestCaseData(caseParams,
-                                      //The 2 objects below are used to for the test case to use the right generic types
+                                      // The 2 objects below are used to for the test case to use the right generic types
                                       Activator.CreateInstance(caseConfig.RequestType),
                                       Activator.CreateInstance(caseConfig.ReplyType)).SetName((caseConfig.IsAsync
                                                                                                  ? "Async"
@@ -853,15 +851,13 @@ public class AuthenticationIntegrationTest
                                                                                                                  ? "Async"
                                                                                                                  : ""),
                                                                                                      // - The parameter of the method
-                                                                                                     GetParameters(m.GetParameters()[0]
-                                                                                                                    .ParameterType,
+                                                                                                     GetParameters(m.GetParameters()[0].ParameterType,
                                                                                                                    clientStream),
                                                                                                      // - The Request type
                                                                                                      clientStream
                                                                                                        ? m.GetParameters()[0]
                                                                                                           .ParameterType.GetGenericArguments()[0]
-                                                                                                       : m.GetParameters()[0]
-                                                                                                          .ParameterType,
+                                                                                                       : m.GetParameters()[0].ParameterType,
                                                                                                      // - The Response type
                                                                                                      serverStream
                                                                                                        ? m.GetParameters()[1]
@@ -1127,7 +1123,7 @@ public class AuthenticationIntegrationTest
         }
 
         break;
-      //Authentication is required, but impersonation is not done
+      // Authentication is required, but impersonation is not done
       case AuthenticationType.NoImpersonationNoAuthorization:
         userIndex = (int)initialUserIndex;
         if (impersonationType == ImpersonationType.NoImpersonate)
@@ -1153,7 +1149,7 @@ public class AuthenticationIntegrationTest
         }
 
         break;
-      //Normal case : authentication and authorization are required, impersonation is authorized
+      // Normal case : authentication and authorization are required, impersonation is authorized
       default:
       case AuthenticationType.DefaultAuth:
         userIndex = impersonationType == ImpersonationType.NoImpersonate
@@ -1366,8 +1362,7 @@ public class AuthenticationIntegrationTest
       var castedResponse = (GetCurrentUserResponse)response!;
       // Check if the returned username is correct
       Assert.AreEqual(options_!.RequireAuthentication
-                        ? Identities[finalUserIndex]
-                          .UserName
+                        ? Identities[finalUserIndex].UserName
                         : "Anonymous",
                       castedResponse.User.Username);
       // Check if the role list is empty when there is no authorization, otherwise returns the roles
