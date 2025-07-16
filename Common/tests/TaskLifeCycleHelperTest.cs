@@ -1006,14 +1006,14 @@ public class TaskLifeCycleHelperTest
                                                     null,
                                                     new UpdateDefinition<TaskData>().Set(td => td.Status,
                                                                                          status))
-                           .ConfigureAwait(false)!;
+                           .ConfigureAwait(false);
 
     Assert.That(() => Enumerable.Range(0,
                                        concurrency)
                                 .Select(_ => TaskLifeCycleHelper.RetryTaskAsync(holder.TaskTable,
                                                                                 holder.ResultTable,
                                                                                 holder.PushQueueStorage,
-                                                                                taskData,
+                                                                                taskData!,
                                                                                 sessionData,
                                                                                 null,
                                                                                 "task has been retried",
@@ -1021,7 +1021,7 @@ public class TaskLifeCycleHelperTest
                                 .WhenAll(),
                 Throws.Nothing);
 
-    taskData = await holder.TaskTable.ReadTaskAsync(taskData.TaskId)
+    taskData = await holder.TaskTable.ReadTaskAsync(taskData!.TaskId)
                            .ConfigureAwait(false);
     var retryTaskData = await holder.TaskTable.ReadTaskAsync(taskData.RetryId())
                                     .ConfigureAwait(false);

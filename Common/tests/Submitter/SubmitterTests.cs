@@ -563,7 +563,7 @@ public class SubmitterTests
                                 sessionTable_!,
                                 CancellationToken.None)
               .ConfigureAwait(false);
-    pushQueueStorage_.Messages.Clear();
+    pushQueueStorage_!.Messages.Clear();
 
     var sessionId = (await submitter_!.CreateSession(new List<string>
                                                      {

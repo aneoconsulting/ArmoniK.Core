@@ -99,7 +99,8 @@ public sealed class SessionClient : ISessionClient
                                                                    {
                                                                      id,
                                                                    },
-                                                                   CancellationToken.None)
+                                                                   parallelism: 1,
+                                                                   cancellationToken: CancellationToken.None)
                                               .ConfigureAwait(false);
 
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
