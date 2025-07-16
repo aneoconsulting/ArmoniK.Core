@@ -90,7 +90,6 @@ public class TaskLifeCycleHelperTest
                                           };
 
     public readonly  IPartitionTable               PartitionTable;
-    private readonly TestDatabaseProvider          prov_;
     public readonly  IPullQueueStorage             PullQueueStorage;
     public readonly  IPushQueueStorage             PushQueueStorage;
     public readonly  SimplePullQueueStorageChannel QueueStorage;
@@ -99,6 +98,7 @@ public class TaskLifeCycleHelperTest
     public readonly  ISessionTable                 SessionTable;
     public readonly  ISubmitter                    Submitter;
     public readonly  ITaskTable                    TaskTable;
+    private readonly TestDatabaseProvider          prov_;
 
     public Holder()
     {
