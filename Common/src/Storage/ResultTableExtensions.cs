@@ -28,6 +28,12 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Provides extension methods for <see cref="IResultTable" /> to manage and update the lifecycle and metadata of results
+///   in storage.
+///   Includes utilities for aborting, completing, updating, retrieving, and marking results, as well as managing
+///   dependencies and statuses.
+/// </summary>
 public static class ResultTableExtensions
 {
   /// <summary>
@@ -144,10 +150,8 @@ public static class ResultTableExtensions
   ///   Complete many results in the database
   /// </summary>
   /// <param name="resultTable">Interface to manage results</param>
-  /// <param name="sessionId">id of the session containing the results</param>
-  /// <param name="resultId">Id of the result to complete</param>
-  /// <param name="size">Size of the result to complete</param>
-  /// <param name="opaqueId">Opaque unique identifier representing the object</param>
+  /// <param name="results">Collection of results to complete, each with its id, size, and opaque identifier</param>
+  /// <param name="completedBy">Identifier of the task that completed the results</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The new version of the result metadata
@@ -186,6 +190,7 @@ public static class ResultTableExtensions
   /// <param name="ownerTaskId">id of the task owning the result</param>
   /// <param name="resultId">id of the result to be modified</param>
   /// <param name="size">Size of the result to be modified</param>
+  /// <param name="opaqueId">Opaque unique identifier representing the object containing the actual data</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
