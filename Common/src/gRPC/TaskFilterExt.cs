@@ -27,8 +27,22 @@ using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+/// <summary>
+///   Provides extension methods for building LINQ filter expressions from gRPC <see cref="TaskFilter" /> messages.
+///   Enables conversion of task filter criteria into strongly-typed expressions for querying <see cref="TaskData" />
+///   objects.
+/// </summary>
 public static class TaskFilterExt
 {
+  /// <summary>
+  ///   Converts a <see cref="TaskFilter" /> into a LINQ <see cref="Expression" /> for filtering <see cref="TaskData" />
+  ///   objects.
+  /// </summary>
+  /// <param name="filter">The gRPC task filter message.</param>
+  /// <returns>
+  ///   An <see cref="Expression" /> representing the filter conditions for <see cref="TaskData" />.
+  /// </returns>
+  /// <exception cref="ArgumentException">Thrown if the filter's IDs or status case is not recognized.</exception>
   public static Expression<Func<TaskData, bool>> ToFilterExpression(this TaskFilter filter)
   {
     var x = Expression.Parameter(typeof(TaskData),
