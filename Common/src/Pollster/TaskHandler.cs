@@ -46,6 +46,12 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Handles the lifecycle and execution of a single task in the ArmoniK Pollster, including acquisition, preprocessing,
+///   execution, postprocessing, and error handling.
+///   Manages task and session metadata, agent communication, health checks, and resource cleanup for robust distributed
+///   task processing.
+/// </summary>
 public sealed class TaskHandler : IAsyncDisposable
 {
   private readonly Activity?                             activity_;
@@ -84,6 +90,30 @@ public sealed class TaskHandler : IAsyncDisposable
   private          SessionData?                          sessionData_;
   private          TaskData?                             taskData_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="TaskHandler" /> class.
+  /// </summary>
+  /// <param name="sessionTable">The session table for managing session metadata.</param>
+  /// <param name="taskTable">The task table for managing task metadata.</param>
+  /// <param name="resultTable">The result table for managing result metadata.</param>
+  /// <param name="pushQueueStorage">The queue storage for pushing tasks to be processed.</param>
+  /// <param name="objectStorage">The object storage for managing payloads and results.</param>
+  /// <param name="submitter">The submitter service for completing tasks and managing results.</param>
+  /// <param name="dataPrefetcher">The data prefetcher for loading task input data.</param>
+  /// <param name="workerStreamHandler">The handler for worker stream communication.</param>
+  /// <param name="messageHandler">The handler for queue messages associated with the task.</param>
+  /// <param name="taskProcessingChecker">The checker for verifying if a task is being processed by an agent.</param>
+  /// <param name="ownerPodId">The identifier of the current agent.</param>
+  /// <param name="ownerPodName">The name of the current agent.</param>
+  /// <param name="activitySource">The activity source for distributed tracing.</param>
+  /// <param name="agentHandler">The handler for agent lifecycle management.</param>
+  /// <param name="logger">The logger for diagnostic and trace logging.</param>
+  /// <param name="pollsterOptions">The pollster options for configuration.</param>
+  /// <param name="submitterOptions">The submitter options for configuration.</param>
+  /// <param name="onDispose">The action to execute on disposal.</param>
+  /// <param name="exceptionManager">The exception manager for handling cancellation and errors.</param>
+  /// <param name="functionExecutionMetrics">The metrics collector for function execution.</param>
+  /// <param name="healthCheckRecord">The health check record for agent health monitoring.</param>
   public TaskHandler(ISessionTable                         sessionTable,
                      ITaskTable                            taskTable,
                      IResultTable                          resultTable,
