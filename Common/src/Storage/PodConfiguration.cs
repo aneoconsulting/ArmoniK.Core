@@ -19,4 +19,8 @@ using System.Collections.Generic;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Represents the configuration of a pod, encapsulating a set of key-value pairs for pod-specific settings.
+/// </summary>
+/// <param name="Configuration">Dictionary containing the configuration of the machines in a partition</param>
 public record PodConfiguration(IDictionary<string, string> Configuration);
