@@ -17,6 +17,10 @@
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Represents a queue for managing tasks that are in the post-processing stage in the ArmoniK Pollster.
+///   Inherits from <see cref="TaskQueueBase" /> and provides functionality specific to post-processing tasks.
+/// </summary>
 public sealed class PostProcessingTaskQueue : TaskQueueBase
 {
 }
