@@ -26,6 +26,12 @@ using ArmoniK.Core.Common.Exceptions;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Provides extension methods for <see cref="ISessionTable" /> to manage and update the lifecycle and metadata of
+///   sessions in storage.
+///   Includes utilities for retrieving, cancelling, pausing, resuming, closing, purging sessions, and managing submission
+///   states.
+/// </summary>
 public static class SessionTableExtensions
 {
   /// <summary>
