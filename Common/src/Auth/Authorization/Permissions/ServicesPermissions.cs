@@ -31,10 +31,20 @@ namespace ArmoniK.Core.Common.Auth.Authorization.Permissions;
 /// </summary>
 public static class ServicesPermissions
 {
+  /// <summary>
+  ///   Represents the default permission name used when no specific service is matched.
+  /// </summary>
   public const string Default = "Default";
 
+  /// <summary>
+  ///   Represents a wildcard permission that applies to all services.
+  /// </summary>
   public const string All = "*";
 
+  /// <summary>
+  ///   Maps service types to their corresponding permission names.
+  ///   Used to resolve the permission name associated with each gRPC service type.
+  /// </summary>
   public static readonly ReadOnlyDictionary<Type, string> Type2NameMapping = new(new Dictionary<Type, string>
                                                                                  {
                                                                                    {
