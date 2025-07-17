@@ -25,6 +25,11 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+/// <summary>
+///   Provides extension methods for converting gRPC result requests and filters into LINQ expressions for querying
+///   <see cref="Result" /> objects.
+///   Includes utilities for mapping gRPC fields and filters to strongly-typed expressions used in result-related logic.
+/// </summary>
 public static class ListResultsRequestExt
 {
   /// <summary>
@@ -43,6 +48,14 @@ public static class ListResultsRequestExt
          _                                         => throw new ArgumentOutOfRangeException(nameof(sort)),
        };
 
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="Result" /> field
+  /// </summary>
+  /// <param name="taskField">The gPRC message field</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<Result, object?>> ToField(this ResultField taskField)
     => taskField.FieldCase switch
        {
