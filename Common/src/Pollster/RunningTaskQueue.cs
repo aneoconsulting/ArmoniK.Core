@@ -17,6 +17,10 @@
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Represents a queue for managing running tasks in the ArmoniK Pollster.
+///   Inherits from <see cref="TaskQueueBase" /> and provides functionality specific to active task processing.
+/// </summary>
 public sealed class RunningTaskQueue : TaskQueueBase
 {
 }
