@@ -110,6 +110,9 @@ public interface IAgent : IDisposable
   ///   Submit tasks with payload already existing
   /// </summary>
   /// <param name="requests">Requests containing the tasks to submit</param>
+  /// <param name="taskOptions">Options to apply to the tasks</param>
+  /// <param name="sessionId">Session id to which the tasks belong</param>
+  /// <param name="token">Worker token for request validation</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Submitted tasks to send to the worker
