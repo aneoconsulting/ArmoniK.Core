@@ -22,6 +22,10 @@ using ArmoniK.Core.Common.Utils;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+/// <summary>
+///   Provides extension methods for combining predicate expressions using logical AND and OR operations.
+///   Enables the construction of complex filter expressions for LINQ queries in a composable manner.
+/// </summary>
 public static class ExpressionExt
 {
   private static Expression<Func<T, bool>> MakeBinaryExpression<T>(ExpressionType            expressionType,
