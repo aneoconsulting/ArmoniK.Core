@@ -48,6 +48,10 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
+/// <summary>
+///   Implements the <see cref="ISubmitter" /> service for managing sessions, tasks, and results in the ArmoniK system.
+///   Provides methods for session and task lifecycle management, result retrieval and storage, and service configuration.
+/// </summary>
 public class Submitter : ISubmitter
 {
   private readonly ActivitySource              activitySource_;
@@ -60,6 +64,18 @@ public class Submitter : ISubmitter
   private readonly Injection.Options.Submitter submitterOptions_;
   private readonly ITaskTable                  taskTable_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="Submitter" /> class.
+  /// </summary>
+  /// <param name="pushQueueStorage">The queue storage for pushing tasks to be processed.</param>
+  /// <param name="objectStorage">The object storage for managing payloads and results.</param>
+  /// <param name="logger">The logger for diagnostic and trace logging.</param>
+  /// <param name="sessionTable">The session table for managing session metadata.</param>
+  /// <param name="taskTable">The task table for managing task metadata.</param>
+  /// <param name="resultTable">The result table for managing result metadata.</param>
+  /// <param name="partitionTable">The partition table for managing partition metadata.</param>
+  /// <param name="submitterOptions">The submitter options for configuration.</param>
+  /// <param name="activitySource">The activity source for distributed tracing.</param>
   [UsedImplicitly]
   public Submitter(IPushQueueStorage           pushQueueStorage,
                    IObjectStorage              objectStorage,
