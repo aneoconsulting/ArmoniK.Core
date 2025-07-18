@@ -29,8 +29,13 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+/// <summary>
+///   Provides a base implementation of a gRPC health check service for ArmoniK, integrating with ASP.NET Core health
+///   checks.
+///   Supports readiness checks for multiple gRPC services and returns health status responses according to gRPC
+///   conventions.
+/// </summary>
 [PublicAPI]
-/// <inheritdoc cref="Health" />
 public abstract class GrpcHealthCheckServiceBase : Health.HealthBase
 {
   private readonly string[]           grpcServices_;
