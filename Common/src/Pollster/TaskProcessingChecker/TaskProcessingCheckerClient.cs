@@ -26,6 +26,11 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 
+/// <summary>
+///   Implements the <see cref="ITaskProcessingChecker" /> interface to check if a task is being processed by a specific
+///   pod.
+///   Uses HTTP requests to communicate with other pods and determine task processing status, with retry and timeout logic.
+/// </summary>
 public class TaskProcessingCheckerClient : ITaskProcessingChecker
 {
   private const    int                                  Retries = 5;
@@ -33,6 +38,11 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
   private readonly ILogger<TaskProcessingCheckerClient> logger_;
   private readonly TimeSpan                             requestTimeout_ = TimeSpan.FromSeconds(10);
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="TaskProcessingCheckerClient" /> class.
+  /// </summary>
+  /// <param name="httpClientFactory">The HTTP client factory used to create HTTP clients for communication with other pods.</param>
+  /// <param name="logger">The logger used for diagnostic and trace logging.</param>
   public TaskProcessingCheckerClient(IHttpClientFactory                   httpClientFactory,
                                      ILogger<TaskProcessingCheckerClient> logger)
   {
@@ -40,6 +50,7 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
     logger_            = logger;
   }
 
+  /// <inheritdoc />
   public async Task<bool> Check(string            taskId,
                                 string            ownerPodId,
                                 CancellationToken cancellationToken)
