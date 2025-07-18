@@ -24,6 +24,11 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+/// <summary>
+///   Provides extension methods for converting gRPC partition requests and filters into LINQ expressions for querying
+///   <see cref="PartitionData" /> objects.
+///   Includes utilities for mapping gRPC fields and filters to strongly-typed expressions used in partition-related logic.
+/// </summary>
 public static class ListPartitionsRequestExt
 {
   /// <summary>
@@ -41,6 +46,14 @@ public static class ListPartitionsRequestExt
          _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
        };
 
+  /// <summary>
+  ///   Converts gRPC message into the associated <see cref="PartitionData" /> field
+  /// </summary>
+  /// <param name="taskField">The gPRC message field</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> that access the field from the object
+  /// </returns>
+  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
   public static Expression<Func<PartitionData, object?>> ToField(this PartitionField taskField)
     => taskField.FieldCase switch
        {
