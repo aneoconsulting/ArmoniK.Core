@@ -35,6 +35,11 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Provides helper methods for managing the lifecycle of tasks in the ArmoniK system.
+///   Includes utilities for validating, creating, finalizing, retrying, aborting, pausing, resuming, and completing tasks,
+///   as well as handling dependencies and task state transitions across storage and queue systems.
+/// </summary>
 public static class TaskLifeCycleHelper
 {
   /// <summary>
