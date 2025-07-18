@@ -17,6 +17,10 @@
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Defines the possible statuses for a result in the ArmoniK system, representing its lifecycle from creation to
+///   deletion.
+/// </summary>
 public enum ResultStatus
 {
   /// <summary>Result is in an unspecified state.</summary>
