@@ -19,6 +19,11 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.Pollster;
 
+/// <summary>
+///   Represents the possible outcomes and reasons for attempting to acquire a task for processing in the ArmoniK system.
+///   Enumerates all acquisition results, including success, cancellation, task and session states, and various failure
+///   scenarios.
+/// </summary>
 public enum AcquisitionStatus
 {
   /// <summary>
