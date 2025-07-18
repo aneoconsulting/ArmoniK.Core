@@ -33,7 +33,7 @@ namespace ArmoniK.Core.Common.Pollster;
 ///   A background service that handles post-processing of completed tasks.
 ///   It reads task handlers from the post-processing queue and finalizes them
 ///   by performing result uploading, task submissions, message acknowledgment
-//    and recording the success.
+///   and recording the success.
 /// </summary>
 public class PostProcessor : BackgroundService
 {
