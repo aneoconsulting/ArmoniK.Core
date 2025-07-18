@@ -27,8 +27,22 @@ using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+/// <summary>
+///   Provides extension methods for building LINQ filter expressions from gRPC <see cref="SessionFilter" /> messages.
+///   Enables conversion of session filter criteria into strongly-typed expressions for querying <see cref="SessionData" />
+///   objects.
+/// </summary>
 public static class SessionFilterExt
 {
+  /// <summary>
+  ///   Converts a <see cref="SessionFilter" /> into a LINQ <see cref="Expression" /> for filtering
+  ///   <see cref="SessionData" /> objects.
+  /// </summary>
+  /// <param name="filter">The gRPC session filter message.</param>
+  /// <returns>
+  ///   An <see cref="Expression" /> representing the filter conditions for <see cref="SessionData" />.
+  /// </returns>
+  /// <exception cref="ArgumentException">Thrown if the filter's status case is not recognized.</exception>
   public static Expression<Func<SessionData, bool>> ToFilterExpression(this SessionFilter filter)
   {
     var x = Expression.Parameter(typeof(SessionData),
