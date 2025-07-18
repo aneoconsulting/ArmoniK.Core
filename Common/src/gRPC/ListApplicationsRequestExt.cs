@@ -25,6 +25,11 @@ using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.gRPC;
 
+/// <summary>
+///   Provides extension methods for converting gRPC application requests and filters into LINQ expressions for querying
+///   <see cref="Application" /> and <see cref="TaskData" /> objects.
+///   Includes utilities for mapping gRPC fields and filters to strongly-typed expressions used in application logic.
+/// </summary>
 public static class ListApplicationsRequestExt
 {
   /// <summary>
