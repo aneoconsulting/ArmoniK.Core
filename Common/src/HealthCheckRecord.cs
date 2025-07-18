@@ -61,6 +61,11 @@ public class HealthCheckRecord
                             TimeSpan.Zero);
   }
 
+  /// <summary>
+  ///   Publishes health check reports to a <see cref="HealthCheckRecord" />, recording the results for later retrieval by
+  ///   other components.
+  ///   Implements <see cref="IHealthCheckPublisher" /> to integrate with ASP.NET Core health checks.
+  /// </summary>
   public class Publisher(HealthCheckRecord healthCheckRecord) : IHealthCheckPublisher
   {
     /// <inheritdoc />
