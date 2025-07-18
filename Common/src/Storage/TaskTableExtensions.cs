@@ -29,6 +29,12 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
 
+/// <summary>
+///   Provides extension methods for <see cref="ITaskTable" /> to manage and update the lifecycle and metadata of tasks in
+///   storage.
+///   Includes utilities for ending, cancelling, finalizing, acquiring, releasing, retrying, and bulk updating tasks, as
+///   well as retrieving task status and outputs.
+/// </summary>
 public static class TaskTableExtensions
 {
   private static readonly TaskStatus[] FinalStatus =
