@@ -27,12 +27,9 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -40,63 +37,41 @@ using MongoDB.Driver.Linq;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-public class PartitionTable : IPartitionTable
+public class PartitionTable : BaseTable<PartitionData, PartitionDataModelMapping>, IPartitionTable
 {
-  private readonly ActivitySource                                                    activitySource_;
-  private readonly ILogger<TaskTable>                                                logger_;
-  private readonly MongoCollectionProvider<PartitionData, PartitionDataModelMapping> partitionCollectionProvider_;
-  private readonly SessionProvider                                                   sessionProvider_;
-
-  private bool isInitialized_;
-
+  /// <inheritdoc />
   public PartitionTable(SessionProvider                                                   sessionProvider,
                         MongoCollectionProvider<PartitionData, PartitionDataModelMapping> partitionCollectionProvider,
-                        ILogger<TaskTable>                                                logger,
-                        ActivitySource                                                    activitySource)
+                        ActivitySource                                                    activitySource,
+                        ILogger<PartitionTable>                                           logger)
+    : base(sessionProvider,
+           partitionCollectionProvider,
+           activitySource,
+           logger)
   {
-    sessionProvider_             = sessionProvider;
-    partitionCollectionProvider_ = partitionCollectionProvider;
-    logger_                      = logger;
-    activitySource_              = activitySource;
   }
 
   /// <inheritdoc />
-  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  private PartitionTable(PartitionTable partitionTable,
+                         bool           readOnly)
+    : base(partitionTable,
+           readOnly)
   {
-    var result = await HealthCheckResultCombiner.Combine(tag,
-                                                         $"{nameof(PartitionTable)} is not initialized",
-                                                         sessionProvider_,
-                                                         partitionCollectionProvider_)
-                                                .ConfigureAwait(false);
-
-    return isInitialized_ && result.Status == HealthStatus.Healthy
-             ? HealthCheckResult.Healthy()
-             : HealthCheckResult.Unhealthy(result.Description);
   }
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      await sessionProvider_.Init(cancellationToken)
-                            .ConfigureAwait(false);
-      sessionProvider_.Get();
-      await partitionCollectionProvider_.Init(cancellationToken)
-                                        .ConfigureAwait(false);
-      partitionCollectionProvider_.Get();
-      isInitialized_ = true;
-    }
-  }
+  public IPartitionTable ReadOnly
+    => new PartitionTable(this,
+                          true);
 
   /// <inheritdoc />
   public async Task CreatePartitionsAsync(IEnumerable<PartitionData> partitions,
                                           CancellationToken          cancellationToken = default)
   {
-    using var _        = logger_.LogFunction();
-    using var activity = activitySource_.StartActivity($"{nameof(CreatePartitionsAsync)}");
+    using var _        = Logger.LogFunction();
+    using var activity = StartActivity();
 
-    var taskCollection = partitionCollectionProvider_.Get();
+    var taskCollection = GetCollection();
 
     await taskCollection.InsertManyAsync(partitions,
                                          cancellationToken: cancellationToken)
@@ -107,12 +82,12 @@ public class PartitionTable : IPartitionTable
   public async Task<PartitionData> ReadPartitionAsync(string            partitionId,
                                                       CancellationToken cancellationToken = default)
   {
-    using var _        = logger_.LogFunction();
-    using var activity = activitySource_.StartActivity($"{nameof(ReadPartitionAsync)}");
+    using var _        = Logger.LogFunction();
+    using var activity = StartActivity();
     activity?.SetTag("ReadPartitionId",
                      partitionId);
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = partitionCollectionProvider_.Get();
+    var sessionHandle  = GetSession();
+    var taskCollection = GetReadCollection();
 
     try
     {
@@ -131,10 +106,10 @@ public class PartitionTable : IPartitionTable
   /// <inheritdoc />
   public IAsyncEnumerable<PartitionData> GetPartitionWithAllocationAsync(CancellationToken cancellationToken = default)
   {
-    using var _              = logger_.LogFunction();
-    using var activity       = activitySource_.StartActivity($"{nameof(GetPartitionWithAllocationAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = partitionCollectionProvider_.Get();
+    using var _              = Logger.LogFunction();
+    using var activity       = StartActivity();
+    var       sessionHandle  = GetSession();
+    var       taskCollection = GetReadCollection();
 
     return taskCollection.AsQueryable(sessionHandle)
                          .Where(tdm => tdm.PodMax > 0)
@@ -145,11 +120,11 @@ public class PartitionTable : IPartitionTable
   public async Task DeletePartitionAsync(string            partitionId,
                                          CancellationToken cancellationToken = default)
   {
-    using var _        = logger_.LogFunction();
-    using var activity = activitySource_.StartActivity($"{nameof(DeletePartitionAsync)}");
+    using var _        = Logger.LogFunction();
+    using var activity = StartActivity();
     activity?.SetTag($"{nameof(DeletePartitionAsync)}_TaskId",
                      partitionId);
-    var partitionCollection = partitionCollectionProvider_.Get();
+    var partitionCollection = GetCollection();
 
     var result = await partitionCollection.DeleteOneAsync(tdm => tdm.PartitionId == partitionId,
                                                           cancellationToken)
@@ -165,10 +140,10 @@ public class PartitionTable : IPartitionTable
   public async Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
                                                      CancellationToken   cancellationToken = default)
   {
-    using var _              = logger_.LogFunction();
-    using var activity       = activitySource_.StartActivity($"{nameof(ArePartitionsExistingAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = partitionCollectionProvider_.Get();
+    using var _              = Logger.LogFunction();
+    using var activity       = StartActivity();
+    var       sessionHandle  = GetSession();
+    var       taskCollection = GetReadCollection();
 
     return await taskCollection.AsQueryable(sessionHandle)
                                .CountAsync(tdm => partitionIds.Contains(tdm.PartitionId),
@@ -184,9 +159,9 @@ public class PartitionTable : IPartitionTable
                                                                                                  int                                      pageSize,
                                                                                                  CancellationToken                        cancellationToken = default)
   {
-    using var activity            = activitySource_.StartActivity($"{nameof(ListPartitionsAsync)}");
-    var       sessionHandle       = sessionProvider_.Get();
-    var       partitionCollection = partitionCollectionProvider_.Get();
+    using var activity            = StartActivity();
+    var       sessionHandle       = GetSession();
+    var       partitionCollection = GetReadCollection();
 
     var partitionList = Task.FromResult(new List<PartitionData>());
     if (pageSize > 0)
@@ -224,9 +199,9 @@ public class PartitionTable : IPartitionTable
                                                           Expression<Func<PartitionData, T>>         selector,
                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var activity            = activitySource_.StartActivity($"{nameof(FindPartitionsAsync)}");
-    var       sessionHandle       = sessionProvider_.Get();
-    var       partitionCollection = partitionCollectionProvider_.Get();
+    using var activity            = StartActivity();
+    var       sessionHandle       = GetSession();
+    var       partitionCollection = GetReadCollection();
 
     await foreach (var partition in partitionCollection.Find(sessionHandle,
                                                              filter)

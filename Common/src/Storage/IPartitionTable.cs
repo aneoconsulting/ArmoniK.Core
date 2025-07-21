@@ -33,6 +33,12 @@ namespace ArmoniK.Core.Common.Storage;
 public interface IPartitionTable : IInitializable
 {
   /// <summary>
+  ///   Read optimized version of the table.
+  /// </summary>
+  public IPartitionTable ReadOnly
+    => this;
+
+  /// <summary>
   ///   Inserts a collection of partitions in the data base
   /// </summary>
   /// <param name="partitions">Collection of partitions to be inserted</param>
