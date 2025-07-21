@@ -126,17 +126,22 @@ public class GrpcResultsService : Results.ResultsBase
                                                               ServerCallContext  context)
   {
     using var measure = meter_.CountAndTime();
-    var results = await resultTable_.ListResultsAsync(request.Filters is null
-                                                        ? data => true
-                                                        : request.Filters.ToResultFilter(),
-                                                      request.Sort is null
-                                                        ? result => result.ResultId
-                                                        : request.Sort.ToField(),
-                                                      request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                      request.Page,
-                                                      request.PageSize,
-                                                      context.CancellationToken)
-                                    .ConfigureAwait(false);
+
+    var resultTable = request.PageSize == 0
+                        ? resultTable_.ReadOnly
+                        : resultTable_;
+
+    var results = await resultTable.ListResultsAsync(request.Filters is null
+                                                       ? data => true
+                                                       : request.Filters.ToResultFilter(),
+                                                     request.Sort is null
+                                                       ? result => result.ResultId
+                                                       : request.Sort.ToField(),
+                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                     request.Page,
+                                                     request.PageSize,
+                                                     context.CancellationToken)
+                                   .ConfigureAwait(false);
     return new ListResultsResponse
            {
              PageSize = request.PageSize,

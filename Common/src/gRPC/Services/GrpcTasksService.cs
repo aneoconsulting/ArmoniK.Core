@@ -200,6 +200,11 @@ public class GrpcTasksService : Task.TasksBase
                                                           ServerCallContext context)
   {
     using var measure = meter_.CountAndTime();
+
+    var taskTable = request.PageSize == 0
+                      ? taskTable_.ReadOnly
+                      : taskTable_;
+
     try
     {
       if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
@@ -208,18 +213,18 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
-                                                                  ? data => true
-                                                                  : request.Filters.ToTaskDataFilter(),
-                                                                request.Sort is null
-                                                                  ? data => data.TaskId
-                                                                  : request.Sort.ToField(),
-                                                                taskSummaryMask_.GetProjection(),
-                                                                request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                                request.Page,
-                                                                request.PageSize,
-                                                                context.CancellationToken)
-                                                .ConfigureAwait(false);
+      var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
+                                                                 ? data => true
+                                                                 : request.Filters.ToTaskDataFilter(),
+                                                               request.Sort is null
+                                                                 ? data => data.TaskId
+                                                                 : request.Sort.ToField(),
+                                                               taskSummaryMask_.GetProjection(),
+                                                               request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                               request.Page,
+                                                               request.PageSize,
+                                                               context.CancellationToken)
+                                               .ConfigureAwait(false);
 
       return new ListTasksResponse
              {
@@ -390,10 +395,10 @@ public class GrpcTasksService : Task.TasksBase
              {
                Status =
                {
-                 (await taskTable_.CountTasksAsync(request.Filters is null
-                                                     ? data => true
-                                                     : request.Filters.ToTaskDataFilter(),
-                                                   context.CancellationToken)
+                 (await taskTable_.ReadOnly.CountTasksAsync(request.Filters is null
+                                                              ? data => true
+                                                              : request.Filters.ToTaskDataFilter(),
+                                                            context.CancellationToken)
                                   .ConfigureAwait(false)).Select(count => new StatusCount
                                                                           {
                                                                             Status = count.Status.ToGrpcStatus(),
@@ -425,6 +430,11 @@ public class GrpcTasksService : Task.TasksBase
                                                                           ServerCallContext context)
   {
     using var measure = meter_.CountAndTime();
+
+    var taskTable = request.PageSize == 0
+                      ? taskTable_.ReadOnly
+                      : taskTable_;
+
     try
     {
       if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
@@ -433,18 +443,18 @@ public class GrpcTasksService : Task.TasksBase
                            request.Sort.Field.TaskOptionGenericField.Field);
       }
 
-      var (tasks, totalCount) = await taskTable_.ListTasksAsync(request.Filters is null
-                                                                  ? data => true
-                                                                  : request.Filters.ToTaskDataFilter(),
-                                                                request.Sort is null
-                                                                  ? data => data.TaskId
-                                                                  : request.Sort.ToField(),
-                                                                taskDetailedMask_.GetProjection(),
-                                                                request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                                request.Page,
-                                                                request.PageSize,
-                                                                context.CancellationToken)
-                                                .ConfigureAwait(false);
+      var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
+                                                                 ? data => true
+                                                                 : request.Filters.ToTaskDataFilter(),
+                                                               request.Sort is null
+                                                                 ? data => data.TaskId
+                                                                 : request.Sort.ToField(),
+                                                               taskDetailedMask_.GetProjection(),
+                                                               request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                               request.Page,
+                                                               request.PageSize,
+                                                               context.CancellationToken)
+                                               .ConfigureAwait(false);
 
       return new ListTasksDetailedResponse
              {

@@ -75,9 +75,9 @@ public class GrpcEventsService : Events.EventsBase
                                        ServerCallContext                              context)
   {
     using var measure = meter_.CountAndTime();
-    var wtg = new WatchToGrpc(taskTable_,
+    var wtg = new WatchToGrpc(taskTable_.ReadOnly,
                               taskWatcher_,
-                              resultTable_,
+                              resultTable_.ReadOnly,
                               resultWatcher_,
                               logger_);
 
