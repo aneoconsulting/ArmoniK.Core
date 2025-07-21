@@ -53,6 +53,12 @@ public interface ITaskTable : IInitializable
   public ILogger Logger { get; }
 
   /// <summary>
+  ///   Read optimized version of the table.
+  /// </summary>
+  public ITaskTable ReadOnly
+    => this;
+
+  /// <summary>
   ///   Inserts a collection of tasks in the data base
   /// </summary>
   /// <param name="tasks">Collection of tasks to be inserted</param>
