@@ -26,14 +26,11 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -41,32 +38,39 @@ using MongoDB.Driver.Linq;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-public class ResultTable : IResultTable
+public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTable
 {
-  private readonly ActivitySource                                          activitySource_;
-  private readonly MongoCollectionProvider<Result, ResultDataModelMapping> resultCollectionProvider_;
-  private readonly SessionProvider                                         sessionProvider_;
-
-  private bool isInitialized_;
-
+  /// <inheritdoc />
   public ResultTable(SessionProvider                                         sessionProvider,
                      MongoCollectionProvider<Result, ResultDataModelMapping> resultCollectionProvider,
                      ActivitySource                                          activitySource,
                      ILogger<ResultTable>                                    logger)
+    : base(sessionProvider,
+           resultCollectionProvider,
+           activitySource,
+           logger)
   {
-    sessionProvider_          = sessionProvider;
-    resultCollectionProvider_ = resultCollectionProvider;
-    activitySource_           = activitySource;
-    Logger                    = logger;
   }
+
+  /// <inheritdoc />
+  private ResultTable(ResultTable resultTable,
+                      bool        readOnly)
+    : base(resultTable,
+           readOnly)
+  {
+  }
+
+  /// <inheritdoc />
+  public IResultTable ReadOnly
+    => new ResultTable(this,
+                       true);
 
   /// <inheritdoc />
   public async Task Create(ICollection<Result> results,
                            CancellationToken   cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(Create)}");
-
-    var resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       resultCollection = GetCollection();
 
     try
     {
@@ -95,8 +99,8 @@ public class ResultTable : IResultTable
   public async Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
                                         CancellationToken                        cancellationToken = default)
   {
-    using var activity         = activitySource_.StartActivity($"{nameof(AddTaskDependencies)}");
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       resultCollection = GetCollection();
 
     if (!dependencies.Any())
     {
@@ -127,9 +131,9 @@ public class ResultTable : IResultTable
   async Task<Result> IResultTable.GetResult(string            resultId,
                                             CancellationToken cancellationToken)
   {
-    using var activity         = activitySource_.StartActivity($"{nameof(IResultTable.GetResult)}");
-    var       sessionHandle    = sessionProvider_.Get();
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       sessionHandle    = GetSession();
+    var       resultCollection = GetReadCollection();
     try
     {
       return await resultCollection.AsQueryable(sessionHandle)
@@ -152,9 +156,9 @@ public class ResultTable : IResultTable
                                                                                     CancellationToken                 cancellationToken = default)
   {
     using var _                = Logger.LogFunction();
-    using var activity         = activitySource_.StartActivity($"{nameof(ListResultsAsync)}");
-    var       sessionHandle    = sessionProvider_.Get();
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       sessionHandle    = GetSession();
+    var       resultCollection = GetReadCollection();
 
 
     var resultList = Task.FromResult(new List<Result>());
@@ -184,8 +188,8 @@ public class ResultTable : IResultTable
   public async Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                                      CancellationToken                             cancellationToken = default)
   {
-    using var activity         = activitySource_.StartActivity($"{nameof(SetTaskOwnership)}");
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       resultCollection = GetCollection();
 
     if (!requests.Any())
     {
@@ -210,8 +214,8 @@ public class ResultTable : IResultTable
                                           IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
                                           CancellationToken                                      cancellationToken)
   {
-    using var activity         = activitySource_.StartActivity($"{nameof(ChangeResultOwnership)}");
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       resultCollection = GetCollection();
 
     await resultCollection.BulkWriteAsync(requests.Select(r =>
                                                           {
@@ -235,10 +239,10 @@ public class ResultTable : IResultTable
   public async Task DeleteResult(string            key,
                                  CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(DeleteResult)}");
+    using var activity = StartActivity();
     activity?.SetTag($"{nameof(DeleteResult)}_key",
                      key);
-    var resultCollection = resultCollectionProvider_.Get();
+    var resultCollection = GetCollection();
 
     var result = await resultCollection.DeleteOneAsync(model => model.ResultId == key,
                                                        cancellationToken)
@@ -259,9 +263,9 @@ public class ResultTable : IResultTable
                                            Expression<Func<Result, T>>    convertor,
                                            CancellationToken              cancellationToken = default)
   {
-    using var activity         = activitySource_.StartActivity($"{nameof(GetResults)}");
-    var       sessionHandle    = sessionProvider_.Get();
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       sessionHandle    = GetSession();
+    var       resultCollection = GetReadCollection();
 
     return resultCollection.Find(sessionHandle,
                                  filter)
@@ -273,10 +277,10 @@ public class ResultTable : IResultTable
   public async Task DeleteResults(string            sessionId,
                                   CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(DeleteResults)}");
+    using var activity = StartActivity();
     activity?.SetTag($"{nameof(DeleteResults)}_sessionId",
                      sessionId);
-    var resultCollection = resultCollectionProvider_.Get();
+    var resultCollection = GetCollection();
 
     await resultCollection.DeleteManyAsync(model => model.SessionId == sessionId,
                                            cancellationToken)
@@ -291,10 +295,10 @@ public class ResultTable : IResultTable
                                             Core.Common.Storage.UpdateDefinition<Result> updates,
                                             CancellationToken                            cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(UpdateOneResult)}");
+    using var activity = StartActivity();
     activity?.SetTag($"{nameof(DeleteResult)}_resultId",
                      resultId);
-    var resultCollection = resultCollectionProvider_.Get();
+    var resultCollection = GetCollection();
 
     var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
 
@@ -323,8 +327,8 @@ public class ResultTable : IResultTable
                                             Core.Common.Storage.UpdateDefinition<Result> updates,
                                             CancellationToken                            cancellationToken = default)
   {
-    using var activity         = activitySource_.StartActivity($"{nameof(UpdateManyResults)}");
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       resultCollection = GetCollection();
 
     var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
 
@@ -346,8 +350,8 @@ public class ResultTable : IResultTable
   async Task<long> IResultTable.BulkUpdateResults(IEnumerable<(Expression<Func<Result, bool>> filter, Core.Common.Storage.UpdateDefinition<Result> updates)> bulkUpdates,
                                                   CancellationToken cancellationToken)
   {
-    using var activity         = activitySource_.StartActivity($"{nameof(IResultTable.BulkUpdateResults)}");
-    var       resultCollection = resultCollectionProvider_.Get();
+    using var activity         = StartActivity();
+    var       resultCollection = GetCollection();
 
     var requests = bulkUpdates.Select(item =>
                                       {
@@ -378,36 +382,7 @@ public class ResultTable : IResultTable
     return updateResult.MatchedCount;
   }
 
-
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      await sessionProvider_.Init(cancellationToken)
-                            .ConfigureAwait(false);
-      sessionProvider_.Get();
-      await resultCollectionProvider_.Init(cancellationToken)
-                                     .ConfigureAwait(false);
-      resultCollectionProvider_.Get();
-      isInitialized_ = true;
-    }
-  }
-
-  /// <inheritdoc />
-  public ILogger Logger { get; }
-
-  /// <inheritdoc />
-  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    var result = await HealthCheckResultCombiner.Combine(tag,
-                                                         $"{nameof(ResultTable)} is not initialized",
-                                                         sessionProvider_,
-                                                         resultCollectionProvider_)
-                                                .ConfigureAwait(false);
-
-    return isInitialized_ && result.Status == HealthStatus.Healthy
-             ? HealthCheckResult.Healthy()
-             : HealthCheckResult.Unhealthy(result.Description);
-  }
+  ILogger IResultTable.Logger
+    => base.Logger;
 }

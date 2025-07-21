@@ -40,6 +40,12 @@ public interface IResultTable : IInitializable
   public ILogger Logger { get; }
 
   /// <summary>
+  ///   Read optimized version of the table.
+  /// </summary>
+  public IResultTable ReadOnly
+    => this;
+
+  /// <summary>
   ///   Change ownership (in batch) of the results in the given request
   /// </summary>
   /// <param name="oldTaskId">Task Id of the previous owner</param>
