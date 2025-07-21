@@ -27,37 +27,42 @@ using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-public class SessionTable : ISessionTable
+public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISessionTable
 {
-  private readonly ActivitySource                                                activitySource_;
-  private readonly MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider_;
-  private readonly SessionProvider                                               sessionProvider_;
-
-
-  private bool isInitialized_;
-
+  /// <inheritdoc />
   public SessionTable(SessionProvider                                               sessionProvider,
                       MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider,
-                      ILogger<SessionTable>                                         logger,
-                      ActivitySource                                                activitySource)
+                      ActivitySource                                                activitySource,
+                      ILogger<SessionTable>                                         logger)
+    : base(sessionProvider,
+           sessionCollectionProvider,
+           activitySource,
+           logger)
   {
-    sessionProvider_           = sessionProvider;
-    sessionCollectionProvider_ = sessionCollectionProvider;
-    Logger                     = logger;
-    activitySource_            = activitySource;
   }
+
+  /// <inheritdoc />
+  private SessionTable(SessionTable sessionTable,
+                       bool         readOnly)
+    : base(sessionTable,
+           readOnly)
+  {
+  }
+
+  /// <inheritdoc />
+  public ISessionTable ReadOnly
+    => new SessionTable(this,
+                        true);
 
 
   [PublicAPI]
@@ -65,12 +70,12 @@ public class SessionTable : ISessionTable
                                                 TaskOptions         defaultOptions,
                                                 CancellationToken   cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(SetSessionDataAsync)}");
+    using var activity = StartActivity();
     var rootSessionId = Guid.NewGuid()
                             .ToString();
     activity?.SetTag($"{nameof(SetSessionDataAsync)}_sessionId",
                      rootSessionId);
-    var sessionCollection = sessionCollectionProvider_.Get();
+    var sessionCollection = GetCollection();
 
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
@@ -88,9 +93,9 @@ public class SessionTable : ISessionTable
                                                   Expression<Func<SessionData, T>>    selector,
                                                   CancellationToken                   cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(FindSessionsAsync)}");
-    var       sessionHandle     = sessionProvider_.Get();
-    var       sessionCollection = sessionCollectionProvider_.Get();
+    using var activity          = StartActivity();
+    var       sessionHandle     = GetSession();
+    var       sessionCollection = GetReadCollection();
 
     return sessionCollection.Find(sessionHandle,
                                   filter)
@@ -102,10 +107,10 @@ public class SessionTable : ISessionTable
   public async Task DeleteSessionAsync(string            sessionId,
                                        CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(DeleteSessionAsync)}");
+    using var activity = StartActivity();
     activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
                      sessionId);
-    var sessionCollection = sessionCollectionProvider_.Get();
+    var sessionCollection = GetCollection();
 
     var res = await sessionCollection.DeleteManyAsync(data => data.SessionId == sessionId,
                                                       cancellationToken)
@@ -132,9 +137,9 @@ public class SessionTable : ISessionTable
                                                                                             CancellationToken                      cancellationToken = default)
   {
     using var _                 = Logger.LogFunction();
-    using var activity          = activitySource_.StartActivity($"{nameof(ListSessionsAsync)}");
-    var       sessionHandle     = sessionProvider_.Get();
-    var       sessionCollection = sessionCollectionProvider_.Get();
+    using var activity          = StartActivity();
+    var       sessionHandle     = GetSession();
+    var       sessionCollection = GetReadCollection();
 
     var sessionList = Task.FromResult(new List<SessionData>());
     if (pageSize > 0)
@@ -160,38 +165,8 @@ public class SessionTable : ISessionTable
   }
 
   /// <inheritdoc />
-  public ILogger Logger { get; }
-
-
-  /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      await sessionProvider_.Init(cancellationToken)
-                            .ConfigureAwait(false);
-      await sessionCollectionProvider_.Init(cancellationToken)
-                                      .ConfigureAwait(false);
-      sessionCollectionProvider_.Get();
-      sessionProvider_.Get();
-    }
-
-    isInitialized_ = true;
-  }
-
-  /// <inheritdoc />
-  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    var result = await HealthCheckResultCombiner.Combine(tag,
-                                                         $"{nameof(SessionTable)} is not initialized",
-                                                         sessionProvider_,
-                                                         sessionCollectionProvider_)
-                                                .ConfigureAwait(false);
-
-    return isInitialized_ && result.Status == HealthStatus.Healthy
-             ? HealthCheckResult.Healthy()
-             : HealthCheckResult.Unhealthy(result.Description);
-  }
+  ILogger ISessionTable.Logger
+    => base.Logger;
 
   /// <inheritdoc />
   public async Task<SessionData?> UpdateOneSessionAsync(string                                            sessionId,
@@ -200,8 +175,8 @@ public class SessionTable : ISessionTable
                                                         bool                                              before            = false,
                                                         CancellationToken                                 cancellationToken = default)
   {
-    using var activity          = activitySource_.StartActivity($"{nameof(UpdateOneSessionAsync)}");
-    var       sessionCollection = sessionCollectionProvider_.Get();
+    using var activity          = StartActivity();
+    var       sessionCollection = GetCollection();
 
     var updateDefinition = new UpdateDefinitionBuilder<SessionData>().Combine();
 

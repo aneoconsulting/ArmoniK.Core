@@ -39,6 +39,12 @@ public interface ISessionTable : IInitializable
   ILogger Logger { get; }
 
   /// <summary>
+  ///   Read optimized version of the table.
+  /// </summary>
+  public ISessionTable ReadOnly
+    => this;
+
+  /// <summary>
   ///   Set metadata for a new session
   /// </summary>
   /// <param name="partitionIds">List of partitions allowed to be used during the session</param>
