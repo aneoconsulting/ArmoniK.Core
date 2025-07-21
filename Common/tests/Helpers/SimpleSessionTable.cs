@@ -70,25 +70,25 @@ public class SimpleSessionTable : ISessionTable
                                                   Expression<Func<SessionData, T>>    selector,
                                                   CancellationToken                   cancellationToken = default)
     => new SessionData[]
-       {
-         new(SessionId,
-             SessionStatus.Running,
-             true,
-             true,
-             DateTime.Today.ToUniversalTime(),
-             null,
-             null,
-             null,
-             null,
-             null,
-             null,
-             new List<string>
-             {
-               PartitionId,
-             },
-             TaskOptions),
-       }.Select(selector.Compile())
-        .ToAsyncEnumerable();
+      {
+        new(SessionId,
+            SessionStatus.Running,
+            true,
+            true,
+            DateTime.Today.ToUniversalTime(),
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            new List<string>
+            {
+              PartitionId,
+            },
+            TaskOptions),
+      }.Select(selector.Compile())
+       .ToAsyncEnumerable();
 
   public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
