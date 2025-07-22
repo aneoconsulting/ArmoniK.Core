@@ -28,6 +28,7 @@ using Amazon.SQS.Model;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -35,13 +36,13 @@ namespace ArmoniK.Core.Adapters.SQS;
 
 internal class PullQueueStorage : IPullQueueStorage
 {
+  private readonly MemoryCache     cache_;
   private readonly AmazonSQSClient client_;
 
   private readonly ILogger logger_;
 
-  private readonly SQS      options_;
-  private readonly string[] queueUrls_;
-  private          bool     isInitialized_;
+  private readonly SQS  options_;
+  private          bool isInitialized_;
 
   public PullQueueStorage(AmazonSQSClient           client,
                           SQS                       options,
@@ -50,8 +51,8 @@ internal class PullQueueStorage : IPullQueueStorage
     options_ = options;
     client_  = client;
     logger_  = logger;
-    queueUrls_ = new string[int.Max(options.MaxPriority,
-                                    1)];
+    cache_   = new MemoryCache(new MemoryCacheOptions());
+
     logger_.LogDebug("Created SQS PullQueueStorage with options {@SqsOptions}",
                      options_);
   }
@@ -65,37 +66,96 @@ internal class PullQueueStorage : IPullQueueStorage
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    for (var i = 0; i < queueUrls_.Length; i++)
+    var queueInfos = new List<(string queueUrl, string queueName, int priority)>();
+
+    for (var i = 0; i < int.Max(options_.MaxPriority,
+                                1); i++)
     {
-      logger_.LogDebug("Initialize queue #{SqsPriority} with options {@SqsOptions}",
-                       i,
+      var priority = i + 1;
+      logger_.LogDebug("Getting queue for priority #{SqsPriority} with options {@SqsOptions}",
+                       priority,
                        options_);
+
       var queueName = client_.GetQueueName(options_,
-                                           i + 1,
+                                           priority,
                                            partitionId);
-      queueUrls_[i] = await client_.GetOrCreateQueueUrlAsync(queueName,
-                                                             options_.Tags,
-                                                             options_.Attributes,
-                                                             cancellationToken)
-                                   .ConfigureAwait(false);
+
+      // Use cache to get or create queue URL
+      var queueUrl = await cache_.GetOrCreateAsync(queueName,
+                                                   _ => client_.GetOrCreateQueueUrlAsync(queueName,
+                                                                                         options_.Tags,
+                                                                                         options_.Attributes,
+                                                                                         cancellationToken))
+                                 .ConfigureAwait(false);
+
+      queueInfos.Add((queueUrl, queueName, priority));
     }
 
-    foreach (var queueUrl in queueUrls_.Reverse())
+    foreach (var (queueUrl, queueName, priority) in queueInfos.OrderByDescending(x => x.priority))
     {
-      logger_.LogDebug("Try pulling {NbMessages} from {QueueUrl} with options {@SqsOptions}",
+      logger_.LogDebug("Try pulling {NbMessages} from {QueueUrl} (priority {Priority}) with options {@SqsOptions}",
                        nbMessages,
                        queueUrl,
+                       priority,
                        options_);
 
-      var messages = await client_.ReceiveMessageAsync(new ReceiveMessageRequest
+      ReceiveMessageResponse? messages = null;
+
+      try
+      {
+        messages = await client_.ReceiveMessageAsync(new ReceiveMessageRequest
+                                                     {
+                                                       QueueUrl            = queueUrl,
+                                                       MaxNumberOfMessages = nbMessages,
+                                                       VisibilityTimeout   = options_.AckDeadlinePeriod,
+                                                       WaitTimeSeconds     = options_.WaitTimeSeconds,
+                                                     },
+                                                     cancellationToken)
+                                .ConfigureAwait(false);
+      }
+      catch (Exception ex) when (ShouldRetryWithRefreshedUrl(ex))
+      {
+        logger_.LogWarning(ex,
+                           "Failed to receive messages from queue {QueueUrl} (priority {Priority}), refreshing cache and retrying",
+                           queueUrl,
+                           priority);
+
+        // Invalidate cache and get fresh URL
+        cache_.Remove(queueName);
+        var refreshedQueueUrl = await client_.GetOrCreateQueueUrlAsync(queueName,
+                                                                       options_.Tags,
+                                                                       options_.Attributes,
+                                                                       cancellationToken)
+                                             .ConfigureAwait(false);
+        cache_.Set(queueName,
+                   refreshedQueueUrl);
+
+        // Retry with refreshed URL
+        try
+        {
+          messages = await client_.ReceiveMessageAsync(new ReceiveMessageRequest
                                                        {
-                                                         QueueUrl            = queueUrl,
+                                                         QueueUrl            = refreshedQueueUrl,
                                                          MaxNumberOfMessages = nbMessages,
                                                          VisibilityTimeout   = options_.AckDeadlinePeriod,
                                                          WaitTimeSeconds     = options_.WaitTimeSeconds,
                                                        },
                                                        cancellationToken)
                                   .ConfigureAwait(false);
+
+          logger_.LogDebug("Successfully retried receiving messages from refreshed queue {QueueUrl} (priority {Priority})",
+                           refreshedQueueUrl,
+                           priority);
+        }
+        catch (Exception retryEx)
+        {
+          logger_.LogError(retryEx,
+                           "Failed to receive messages even after refreshing queue URL for {QueueName} (priority {Priority})",
+                           queueName,
+                           priority);
+          continue;
+        }
+      }
 
       if (messages?.Messages?.Count is null or 0)
       {
@@ -135,4 +195,18 @@ internal class PullQueueStorage : IPullQueueStorage
   public int MaxPriority
     => int.Max(options_.MaxPriority,
                1);
+
+  /// <summary>
+  ///   Determines if an exception should trigger a retry with a refreshed queue URL
+  /// </summary>
+  /// <param name="ex">The exception that occurred</param>
+  /// <returns>True if the operation should be retried with a refreshed URL</returns>
+  private static bool ShouldRetryWithRefreshedUrl(Exception ex)
+    => ex switch
+       {
+         QueueDoesNotExistException                                                                 => true,
+         AmazonSQSException sqsEx when sqsEx.ErrorCode == "AWS.SimpleQueueService.NonExistentQueue" => true,
+         AmazonSQSException sqsEx when sqsEx.ErrorCode == "InvalidParameterValue"                   => true,
+         _                                                                                          => false,
+       };
 }
