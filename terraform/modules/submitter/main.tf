@@ -26,6 +26,14 @@ resource "docker_container" "init" {
       source = mounts.key
     }
   }
+
+  dynamic "upload" {
+    for_each = var.mounts
+    content {
+      source = upload.value
+      file   = upload.key
+    }
+  }
 }
 
 resource "docker_container" "submitter" {
