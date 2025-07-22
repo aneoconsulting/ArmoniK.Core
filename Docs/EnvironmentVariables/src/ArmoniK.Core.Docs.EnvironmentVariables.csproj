@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+      <TargetFramework>net8.0</TargetFramework>
+      <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64</RuntimeIdentifiers>
+      <Company>ANEO</Company>
+      <Copyright>Copyright (C) ANEO, 2021-2021</Copyright>
+      <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+      <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+      <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+      <IsPackable>true</IsPackable>
+      <Nullable>enable</Nullable>
+      <EnableDynamicLoading>true</EnableDynamicLoading>
+      <RootNamespace>ArmoniK.Core.Docs.EnvironmentVariables</RootNamespace>
+      <OutputType>Exe</OutputType>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="itext" Version="9.2.0" />
+      <PackageReference Include="itext.bouncy-castle-adapter" Version="9.2.0" />
+    </ItemGroup>
+
+</Project>
