@@ -13,18 +13,11 @@ locals {
     "Serilog__MinimumLevel__Override__ArmoniK.Core.Common.Auth.Authentication.Authenticator" = "${var.serilog.loggin_level_routing}",
     "ASPNETCORE_ENVIRONMENT"                                                                 = "${var.aspnet_core_env}"
   }
-<<<<<<< HEAD
-  worker   = merge(var.compute_plane.worker, { image = var.worker_image })
-  queue    = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_none))
-  database = module.database
-  object   = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed))
-=======
   worker             = merge(var.compute_plane.worker, { image = var.worker_image })
   queue              = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_none))
   database           = module.database
-  object             = one(concat(module.object_redis, module.object_minio, module.object_local))
+  object             = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed))
   partition_env_vars = { for i in local.partitions : "InitServices__Partitioning__Partitions__${i}" => jsonencode(merge(var.partition_data, { PartitionId = "${var.partition_data.PartitionId}${i}" })) }
->>>>>>> 548873fd (feat: add static init for instances of Partition and Authentication)
   env_maps = concat([
     local.queue.generated_env_vars,
     local.object.generated_env_vars,
