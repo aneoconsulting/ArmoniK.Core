@@ -28,6 +28,15 @@ namespace ArmoniK.Core.Common.gRPC;
 /// </summary>
 public class ExpressionBuilders
 {
+  /// <summary>
+  ///   Extracts the member expression from a field selector expression.
+  /// </summary>
+  /// <typeparam name="TIn">The type of the input parameter for the selector expression.</typeparam>
+  /// <param name="selector">The field selector expression.</param>
+  /// <returns>
+  ///   The <see cref="Expression" /> representing the accessed member or method call.
+  /// </returns>
+  /// <exception cref="NotImplementedException">Thrown if the selector's body is not a supported expression type.</exception>
   public static Expression GetMemberExpression<TIn>(Expression<Func<TIn, object?>> selector)
   {
     switch (selector.Body.NodeType)
