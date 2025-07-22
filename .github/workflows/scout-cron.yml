@@ -14,7 +14,7 @@ jobs:
     - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4
     - name: List last releases
       id: releases
-      run: echo "releases:$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
+      run: echo "releases=$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
       env:
         GH_TOKEN: ${{ github.token }}
 
@@ -25,16 +25,16 @@ jobs:
       fail-fast: false
       matrix:
         image:
-          - dockerhubaneo/armonik_pollingagent
-          - dockerhubaneo/armonik_control_metrics
-          - dockerhubaneo/armonik_control_partition_metrics
-          - dockerhubaneo/armonik_control
-          - dockerhubaneo/armonik_core_stream_test_worker
-          - dockerhubaneo/armonik_core_stream_test_client
-          - dockerhubaneo/armonik_core_htcmock_test_worker
-          - dockerhubaneo/armonik_core_htcmock_test_client
-          - dockerhubaneo/armonik_core_bench_test_worker
-          - dockerhubaneo/armonik_core_bench_test_client
+          - pollingagent
+          - control_metrics
+          - control_partition_metrics
+          - control
+          - core_stream_test_worker
+          - core_stream_test_client
+          - core_htcmock_test_worker
+          - core_htcmock_test_client
+          - core_bench_test_worker
+          - core_bench_test_client
         version: ${{ fromJSON(needs.releases.outputs.releases) }}
     steps:
     - name: Login to Docker Hub
@@ -42,13 +42,15 @@ jobs:
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
+    - name: Pull image
+      run: docker pull "dockerhubaneo/armonik_${{ matrix.image }}:${{ matrix.version }}"
     - name: Analyze for critical and high CVEs
       uses: docker/scout-action@aceeb83b88f2ae54376891227858dda7af647183 # v1
       with:
         command: cves
-        image: "${{ matrix.image }}:${{ matrix.image }}"
-        sarif-file: "${{ matrix.image }}_${{ matrix.image }}.sarif.json"
+        image: "dockerhubaneo/armonik_${{ matrix.image }}:${{ matrix.version }}"
+        sarif-file: "${{ matrix.image }}_${{ matrix.version }}.sarif.json"
         summary: true
-        platform: linux/arm64,linux/amd64,windows/amd64
+        platform: linux/amd64
     - name: print sarif file
-      run: cat "${{ matrix.image }}_${{ matrix.image }}.sarif.json"
+      run: cat "${{ matrix.image }}_${{ matrix.version }}.sarif.json"
