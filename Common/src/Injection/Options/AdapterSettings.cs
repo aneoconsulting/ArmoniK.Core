@@ -23,6 +23,11 @@ namespace ArmoniK.Core.Common.Injection.Options;
 public class AdapterSettings
 {
   /// <summary>
+  ///   Path to the section containing the values in the configuration object
+  /// </summary>
+  public const string SettingSection = nameof(AdapterSettings);
+
+  /// <summary>
   ///   Absolute file system path of the adapter's plugin assembly in the container
   /// </summary>
   public string AdapterAbsolutePath { get; set; } = "";
