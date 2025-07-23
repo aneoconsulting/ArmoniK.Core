@@ -22,7 +22,6 @@ using System.Diagnostics;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
-using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Configuration;
