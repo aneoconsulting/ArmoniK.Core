@@ -21,6 +21,9 @@ namespace ArmoniK.Core.Adapters.SQS;
 
 internal class SQS
 {
+  /// <summary>
+  ///   The name of the configuration section for SQS settings.
+  /// </summary>
   public const string SettingSection = nameof(SQS);
 
   /// <summary>
