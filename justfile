@@ -36,13 +36,13 @@ export TF_VAR_socket_type       := socket_type
 # Sets the queue
 export TF_VAR_queue_storage := if queue == "rabbitmq" {
   if os_family() == "windows" {
-    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12" }'
+    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:4.1.0" }'
   } else {
     '{ name = "rabbitmq", image = "rabbitmq:4-management" }'
   }
 } else if queue == "rabbitmq091" {
   if os_family() == "windows" {
-    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:3.6.12", protocol = "amqp0_9_1" }'
+    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:4.1.0", protocol = "amqp0_9_1" }'
   } else {
     '{ name = "rabbitmq", image = "rabbitmq:4-management", protocol = "amqp0_9_1" }'
   }
