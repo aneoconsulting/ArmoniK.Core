@@ -86,8 +86,14 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   {
     if (initDatabase.Users.Any())
     {
-      await collection.InsertManyAsync(sessionHandle,
-                                       initDatabase.Users)
+      var upsert = initDatabase.Users.Select(data => new ReplaceOneModel<UserData>(Builders<UserData>.Filter.Where(userData => userData.UserId == data.UserId),
+                                                                                   data)
+                                                     {
+                                                       IsUpsert = true,
+                                                     });
+
+      await collection.BulkWriteAsync(sessionHandle,
+                                      upsert)
                       .ConfigureAwait(false);
     }
   }

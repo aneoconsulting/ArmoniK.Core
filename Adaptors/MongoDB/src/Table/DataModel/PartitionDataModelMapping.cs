@@ -105,8 +105,17 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
   {
     if (initDatabase.Partitions.Any())
     {
-      await collection.InsertManyAsync(sessionHandle,
-                                       initDatabase.Partitions)
+      var upsert = initDatabase.Partitions.Select(data
+                                                    => new ReplaceOneModel<PartitionData>(Builders<PartitionData>.Filter.Where(partitionData
+                                                                                                                                 => partitionData.PartitionId ==
+                                                                                                                                    data.PartitionId),
+                                                                                          data)
+                                                       {
+                                                         IsUpsert = true,
+                                                       });
+
+      await collection.BulkWriteAsync(sessionHandle,
+                                      upsert)
                       .ConfigureAwait(false);
     }
   }

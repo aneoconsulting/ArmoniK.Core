@@ -90,8 +90,14 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
   {
     if (initDatabase.Auths.Any())
     {
-      await collection.InsertManyAsync(sessionHandle,
-                                       initDatabase.Auths)
+      var upsert = initDatabase.Auths.Select(data => new ReplaceOneModel<AuthData>(Builders<AuthData>.Filter.Where(authData => authData.AuthId == data.AuthId),
+                                                                                   data)
+                                                     {
+                                                       IsUpsert = true,
+                                                     });
+
+      await collection.BulkWriteAsync(sessionHandle,
+                                      upsert)
                       .ConfigureAwait(false);
     }
   }

@@ -87,8 +87,14 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
   {
     if (initDatabase.Roles.Any())
     {
-      await collection.InsertManyAsync(sessionHandle,
-                                       initDatabase.Roles)
+      var upsert = initDatabase.Roles.Select(data => new ReplaceOneModel<RoleData>(Builders<RoleData>.Filter.Where(roleData => roleData.RoleId == data.RoleId),
+                                                                                   data)
+                                                     {
+                                                       IsUpsert = true,
+                                                     });
+
+      await collection.BulkWriteAsync(sessionHandle,
+                                      upsert)
                       .ConfigureAwait(false);
     }
   }
