@@ -202,7 +202,7 @@ public class GrpcTasksService : Task.TasksBase
     using var measure = meter_.CountAndTime();
 
     var taskTable = request.PageSize == 0
-                      ? taskTable_.ReadOnly
+                      ? taskTable_.Secondary
                       : taskTable_;
 
     try
@@ -395,10 +395,10 @@ public class GrpcTasksService : Task.TasksBase
              {
                Status =
                {
-                 (await taskTable_.ReadOnly.CountTasksAsync(request.Filters is null
-                                                              ? data => true
-                                                              : request.Filters.ToTaskDataFilter(),
-                                                            context.CancellationToken)
+                 (await taskTable_.Secondary.CountTasksAsync(request.Filters is null
+                                                               ? data => true
+                                                               : request.Filters.ToTaskDataFilter(),
+                                                             context.CancellationToken)
                                   .ConfigureAwait(false)).Select(count => new StatusCount
                                                                           {
                                                                             Status = count.Status.ToGrpcStatus(),
@@ -432,7 +432,7 @@ public class GrpcTasksService : Task.TasksBase
     using var measure = meter_.CountAndTime();
 
     var taskTable = request.PageSize == 0
-                      ? taskTable_.ReadOnly
+                      ? taskTable_.Secondary
                       : taskTable_;
 
     try

@@ -64,7 +64,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
   }
 
   /// <inheritdoc />
-  public ITaskTable ReadOnly
+  public ITaskTable Secondary
     => new TaskTable(this,
                      true);
 

@@ -40,9 +40,9 @@ public interface IResultTable : IInitializable
   public ILogger Logger { get; }
 
   /// <summary>
-  ///   Read optimized version of the table.
+  ///   Table targeting a secondary server for read operations
   /// </summary>
-  public IResultTable ReadOnly
+  public IResultTable Secondary
     => this;
 
   /// <summary>

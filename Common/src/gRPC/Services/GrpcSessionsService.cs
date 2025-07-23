@@ -186,7 +186,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     using var measure = meter_.CountAndTime();
 
     var sessionTable = request.PageSize == 0
-                         ? sessionTable_.ReadOnly
+                         ? sessionTable_.Secondary
                          : sessionTable_;
 
     try

@@ -53,9 +53,9 @@ public interface ITaskTable : IInitializable
   public ILogger Logger { get; }
 
   /// <summary>
-  ///   Read optimized version of the table.
+  ///   Table targeting a secondary server for read operations
   /// </summary>
-  public ITaskTable ReadOnly
+  public ITaskTable Secondary
     => this;
 
   /// <summary>

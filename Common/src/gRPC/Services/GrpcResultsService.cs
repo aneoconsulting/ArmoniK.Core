@@ -128,7 +128,7 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
 
     var resultTable = request.PageSize == 0
-                        ? resultTable_.ReadOnly
+                        ? resultTable_.Secondary
                         : resultTable_;
 
     var results = await resultTable.ListResultsAsync(request.Filters is null

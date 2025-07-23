@@ -60,7 +60,7 @@ public class PartitionTable : BaseTable<PartitionData, PartitionDataModelMapping
   }
 
   /// <inheritdoc />
-  public IPartitionTable ReadOnly
+  public IPartitionTable Secondary
     => new PartitionTable(this,
                           true);
 

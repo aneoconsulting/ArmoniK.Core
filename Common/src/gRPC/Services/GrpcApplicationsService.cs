@@ -65,20 +65,20 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
                                                                         ServerCallContext       context)
   {
     using var measure = meter_.CountAndTime();
-    var (applications, totalCount) = await taskTable_.ReadOnly.ListApplicationsAsync(request.Filters is null
-                                                                                       ? data => true
-                                                                                       : request.Filters.ToApplicationFilter(),
-                                                                                     request.Sort is null
-                                                                                       ? new List<Expression<Func<Application, object?>>>
-                                                                                         {
-                                                                                           application => application.Name,
-                                                                                         }
-                                                                                       : request.Sort.Fields.Select(field => field.ToField())
-                                                                                                .ToList(),
-                                                                                     request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                                                     request.Page,
-                                                                                     request.PageSize,
-                                                                                     context.CancellationToken)
+    var (applications, totalCount) = await taskTable_.Secondary.ListApplicationsAsync(request.Filters is null
+                                                                                        ? data => true
+                                                                                        : request.Filters.ToApplicationFilter(),
+                                                                                      request.Sort is null
+                                                                                        ? new List<Expression<Func<Application, object?>>>
+                                                                                          {
+                                                                                            application => application.Name,
+                                                                                          }
+                                                                                        : request.Sort.Fields.Select(field => field.ToField())
+                                                                                                 .ToList(),
+                                                                                      request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                                      request.Page,
+                                                                                      request.PageSize,
+                                                                                      context.CancellationToken)
                                                      .ConfigureAwait(false);
     return new ListApplicationsResponse
            {

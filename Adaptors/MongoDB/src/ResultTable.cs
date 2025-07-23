@@ -61,7 +61,7 @@ public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTab
   }
 
   /// <inheritdoc />
-  public IResultTable ReadOnly
+  public IResultTable Secondary
     => new ResultTable(this,
                        true);
 

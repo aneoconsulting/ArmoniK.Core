@@ -33,9 +33,9 @@ namespace ArmoniK.Core.Common.Storage;
 public interface IPartitionTable : IInitializable
 {
   /// <summary>
-  ///   Read optimized version of the table.
+  ///   Table targeting a secondary server for read operations
   /// </summary>
-  public IPartitionTable ReadOnly
+  public IPartitionTable Secondary
     => this;
 
   /// <summary>

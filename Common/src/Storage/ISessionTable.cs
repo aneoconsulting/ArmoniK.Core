@@ -39,9 +39,9 @@ public interface ISessionTable : IInitializable
   ILogger Logger { get; }
 
   /// <summary>
-  ///   Read optimized version of the table.
+  ///   Table targeting a secondary server for read operations
   /// </summary>
-  public ISessionTable ReadOnly
+  public ISessionTable Secondary
     => this;
 
   /// <summary>

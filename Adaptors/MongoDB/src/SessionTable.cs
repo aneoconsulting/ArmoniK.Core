@@ -60,7 +60,7 @@ public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISe
   }
 
   /// <inheritdoc />
-  public ISessionTable ReadOnly
+  public ISessionTable Secondary
     => new SessionTable(this,
                         true);
 
