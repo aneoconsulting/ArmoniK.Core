@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -215,13 +214,6 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                               output,
                                               initDatabase)
                    .ConfigureAwait(false);
-        break;
-      }
-      catch (MongoBulkWriteException<TData> e) when (e.WriteErrors.All(error => error.Category == ServerErrorCategory.DuplicateKey))
-      {
-        logger.LogDebug(e,
-                        "Values were already present within the collection {CollectionName}",
-                        model.CollectionName);
         break;
       }
       catch (Exception ex)
