@@ -88,11 +88,11 @@ public class InitDatabase
                                      data => data.UserId);
 
     Auths = initServices.Authentication.UserCertificates.Select(Certificate.FromJson)
-                        .OrderBy(certificate => (certificate.Fingerprint, certificate.CN))
+                        .OrderBy(certificate => (certificate.Fingerprint, CN: certificate.Cn))
                         .Select((certificate,
                                  i) => new AuthData(i,
                                                     userDic[certificate.User],
-                                                    certificate.CN,
+                                                    certificate.Cn,
                                                     certificate.Fingerprint))
                         .AsICollection();
 

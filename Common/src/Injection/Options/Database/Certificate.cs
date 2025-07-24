@@ -33,7 +33,7 @@ public record Certificate
   /// <summary>
   ///   Certificate common name
   /// </summary>
-  public required string CN { get; init; }
+  public required string Cn { get; init; }
 
   /// <summary>
   ///   Certificate fingerprint

@@ -77,7 +77,7 @@ public class AuthenticationTableTestBase
   private static readonly Certificate CertEnv = new()
                                                 {
                                                   Fingerprint = "FingerprintEnv",
-                                                  CN          = "CNEnv",
+                                                  Cn          = "CNEnv",
                                                   User        = "UserEnv",
                                                 };
 

@@ -94,21 +94,21 @@ internal class StaticInitTests
   private static readonly Certificate Cert1 = new()
                                               {
                                                 Fingerprint = "Fingerprint1",
-                                                CN          = "CN1",
+                                                Cn          = "CN1",
                                                 User        = "User1",
                                               };
 
   private static readonly Certificate Cert2 = new()
                                               {
                                                 Fingerprint = "Fingerprint2",
-                                                CN          = "CN2",
+                                                Cn          = "CN2",
                                                 User        = "User2",
                                               };
 
   private static readonly Certificate Cert3 = new()
                                               {
                                                 Fingerprint = "Fingerprint3",
-                                                CN          = "CN3",
+                                                Cn          = "CN3",
                                                 User        = "User3",
                                               };
 
@@ -303,14 +303,14 @@ internal class StaticInitTests
   [Test]
   public void NoFingerprintShouldSucceed()
   {
-    var cert = Certificate.FromJson("{\"User\": \"User1\", \"CN\": \"CN1\"}");
+    var cert = Certificate.FromJson("{\"User\": \"User1\", \"Cn\": \"CN1\"}");
     Assert.IsNull(cert.Fingerprint);
   }
 
   [Test]
   public void NullFingerprintShouldSucceed()
   {
-    var cert = Certificate.FromJson("{\"User\": \"User1\", \"CN\": \"CN1\", \"Fingerprint\": null}");
+    var cert = Certificate.FromJson("{\"User\": \"User1\", \"Cn\": \"CN1\", \"Fingerprint\": null}");
     Assert.IsNull(cert.Fingerprint);
   }
 }
