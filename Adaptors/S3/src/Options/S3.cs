@@ -19,12 +19,36 @@ namespace ArmoniK.Core.Adapters.S3.Options;
 
 public class S3
 {
+  /// <summary>
+  ///   The name of the configuration section for S3 Object Storage settings.
+  /// </summary>
   public const string SettingSection = nameof(S3);
-  public       string EndpointUrl        { get; set; } = "";
-  public       string Login              { get; set; } = "";
-  public       string Password           { get; set; } = "";
-  public       bool   MustForcePathStyle { get; set; }
-  public       string BucketName         { get; set; } = "";
+
+  /// <summary>
+  ///   Endpoint URL of the S3 bucket. Default is an empty string.
+  /// </summary>
+  public string EndpointUrl { get; set; } = "";
+
+  /// <summary>
+  ///   Login credential for accessing the S3 service. Default is an empty string.
+  /// </summary>
+  public string Login { get; set; } = "";
+
+  /// <summary>
+  ///   Password associated with the login for S3 access. Default is an empty string.
+  /// </summary>
+  public string Password { get; set; } = "";
+
+  /// <summary>
+  ///   Boolean property  to indicate whether path-style access should be enforced when connecting to the S3 service.
+  ///   Defaults to false.
+  /// </summary>
+  public bool MustForcePathStyle { get; set; }
+
+  /// <summary>
+  ///   Name of the S3 bucket that the application will interact with. Default is an empty string.
+  /// </summary>
+  public string BucketName { get; set; } = "";
 
   /// <summary>
   ///   Number of tasks to be used in parallel execution
