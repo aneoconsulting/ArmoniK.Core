@@ -391,8 +391,8 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
              {
                Values =
                {
-                 (await taskTable_.CountTasksAsync(request,
-                                                   context.CancellationToken)
+                 (await taskTable_.Secondary.CountTasksAsync(request,
+                                                             context.CancellationToken)
                                   .ConfigureAwait(false)).Select(count => count.ToGrpcStatusCount()),
                },
              };

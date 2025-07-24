@@ -943,6 +943,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   private static IResultTable CreateResultTableMock(Action<ISetup<IResultTable, IAsyncEnumerable<ResultIdStatus>>> setupAction)
   {
     var mock = new Mock<IResultTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     var setup = mock.Setup(table => table.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
                                                      It.IsAny<Expression<Func<Result, ResultIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()));

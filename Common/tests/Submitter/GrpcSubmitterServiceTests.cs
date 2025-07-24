@@ -59,6 +59,12 @@ public class GrpcSubmitterServiceTests
   [SetUp]
   public void SetUp()
   {
+    mockResultTable_.Setup(resultTable => resultTable.Secondary)
+                    .Returns(mockResultTable_.Object);
+    mockSessionTable_.Setup(sessionTable => sessionTable.Secondary)
+                     .Returns(mockSessionTable_.Object);
+    mockTaskTable_.Setup(taskTable => taskTable.Secondary)
+                  .Returns(mockTaskTable_.Object);
   }
 
   [TearDown]
@@ -389,6 +395,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputArmonikExceptionShouldThrowRpcException()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
                                                     It.IsAny<Expression<Func<TaskData, Output>>>(),
                                                     It.IsAny<CancellationToken>()))
@@ -423,6 +431,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(taskTable => taskTable.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
                                                     It.IsAny<Expression<Func<TaskData, Output>>>(),
                                                     It.IsAny<CancellationToken>()))
@@ -451,6 +461,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetTaskOutputShouldSucceed2()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.ReadTaskAsync(It.IsAny<string>(),
                                                     It.IsAny<Expression<Func<TaskData, Output>>>(),
                                                     It.IsAny<CancellationToken>()))
@@ -1552,6 +1564,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetStatusShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
                                                      It.IsAny<Expression<Func<TaskData, TaskIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()))
@@ -1586,6 +1600,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetStatusTaskNotFoundExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
                                                      It.IsAny<Expression<Func<TaskData, TaskIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()))
@@ -1622,6 +1638,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetStatusArmonikExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
                                                      It.IsAny<Expression<Func<TaskData, TaskIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()))
@@ -1694,6 +1712,8 @@ public class GrpcSubmitterServiceTests
   public async Task ListTasksShouldSucceed()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
                                                      It.IsAny<Expression<Func<TaskData, string>>>(),
                                                      It.IsAny<CancellationToken>()))
@@ -1771,6 +1791,8 @@ public class GrpcSubmitterServiceTests
   public async Task ListTaskArmonikExceptionShouldThrow()
   {
     var mock = new Mock<ITaskTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(taskTable => taskTable.FindTasksAsync(It.IsAny<Expression<Func<TaskData, bool>>>(),
                                                      It.IsAny<Expression<Func<TaskData, string>>>(),
                                                      It.IsAny<CancellationToken>()))
@@ -1811,6 +1833,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetResultStatusAsyncArmoniKNotFoundExceptionShouldThrow()
   {
     var mock = new Mock<IResultTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(resultTable => resultTable.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
                                                      It.IsAny<Expression<Func<Result, ResultIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()))
@@ -1849,6 +1873,8 @@ public class GrpcSubmitterServiceTests
   public async Task GetResultStatusShouldSucceed()
   {
     var mock = new Mock<IResultTable>();
+    mock.Setup(table => table.Secondary)
+        .Returns(mock.Object);
     mock.Setup(resultTable => resultTable.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
                                                      It.IsAny<Expression<Func<Result, ResultIdStatus>>>(),
                                                      It.IsAny<CancellationToken>()))

@@ -25,16 +25,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
-using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -44,28 +40,33 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
-/// <inheritdoc />
-public class TaskTable : ITaskTable
+/// <inheritdoc cref="ITaskTable" />
+public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
 {
-  private readonly ActivitySource                                          activitySource_;
-  private readonly SessionProvider                                         sessionProvider_;
-  private readonly MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider_;
-
-  private bool isInitialized_;
-
+  /// <inheritdoc />
   public TaskTable(SessionProvider                                         sessionProvider,
                    MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider,
-                   ILogger<TaskTable>                                      logger,
                    ActivitySource                                          activitySource,
-                   TableStorage                                            option)
+                   ILogger<TaskTable>                                      logger)
+    : base(sessionProvider,
+           taskCollectionProvider,
+           activitySource,
+           logger)
   {
-    sessionProvider_        = sessionProvider;
-    taskCollectionProvider_ = taskCollectionProvider;
-    Logger                  = logger;
-    activitySource_         = activitySource;
-    PollingDelayMin         = option.PollingDelayMin;
-    PollingDelayMax         = option.PollingDelayMax;
   }
+
+  /// <inheritdoc />
+  private TaskTable(TaskTable taskTable,
+                    bool      readOnly)
+    : base(taskTable,
+           readOnly)
+  {
+  }
+
+  /// <inheritdoc />
+  public ITaskTable Secondary
+    => new TaskTable(this,
+                     true);
 
   public TimeSpan PollingDelayMin { get; set; }
   public TimeSpan PollingDelayMax { get; set; }
@@ -74,9 +75,8 @@ public class TaskTable : ITaskTable
   public async Task CreateTasks(IEnumerable<TaskData> tasks,
                                 CancellationToken     cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(CreateTasks)}");
-
-    var taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       taskCollection = GetCollection();
 
     try
     {
@@ -96,10 +96,10 @@ public class TaskTable : ITaskTable
                                         Expression<Func<TaskData, T>> selector,
                                         CancellationToken             cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(ReadTaskAsync)}");
+    using var activity = StartActivity();
     activity?.SetTag("ReadTaskId",
                      taskId);
-    var taskCollection = taskCollectionProvider_.Get();
+    var taskCollection = GetReadCollection();
 
     try
     {
@@ -123,10 +123,10 @@ public class TaskTable : ITaskTable
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                                   CancellationToken                cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(CountTasksAsync)}");
+    using var activity = StartActivity();
 
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
+    var sessionHandle  = GetSession();
+    var taskCollection = GetReadCollection();
 
     var res = await taskCollection.AsQueryable(sessionHandle)
                                   .Where(filter)
@@ -142,10 +142,10 @@ public class TaskTable : ITaskTable
   /// <inheritdoc />
   public async Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(CountPartitionTasksAsync)}");
+    using var activity = StartActivity();
 
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
+    var sessionHandle  = GetSession();
+    var taskCollection = GetReadCollection();
 
 
     var res = await taskCollection.AsQueryable(sessionHandle)
@@ -167,10 +167,10 @@ public class TaskTable : ITaskTable
   public async Task DeleteTaskAsync(string            id,
                                     CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(DeleteTaskAsync)}");
+    using var activity = StartActivity();
     activity?.SetTag($"{nameof(DeleteTaskAsync)}_TaskId",
                      id);
-    var taskCollection = taskCollectionProvider_.Get();
+    var taskCollection = GetCollection();
 
     var result = await taskCollection.DeleteOneAsync(tdm => tdm.TaskId == id,
                                                      cancellationToken)
@@ -190,10 +190,10 @@ public class TaskTable : ITaskTable
   public async Task DeleteTasksAsync(string            sessionId,
                                      CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(DeleteTasksAsync)}");
+    using var activity = StartActivity();
     activity?.SetTag($"{nameof(DeleteTaskAsync)}_SessionId",
                      sessionId);
-    var taskCollection = taskCollectionProvider_.Get();
+    var taskCollection = GetCollection();
 
     var res = await taskCollection.DeleteManyAsync(tdm => tdm.SessionId == sessionId,
                                                    cancellationToken)
@@ -215,9 +215,9 @@ public class TaskTable : ITaskTable
                                                                                int                                 pageSize,
                                                                                CancellationToken                   cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ListTasksAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       sessionHandle  = GetSession();
+    var       taskCollection = GetReadCollection();
 
     var taskList = Task.FromResult(new List<T>());
     if (pageSize > 0)
@@ -248,9 +248,9 @@ public class TaskTable : ITaskTable
                                                Expression<Func<TaskData, T>>    selector,
                                                CancellationToken                cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(FindTasksAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       sessionHandle  = GetSession();
+    var       taskCollection = GetReadCollection();
 
     return taskCollection.Find(sessionHandle,
                                filter)
@@ -263,8 +263,8 @@ public class TaskTable : ITaskTable
                                           Core.Common.Storage.UpdateDefinition<TaskData> updates,
                                           CancellationToken                              cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(UpdateOneTask)}");
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       taskCollection = GetCollection();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Combine();
 
@@ -292,8 +292,8 @@ public class TaskTable : ITaskTable
   async Task<long> ITaskTable.BulkUpdateTasks(IEnumerable<(Expression<Func<TaskData, bool>> filter, Core.Common.Storage.UpdateDefinition<TaskData> updates)> bulkUpdates,
                                               CancellationToken cancellationToken)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ITaskTable.BulkUpdateTasks)}");
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       taskCollection = GetCollection();
 
     var requests = bulkUpdates.Select(item =>
                                       {
@@ -332,9 +332,9 @@ public class TaskTable : ITaskTable
                                                                                                    int pageSize,
                                                                                                    CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(ListApplicationsAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       sessionHandle  = GetSession();
+    var       taskCollection = GetReadCollection();
 
     var queryable = taskCollection.AsQueryable(sessionHandle)
                                   .Where(filter)
@@ -361,9 +361,9 @@ public class TaskTable : ITaskTable
                                                                            Expression<Func<TaskData, T>>              selector,
                                                                            [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(RemoveRemainingDataDependenciesAsync)}");
-    var       sessionHandle  = sessionProvider_.Get();
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       sessionHandle  = GetSession();
+    var       taskCollection = GetCollection();
 
     // MongoDB driver does not support to unset a list, so Unset should be called multiple times.
     // However, Unset on an UpdateDefinitionBuilder returns an UpdateDefinition.
@@ -412,8 +412,8 @@ public class TaskTable : ITaskTable
                                              bool                                           before,
                                              CancellationToken                              cancellationToken = default)
   {
-    using var activity       = activitySource_.StartActivity($"{nameof(UpdateOneTask)}");
-    var       taskCollection = taskCollectionProvider_.Get();
+    using var activity       = StartActivity();
+    var       taskCollection = GetCollection();
 
     var updateDefinition = new UpdateDefinitionBuilder<TaskData>().Combine();
 
@@ -452,45 +452,17 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
-  public ILogger Logger { get; }
-
-  /// <inheritdoc />
-  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    var result = await HealthCheckResultCombiner.Combine(tag,
-                                                         $"{nameof(TaskTable)} is not initialized",
-                                                         sessionProvider_,
-                                                         taskCollectionProvider_)
-                                                .ConfigureAwait(false);
-
-    return isInitialized_ && result.Status == HealthStatus.Healthy
-             ? HealthCheckResult.Healthy()
-             : HealthCheckResult.Unhealthy(result.Description);
-  }
-
-  /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
-  {
-    if (!isInitialized_)
-    {
-      await sessionProvider_.Init(cancellationToken)
-                            .ConfigureAwait(false);
-      sessionProvider_.Get();
-      await taskCollectionProvider_.Init(cancellationToken)
-                                   .ConfigureAwait(false);
-      taskCollectionProvider_.Get();
-      isInitialized_ = true;
-    }
-  }
+  ILogger ITaskTable.Logger
+    => base.Logger;
 
   /// <inheritdoc />
   public Task<int> CountAllTasksAsync(TaskStatus        status,
                                       CancellationToken cancellationToken = default)
   {
-    using var activity = activitySource_.StartActivity($"{nameof(CountAllTasksAsync)}");
+    using var activity = StartActivity($"{nameof(CountAllTasksAsync)}");
 
-    var sessionHandle  = sessionProvider_.Get();
-    var taskCollection = taskCollectionProvider_.Get();
+    var sessionHandle  = GetSession();
+    var taskCollection = GetReadCollection();
 
     var res = taskCollection.AsQueryable(sessionHandle)
                             .Count(model => model.Status == status);

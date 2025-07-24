@@ -39,6 +39,12 @@ public interface ISessionTable : IInitializable
   ILogger Logger { get; }
 
   /// <summary>
+  ///   Table targeting a secondary server for read operations
+  /// </summary>
+  public ISessionTable Secondary
+    => this;
+
+  /// <summary>
   ///   Set metadata for a new session
   /// </summary>
   /// <param name="partitionIds">List of partitions allowed to be used during the session</param>

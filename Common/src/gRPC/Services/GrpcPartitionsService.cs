@@ -95,16 +95,16 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
                                                                     ServerCallContext     context)
   {
     using var measure = meter_.CountAndTime();
-    var partitions = await partitionTable_.ListPartitionsAsync(request.Filters is null
-                                                                 ? data => true
-                                                                 : request.Filters.ToPartitionFilter(),
-                                                               request.Sort is null
-                                                                 ? data => data.PartitionId
-                                                                 : request.Sort.ToField(),
-                                                               request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                               request.Page,
-                                                               request.PageSize,
-                                                               context.CancellationToken)
+    var partitions = await partitionTable_.Secondary.ListPartitionsAsync(request.Filters is null
+                                                                           ? data => true
+                                                                           : request.Filters.ToPartitionFilter(),
+                                                                         request.Sort is null
+                                                                           ? data => data.PartitionId
+                                                                           : request.Sort.ToField(),
+                                                                         request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                         request.Page,
+                                                                         request.PageSize,
+                                                                         context.CancellationToken)
                                           .ConfigureAwait(false);
     return new ListPartitionsResponse
            {

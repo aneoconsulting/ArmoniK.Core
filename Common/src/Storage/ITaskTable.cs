@@ -53,6 +53,12 @@ public interface ITaskTable : IInitializable
   public ILogger Logger { get; }
 
   /// <summary>
+  ///   Table targeting a secondary server for read operations
+  /// </summary>
+  public ITaskTable Secondary
+    => this;
+
+  /// <summary>
   ///   Inserts a collection of tasks in the data base
   /// </summary>
   /// <param name="tasks">Collection of tasks to be inserted</param>
