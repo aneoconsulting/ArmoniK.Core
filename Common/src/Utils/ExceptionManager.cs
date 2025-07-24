@@ -19,9 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using System.Threading.Tasks;
+
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -33,7 +38,7 @@ namespace ArmoniK.Core.Common.Utils;
 ///   When the application is stopped, a grace delay is in place to let
 ///   all the running services to stop properly.
 /// </summary>
-public class ExceptionManager : IDisposable
+public class ExceptionManager : IDisposable, IHealthCheckProvider
 {
   private readonly IHostApplicationLifetime applicationLifetime_;
   private readonly IList<IDisposable>       disposables_;
@@ -130,6 +135,12 @@ public class ExceptionManager : IDisposable
     earlyCts_.Cancel();
     lateCts_.Cancel();
   }
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(lateCts_.IsCancellationRequested
+                         ? HealthCheckResult.Unhealthy()
+                         : HealthCheckResult.Healthy());
 
   /// <summary>
   ///   Record an error at the application level
