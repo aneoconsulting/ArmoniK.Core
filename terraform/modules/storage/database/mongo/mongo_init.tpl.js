@@ -18,5 +18,3 @@ while(initialized === false)
     sleep(1000);
   }
 }
-
-db.PartitionData.insertMany(${partition_data});
