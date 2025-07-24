@@ -22,7 +22,7 @@ output "generated_env_vars" {
     "MongoDB__ServerSelectionTimeout"        = "00:00:20"
   }
 
-  depends_on = [null_resource.partitions_in_db]
+  depends_on = [null_resource.init_replica]
 }
 
 output "core_mounts" {
