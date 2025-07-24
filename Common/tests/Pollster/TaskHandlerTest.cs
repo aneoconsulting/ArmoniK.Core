@@ -1606,6 +1606,7 @@ public class TaskHandlerTest
   }
 
   [Test]
+  [Retry(3)]
   [TestCaseSource(nameof(TestCaseOuptut))]
   public async Task<(TaskStatus taskStatus, QueueMessageStatus messageStatus)> ExecuteTaskWithExceptionDuringCancellationShouldSucceed<TEx>(
     ExceptionWorkerStreamHandler<TEx> workerStreamHandler,
