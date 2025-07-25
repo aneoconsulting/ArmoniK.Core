@@ -63,7 +63,7 @@ public class UserIdentity : ClaimsIdentity
   /// <summary>
   ///   User Id
   /// </summary>
-  public string UserId { get; set; }
+  public int UserId { get; set; }
 
   /// <summary>
   ///   Transforms a UserAuthenticationResult into a list of claims to be used in an ClaimsIdentity

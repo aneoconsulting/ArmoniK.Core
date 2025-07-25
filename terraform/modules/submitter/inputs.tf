@@ -33,3 +33,7 @@ variable "log_driver" {
   })
 }
 
+variable "container_init" {
+  type = bool
+}
+

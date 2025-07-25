@@ -16,10 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Injection.Options.Database;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -38,13 +40,11 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
       BsonClassMap.RegisterClassMap<UserData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(UserData.UserId))
-                                                  .SetIsRequired(true)
-                                                  .SetSerializer(IdSerializer.Instance);
+                                                  .SetIsRequired(true);
                                                 cm.MapProperty(nameof(UserData.Username))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(UserData.Roles))
                                                   .SetIgnoreIfDefault(true)
-                                                  .SetSerializer(IdArraySerializer.Instance)
                                                   .SetDefaultValue(Array.Empty<string>());
                                                 cm.SetIgnoreExtraElements(true);
                                                 cm.MapCreator(model => new UserData(model.UserId,
@@ -78,4 +78,23 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                    Options.MongoDB      options)
     => Task.CompletedTask;
+
+  /// <inheritdoc />
+  public async Task InitializeCollectionAsync(IClientSessionHandle       sessionHandle,
+                                              IMongoCollection<UserData> collection,
+                                              InitDatabase               initDatabase)
+  {
+    if (initDatabase.Users.Any())
+    {
+      var upsert = initDatabase.Users.Select(data => new ReplaceOneModel<UserData>(Builders<UserData>.Filter.Where(userData => userData.UserId == data.UserId),
+                                                                                   data)
+                                                     {
+                                                       IsUpsert = true,
+                                                     });
+
+      await collection.BulkWriteAsync(sessionHandle,
+                                      upsert)
+                      .ConfigureAwait(false);
+    }
+  }
 }
