@@ -53,6 +53,8 @@ using Serilog;
 using Pollster = ArmoniK.Core.Common.Injection.Options.Pollster;
 using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace ArmoniK.Core.Compute.PollingAgent;
 
 public static class Program

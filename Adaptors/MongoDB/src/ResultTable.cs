@@ -259,6 +259,7 @@ public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTab
     }
   }
 
+  /// <inheritdoc />
   public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
                                            Expression<Func<Result, T>>    convertor,
                                            CancellationToken              cancellationToken = default)

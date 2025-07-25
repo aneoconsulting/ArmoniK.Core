@@ -41,6 +41,7 @@ public class SessionProvider : IInitializable
   public SessionProvider(IMongoClient client)
     => client_ = client;
 
+  /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
        {
@@ -55,6 +56,7 @@ public class SessionProvider : IInitializable
                                                     null),
        };
 
+  /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
   {
     if (clientSessionHandle_ is not null)

@@ -91,6 +91,7 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
                     .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                    Options.MongoDB      options)
     => Task.CompletedTask;

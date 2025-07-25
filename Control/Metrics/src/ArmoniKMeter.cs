@@ -32,6 +32,8 @@ using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace ArmoniK.Core.Control.Metrics;
 
 public class ArmoniKMeter : Meter, IHostedService
@@ -137,6 +139,7 @@ public class ArmoniKMeter : Meter, IHostedService
     }
   }
 
+  /// <inheritdoc />
   public async Task StartAsync(CancellationToken cancellationToken)
   {
     // Call an aggregate gauge in order to populate all gauges.
@@ -148,6 +151,7 @@ public class ArmoniKMeter : Meter, IHostedService
                      gauges_.Values.Select(reader => reader.Name));
   }
 
+  /// <inheritdoc />
   public Task StopAsync(CancellationToken cancellationToken)
     => Task.CompletedTask;
 

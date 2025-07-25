@@ -68,7 +68,10 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     => new TaskTable(this,
                      true);
 
+  /// <inheritdoc />
   public TimeSpan PollingDelayMin { get; set; }
+
+  /// <inheritdoc />
   public TimeSpan PollingDelayMax { get; set; }
 
   /// <inheritdoc />
@@ -187,6 +190,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     }
   }
 
+  /// <inheritdoc />
   public async Task DeleteTasksAsync(string            sessionId,
                                      CancellationToken cancellationToken = default)
   {
