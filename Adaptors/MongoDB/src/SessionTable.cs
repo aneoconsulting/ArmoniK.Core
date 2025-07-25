@@ -65,6 +65,7 @@ public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISe
                         true);
 
 
+  /// <inheritdoc />
   [PublicAPI]
   public async Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
                                                 TaskOptions         defaultOptions,

@@ -22,6 +22,8 @@ using ArmoniK.Core.Common.Pollster;
 
 using Microsoft.Extensions.Hosting;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace ArmoniK.Core.Compute.PollingAgent;
 
 public class Worker : BackgroundService

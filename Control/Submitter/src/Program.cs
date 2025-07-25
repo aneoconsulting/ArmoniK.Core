@@ -53,6 +53,8 @@ using OpenTelemetry.Trace;
 
 using Serilog;
 
+#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+
 namespace ArmoniK.Core.Control.Submitter;
 
 public static class Program

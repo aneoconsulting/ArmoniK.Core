@@ -212,6 +212,7 @@ public class ObjectStorage : IObjectStorage
                                                       cancellationToken))
                 .ConfigureAwait(false);
 
+  /// <inheritdoc />
   public async Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
                                                               CancellationToken   cancellationToken = default)
     => await ids.ParallelSelect(async id => (id, await GetSizeAsync(id,

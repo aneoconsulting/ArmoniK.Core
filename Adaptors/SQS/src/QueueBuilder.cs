@@ -32,6 +32,7 @@ namespace ArmoniK.Core.Adapters.SQS;
 [PublicAPI]
 public class QueueBuilder : IDependencyInjectionBuildable
 {
+  /// <inheritdoc />
   public void Build(IServiceCollection   serviceCollection,
                     ConfigurationManager configuration,
                     ILogger              logger)

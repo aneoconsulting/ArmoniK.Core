@@ -138,6 +138,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                     .ConfigureAwait(false);
   }
 
+  /// <inheritdoc />
   public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                          Options.MongoDB      options)
     => await sessionHandle.shardCollection(options,
