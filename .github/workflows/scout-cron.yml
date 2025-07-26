@@ -45,7 +45,7 @@ jobs:
     - name: Pull image
       run: docker pull "dockerhubaneo/armonik_${{ matrix.image }}:${{ matrix.version }}"
     - name: Analyze for critical and high CVEs
-      uses: docker/scout-action@aceeb83b88f2ae54376891227858dda7af647183 # v1
+      uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1
       with:
         command: cves
         image: "dockerhubaneo/armonik_${{ matrix.image }}:${{ matrix.version }}"
