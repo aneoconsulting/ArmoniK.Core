@@ -35,6 +35,9 @@ using StackExchange.Redis;
 
 namespace ArmoniK.Core.Adapters.Redis;
 
+/// <summary>
+///   <see cref="IObjectStorage" /> implementation for Redis
+/// </summary>
 public class ObjectStorage : IObjectStorage
 {
   private readonly ILogger<ObjectStorage> logger_;
