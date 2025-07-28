@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 namespace ArmoniK.Core.Adapters.SQS;
 
 /// <summary>
-/// Represents a heartbeat mechanism that executes a specified function at regular intervals.
+///   Represents a heartbeat mechanism that executes a specified function at regular intervals.
 /// </summary>
 public class Heart
 {

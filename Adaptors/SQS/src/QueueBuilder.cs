@@ -30,7 +30,7 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Adapters.SQS;
 
 /// <summary>
-/// Represents a builder for configuring queue services in the dependency injection container.
+///   Represents a builder for configuring queue services in the dependency injection container.
 /// </summary>
 [PublicAPI]
 public class QueueBuilder : IDependencyInjectionBuildable
