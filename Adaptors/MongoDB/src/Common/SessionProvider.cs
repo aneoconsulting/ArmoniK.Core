@@ -31,17 +31,31 @@ using MongoDB.Driver.Core.Clusters;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
+/// <summary>
+///   Provides a MongoDB session handle for database operations, implementing initialization and health checks.
+/// </summary>
 public class SessionProvider : IInitializable
 {
   private readonly IMongoClient          client_;
   private readonly object                lockObj_ = new();
   private          IClientSessionHandle? clientSessionHandle_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="SessionProvider" /> class.
+  /// </summary>
+  /// <param name="client">The MongoDB client used to create sessions.</param>
   [UsedImplicitly]
   public SessionProvider(IMongoClient client)
     => client_ = client;
 
-  /// <inheritdoc />
+  /// <summary>
+  ///   Checks the health of the MongoDB session provider.
+  /// </summary>
+  /// <param name="tag">The health check tag indicating the type of health check.</param>
+  /// <returns>A task that represents the asynchronous health check operation, containing the result of the health check.</returns>
+  /// <exception cref="ArgumentOutOfRangeException">
+  ///   Thrown when the provided health check tag is not recognized.
+  /// </exception>
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => tag switch
        {
@@ -56,7 +70,11 @@ public class SessionProvider : IInitializable
                                                     null),
        };
 
-  /// <inheritdoc />
+  /// <summary>
+  ///   Initializes the MongoDB session handle.
+  /// </summary>
+  /// <param name="cancellationToken">A cancellation token to observe while waiting for the initialization to complete.</param>
+  /// <returns>A task that represents the asynchronous initialization operation.</returns>
   public Task Init(CancellationToken cancellationToken)
   {
     if (clientSessionHandle_ is not null)
@@ -72,6 +90,14 @@ public class SessionProvider : IInitializable
     return Task.CompletedTask;
   }
 
+  /// <summary>
+  ///   Retrieves the current MongoDB session handle.
+  /// </summary>
+  /// <returns>The current <see cref="IClientSessionHandle" /> for MongoDB operations.</returns>
+  /// <exception cref="NullReferenceException">
+  ///   Thrown when the session handle has not been initialized.
+  ///   Ensure that the <see cref="Init" /> method has been called before accessing the session handle.
+  /// </exception>
   public IClientSessionHandle Get()
   {
     if (clientSessionHandle_ is null)

@@ -33,6 +33,14 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
+/// <summary>
+///   Provides a MongoDB collection for data operations, implementing initialization and async initialization.
+/// </summary>
+/// <typeparam name="TData">The type of data stored in the MongoDB collection.</typeparam>
+/// <typeparam name="TModelMapping">The type of the model mapping that defines the MongoDB collection mapping.</typeparam>
+/// <remarks>
+///   This class is responsible for providing access to a MongoDB collection and ensuring it is properly initialized.
+/// </remarks>
 [PublicAPI]
 public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAsyncInitialization<IMongoCollection<TData>>
   where TModelMapping : IMongoDataModelMapping<TData>, new()
@@ -40,6 +48,20 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   private bool                     isInitialized_;
   private IMongoCollection<TData>? mongoCollection_;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="MongoCollectionProvider{TData, TModelMapping}" /> class.
+  /// </summary>
+  /// <param name="options">The MongoDB options used for configuration, including data retention settings.</param>
+  /// <param name="sessionProvider">The session provider used to manage MongoDB sessions.</param>
+  /// <param name="mongoDatabase">The MongoDB database instance to which the collection belongs.</param>
+  /// <param name="logger">The logger instance used for logging purposes.</param>
+  /// <param name="cancellationToken">
+  ///   A cancellation token to observe while waiting for the initialization to complete
+  ///   (optional).
+  /// </param>
+  /// <exception cref="ArgumentOutOfRangeException">
+  ///   Thrown when the data retention option is not defined (i.e., set to zero).
+  /// </exception>
   public MongoCollectionProvider(Options.MongoDB                  options,
                                  InitDatabase                     initDatabase,
                                  SessionProvider                  sessionProvider,
@@ -237,6 +259,14 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     return output;
   }
 
+  /// <summary>
+  ///   Retrieves the MongoDB collection for data operations.
+  /// </summary>
+  /// <returns>The MongoDB collection of type <see cref="IMongoCollection{TData}" />.</returns>
+  /// <exception cref="InvalidOperationException">
+  ///   Thrown when the MongoDB collection has not been initialized.
+  ///   Ensure that the <see cref="InitializeAsync" /> method has been called before accessing the collection.
+  /// </exception>
   public IMongoCollection<TData> Get()
   {
     if (!isInitialized_)

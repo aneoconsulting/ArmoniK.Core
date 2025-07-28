@@ -37,6 +37,7 @@ using MongoDB.Driver.Linq;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+/// <inheritdoc cref="ArmoniK.Core.Common.Storage.IPartitionTable" />
 public class PartitionTable : BaseTable<PartitionData, PartitionDataModelMapping>, IPartitionTable
 {
   /// <inheritdoc />
