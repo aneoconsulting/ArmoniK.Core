@@ -39,6 +39,9 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.S3;
 
+/// <summary>
+///   <see cref="IObjectStorage" /> implementation for S3
+/// </summary>
 public class ObjectStorage : IObjectStorage
 {
   private const    long                   MinPartSize  = 5 * 1024 * 1024; // 5 MiB
