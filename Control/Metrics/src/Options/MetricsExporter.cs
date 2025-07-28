@@ -24,7 +24,7 @@ using JetBrains.Annotations;
 namespace ArmoniK.Core.Control.Metrics.Options;
 
 /// <summary>
-///  Represents the configuration settings for the metrics exporter.
+///   Represents the configuration settings for the metrics exporter.
 /// </summary>
 [PublicAPI]
 public class MetricsExporter
