@@ -320,6 +320,7 @@ public class TaskTable : ITaskTable
                                                            new BulkWriteOptions
                                                            {
                                                              IsOrdered = false,
+                                                             BypassDocumentValidation = true,
                                                            },
                                                            cancellationToken)
                                            .ConfigureAwait(false);

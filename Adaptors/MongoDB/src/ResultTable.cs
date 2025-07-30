@@ -76,6 +76,7 @@ public class ResultTable : IResultTable
                                               new BulkWriteOptions
                                               {
                                                 IsOrdered = false,
+                                                BypassDocumentValidation = true,
                                               },
                                               cancellationToken)
                               .ConfigureAwait(false);
@@ -114,6 +115,7 @@ public class ResultTable : IResultTable
                                                             new BulkWriteOptions
                                                             {
                                                               IsOrdered = false,
+                                                              BypassDocumentValidation = true,
                                                             },
                                                             cancellationToken)
                                             .ConfigureAwait(false);
@@ -196,6 +198,11 @@ public class ResultTable : IResultTable
                                                                                                                                r.resultId),
                                                                                                     Builders<Result>.Update.Set(model => model.OwnerTaskId,
                                                                                                                                 r.taskId))),
+                                                    new BulkWriteOptions()
+                                                    {
+                                                      IsOrdered = false,
+                                                      BypassDocumentValidation = true,
+                                                    },
                                                     cancellationToken: cancellationToken)
                                     .ConfigureAwait(false);
 
@@ -226,6 +233,11 @@ public class ResultTable : IResultTable
                                                                                                Builders<Result>.Update.Set(model => model.OwnerTaskId,
                                                                                                                            r.NewTaskId));
                                                           }),
+                                          new BulkWriteOptions()
+                                          {
+                                            IsOrdered = false,
+                                            BypassDocumentValidation = true,
+                                          },
                                           cancellationToken: cancellationToken)
                           .ConfigureAwait(false);
   }
@@ -370,6 +382,7 @@ public class ResultTable : IResultTable
                                                              new BulkWriteOptions
                                                              {
                                                                IsOrdered = false,
+                                                               BypassDocumentValidation = true,
                                                              },
                                                              cancellationToken)
                                              .ConfigureAwait(false);
