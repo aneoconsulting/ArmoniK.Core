@@ -445,6 +445,7 @@ public class TaskTable : ITaskTable
                                                             ReturnDocument = before
                                                                                ? ReturnDocument.Before
                                                                                : ReturnDocument.After,
+                                                            BypassDocumentValidation = true,
                                                           },
                                                           cancellationToken)
                                    .ConfigureAwait(false);

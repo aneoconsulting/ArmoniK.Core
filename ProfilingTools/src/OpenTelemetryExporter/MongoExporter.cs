@@ -61,7 +61,12 @@ internal class MongoExporter : BaseExporter<Activity>
       foreach (var activity in batch)
       {
         collection_.InsertOne(session_,
-                              activity.ToOpenTelemetryData());
+                              activity.ToOpenTelemetryData(),
+                              new InsertOneOptions()
+                              {
+                                BypassDocumentValidation = true
+                              }
+                              );
       }
 
       return ExportResult.Success;

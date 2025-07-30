@@ -78,6 +78,7 @@ public class SessionTable : ISessionTable
                            defaultOptions);
 
     await sessionCollection.InsertOneAsync(data,
+                                           new InsertOneOptions(){BypassDocumentValidation = true},
                                            cancellationToken: cancellationToken)
                            .ConfigureAwait(false);
     return data.SessionId;

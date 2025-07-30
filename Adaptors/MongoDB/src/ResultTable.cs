@@ -311,6 +311,7 @@ public class ResultTable : IResultTable
                                                               new FindOneAndUpdateOptions<Result>
                                                               {
                                                                 ReturnDocument = ReturnDocument.Before,
+                                                                BypassDocumentValidation = true,
                                                               },
                                                               cancellationToken)
                                        .ConfigureAwait(false);
