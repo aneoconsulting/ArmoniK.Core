@@ -227,6 +227,7 @@ public class SessionTable : ISessionTable
                                                                       ReturnDocument = before
                                                                                          ? ReturnDocument.Before
                                                                                          : ReturnDocument.After,
+                                                                      BypassDocumentValidation = true,
                                                                     },
                                                                     cancellationToken)
                                              .ConfigureAwait(false);
