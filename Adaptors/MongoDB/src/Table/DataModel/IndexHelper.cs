@@ -30,9 +30,24 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 /// </summary>
 public enum IndexType
 {
+  /// <summary>
+  ///   Index is based on ascending order of the keys.
+  /// </summary>
   Ascending,
+
+  /// <summary>
+  ///   Index is based on descending order of the keys.
+  /// </summary>
   Descending,
+
+  /// <summary>
+  ///   Index is based on the hash of the keys.
+  /// </summary>
   Hashed,
+
+  /// <summary>
+  ///   Index is optimized for text search.
+  /// </summary>
   Text,
 }
 

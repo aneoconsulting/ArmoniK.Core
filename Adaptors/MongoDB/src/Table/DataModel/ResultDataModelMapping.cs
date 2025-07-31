@@ -27,9 +27,12 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record ResultDataModelMapping : IMongoDataModelMapping<Result>
+/// <summary>
+///   Implementation of <see cref="IMongoDataModelMapping{T}" /> for <see cref="Result" />
+/// </summary>
+public class ResultDataModelMapping : IMongoDataModelMapping<Result>
 {
-  public ResultDataModelMapping()
+  static ResultDataModelMapping()
   {
     if (!BsonClassMap.IsClassMapRegistered(typeof(Result)))
     {
@@ -112,7 +115,7 @@ public record ResultDataModelMapping : IMongoDataModelMapping<Result>
   /// <inheritdoc />
   public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                          Options.MongoDB      options)
-    => await sessionHandle.shardCollection(options,
+    => await sessionHandle.ShardCollection(options,
                                            CollectionName)
                           .ConfigureAwait(false);
 }

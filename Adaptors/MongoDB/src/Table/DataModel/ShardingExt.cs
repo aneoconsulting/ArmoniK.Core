@@ -23,13 +23,22 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
+/// <summary>
+///   Extension of <see cref="IClientSessionHandle" /> to shard collections
+/// </summary>
 public static class ShardingExt
 {
-  public static async Task shardCollection(this IClientSessionHandle sessionHandle,
+  /// <summary>
+  ///   Shard a collection using its id as a sharding key.
+  /// </summary>
+  /// <param name="sessionHandle">Handle to the client session.</param>
+  /// <param name="options">Options of MongoDB.</param>
+  /// <param name="collectionName">Name of the collection to shard.</param>
+  public static async Task ShardCollection(this IClientSessionHandle sessionHandle,
                                            Options.MongoDB           options,
                                            string                    collectionName)
   {
-    var adminDB = sessionHandle.Client.GetDatabase("admin");
+    var adminDb = sessionHandle.Client.GetDatabase("admin");
     var shardingCommandDict = new Dictionary<string, object>
                               {
                                 {
@@ -46,7 +55,7 @@ public static class ShardingExt
                               };
 
     var shardingCommand = new BsonDocumentCommand<BsonDocument>(new BsonDocument(shardingCommandDict));
-    await adminDB.RunCommandAsync(shardingCommand)
+    await adminDb.RunCommandAsync(shardingCommand)
                  .ConfigureAwait(false);
   }
 }
