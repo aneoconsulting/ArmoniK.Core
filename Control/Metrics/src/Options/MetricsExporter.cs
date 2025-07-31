@@ -23,11 +23,54 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Control.Metrics.Options;
 
+/// <summary>
+///   Represents the configuration settings for the metrics exporter.
+/// </summary>
 [PublicAPI]
 public class MetricsExporter
 {
+  /// <summary>
+  ///   The configuration section path used to retrieve settings related to the metrics exporter.
+  /// </summary>
   public const string SettingSection = nameof(MetricsExporter);
 
-  public string   Metrics       { get; set; } = "";
+  /// <summary>
+  ///   Gets or sets the metrics to be exported.
+  ///   This property defines the specific metrics that the exporter will handle.
+  /// </summary>
+  /// <remarks>
+  ///   The metrics are separated by commas and can the following:
+  ///   <list type="bullet">
+  ///     <item>Creating</item>
+  ///     <item>Submitted</item>
+  ///     <item>Dispatched</item>
+  ///     <item>Completed</item>
+  ///     <item>Error</item>
+  ///     <item>Timeout</item>
+  ///     <item>Cancelling</item>
+  ///     <item>Cancelled</item>
+  ///     <item>Processing</item>
+  ///     <item>Processed</item>
+  ///     <item>Retried</item>
+  ///     <item>Pending</item>
+  ///     <item>Paused</item>
+  ///     <item>Queued</item>
+  ///   </list>
+  /// </remarks>
+  /// <remarks>
+  ///   The following metrics are always present:
+  ///   <list type="bullet">
+  ///     <item>Submitted</item>
+  ///     <item>Dispatched</item>
+  ///     <item>Processing</item>
+  ///     <item>Queued</item>
+  ///   </list>
+  /// </remarks>
+  public string Metrics { get; set; } = "";
+
+  /// <summary>
+  ///   Gets or sets the cache validity duration.
+  ///   This defines the time span for which the cached metrics are considered valid.
+  /// </summary>
   public TimeSpan CacheValidity { get; set; } = TimeSpan.FromSeconds(5);
 }
