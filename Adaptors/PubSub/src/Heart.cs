@@ -21,6 +21,9 @@ using System.Threading.Tasks;
 
 namespace ArmoniK.Core.Adapters.PubSub;
 
+/// <summary>
+///   Represents a heartbeat mechanism that executes a specified function at regular intervals.
+/// </summary>
 public class Heart
 {
   private readonly TimeSpan          beatPeriod_;

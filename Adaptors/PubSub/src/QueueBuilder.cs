@@ -30,6 +30,10 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.PubSub;
 
+/// <summary>
+///   Class to build and configure services for Google Cloud Pub/Sub integration
+///   through Dependency Injection.
+/// </summary>
 [PublicAPI]
 public class QueueBuilder : IDependencyInjectionBuildable
 {
