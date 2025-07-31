@@ -37,6 +37,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+/// <inheritdoc cref="ArmoniK.Core.Common.Storage.ISessionTable" />
 public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISessionTable
 {
   /// <inheritdoc />

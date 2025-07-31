@@ -21,6 +21,9 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Options;
 
+/// <summary>
+///   Represents the configuration settings for MongoDB table storage.
+/// </summary>
 [PublicAPI]
 public class TableStorage
 {

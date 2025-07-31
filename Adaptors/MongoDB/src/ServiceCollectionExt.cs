@@ -46,8 +46,19 @@ using ConfigurationExt = ArmoniK.Core.Utils.ConfigurationExt;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+/// <summary>
+///   Provides extension methods for configuring MongoDB components in the service collection.
+/// </summary>
 public static class ServiceCollectionExt
 {
+  /// <summary>
+  ///   Adds MongoDB components to the specified service collection.
+  ///   This method configures the MongoDB client and storage services based on the provided configuration.
+  /// </summary>
+  /// <param name="services">The service collection to which the MongoDB components will be added.</param>
+  /// <param name="configuration">The configuration manager used to retrieve MongoDB settings.</param>
+  /// <param name="logger">The logger instance used for logging purposes.</param>
+  /// <returns>The updated service collection with MongoDB components added.</returns>
   [PublicAPI]
   public static IServiceCollection AddMongoComponents(this IServiceCollection services,
                                                       ConfigurationManager    configuration,
@@ -191,6 +202,13 @@ public static class ServiceCollectionExt
     return client;
   }
 
+  /// <summary>
+  ///   Adds MongoDB storage services to the specified service collection.
+  /// </summary>
+  /// <param name="services">The service collection to which the MongoDB storage services will be added.</param>
+  /// <param name="configuration">The configuration manager used to retrieve MongoDB settings.</param>
+  /// <param name="logger">The logger instance used for logging purposes.</param>
+  /// <returns>The updated service collection with MongoDB storage services added.</returns>
   [PublicAPI]
   public static IServiceCollection AddMongoStorages(this IServiceCollection services,
                                                     ConfigurationManager    configuration,
@@ -230,6 +248,13 @@ public static class ServiceCollectionExt
     return services;
   }
 
+  /// <summary>
+  ///   Adds a MongoDB client to the specified service collection.
+  /// </summary>
+  /// <param name="services">The service collection to which the MongoDB client will be added.</param>
+  /// <param name="configuration">The configuration manager used to retrieve MongoDB settings.</param>
+  /// <param name="logger">The logger instance used for logging purposes.</param>
+  /// <returns>The updated service collection with the MongoDB client added.</returns>
   public static IServiceCollection AddMongoClient(this IServiceCollection services,
                                                   ConfigurationManager    configuration,
                                                   ILogger                 logger)

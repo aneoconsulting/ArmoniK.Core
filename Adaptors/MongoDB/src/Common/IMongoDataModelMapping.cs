@@ -23,8 +23,15 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Common;
 
+/// <summary>
+///   Defines the contract for mapping a data model to a MongoDB collection.
+/// </summary>
+/// <typeparam name="T">The type of the data model.</typeparam>
 public interface IMongoDataModelMapping<T>
 {
+  /// <summary>
+  ///   Gets the name of the MongoDB collection associated with the data model.
+  /// </summary>
   string CollectionName { get; }
 
   /// <summary>

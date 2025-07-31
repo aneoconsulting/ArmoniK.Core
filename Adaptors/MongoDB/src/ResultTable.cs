@@ -38,6 +38,7 @@ using MongoDB.Driver.Linq;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
 
+/// <inheritdoc cref="ArmoniK.Core.Common.Storage.IResultTable" />
 public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTable
 {
   /// <inheritdoc />
