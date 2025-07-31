@@ -17,6 +17,9 @@
 
 namespace ArmoniK.Core.Adapters.S3.Options;
 
+/// <summary>
+///   Represents the configuration settings for connecting to AWS S3 object storage service.
+/// </summary>
 public class S3
 {
   /// <summary>
