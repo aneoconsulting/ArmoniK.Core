@@ -156,7 +156,7 @@ public class ExpressionBuilders
                                        typeof(string));
 
     var methodInfo = typeof(string).GetMethods()
-                                   .First(m => m.Name == method                                   && m.GetParameters()
+                                   .First(m => m.Name == method                  && m.GetParameters()
                                                                                      .Length == 1 && m.GetParameters()
                                                                                                       .First()
                                                                                                       .ParameterType == typeof(string));
