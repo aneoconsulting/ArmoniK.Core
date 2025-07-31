@@ -38,6 +38,34 @@ public class MetricsExporter
   ///   Gets or sets the metrics to be exported.
   ///   This property defines the specific metrics that the exporter will handle.
   /// </summary>
+  /// <remarks>
+  ///   The metrics are separated by commas and can the following:
+  ///   <list type="bullet">
+  ///     <item>Creating</item>
+  ///     <item>Submitted</item>
+  ///     <item>Dispatched</item>
+  ///     <item>Completed</item>
+  ///     <item>Error</item>
+  ///     <item>Timeout</item>
+  ///     <item>Cancelling</item>
+  ///     <item>Cancelled</item>
+  ///     <item>Processing</item>
+  ///     <item>Processed</item>
+  ///     <item>Retried</item>
+  ///     <item>Pending</item>
+  ///     <item>Paused</item>
+  ///     <item>Queued</item>
+  ///   </list>
+  /// </remarks>
+  /// <remarks>
+  ///   The following metrics are always present:
+  ///   <list type="bullet">
+  ///     <item>Submitted</item>
+  ///     <item>Dispatched</item>
+  ///     <item>Processing</item>
+  ///     <item>Queued</item>
+  ///   </list>
+  /// </remarks>
   public string Metrics { get; set; } = "";
 
   /// <summary>
