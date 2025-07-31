@@ -26,13 +26,28 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Adapters.QueueCommon;
 
+/// <summary>
+///   Represents the base class for queue storage implementations
+/// </summary>
 public class QueueStorageBase : IQueueStorage
 {
-  private const   int  MaxInternalQueuePriority = 10;
+  private const int MaxInternalQueuePriority = 10;
+
+  /// <inheritdoc cref="ArmoniK.Core.Adapters.QueueCommon.Amqp" />
   public readonly Amqp Options;
 
+  /// <summary>
+  ///   Gets a value indicating whether the queue storage has been initialized.
+  /// </summary>
   public bool IsInitialized;
 
+  /// <summary>
+  ///   Initializes a new instance of the <see cref="QueueStorageBase" /> class with the specified AMQP options.
+  /// </summary>
+  /// <param name="options">The AMQP options to configure the queue storage.</param>
+  /// <exception cref="ArgumentOutOfRangeException">
+  ///   Thrown when any of the required options are not defined or invalid.
+  /// </exception>
   protected QueueStorageBase(Amqp options)
   {
     if (string.IsNullOrEmpty(options.Host))
