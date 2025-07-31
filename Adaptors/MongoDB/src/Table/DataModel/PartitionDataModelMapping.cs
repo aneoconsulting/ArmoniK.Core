@@ -27,6 +27,9 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
+/// <summary>
+///   Implementation of <see cref="IMongoDataModelMapping{T}" /> for <see cref="PartitionData" />
+/// </summary>
 public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
 {
   static PartitionDataModelMapping()

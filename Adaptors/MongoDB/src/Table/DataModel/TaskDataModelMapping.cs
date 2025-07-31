@@ -28,6 +28,9 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
+/// <summary>
+///   Implementation of <see cref="IMongoDataModelMapping{T}" /> for <see cref="TaskData" />
+/// </summary>
 public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
 {
   static TaskDataModelMapping()
@@ -215,7 +218,7 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
   /// <inheritdoc />
   public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                          Options.MongoDB      options)
-    => await sessionHandle.shardCollection(options,
+    => await sessionHandle.ShardCollection(options,
                                            CollectionName)
                           .ConfigureAwait(false);
 }

@@ -52,6 +52,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
   ///   Initializes a new instance of the <see cref="MongoCollectionProvider{TData, TModelMapping}" /> class.
   /// </summary>
   /// <param name="options">The MongoDB options used for configuration, including data retention settings.</param>
+  /// <param name="initDatabase">The init data used to populate the database.</param>
   /// <param name="sessionProvider">The session provider used to manage MongoDB sessions.</param>
   /// <param name="mongoDatabase">The MongoDB database instance to which the collection belongs.</param>
   /// <param name="logger">The logger instance used for logging purposes.</param>

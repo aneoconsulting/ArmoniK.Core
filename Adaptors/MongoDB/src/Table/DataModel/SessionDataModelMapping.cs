@@ -26,7 +26,10 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 
-public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
+/// <summary>
+///   Implementation of <see cref="IMongoDataModelMapping{T}" /> for <see cref="SessionData" />
+/// </summary>
+public class SessionDataModelMapping : IMongoDataModelMapping<SessionData>
 {
   static SessionDataModelMapping()
   {
@@ -141,7 +144,7 @@ public record SessionDataModelMapping : IMongoDataModelMapping<SessionData>
   /// <inheritdoc />
   public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                          Options.MongoDB      options)
-    => await sessionHandle.shardCollection(options,
+    => await sessionHandle.ShardCollection(options,
                                            CollectionName)
                           .ConfigureAwait(false);
 }
