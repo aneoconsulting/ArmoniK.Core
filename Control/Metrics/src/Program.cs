@@ -22,6 +22,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Control.Metrics.Options;
@@ -66,6 +68,9 @@ public static class Program
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
              .AddSingleton(builder.Configuration.GetInitializedValue<MetricsExporter>(MetricsExporter.SettingSection))
+             .AddInitializedOption<InitServices>(builder.Configuration,
+                                                 InitServices.SettingSection)
+             .AddSingleton<InitDatabase>()
              .AddHostedService<ArmoniKMeter>()
              .AddControllers();
 

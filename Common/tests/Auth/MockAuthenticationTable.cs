@@ -46,7 +46,7 @@ public class MockAuthenticationTable : IAuthenticationTable
                                                               fingerprint))
                                   ?.ToUserAuthenticationResult());
 
-  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
+  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(int?              id,
                                                                   string?           username,
                                                                   CancellationToken cancellationToken)
     => Task.FromResult(identities_.Find(i => id is not null

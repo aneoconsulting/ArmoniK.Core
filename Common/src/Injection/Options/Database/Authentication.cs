@@ -15,31 +15,32 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 
-namespace ArmoniK.Core.Common.Auth.Authentication;
+namespace ArmoniK.Core.Common.Injection.Options.Database;
 
 /// <summary>
-///   Object containing the authentication result from database
+///   Options fill authentication related data
 /// </summary>
-/// <param name="Id">User Id</param>
-/// <param name="Username">User name</param>
-/// <param name="Roles">User roles</param>
-/// <param name="Permissions">User permissions</param>
-public record UserAuthenticationResult(int                 Id,
-                                       string              Username,
-                                       IEnumerable<string> Roles,
-                                       IEnumerable<string> Permissions)
+public record Authentication
 {
   /// <summary>
-  ///   Creates an empty result
+  ///   Path to the section containing the values in the configuration object
   /// </summary>
-  public UserAuthenticationResult()
-    : this(0,
-           "",
-           Array.Empty<string>(),
-           Array.Empty<string>())
-  {
-  }
+  public const string SettingSection = nameof(Authentication);
+
+  /// <summary>
+  ///   User certificates used for authentication in a JSON string
+  /// </summary>
+  public List<string> UserCertificates { get; init; } = new();
+
+  /// <summary>
+  ///   Roles used for authentication in a JSON string
+  /// </summary>
+  public List<string> Roles { get; init; } = new();
+
+  /// <summary>
+  ///   Users used for authentication in a JSON string
+  /// </summary>
+  public List<string> Users { get; init; } = new();
 }

@@ -31,6 +31,7 @@ using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
@@ -101,6 +102,9 @@ public static class Program
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
                                                             Common.Injection.Options.Submitter.SettingSection)
+             .AddInitializedOption<InitServices>(builder.Configuration,
+                                                 InitServices.SettingSection)
+             .AddSingleton<InitDatabase>()
              .AddSingleton(sp => new ExceptionManager.Options(TimeSpan.Zero,
                                                               sp.GetRequiredService<Common.Injection.Options.Submitter>()
                                                                 .MaxErrorAllowed))
@@ -261,6 +265,12 @@ public static class Program
 
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
+
+      if (app.Services.GetRequiredService<InitServices>()
+             .StopAfterInit)
+      {
+        return 0;
+      }
 
       await app.RunAsync()
                .ConfigureAwait(false);

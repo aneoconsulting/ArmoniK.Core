@@ -19,7 +19,6 @@ using System.Collections.Generic;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 
-using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
@@ -34,8 +33,8 @@ namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 /// <param name="UserData">List of users that have the id UserId</param>
 [BsonIgnoreExtraElements]
 public record AuthDataAfterLookup([property: BsonId]
-                                  ObjectId AuthId,
-                                  ObjectId   UserId,
+                                  int AuthId,
+                                  int        UserId,
                                   string     Cn,
                                   string     Fingerprint,
                                   UserData[] UserData);
@@ -48,7 +47,7 @@ public record AuthDataAfterLookup([property: BsonId]
 /// <param name="Roles">List of roles of the user</param>
 [BsonIgnoreExtraElements]
 public record UserDataAfterLookup([property: BsonId]
-                                  ObjectId UserId,
+                                  int UserId,
                                   string                Username,
                                   IEnumerable<RoleData> Roles);
 
@@ -60,7 +59,7 @@ public record UserDataAfterLookup([property: BsonId]
 /// <param name="Roles">User's roles</param>
 /// <param name="Permissions">User's permissions</param>
 public record MongoAuthResult([property: BsonId]
-                              ObjectId Id,
+                              int Id,
                               string              Username,
                               IEnumerable<string> Roles,
                               IEnumerable<string> Permissions)
@@ -70,7 +69,7 @@ public record MongoAuthResult([property: BsonId]
   /// </summary>
   /// <returns>UserAuthenticationResult from this object</returns>
   public UserAuthenticationResult ToUserAuthenticationResult()
-    => new(IdSerializer.Deserialize(Id),
+    => new(Id,
            Username,
            Roles,
            Permissions);

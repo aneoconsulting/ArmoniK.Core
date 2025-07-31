@@ -47,7 +47,7 @@ public interface IAuthenticationTable : IInitializable
   /// <param name="username">User name</param>
   /// <param name="cancellationToken">Cancellation token</param>
   /// <returns>User authentication data matching the id, if not null, otherwise the username, null if not found</returns>
-  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
+  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(int?              id,
                                                                   string?           username,
                                                                   CancellationToken cancellationToken = default);
 
