@@ -62,7 +62,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+      uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
       with:
         tool: just
 
@@ -138,7 +138,7 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+      uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
       with:
         tool: just
 
@@ -282,7 +282,7 @@ jobs:
       uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3  
 
     - name: Setup just
-      uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+      uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
       with:
         tool: just
 
@@ -322,7 +322,7 @@ jobs:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     - name: Analyze for critical and high CVEs
-      uses: docker/scout-action@aceeb83b88f2ae54376891227858dda7af647183 # v1
+      uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1
       with:
         command: cves
         image: "${{ matrix.image }}:${{ needs.versionning.outputs.version }}"
@@ -364,7 +364,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+        uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
         with:
           tool: just
 
@@ -489,7 +489,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+        uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
         with:
           tool: just
       
@@ -780,7 +780,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+        uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
         with:
           tool: just
 
@@ -867,7 +867,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+        uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
         with:
           tool: just
 
@@ -988,7 +988,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+        uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
         with:
           tool: just
 
@@ -1063,7 +1063,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+        uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
         with:
           tool: just
 
@@ -1136,7 +1136,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@c99cc51b309eee71a866715cfa08c922f11cf898 # v2
+        uses: taiki-e/install-action@d31232495ad76f47aad66e3501e47780b49f0f3e # v2
         with:
           tool: just
 
