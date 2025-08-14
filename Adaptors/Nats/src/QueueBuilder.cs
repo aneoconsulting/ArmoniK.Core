@@ -1,55 +1,56 @@
 // This file is part of the ArmoniK project
-//
-// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
-//
+// 
+// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-// Install NuGet package `NATS.Net`
 using NATS.Client.JetStream;
-using NATS.Client.JetStream.Models;
 using NATS.Net;
-
-using System;
 
 namespace ArmoniK.Core.Adapters.Nats;
 
 public class QueueBuilder : IDependencyInjectionBuildable
 {
-  public void Build(IServiceCollection serviceCollection,
-                ConfigurationManager configuration,
-                ILogger logger)
+  /// <inheritdoc />
+  /// <remarks>
+  ///   Registers all NATS-related services into the dependency injection container.
+  ///   - Loads NATS options from configuration (throws if missing).
+  ///   - Registers the NATS options instance as a singleton.
+  ///   - Creates and registers a JetStream context (INatsJSContext) from a NatsClient.
+  ///   - Registers queue storage implementations: PullQueueStorage and PushQueueStorage.
+  ///   <remarks />
+  public void Build(IServiceCollection   serviceCollection,
+                    ConfigurationManager configuration,
+                    ILogger              logger)
   {
     var natsOptions = configuration.GetSection(Nats.SettingSection)
-                                     .Get<Nats>() ?? throw new InvalidOperationException("Options not found");
-
+                                   .Get<Nats>() ?? throw new InvalidOperationException("Options not found");
+    Console.WriteLine(natsOptions.Url);
     serviceCollection.AddSingleton(natsOptions);
-
-    // Access JetStream for managing streams and consumers as well as for
-    // publishing and consuming messages to and from the stream.
-    // Register connection singleton (shared connection)
     serviceCollection.AddSingleton<INatsJSContext>(sp =>
-    {
-      var nc = new NatsClient(natsOptions.Url);
-      return nc.CreateJetStreamContext();
-    });
+                                                   {
+                                                     var nc = new NatsClient(natsOptions.Url);
+                                                     return nc.CreateJetStreamContext();
+                                                   });
 
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
     serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
