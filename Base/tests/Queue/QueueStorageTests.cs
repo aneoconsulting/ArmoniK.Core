@@ -79,8 +79,6 @@ public class QueueStorageTests
                                          adapterAbsolutePath);
     }
 
-    Environment.SetEnvironmentVariable("Amqp__PartitionId",
-                                       "TestPartition");
     var configuration = new ConfigurationManager();
 
 

@@ -36,7 +36,7 @@ internal class PubSub
   public string Prefix { get; set; } = string.Empty;
 
   /// <summary>
-  ///   Minimum duration to retain a message after it it published to the topic
+  ///   Minimum duration to retain a message after it is published to the topic
   /// </summary>
   public TimeSpan MessageRetention { get; set; } = TimeSpan.FromDays(1);
 
