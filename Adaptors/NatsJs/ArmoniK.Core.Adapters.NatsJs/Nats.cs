@@ -1,0 +1,55 @@
+// This file is part of the ArmoniK project
+//
+// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+//
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace ArmoniK.Core.Adapters.Nats; 
+
+internal class Nats
+{
+  /// <summary>
+  /// The configuration section name used to bind NATS settings from configuration sources.
+  /// </summary>
+  public const string SettingSection = nameof(Nats);
+
+  /// <summary>
+  /// The URL of the NATS server to connect to.
+  /// This should include protocol, host, and port, e.g. "nats://localhost:4222".
+  /// </summary>
+  public string Url { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Number of priority levels supported. Each priority level will create its own SQS topic.
+  /// </summary>
+  public int MaxPriority { get; set; } = 0;
+
+  /// <summary>
+  ///   Acknowledgment deadline in seconds: If a message wasn't acknowledged within this deadline, it will be
+  ///   redelivered .
+  /// </summary>
+  public int AckWait { get; set; } = 120;
+
+  /// <summary>
+  ///   Time  in seconds between two modifications of acknowledgment deadline
+  /// </summary>
+  public int AckExtendDeadlineStep { get; set; } = 60;
+
+}
