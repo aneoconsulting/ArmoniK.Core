@@ -26,17 +26,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.5.1">
+    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.6.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NATS.Client" Version="1.1.8" />
-    <PackageReference Include="NATS.Client.JetStream" Version="2.6.4" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.1">
+    <PackageReference Include="NATS.Client.JetStream" Version="2.6.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.8">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="NATS.Net" Version="2.6.4" />
+    <PackageReference Include="NATS.Net" Version="2.6.6" />
   </ItemGroup>
 
   <ItemGroup>

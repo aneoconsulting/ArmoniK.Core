@@ -33,13 +33,13 @@ public class Heart
   private CancellationTokenSource? stoppedHeartCts_;
 
   /// <summary>
-  /// <param name="pulse">
-  ///   The function to execute at each beat
-  ///   It returns a predicate indicating if the heart must continue beating
-  /// </param>
-  /// <param name="beatPeriod">Defines the timespan between two heartbeats</param>
-  /// <param name="cancellationToken"></param>
-  /// <returns></returns>
+  ///   <param name="pulse">
+  ///     The function to execute at each beat
+  ///     It returns a predicate indicating if the heart must continue beating
+  ///   </param>
+  ///   <param name="beatPeriod">Defines the timespan between two heartbeats</param>
+  ///   <param name="cancellationToken"></param>
+  ///   <returns></returns>
   /// </summary>
   public Heart(Func<CancellationToken, Task> pulse,
                TimeSpan                      beatPeriod,

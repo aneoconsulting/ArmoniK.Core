@@ -1,19 +1,24 @@
 // This file is part of the ArmoniK project
-//
-// Copyright (C) ANEO, 2021-$CURRENT_YEAR$. All rights reserved.
-//
+// 
+// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 
@@ -21,55 +26,50 @@ using Microsoft.Extensions.Logging;
 
 using NATS.Client.JetStream;
 
-using System;
-using System.Diagnostics;
-
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-
 namespace ArmoniK.Core.Adapters.Nats;
 
 internal class QueueMessageHandler : IQueueMessageHandler
 {
-
-  private readonly INatsJSContext js_;
+  private readonly Heart             autoExtendAckDeadline_;
+  private readonly INatsJSContext    js_;
+  private readonly ILogger           logger_;
   private readonly NatsJSMsg<string> message_;
-  private StackTrace? stackTrace_;
-  private Heart autoExtendAckDeadline_;
-  private readonly ILogger logger_;
+  private          StackTrace?       stackTrace_;
 
 
-  public QueueMessageHandler(NatsJSMsg<string> message, INatsJSContext js, int AckWait, int ackExtendDeadlineStep,
-                             ILogger logger,
+  public QueueMessageHandler(NatsJSMsg<string> message,
+                             INatsJSContext    js,
+                             int               AckWait,
+                             int               ackExtendDeadlineStep,
+                             ILogger           logger,
                              CancellationToken cancellationToken)
   {
-    js_ = js;
-    message_ = message;
-    MessageId = message.Data!;
-    TaskId = message.Data!;
+    js_               = js;
+    message_          = message;
+    MessageId         = message.Data!;
+    TaskId            = message.Data!;
     ReceptionDateTime = DateTime.UtcNow;
-    Status = QueueMessageStatus.Running;
-    logger_ = logger;
-    stackTrace_ = new StackTrace(true);
+    Status            = QueueMessageStatus.Running;
+    logger_           = logger;
+    stackTrace_       = new StackTrace(true);
     autoExtendAckDeadline_ = new Heart(ModifyAckDeadline,
-                                   TimeSpan.FromSeconds(ackExtendDeadlineStep),
-                                   CancellationToken);
+                                       TimeSpan.FromSeconds(ackExtendDeadlineStep),
+                                       CancellationToken);
     autoExtendAckDeadline_.Start();
-
   }
-  public CancellationToken CancellationToken { get ; set ; }
-  public string MessageId { get; }
-  public string TaskId { get; }
-  public QueueMessageStatus Status { get; set; }
-  public DateTime ReceptionDateTime { get; init; }
+
+  public CancellationToken  CancellationToken { get; set; }
+  public string             MessageId         { get; }
+  public string             TaskId            { get; }
+  public QueueMessageStatus Status            { get; set; }
+  public DateTime           ReceptionDateTime { get; init; }
+
   public async ValueTask DisposeAsync()
   {
     stackTrace_ = null;
 
-    await autoExtendAckDeadline_.Stop().ConfigureAwait(false);
+    await autoExtendAckDeadline_.Stop()
+                                .ConfigureAwait(false);
 
     switch (Status)
     {
@@ -77,12 +77,14 @@ internal class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Failed:
       case QueueMessageStatus.Running:
       case QueueMessageStatus.Postponed:
-        await message_.AckProgressAsync().ConfigureAwait(false);
+        await message_.AckProgressAsync()
+                      .ConfigureAwait(false);
         break;
       case QueueMessageStatus.Cancelled:
       case QueueMessageStatus.Processed:
       case QueueMessageStatus.Poisonous:
-        await message_.AckAsync().ConfigureAwait(false);
+        await message_.AckAsync()
+                      .ConfigureAwait(false);
         break;
       default:
         throw new ArgumentOutOfRangeException();
@@ -92,7 +94,9 @@ internal class QueueMessageHandler : IQueueMessageHandler
   }
 
   public async Task ModifyAckDeadline(CancellationToken cancellationToken)
-  => await message_.AckProgressAsync().ConfigureAwait(false);
+    => await message_.AckProgressAsync()
+                     .ConfigureAwait(false);
+
   ~QueueMessageHandler()
   {
     if (stackTrace_ is null)
@@ -102,11 +106,11 @@ internal class QueueMessageHandler : IQueueMessageHandler
 
     logger_.LogError("QueueMessageHandler for Message {MessageId} and Task {TaskId} was not disposed: Created {MessageCreationStackTrace}",
                      MessageId,
-    TaskId,
+                     TaskId,
                      stackTrace_);
     DisposeAsync()
-  .AsTask()
-  .GetAwaiter()
-  .GetResult();
+      .AsTask()
+      .GetAwaiter()
+      .GetResult();
   }
 }
