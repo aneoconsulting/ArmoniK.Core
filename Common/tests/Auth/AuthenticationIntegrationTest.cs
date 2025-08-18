@@ -289,7 +289,7 @@ public class AuthenticationIntegrationTest
     NoImpersonate,
   }
 
-  public const int    AllRightsId       = 0;
+  public const string AllRightsId       = "AllRightsId";
   public const string AllRightsUsername = "AllRightsUsername";
   public const string AllRightsRole     = "AllRights";
 
@@ -313,7 +313,7 @@ public class AuthenticationIntegrationTest
         ServicesPermissions.PermissionsLists[ServicesPermissions.All],
         Authenticator.SchemeName),
     // No Rights
-    new(1,
+    new("NoRightsId1",
         "NoRightsUsername1",
         new[]
         {
@@ -327,7 +327,7 @@ public class AuthenticationIntegrationTest
         Array.Empty<Permission>(),
         Authenticator.SchemeName),
     // Can impersonate
-    new(2,
+    new("CanImpersonateId1",
         "CanImpersonateUsername1",
         new[]
         {
@@ -346,14 +346,14 @@ public class AuthenticationIntegrationTest
         },
         Authenticator.SchemeName),
     // Has no certificate
-    new(3,
+    new("NoCertificateId",
         "NoCertificateUsername",
         Array.Empty<MockIdentity.MockCertificate>(),
         Array.Empty<string>(),
         Array.Empty<Permission>(),
         null),
     // Has half of the permissions
-    new(4,
+    new("SomeRightsId",
         "SomeRightsUsername",
         new[]
         {
@@ -369,7 +369,7 @@ public class AuthenticationIntegrationTest
                                    index) => index % 2 == 0),
         Authenticator.SchemeName),
     // Has the other half of the permissions
-    new(5,
+    new("OtherRightsId",
         "OtherRightsUsername",
         new[]
         {
@@ -422,9 +422,9 @@ public class AuthenticationIntegrationTest
     {
       headers.Add(AuthenticatorOptions.DefaultAuth.ImpersonationIdHeader,
                   (int)impersonate < 0
-                    ? "404"
+                    ? "DoesntExist"
                     : Identities[(int)impersonate]
-                      .UserId.ToString());
+                      .UserId);
     }
     else if (impersonationType == ImpersonationType.ImpersonateUsername)
     {

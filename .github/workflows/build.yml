@@ -461,40 +461,39 @@ jobs:
       fail-fast: false
       matrix:
         target:
-          - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: pubsub, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: sqs, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: rabbitmq, object: redis, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: pubsub, object: redis, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: sqs, object: redis, log-level: Information, socket_type: unixdomainsocket }
 
-          - { queue: activemq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
-          - { queue: rabbitmq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
-          - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
-          - { queue: pubsub, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
-          - { queue: sqs, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
+          - { queue: activemq, object: redis, log-level: Information, socket_type: tcp }
+          - { queue: rabbitmq, object: redis, log-level: Information, socket_type: tcp }
+          - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: tcp }
+          - { queue: pubsub, object: redis, log-level: Information, socket_type: tcp }
+          - { queue: sqs, object: redis, log-level: Information, socket_type: tcp }
 
-          - { queue: activemq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true }
-          - { queue: rabbitmq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq091, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: pubsub, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: sqs, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: activemq, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
+          - { queue: rabbitmq, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
+          - { queue: rabbitmq091, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
+          - { queue: pubsub, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
+          - { queue: sqs, object: redis, log-level: Verbose, socket_type: unixdomainsocket }
 
-          - { queue: activemq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq091, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: pubsub, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: sqs, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: activemq, object: minio, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: rabbitmq, object: minio, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: rabbitmq091, object: minio, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: pubsub, object: minio, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: sqs, object: minio, log-level: Information, socket_type: unixdomainsocket }
 
-          - { queue: activemq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
-          - { queue: rabbitmq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
-          - { queue: rabbitmq091, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
-          - { queue: pubsub, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
-          - { queue: sqs, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
+          - { queue: activemq, object: embed, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: rabbitmq, object: embed, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: rabbitmq091, object: embed, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: pubsub, object: embed, log-level: Information, socket_type: unixdomainsocket }
+          - { queue: sqs, object: embed, log-level: Information, socket_type: unixdomainsocket }
 
-          - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true }
-          - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: false }
+          - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket }
 
-    name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.socket_type }} ${{ matrix.target.cinit }}
+    name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.socket_type }}
     steps:
       - name: Checkout
         uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
@@ -525,7 +524,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=${{ matrix.target.log-level }} tag=${VERSION} queue=${{ matrix.target.queue }} object=${{ matrix.target.object }} socket_type=${{ matrix.target.socket_type }} cinit=${{ matrix.target.cinit }} worker=htcmock deploy
+            just log_level=${{ matrix.target.log-level }} tag=${VERSION} queue=${{ matrix.target.queue }} object=${{ matrix.target.object }} socket_type=${{ matrix.target.socket_type }} worker=htcmock deploy
           sleep 10
 
       - name: Print And Time Metrics
@@ -633,8 +632,8 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}.json.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-monitor.tar.gz
 
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -646,14 +645,14 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-container-logs.tar.gz
       - name: Export and upload database
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-database.tar.gz
 
   testWindowsDocker:
     needs:

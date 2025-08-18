@@ -242,9 +242,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
         {
           var prevIdentity = identity;
           identity = await GetImpersonatedIdentityAsync(identity,
-                                                        impersonationId is null
-                                                          ? null
-                                                          : int.Parse(impersonationId),
+                                                        impersonationId,
                                                         impersonationUsername)
                        .ConfigureAwait(false);
           logger_.LogInformation("User with id {userId} and name {userName} impersonated the user with id {impersonatedId} and name {impersonatedName}. Authentication key : {keyHash}",
@@ -318,7 +316,7 @@ public class Authenticator : AuthenticationHandler<AuthenticatorOptions>
   ///   or the impersonating user doesn't have the permissions to impersonate the specified user
   /// </exception>
   public async Task<ClaimsPrincipal> GetImpersonatedIdentityAsync(ClaimsPrincipal   baseIdentity,
-                                                                  int?              impersonationId,
+                                                                  string?           impersonationId,
                                                                   string?           impersonationUsername,
                                                                   CancellationToken cancellationToken = default)
   {

@@ -147,7 +147,7 @@ variable "compute_plane" {
 variable "partition_data" {
   description = "Template to create multiple partitions"
   type = object({
-    PartitionId          = optional(string, "TestPartition")
+    _id                  = optional(string, "TestPartition")
     Priority             = optional(number, 1)
     PodReserved          = optional(number, 50)
     PodMax               = optional(number, 100)
@@ -269,9 +269,4 @@ variable "tracing_ingestion_ports" {
   })
   default = {
   }
-}
-
-variable "container_init" {
-  type    = bool
-  default = true
 }

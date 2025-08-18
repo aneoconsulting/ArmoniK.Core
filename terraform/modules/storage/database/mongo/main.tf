@@ -55,6 +55,7 @@ locals {
   prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
   mongo_init_repset = templatefile("${path.module}/mongo_init.tpl.js", {
     replica_set_name = var.mongodb_params.replica_set_name
+    partition_data   = jsonencode(values(var.partition_list))
   })
 }
 resource "local_file" "mongo_init" {
