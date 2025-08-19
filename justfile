@@ -15,6 +15,7 @@ replicas     := "3"
 partitions   := "2"
 platform     := ""
 push         := "false"
+latest       := "false"
 load         := "true"
 ingress      := "true"
 prometheus   := "true"
@@ -258,27 +259,19 @@ restart serviceName: (container "restart" serviceName)
 
 # Custom command to build a single image
 build imageTag dockerFile target="":
-  #!/usr/bin/env bash
+  #!/bin/sh
 
-  target_parameter=""
-  if [ "{{target}}" != "" ]; then
-    target_parameter="--target {{target}}"
-  fi
-  platform_parameter=""
-  if [ "{{platform}}" != "" ]; then
-    platform_parameter="--platform {{platform}}"
-  fi
-  push_parameter=""
-  if [ "{{push}}" == "true" ]; then
-    push_parameter="--push --provenance true"
-  fi
-  load_parameter=""
-  if [ "{{load}}" == "true" ]; then
-    load_parameter="--load"
-  fi
+  tag="{{imageTag}}"
+
+  set --
+  [ -z "{{target}}" ] || set -- "$@" --target "{{target}}"
+  [ -z "{{platform}}" ] || set -- "$@" --platform "{{platform}}"
+  [ "{{push}}" != "true" ] || set -- "$@" --push --provenance true
+  [ "{{load}}" != "true" ] || set -- "$@" --load
+  [ "{{latest}}" != "true" ] || set -- "$@" -t "${tag%:*}:latest"
 
   set -x
-  docker buildx build --progress=plain --build-arg VERSION={{tag}} $platform_parameter $load_parameter $push_parameter $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
+  docker buildx build --progress=plain --build-arg VERSION={{tag}} "$@" -t "$tag" -f "{{dockerFile}}" ./
 
 # Build Worker
 buildWorker: (build TF_VAR_worker_image TF_VAR_worker_docker_file_path + "Dockerfile")
