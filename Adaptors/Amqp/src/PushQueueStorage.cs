@@ -29,6 +29,7 @@ using Amqp.Framing;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Utils;
+using ArmoniK.Utils.Pool;
 
 using Microsoft.Extensions.Logging;
 

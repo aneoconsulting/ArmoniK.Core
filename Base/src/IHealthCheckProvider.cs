@@ -19,8 +19,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base.DataStructures;
 
-using JetBrains.Annotations;
-
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Base;
@@ -28,7 +26,6 @@ namespace ArmoniK.Core.Base;
 /// <summary>
 ///   Represents a simpler health check than <see cref="IHealthCheck" />.
 /// </summary>
-[PublicAPI]
 public interface IHealthCheckProvider
 {
   /// <summary>

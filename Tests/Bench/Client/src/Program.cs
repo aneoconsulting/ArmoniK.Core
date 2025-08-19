@@ -37,6 +37,7 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.Client;
 using ArmoniK.Samples.Bench.Client.Options;
 using ArmoniK.Utils;
+using ArmoniK.Utils.Pool;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
