@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 as base-linux
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 as base-linux
 ARG TARGETARCH
 ADD --chmod=755 https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-${TARGETARCH} /tini
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
@@ -6,10 +6,10 @@ RUN mkdir /cache /local_storage /comm && chown armonikuser: /cache /local_storag
 USER armonikuser
 ENTRYPOINT [ "/tini", "-s", "-vv", "--", "dotnet" ]
 
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows
+FROM mcr.microsoft.com/dotnet/aspnet:9.0-nanoserver-ltsc2022 AS base-windows
 ENTRYPOINT ["C:\\Program Files\\dotnet\\dotnet.exe"]
 
-FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:9.0 AS build
 ARG VERSION=1.0.0.0
 ARG TARGETARCH
 ARG TARGETOS
