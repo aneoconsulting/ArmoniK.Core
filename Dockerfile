@@ -1,8 +1,10 @@
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 as base-linux
+ARG TARGETARCH
+ADD --chmod=755 https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-${TARGETARCH} /tini
 RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
 RUN mkdir /cache /local_storage /comm && chown armonikuser: /cache /local_storage /comm
 USER armonikuser
-ENTRYPOINT [ "dotnet" ]
+ENTRYPOINT [ "/tini", "-s", "-vv", "--", "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows
 ENTRYPOINT ["C:\\Program Files\\dotnet\\dotnet.exe"]
