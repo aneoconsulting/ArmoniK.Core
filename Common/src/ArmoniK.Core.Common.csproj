@@ -27,7 +27,7 @@
 
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Core" Version="3.26.1" />
+    <PackageReference Include="ArmoniK.Api.Core" Version="4.0.0-jgupdatedep.2.38910a5" />
     <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.5.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
