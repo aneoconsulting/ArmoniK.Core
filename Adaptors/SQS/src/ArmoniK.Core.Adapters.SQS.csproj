@@ -24,11 +24,11 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.5.1">
+    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.6.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ArmoniK.Utils" Version="0.5.1">
+    <PackageReference Include="ArmoniK.Utils" Version="0.6.1">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
   </ItemGroup>
