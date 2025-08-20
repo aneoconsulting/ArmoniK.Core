@@ -1,7 +1,11 @@
 resource "docker_volume" "socket_vol" {
   count = var.socket_type == "tcp" ? 0 : 1
   name  = "socket_vol${var.replica_counter}"
-
+  driver_opts = {
+    o : "mode=0777"
+    device : "tmpfs"
+    type : "tmpfs"
+  }
 }
 
 resource "docker_volume" "comm_vol" {
@@ -28,6 +32,7 @@ resource "docker_container" "worker" {
 
   env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env, local.common_env)
 
+  user       = 3333
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts
 
