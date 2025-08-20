@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled as base-linux
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS base-linux
 ARG TARGETARCH
 ADD --chmod=755 https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-${TARGETARCH} /tini
 USER $APP_UID
@@ -103,7 +103,7 @@ WORKDIR /src/Control/Submitter/src
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 
-FROM base-${TARGETOS} as polling_agent
+FROM base-${TARGETOS} AS polling_agent
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -125,7 +125,7 @@ EXPOSE 1080
 CMD ["ArmoniK.Core.Compute.PollingAgent.dll"]
 
 
-FROM base-${TARGETOS} as metrics
+FROM base-${TARGETOS} AS metrics
 WORKDIR /app
 COPY --from=build /app/publish/metrics .
 ENV ASPNETCORE_URLS http://+:1080
@@ -133,7 +133,7 @@ EXPOSE 1080
 CMD ["ArmoniK.Core.Control.Metrics.dll"]
 
 
-FROM base-${TARGETOS} as partition_metrics
+FROM base-${TARGETOS} AS partition_metrics
 WORKDIR /app
 COPY --from=build /app/publish/partition_metrics .
 ENV ASPNETCORE_URLS http://+:1080
@@ -141,7 +141,7 @@ EXPOSE 1080
 CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
-FROM base-${TARGETOS} as submitter
+FROM base-${TARGETOS} AS submitter
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
