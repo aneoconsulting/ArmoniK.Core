@@ -22,7 +22,6 @@ variable "mongodb_params" {
     use_direct_connection    = optional(bool, true)
     database_name            = optional(string, "database")
     exposed_port             = optional(number, 27017)
-    windows                  = optional(bool, false)
   })
   default = {}
 }
@@ -274,4 +273,9 @@ variable "tracing_ingestion_ports" {
 variable "container_init" {
   type    = bool
   default = true
+}
+
+variable "windows" {
+  type    = bool
+  default = false
 }
