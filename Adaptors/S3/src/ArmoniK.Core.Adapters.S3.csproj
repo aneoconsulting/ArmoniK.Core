@@ -34,7 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.6.1">
