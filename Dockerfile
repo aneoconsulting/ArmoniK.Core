@@ -104,6 +104,8 @@ RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --
 
 
 FROM base-${TARGETOS} AS polling_agent
+WORKDIR /adapters/queue/sqs
+COPY --from=build /app/publish/sqs .
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
@@ -142,6 +144,8 @@ CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
 FROM base-${TARGETOS} AS submitter
+WORKDIR /adapters/queue/sqs
+COPY --from=build /app/publish/sqs .
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/amqp
