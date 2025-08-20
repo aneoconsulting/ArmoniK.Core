@@ -22,8 +22,6 @@ using ArmoniK.Core.Base;
 using Google.Api.Gax;
 using Google.Cloud.PubSub.V1;
 
-using JetBrains.Annotations;
-
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -34,7 +32,6 @@ namespace ArmoniK.Core.Adapters.PubSub;
 ///   Class to build and configure services for Google Cloud Pub/Sub integration
 ///   through Dependency Injection.
 /// </summary>
-[PublicAPI]
 public class QueueBuilder : IDependencyInjectionBuildable
 {
   /// <inheritdoc />

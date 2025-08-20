@@ -15,14 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
-
 namespace ArmoniK.Core.Adapters.QueueCommon;
 
 /// <summary>
 ///   Represents the configuration settings for the AMQP (Advanced Message Queuing Protocol) connection.
 /// </summary>
-[PublicAPI]
 public class Amqp
 {
   /// <summary>
