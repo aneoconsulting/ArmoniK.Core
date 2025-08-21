@@ -62,3 +62,7 @@ variable "log_driver" {
 variable "container_init" {
   type = bool
 }
+
+variable "windows" {
+  type = bool
+}

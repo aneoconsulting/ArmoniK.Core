@@ -32,6 +32,7 @@ module "database" {
   image          = var.database_image
   network        = docker_network.armonik.id
   mongodb_params = var.mongodb_params
+  windows        = var.windows
 }
 
 module "object_redis" {
@@ -138,6 +139,7 @@ module "compute_plane" {
   log_driver         = module.fluenbit.log_driver
   mounts             = local.mounts
   container_init     = var.container_init
+  windows            = var.windows
 }
 
 module "metrics_exporter" {
