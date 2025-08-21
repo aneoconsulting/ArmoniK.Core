@@ -1,0 +1,230 @@
+name: Microbenchmarks on Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to benchmark'
+        required: true
+        default: 'latest'
+
+env:
+  AWS_DEFAULT_REGION: us-east-1
+  TERRAFORM_VERSION: latest
+  PYTHON_VERSION: "3.12"
+  REMOTE_TFSTATE_BUCKET: "armonik-microbench-backend-tfstate"
+  RUN_ID_UNIQUE: ${{ vars.LOCAL_RUN_ID || github.run_id }}
+jobs:
+  microbenchmarks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    environment: microbench 
+      
+    steps:
+      - name: Checkout ArmoniK.Core
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.release.tag_name || github.event.inputs.release_tag }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Clone ArmoniK.Microbench
+        run: |
+          git clone https://github.com/aneoconsulting/ArmoniK.Microbench.git
+          cd ArmoniK.Microbench
+
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: "latest"
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+        # TODO: Switch to OIDC later          
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4.1.0
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_DEFAULT_REGION }}
+
+      - name: Copy parameters.tfvars
+        run: |
+          # Copy the parameters file from ArmoniK.Core to ArmoniK.Microbench
+          cp Microbenchmarks/parameters.tfvars ArmoniK.Microbench/infrastructure/
+
+      - name: Initialize and Deploy Infrastructure
+        id: deploy
+        run: |
+          cd ArmoniK.Microbench/infrastructure
+
+          cat > backend.tf <<EOF
+          terraform {
+            backend "s3" {
+              bucket = "$REMOTE_TFSTATE_BUCKET"
+              key    = "microbench/${{ env.RUN_ID_UNIQUE }}/terraform.tfstate"
+              region = "us-east-1"
+            }
+          }
+          EOF
+
+          # Initialize Terraform
+          terraform init -backend-config=bucket=$REMOTE_TFSTATE_BUCKET -backend-config=key=microbench/${{ env.RUN_ID_UNIQUE }}/terraform.tfstate
+          
+          # Apply infrastructure with the parameters file
+          terraform apply -var-file="parameters.tfvars" -var="prefix=microbench-${{ env.RUN_ID_UNIQUE }}" -auto-approve
+
+          echo "terraform_state_key=microbench/${{ env.RUN_ID_UNIQUE }}/terraform.tfstate" >> $GITHUB_OUTPUT
+
+      - name: Create Microbenchmark Study
+        id: create_study
+        run: |
+          cd ArmoniK.Microbench
+          
+          # Get release version
+          RELEASE_VERSION="${{ github.event.release.tag_name || github.event.inputs.release_tag }}"
+          STUDY_NAME="release-${RELEASE_VERSION}-$(date +%Y%m%d-%H%M%S)"
+          
+          echo "study_name=${STUDY_NAME}" >> $GITHUB_OUTPUT
+
+          sleep 180s
+          
+          # Create study using the microbenchmark CLI
+          uv run microbenchmark.py study create "${STUDY_NAME}" \
+            --core-version "${RELEASE_VERSION}" \
+            --runner-version "latest" 
+
+      - name: Run Microbenchmarks
+        run: |
+          cd ArmoniK.Microbench
+          
+          STUDY_NAME="${{ steps.create_study.outputs.study_name }}"
+          RUNNER_HOST="${{ steps.deploy.outputs.runner_host }}"
+          RUNNER_KEY="${{ steps.deploy.outputs.runner_key_path }}"
+          
+          # If we have specific config files, use them
+          CONFIG_LIST="${{ steps.find_configs.outputs.config_list }}"
+          
+          if [ -n "$CONFIG_LIST" ]; then
+            # Run benchmarks with individual config files
+            for config in $CONFIG_LIST; do
+              echo "Running benchmark with config: $config"
+              uv run microbenchmark.py study run "$STUDY_NAME" \
+                --runner "./infrastructure/benchmark_configs/runners/benchmark_runner.json" \
+                --config "$config" \
+                --s3-bucket "armonik-microbench-results" \
+                --profile "default" || echo "Benchmark failed for $config, continuing..."
+            done
+          else
+            # Run with directory if configs exist
+            if [ -d "./infrastructure/benchmark_configs" ]; then
+              uv run microbenchmark.py study run "$STUDY_NAME" \
+                --runner "./infrastructure/benchmark_configs/runners/benchmark_runner.json" \
+                --directory "./infrastructure/benchmark_configs" \
+                --s3-bucket "armonik-microbench-results" \
+                --profile "default" || echo "Directory benchmark run failed, continuing..."
+            else
+              echo "No benchmark configurations found to run"
+            fi
+          fi
+
+      - name: Retrieve Results
+        if: always()
+        run: |
+          cd ArmoniK.Microbench
+          
+          STUDY_NAME="${{ steps.create_study.outputs.study_name }}"
+          
+          # Download results locally
+          uv run microbenchmark.py study sync "$STUDY_NAME" \
+            --output-dir "./results" --no-profile || echo "Failed to sync results, continuing..."
+          
+          # # Also retrieve raw results from the runner
+          # python microbenchmark.py runner retrieve-results \
+          #   --host "${{ steps.deploy.outputs.runner_host }}" \
+          #   --key "${{ steps.deploy.outputs.runner_key_path }}" \
+          #   --s3-bucket "armonik-microbench-results" \
+          #   --s3-key "release-${{ github.event.release.tag_name || github.event.inputs.release_tag }}-results.zip" \
+          #   --output-dir "./raw-results" || echo "Failed to retrieve raw results, continuing..."
+
+      - name: Upload Results as Artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: microbench-results-${{ github.event.release.tag_name || github.event.inputs.release_tag }}
+          path: |
+            ArmoniK.Microbench/results/
+            ArmoniK.Microbench/studies/
+          retention-days: 30
+
+      - name: Generate Results Summary
+        if: always()
+        run: |
+          cd ArmoniK.Microbench
+          
+          STUDY_NAME="${{ steps.create_study.outputs.study_name }}"
+          
+          echo "## 🚀 Microbenchmark Results for Release ${{ github.event.release.tag_name || github.event.inputs.release_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Study Name:** $STUDY_NAME" >> $GITHUB_STEP_SUMMARY
+          echo "**Core Version:** ${{ github.event.release.tag_name || github.event.inputs.release_tag }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Date:** $(date -u '+%Y-%m-%d %H:%M:%S UTC')" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          
+          # Try to extract summary information from study file if it exists
+          if [ -f "studies/${STUDY_NAME}.json" ]; then
+            echo "### Study Details" >> $GITHUB_STEP_SUMMARY
+            python -c "
+            import json
+            try:
+                with open('studies/${STUDY_NAME}.json', 'r') as f:
+                    study = json.load(f)
+                if 'runs' in study and study['runs']:
+                    run = study['runs'][-1]  # Get latest run
+                    benchmarks = run.get('benchmarks', {})
+                    total = len(benchmarks)
+                    successful = sum(1 for b in benchmarks.values() if b.get('status') == 'success')
+                    print(f'- **Total Benchmarks:** {total}')
+                    print(f'- **Successful:** {successful}')
+                    print(f'- **Failed:** {total - successful}')
+                    if benchmarks:
+                        print('- **Benchmark Names:**')
+                        for name in benchmarks.keys():
+                            status = benchmarks[name].get('status', 'unknown')
+                            print(f'  - {name}: {status}')
+            except Exception as e:
+                print(f'Could not parse study results: {e}')
+            " >> $GITHUB_STEP_SUMMARY
+          fi
+          
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Results have been uploaded as workflow artifacts and stored in S3." >> $GITHUB_STEP_SUMMARY
+
+      - name: Destroy Infrastructure
+        if: always()
+        run: |
+          cd ArmoniK.Microbench/infrastructure
+
+          echo "Initializing Terraform for destroy..."
+          terraform init -backend-config=bucket=$REMOTE_TFSTATE_BUCKET -backend-config=key=microbench/${{ env.RUN_ID_UNIQUE }}/terraform.tfstate
+       
+          echo "Destroying Terraform infrastructure..."
+          terraform destroy -var-file="parameters.tfvars"  -var="prefix=microbench-${{ env.RUN_ID_UNIQUE }}" -auto-approve || echo "Failed to destroy some resources"
+          
+          # Clean up any remaining state files
+          rm -f terraform.tfstate*
+          rm -f .terraform.lock.hcl
+          rm -rf .terraform/
+
+      - name: Cleanup
+        if: always()
+        run: |
+          # Clean up any sensitive files
+          find . -name "*.pem" -type f -delete
+          find . -name "*key*" -type f -delete
+          find . -name "terraform.tfstate*" -type f -delete
