@@ -32,7 +32,6 @@ resource "docker_container" "worker" {
 
   env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env, local.common_env)
 
-  user       = 3333
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts
 
@@ -74,7 +73,6 @@ resource "docker_container" "polling_agent" {
 
   env = concat(local.env, local.gen_env, local.common_env)
 
-  user       = 3333
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts
 
