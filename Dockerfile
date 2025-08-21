@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/aspnet:8.0-jammy-chiseled AS base-linux
+FROM mcr.microsoft.com/dotnet/aspnet:8.0-azurelinux3.0-distroless AS base-linux
 ARG TARGETARCH
 ADD --chmod=755 https://github.com/krallin/tini/releases/download/v0.19.0/tini-static-${TARGETARCH} /tini
 USER $APP_UID
