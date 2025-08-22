@@ -151,6 +151,19 @@ public class TaskTable : ITaskTable
   }
 
   /// <inheritdoc />
+  public Task DeleteTasksAsync(ICollection<string> taskIds,
+                               CancellationToken   cancellationToken = default)
+  {
+    foreach (var id in taskIds)
+    {
+      taskId2TaskData_.TryRemove(id,
+                                 out _);
+    }
+
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
   public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
                                                                          Expression<Func<TaskData, object?>> orderField,
                                                                          Expression<Func<TaskData, T>>       selector,

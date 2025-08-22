@@ -55,6 +55,10 @@ public class SimpleResultTable : IResultTable
                             CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
+  public Task DeleteResults(ICollection<string> results,
+                            CancellationToken   cancellationToken = default)
+    => Task.CompletedTask;
+
   public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
                                            Expression<Func<Result, T>>    convertor,
                                            CancellationToken              cancellationToken = default)

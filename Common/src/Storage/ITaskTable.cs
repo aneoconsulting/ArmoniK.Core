@@ -115,7 +115,7 @@ public interface ITaskTable : IInitializable
                                CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Remove a task from the data base given its id
+  ///   Remove a task from the database given its id
   /// </summary>
   /// <param name="id">Id of the tasks to be deleted</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -123,10 +123,15 @@ public interface ITaskTable : IInitializable
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   Task DeleteTaskAsync(string            id,
-                       CancellationToken cancellationToken = default);
+                       CancellationToken cancellationToken = default)
+    => DeleteTasksAsync(new List<string>
+                        {
+                          id,
+                        },
+                        cancellationToken);
 
   /// <summary>
-  ///   Remove tasks from the data base given their session id
+  ///   Remove tasks from the database given their session id
   /// </summary>
   /// <param name="sessionId">Id of the session from which tasks should be deleted</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -135,6 +140,20 @@ public interface ITaskTable : IInitializable
   /// </returns>
   Task DeleteTasksAsync(string            sessionId,
                         CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Remove tasks from the database given their ids
+  /// </summary>
+  /// <param name="taskIds">Ids of the tasks to be deleted</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  /// <remarks>
+  ///   Does not throw if the task does not exist.
+  /// </remarks>
+  Task DeleteTasksAsync(ICollection<string> taskIds,
+                        CancellationToken   cancellationToken = default);
 
   /// <summary>
   ///   List all tasks matching the given filter and ordering
