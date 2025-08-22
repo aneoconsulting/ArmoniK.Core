@@ -55,29 +55,33 @@ public class SimpleResultTable : IResultTable
                             CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
+  public Task DeleteResults(ICollection<string> results,
+                            CancellationToken   cancellationToken = default)
+    => Task.CompletedTask;
+
   public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
                                            Expression<Func<Result, T>>    convertor,
                                            CancellationToken              cancellationToken = default)
     => new List<Result>
-       {
-         new(SessionId,
-             OutputId,
-             "",
-             TaskId,
-             TaskId,
-             TaskId,
-             ResultStatus.Completed,
-             new List<string>(),
-             DateTime.Now.ToUniversalTime(),
-             DateTime.Now.ToUniversalTime(),
-             1,
-             new byte[]
-             {
-               42,
-             },
-             false),
-       }.Select(convertor.Compile())
-        .ToAsyncEnumerable();
+      {
+        new(SessionId,
+            OutputId,
+            "",
+            TaskId,
+            TaskId,
+            TaskId,
+            ResultStatus.Completed,
+            new List<string>(),
+            DateTime.Now.ToUniversalTime(),
+            DateTime.Now.ToUniversalTime(),
+            1,
+            new byte[]
+            {
+              42,
+            },
+            false),
+      }.Select(convertor.Compile())
+       .ToAsyncEnumerable();
 
   public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
                                                                               Expression<Func<Result, object?>> orderField,
