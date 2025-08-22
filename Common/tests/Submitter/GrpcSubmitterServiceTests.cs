@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -72,10 +73,11 @@ public class GrpcSubmitterServiceTests
   {
   }
 
-  private readonly Mock<IResultTable>  mockResultTable_  = new();
-  private readonly Mock<ISessionTable> mockSessionTable_ = new();
-  private readonly Mock<ITaskTable>    mockTaskTable_    = new();
-  private readonly Mock<ISubmitter>    mockSubmitter_    = new();
+  private readonly Mock<IResultTable>   mockResultTable_   = new();
+  private readonly Mock<ISessionTable>  mockSessionTable_  = new();
+  private readonly Mock<ITaskTable>     mockTaskTable_     = new();
+  private readonly Mock<ISubmitter>     mockSubmitter_     = new();
+  private readonly Mock<IObjectStorage> mockObjectStorage_ = new();
 
   private readonly TaskOptions taskOptions_ = new()
                                               {
@@ -104,6 +106,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -136,6 +139,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -175,6 +179,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -214,6 +219,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -253,6 +259,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -292,6 +299,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -331,6 +339,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -370,6 +379,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -406,6 +416,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -443,6 +454,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var output = await service.TryGetTaskOutput(new TaskOutputRequest
@@ -473,6 +485,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var output = await service.TryGetTaskOutput(new TaskOutputRequest
@@ -499,6 +512,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -533,6 +547,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -557,6 +572,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -584,6 +600,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -618,6 +635,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -652,6 +670,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -688,6 +707,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var response = await service.CancelTasks(new TaskFilter
@@ -720,6 +740,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -759,6 +780,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -801,6 +823,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -832,6 +855,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -870,6 +894,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -929,6 +954,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -975,6 +1001,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1028,6 +1055,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1094,6 +1122,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var list = new List<CreateLargeTaskRequest>
@@ -1135,6 +1164,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var helper = new TestHelperAsyncStreamReader<CreateLargeTaskRequest>(new List<CreateLargeTaskRequest>());
@@ -1172,6 +1202,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var list = new List<CreateLargeTaskRequest>
@@ -1220,6 +1251,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var list = new List<CreateLargeTaskRequest>
@@ -1275,6 +1307,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1315,6 +1348,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1358,6 +1392,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1405,6 +1440,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1433,6 +1469,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1468,6 +1505,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1503,6 +1541,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1538,6 +1577,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     mockSubmitter.Verify();
@@ -1579,6 +1619,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var response = await service.GetTaskStatus(new GetTaskStatusRequest
@@ -1611,6 +1652,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -1649,6 +1691,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -1685,6 +1728,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -1726,6 +1770,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var response = await service.ListTasks(new TaskFilter
@@ -1761,6 +1806,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -1802,6 +1848,7 @@ public class GrpcSubmitterServiceTests
                                            mock.Object,
                                            mockSessionTable_.Object,
                                            mockResultTable_.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -1844,6 +1891,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mock.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     try
@@ -1888,6 +1936,7 @@ public class GrpcSubmitterServiceTests
                                            mockTaskTable_.Object,
                                            mockSessionTable_.Object,
                                            mock.Object,
+                                           mockObjectStorage_.Object,
                                            NullLogger<GrpcSubmitterService>.Instance);
 
     var response = await service.GetResultStatus(new GetResultStatusRequest

@@ -881,6 +881,10 @@ internal class IntegrationGrpcSubmitterServiceTest
                                  CancellationToken cancellationToken = default)
       => throw new T();
 
+    public Task DeleteTasksAsync(ICollection<string> taskIds,
+                                 CancellationToken   cancellationToken = default)
+      => throw new T();
+
     public Task<(IEnumerable<TData> tasks, long totalCount)> ListTasksAsync<TData>(Expression<Func<TaskData, bool>>    filter,
                                                                                    Expression<Func<TaskData, object?>> orderField,
                                                                                    Expression<Func<TaskData, TData>>   selector,
