@@ -1,0 +1,40 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <RuntimeIdentifiers>win-x64;linux-x64;linux-arm64</RuntimeIdentifiers>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugType>Embedded</DebugType>
+    <IncludeSymbols>true</IncludeSymbols>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.5.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Moq" Version="4.20.72"/>
+    <PackageReference Include="NUnit" Version="3.14.0"/>
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0"/>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Utils\src\ArmoniK.Core.Utils.csproj"/>
+    <ProjectReference Include="..\src\ArmoniK.Core.Control.IntentLog.csproj"/>
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\src\ArmoniK.Core.Control.IntentLog.csproj"/>
+  </ItemGroup>
+
+</Project>
