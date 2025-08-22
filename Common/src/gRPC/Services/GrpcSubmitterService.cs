@@ -18,16 +18,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -43,6 +46,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBase
 {
   private readonly ILogger<GrpcSubmitterService> logger_;
+  private readonly IObjectStorage                objectStorage_;
   private readonly IResultTable                  resultTable_;
   private readonly ISessionTable                 sessionTable_;
   private readonly ISubmitter                    submitter_;
@@ -55,18 +59,21 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   /// <param name="taskTable">The task table for managing tasks.</param>
   /// <param name="sessionTable">The session table for managing sessions.</param>
   /// <param name="resultTable">The result table for managing task inputs and outputs.</param>
+  /// <param name="objectStorage">Interface to manage data</param>
   /// <param name="logger">The logger instance for logging information.</param>
   public GrpcSubmitterService(ISubmitter                    submitter,
                               ITaskTable                    taskTable,
                               ISessionTable                 sessionTable,
                               IResultTable                  resultTable,
+                              IObjectStorage                objectStorage,
                               ILogger<GrpcSubmitterService> logger)
   {
-    submitter_    = submitter;
-    taskTable_    = taskTable;
-    sessionTable_ = sessionTable;
-    resultTable_  = resultTable;
-    logger_       = logger;
+    submitter_     = submitter;
+    taskTable_     = taskTable;
+    sessionTable_  = sessionTable;
+    resultTable_   = resultTable;
+    objectStorage_ = objectStorage;
+    logger_        = logger;
   }
 
 
@@ -231,30 +238,69 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                   context.CancellationToken)
                                      .ConfigureAwait(false);
 
+
       var sessionData = await sessionTask.ConfigureAwait(false);
 
-      await submitter_.FinalizeTaskCreation(requests,
-                                            sessionData,
-                                            request.SessionId,
-                                            context.CancellationToken)
-                      .ConfigureAwait(false);
+      try
+      {
+        await submitter_.FinalizeTaskCreation(requests,
+                                              sessionData,
+                                              request.SessionId,
+                                              context.CancellationToken)
+                        .ConfigureAwait(false);
 
-      return new CreateTaskReply
-             {
-               CreationStatusList = new CreateTaskReply.Types.CreationStatusList
-                                    {
-                                      CreationStatuses =
+        return new CreateTaskReply
+               {
+                 CreationStatusList = new CreateTaskReply.Types.CreationStatusList
                                       {
-                                        requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
-                                                                       {
-                                                                         TaskInfo = new CreateTaskReply.Types.TaskInfo
-                                                                                    {
-                                                                                      TaskId = taskRequest.TaskId,
-                                                                                    },
-                                                                       }),
+                                        CreationStatuses =
+                                        {
+                                          requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
+                                                                         {
+                                                                           TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                      {
+                                                                                        TaskId = taskRequest.TaskId,
+                                                                                      },
+                                                                         }),
+                                        },
                                       },
-                                    },
-             };
+               };
+      }
+      catch (Exception e)
+      {
+        await TaskLifeCycleHelper.DeleteTasksAsync(taskTable_,
+                                                   resultTable_,
+                                                   requests,
+                                                   CancellationToken.None)
+                                 .ConfigureAwait(false);
+        var payloads = requests.Select(creationRequest => creationRequest.PayloadId)
+                               .AsICollection();
+        var outputs = requests.SelectMany(creationRequest => creationRequest.ExpectedOutputKeys)
+                              .ToList();
+        outputs.AddRange(payloads);
+        await resultTable_.GetResults(result => payloads.Contains(result.ResultId),
+                                      result => result.OpaqueId,
+                                      CancellationToken.None)
+                          .ParallelForEach(opaqueId =>
+                                           {
+                                             Task.Factory.StartNew(async () =>
+                                                                   {
+                                                                     await objectStorage_.TryDeleteAsync(new[]
+                                                                                                         {
+                                                                                                           opaqueId,
+                                                                                                         },
+                                                                                                         CancellationToken.None)
+                                                                                         .ConfigureAwait(false);
+                                                                   },
+                                                                   CancellationToken.None);
+                                             return Task.CompletedTask;
+                                           })
+                          .ConfigureAwait(false);
+        await resultTable_.DeleteResults(outputs,
+                                         CancellationToken.None)
+                          .ConfigureAwait(false);
+        throw;
+      }
     }
     catch (SessionNotFoundException e)
     {
