@@ -134,10 +134,10 @@ export TF_VAR_log_driver_image:= if os_family() == "windows" {
   "fluent/fluent-bit:latest"
 }
 
-export TF_VAR_mongodb_params:= if os_family() == "windows" {
-  '{"windows": "true"}'
+export TF_VAR_windows:= if os_family() == "windows" {
+  "true"
 } else {
-  '{}'
+  "false"
 }
 
 export TF_VAR_compute_plane:= if os_family() == "windows" {

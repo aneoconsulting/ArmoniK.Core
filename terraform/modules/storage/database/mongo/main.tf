@@ -18,10 +18,10 @@ resource "docker_container" "database" {
     external = var.mongodb_params.exposed_port
   }
 
-  wait = !var.mongodb_params.windows
+  wait = !var.windows
 
   dynamic "healthcheck" {
-    for_each = var.mongodb_params.windows ? [] : [1]
+    for_each = var.windows ? [] : [1]
     content {
       test     = ["CMD", "mongosh", "--quiet", "--tls", "--tlsCAFile", "/mongo-certificate/ca.pem", "--eval", "db.runCommand('ping').ok"]
       interval = "3s"
@@ -45,14 +45,14 @@ resource "docker_container" "database" {
   }
 }
 resource "time_sleep" "wait" {
-  create_duration = var.mongodb_params.windows ? "40s" : "0s"
+  create_duration = var.windows ? "40s" : "0s"
   depends_on      = [docker_container.database]
 }
 locals {
   linux_run = "docker exec ${docker_container.database.name} mongosh mongodb://127.0.0.1:27017/${var.mongodb_params.database_name} --tls --tlsCAFile /mongo-certificate/ca.pem"
   // mongosh is not installed in windows docker images so we need it to be installed locally
   windows_run = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name}?serverSelectionTimeoutMS=10000 --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
-  prefix_run  = var.mongodb_params.windows ? local.windows_run : local.linux_run
+  prefix_run  = var.windows ? local.windows_run : local.linux_run
   mongo_init_repset = templatefile("${path.module}/mongo_init.tpl.js", {
     replica_set_name = var.mongodb_params.replica_set_name
   })
@@ -64,7 +64,7 @@ resource "local_file" "mongo_init" {
 }
 resource "null_resource" "init_replica" {
   provisioner "local-exec" {
-    command = var.mongodb_params.windows ? "${local.windows_run} --file ${local_file.mongo_init.filename}" : "${local.linux_run} --file /mongo-init.js"
+    command = var.windows ? "${local.windows_run} --file ${local_file.mongo_init.filename}" : "${local.linux_run} --file /mongo-init.js"
   }
   depends_on = [time_sleep.wait]
 }

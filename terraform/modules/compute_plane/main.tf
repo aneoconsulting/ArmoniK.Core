@@ -1,11 +1,20 @@
 resource "docker_volume" "socket_vol" {
   count = var.socket_type == "tcp" ? 0 : 1
   name  = "socket_vol${var.replica_counter}"
-
+  driver_opts = var.windows ? {} : {
+    o : "mode=0777"
+    device : "tmpfs"
+    type : "tmpfs"
+  }
 }
 
 resource "docker_volume" "comm_vol" {
   name = "comm_vol${var.replica_counter}"
+  driver_opts = var.windows ? {} : {
+    o : "mode=0777"
+    device : "tmpfs"
+    type : "tmpfs"
+  }
 }
 
 resource "docker_image" "worker" {
