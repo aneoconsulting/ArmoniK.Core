@@ -98,6 +98,14 @@ module "queue_pubsub" {
   network    = docker_network.armonik.id
 }
 
+module "queue_nats" {
+  source     = "./modules/storage/queue/nats"
+  count      = var.queue_storage.name == "nats" ? 1 : 0
+  queue_envs = var.queue_env_vars
+  image      = var.queue_storage.image
+  network    = docker_network.armonik.id
+}
+
 module "queue_sqs" {
   source     = "./modules/storage/queue/sqs"
   count      = var.queue_storage.name == "sqs" ? 1 : 0
