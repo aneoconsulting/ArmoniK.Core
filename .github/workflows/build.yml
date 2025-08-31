@@ -124,7 +124,8 @@ jobs:
           - rabbitmq
           - rabbitmq091
           - sqs
-          - pubsub     
+          - pubsub
+          - nats
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -361,6 +362,7 @@ jobs:
           - rabbitmq091
           - sqs
           - pubsub
+          - nats
         log-level:
           - Information
           - Verbose
@@ -466,30 +468,35 @@ jobs:
           - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: nats, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: rabbitmq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: sqs, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
+          - { queue: nats, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
 
           - { queue: activemq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true }
           - { queue: rabbitmq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: rabbitmq091, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: nats, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: rabbitmq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: rabbitmq091, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: nats, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: rabbitmq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: rabbitmq091, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: pubsub, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: sqs, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
+          - { queue: nats, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
 
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: false }
