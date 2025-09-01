@@ -698,7 +698,7 @@ jobs:
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
       - name: Deploy Core
-        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=rabbitmq091 deploy
+        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=nats deploy
         shell: powershell
 
       - name: Pull image
