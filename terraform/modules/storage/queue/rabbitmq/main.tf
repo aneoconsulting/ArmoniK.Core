@@ -11,7 +11,7 @@ resource "docker_container" "queue" {
   }
 
   ports {
-    internal = local.is_windows ? 5672 : 5671
+    internal = var.windows ? 5672 : 5671
     external = var.exposed_ports.amqp_connector
   }
 
@@ -20,7 +20,7 @@ resource "docker_container" "queue" {
     external = var.exposed_ports.admin_interface
   }
   dynamic "upload" {
-    for_each = local.is_windows ? [] : [
+    for_each = var.windows ? [] : [
       { file = "/rabbitmq/certs/rabbit.key", content = local_file.key.content },
       { file = "/rabbitmq/certs/rabbit.crt", content = local_file.cert.content },
       { file = "/rabbitmq/certs/ca.pem", content = local_file.ca.content }
@@ -38,7 +38,7 @@ resource "docker_container" "queue" {
   }
 
   dynamic "upload" {
-    for_each = local.is_windows ? [] : [
+    for_each = var.windows ? [] : [
       {
         file   = "/etc/rabbitmq/conf.d/10-defaults.conf"
         source = abspath("${path.root}/rabbitmq/rabbitmq.conf")

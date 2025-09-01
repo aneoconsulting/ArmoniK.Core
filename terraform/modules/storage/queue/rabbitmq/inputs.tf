@@ -34,3 +34,7 @@ variable "exposed_ports" {
     amqp_connector  = 5671
   }
 }
+
+variable "windows" {
+  type = bool
+}
