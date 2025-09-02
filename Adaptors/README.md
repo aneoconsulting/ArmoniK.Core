@@ -20,6 +20,9 @@ ArmoniK provides multiple queue adapter implementations:
 - **Google Cloud Pub/Sub** - `ArmoniK.Core.Adapters.PubSub`
   - Google Cloud messaging service integration
 
+- **Nats Jet Stream** - `ArmoniK.Core.Adapters.Nats`
+  - Messaging service integration
+
 - **Memory** - `ArmoniK.Core.Adapters.Memory`
   - In-memory queue for testing and development
 
@@ -61,7 +64,7 @@ Configuration example:
 ## Deployment Examples
 
 ### On-premises
-- **Queue**: RabbitMQ or AMQP
+- **Queue**: RabbitMQ or AMQP or Nats
 - **Object Storage**: Minio
 - **Database**: MongoDB
 

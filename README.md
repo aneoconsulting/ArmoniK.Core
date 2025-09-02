@@ -36,7 +36,8 @@ Therefore, features in development or testing that cannot fit within a branch an
 | RabbitMQ | Queue          | RabbitMQ client using AMQP protocol 0.9.2     | GA      | Linux          | 
 | AMQP     | Queue          | AMQP client using AMQP protocol 1.0.0         | GA      | Linux          | 
 | PubSub   | Queue          | Google PubSub client                          | GA      | -              | 
-| SQS      | Queue          | AWS SQS client                                | Preview | -              | 
+| SQS      | Queue          | AWS SQS client                                | GA      | -              | 
+| Nats     | Queue          | Nats Jet Stream client                        | Preview | -              | 
 | Redis    | Object Storage | Redis client used to store binary data        | GA      | Windows, Linux | 
 | Local    | Object Storage | File system used to store binary data         | GA      | -              | 
 | S3       | Object Storage | AWS S3 client used to store binary data       | GA      | -              | 
