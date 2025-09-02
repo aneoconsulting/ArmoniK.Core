@@ -22,7 +22,7 @@ resource "docker_container" "queue" {
   dynamic "healthcheck" {
     for_each = var.windows ? [] : [1]
     content {
-      test         = concat(["CMD", "wget", "http://localhost:8222/healthz"])
+      test         = concat(["CMD", "wget", "--spider", "-q", "http://localhost:8222/healthz"])
       interval     = "10s"
       timeout      = "3s"
       start_period = "10s"
