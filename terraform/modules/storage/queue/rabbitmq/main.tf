@@ -34,7 +34,7 @@ resource "docker_container" "queue" {
 
   upload {
     file    = "/etc/rabbitmq/enabled_plugins"
-    content = "[rabbitmq_management ,rabbitmq_management_agent ${local.plug}]."
+    content = "[rabbitmq_management ,rabbitmq_management_agent]."
   }
 
   dynamic "upload" {
