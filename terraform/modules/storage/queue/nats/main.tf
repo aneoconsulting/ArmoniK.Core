@@ -12,7 +12,7 @@ resource "docker_container" "queue" {
   }
 
   command = ["-js", "--http_port", "8222"]
-  wait    = !var.windows ? true : false
+  wait    = !var.windows
 
   ports {
     internal = 4222
