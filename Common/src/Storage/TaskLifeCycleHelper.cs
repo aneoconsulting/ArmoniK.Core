@@ -840,14 +840,12 @@ public static class TaskLifeCycleHelper
                                   .ToListAsync(cancellationToken)
                                   .ConfigureAwait(false);
 
-    if (logger.IsEnabled(LogLevel.Debug))
-    {
-      logger.LogDebug("Task {TaskId} that was processing on {OtherPodId} created tasks {@Tasks} and completed results {@Results}",
-                      taskData.TaskId,
-                      taskData.OwnerPodId,
-                      subtasks,
-                      await resultTask);
-    }
+      logger.LogWarning("Task {TaskId} that was processing on {OtherPodId} created tasks {@Tasks}, Status: {@SubStatus} and completed results {@Results}",
+                     taskData.TaskId,
+                     taskData.OwnerPodId,
+                     subtasks,
+                     subtasks.Select(s => s.Status).ToString(),
+                     await resultTask);
 
     var    resubmit = true;
     string errorMessage;
@@ -880,7 +878,7 @@ public static class TaskLifeCycleHelper
 
     if (committed)
     {
-      logger.LogInformation("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
+      logger.LogWarning("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
                             taskData.TaskId);
 
       try
@@ -949,8 +947,8 @@ public static class TaskLifeCycleHelper
       // So we can safely cancel the subtasks, and retry the current task.
       errorMessage = "Other pod seems to have crashed, resubmitting task";
 
-      logger.LogInformation("Resubmitting task {TaskId} on another pod, and cancel subtasks",
-                            taskData.TaskId);
+      logger.LogWarning("Resubmitting task {TaskId} on another pod, and cancel subtasks",
+                        taskData.TaskId);
     }
 
     await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
