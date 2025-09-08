@@ -14,6 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.6.2-jfdocextractor.5.sha.751d8a3" />
     <PackageReference Include="AWSSDK.S3" Version="3.7.405" />
     <!-- AWSSDK.SecurityToken is required to handle the default authentication -->
     <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.400.36" />
@@ -31,10 +32,10 @@
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.2">
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.8">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.3">
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="9.0.8">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.6.1">

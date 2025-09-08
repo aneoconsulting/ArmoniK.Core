@@ -19,9 +19,12 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Control.PartitionMetrics.Options;
 
+using ArmoniK.Utils.DocAttribute;
+
 /// <summary>
 ///   Options to set up the connection to the metrics exporter
 /// </summary>
+[ExtractDocumentation("Options for PartitionMetricsExporter")]
 [PublicAPI]
 public class MetricsExporter
 {
