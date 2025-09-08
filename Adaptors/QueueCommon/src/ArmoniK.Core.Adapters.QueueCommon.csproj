@@ -30,6 +30,9 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.6.2">
+      <ExcludeAssets>runtime</ExcludeAssets>
+    </PackageReference>
     <ProjectReference Include="..\..\..\Base\src\ArmoniK.Core.Base.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>

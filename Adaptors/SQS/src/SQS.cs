@@ -17,8 +17,11 @@
 
 using System.Collections.Generic;
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Adapters.SQS;
 
+[ExtractDocumentation("Options for SQS")]
 internal class SQS
 {
   /// <summary>

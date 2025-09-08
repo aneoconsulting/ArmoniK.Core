@@ -15,11 +15,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Common.Injection.Options;
 
 /// <summary>
 ///   Configuration for <see cref="gRPC.Services.Submitter" />.
 /// </summary>
+[ExtractDocumentation("Options for Submitter")]
 public class Submitter
 {
   /// <summary>
