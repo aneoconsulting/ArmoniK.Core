@@ -21,11 +21,14 @@ using JetBrains.Annotations;
 
 // ReSharper disable InconsistentNaming
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Control.Metrics.Options;
 
 /// <summary>
 ///   Represents the configuration settings for the metrics exporter.
 /// </summary>
+[ExtractDocumentation("Options for MetricsExporter")]
 [PublicAPI]
 public class MetricsExporter
 {
