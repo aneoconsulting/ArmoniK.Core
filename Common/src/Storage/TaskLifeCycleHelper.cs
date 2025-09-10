@@ -841,7 +841,21 @@ public static class TaskLifeCycleHelper
     // If at least one task is not creating, it means that it has potentially been submitted, and might have started.
     // It also means that we created all subtasks and completed all the results of the current task.
     // Therefore, we can safely finish the completion of the current task on behalf of the pod that has crashed.
-    var committed = subtasks.Any(td => td.Status is not TaskStatus.Creating);
+    // -> THIS AIN'T VALID, CONCURRENCY CASE POSSIBLE
+
+    var committed    = subtasks.Any(td => td.Status is not TaskStatus.Creating);
+    var wasCancelled = subtasks.Any(td => td.Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
+
+    // Only if there is no subtasks cancelled or cancelling, we can safely finish the completion.
+
+    committed = committed && !wasCancelled;
+
+    if (wasCancelled)
+    {
+      logger.LogError("Some subtasks (Total: {totalSubtasks} vs cancel: {cancelCount}) has status Cancelling or Cancelled, this might indicate a concurrent case",
+                      subtasks.Count,
+                      subtasks.Count(td => td.Status is TaskStatus.Creating or TaskStatus.Cancelled));
+    }
 
     // If no tasks were created, we look for all the tasks that depends on completed results
     if (subtasks.Count == 0)
