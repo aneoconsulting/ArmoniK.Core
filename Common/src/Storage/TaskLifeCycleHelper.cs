@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2025. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -811,11 +811,6 @@ public static class TaskLifeCycleHelper
                                                                         ILogger           logger,
                                                                         CancellationToken cancellationToken)
   {
-    logger.LogDebug("Other pod has crashed while processing {TaskId}. Wait {ProcessingCrashedDelay} to ensure crashing pod {OtherPodId} has finished what it was doing, and check subtasks status",
-                    taskData.TaskId,
-                    processingCrashedDelay,
-                    taskData.OwnerPodId);
-
     await Task.Delay(processingCrashedDelay,
                      cancellationToken)
               .ConfigureAwait(false);
@@ -839,13 +834,6 @@ public static class TaskLifeCycleHelper
                                                   cancellationToken)
                                   .ToListAsync(cancellationToken)
                                   .ConfigureAwait(false);
-
-      logger.LogWarning("Task {TaskId} that was processing on {OtherPodId} created tasks {@Tasks}, Status: {@SubStatus} and completed results {@Results}",
-                     taskData.TaskId,
-                     taskData.OwnerPodId,
-                     subtasks,
-                     subtasks.Select(s => s.Status).ToString(),
-                     await resultTask);
 
     var    resubmit = true;
     string errorMessage;
@@ -878,9 +866,6 @@ public static class TaskLifeCycleHelper
 
     if (committed)
     {
-      logger.LogWarning("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
-                            taskData.TaskId);
-
       try
       {
         var results = await resultTask;
@@ -913,6 +898,9 @@ public static class TaskLifeCycleHelper
                                   cancellationToken)
           .ConfigureAwait(false);
 
+
+        logger.LogWarning("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
+                          taskData.TaskId);
 
         await CompleteTaskAsync(taskTable,
                                 resultTable,
@@ -950,6 +938,9 @@ public static class TaskLifeCycleHelper
       logger.LogWarning("Resubmitting task {TaskId} on another pod, and cancel subtasks",
                         taskData.TaskId);
     }
+
+    logger.LogWarning("Cancelling subtasks of {TaskId}",
+                      taskData.TaskId);
 
     await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
                                     cancellationToken)
