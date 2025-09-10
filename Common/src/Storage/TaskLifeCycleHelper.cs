@@ -913,8 +913,8 @@ public static class TaskLifeCycleHelper
           .ConfigureAwait(false);
 
 
-        logger.LogWarning("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
-                          taskData.TaskId);
+        logger.LogError("Subtasks were already submitted, completing {TaskId} on behalf of previous pod",
+                        taskData.TaskId);
 
         await CompleteTaskAsync(taskTable,
                                 resultTable,
@@ -953,7 +953,7 @@ public static class TaskLifeCycleHelper
                         taskData.TaskId);
     }
 
-    logger.LogWarning("Cancelling subtasks of {TaskId}",
+    logger.LogError("Cancelling subtasks of {TaskId}",
                       taskData.TaskId);
 
     await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
