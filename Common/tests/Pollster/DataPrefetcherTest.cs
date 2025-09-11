@@ -100,6 +100,10 @@ public class DataPrefetcherTest
                               CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
+    public Task DeleteResults(ICollection<string> results,
+                              CancellationToken   cancellationToken = default)
+      => throw new NotImplementedException();
+
     public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
                                              Expression<Func<Result, T>>    convertor,
                                              CancellationToken              cancellationToken = default)

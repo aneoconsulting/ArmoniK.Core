@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
@@ -512,46 +513,56 @@ public class GrpcTasksService : Task.TasksBase
                                                                                               creation.ExpectedOutputKeys,
                                                                                               creation.DataDependencies))
                                     .ToList();
+      try
+      {
+        await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                              resultTable_,
+                                              request.SessionId,
+                                              request.SessionId,
+                                              creationRequests,
+                                              logger_,
+                                              context.CancellationToken)
+                                 .ConfigureAwait(false);
 
+        await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
+                                                       resultTable_,
+                                                       pushQueueStorage_,
+                                                       creationRequests,
+                                                       sessionData,
+                                                       request.SessionId,
+                                                       logger_,
+                                                       context.CancellationToken)
+                                 .ConfigureAwait(false);
 
-      await TaskLifeCycleHelper.CreateTasks(taskTable_,
-                                            resultTable_,
-                                            request.SessionId,
-                                            request.SessionId,
-                                            creationRequests,
-                                            logger_,
-                                            context.CancellationToken)
-                               .ConfigureAwait(false);
-
-      await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
-                                                     resultTable_,
-                                                     pushQueueStorage_,
-                                                     creationRequests,
-                                                     sessionData,
-                                                     request.SessionId,
-                                                     logger_,
-                                                     context.CancellationToken)
-                               .ConfigureAwait(false);
-
-      return new SubmitTasksResponse
-             {
-               TaskInfos =
+        return new SubmitTasksResponse
                {
-                 creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
-                                                            {
-                                                              DataDependencies =
+                 TaskInfos =
+                 {
+                   creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
                                                               {
-                                                                creationRequest.DataDependencies,
-                                                              },
-                                                              ExpectedOutputIds =
-                                                              {
-                                                                creationRequest.ExpectedOutputKeys,
-                                                              },
-                                                              TaskId    = creationRequest.TaskId,
-                                                              PayloadId = creationRequest.PayloadId,
-                                                            }),
-               },
-             };
+                                                                DataDependencies =
+                                                                {
+                                                                  creationRequest.DataDependencies,
+                                                                },
+                                                                ExpectedOutputIds =
+                                                                {
+                                                                  creationRequest.ExpectedOutputKeys,
+                                                                },
+                                                                TaskId    = creationRequest.TaskId,
+                                                                PayloadId = creationRequest.PayloadId,
+                                                              }),
+                 },
+               };
+      }
+      catch (Exception)
+      {
+        await TaskLifeCycleHelper.DeleteTasksAsync(taskTable_,
+                                                   resultTable_,
+                                                   creationRequests,
+                                                   CancellationToken.None)
+                                 .ConfigureAwait(false);
+        throw;
+      }
     }
     catch (SubmissionClosedException e)
     {

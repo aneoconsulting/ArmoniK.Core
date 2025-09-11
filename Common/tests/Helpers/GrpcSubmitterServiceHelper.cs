@@ -21,6 +21,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -71,6 +72,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddSingleton<ITaskTable, SimpleTaskTable>()
            .AddSingleton<IResultTable, SimpleResultTable>()
            .AddSingleton<ISessionTable, SimpleSessionTable>()
+           .AddSingleton<IObjectStorage, SimpleObjectStorage>()
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
            .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
