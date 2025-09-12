@@ -121,6 +121,10 @@ public class SimpleTaskTable : ITaskTable
                                CancellationToken cancellationToken = default)
     => Task.CompletedTask;
 
+  public Task DeleteTasksAsync(ICollection<string> taskIds,
+                               CancellationToken   cancellationToken = default)
+    => Task.CompletedTask;
+
   public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
                                                                          Expression<Func<TaskData, object?>> orderField,
                                                                          Expression<Func<TaskData, T>>       selector,
