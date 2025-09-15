@@ -77,6 +77,9 @@ public static class ServicesPermissions
                                                                                    {
                                                                                      typeof(GrpcVersionsService), "Versions"
                                                                                    },
+                                                                                   {
+                                                                                     typeof(GrpcHealthChecksService), "HealthChecks"
+                                                                                   },
                                                                                  });
 
   /// <summary>
