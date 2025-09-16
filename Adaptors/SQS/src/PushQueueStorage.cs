@@ -135,7 +135,7 @@ internal class PushQueueStorage : IPushQueueStorage
                                                                   .ToList();
                                          if (retry > 4)
                                          {
-                                           throw new InvalidOperationException("Some message were not pushed and retries number was exceeded.");
+                                           throw new InvalidOperationException("Some messages were not pushed, and the number of retries was exceeded.");
                                          }
                                        }
                                        else
