@@ -90,36 +90,58 @@ internal class PushQueueStorage : IPushQueueStorage
                                                                               MessageBody = data.TaskId,
                                                                             })
                                                             .ToList();
-                                     var response = await client_.SendMessageBatchAsync(new SendMessageBatchRequest
-                                                                                        {
-                                                                                          QueueUrl = queueUrl,
-                                                                                          Entries  = entriesList,
-                                                                                        },
-                                                                                        cancellationToken)
-                                                                 .ConfigureAwait(false);
-
-                                     if (logger_.IsEnabled(LogLevel.Debug))
+                                     var retry = 0;
+                                     while (entriesList.Any())
                                      {
-                                       logger_.LogDebug("pushed {messages} onto {QueueUrl}, {statusCode}, {responseMetadata}",
-                                                        entriesList.Select(entry => entry.Id)
-                                                                   .ToList(),
-                                                        queueUrl,
-                                                        response.HttpStatusCode,
-                                                        response.ResponseMetadata);
-                                     }
-
-                                     if (response.Failed.Any())
-                                     {
-                                       logger_.LogWarning("failed messages : {failed}",
-                                                          response.Failed.Select(entry => new
+                                       retry++;
+                                       var response = await client_.SendMessageBatchAsync(new SendMessageBatchRequest
                                                                                           {
-                                                                                            entry.Id,
-                                                                                            entry.Code,
-                                                                                            entry.Message,
-                                                                                            entry.SenderFault,
-                                                                                          })
-                                                                  .ToList());
-                                       throw new InvalidOperationException("Some message were not pushed");
+                                                                                            QueueUrl = queueUrl,
+                                                                                            Entries  = entriesList,
+                                                                                          },
+                                                                                          cancellationToken)
+                                                                   .ConfigureAwait(false);
+
+                                       if (logger_.IsEnabled(LogLevel.Debug))
+                                       {
+                                         logger_.LogDebug("pushed {messages} onto {QueueUrl}, {statusCode}, {responseMetadata}",
+                                                          entriesList.Select(entry => entry.Id)
+                                                                     .ToList(),
+                                                          queueUrl,
+                                                          response.HttpStatusCode,
+                                                          response.ResponseMetadata);
+                                       }
+
+                                       if (response.Failed.Any())
+                                       {
+                                         logger_.LogWarning("failed messages : {failed}",
+                                                            response.Failed.Select(entry => new
+                                                                                            {
+                                                                                              entry.Id,
+                                                                                              entry.Code,
+                                                                                              entry.Message,
+                                                                                              entry.SenderFault,
+                                                                                            })
+                                                                    .ToList());
+
+                                         if (response.Failed.Any(entry => entry.SenderFault))
+                                         {
+                                           throw new InvalidOperationException("Some message were not pushed that have sender issues.");
+                                         }
+
+                                         // there is at most 10 elements in this list
+                                         entriesList = entriesList.Where(entry => response.Failed.Select(e => e.Id)
+                                                                                          .Contains(entry.Id))
+                                                                  .ToList();
+                                         if (retry > 4)
+                                         {
+                                           throw new InvalidOperationException("Some message were not pushed and retries number was exceeded.");
+                                         }
+                                       }
+                                       else
+                                       {
+                                         entriesList = new List<SendMessageBatchRequestEntry>();
+                                       }
                                      }
                                    })
                   .ConfigureAwait(false);
