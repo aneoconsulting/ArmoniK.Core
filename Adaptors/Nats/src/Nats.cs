@@ -51,4 +51,11 @@ internal class Nats
   ///   If DegreeOfParallelism is negative, no limit is enforced.
   /// </summary>
   public int DegreeOfParallelism { get; set; }
+
+
+  /// <summary>
+  ///   Number of priority levels supported. Each priority level will create its own Nats subject.
+  /// </summary>
+  public int MaxPriority { get; set; } = 0;
+
 }
