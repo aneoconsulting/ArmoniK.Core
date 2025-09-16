@@ -6,6 +6,7 @@ output "generated_env_vars" {
     "PubSub__TopicId"                                       = "TestTopic"
     "PubSub__SubscriptionId"                                = "SubTest"
     "PUBSUB_EMULATOR_HOST"                                  = "${var.queue_envs.host}:8085"
+    "PubSub__MaxPriority"                                   = "9"
   })
 }
 output "core_mounts" {
