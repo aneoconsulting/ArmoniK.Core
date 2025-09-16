@@ -65,4 +65,9 @@ internal class PubSub
   ///   Guarantee that messages are not duplicated at Pub/Sub level
   /// </summary>
   public bool ExactlyOnceDelivery { get; set; } = false;
+
+  /// <summary>
+  ///   Number of priority levels supported. Each priority level will create its own PubSub topic. (Priority 2 will potentially be treated before priority 1, it's not absolute)
+  /// </summary>
+  public int MaxPriority { get; set; } = 0;
 }
