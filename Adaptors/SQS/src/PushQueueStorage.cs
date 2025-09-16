@@ -126,7 +126,7 @@ internal class PushQueueStorage : IPushQueueStorage
 
                                          if (response.Failed.Any(entry => entry.SenderFault))
                                          {
-                                           throw new InvalidOperationException("Some message were not pushed that have sender issues.");
+                                           throw new InvalidOperationException("Some messages were not pushed due to sender issues");
                                          }
 
                                          // there is at most 10 elements in this list
