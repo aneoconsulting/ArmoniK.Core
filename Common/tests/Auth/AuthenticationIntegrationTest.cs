@@ -41,8 +41,6 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
 using ArmoniK.Core.Common.gRPC.Services;
-using ArmoniK.Core.Common.Meter;
-using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Tests.Helpers;
@@ -98,7 +96,6 @@ public class AuthenticationIntegrationTest
                                                               });
                                              },
                                              false);
-
   }
 
   [OneTimeTearDown]
@@ -947,7 +944,8 @@ public class AuthenticationIntegrationTest
                                                                                                                           typeof(GrpcAuthService)
                                                                                                                         },
                                                                                                                         {
-                                                                                                                          typeof(HealthChecksService.HealthChecksServiceClient),
+                                                                                                                          typeof(HealthChecksService.
+                                                                                                                            HealthChecksServiceClient),
                                                                                                                           typeof(GrpcHealthChecksService)
                                                                                                                         },
                                                                                                                       });
