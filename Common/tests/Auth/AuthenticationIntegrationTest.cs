@@ -29,6 +29,7 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Auth;
 using ArmoniK.Api.gRPC.V1.Events;
+using ArmoniK.Api.gRPC.V1.HealthChecks;
 using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
@@ -79,15 +80,15 @@ public class AuthenticationIntegrationTest
                                              LogLevel.Warning,
                                              s =>
                                              {
-                                               s.AddSingleton<ITaskTable>(new SimpleTaskTable())
-                                                .AddSingleton<ISessionTable>(new SimpleSessionTable())
-                                                .AddSingleton<IResultTable>(new SimpleResultTable())
-                                                .AddSingleton<IPartitionTable>(new SimplePartitionTable())
-                                                .AddSingleton<ITaskWatcher>(new SimpleTaskWatcher())
-                                                .AddSingleton<IPushQueueStorage>(new SimplePushQueueStorage())
-                                                .AddSingleton<IPullQueueStorage>(new SimplePullQueueStorage())
-                                                .AddSingleton<IObjectStorage>(new SimpleObjectStorage())
-                                                .AddSingleton<IResultWatcher>(new SimpleResultWatcher())
+                                               s.AddSingleton<ITaskTable, SimpleTaskTable>()
+                                                .AddSingleton<ISessionTable, SimpleSessionTable>()
+                                                .AddSingleton<IResultTable, SimpleResultTable>()
+                                                .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                .AddSingleton<ITaskWatcher, SimpleTaskWatcher>()
+                                                .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                .AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                .AddSingleton<IObjectStorage, SimpleObjectStorage>()
+                                                .AddSingleton<IResultWatcher, SimpleResultWatcher>()
                                                 .AddSingleton(new Injection.Options.Submitter
                                                               {
                                                                 DefaultPartition = "defaultPartition",
@@ -941,6 +942,11 @@ public class AuthenticationIntegrationTest
                                                                                                                         {
                                                                                                                           typeof(Authentication.AuthenticationClient),
                                                                                                                           typeof(GrpcAuthService)
+                                                                                                                        },
+                                                                                                                        {
+                                                                                                                          typeof(HealthChecksService.
+                                                                                                                            HealthChecksServiceClient),
+                                                                                                                          typeof(GrpcHealthChecksService)
                                                                                                                         },
                                                                                                                       });
 
