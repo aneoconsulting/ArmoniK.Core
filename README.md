@@ -16,7 +16,7 @@ This project is part of the [ArmoniK](https://github.com/aneoconsulting/ArmoniK)
 
 ArmoniK.Core provides services for submitting computational tasks, keeping track of the status of the tasks and retrieving the results of the computations. The tasks are processed by external workers whose interfaces are also defined in ArmoniK.Api. ArmoniK.Core sends tasks to the workers, manages eventual errors during the execution of the tasks and manages also the storage of the task's results.
 
-More detailed information on the inner working of ArmoniK.Core is available [here](https://aneoconsulting.github.io/ArmoniK.Core/).
+More detailed information on the inner working of ArmoniK.Core is available [here](https://armonikcore.readthedocs.io/).
 
 ## Development process
 
