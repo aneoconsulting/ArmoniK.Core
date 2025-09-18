@@ -65,6 +65,7 @@ internal class PushQueueStorage : IPushQueueStorage
 
     await messages.GroupBy(m => m.Options.Priority)
                   .ToAsyncEnumerable()
+                  // SQS supports a maximum of 10 messages per batch request, see quotas
                   .SelectMany(group => group.Chunk(10)
                                             .ToAsyncEnumerable()
                                             .SelectAwait(async chunk =>
@@ -120,7 +121,6 @@ internal class PushQueueStorage : IPushQueueStorage
                                          var failed      = response.Failed.ToDictionary(entry => entry.Id);
                                          var entriesDict = entriesList.ToDictionary(entry => entry.Id);
 
-                                         // there is at most 10 elements in this list
                                          entriesList = entriesList.Where(entry => failed.ContainsKey(entry.Id))
                                                                   .ToList();
 
