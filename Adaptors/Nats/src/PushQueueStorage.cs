@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,7 +59,8 @@ internal class PushQueueStorage : IPushQueueStorage
 
   /// <inheritdoc />
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(options_.MaxPriority,
+               1);
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -87,9 +89,14 @@ internal class PushQueueStorage : IPushQueueStorage
   {
     try
     {
-      await Publish(messages,
+     await  messages.GroupBy(m => m.Options.Priority).ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism,
+                                                              cancellationToken),
+                                      async message =>
+                                      {
+                                        await Publish(messages,
                     partitionId,
                     cancellationToken);
+                                      }).ConfigureAwait(false);
     }
     catch (Exception)
     {
@@ -97,28 +104,34 @@ internal class PushQueueStorage : IPushQueueStorage
       {
         var existing = await js_.GetStreamAsync("armonik-stream")
                                 .ConfigureAwait(false);
-        if (!existing.Info.Config.Subjects!.Contains(partitionId))
+        for (var i = 0; i < MaxPriority; i++)
         {
-          existing.Info.Config.Subjects!.Add(partitionId);
-          await js_.UpdateStreamAsync(existing.Info.Config)
-                   .ConfigureAwait(false);
+          var priority = i + 1;
+          if (!existing.Info.Config.Subjects!.Contains(partitionId+priority))
+          {
+            existing.Info.Config.Subjects!.Add(partitionId+priority);
+            await js_.UpdateStreamAsync(existing.Info.Config)
+                     .ConfigureAwait(false);
+          }
         }
       }
       catch (NatsJSApiException ex) when (ex.Error.Code == 404)
       {
+        var subjects = Enumerable.Range(0, MaxPriority)
+                                 .Select(i => partitionId + i)
+                                 .ToArray();
+
         var config = new StreamConfig
-                     {
-                       Name    = "armonik-stream",
-                       Storage = StreamConfigStorage.File,
-                       Subjects = new[]
-                                  {
-                                    partitionId,
-                                  },
-                       Retention = StreamConfigRetention.Workqueue,
-                     };
+        {
+          Name = "armonik-stream",
+          Storage = StreamConfigStorage.File,
+          Subjects = subjects,
+          Retention = StreamConfigRetention.Workqueue,
+        };
         await js_.CreateStreamAsync(config)
                  .ConfigureAwait(false);
       }
+
 
       await Publish(messages,
                     partitionId,
@@ -140,7 +153,7 @@ internal class PushQueueStorage : IPushQueueStorage
                                                               cancellationToken),
                                       async message =>
                                       {
-                                        await js_.PublishAsync(partitionId,
+                                        await js_.PublishAsync(partitionId+message.Options.Priority,
                                                                Encoding.UTF8.GetBytes(message.TaskId),
                                                                headers: new NatsHeaders
                                                                         {

@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,7 +77,8 @@ internal class PullQueueStorage : IPullQueueStorage
 
   /// <inheritdoc />
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(options_.MaxPriority,
+               1);
 
   /// <inheritdoc />
   /// <remarks>
@@ -96,12 +98,12 @@ internal class PullQueueStorage : IPullQueueStorage
   ///   This ensures that if a consumer for the given partition does not exist, it is created on-demand,
   ///   and messages are always processed through a uniform handler abstraction.
   /// </remarks>
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
-                                                                        int                                        nbMessages,
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string partitionId,
+                                                                        int nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    INatsJSConsumer? consumer;
-    INatsJSStream?   stream;
+    INatsJSConsumer[] consumer;
+    INatsJSStream? stream;
     try
     {
       stream = await js_.GetStreamAsync("armonik-stream")
@@ -109,49 +111,57 @@ internal class PullQueueStorage : IPullQueueStorage
     }
     catch (NatsJSApiException ex) when (ex.Error.Code == 404)
     {
+      var subjects = Enumerable.Range(0, MaxPriority)
+                         .Select(i => partitionId + i)
+                         .ToArray();
       var config = new StreamConfig
-                   {
-                     Name    = "armonik-stream",
-                     Storage = StreamConfigStorage.File,
-                     Subjects = new[]
-                                {
-                                  partitionId,
-                                },
-                     Retention = StreamConfigRetention.Workqueue,
-                   };
+      {
+        Name = "armonik-stream",
+        Storage = StreamConfigStorage.File,
+        Subjects = subjects,
+        Retention = StreamConfigRetention.Workqueue,
+      };
       stream = await js_.CreateStreamAsync(config)
                         .ConfigureAwait(false);
     }
 
     try
     {
-      consumer = await stream.GetConsumerAsync(partitionId)
-                             .ConfigureAwait(false);
+      consumer = await Task.WhenAll(
+          Enumerable.Range(0, MaxPriority)
+                    .Select(async i => await stream.GetConsumerAsync(partitionId + i)
+                             .ConfigureAwait(false)));
     }
     catch (NatsJSApiException ex) when (ex.Error.Code == 404)
     {
-      consumer = await js_.CreateConsumerAsync("armonik-stream",
-                                               new ConsumerConfig(partitionId)
-                                               {
-                                                 DurableName   = partitionId,
-                                                 AckWait       = TimeSpan.FromSeconds(options_.AckWait),
-                                                 AckPolicy     = ConsumerConfigAckPolicy.Explicit,
-                                                 FilterSubject = partitionId,
-                                               })
-                          .ConfigureAwait(false);
+      consumer = await Task.WhenAll(
+         Enumerable.Range(0, MaxPriority)
+                   .Select(async i => await js_.CreateConsumerAsync(
+                       "armonik-stream",
+                       new ConsumerConfig(partitionId + i)
+                       {
+                         DurableName = partitionId + i,
+                         AckWait = TimeSpan.FromSeconds(options_.AckWait),
+                         AckPolicy = ConsumerConfigAckPolicy.Explicit,
+                         FilterSubject = partitionId + i,
+                       }))
+     );
     }
 
-    await foreach (var natsJSMsg in consumer.FetchAsync<string>(new NatsJSFetchOpts
-                                                                {
-                                                                  MaxMsgs = nbMessages,
-                                                                }))
+    foreach (var consume in consumer.Reverse())
     {
-      yield return new QueueMessageHandler(natsJSMsg,
-                                           js_,
-                                           options_.AckWait,
-                                           options_.AckExtendDeadlineStep,
-                                           logger_,
-                                           cancellationToken);
+      await foreach (var natsJSMsg in consume.FetchAsync<string>(new NatsJSFetchOpts
+      {
+        MaxMsgs = nbMessages,
+      }))
+      {
+        yield return new QueueMessageHandler(natsJSMsg,
+                                             js_,
+                                             options_.AckWait,
+                                             options_.AckExtendDeadlineStep,
+                                             logger_,
+                                             cancellationToken);
+      }
     }
   }
 }
