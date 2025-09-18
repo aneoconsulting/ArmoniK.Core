@@ -120,8 +120,7 @@ internal class PushQueueStorage : IPushQueueStorage
                                        {
                                          var failed = response.Failed.ToDictionary(entry => entry.Id);
 
-                                         remainingEntries = remainingEntries.Where(entry => failed.ContainsKey(entry.Id))
-                                                                            .ToList();
+                                         remainingEntries.RemoveAll(entry => !failed.ContainsKey(entry.Id));
 
                                          var failedData = remainingEntries.Select(entry => new
                                                                                            {
