@@ -26,6 +26,7 @@ using Amazon.SQS.Model;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Caching.Memory;
@@ -104,8 +105,10 @@ internal class PushQueueStorage : IPushQueueStorage
 
                                        if (logger_.IsEnabled(LogLevel.Debug))
                                        {
-                                         logger_.LogDebug("pushed {messages} onto {QueueUrl}, {statusCode}, {responseMetadata}",
+                                         logger_.LogDebug("pushed {Messages} for {TaskIds} onto {QueueUrl}, {statusCode}, {responseMetadata}",
                                                           entriesList.Select(entry => entry.Id)
+                                                                     .ToList(),
+                                                          entriesList.Select(entry => entry.MessageBody)
                                                                      .ToList(),
                                                           queueUrl,
                                                           response.HttpStatusCode,
@@ -114,28 +117,36 @@ internal class PushQueueStorage : IPushQueueStorage
 
                                        if (response.Failed.Any())
                                        {
+                                         var failed      = response.Failed.ToDictionary(entry => entry.Id);
+                                         var entriesDict = entriesList.ToDictionary(entry => entry.Id);
+
+                                         // there is at most 10 elements in this list
+                                         entriesList = entriesList.Where(entry => failed.ContainsKey(entry.Id))
+                                                                  .ToList();
+
+                                         var failedData = response.Failed.Select(entry => new
+                                                                                          {
+                                                                                            entry.Id,
+                                                                                            entriesDict[entry.Id]
+                                                                                              .MessageBody,
+                                                                                            entry.Code,
+                                                                                            entry.Message,
+                                                                                            entry.SenderFault,
+                                                                                          })
+                                                                  .ToList();
+
                                          logger_.LogWarning("failed messages : {failed}",
-                                                            response.Failed.Select(entry => new
-                                                                                            {
-                                                                                              entry.Id,
-                                                                                              entry.Code,
-                                                                                              entry.Message,
-                                                                                              entry.SenderFault,
-                                                                                            })
-                                                                    .ToList());
+                                                            failedData);
 
                                          if (response.Failed.Any(entry => entry.SenderFault))
                                          {
-                                           throw new InvalidOperationException("Some messages were not pushed due to sender issues");
+                                           throw new QueueInsertionFailedException($"Some messages were not pushed due to sender-related issues. \nMessages: {failedData}");
                                          }
 
-                                         // there is at most 10 elements in this list
-                                         entriesList = entriesList.Where(entry => response.Failed.Select(e => e.Id)
-                                                                                          .Contains(entry.Id))
-                                                                  .ToList();
                                          if (retry > 4)
                                          {
-                                           throw new InvalidOperationException("Some messages were not pushed, and the number of retries was exceeded.");
+                                           throw new
+                                             QueueInsertionFailedException($"Some messages were not pushed and retries number was exceeded. \nMessages: {failedData}");
                                          }
                                        }
                                        else
