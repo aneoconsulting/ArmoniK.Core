@@ -14,10 +14,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.405" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.501.5" />
     <!-- AWSSDK.SecurityToken is required to handle the default authentication -->
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.400.36" />
-    <PackageReference Include="AWSSDK.Core" Version="3.7.400.36" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.501.11" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.500.20" />
   </ItemGroup>
 
   <ItemGroup>
