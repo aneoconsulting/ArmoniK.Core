@@ -211,6 +211,18 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
   }
 
   /// <inheritdoc />
+  public async Task DeleteTasksAsync(ICollection<string> taskIds,
+                                     CancellationToken   cancellationToken = default)
+  {
+    using var activity       = StartActivity();
+    var       taskCollection = GetCollection();
+
+    await taskCollection.DeleteManyAsync(data => taskIds.Contains(data.TaskId),
+                                         cancellationToken)
+                        .ConfigureAwait(false);
+  }
+
+  /// <inheritdoc />
   public async Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
                                                                                Expression<Func<TaskData, object?>> orderField,
                                                                                Expression<Func<TaskData, T>>       selector,

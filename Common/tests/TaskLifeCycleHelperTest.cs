@@ -513,6 +513,161 @@ public class TaskLifeCycleHelperTest
   }
 
   [Test]
+  public async Task TaskDeletionDuringSubmissionShouldSucceed([Values] bool finalize)
+  {
+    using var holder = new Holder();
+
+    var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
+                                                               holder.PartitionTable,
+                                                               new List<string>
+                                                               {
+                                                                 Holder.Partition,
+                                                               },
+                                                               holder.Options.ToTaskOptions(),
+                                                               Holder.Partition)
+                                                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+    var results = new List<Result>
+                  {
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Payload",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Completed,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "DataDependency1",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        null,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "DataDependency2",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        null,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Output",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        null,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                  };
+
+    await holder.ResultTable.Create(results)
+                .ConfigureAwait(false);
+
+    var tasks = new List<TaskCreationRequest>
+                {
+                  new(Guid.NewGuid()
+                          .ToString(),
+                      results[0]
+                        .ResultId,
+                      holder.Options.ToTaskOptions(),
+                      new List<string>
+                      {
+                        results[3]
+                          .ResultId,
+                      },
+                      new List<string>
+                      {
+                        results[1]
+                          .ResultId,
+                        results[2]
+                          .ResultId,
+                      }),
+                };
+
+    var taskId = tasks.Single()
+                      .TaskId;
+
+    await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                          holder.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          tasks,
+                                          NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                               .ConfigureAwait(false);
+
+    Assert.AreEqual(TaskStatus.Creating,
+                    taskData.Status);
+
+    if (finalize)
+    {
+      await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                     holder.ResultTable,
+                                                     holder.PushQueueStorage,
+                                                     tasks,
+                                                     sessionData,
+                                                     sessionId,
+                                                     NullLogger.Instance)
+                               .ConfigureAwait(false);
+
+      taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                             .ConfigureAwait(false);
+
+      Assert.AreEqual(TaskStatus.Pending,
+                      taskData.Status);
+      Assert.AreEqual(2,
+                      taskData.RemainingDataDependencies.Count);
+    }
+
+    await TaskLifeCycleHelper.DeleteTasksAsync(holder.TaskTable,
+                                               holder.ResultTable,
+                                               tasks)
+                             .ConfigureAwait(false);
+
+
+    var count = await holder.TaskTable.FindTasksAsync(data => tasks.Select(request => request.TaskId)
+                                                                   .Contains(data.TaskId),
+                                                      data => data)
+                            .CountAsync()
+                            .ConfigureAwait(false);
+
+    Assert.That(count,
+                Is.EqualTo(0));
+  }
+
+  [Test]
   public async Task FinalizeTwiceShouldSucceed()
   {
     using var holder = new Holder();

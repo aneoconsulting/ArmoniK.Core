@@ -103,6 +103,17 @@ public interface IResultTable : IInitializable
                      CancellationToken cancellationToken = default);
 
   /// <summary>
+  ///   Delete all the results from a collection
+  /// </summary>
+  /// <param name="results">ids of the results to be deleted</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  Task DeleteResults(ICollection<string> results,
+                     CancellationToken   cancellationToken = default);
+
+  /// <summary>
   ///   Get the results from a filter and convert it in the given type
   /// </summary>
   /// <param name="filter">Filter to select results</param>
