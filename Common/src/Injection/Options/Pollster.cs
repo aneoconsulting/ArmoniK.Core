@@ -17,11 +17,14 @@
 
 using System;
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Common.Injection.Options;
 
 /// <summary>
 ///   Configuration for <see cref="Common.Pollster.Pollster" />
 /// </summary>
+[ExtractDocumentation("Options for Pollster")]
 public class Pollster
 {
   /// <summary>
