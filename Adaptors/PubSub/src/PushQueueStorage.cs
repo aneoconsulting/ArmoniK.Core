@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Utils;
 
 using Google.Cloud.PubSub.V1;
 using Google.Protobuf;
@@ -58,16 +59,23 @@ internal class PushQueueStorage : IPushQueueStorage
       throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
-    var topic = $"a{options_.Prefix}-{partitionId}";
-    var topicName = TopicName.FromProjectTopic(options_.ProjectId,
-                                               topic);
-    foreach (var chunks in messages.Chunk(500))
-    {
-      await Publish(topicName,
-                    chunks)
-        .ConfigureAwait(false);
-    }
+    var tasks = messages.GroupBy(m => m.Options.Priority)
+                        .SelectMany(group => group.Chunk(500)
+                                                  .Select(chunk =>
+                                                          {
+                                                            var topic = $"a{options_.Prefix}-{partitionId}-{group.Key}";
+                                                            var topicName = TopicName.FromProjectTopic(options_.ProjectId,
+                                                                                                       topic);
+                                                            return (topicName, chunk);
+                                                          }))
+                        .ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
+                                         async item =>
+                                         {
+                                           await Publish(item.topicName,
+                                                         item.chunk);
+                                         });
   }
+
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(isInitialized_
