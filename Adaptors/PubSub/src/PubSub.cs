@@ -17,9 +17,9 @@
 
 using System;
 
-namespace ArmoniK.Core.Adapters.PubSub;
-
 using ArmoniK.Utils.DocAttribute;
+
+namespace ArmoniK.Core.Adapters.PubSub;
 
 [ExtractDocumentation("Options for PubSub")]
 internal class PubSub
