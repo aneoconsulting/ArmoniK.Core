@@ -17,9 +17,9 @@
 
 using System;
 
-namespace ArmoniK.Core.Adapters.Redis.Options;
-
 using ArmoniK.Utils.DocAttribute;
+
+namespace ArmoniK.Core.Adapters.Redis.Options;
 
 /// <summary>
 ///   Represents the configuration settings for connecting to a Redis instance.

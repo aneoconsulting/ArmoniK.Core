@@ -17,9 +17,10 @@
 
 using System;
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Common.Injection.Options;
 
-using ArmoniK.Utils.DocAttribute;
 /// <summary>
 ///   Configuration for <see cref="Stream.Worker.WorkerStreamHandler" />
 /// </summary>
