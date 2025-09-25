@@ -78,12 +78,13 @@ public class TestPollsterProvider : IDisposable
   public readonly  ITaskTable               TaskTable;
 
 
-  public TestPollsterProvider(IWorkerStreamHandler workerStreamHandler,
-                              IAgentHandler        agentHandler,
-                              IPullQueueStorage    pullQueueStorage,
-                              TimeSpan?            graceDelay     = null,
-                              TimeSpan?            acquireTimeout = null,
-                              int                  maxError       = 5)
+  public TestPollsterProvider(IWorkerStreamHandler         workerStreamHandler,
+                              IAgentHandler                agentHandler,
+                              IPullQueueStorage            pullQueueStorage,
+                              TimeSpan?                    graceDelay       = null,
+                              TimeSpan?                    acquireTimeout   = null,
+                              int                          maxError         = 5,
+                              IDictionary<string, string>? additionalConfig = null)
   {
     graceDelay_ = graceDelay;
     var logger = NullLogger.Instance;
@@ -162,6 +163,15 @@ public class TestPollsterProvider : IDisposable
                                                                  "internal")
                                                   },
                                                 };
+
+    if (additionalConfig is not null)
+    {
+      foreach (var pair in additionalConfig)
+      {
+        minimalConfig.Add(pair.Key,
+                          pair.Value);
+      }
+    }
 
     Console.WriteLine(minimalConfig.ToJson());
 

@@ -288,12 +288,19 @@ public class PollsterTest
 
   [Test]
   [Timeout(15000)]
-  public async Task InitShouldSucceed()
+  public async Task InitShouldSucceed([Values] bool FailReadinessIfNoTasks)
   {
     var mockAgentHandler = new Mock<IAgentHandler>();
     using var testServiceProvider = new TestPollsterProvider(new MockWorkerStreamHandler(),
                                                              mockAgentHandler.Object,
-                                                             new MockPullQueueStorage());
+                                                             new MockPullQueueStorage(),
+                                                             additionalConfig: new Dictionary<string, string>
+                                                                               {
+                                                                                 {
+                                                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.FailReadinessIfNoTasks)}",
+                                                                                   FailReadinessIfNoTasks.ToString()
+                                                                                 },
+                                                                               });
 
     Assert.AreNotEqual(HealthStatus.Healthy,
                        (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
@@ -314,7 +321,9 @@ public class PollsterTest
                     (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
                                               .ConfigureAwait(false)).Status);
     // Unhealthy because there are no tasks in queue
-    Assert.AreEqual(HealthStatus.Unhealthy,
+    Assert.AreEqual(FailReadinessIfNoTasks
+                      ? HealthStatus.Unhealthy
+                      : HealthStatus.Healthy,
                     (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
                                               .ConfigureAwait(false)).Status);
     Assert.AreEqual(HealthStatus.Healthy,

@@ -83,4 +83,9 @@ public class Pollster
   ///   The delay after the agent has verified the other agent crashed before retrying the task.
   /// </summary>
   public TimeSpan ProcessingCrashedDelay { get; set; } = TimeSpan.FromSeconds(10);
+
+  /// <summary>
+  ///   Indicates that readiness health check fails when no tasks are available for this pollster.
+  /// </summary>
+  public bool FailReadinessIfNoTasks { get; set; }
 }
