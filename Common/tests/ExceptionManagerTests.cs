@@ -21,10 +21,12 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -84,6 +86,10 @@ public class ExceptionManagerTests
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(5),
                                                                      maxError));
 
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Healthy));
+
     Assert.That(em.EarlyCancellationToken,
                 Is.Not.EqualTo(em.LateCancellationToken));
 
@@ -107,6 +113,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.False);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Healthy));
 
     lifetime_.StopApplication();
 
@@ -128,6 +137,9 @@ public class ExceptionManagerTests
     Assert.That(events,
                 Is.EqualTo(Enumerable.Range(0,
                                             5)));
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Unhealthy));
   }
 
   [Test]
@@ -167,6 +179,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.False);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Healthy));
 
     var sw = Stopwatch.StartNew();
     lifetime_.StopApplication();
@@ -187,6 +202,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.False);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Unhealthy));
 
     lifetime_.NotifyStopped();
 
@@ -235,6 +253,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.True);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Healthy));
 
     try
     {
@@ -248,6 +269,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.True);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Unhealthy));
 
     lifetime_.NotifyStopped();
 
@@ -291,6 +315,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.True);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Healthy));
 
     em.RecordError(logger,
                    new ApplicationException("Error"),
@@ -308,6 +335,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.True);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Unhealthy));
 
     lifetime_.NotifyStopped();
 
@@ -356,6 +386,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.False);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Unhealthy));
 
     lifetime_.NotifyStopped();
 
@@ -395,6 +428,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.True);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Unhealthy));
   }
 
   [Test]
@@ -443,6 +479,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.False);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Healthy));
 
     em.RecordError(logger,
                    new ApplicationException("Final Error"),
@@ -450,6 +489,9 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.True);
+    Assert.That(() => em.Check(HealthCheckTag.Liveness),
+                Has.Property(nameof(HealthCheckResult.Status))
+                   .EqualTo(HealthStatus.Unhealthy));
 
     em.RecordSuccess();
 
