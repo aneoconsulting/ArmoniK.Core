@@ -55,12 +55,6 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
 } else if queue == "pubsub" {
   '{ name = "pubsub", image = "gcr.io/google.com/cloudsdktool/google-cloud-cli:latest" }'
-} else if queue == "nats" { 
-  if os_family() == "windows" {
-    '{ name = "nats", image = "nats:nanoserver-ltsc2022"}'
-  } else {
-  '{ name = "nats", image = "nats:alpine" }'
-  }
 } else if queue == "sqs" {
   '{ name = "sqs", image = "localstack/localstack:latest" }'
 } else {
@@ -140,10 +134,10 @@ export TF_VAR_log_driver_image:= if os_family() == "windows" {
   "fluent/fluent-bit:latest"
 }
 
-export TF_VAR_windows:= if os_family() == "windows" {
-  "true"
+export TF_VAR_mongodb_params:= if os_family() == "windows" {
+  '{"windows": "true"}'
 } else {
-  "false"
+  '{}'
 }
 
 export TF_VAR_compute_plane:= if os_family() == "windows" {
@@ -174,7 +168,6 @@ _usage:
         rabbitmq091 :  for rabbitmq (0.9.1 protocol)
         artemis     :  for artemis  (1.0.0 protocol)
         pubsub      :  for Google PubSub
-        nats        :  for Nats with JetStream
         none        :  for external queue configurations
 
       worker: allowed values below

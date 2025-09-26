@@ -32,7 +32,6 @@ module "database" {
   image          = var.database_image
   network        = docker_network.armonik.id
   mongodb_params = var.mongodb_params
-  windows        = var.windows
 }
 
 module "object_redis" {
@@ -99,15 +98,6 @@ module "queue_pubsub" {
   network    = docker_network.armonik.id
 }
 
-module "queue_nats" {
-  source     = "./modules/storage/queue/nats"
-  count      = var.queue_storage.name == "nats" ? 1 : 0
-  queue_envs = var.queue_env_vars
-  image      = var.queue_storage.image
-  network    = docker_network.armonik.id
-  windows    = var.windows
-}
-
 module "queue_sqs" {
   source     = "./modules/storage/queue/sqs"
   count      = var.queue_storage.name == "sqs" ? 1 : 0
@@ -149,7 +139,6 @@ module "compute_plane" {
   log_driver         = module.fluenbit.log_driver
   mounts             = local.mounts
   container_init     = var.container_init
-  windows            = var.windows
 }
 
 module "metrics_exporter" {
