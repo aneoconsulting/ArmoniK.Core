@@ -275,3 +275,8 @@ variable "container_init" {
   type    = bool
   default = true
 }
+
+variable "windows" {
+  type    = bool
+  default = false
+}
