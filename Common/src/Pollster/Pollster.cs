@@ -257,7 +257,7 @@ public class Pollster : IInitializable
       healthCheckFailedResult_ = result;
     }
 
-    if (tag == HealthCheckTag.Readiness && taskProcessingDict_.IsEmpty)
+    if (pollsterOptions_.FailReadinessIfNoTasks && tag == HealthCheckTag.Readiness && taskProcessingDict_.IsEmpty)
     {
       return HealthCheckResult.Unhealthy("No tasks to process");
     }
