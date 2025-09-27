@@ -62,7 +62,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
       with:
         tool: just
 
@@ -145,7 +145,7 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
       with:
         tool: just
 
@@ -295,7 +295,7 @@ jobs:
       uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3  
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
       with:
         tool: just
 
@@ -378,7 +378,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
         with:
           tool: just
 
@@ -514,7 +514,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
         with:
           tool: just
       
@@ -685,7 +685,7 @@ jobs:
           choco install just -y      
 
       - name: Setup AWS cli
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -817,7 +817,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
         with:
           tool: just
 
@@ -910,7 +910,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
         with:
           tool: just
 
@@ -1037,7 +1037,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
         with:
           tool: just
 
@@ -1118,7 +1118,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
         with:
           tool: just
 
@@ -1197,7 +1197,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@00a367b59ffa7299659baf1168279aefe69f5516 # v2
         with:
           tool: just
 
