@@ -55,12 +55,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
 } else if queue == "pubsub" {
   '{ name = "pubsub", image = "gcr.io/google.com/cloudsdktool/google-cloud-cli:latest" }'
-} else if queue == "nats" { 
-  if os_family() == "windows" {
-    '{ name = "nats", image = "nats:nanoserver-ltsc2022"}'
-  } else {
+} else if queue == "nats" {
   '{ name = "nats", image = "nats:alpine" }'
-  }
 } else if queue == "sqs" {
   '{ name = "sqs", image = "localstack/localstack:latest" }'
 } else {

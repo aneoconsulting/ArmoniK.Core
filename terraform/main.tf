@@ -105,7 +105,6 @@ module "queue_nats" {
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
   network    = docker_network.armonik.id
-  windows    = var.windows
 }
 
 module "queue_sqs" {

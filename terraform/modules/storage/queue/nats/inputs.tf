@@ -27,7 +27,3 @@ variable "exposed_ports" {
     connection = 4222
   }
 }
-
-variable "windows" {
-  type = bool
-}
