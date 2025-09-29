@@ -55,8 +55,6 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
 } else if queue == "pubsub" {
   '{ name = "pubsub", image = "gcr.io/google.com/cloudsdktool/google-cloud-cli:latest" }'
-} else if queue == "nats" {
-  '{ name = "nats", image = "nats:alpine" }'
 } else if queue == "sqs" {
   '{ name = "sqs", image = "localstack/localstack:latest" }'
 } else {
@@ -170,7 +168,6 @@ _usage:
         rabbitmq091 :  for rabbitmq (0.9.1 protocol)
         artemis     :  for artemis  (1.0.0 protocol)
         pubsub      :  for Google PubSub
-        nats        :  for Nats with JetStream
         none        :  for external queue configurations
 
       worker: allowed values below
