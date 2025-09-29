@@ -72,7 +72,6 @@ module "queue_rabbitmq" {
   image      = var.queue_storage.image
   protocol   = var.queue_storage.protocol
   network    = docker_network.armonik.id
-  windows    = var.windows
 }
 
 module "queue_activemq" {

@@ -6,23 +6,23 @@ output "generated_env_vars" {
     "Amqp__User"                                            = "guest" # Default value, to change it we should provide a suitable .conf file
     "Amqp__Password"                                        = "guest" # Default value, to change it we should provide a suitable .conf file
     "Amqp__Host"                                            = "queue"
-    "Amqp__Port"                                            = var.windows ? 5672 : 5671
-    "Amqp__Scheme"                                          = var.windows ? "AMQP" : "AMQPS"
-    "Amqp__CaPath"                                          = !var.windows ? "/rabbitmq/certs/ca.pem" : ""
-    "Amqp__CertPath"                                        = !var.windows ? "/rabbitmq/certs/rabbit.crt" : ""
-    "Amqp__KeyPath"                                         = !var.windows ? "/rabbitmq/certs/rabbit.key" : ""
+    "Amqp__Port"                                            = local.is_windows ? 5672 : 5671
+    "Amqp__Scheme"                                          = local.is_windows ? "AMQP" : "AMQPS"
+    "Amqp__CaPath"                                          = !local.is_windows ? "/rabbitmq/certs/ca.pem" : ""
+    "Amqp__CertPath"                                        = !local.is_windows ? "/rabbitmq/certs/rabbit.crt" : ""
+    "Amqp__KeyPath"                                         = !local.is_windows ? "/rabbitmq/certs/rabbit.key" : ""
     "Amqp__Timeout"                                         = "20000"
     "Amqp__MaxPriority"                                     = "${var.queue_envs.max_priority}"
     "Amqp__MaxRetries"                                      = "${var.queue_envs.max_retries}"
     "Amqp__LinkCredit"                                      = "${var.queue_envs.link_credit}"
-    "Amqp__EndpointUrl"                                     = "queue:${var.windows ? 5672 : 5671}"
-    "Amqp__AllowInsecureTls"                                = !var.windows ? true : false
+    "Amqp__EndpointUrl"                                     = "queue:${local.is_windows ? 5672 : 5671}"
+    "Amqp__AllowInsecureTls"                                = !local.is_windows ? true : false
   })
 }
 
 output "core_mounts" {
   description = "Volumes that agents and submitters must mount to access the queue"
-  value = var.windows ? {} : {
+  value = local.is_windows ? {} : {
     "/rabbitmq/certs/ca.pem" = local_file.ca.filename
   }
 }
