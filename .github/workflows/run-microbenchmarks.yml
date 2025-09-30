@@ -1,0 +1,22 @@
+name: Run microbenchmarks on release
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: 'Release tag to benchmark'
+        required: true
+        default: 'latest'
+
+jobs:
+  trigger:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger Repository B workflow
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/aneoconsulting/ArmoniK.Microbench/dispatches \
+            -d '{"event_type":"trigger-microbenchmarks","client_payload":{"release_tag":"${{ github.event.release.tag_name || github.event.inputs.release_tag }}"}}'
