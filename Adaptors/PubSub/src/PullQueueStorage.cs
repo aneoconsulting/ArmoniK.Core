@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +42,7 @@ internal class PullQueueStorage : IPullQueueStorage
   private readonly bool    exactlyOnceDelivery_;
   private readonly string  kmsKeyName_;
   private readonly ILogger logger_;
+  private readonly int     maxPriority_;
   private readonly bool    messageOrdering_;
 
   private readonly TimeSpan                   messageRetention_;
@@ -66,6 +68,7 @@ internal class PullQueueStorage : IPullQueueStorage
     prefix_                = options.Prefix;
     project_               = options.ProjectId;
     logger_                = logger;
+    maxPriority_           = options.MaxPriority;
   }
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
@@ -77,69 +80,86 @@ internal class PullQueueStorage : IPullQueueStorage
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    var topic = $"a{prefix_}-{partitionId}";
-    var sub   = $"a{prefix_}-{partitionId}-ak-sub";
-
-    var topicName = TopicName.FromProjectTopic(project_,
-                                               topic);
-    var subscriptionName = SubscriptionName.FromProjectSubscription(project_,
-                                                                    sub);
-    PullResponse messages;
-    try
+    var queueInfos = new List<(SubscriptionName queueUrl, TopicName queueName, int priority)>();
+    for (var i = 0; i < int.Max(MaxPriority,
+                                1); i++)
     {
-      messages = await subscriber_.PullAsync(subscriptionName,
-                                             nbMessages,
-                                             cancellationToken)
-                                  .ConfigureAwait(false);
-    }
-    catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
-    {
-      try
-      {
-        await publisher_.CreateTopicAsync(new Topic
-                                          {
-                                            MessageRetentionDuration = Duration.FromTimeSpan(messageRetention_),
-                                            TopicName                = topicName,
-                                            KmsKeyName               = kmsKeyName_,
-                                          })
-                        .ConfigureAwait(false);
-      }
-      catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
-      {
-      }
+      var priority = i + 1;
+      logger_.LogDebug("Getting queue for priority #{PubSubPriority}",
+                       priority);
+      var topic = $"a{prefix_}-{partitionId}-{priority}";
+      var sub   = $"a{prefix_}-{partitionId}-{priority}-ak-sub";
 
-      var subscriptionRequest = new Subscription
-                                {
-                                  SubscriptionName          = subscriptionName,
-                                  TopicAsTopicName          = topicName,
-                                  EnableExactlyOnceDelivery = exactlyOnceDelivery_,
-                                  EnableMessageOrdering     = messageOrdering_,
-                                  AckDeadlineSeconds        = ackDeadlinePeriod_,
-                                };
-      try
-      {
-        await subscriber_.CreateSubscriptionAsync(subscriptionRequest)
-                         .ConfigureAwait(false);
-      }
-      catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
-      {
-      }
-
-      messages = await subscriber_.PullAsync(subscriptionName,
-                                             nbMessages,
-                                             cancellationToken)
-                                  .ConfigureAwait(false);
+      var topicName = TopicName.FromProjectTopic(project_,
+                                                 topic);
+      var subscriptionName = SubscriptionName.FromProjectSubscription(project_,
+                                                                      sub);
+      queueInfos.Add((subscriptionName, topicName, priority));
     }
 
-    foreach (var message in messages.ReceivedMessages)
+    foreach (var (subscriptionName, topicName, priority) in queueInfos.OrderByDescending(x => x.priority))
     {
-      cancellationToken.ThrowIfCancellationRequested();
-      yield return new QueueMessageHandler(message,
-                                           subscriber_,
-                                           subscriptionName,
-                                           ackDeadlinePeriod_,
-                                           ackExtendDeadlineStep_,
-                                           logger_);
+      logger_.LogDebug("Try pulling {NbMessages} from {subscriptionName} (priority {Priority})",
+                       nbMessages,
+                       subscriptionName,
+                       priority);
+      PullResponse messages;
+      try
+      {
+        messages = await subscriber_.PullAsync(subscriptionName,
+                                               nbMessages,
+                                               cancellationToken)
+                                    .ConfigureAwait(false);
+      }
+      catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
+      {
+        try
+        {
+          await publisher_.CreateTopicAsync(new Topic
+                                            {
+                                              MessageRetentionDuration = Duration.FromTimeSpan(messageRetention_),
+                                              TopicName                = topicName,
+                                              KmsKeyName               = kmsKeyName_,
+                                            })
+                          .ConfigureAwait(false);
+        }
+        catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
+        {
+        }
+
+        var subscriptionRequest = new Subscription
+                                  {
+                                    SubscriptionName          = subscriptionName,
+                                    TopicAsTopicName          = topicName,
+                                    EnableExactlyOnceDelivery = exactlyOnceDelivery_,
+                                    EnableMessageOrdering     = messageOrdering_,
+                                    AckDeadlineSeconds        = ackDeadlinePeriod_,
+                                  };
+        try
+        {
+          await subscriber_.CreateSubscriptionAsync(subscriptionRequest)
+                           .ConfigureAwait(false);
+        }
+        catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
+        {
+        }
+
+        messages = await subscriber_.PullAsync(subscriptionName,
+                                               nbMessages,
+                                               cancellationToken)
+                                    .ConfigureAwait(false);
+      }
+
+      foreach (var message in messages.ReceivedMessages)
+      {
+        cancellationToken.ThrowIfCancellationRequested();
+        yield return new QueueMessageHandler(message,
+                                             subscriber_,
+                                             subscriptionName,
+                                             ackDeadlinePeriod_,
+                                             ackExtendDeadlineStep_,
+                                             logger_);
+      }
     }
   }
 
@@ -159,5 +179,6 @@ internal class PullQueueStorage : IPullQueueStorage
   }
 
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(maxPriority_,
+               1);
 }
