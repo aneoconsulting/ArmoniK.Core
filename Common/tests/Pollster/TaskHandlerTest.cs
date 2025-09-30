@@ -1172,6 +1172,10 @@ public class TaskHandlerTest
                                  CancellationToken cancellationToken = default)
       => throw new NotImplementedException();
 
+    public Task DeleteTasksAsync(ICollection<string> taskIds,
+                                 CancellationToken   cancellationToken = default)
+      => throw new NotImplementedException();
+
     public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
                                                                            Expression<Func<TaskData, object?>> orderField,
                                                                            Expression<Func<TaskData, T>>       selector,

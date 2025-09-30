@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
@@ -28,9 +27,7 @@ using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Utils;
-
 using Grpc.Core;
-
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -841,21 +838,8 @@ public static class TaskLifeCycleHelper
     // If at least one task is not creating, it means that it has potentially been submitted, and might have started.
     // It also means that we created all subtasks and completed all the results of the current task.
     // Therefore, we can safely finish the completion of the current task on behalf of the pod that has crashed.
-    // -> THIS AIN'T VALID, CONCURRENCY CASE POSSIBLE
 
     var committed    = subtasks.Any(td => td.Status is not TaskStatus.Creating);
-    var wasCancelled = subtasks.Any(td => td.Status is TaskStatus.Cancelling or TaskStatus.Cancelled);
-
-    // Only if there is no subtasks cancelled or cancelling, we can safely finish the completion.
-
-    committed = committed && !wasCancelled;
-
-    if (wasCancelled)
-    {
-      logger.LogError("Some subtasks (Total: {totalSubtasks} vs cancel: {cancelCount}) has status Cancelling or Cancelled, this might indicate a concurrent case",
-                      subtasks.Count,
-                      subtasks.Count(td => td.Status is TaskStatus.Creating or TaskStatus.Cancelling));
-    }
 
     // If no tasks were created, we look for all the tasks that depends on completed results
     if (subtasks.Count == 0)
@@ -953,12 +937,29 @@ public static class TaskLifeCycleHelper
                         taskData.TaskId);
     }
 
-    logger.LogError("Cancelling subtasks of {TaskId}",
-                      taskData.TaskId);
+    // Revert ExpectedOutputIds to current task to avoid aborting them while aborting subtasks
+    await resultTable.UpdateManyResults(td => taskData.ExpectedOutputIds.Contains(td.ResultId),
+                                        new UpdateDefinition<Result>().Set(td => td.OwnerTaskId,
+                                                                           taskData.TaskId),
+                                        cancellationToken)
+                     .ConfigureAwait(false);
 
-    await taskTable.CancelTaskAsync(subtasks.ViewSelect(td => td.TaskId),
-                                    cancellationToken)
-                   .ConfigureAwait(false);
+    var resultsToAbort = await resultTable.GetResults(r => r.CreatedBy == taskData.TaskId,
+                                                      r => r.ResultId,
+                                                      cancellationToken)
+                                          .ToListAsync(cancellationToken)
+                                          .ConfigureAwait(false);
+    logger.LogError("Deleting subtasks of {TaskId}",
+                    taskData.TaskId);
+
+    await ResultLifeCycleHelper.PurgeTasksAndAbortResults(taskTable,
+                                                          resultTable,
+                                                          subtasks.ViewSelect(td => td.TaskId),
+                                                          resultsToAbort,
+                                                          errorMessage,
+                                                          TaskStatus.Cancelled,
+                                                          cancellationToken)
+                               .ConfigureAwait(false);
 
     await CompleteTaskAsync(taskTable,
                             resultTable,
