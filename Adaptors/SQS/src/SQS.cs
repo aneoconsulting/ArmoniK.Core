@@ -80,4 +80,9 @@ internal class SQS
   ///   </a>
   /// </remarks>
   public Dictionary<string, string> Attributes { get; set; } = new();
+
+  /// <summary>
+  ///   Maximum number of retry attempts for failed operations.
+  /// </summary>
+  public int MaxRetries { get; set; } = 5;
 }
