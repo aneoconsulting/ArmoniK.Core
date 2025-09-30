@@ -715,12 +715,13 @@ public static class TaskLifeCycleHelper
                                           .ToListAsync(cancellationToken)
                                           .ConfigureAwait(false);
 
-    await ResultLifeCycleHelper.AbortTasksAndResults(taskTable,
+    await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable,
                                                      resultTable,
                                                      subtasks,
                                                      resultsToAbort,
                                                      errorMessage,
                                                      TaskStatus.Cancelled,
+                                                     false,
                                                      cancellationToken)
                                .ConfigureAwait(false);
 
@@ -819,7 +820,7 @@ public static class TaskLifeCycleHelper
                                                cancellationToken)
                                  .ConfigureAwait(false);
 
-    await ResultLifeCycleHelper.AbortTasksAndResults(taskTable,
+    await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable,
                                                      resultTable,
                                                      new[]
                                                      {
@@ -1019,13 +1020,14 @@ public static class TaskLifeCycleHelper
                                           .ToListAsync(cancellationToken)
                                           .ConfigureAwait(false);
 
-    await ResultLifeCycleHelper.AbortTasksAndResults(taskTable,
-                                                     resultTable,
-                                                     subtasks.ViewSelect(td => td.TaskId),
-                                                     resultsToAbort,
-                                                     errorMessage,
-                                                     TaskStatus.Cancelled,
-                                                     cancellationToken)
+    await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable,
+                                                          resultTable,
+                                                          subtasks.ViewSelect(td => td.TaskId),
+                                                          resultsToAbort,
+                                                          errorMessage,
+                                                          TaskStatus.Cancelled,
+                                                          true,
+                                                          cancellationToken)
                                .ConfigureAwait(false);
 
     // Retry or abort the current task
@@ -1035,7 +1037,7 @@ public static class TaskLifeCycleHelper
                                         pushQueueStorage,
                                         taskData,
                                         sessionData,
-                                        subtasks.ViewSelect(td => td.TaskId),
+                                        [],
                                         errorMessage,
                                         logger,
                                         cancellationToken)
