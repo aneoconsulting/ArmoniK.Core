@@ -21,6 +21,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -70,13 +71,17 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddSingleton(new AuthenticationCache())
            .AddSingleton<ITaskTable, SimpleTaskTable>()
            .AddSingleton<IResultTable, SimpleResultTable>()
+           .AddSingleton<IObjectStorage, SimpleObjectStorage>()
            .AddSingleton<ISessionTable, SimpleSessionTable>()
+           .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
            .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
            .AddHttpClient()
-           .AddSingleton<MeterHolder>()
+           .AddScoped<GrpcHealthChecksService>()
+           .AddMetrics()
            .AddSingleton<AgentIdentifier>()
+           .AddSingleton<MeterHolder>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddAuthentication()
            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
@@ -85,6 +90,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
                                                            });
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
            .AddAuthorization();
+
     if (validateGrpcRequests)
     {
       builder.Services.ValidateGrpcRequests();
@@ -108,6 +114,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
     app_.MapGrpcService<GrpcEventsService>();
     app_.MapGrpcService<GrpcPartitionsService>();
     app_.MapGrpcService<GrpcVersionsService>();
+    app_.MapGrpcService<GrpcHealthChecksService>();
   }
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,

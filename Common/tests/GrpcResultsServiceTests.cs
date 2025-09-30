@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Results;
@@ -43,6 +45,8 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+
+using Moq;
 
 using NUnit.Framework;
 
@@ -523,5 +527,91 @@ public class GrpcResultsServiceTests
     // Results with manual deletion = true should not be deleted after purge
     Assert.That(sizes[opaqueIdManual],
                 Is.GreaterThan(0));
+  }
+
+  [Test]
+  public async Task IssueDuringCreateResultsShouldNotCreateAnything()
+  {
+    var mock = new Mock<IResultTable>();
+    mock.Setup(table => table.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
+                                         It.IsAny<Expression<Func<Result, Result>>>(),
+                                         It.IsAny<CancellationToken>()))
+        .Throws<OperationCanceledException>();
+
+
+    helper_ = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                               .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                               .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                               .AddSingleton<Injection.Options.Submitter>()
+                                                               .AddSingleton(mock.Object)
+                                                               .AddSingleton<MeterHolder>()
+                                                               .AddSingleton<AgentIdentifier>()
+                                                               .AddScoped(typeof(FunctionExecutionMetrics<>))
+                                                               .AddHttpClient()
+                                                               .AddGrpc(),
+                                       builder => builder.UseRouting()
+                                                         .UseAuthorization(),
+                                       builder =>
+                                       {
+                                         builder.MapGrpcService<GrpcTasksService>();
+                                         builder.MapGrpcService<GrpcSessionsService>();
+                                         builder.MapGrpcService<GrpcResultsService>();
+                                       },
+                                       true);
+
+    helper_!.App.Start();
+
+    var server = helper_!.App.GetTestServer();
+
+    channel_ = GrpcChannel.ForAddress("http://localhost:9999",
+                                      new GrpcChannelOptions
+                                      {
+                                        HttpHandler = server.CreateHandler(),
+                                      });
+
+    session_ = new Sessions.SessionsClient(channel_).CreateSession(new CreateSessionRequest
+                                                                   {
+                                                                     DefaultTaskOption = new TaskOptions
+                                                                                         {
+                                                                                           MaxRetries = 1,
+                                                                                           Priority   = 2,
+                                                                                           MaxDuration = new Duration
+                                                                                                         {
+                                                                                                           Seconds = 500,
+                                                                                                           Nanos   = 0,
+                                                                                                         },
+                                                                                         },
+                                                                   });
+    Assert.That(async () =>
+                {
+                  await new Results.ResultsClient(channel_).CreateResultsAsync(new CreateResultsRequest
+                                                                               {
+                                                                                 SessionId = session_.SessionId,
+                                                                                 Results =
+                                                                                 {
+                                                                                   new CreateResultsRequest.Types.ResultCreate
+                                                                                   {
+                                                                                     Data = ByteString.Empty,
+                                                                                     Name = "test1",
+                                                                                   },
+                                                                                   new CreateResultsRequest.Types.ResultCreate
+                                                                                   {
+                                                                                     Data = ByteString.Empty,
+                                                                                     Name = "test1",
+                                                                                   },
+                                                                                 },
+                                                                               });
+                },
+                Throws.InstanceOf<RpcException>()
+                      .With.Property(nameof(RpcException.StatusCode))
+                      .EqualTo(StatusCode.Unknown));
+
+    mock.Verify(table => table.Create(It.IsAny<ICollection<Result>>(),
+                                      It.IsAny<CancellationToken>()),
+                Times.Once);
+
+    mock.Verify(table => table.DeleteResults(It.IsAny<ICollection<string>>(),
+                                             It.IsAny<CancellationToken>()),
+                Times.Once);
   }
 }

@@ -245,6 +245,7 @@ public static class TaskLifeCycleHelper
                                                           cancellationToken);
 
     // Transfer ownership while dependencies are in preparation
+    // TODO: manage this case in DeleteTasks
     if (!parentTaskId.Equals(sessionData.SessionId))
     {
       var parentExpectedOutputKeys = (await taskTable.ReadTaskAsync(parentTaskId,
@@ -277,6 +278,33 @@ public static class TaskLifeCycleHelper
                             logger,
                             cancellationToken)
       .ConfigureAwait(false);
+  }
+
+  /// <summary>
+  ///   DeleteTasks created by <see cref="CreateTasks" /> and <see cref="FinalizeTaskCreation" />
+  /// </summary>
+  /// <param name="taskTable"></param>
+  /// <param name="resultTable"></param>
+  /// <param name="creationRequests"></param>
+  /// <param name="cancellationToken"></param>
+  /// <remarks>
+  ///   Does not support tasks created during subtasking where parentTaskId != sessionId
+  /// </remarks>
+  public static async Task DeleteTasksAsync(ITaskTable                       taskTable,
+                                            IResultTable                     resultTable,
+                                            ICollection<TaskCreationRequest> creationRequests,
+                                            CancellationToken                cancellationToken = default)
+  {
+    await taskTable.DeleteTasksAsync(creationRequests.ViewSelect(creationRequest => creationRequest.TaskId),
+                                     cancellationToken)
+                   .ConfigureAwait(false);
+    // actually, we should roll back result ownership change.
+    // In this case, we can just put it empty because we are not in the subtasking case
+    await resultTable.SetTaskOwnership(creationRequests.SelectMany(creationRequest => creationRequest.ExpectedOutputKeys)
+                                                       .ToHashSet()
+                                                       .ViewSelect(s => (s, "")),
+                                       cancellationToken)
+                     .ConfigureAwait(false);
   }
 
   /// <summary>

@@ -92,8 +92,8 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       }
       catch (Exception ex)
       {
-        logger_.LogDebug(ex,
-                         "Channel was not created, retry in {seconds}",
+        logger_.LogError(ex,
+                         "Failed to create worker channel, retry in {seconds}",
                          optionsInitWorker_.WorkerCheckDelay * retry);
         await Task.Delay(optionsInitWorker_.WorkerCheckDelay * retry,
                          cancellationToken)

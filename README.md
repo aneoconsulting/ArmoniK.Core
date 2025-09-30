@@ -16,7 +16,7 @@ This project is part of the [ArmoniK](https://github.com/aneoconsulting/ArmoniK)
 
 ArmoniK.Core provides services for submitting computational tasks, keeping track of the status of the tasks and retrieving the results of the computations. The tasks are processed by external workers whose interfaces are also defined in ArmoniK.Api. ArmoniK.Core sends tasks to the workers, manages eventual errors during the execution of the tasks and manages also the storage of the task's results.
 
-More detailed information on the inner working of ArmoniK.Core is available [here](https://aneoconsulting.github.io/ArmoniK.Core/).
+More detailed information on the inner working of ArmoniK.Core is available [here](https://armonikcore.readthedocs.io/).
 
 ## Development process
 
@@ -36,7 +36,8 @@ Therefore, features in development or testing that cannot fit within a branch an
 | RabbitMQ | Queue          | RabbitMQ client using AMQP protocol 0.9.2     | GA      | Linux          | 
 | AMQP     | Queue          | AMQP client using AMQP protocol 1.0.0         | GA      | Linux          | 
 | PubSub   | Queue          | Google PubSub client                          | GA      | -              | 
-| SQS      | Queue          | AWS SQS client                                | Preview | -              | 
+| SQS      | Queue          | AWS SQS client                                | GA      | -              | 
+| Nats     | Queue          | Nats Jet Stream client                        | Preview | -              | 
 | Redis    | Object Storage | Redis client used to store binary data        | GA      | Windows, Linux | 
 | Local    | Object Storage | File system used to store binary data         | GA      | -              | 
 | S3       | Object Storage | AWS S3 client used to store binary data       | GA      | -              | 

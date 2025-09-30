@@ -74,6 +74,19 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
+  public Task DeleteResults(ICollection<string> results,
+                            CancellationToken   cancellationToken = default)
+  {
+    foreach (var id in results)
+    {
+      results_.TryRemove(id,
+                         out _);
+    }
+
+    return Task.CompletedTask;
+  }
+
+  /// <inheritdoc />
   public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
                                            Expression<Func<Result, T>>    convertor,
                                            CancellationToken              cancellationToken = default)

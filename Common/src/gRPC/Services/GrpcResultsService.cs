@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -177,17 +178,27 @@ public class GrpcResultsService : Results.ResultsBase
                                                           rc.ManualDeletion))
                          .ToList();
 
-    await resultTable_.Create(results,
-                              context.CancellationToken)
-                      .ConfigureAwait(false);
+    try
+    {
+      await resultTable_.Create(results,
+                                context.CancellationToken)
+                        .ConfigureAwait(false);
 
-    return new CreateResultsMetaDataResponse
-           {
-             Results =
+      return new CreateResultsMetaDataResponse
              {
-               results.Select(result => result.ToGrpcResultRaw()),
-             },
-           };
+               Results =
+               {
+                 results.Select(result => result.ToGrpcResultRaw()),
+               },
+             };
+    }
+    catch (Exception)
+    {
+      await resultTable_.DeleteResults(results.ViewSelect(result => result.ResultId),
+                                       CancellationToken.None)
+                        .ConfigureAwait(false);
+      throw;
+    }
   }
 
   /// <inheritdoc />
@@ -197,64 +208,88 @@ public class GrpcResultsService : Results.ResultsBase
                                                                   ServerCallContext    context)
   {
     using var measure = meter_.CountAndTime();
-    var results = await request.Results.ParallelSelect(new ParallelTaskOptions(options_.DegreeOfParallelism),
-                                                       async rc =>
-                                                       {
-                                                         var resultId = Guid.NewGuid()
-                                                                            .ToString();
 
-                                                         var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
-                                                                                                                {
-                                                                                                                  ResultId  = resultId,
-                                                                                                                  SessionId = request.SessionId,
-                                                                                                                },
-                                                                                                                new List<ReadOnlyMemory<byte>>
-                                                                                                                {
-                                                                                                                  rc.Data.Memory,
-                                                                                                                }.ToAsyncEnumerable(),
-                                                                                                                context.CancellationToken)
-                                                                                              .ConfigureAwait(false);
+    var requests = request.Results.Select(rc =>
+                                          {
+                                            var resultId = Guid.NewGuid()
+                                                               .ToString();
+                                            var now = DateTime.UtcNow;
+                                            var result = new Result(request.SessionId,
+                                                                    resultId,
+                                                                    rc.Name,
+                                                                    "",
+                                                                    "",
+                                                                    request.SessionId,
+                                                                    ResultStatus.Created,
+                                                                    new List<string>(),
+                                                                    now,
+                                                                    null,
+                                                                    0,
+                                                                    Array.Empty<byte>(),
+                                                                    rc.ManualDeletion);
 
-                                                         var now = DateTime.UtcNow;
+                                            return (result, rc.Data);
+                                          })
+                          .AsICollection();
 
-                                                         return (new Result(request.SessionId,
-                                                                            resultId,
-                                                                            rc.Name,
-                                                                            "",
-                                                                            "",
-                                                                            request.SessionId,
-                                                                            ResultStatus.Created,
-                                                                            new List<string>(),
-                                                                            now,
-                                                                            null,
-                                                                            size,
-                                                                            Array.Empty<byte>(),
-                                                                            rc.ManualDeletion), id);
-                                                       })
-                               .ToListAsync()
-                               .ConfigureAwait(false);
+    var opaqueIds = new ConcurrentBag<byte[]>();
 
-    await resultTable_.Create(results.ViewSelect(tuple => tuple.Item1),
-                              context.CancellationToken)
-                      .ConfigureAwait(false);
+    try
+    {
+      var results = await requests.ParallelSelect(new ParallelTaskOptions(options_.DegreeOfParallelism),
+                                                  async rc =>
+                                                  {
+                                                    var (id, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
+                                                                                                           {
+                                                                                                             ResultId  = rc.result.ResultId,
+                                                                                                             SessionId = request.SessionId,
+                                                                                                           },
+                                                                                                           new List<ReadOnlyMemory<byte>>
+                                                                                                           {
+                                                                                                             rc.Data.Memory,
+                                                                                                           }.ToAsyncEnumerable(),
+                                                                                                           context.CancellationToken)
+                                                                                         .ConfigureAwait(false);
 
-    await resultTable_.CompleteManyResults(results.ViewSelect(tuple => (tuple.Item1.ResultId, tuple.Item1.Size, tuple.id)),
-                                           "",
-                                           context.CancellationToken)
-                      .ConfigureAwait(false);
+                                                    opaqueIds.Add(id);
 
-    return new CreateResultsResponse
-           {
-             Results =
-             {
-               await resultTable_.GetResults(request.SessionId,
-                                             results.Select(tuple => tuple.Item1.ResultId),
+                                                    return (rc.result, id, size);
+                                                  })
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      await resultTable_.Create(results.ViewSelect(tuple => tuple.result),
+                                context.CancellationToken)
+                        .ConfigureAwait(false);
+
+      await resultTable_.CompleteManyResults(results.ViewSelect(tuple => (tuple.result.ResultId, tuple.size, tuple.id)),
+                                             "",
                                              context.CancellationToken)
-                                 .Select(result => result.ToGrpcResultRaw())
-                                 .ToListAsync()
-                                 .ConfigureAwait(false),
-             },
-           };
+                        .ConfigureAwait(false);
+
+      return new CreateResultsResponse
+             {
+               Results =
+               {
+                 await resultTable_.GetResults(request.SessionId,
+                                               results.Select(tuple => tuple.result.ResultId),
+                                               context.CancellationToken)
+                                   .Select(result => result.ToGrpcResultRaw())
+                                   .ToListAsync()
+                                   .ConfigureAwait(false),
+               },
+             };
+    }
+    catch (Exception)
+    {
+      await objectStorage_.TryDeleteAsync(opaqueIds,
+                                          CancellationToken.None)
+                          .ConfigureAwait(false);
+      await resultTable_.DeleteResults(requests.ViewSelect(result => result.result.ResultId),
+                                       CancellationToken.None)
+                        .ConfigureAwait(false);
+      throw;
+    }
   }
 
   /// <inheritdoc />
