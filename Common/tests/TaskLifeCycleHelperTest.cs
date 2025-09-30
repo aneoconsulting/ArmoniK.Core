@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2025. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -30,6 +30,7 @@ using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Utils;
 
 using Google.Protobuf.WellKnownTypes;
 
@@ -1036,7 +1037,7 @@ public class TaskLifeCycleHelperTest
                         },
                         resultTemplate with
                         {
-                          ResultId = "output",
+                          ResultId = "outputRoot",
                         },
                         resultTemplate with
                         {
@@ -1056,8 +1057,10 @@ public class TaskLifeCycleHelperTest
                           resultTemplate with
                           {
                             ResultId = "payloadB",
-                            CreatedBy = "root",
-                            CompletedBy = "root",
+                          },
+                          resultTemplate with
+                          {
+                            ResultId = "outputB",
                           },
                         };
 
@@ -1068,7 +1071,7 @@ public class TaskLifeCycleHelperTest
                           holder.Options.ToTaskOptions(),
                           new List<string>
                           {
-                            "output",
+                            "outputRoot",
                           },
                           new List<string>()),
                       new("A",
@@ -1088,7 +1091,8 @@ public class TaskLifeCycleHelperTest
                             holder.Options.ToTaskOptions(),
                             new List<string>
                             {
-                              "output",
+                              "outputRoot",
+                              "outputB",
                             },
                             new List<string>
                             {
@@ -1142,7 +1146,10 @@ public class TaskLifeCycleHelperTest
 
     if (crashState >= CrashState.ResultsCreated)
     {
-      await holder.ResultTable.Create(submitResults)
+      await holder.ResultTable.Create(submitResults.ViewSelect(r => r with
+                                                                    {
+                                                                      CreatedBy = "root",
+                                                                    }))
                   .ConfigureAwait(false);
     }
 
@@ -1224,8 +1231,13 @@ public class TaskLifeCycleHelperTest
                             .ToListAsync()
                             .ConfigureAwait(false);
 
-    var output = await holder.ResultTable.GetResult("output")
-                             .ConfigureAwait(false);
+    var outputRoot = await holder.ResultTable.GetResult("outputRoot")
+                                 .ConfigureAwait(false);
+
+    var outputB = await holder.ResultTable.GetResults(r => r.ResultId == "outputB",
+                                                      r => r)
+                              .ToListAsync()
+                              .ConfigureAwait(false);
 
     var messages = new List<string>();
 
@@ -1249,17 +1261,28 @@ public class TaskLifeCycleHelperTest
 
                       Assert.That(taskB,
                                   crashState >= CrashState.TasksCreated || !subtask
-                                    ? Has.ItemAt(0)
-                                         .Property("Status")
-                                         .EqualTo(committed || !subtask
-                                                    ? TaskStatus.Pending
-                                                    : TaskStatus.Cancelling)
+                                    ? committed || !subtask
+                                        ? Has.ItemAt(0)
+                                             .Property("Status")
+                                             .EqualTo(TaskStatus.Pending)
+                                        : Is.Empty // subtasks are deleted when not committed
                                     : Is.Empty);
 
-                      Assert.That(output.Status,
+                      Assert.That(outputB,
+                                  crashState >= CrashState.ResultsCreated || !subtask
+                                    ? committed || !subtask
+                                        ? Has.ItemAt(0)
+                                             .Property("Status")
+                                             .EqualTo(ResultStatus.Created)
+                                        : Has.ItemAt(0) // results are aborted when not committed
+                                             .Property("Status")
+                                             .EqualTo(ResultStatus.Aborted)
+                                    : Is.Empty);
+
+                      Assert.That(outputRoot.Status,
                                   Is.EqualTo(ResultStatus.Created));
-                      Assert.That(output.OwnerTaskId,
-                                  Is.EqualTo(committed || !subtask
+                      Assert.That(outputRoot.OwnerTaskId,
+                                  Is.EqualTo(committed
                                                ? "B"
                                                : "root###1"));
 
