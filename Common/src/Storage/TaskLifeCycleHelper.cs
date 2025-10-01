@@ -1000,10 +1000,10 @@ public static class TaskLifeCycleHelper
       errorMessage = $"Task {taskData.TaskId} has been {action} because pod {taskData.OwnerPodId} seems to have crashed";
 
       logger.LogInformation("{Action} task {TaskId} on another pod, and cancel subtasks",
-                            taskData.TaskId,
                             retry
                               ? "Retry"
-                              : "Abort");
+                              : "Abort",
+                            taskData.TaskId);
     }
 
     // Revert ExpectedOutputIds to current task to avoid aborting them while aborting subtasks
