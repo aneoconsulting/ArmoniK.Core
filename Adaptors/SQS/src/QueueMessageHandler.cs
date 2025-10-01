@@ -17,6 +17,9 @@
 
 using System;
 using System.Diagnostics;
+using System.IO;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,6 +27,7 @@ using Amazon.SQS;
 using Amazon.SQS.Model;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.Exceptions;
 
 using Microsoft.Extensions.Logging;
 
@@ -35,6 +39,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
   private readonly Heart           autoExtendAckDeadline_;
   private readonly AmazonSQSClient client_;
   private readonly ILogger         logger_;
+  private readonly SQS             options_;
   private readonly string          queueUrl_;
   private readonly string          receiptHandle_;
   private          StackTrace?     stackTrace_;
@@ -42,8 +47,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
   public QueueMessageHandler(Message         message,
                              AmazonSQSClient client,
                              string          queueUrl,
-                             int             ackDeadlinePeriod,
-                             int             ackExtendDeadlineStep,
+                             SQS             options,
                              ILogger         logger)
   {
     MessageId          = message.MessageId;
@@ -52,11 +56,12 @@ internal class QueueMessageHandler : IQueueMessageHandler
     client_            = client;
     queueUrl_          = queueUrl;
     receiptHandle_     = message.ReceiptHandle;
-    ackDeadlinePeriod_ = ackDeadlinePeriod;
+    ackDeadlinePeriod_ = options.AckDeadlinePeriod;
     logger_            = logger;
+    options_           = options;
     stackTrace_        = new StackTrace(true);
     autoExtendAckDeadline_ = new Heart(ModifyAckDeadline,
-                                       TimeSpan.FromSeconds(ackExtendDeadlineStep),
+                                       TimeSpan.FromSeconds(options.AckExtendDeadlineStep),
                                        CancellationToken);
 
     autoExtendAckDeadline_.Start();
@@ -121,14 +126,39 @@ internal class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public DateTime ReceptionDateTime { get; init; }
 
-  private Task ModifyAckDeadline(CancellationToken cancellationToken)
-    => client_.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
-                                            {
-                                              VisibilityTimeout = ackDeadlinePeriod_,
-                                              QueueUrl          = queueUrl_,
-                                              ReceiptHandle     = receiptHandle_,
-                                            },
-                                            cancellationToken);
+  private async Task ModifyAckDeadline(CancellationToken cancellationToken)
+  {
+    Exception? e = null;
+    for (var i = 0; i < options_.MaxRetries + 1; i++)
+    {
+      try
+      {
+        await client_.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
+                                                   {
+                                                     VisibilityTimeout = ackDeadlinePeriod_,
+                                                     QueueUrl          = queueUrl_,
+                                                     ReceiptHandle     = receiptHandle_,
+                                                   },
+                                                   cancellationToken)
+                     .ConfigureAwait(false);
+        return;
+      }
+      catch (Exception ex) when (ex is HttpRequestException or AmazonSQSException or SocketException or IOException)
+      {
+        e = ex;
+        logger_.LogWarning(e,
+                           "Failed to modify ack deadline {retry}/{maxRetries}",
+                           i,
+                           options_.MaxRetries + 1);
+        await Task.Delay((i + 1) * (i + 1) * 100,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
+    }
+
+    throw new ArmoniKException("Number of retries exceeded during SQS message deadline extension",
+                               e);
+  }
 
   ~QueueMessageHandler()
   {

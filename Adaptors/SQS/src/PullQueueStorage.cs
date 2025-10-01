@@ -168,8 +168,7 @@ internal class PullQueueStorage : IPullQueueStorage
         yield return new QueueMessageHandler(message,
                                              client_,
                                              queueUrl,
-                                             options_.AckDeadlinePeriod,
-                                             options_.WaitTimeSeconds,
+                                             options_,
                                              logger_);
       }
 
