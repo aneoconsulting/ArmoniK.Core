@@ -100,7 +100,7 @@ public class PostProcessor : BackgroundService
       }
     }
 
-    exceptionManager_.Stop(logger_,
-                           "End of task post processor; no more tasks will be finalized");
+    exceptionManager_.UnregisterAndStop(logger_,
+                                        "End of task post processor; no more tasks will be finalized");
   }
 }
