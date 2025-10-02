@@ -81,27 +81,34 @@ internal class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Failed:
       case QueueMessageStatus.Running:
       case QueueMessageStatus.Postponed:
-        await client_.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
-                                                   {
-                                                     VisibilityTimeout = 0,
-                                                     QueueUrl          = queueUrl_,
-                                                     ReceiptHandle     = receiptHandle_,
-                                                   },
-                                                   CancellationToken.None)
-                     .ConfigureAwait(false);
+        await Retry(() => client_.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
+                                                               {
+                                                                 VisibilityTimeout = 0,
+                                                                 QueueUrl          = queueUrl_,
+                                                                 ReceiptHandle     = receiptHandle_,
+                                                               },
+                                                               CancellationToken.None),
+                    options_.MaxRetries,
+                    "set message visibility timeout to 0",
+                    FilterException,
+                    CancellationToken.None)
+          .ConfigureAwait(false);
 
         break;
       case QueueMessageStatus.Cancelled:
       case QueueMessageStatus.Processed:
       case QueueMessageStatus.Poisonous:
-        await client_.DeleteMessageAsync(new DeleteMessageRequest
-                                         {
-                                           QueueUrl      = queueUrl_,
-                                           ReceiptHandle = receiptHandle_,
-                                         },
-                                         CancellationToken.None)
-                     .ConfigureAwait(false);
-
+        await Retry(() => client_.DeleteMessageAsync(new DeleteMessageRequest
+                                                     {
+                                                       QueueUrl      = queueUrl_,
+                                                       ReceiptHandle = receiptHandle_,
+                                                     },
+                                                     CancellationToken.None),
+                    options_.MaxRetries,
+                    "delete message",
+                    FilterException,
+                    CancellationToken.None)
+          .ConfigureAwait(false);
 
         break;
       default:
@@ -126,39 +133,53 @@ internal class QueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public DateTime ReceptionDateTime { get; init; }
 
-  private async Task ModifyAckDeadline(CancellationToken cancellationToken)
+  private async Task<T> Retry<T>(Func<Task<T>>         function,
+                                 int                   maxRetries,
+                                 string                exceptionMessage,
+                                 Func<Exception, bool> retryFilter,
+                                 CancellationToken     cancellationToken = default)
   {
     Exception? e = null;
-    for (var i = 0; i < options_.MaxRetries + 1; i++)
+    for (var i = 0; i < maxRetries + 1; i++)
     {
       try
       {
-        await client_.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
-                                                   {
-                                                     VisibilityTimeout = ackDeadlinePeriod_,
-                                                     QueueUrl          = queueUrl_,
-                                                     ReceiptHandle     = receiptHandle_,
-                                                   },
-                                                   cancellationToken)
-                     .ConfigureAwait(false);
-        return;
+        return await function()
+                 .ConfigureAwait(false);
       }
-      catch (Exception ex) when (ex is HttpRequestException or AmazonSQSException or SocketException or IOException)
+      catch (Exception ex) when (retryFilter(ex))
       {
         e = ex;
         logger_.LogWarning(e,
-                           "Failed to modify ack deadline {retry}/{maxRetries}",
+                           "Failed to {Message} {Retry}/{MaxRetries}",
+                           exceptionMessage,
                            i,
-                           options_.MaxRetries + 1);
+                           maxRetries + 1);
         await Task.Delay((i + 1) * (i + 1) * 100,
                          cancellationToken)
                   .ConfigureAwait(false);
       }
     }
 
-    throw new ArmoniKException("Number of retries exceeded during SQS message deadline extension",
+    throw new ArmoniKException($"Number of retries exceeded when trying to {exceptionMessage}",
                                e);
   }
+
+  private static bool FilterException(Exception ex)
+    => ex is HttpRequestException or AmazonSQSException or SocketException or IOException;
+
+  private Task ModifyAckDeadline(CancellationToken cancellationToken)
+    => Retry(() => client_.ChangeMessageVisibilityAsync(new ChangeMessageVisibilityRequest
+                                                        {
+                                                          VisibilityTimeout = ackDeadlinePeriod_,
+                                                          QueueUrl          = queueUrl_,
+                                                          ReceiptHandle     = receiptHandle_,
+                                                        },
+                                                        CancellationToken.None),
+             options_.MaxRetries,
+             "extend SQS message deadline",
+             FilterException,
+             cancellationToken);
 
   ~QueueMessageHandler()
   {
