@@ -62,7 +62,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
       with:
         tool: just
 
@@ -75,7 +75,7 @@ jobs:
           sudo apt-get install -y mongodb-org
 
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -145,12 +145,12 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
       with:
         tool: just
 
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -295,12 +295,12 @@ jobs:
       uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3  
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
       with:
         tool: just
 
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -330,7 +330,7 @@ jobs:
           - dockerhubaneo/armonik_core_bench_test_client
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -378,7 +378,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
         with:
           tool: just
 
@@ -388,7 +388,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -514,7 +514,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
         with:
           tool: just
       
@@ -524,7 +524,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -685,14 +685,14 @@ jobs:
           choco install just -y      
 
       - name: Setup AWS cli
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
+        uses: aws-actions/configure-aws-credentials@7474bc4690e29a8392af63c5b98e7449536d5c3a # v4
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -817,7 +817,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
         with:
           tool: just
 
@@ -827,7 +827,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -910,7 +910,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
         with:
           tool: just
 
@@ -920,7 +920,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -1037,7 +1037,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
         with:
           tool: just
 
@@ -1047,7 +1047,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -1118,7 +1118,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
         with:
           tool: just
 
@@ -1128,7 +1128,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -1197,7 +1197,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@bf2f998095ccb464eb8b85eeb95a460ccd744ec4 # v2
         with:
           tool: just
 
@@ -1207,7 +1207,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
