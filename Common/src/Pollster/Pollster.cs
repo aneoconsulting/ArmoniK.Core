@@ -510,8 +510,8 @@ public class Pollster : IInitializable
     }
     finally
     {
-      exceptionManager_.Stop(logger_,
-                             "End of Pollster main loop: Stop the application");
+      exceptionManager_.UnregisterAndStop(logger_,
+                                          "End of Pollster main loop: Stop the application");
       runningTaskQueue_.CloseWriter();
       endLoopReached_ = true;
     }

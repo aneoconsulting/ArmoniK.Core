@@ -25,9 +25,11 @@ using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 using NUnit.Framework;
 
@@ -59,6 +61,9 @@ public class ExceptionManagerTests
   public void NoDelay()
   {
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.Zero,
                                                                      0));
@@ -80,6 +85,9 @@ public class ExceptionManagerTests
                    : loggerFactory_.CreateLogger(nameof(NominalStop));
     var events = new ConcurrentQueue<int>();
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(5),
                                                                      maxError));
@@ -88,8 +96,8 @@ public class ExceptionManagerTests
                 Is.Not.EqualTo(em.LateCancellationToken));
 
     await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
-    await using var d1 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(1));
-    await using var d2 = em.EarlyCancellationToken.Register(() => events.Enqueue(2));
+    await using var d2 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
+    await using var d1 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(2));
     await using var d3 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(3));
     await using var d4 = em.LateCancellationToken.Register(() => events.Enqueue(4));
 
@@ -108,7 +116,7 @@ public class ExceptionManagerTests
     Assert.That(em.Failed,
                 Is.False);
 
-    lifetime_.StopApplication();
+    em.StopApplication(false);
 
     try
     {
@@ -122,6 +130,18 @@ public class ExceptionManagerTests
 
     Assert.That(em.Failed,
                 Is.False);
+
+    lifetime_.StopApplication();
+
+    try
+    {
+      await em.ApplicationStopping.AsTask()
+              .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // ignore
+    }
 
     lifetime_.NotifyStopped();
 
@@ -137,9 +157,12 @@ public class ExceptionManagerTests
                                            5)]
                                    int maxError)
   {
-    var logger = loggerFactory_.CreateLogger(nameof(NominalStop));
+    var logger = loggerFactory_.CreateLogger(nameof(GraceDelayStop));
     var events = new ConcurrentQueue<int>();
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(1),
                                                                      maxError));
@@ -208,6 +231,9 @@ public class ExceptionManagerTests
     var logger = loggerFactory_.CreateLogger(nameof(ErrorStop));
     var events = new ConcurrentQueue<int>();
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(1),
                                                                      maxError));
@@ -265,6 +291,9 @@ public class ExceptionManagerTests
     var logger = loggerFactory_.CreateLogger(nameof(FatalStop));
     var events = new ConcurrentQueue<int>();
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromMilliseconds(15)));
 
@@ -318,11 +347,14 @@ public class ExceptionManagerTests
 
   [Test]
   [Timeout(10000)]
-  public async Task Stop()
+  public async Task UnregisterAndStop()
   {
-    var logger = loggerFactory_.CreateLogger(nameof(Stop));
+    var logger = loggerFactory_.CreateLogger(nameof(UnregisterAndStop));
     var events = new ConcurrentQueue<int>();
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(15)));
 
@@ -341,8 +373,71 @@ public class ExceptionManagerTests
     await Task.Delay(10)
               .ConfigureAwait(false);
 
-    em.Stop(logger,
-            "");
+    em.UnregisterAndStop(logger,
+                         "");
+
+    try
+    {
+      await em.LateCancellationToken.AsTask()
+              .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // ignore
+    }
+
+    Assert.That(em.Failed,
+                Is.False);
+
+    lifetime_.NotifyStopped();
+
+    Assert.That(events,
+                Is.EqualTo(Enumerable.Range(0,
+                                            5)));
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task Unregister2()
+  {
+    var logger = loggerFactory_.CreateLogger(nameof(UnregisterAndStop));
+    var events = new ConcurrentQueue<int>();
+    using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
+                                        loggerFactory_.CreateLogger<ExceptionManager>(),
+                                        new ExceptionManager.Options(TimeSpan.FromSeconds(15)));
+
+    Assert.That(em.EarlyCancellationToken,
+                Is.Not.EqualTo(em.LateCancellationToken));
+
+    await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
+    await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
+    await using var d2 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(2));
+    await using var d3 = em.LateCancellationToken.Register(() => events.Enqueue(3));
+    await using var d4 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(4));
+
+    lifetime_.NotifyStarted();
+    em.Register();
+
+    await Task.Delay(10)
+              .ConfigureAwait(false);
+
+    em.StopApplication(false);
+
+    try
+    {
+      await em.EarlyCancellationToken.AsTask()
+              .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // ignore
+    }
+
+    em.UnregisterAndStop(logger,
+                         "");
 
     try
     {
@@ -371,6 +466,9 @@ public class ExceptionManagerTests
     var maxError = 10000;
 
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(MaxError: maxError));
 
@@ -411,6 +509,9 @@ public class ExceptionManagerTests
   {
     var logger = loggerFactory_.CreateLogger(nameof(ErrorStop));
     using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(MaxError: maxError));
 

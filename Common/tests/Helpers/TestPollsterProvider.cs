@@ -28,6 +28,7 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Meter;
@@ -205,11 +206,10 @@ public class TestPollsterProvider : IDisposable
            .AddInitializedOption<InitServices>(builder.Configuration,
                                                InitServices.SettingSection)
            .AddSingleton<InitDatabase>()
-           .AddSingleton(sp => new ExceptionManager.Options(sp.GetRequiredService<Injection.Options.Pollster>()
-                                                              .GraceDelay,
-                                                            sp.GetRequiredService<Injection.Options.Pollster>()
-                                                              .MaxErrorAllowed))
-           .AddSingleton<ExceptionManager>()
+           .AddExceptionManager(sp => new ExceptionManager.Options(sp.GetRequiredService<Injection.Options.Pollster>()
+                                                                     .GraceDelay,
+                                                                   sp.GetRequiredService<Injection.Options.Pollster>()
+                                                                     .MaxErrorAllowed))
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
