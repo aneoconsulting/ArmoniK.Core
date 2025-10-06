@@ -194,7 +194,7 @@ public class AuthenticationTable : IAuthenticationTable
   }
 
   /// <inheritdoc />
-  public async Task<UserAuthenticationResult?> GetIdentityFromUserAsync(int?              id,
+  public async Task<UserAuthenticationResult?> GetIdentityFromUserAsync(string?           id,
                                                                         string?           username,
                                                                         CancellationToken cancellationToken = default)
   {

@@ -16,12 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Injection.Options.Database;
 
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -40,7 +38,8 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
       BsonClassMap.RegisterClassMap<RoleData>(cm =>
                                               {
                                                 cm.MapIdProperty(nameof(RoleData.RoleId))
-                                                  .SetIsRequired(true);
+                                                  .SetIsRequired(true)
+                                                  .SetSerializer(IdSerializer.Instance);
                                                 cm.MapProperty(nameof(RoleData.RoleName))
                                                   .SetIsRequired(true);
                                                 cm.MapProperty(nameof(RoleData.Permissions))
@@ -79,23 +78,4 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                    Options.MongoDB      options)
     => Task.CompletedTask;
-
-  /// <inheritdoc />
-  public async Task InitializeCollectionAsync(IClientSessionHandle       sessionHandle,
-                                              IMongoCollection<RoleData> collection,
-                                              InitDatabase               initDatabase)
-  {
-    if (initDatabase.Roles.Any())
-    {
-      var upsert = initDatabase.Roles.Select(data => new ReplaceOneModel<RoleData>(Builders<RoleData>.Filter.Where(roleData => roleData.RoleId == data.RoleId),
-                                                                                   data)
-                                                     {
-                                                       IsUpsert = true,
-                                                     });
-
-      await collection.BulkWriteAsync(sessionHandle,
-                                      upsert)
-                      .ConfigureAwait(false);
-    }
-  }
 }

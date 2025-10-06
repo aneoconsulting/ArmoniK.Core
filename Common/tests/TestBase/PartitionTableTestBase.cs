@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,8 +24,6 @@ using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.ListPartitionsRequestExt;
 
@@ -42,10 +39,6 @@ public class PartitionTableTestBase
   [SetUp]
   public async Task SetUp()
   {
-    Environment.SetEnvironmentVariable(PartitionPath.Replace(":",
-                                                             "__") + "__0",
-                                       PartitionEnv.ToJson());
-
     GetPartitionTableInstance();
 
     if (!RunTests || CheckForSkipSetup())
@@ -112,31 +105,6 @@ public class PartitionTableTestBase
   {
   }
 
-  private const string PartitionPath = $"{InitServices.SettingSection}:{Partitioning.SettingSection}:{nameof(Partitioning.Partitions)}";
-
-
-  private static readonly Partition PartitionEnv = new()
-                                                   {
-                                                     Priority             = 2,
-                                                     PodMax               = 2,
-                                                     PodReserved          = 2,
-                                                     PreemptionPercentage = 2,
-                                                     PartitionId          = "Partition1",
-                                                     ParentPartitionIds = new List<string>
-                                                                          {
-                                                                            "PartitionParent1",
-                                                                          },
-                                                     PodConfiguration = new Dictionary<string, string>
-                                                                        {
-                                                                          {
-                                                                            "key1", "val1"
-                                                                          },
-                                                                          {
-                                                                            "key2", "val2"
-                                                                          },
-                                                                        },
-                                                   };
-
   [Test]
   [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
@@ -180,24 +148,6 @@ public class PartitionTableTestBase
 
       Assert.AreEqual("PartitionId0",
                       result.PartitionId);
-    }
-  }
-
-  [Test]
-  public async Task ReadPartitionAsyncFromEnvShouldSucceed()
-  {
-    if (RunTests)
-    {
-      var result = await PartitionTable!.ReadPartitionAsync(PartitionEnv.PartitionId,
-                                                            CancellationToken.None)
-                                        .ConfigureAwait(false);
-
-      Assert.AreEqual(PartitionEnv.PartitionId,
-                      result.PartitionId);
-      Assert.AreEqual(PartitionEnv.PodReserved,
-                      result.PodReserved);
-      Assert.AreEqual(PartitionEnv.PodConfiguration,
-                      result.PodConfiguration!.Configuration);
     }
   }
 

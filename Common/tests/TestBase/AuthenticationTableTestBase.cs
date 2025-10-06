@@ -21,11 +21,10 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Injection.Options.Database;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -39,16 +38,6 @@ public class AuthenticationTableTestBase
   [SetUp]
   public async Task SetUp()
   {
-    Environment.SetEnvironmentVariable(CertificatePath.Replace(":",
-                                                               "__") + "__0",
-                                       CertEnv.ToJson());
-    Environment.SetEnvironmentVariable(UserPath.Replace(":",
-                                                        "__") + "__0",
-                                       UserEnv.ToJson());
-    Environment.SetEnvironmentVariable(RolePath.Replace(":",
-                                                        "__") + "__0",
-                                       RoleEnv.ToJson());
-
     GetAuthSource();
 
     if (!RunTests || CheckForSkipSetup())
@@ -74,42 +63,11 @@ public class AuthenticationTableTestBase
     return category is "SkipSetUp";
   }
 
-  private static readonly Certificate CertEnv = new()
-                                                {
-                                                  Fingerprint = "FingerprintEnv",
-                                                  Cn          = "CNEnv",
-                                                  User        = "UserEnv",
-                                                };
-
-
-  private static readonly User UserEnv = new()
-                                         {
-                                           Name = "UserEnv",
-                                           Roles = new List<string>
-                                                   {
-                                                     "RoleEnv",
-                                                   },
-                                         };
-
-
-  private static readonly Role RoleEnv = new()
-                                         {
-                                           Name = "RoleEnv",
-                                           Permissions = new List<string>
-                                                         {
-                                                           "catEnv:PermEnv",
-                                                         },
-                                         };
-
-  private const string CertificatePath = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.UserCertificates)}";
-  private const string UserPath        = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.Users)}";
-  private const string RolePath        = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.Roles)}";
-
   static AuthenticationTableTestBase()
   {
     Roles = new List<RoleData>
             {
-              new(11,
+              new("RoleId1".ToOidString(),
                   "Role1",
                   new[]
                   {
@@ -117,7 +75,7 @@ public class AuthenticationTableTestBase
                     "category1:name2",
                     "category2:name3",
                   }),
-              new(12,
+              new("RoleId2".ToOidString(),
                   "Role2",
                   new[]
                   {
@@ -125,7 +83,7 @@ public class AuthenticationTableTestBase
                     "category1:name2:" + PermissionScope.AllUsersScope,
                     "category2:name4",
                   }),
-              new(13,
+              new("RoleId3".ToOidString(),
                   "Role3",
                   new[]
                   {
@@ -133,20 +91,20 @@ public class AuthenticationTableTestBase
                     "category4:name2",
                     "category5:name3",
                   }),
-              new(14,
+              new("RoleId4".ToOidString(),
                   "Role4",
                   Array.Empty<string>()),
             };
     Users = new List<UserData>
             {
-              new(21,
+              new("UserId1".ToOidString(),
                   "User1",
                   new[]
                   {
                     Roles[0]
                       .RoleId,
                   }),
-              new(22,
+              new("UserId2".ToOidString(),
                   "User2",
                   new[]
                   {
@@ -155,7 +113,7 @@ public class AuthenticationTableTestBase
                     Roles[1]
                       .RoleId,
                   }),
-              new(23,
+              new("UserId3".ToOidString(),
                   "User3",
                   new[]
                   {
@@ -164,60 +122,60 @@ public class AuthenticationTableTestBase
                     Roles[2]
                       .RoleId,
                   }),
-              new(24,
+              new("UserId4".ToOidString(),
                   "User4",
                   new[]
                   {
                     Roles[0]
                       .RoleId,
-                    1000, // this one should not exist
+                    "RoleIdDontExist".ToOidString(),
                   }),
-              new(25,
+              new("UserId5".ToOidString(),
                   "User5",
-                  Array.Empty<int>()),
+                  Array.Empty<string>()),
             };
     Auths = new List<AuthData>
             {
-              new(31,
+              new("AuthId1".ToOidString(),
                   Users[0]
                     .UserId,
                   "CNUser1",
                   "Fingerprint1"),
-              new(32,
+              new("AuthId2".ToOidString(),
                   Users[1]
                     .UserId,
                   "CNUser2",
                   "Fingerprint2"),
-              new(33,
+              new("AuthId3".ToOidString(),
                   Users[1]
                     .UserId,
                   "CNUser3",
                   "Fingerprint3"),
-              new(34,
+              new("AuthId4".ToOidString(),
                   Users[2]
                     .UserId,
                   "CNUser4",
                   "Fingerprint4"),
-              new(35,
+              new("AuthId5".ToOidString(),
                   Users[3]
                     .UserId,
                   "CNUser5",
                   "Fingerprint5"),
-              new(36,
-                  1000, // this user should not exist
+              new("AuthId6".ToOidString(),
+                  "UserIdDontExist".ToOidString(),
                   "CNUser6",
                   "Fingerprint6"),
-              new(37,
+              new("AuthId7".ToOidString(),
                   Users[1]
                     .UserId,
                   "CNUser2",
                   "Fingerprint7"),
-              new(38,
+              new("AuthId8".ToOidString(),
                   Users[2]
                     .UserId,
                   "CNUserCommon",
                   null),
-              new(39,
+              new("AuthId9".ToOidString(),
                   Users[3]
                     .UserId,
                   "CNUser2",
@@ -362,15 +320,15 @@ public class AuthenticationTableTestBase
                     ident.Username);
   }
 
-  [TestCase(1000)]
-  public void GetIdentityFromIdShouldFail(int id)
+  [TestCase("UserIdDontExist")]
+  public void GetIdentityFromIdShouldFail(string id)
   {
     if (!RunTests)
     {
       return;
     }
 
-    Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(id,
+    Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(id.ToOidString(),
                                                                 null)
                                       .Result);
   }
@@ -420,9 +378,6 @@ public class AuthenticationTableTestBase
   [TestCase("User2",
             "Role1",
             true)]
-  [TestCase("UserEnv",
-            "RoleEnv",
-            true)]
   [TestCase("User2",
             "RoleDontExist",
             false)]
@@ -457,9 +412,6 @@ public class AuthenticationTableTestBase
             true)]
   [TestCase("User2",
             "category1:name2:" + PermissionScope.AllUsersScope,
-            true)]
-  [TestCase("UserEnv",
-            "catEnv:PermEnv",
             true)]
   public void UserHasClaimShouldMatch(string username,
                                       string claim,

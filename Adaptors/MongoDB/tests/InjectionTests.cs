@@ -20,8 +20,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 
 using ArmoniK.Core.Adapters.MongoDB.Options;
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Configuration;
@@ -98,9 +96,6 @@ internal class InjectionTests
     var services = new ServiceCollection();
     services.AddMongoComponents(configuration_,
                                 logger);
-    services.AddInitializedOption<InitServices>(configuration_,
-                                                InitServices.SettingSection);
-    services.AddSingleton<InitDatabase>();
     services.AddSingleton(ActivitySource);
     services.AddLogging();
     provider_ = services.BuildServiceProvider(new ServiceProviderOptions
