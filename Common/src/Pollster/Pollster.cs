@@ -290,7 +290,7 @@ public class Pollster : IInitializable
       await Init(exceptionManager_.EarlyCancellationToken)
         .ConfigureAwait(false);
 
-      logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
+      using var logLoop = logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
 
       var acquisitionRetry = 0;
 
@@ -309,7 +309,8 @@ public class Pollster : IInitializable
 
         logger_.LogTrace("Trying to fetch messages");
 
-        logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");
+        using var logIter =
+          logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop.{nameof(pullQueueStorage_.PullMessagesAsync)}");
 
         try
         {
