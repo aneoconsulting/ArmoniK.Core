@@ -26,6 +26,7 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
+using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -174,8 +175,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
-           .AddSingleton<ExceptionManager.Options>()
-           .AddSingleton<ExceptionManager>()
+           .AddExceptionManager()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton<HealthCheckRecord>()
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),

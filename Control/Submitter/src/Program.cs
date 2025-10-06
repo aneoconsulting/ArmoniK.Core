@@ -101,10 +101,9 @@ public static class Program
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
                                                             Common.Injection.Options.Submitter.SettingSection)
-             .AddSingleton(sp => new ExceptionManager.Options(TimeSpan.Zero,
-                                                              sp.GetRequiredService<Common.Injection.Options.Submitter>()
-                                                                .MaxErrorAllowed))
-             .AddSingleton<ExceptionManager>()
+             .AddExceptionManager(sp => new ExceptionManager.Options(TimeSpan.Zero,
+                                                                     sp.GetRequiredService<Common.Injection.Options.Submitter>()
+                                                                       .MaxErrorAllowed))
              .AddGrpcReflection()
              .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()

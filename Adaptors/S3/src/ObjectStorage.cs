@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -247,9 +249,10 @@ public class ObjectStorage : IObjectStorage
       {
         logger_.LogError("The key {Key} was not found",
                          key);
-        throw new ObjectDataNotFoundException("Key not found");
+        throw new ObjectDataNotFoundException("Key not found",
+                                              ex);
       }
-      catch (AmazonS3Exception ex)
+      catch (Exception ex) when (ex is AmazonS3Exception or HttpRequestException or SocketException or IOException)
       {
         if (retryCount + 1 >= options_.MaxRetry)
         {

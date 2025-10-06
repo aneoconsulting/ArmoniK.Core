@@ -112,10 +112,9 @@ public static class Program
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)
              .AddSingleton(pollsterOptions)
-             .AddSingleton(new ExceptionManager.Options(pollsterOptions.GraceDelay,
-                                                        pollsterOptions.MaxErrorAllowed))
-             .AddSingleton<ExceptionManager>()
              .AddSingleton<HealthCheckRecord>()
+             .AddExceptionManager(_ => new ExceptionManager.Options(pollsterOptions.GraceDelay,
+                                                                    pollsterOptions.MaxErrorAllowed))
              .AddSingleton<IHealthCheckPublisher, HealthCheckRecord.Publisher>()
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
