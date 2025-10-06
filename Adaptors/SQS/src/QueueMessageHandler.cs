@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -42,6 +43,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
   private readonly SQS             options_;
   private readonly string          queueUrl_;
   private readonly string          receiptHandle_;
+  private readonly IDisposable?    scope_;
   private          StackTrace?     stackTrace_;
 
   public QueueMessageHandler(Message         message,
@@ -63,6 +65,18 @@ internal class QueueMessageHandler : IQueueMessageHandler
     autoExtendAckDeadline_ = new Heart(ModifyAckDeadline,
                                        TimeSpan.FromSeconds(options.AckExtendDeadlineStep),
                                        CancellationToken);
+
+    var d = new Dictionary<string, object>
+            {
+              {
+                "messageHandler", MessageId
+              },
+              {
+                "taskId", TaskId
+              },
+            };
+
+    scope_ = logger_.BeginScope(d);
 
     autoExtendAckDeadline_.Start();
   }
@@ -115,6 +129,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
         throw new ArgumentOutOfRangeException();
     }
 
+    scope_?.Dispose();
     GC.SuppressFinalize(this);
   }
 
