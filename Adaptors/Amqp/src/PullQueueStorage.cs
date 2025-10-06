@@ -97,6 +97,21 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                                                                                            $"{partitionId}###SenderLink{i}",
                                                                                                                            $"{partitionId}###q{i}")))
                                                         .ToArray());
+    var receiversSet = new bool[receiversArray.Length];
+    await using var rollbackCredits = new Deferrer(async () =>
+                                                   {
+                                                     // Rollback credits for all receivers whose credits have been set during the pull
+                                                     for (var i = 0; i < receiversArray.Length; i++)
+                                                     {
+                                                       if (receiversSet[i])
+                                                       {
+                                                         var receiver = await receiversArray[i];
+                                                         receiver.SetCredit(Options.LinkCredit,
+                                                                            false);
+                                                       }
+                                                     }
+                                                   });
+
     while (nbPulledMessage < nbMessages)
     {
       var currentNbMessages = nbPulledMessage;
@@ -111,6 +126,16 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
           try
           {
             receiver = await receiversArray[i];
+
+            // Do not set credits if they have been set for this receiver in the same pull
+            if (!receiversSet[i])
+            {
+              // Set credit to number of messages to fetch + prefetch
+              receiver.SetCredit(nbMessages - nbPulledMessage + Options.LinkCredit,
+                                 false);
+              receiversSet[i] = true;
+            }
+
             message = await receiver.ReceiveAsync(TimeSpan.FromMilliseconds(100))
                                     .ConfigureAwait(false);
             break;
@@ -177,12 +202,9 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                        $"{partitionId}###ReceiverLink{link}",
                                        $"{partitionId}###q{link}");
 
-             /* linkCredit_: the maximum number of messages the
-                                       * remote peer can send to the receiver.
-                                       * With the goal of minimizing/deactivating
-                                       * prefetching, a value of 1 gave us the desired
-                                       * behavior. We pick a default value of 2 to have "some cache". */
-             rl.SetCredit(Options.LinkCredit);
+             // Prefetch
+             rl.SetCredit(Options.LinkCredit,
+                          false);
              return rl;
            });
 }

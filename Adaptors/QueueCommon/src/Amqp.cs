@@ -78,12 +78,18 @@ public class Amqp
   public int MaxRetries { get; set; }
 
   /// <summary>
-  ///   Link credit for flow control in the AMQP connection. The minimum valued supported is 1
-  ///   For more details see:
-  ///   <a
-  ///     href="https: //www.rabbitmq.com/blog/2024/09/02/amqp-flow-control">
-  ///   </a>
+  ///   Link credit for flow control in the AMQP connection. The minimum valued supported is 0
   /// </summary>
+  /// <remarks>
+  ///   <p>
+  ///     Credits are set to LinkCredit + number of messages to pull each time a pull occur.
+  ///     Consequently, the option LinkCredit represent the number of messages to prefetch by the AMQP driver.
+  ///   </p>
+  ///   <p>
+  ///     For more details see:
+  ///     <a href="https: //www.rabbitmq.com/blog/2024/09/02/amqp-flow-control" />
+  ///   </p>
+  /// </remarks>
   public int LinkCredit { get; set; }
 
   /// <summary>
