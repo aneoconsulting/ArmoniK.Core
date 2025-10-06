@@ -17,11 +17,14 @@
 
 using System;
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Adapters.Redis.Options;
 
 /// <summary>
 ///   Represents the configuration settings for connecting to a Redis instance.
 /// </summary>
+[ExtractDocumentation("Options for Redis")]
 public class Redis
 {
   /// <summary>
