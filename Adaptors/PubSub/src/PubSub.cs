@@ -68,4 +68,17 @@ internal class PubSub
   ///   Guarantee that messages are not duplicated at Pub/Sub level
   /// </summary>
   public bool ExactlyOnceDelivery { get; set; } = false;
+
+  /// <summary>
+  ///   Number of priority levels supported. Each priority level will create its own PubSub topic. (Priority 2 will
+  ///   potentially be treated before priority 1, it's not absolute)
+  /// </summary>
+  public int MaxPriority { get; set; } = 0;
+
+  /// <summary>
+  ///   Limit on the level of parallelism for operations.
+  ///   If DegreeOfParallelism is 0, the number of threads is used as the limit.
+  ///   If DegreeOfParallelism is negative, no limit is enforced.
+  /// </summary>
+  public int DegreeOfParallelism { get; set; }
 }
