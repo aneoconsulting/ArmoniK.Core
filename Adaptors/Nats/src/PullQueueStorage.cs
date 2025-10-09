@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,7 +77,8 @@ internal class PullQueueStorage : IPullQueueStorage
 
   /// <inheritdoc />
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(options_.MaxPriority,
+               1);
 
   /// <inheritdoc />
   /// <remarks>
@@ -98,60 +100,127 @@ internal class PullQueueStorage : IPullQueueStorage
   /// </remarks>
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
                                                                         int                                        nbMessages,
-                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    INatsJSConsumer? consumer;
-    INatsJSStream?   stream;
+    INatsJSConsumer[] prioryties;
+    INatsJSStream? stream;
+    // Create a fonc commune create stream
+    //var streamGestion = new StreamGestion(js_, options_);
     try
     {
-      stream = await js_.GetStreamAsync("armonik-stream")
+      stream = await js_.GetStreamAsync("armonik-stream", cancellationToken:cancellationToken)
                         .ConfigureAwait(false);
+      for (var prio = 0; prio < MaxPriority; prio++)
+      {
+        var priority = prio + 1;
+        if (!stream.Info.Config.Subjects!.Contains(partitionId + priority))
+        {
+          stream.Info.Config.Subjects!.Add(partitionId + priority);
+          await js_.UpdateStreamAsync(stream.Info.Config, cancellationToken: cancellationToken)
+                   .ConfigureAwait(false);
+        }
+      }
     }
     catch (NatsJSApiException ex) when (ex.Error.Code == 404)
     {
-      var config = new StreamConfig
-                   {
-                     Name    = "armonik-stream",
-                     Storage = StreamConfigStorage.File,
-                     Subjects = new[]
-                                {
-                                  partitionId,
-                                },
-                     Retention = StreamConfigRetention.Workqueue,
-                   };
-      stream = await js_.CreateStreamAsync(config)
-                        .ConfigureAwait(false);
-    }
-
-    try
-    {
-      consumer = await stream.GetConsumerAsync(partitionId)
-                             .ConfigureAwait(false);
-    }
-    catch (NatsJSApiException ex) when (ex.Error.Code == 404)
-    {
-      consumer = await js_.CreateConsumerAsync("armonik-stream",
-                                               new ConsumerConfig(partitionId)
-                                               {
-                                                 DurableName   = partitionId,
-                                                 AckWait       = TimeSpan.FromSeconds(options_.AckWait),
-                                                 AckPolicy     = ConsumerConfigAckPolicy.Explicit,
-                                                 FilterSubject = partitionId,
-                                               })
+      try
+      {
+        var subjects = Enumerable.Range(1,
+                                      MaxPriority)
+                               .Select(i => partitionId + i)
+                               .ToArray();
+        var config = new StreamConfig
+        {
+          Name = "armonik-stream",
+          Storage = StreamConfigStorage.File,
+          Subjects = subjects,
+          Retention = StreamConfigRetention.Workqueue,
+        };
+        stream = await js_.CreateStreamAsync(config, cancellationToken)
                           .ConfigureAwait(false);
+
+      }
+      catch (NatsJSApiException) when (ex.Error.Code == 400)
+      {
+        stream = await js_.GetStreamAsync("armonik-stream", cancellationToken: cancellationToken)
+                        .ConfigureAwait(false);
+      }
+
+      catch (NatsJSApiException e2)
+      {
+        logger_.LogError(e2,
+          "{errorcode}", e2.Error.Code);
+        throw;
+      }
+      //end
+    }
+    try
+    {
+      prioryties = await Task.WhenAll(Enumerable.Range(1,
+                                                       MaxPriority)
+                                                .Select(async i => await stream.GetConsumerAsync(partitionId + i, cancellationToken)
+                                                                               .ConfigureAwait(false)));
+    }
+    catch (NatsJSApiException ex) when (ex.Error.Code == 404)
+    {
+      prioryties = await Task.WhenAll(Enumerable.Range(1,
+                                                       MaxPriority)
+                                                .Select(async i => await js_.CreateConsumerAsync("armonik-stream",
+                                                                                                 new ConsumerConfig(partitionId + i)
+                                                                                                 {
+                                                                                                   DurableName   = partitionId + i,
+                                                                                                   AckWait       = TimeSpan.FromSeconds(options_.AckWait),
+                                                                                                   AckPolicy     = ConsumerConfigAckPolicy.Explicit,
+                                                                                                   FilterSubject = partitionId + i,
+                                                                                                 }, cancellationToken)));
     }
 
-    await foreach (var natsJSMsg in consumer.FetchAsync<string>(new NatsJSFetchOpts
-                                                                {
-                                                                  MaxMsgs = nbMessages,
-                                                                }))
+    var i = nbMessages;
+    foreach (var consumer in prioryties.Reverse())
     {
-      yield return new QueueMessageHandler(natsJSMsg,
-                                           js_,
-                                           options_.AckWait,
-                                           options_.AckExtendDeadlineStep,
-                                           logger_,
-                                           cancellationToken);
+      if (options_.WaitTimeSeconds < TimeSpan.FromSeconds(1))
+      {
+        await foreach (var natsJSMsg in consumer.FetchNoWaitAsync<string>(new NatsJSFetchOpts
+        {
+          MaxMsgs = i,
+        }, cancellationToken:cancellationToken)
+                                                .ConfigureAwait(false))
+        {
+          yield return new QueueMessageHandler(natsJSMsg,
+                                               js_,
+                                               options_.AckWait,
+                                               options_.AckExtendDeadlineStep,
+                                               logger_,
+                                               cancellationToken);
+          --i;
+          if (i == 0)
+          {
+            break;
+          }
+        }
+      }
+      else
+      {
+          await foreach (var natsJSMsg in consumer.FetchAsync<string>(new NatsJSFetchOpts
+          {
+            MaxMsgs = i,
+            Expires = options_.WaitTimeSeconds,
+          }, cancellationToken: cancellationToken)
+                                                  .ConfigureAwait(false))
+          {
+            yield return new QueueMessageHandler(natsJSMsg,
+                                                 js_,
+                                                 options_.AckWait,
+                                                 options_.AckExtendDeadlineStep,
+                                                 logger_,
+                                                 cancellationToken);
+            --i;
+            if (i == 0)
+            {
+              break;
+            }
+        }
+      }
     }
   }
 }

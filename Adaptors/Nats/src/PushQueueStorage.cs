@@ -17,6 +17,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,7 +60,8 @@ internal class PushQueueStorage : IPushQueueStorage
 
   /// <inheritdoc />
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(options_.MaxPriority,
+               1);
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -85,40 +88,58 @@ internal class PushQueueStorage : IPushQueueStorage
                                       string                   partitionId,
                                       CancellationToken        cancellationToken = default)
   {
+    INatsJSStream? stream;
+
     try
     {
       await Publish(messages,
                     partitionId,
-                    cancellationToken);
+                    cancellationToken)
+        .ConfigureAwait(false);
     }
     catch (Exception)
     {
       try
       {
-        var existing = await js_.GetStreamAsync("armonik-stream")
-                                .ConfigureAwait(false);
-        if (!existing.Info.Config.Subjects!.Contains(partitionId))
+        stream = await js_.GetStreamAsync("armonik-stream", cancellationToken: cancellationToken)
+                          .ConfigureAwait(false);
+        for (var prio = 0; prio < MaxPriority; prio++)
         {
-          existing.Info.Config.Subjects!.Add(partitionId);
-          await js_.UpdateStreamAsync(existing.Info.Config)
-                   .ConfigureAwait(false);
+          var priority = prio + 1;
+          if (!stream.Info.Config.Subjects!.Contains(partitionId + priority))
+          {
+            stream.Info.Config.Subjects!.Add(partitionId + priority);
+            await js_.UpdateStreamAsync(stream.Info.Config, cancellationToken: cancellationToken)
+                     .ConfigureAwait(false);
+          }
         }
       }
       catch (NatsJSApiException ex) when (ex.Error.Code == 404)
       {
-        var config = new StreamConfig
-                     {
-                       Name    = "armonik-stream",
-                       Storage = StreamConfigStorage.File,
-                       Subjects = new[]
-                                  {
-                                    partitionId,
-                                  },
-                       Retention = StreamConfigRetention.Workqueue,
-                     };
-        await js_.CreateStreamAsync(config)
-                 .ConfigureAwait(false);
+        try
+        {
+          var subjects = Enumerable.Range(1,
+                                        MaxPriority)
+                                 .Select(i => partitionId + i)
+                                 .ToArray();
+          var config = new StreamConfig
+          {
+            Name = "armonik-stream",
+            Storage = StreamConfigStorage.File,
+            Subjects = subjects,
+            Retention = StreamConfigRetention.Workqueue,
+          };
+          stream = await js_.CreateStreamAsync(config, cancellationToken)
+          .ConfigureAwait(false);
+
+        }
+        catch (NatsJSApiException) when (ex.Error.Code == 400)
+        {
+          stream = await js_.GetStreamAsync("armonik-stream", cancellationToken: cancellationToken)
+                          .ConfigureAwait(false);
+        }
       }
+
 
       await Publish(messages,
                     partitionId,
@@ -136,11 +157,12 @@ internal class PushQueueStorage : IPushQueueStorage
   private async Task Publish(IEnumerable<MessageData> messages,
                              string                   partitionId,
                              CancellationToken        cancellationToken = default)
-    => await messages.ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism,
+    => await messages.OrderByDescending(m => m.Options.Priority)
+                     .ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism,
                                                               cancellationToken),
                                       async message =>
                                       {
-                                        await js_.PublishAsync(partitionId,
+                                        await js_.PublishAsync(partitionId + message.Options.Priority,
                                                                Encoding.UTF8.GetBytes(message.TaskId),
                                                                headers: new NatsHeaders
                                                                         {
