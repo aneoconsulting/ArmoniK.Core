@@ -29,19 +29,30 @@ public class TaskOptionsValidator : AbstractValidator<TaskOptions>
   /// <summary>
   ///   Initializes a validator for <see cref="TaskOptions" />
   /// </summary>
-  public TaskOptionsValidator()
+  public TaskOptionsValidator(bool isSession = false)
   {
+    var minRetries = isSession
+                       ? 1
+                       : 0;
+    var minPriority = isSession
+                        ? 1
+                        : 0;
     RuleFor(o => o.MaxRetries)
-      .GreaterThanOrEqualTo(1)
+      .GreaterThanOrEqualTo(minRetries)
+      .WithMessage($"MaxRetries should be greater or equal than {minRetries}")
       .WithName(nameof(TaskOptions.MaxRetries));
     RuleFor(o => o.Priority)
-      .GreaterThanOrEqualTo(1)
+      .GreaterThanOrEqualTo(minPriority)
       .LessThanOrEqualTo(99)
-      .WithMessage("Priority should be included between 1 and 99")
+      .WithMessage($"Priority should be included between {minPriority} and 99")
       .WithName(nameof(TaskOptions.Priority));
-    RuleFor(o => o.MaxDuration)
-      .NotNull()
-      .NotEmpty()
-      .WithName(nameof(TaskOptions.MaxDuration));
+    if (isSession)
+    {
+      RuleFor(o => o.MaxDuration)
+        .NotNull()
+        .NotEmpty()
+        .WithMessage("MaxDuration is required")
+        .WithName(nameof(TaskOptions.MaxDuration));
+    }
   }
 }
