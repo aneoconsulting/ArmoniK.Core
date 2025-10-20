@@ -116,7 +116,9 @@ public record TaskOptions(IDictionary<string, string> Options,
                            taskOption.MaxRetries != 0
                              ? taskOption.MaxRetries
                              : defaultOption.MaxRetries,
-                           taskOption.Priority,
+                           taskOption.Priority != 0
+                             ? taskOption.Priority
+                             : defaultOption.Priority,
                            taskOption.PartitionId != string.Empty
                              ? taskOption.PartitionId
                              : defaultOption.PartitionId,

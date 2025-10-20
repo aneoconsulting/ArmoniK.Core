@@ -31,7 +31,7 @@ public class CreateSessionRequestValidator : AbstractValidator<CreateSessionRequ
   /// </summary>
   public CreateSessionRequestValidator()
     => RuleFor(request => request.DefaultTaskOption)
-       .SetValidator(new TaskOptionsValidator())
+       .SetValidator(new TaskOptionsValidator(true))
        .NotNull()
        .WithName(nameof(CreateSessionRequest.DefaultTaskOption));
 }
