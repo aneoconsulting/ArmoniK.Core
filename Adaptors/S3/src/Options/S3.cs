@@ -15,14 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Utils.DocAttribute;
-
 namespace ArmoniK.Core.Adapters.S3.Options;
 
 /// <summary>
 ///   Represents the configuration settings for connecting to AWS S3 object storage service.
 /// </summary>
-[ExtractDocumentation("Options for S3")]
 public class S3
 {
   /// <summary>

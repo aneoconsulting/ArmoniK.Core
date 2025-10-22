@@ -17,11 +17,8 @@
 
 using System;
 
-using ArmoniK.Utils.DocAttribute;
-
 namespace ArmoniK.Core.Adapters.PubSub;
 
-[ExtractDocumentation("Options for PubSub")]
 internal class PubSub
 {
   public const string SettingSection = nameof(PubSub);

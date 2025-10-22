@@ -15,20 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-// ReSharper disable InconsistentNaming
-
 using System;
 
-using ArmoniK.Utils.DocAttribute;
-
 using JetBrains.Annotations;
+
+// ReSharper disable InconsistentNaming
 
 namespace ArmoniK.Core.Control.Metrics.Options;
 
 /// <summary>
 ///   Represents the configuration settings for the metrics exporter.
 /// </summary>
-[ExtractDocumentation("Options for MetricsExporter")]
 [PublicAPI]
 public class MetricsExporter
 {

@@ -17,14 +17,11 @@
 
 using System;
 
-using ArmoniK.Utils.DocAttribute;
-
 namespace ArmoniK.Core.Common.Injection.Options;
 
 /// <summary>
 ///   Configuration for <see cref="Stream.Worker.WorkerStreamHandler" />
 /// </summary>
-[ExtractDocumentation("Options for InitWorker")]
 public class InitWorker
 {
   /// <summary>
