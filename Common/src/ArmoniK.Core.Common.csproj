@@ -35,10 +35,10 @@
     <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.6.2" />
     <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="8.2.0" />
     <PackageReference Include="Destructurama.Attributed" Version="5.1.0" />
-    <PackageReference Include="Grpc.HealthCheck" Version="2.62.0" />
-    <PackageReference Include="JetBrains.Annotations" Version="2025.2.0" />
+    <PackageReference Include="Grpc.HealthCheck" Version="2.71.0" />
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.2" />
     <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
-    <PackageReference Include="stateless" Version="5.18.0" />
+    <PackageReference Include="stateless" Version="5.20.0" />
     <PackageReference Include="System.Linq.Async" Version="6.0.3" />
     <PackageReference Include="Serilog.Extensions.Hosting" Version="8.0.0" />
     <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.4" />
