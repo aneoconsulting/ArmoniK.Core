@@ -1,0 +1,36 @@
+name: Remove Old Artefacts
+
+on:
+    schedule:
+      - cron: '10 9 * * 1'   # 9:10 on Monday
+    workflow_dispatch:
+
+jobs:
+  images:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        image:
+          - pollingagent
+          - control_metrics
+          - control_partition_metrics
+          - control
+          - core_stream_test_worker
+          - core_stream_test_client
+          - core_htcmock_test_worker
+          - core_htcmock_test_client
+          - core_bench_test_worker
+          - core_bench_test_client
+    steps:
+    - name: Checkout
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Remove old images
+      run: python tools/remove_images.py dockerhubaneo "armonik_${{ matrix.image }}" "${{ secrets.DOCKER_HUB_LOGIN }}" "${{ secrets.DOCKER_HUB_TOKEN }}"
