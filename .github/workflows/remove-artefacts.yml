@@ -1,4 +1,4 @@
-name: Remove Old Artefacts
+name: Remove Old Branch Artefacts
 
 on:
     schedule:
@@ -32,5 +32,25 @@ jobs:
     - name: Install dependencies
       run: pip install requests
 
-    - name: Remove old images
+    - name: Remove old branch images
       run: python tools/remove_images.py dockerhubaneo "armonik_${{ matrix.image }}" "${{ secrets.DOCKER_HUB_LOGIN }}" "${{ secrets.DOCKER_HUB_TOKEN }}"
+
+  nugets:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        nuget:
+          - ArmoniK.Core.Base
+    steps:
+    - name: Checkout
+      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+
+    - name: Install dependencies
+      run: pip install requests
+
+    - name: Unlist old branch nugets
+      run: python tools/unlist_nugets.py "${{ matrix.nuget }}" "${{ secrets.NUGET_API_KEY }}"

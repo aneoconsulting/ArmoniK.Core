@@ -21,7 +21,6 @@ def get_token(username, password):
 
 def get_tags(token, repository):
     headers = {"Authorization": f"JWT {token}"}
-    tags = []
     url = f"{BASE_URL}/repositories/{repository}/tags?page_size=100"
     while url:
         response = requests.get(url, headers=headers)
