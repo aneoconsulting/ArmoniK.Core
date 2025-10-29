@@ -2,6 +2,12 @@ import requests
 import argparse
 import re
 from datetime import datetime, timedelta
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # or DEBUG, WARNING, ERROR
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 
 # Docker Hub API
@@ -33,9 +39,9 @@ def delete_tag(token, repository, tag):
     url = f"{BASE_URL}/repositories/{repository}/tags/{tag}/"
     response = requests.delete(url, headers=headers)
     if response.status_code == 204:
-        print(f"Deleted tag: {tag}")
+        logging.info(f"Deleted tag: {tag}")
     else:
-        print(f"Failed to delete tag: {tag} - {response.status_code} {response.text}")
+        logging.warning(f"Failed to delete tag: {tag} - {response.status_code} {response.text}")
 
 def match_release(tag):
     match = SEMVER.match(tag)
@@ -59,7 +65,7 @@ def main():
         tag_name = tag_info["name"]
         tag_date = datetime.strptime(tag_info["last_updated"], "%Y-%m-%dT%H:%M:%S.%fZ")
         if tag_date < now and not match_release(tag_name):
-            print(f"Deleting tag: {tag_name} (last updated: {tag_date})")
+            logging.info(f"Deleting tag: {tag_name} (last updated: {tag_date})")
             delete_tag(token, f"{args.org}/{args.image}", tag_name)
 
 if __name__ == "__main__":

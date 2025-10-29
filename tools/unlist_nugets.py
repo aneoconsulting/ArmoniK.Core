@@ -2,6 +2,12 @@ import requests
 import argparse
 import re
 from datetime import datetime, timedelta, timezone
+import logging
+
+logging.basicConfig(
+    level=logging.INFO,  # or DEBUG, WARNING, ERROR
+    format="%(asctime)s - %(levelname)s - %(message)s"
+)
 
 # https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 SEMVER = re.compile("^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")
@@ -44,9 +50,9 @@ def unlist_version(package_id, version, api_key):
     headers = {"X-NuGet-ApiKey": api_key}
     response = requests.delete(url, headers=headers)
     if response.status_code == 200:
-        print(f"Unlisted {package_id} {version}")
+        logging.info(f"Unlisted {package_id} {version}")
     else:
-        print(f"Failed to unlist {package_id} {version}: {response.status_code} {response.text}")
+        logging.warning(f"Failed to unlist {package_id} {version}: {response.status_code} {response.text}")
 
 def main():
     parser = argparse.ArgumentParser(description="Unlist prerelease tags for the given nuget package", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -62,7 +68,7 @@ def main():
         version = item["version"]
         published = datetime.fromisoformat(item["published"])
         if not match_release(version) and published < cutoff_date:
-            print(f"Deleting version: {version} (published: {published})")
+            logging.info(f"Deleting version: {version} (published: {published})")
             unlist_version(args.nuget, version, args.token)
 
 if __name__ == "__main__":
