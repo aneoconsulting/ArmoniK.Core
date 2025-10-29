@@ -1,20 +1,18 @@
 import requests
 import argparse
 import re
-import dateutil.parser
-from requests.auth import HTTPBasicAuth
 from datetime import datetime, timedelta, timezone
 
 # https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
 SEMVER = re.compile("^(?P<major>0|[1-9]\d*)\.(?P<minor>0|[1-9]\d*)\.(?P<patch>0|[1-9]\d*)(?:-(?P<prerelease>(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+(?P<buildmetadata>[0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?$")
 
 # NuGet API endpoints
-CATALOG_INDEX_URL = "https://api.nuget.org/v3/catalog0/index.json"
 DELETE_URL_TEMPLATE = "https://www.nuget.org/api/v2/package/{package_id}/{version}"
 REGISTRATION_URL_TEMPLATE = "https://api.nuget.org/v3/registration5-gz-semver2/{package_id}/index.json"
 
 def match_release(tag):
-    return SEMVER.match(tag) is not None and (SEMVER.match(tag).group("prerelease") is None or SEMVER.match(tag).group("prerelease").startswith("SNAPSHOT")) and SEMVER.match(tag).group("buildmetadata") is None
+    match = SEMVER.match(tag)
+    return match is not None and (match.group("prerelease") is None or match.group("prerelease").startswith("SNAPSHOT")) and match.group("buildmetadata") is None
 
 def process_catalog_page(page_url, package_id):
     response = requests.get(page_url)
@@ -54,7 +52,7 @@ def main():
     parser = argparse.ArgumentParser(description="Unlist prerelease tags for the given nuget package", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument("nuget", help="NuGet package ID", type=str)
     parser.add_argument("token", help="Nuget API token that allows unlisting packages", type=str)
-    parser.add_argument("--months", dest="months", help="Number of months for which the prerelease nugets are kept", type=int, default=3)
+    parser.add_argument("--months", dest="months", help="Number of months for which the prerelease nugets are kept", type=int, default=2)
     args = parser.parse_args()
 
     cutoff_date = datetime.now(timezone.utc) - timedelta(days= args.months * 30)

@@ -1,8 +1,6 @@
 import requests
 import argparse
 import re
-import dateutil.parser
-from requests.auth import HTTPBasicAuth
 from datetime import datetime, timedelta
 
 
@@ -40,7 +38,8 @@ def delete_tag(token, repository, tag):
         print(f"Failed to delete tag: {tag} - {response.status_code} {response.text}")
 
 def match_release(tag):
-    return SEMVER.match(tag) is not None and (SEMVER.match(tag).group("prerelease") is None or SEMVER.match(tag).group("prerelease").startswith("SNAPSHOT")) and SEMVER.match(tag).group("buildmetadata") is None
+    match = SEMVER.match(tag)
+    return match is not None and (match.group("prerelease") is None or match.group("prerelease").startswith("SNAPSHOT")) and match.group("buildmetadata") is None
 
 def main():
     parser = argparse.ArgumentParser(description="Remove prerelease tags from the given images", formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -48,7 +47,7 @@ def main():
     parser.add_argument("image", help="Image from which to remove tags", type=str)
     parser.add_argument("user", help="Dockerhub user for login", type=str)
     parser.add_argument("token", help="Dockerhub authorization token", type=str)
-    parser.add_argument("--months", dest="months", help="Number of months for which the prerelease images are kept", type=int, default=3)
+    parser.add_argument("--months", dest="months", help="Number of months for which the prerelease images are kept", type=int, default=2)
     args = parser.parse_args()
 
     now = datetime.today() - timedelta(days= args.months * 30)
