@@ -32,8 +32,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="NATS.Client" Version="1.1.8" />
-    <PackageReference Include="NATS.Client.JetStream" Version="2.6.6" />
-    <PackageReference Include="NATS.Net" Version="2.6.6" />
+    <PackageReference Include="NATS.Client.JetStream" Version="2.6.11" />
+    <PackageReference Include="NATS.Net" Version="2.6.11" />
   </ItemGroup>
 
   <ItemGroup>
