@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -88,8 +87,6 @@ internal class PushQueueStorage : IPushQueueStorage
                                       string                   partitionId,
                                       CancellationToken        cancellationToken = default)
   {
-    INatsJSStream? stream;
-
     try
     {
       await Publish(messages,
@@ -99,51 +96,18 @@ internal class PushQueueStorage : IPushQueueStorage
     }
     catch (Exception)
     {
-      try
-      {
-        stream = await js_.GetStreamAsync("armonik-stream", cancellationToken: cancellationToken)
-                          .ConfigureAwait(false);
-        for (var prio = 0; prio < MaxPriority; prio++)
-        {
-          var priority = prio + 1;
-          if (!stream.Info.Config.Subjects!.Contains(partitionId + priority))
-          {
-            stream.Info.Config.Subjects!.Add(partitionId + priority);
-            await js_.UpdateStreamAsync(stream.Info.Config, cancellationToken: cancellationToken)
-                     .ConfigureAwait(false);
-          }
-        }
-      }
-      catch (NatsJSApiException ex) when (ex.Error.Code == 404)
-      {
-        try
-        {
-          var subjects = Enumerable.Range(1,
-                                        MaxPriority)
-                                 .Select(i => partitionId + i)
-                                 .ToArray();
-          var config = new StreamConfig
-          {
-            Name = "armonik-stream",
-            Storage = StreamConfigStorage.File,
-            Subjects = subjects,
-            Retention = StreamConfigRetention.Workqueue,
-          };
-          stream = await js_.CreateStreamAsync(config, cancellationToken)
-          .ConfigureAwait(false);
+      // Stream or subjects might not exist, ensure they're created
+      var streamGestion = new StreamGestion(js_,
+                                            options_);
+      await streamGestion.EnsureStreamExistsAsync(partitionId,
+                                                  cancellationToken)
+                         .ConfigureAwait(false);
 
-        }
-        catch (NatsJSApiException) when (ex.Error.Code == 400)
-        {
-          stream = await js_.GetStreamAsync("armonik-stream", cancellationToken: cancellationToken)
-                          .ConfigureAwait(false);
-        }
-      }
-
-
+      // Retry publishing after ensuring stream exists
       await Publish(messages,
                     partitionId,
-                    cancellationToken);
+                    cancellationToken)
+        .ConfigureAwait(false);
     }
   }
 
@@ -162,7 +126,9 @@ internal class PushQueueStorage : IPushQueueStorage
                                                               cancellationToken),
                                       async message =>
                                       {
-                                        await js_.PublishAsync(partitionId + message.Options.Priority,
+                                        var subject = StreamGestion.GetSubjectName(partitionId,
+                                                                                   message.Options.Priority);
+                                        await js_.PublishAsync(subject,
                                                                Encoding.UTF8.GetBytes(message.TaskId),
                                                                headers: new NatsHeaders
                                                                         {

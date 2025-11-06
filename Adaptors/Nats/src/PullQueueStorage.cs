@@ -102,125 +102,102 @@ internal class PullQueueStorage : IPullQueueStorage
                                                                         int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    INatsJSConsumer[] prioryties;
-    INatsJSStream? stream;
-    // Create a fonc commune create stream
-    //var streamGestion = new StreamGestion(js_, options_);
+    var streamGestion = new StreamGestion(js_,
+                                          options_);
+
+    // Ensure stream and consumers exist for all priority levels
+    await streamGestion.EnsureStreamExistsAsync(partitionId,
+                                                cancellationToken)
+                       .ConfigureAwait(false);
+
+    var consumers = await streamGestion.EnsureConsumersExistAsync(partitionId,
+                                                                   cancellationToken)
+                                       .ConfigureAwait(false);
+
+    // Fetch from all consumers in parallel to reduce latency
+    var fetchTasks = consumers.Select((consumer,
+                                       index) =>
+                                      {
+                                        // Priority is in reverse order: index 0 = lowest priority, index MaxPriority-1 = highest priority
+                                        var priority = index + 1;
+                                        return FetchWithPriorityAsync(consumer,
+                                                                      priority,
+                                                                      nbMessages,
+                                                                      cancellationToken);
+                                      })
+                              .ToArray();
+
+    var allResults = await Task.WhenAll(fetchTasks)
+                               .ConfigureAwait(false);
+
+    // Flatten all results and sort by priority (highest first), then take only what we need
+    var sortedMessages = allResults.SelectMany(x => x)
+                                   .OrderByDescending(x => x.priority)
+                                   .Take(nbMessages)
+                                   .ToList();
+
+    // Yield messages in priority order
+    foreach (var (msg, _) in sortedMessages)
+    {
+      yield return new QueueMessageHandler(msg,
+                                           js_,
+                                           options_.AckWait,
+                                           options_.AckExtendDeadlineStep,
+                                           logger_,
+                                           cancellationToken);
+    }
+  }
+
+  /// <summary>
+  ///   Fetches messages from a single consumer with priority information.
+  /// </summary>
+  /// <param name="consumer">The NATS consumer to fetch from.</param>
+  /// <param name="priority">The priority level of this consumer.</param>
+  /// <param name="maxMessages">Maximum number of messages to fetch.</param>
+  /// <param name="cancellationToken">Cancellation token.</param>
+  /// <returns>List of messages with their priority.</returns>
+  private async Task<List<(NatsJSMsg<string> msg, int priority)>> FetchWithPriorityAsync(INatsJSConsumer   consumer,
+                                                                                          int               priority,
+                                                                                          int               maxMessages,
+                                                                                          CancellationToken cancellationToken)
+  {
+    var messages = new List<(NatsJSMsg<string>, int)>();
+
     try
-    {
-      stream = await js_.GetStreamAsync("armonik-stream", cancellationToken:cancellationToken)
-                        .ConfigureAwait(false);
-      for (var prio = 0; prio < MaxPriority; prio++)
-      {
-        var priority = prio + 1;
-        if (!stream.Info.Config.Subjects!.Contains(partitionId + priority))
-        {
-          stream.Info.Config.Subjects!.Add(partitionId + priority);
-          await js_.UpdateStreamAsync(stream.Info.Config, cancellationToken: cancellationToken)
-                   .ConfigureAwait(false);
-        }
-      }
-    }
-    catch (NatsJSApiException ex) when (ex.Error.Code == 404)
-    {
-      try
-      {
-        var subjects = Enumerable.Range(1,
-                                      MaxPriority)
-                               .Select(i => partitionId + i)
-                               .ToArray();
-        var config = new StreamConfig
-        {
-          Name = "armonik-stream",
-          Storage = StreamConfigStorage.File,
-          Subjects = subjects,
-          Retention = StreamConfigRetention.Workqueue,
-        };
-        stream = await js_.CreateStreamAsync(config, cancellationToken)
-                          .ConfigureAwait(false);
-
-      }
-      catch (NatsJSApiException) when (ex.Error.Code == 400)
-      {
-        stream = await js_.GetStreamAsync("armonik-stream", cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
-      }
-
-      catch (NatsJSApiException e2)
-      {
-        logger_.LogError(e2,
-          "{errorcode}", e2.Error.Code);
-        throw;
-      }
-      //end
-    }
-    try
-    {
-      prioryties = await Task.WhenAll(Enumerable.Range(1,
-                                                       MaxPriority)
-                                                .Select(async i => await stream.GetConsumerAsync(partitionId + i, cancellationToken)
-                                                                               .ConfigureAwait(false)));
-    }
-    catch (NatsJSApiException ex) when (ex.Error.Code == 404)
-    {
-      prioryties = await Task.WhenAll(Enumerable.Range(1,
-                                                       MaxPriority)
-                                                .Select(async i => await js_.CreateConsumerAsync("armonik-stream",
-                                                                                                 new ConsumerConfig(partitionId + i)
-                                                                                                 {
-                                                                                                   DurableName   = partitionId + i,
-                                                                                                   AckWait       = TimeSpan.FromSeconds(options_.AckWait),
-                                                                                                   AckPolicy     = ConsumerConfigAckPolicy.Explicit,
-                                                                                                   FilterSubject = partitionId + i,
-                                                                                                 }, cancellationToken)));
-    }
-
-    var i = nbMessages;
-    foreach (var consumer in prioryties.Reverse())
     {
       if (options_.WaitTimeSeconds < TimeSpan.FromSeconds(1))
       {
         await foreach (var natsJSMsg in consumer.FetchNoWaitAsync<string>(new NatsJSFetchOpts
+                                                                          {
+                                                                            MaxMsgs = maxMessages,
+                                                                          },
+                                                                          cancellationToken: cancellationToken)
+                                                        .ConfigureAwait(false))
         {
-          MaxMsgs = i,
-        }, cancellationToken:cancellationToken)
-                                                .ConfigureAwait(false))
-        {
-          yield return new QueueMessageHandler(natsJSMsg,
-                                               js_,
-                                               options_.AckWait,
-                                               options_.AckExtendDeadlineStep,
-                                               logger_,
-                                               cancellationToken);
-          --i;
-          if (i == 0)
-          {
-            break;
-          }
+          messages.Add((natsJSMsg, priority));
         }
       }
       else
       {
-          await foreach (var natsJSMsg in consumer.FetchAsync<string>(new NatsJSFetchOpts
-          {
-            MaxMsgs = i,
-            Expires = options_.WaitTimeSeconds,
-          }, cancellationToken: cancellationToken)
-                                                  .ConfigureAwait(false))
-          {
-            yield return new QueueMessageHandler(natsJSMsg,
-                                                 js_,
-                                                 options_.AckWait,
-                                                 options_.AckExtendDeadlineStep,
-                                                 logger_,
-                                                 cancellationToken);
-            --i;
-            if (i == 0)
-            {
-              break;
-            }
+        await foreach (var natsJSMsg in consumer.FetchAsync<string>(new NatsJSFetchOpts
+                                                                    {
+                                                                      MaxMsgs = maxMessages,
+                                                                      Expires = options_.WaitTimeSeconds,
+                                                                    },
+                                                                    cancellationToken: cancellationToken)
+                                                        .ConfigureAwait(false))
+        {
+          messages.Add((natsJSMsg, priority));
         }
       }
     }
+    catch (Exception ex)
+    {
+      logger_.LogDebug(ex,
+                       "No messages available from consumer at priority {Priority}",
+                       priority);
+    }
+
+    return messages;
   }
 }
