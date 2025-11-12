@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -58,7 +59,8 @@ internal class PushQueueStorage : IPushQueueStorage
 
   /// <inheritdoc />
   public int MaxPriority
-    => int.MaxValue;
+    => int.Max(options_.MaxPriority,
+               1);
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -89,40 +91,23 @@ internal class PushQueueStorage : IPushQueueStorage
     {
       await Publish(messages,
                     partitionId,
-                    cancellationToken);
+                    cancellationToken)
+        .ConfigureAwait(false);
     }
     catch (Exception)
     {
-      try
-      {
-        var existing = await js_.GetStreamAsync("armonik-stream")
-                                .ConfigureAwait(false);
-        if (!existing.Info.Config.Subjects!.Contains(partitionId))
-        {
-          existing.Info.Config.Subjects!.Add(partitionId);
-          await js_.UpdateStreamAsync(existing.Info.Config)
-                   .ConfigureAwait(false);
-        }
-      }
-      catch (NatsJSApiException ex) when (ex.Error.Code == 404)
-      {
-        var config = new StreamConfig
-                     {
-                       Name    = "armonik-stream",
-                       Storage = StreamConfigStorage.File,
-                       Subjects = new[]
-                                  {
-                                    partitionId,
-                                  },
-                       Retention = StreamConfigRetention.Workqueue,
-                     };
-        await js_.CreateStreamAsync(config)
-                 .ConfigureAwait(false);
-      }
+      // Stream or subjects might not exist, ensure they're created
+      var streamGestion = new StreamGestion(js_,
+                                            options_);
+      await streamGestion.EnsureStreamExistsAsync(partitionId,
+                                                  cancellationToken)
+                         .ConfigureAwait(false);
 
+      // Retry publishing after ensuring stream exists
       await Publish(messages,
                     partitionId,
-                    cancellationToken);
+                    cancellationToken)
+        .ConfigureAwait(false);
     }
   }
 
@@ -136,11 +121,14 @@ internal class PushQueueStorage : IPushQueueStorage
   private async Task Publish(IEnumerable<MessageData> messages,
                              string                   partitionId,
                              CancellationToken        cancellationToken = default)
-    => await messages.ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism,
+    => await messages.OrderByDescending(m => m.Options.Priority)
+                     .ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism,
                                                               cancellationToken),
                                       async message =>
                                       {
-                                        await js_.PublishAsync(partitionId,
+                                        var subject = StreamGestion.GetSubjectName(partitionId,
+                                                                                   message.Options.Priority);
+                                        await js_.PublishAsync(subject,
                                                                Encoding.UTF8.GetBytes(message.TaskId),
                                                                headers: new NatsHeaders
                                                                         {
