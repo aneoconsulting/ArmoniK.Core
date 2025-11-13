@@ -59,7 +59,7 @@ public static class ResultLifeCycleHelper
     resultIds ??= Array.Empty<string>();
 
     // Early exit if no abortion is actually requested
-    if (taskIds.Count != 0 && resultIds.Count != 0)
+    if (taskIds.Count == 0 && resultIds.Count == 0)
     {
       return;
     }
