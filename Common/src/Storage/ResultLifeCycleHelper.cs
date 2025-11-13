@@ -59,7 +59,7 @@ public static class ResultLifeCycleHelper
     resultIds ??= Array.Empty<string>();
 
     // Early exit if no abortion is actually requested
-    if (!taskIds.Any() && !resultIds.Any())
+    if (taskIds.Count != 0 && resultIds.Count != 0)
     {
       return;
     }
@@ -210,6 +210,7 @@ public static class ResultLifeCycleHelper
     // Early exit if no abortion is actually requested
     if (!taskIds.Any() && !resultIds.Any())
     {
+      taskTable.Logger.LogDebug("No tasks and results to purge");
       return;
     }
 
@@ -229,17 +230,79 @@ public static class ResultLifeCycleHelper
       }
     }
 
+    resultIds = await TryGetResultsFromTaskIds(taskTable, taskIds, resultIds, reason, cancellationToken).ConfigureAwait(false);
+
+    // Early exit if no results need to be aborted (recursion is not needed)
+    if (!resultIds.Any())
+    {
+      taskTable.Logger.LogDebug("No results to purge");
+      return;
+    }
+
+    taskTable.Logger.LogInformation("Abort results {@results}: {reason}",
+                                    resultIds,
+                                    reason);
+
+    var count = await resultTable.UpdateManyResults(result => resultIds.Contains(result.ResultId) &&
+                                                              (taskIds.Contains(result.OwnerTaskId) || string.IsNullOrEmpty(result.OwnerTaskId)) &&
+                                                              result.Status == ResultStatus.Created,
+                                                    new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                       ResultStatus.Aborted)
+                                                                                  .Set(result => result.CompletionDate,
+                                                                                       DateTime.UtcNow),
+                                                    cancellationToken)
+                                 .ConfigureAwait(false);
+
+    // Early exit if no result has been aborted
+    if (count == 0)
+    {
+      taskTable.Logger.LogDebug("No result has been aborted");
+      return;
+    }
+
+    // Find all the tasks that depend on the aborted results
+    var nextTasks = new HashSet<string>();
+    await foreach (var dependentTasks in resultTable.GetResults(result => resultIds.Contains(result.ResultId) && result.Status == ResultStatus.Aborted &&
+                                                                          taskIds.Contains(result.OwnerTaskId),
+                                                                result => result.DependentTasks,
+                                                                cancellationToken)
+                                                    .ConfigureAwait(false))
+    {
+      nextTasks.UnionWith(dependentTasks);
+    }
+
+    // Recursively abort the tasks that indirectly depend on the purged tasks
+    await AbortTasksAndResults(taskTable,
+                               resultTable,
+                               nextTasks,
+                               Array.Empty<string>(),
+                               reason,
+                               TaskStatus.Cancelled,
+                               cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  private static async Task<ICollection<string>> TryGetResultsFromTaskIds(ITaskTable taskTable, ICollection<string> taskIds, ICollection<string> resultIds, string reason, CancellationToken cancellationToken)
+  {
     if (taskIds.Any())
     {
       taskTable.Logger.LogInformation("Purge tasks {@tasks}: {reason}",
                                       taskIds,
                                       reason);
 
+      var taskStatusToSeek = new HashSet<TaskStatus>
+      {
+        TaskStatus.Creating,
+        TaskStatus.Pending,
+        TaskStatus.Paused,
+        TaskStatus.Cancelled,
+        TaskStatus.Cancelling,
+        TaskStatus.Error,
+        TaskStatus.Timeout
+      };
+
       // Find all metadata about the tasks that must be aborted
-      var tasks = await taskTable.FindTasksAsync(task => taskIds.Contains(task.TaskId) &&
-                                                         (task.Status == TaskStatus.Creating || task.Status == TaskStatus.Pending || task.Status == TaskStatus.Paused ||
-                                                          task.Status == TaskStatus.Cancelled || task.Status == TaskStatus.Cancelling ||
-                                                          task.Status == TaskStatus.Error || task.Status == TaskStatus.Timeout),
+      var tasks = await taskTable.FindTasksAsync(task => taskIds.Contains(task.TaskId) && taskStatusToSeek.Contains(task.Status),
                                                  task => new
                                                  {
                                                    task.TaskId,
@@ -270,52 +333,7 @@ public static class ResultLifeCycleHelper
       }
     }
 
-    // Early exit if no results need to be aborted (recursion is not needed)
-    if (!resultIds.Any())
-    {
-      return;
-    }
-
-    taskTable.Logger.LogInformation("Abort results {@results}: {reason}",
-                                    resultIds,
-                                    reason);
-
-    var count = await resultTable.UpdateManyResults(result => resultIds.Contains(result.ResultId) &&
-                                                              (taskIds.Contains(result.OwnerTaskId) || string.IsNullOrEmpty(result.OwnerTaskId)) &&
-                                                              result.Status == ResultStatus.Created,
-                                                    new UpdateDefinition<Result>().Set(result => result.Status,
-                                                                                       ResultStatus.Aborted)
-                                                                                  .Set(result => result.CompletionDate,
-                                                                                       DateTime.UtcNow),
-                                                    cancellationToken)
-                                 .ConfigureAwait(false);
-
-    // Early exit if no result has been aborted
-    if (count == 0)
-    {
-      return;
-    }
-
-    // Find all the tasks that depend on the aborted results
-    var nextTasks = new HashSet<string>();
-    await foreach (var dependentTasks in resultTable.GetResults(result => resultIds.Contains(result.ResultId) && result.Status == ResultStatus.Aborted &&
-                                                                          taskIds.Contains(result.OwnerTaskId),
-                                                                result => result.DependentTasks,
-                                                                cancellationToken)
-                                                    .ConfigureAwait(false))
-    {
-      nextTasks.UnionWith(dependentTasks);
-    }
-
-    // Recursively abort the tasks that indirectly depend on the purged tasks
-    await AbortTasksAndResults(taskTable,
-                               resultTable,
-                               nextTasks,
-                               Array.Empty<string>(),
-                               reason,
-                               TaskStatus.Cancelled,
-                               cancellationToken)
-      .ConfigureAwait(false);
+    return resultIds;
   }
 
 
