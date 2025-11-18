@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Couchbase.Extensions.DependencyInjection" Version="3.8.1" />
+    <PackageReference Include="CouchbaseNetClient" Version="3.8.1" />
+    <PackageReference Include="JetBrains.Annotations" Version="2025.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Base\src\ArmoniK.Core.Base.csproj" />
+    <ProjectReference Include="..\..\..\Utils\src\ArmoniK.Core.Utils.csproj" />
+  </ItemGroup>
+
+</Project>
