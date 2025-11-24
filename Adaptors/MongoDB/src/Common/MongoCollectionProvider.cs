@@ -119,6 +119,10 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
     var        model         = new TModelMapping();
     Exception? lastException = null;
 
+    logger.LogWarning(
+                    "Minimal indexes flags: {UseMinimalIndexes}",
+                    options.UseMinimalIndexes);
+
     for (var collectionRetry = 1; collectionRetry < options.MaxRetries; collectionRetry++)
     {
       lastException = null;
