@@ -420,9 +420,17 @@ public class TaskTable : ITaskTable
                                          cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
 
-    var readyTasks = taskCollection.Find(sessionHandle,
-                                         data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                                 data.RemainingDataDependencies == new Dictionary<string, bool>())
+    var emptyDictionary = new Dictionary<string, bool>();
+
+    var filter = Builders<TaskData>.Filter.In(t => t.TaskId,
+                                              taskIds) & Builders<TaskData>.Filter.Or(Builders<TaskData>.Filter.Eq(t => t.Status,
+                                                                                                                   TaskStatus.Creating),
+                                                                                      Builders<TaskData>.Filter.Eq(t => t.Status,
+                                                                                                                   TaskStatus.Pending)) &
+                 Builders<TaskData>.Filter.Eq(t => t.RemainingDataDependencies,
+                                              emptyDictionary);
+
+    var readyTasks = taskCollection.Find(filter)
                                    .Project(selector)
                                    .ToAsyncEnumerable(cancellationToken);
 
