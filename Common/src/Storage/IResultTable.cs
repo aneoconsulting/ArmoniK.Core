@@ -8,12 +8,19 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Common.Exceptions;
+
+using Microsoft.Extensions.Logging;
+
+using MongoDB.Driver;
 
 using System;
 using System.Collections.Generic;
@@ -21,11 +28,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
-
-using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Exceptions;
-
-using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -127,6 +129,19 @@ public interface IResultTable : IInitializable
                                     CancellationToken              cancellationToken = default);
 
   /// <summary>
+  ///   Get the results from a filter and convert it in the given type
+  /// </summary>
+  /// <param name="filter">MongoDB filter definition to select results</param>
+  /// <param name="convertor">Expression to convert result into another type</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Collection of results metadata from the database
+  /// </returns>
+  IAsyncEnumerable<T> GetResults<T>(FilterDefinition<Result>    filter,
+                                    Expression<Func<Result, T>> convertor,
+                                    CancellationToken           cancellationToken = default);
+
+  /// <summary>
   ///   List all results matching the given request
   /// </summary>
   /// <param name="filter">Filter to select results</param>
@@ -213,6 +228,19 @@ public interface IResultTable : IInitializable
                                UpdateDefinition<Result>       updates,
                                CancellationToken              cancellationToken = default);
 
+
+  /// <summary>
+  ///   Update the results matching the filter with the given new values
+  /// </summary>
+  /// <param name="filter">Filter to select the results to update</param>
+  /// <param name="updates">Collection of fields to update and their new value</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The number of results matched
+  /// </returns>
+  Task<long> UpdateManyResults(FilterDefinition<Result> filter,
+                               UpdateDefinition<Result> updates,
+                               CancellationToken        cancellationToken = default);
 
   /// <summary>
   ///   Updates in bulk results

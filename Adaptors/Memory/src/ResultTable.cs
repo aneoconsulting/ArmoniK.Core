@@ -95,6 +95,21 @@ public class ResultTable : IResultTable
                .ToAsyncEnumerable();
 
   /// <inheritdoc />
+  public IAsyncEnumerable<T> GetResults<T>(MongoDB.Driver.FilterDefinition<Result> filter,
+                                           Expression<Func<Result, T>>             convertor,
+                                           CancellationToken                       cancellationToken = default)
+  {
+    // Memory adapter does not support MongoDB-specific FilterDefinition.
+    // This is intentional - FilterDefinition is MongoDB-specific and cannot be converted to LINQ expressions.
+    // Use the Expression<Func<Result, bool>> overload instead for Memory adapter compatibility.
+    // If you need MongoDB-specific filters, ensure your code detects the adapter type and uses appropriate filters.
+    throw new NotSupportedException(
+      "Memory adapter does not support MongoDB FilterDefinition<Result>. " +
+      "Use GetResults(Expression<Func<Result, bool>> filter, ...) instead. " +
+      "MongoDB FilterDefinition is MongoDB-specific and cannot be applied to in-memory collections.");
+  }
+
+  /// <inheritdoc />
   public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
                                                                               Expression<Func<Result, object?>> orderField,
                                                                               bool                              ascOrder,
@@ -171,6 +186,15 @@ public class ResultTable : IResultTable
     }
 
     return Task.FromResult(i);
+  }
+
+  /// <inheritdoc />
+  public Task<long> UpdateManyResults(MongoDB.Driver.FilterDefinition<Result> filter,
+                                      UpdateDefinition<Result>                 updates,
+                                      CancellationToken                        cancellationToken = default)
+  {
+      throw new NotSupportedException(
+        "Memory adapter does not support MongoDB FilterDefinition<Result>.");
   }
 
   /// <inheritdoc />

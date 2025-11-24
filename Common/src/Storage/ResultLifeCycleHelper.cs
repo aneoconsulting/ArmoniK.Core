@@ -8,7 +8,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -26,6 +26,8 @@ using ArmoniK.Core.Base;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
+
+using MongoDB.Driver;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -243,9 +245,14 @@ public static class ResultLifeCycleHelper
                                     resultIds,
                                     reason);
 
-    var count = await resultTable.UpdateManyResults(result => resultIds.Contains(result.ResultId) &&
-                                                              (taskIds.Contains(result.OwnerTaskId) || string.IsNullOrEmpty(result.OwnerTaskId)) &&
-                                                              result.Status == ResultStatus.Created,
+    var updateFilter = Builders<Result>.Filter.In(result => result.ResultId, resultIds) &
+                       Builders<Result>.Filter.Or(
+                         Builders<Result>.Filter.In(result => result.OwnerTaskId, taskIds),
+                         Builders<Result>.Filter.Eq(result => result.OwnerTaskId, "")
+                       ) &
+                       Builders<Result>.Filter.Eq(result => result.Status, ResultStatus.Created);
+
+    var count = await resultTable.UpdateManyResults(updateFilter,
                                                     new UpdateDefinition<Result>().Set(result => result.Status,
                                                                                        ResultStatus.Aborted)
                                                                                   .Set(result => result.CompletionDate,
@@ -262,8 +269,11 @@ public static class ResultLifeCycleHelper
 
     // Find all the tasks that depend on the aborted results
     var nextTasks = new HashSet<string>();
-    await foreach (var dependentTasks in resultTable.GetResults(result => resultIds.Contains(result.ResultId) && result.Status == ResultStatus.Aborted &&
-                                                                          taskIds.Contains(result.OwnerTaskId),
+
+    var getResultFilter = Builders<Result>.Filter.In(result => result.ResultId, resultIds) &
+                          Builders<Result>.Filter.Eq(result => result.Status, ResultStatus.Aborted) &
+                          Builders<Result>.Filter.In(result => result.OwnerTaskId, taskIds);
+    await foreach (var dependentTasks in resultTable.GetResults(getResultFilter,
                                                                 result => result.DependentTasks,
                                                                 cancellationToken)
                                                     .ConfigureAwait(false))
@@ -357,9 +367,13 @@ public static class ResultLifeCycleHelper
                                              string            sessionId,
                                              CancellationToken cancellationToken)
   {
-    await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId &&
-                                                               (result.Status == ResultStatus.Completed || result.Status == ResultStatus.Created ||
-                                                                result.Status == ResultStatus.Aborted) && !result.ManualDeletion,
+    // Build filter for getting results to delete
+    var getResultsFilter = Builders<Result>.Filter.Eq(result => result.SessionId, sessionId) &
+                           Builders<Result>.Filter.In(result => result.Status, 
+                                                     new[] { ResultStatus.Completed, ResultStatus.Created, ResultStatus.Aborted }) &
+                           Builders<Result>.Filter.Eq(result => result.ManualDeletion, false);
+
+    await foreach (var ids in resultTable.GetResults(getResultsFilter,
                                                      result => result.OpaqueId,
                                                      cancellationToken)
                                          .ToChunksAsync(500,
@@ -372,7 +386,11 @@ public static class ResultLifeCycleHelper
                          .ConfigureAwait(false);
     }
 
-    await resultTable.UpdateManyResults(result => result.SessionId == sessionId && !result.ManualDeletion,
+    // Build filter for updating results
+    var updateResultsFilter = Builders<Result>.Filter.Eq(result => result.SessionId, sessionId) &
+                              Builders<Result>.Filter.Eq(result => result.ManualDeletion, false);
+
+    await resultTable.UpdateManyResults(updateResultsFilter,
                                         new UpdateDefinition<Result>().Set(result => result.Status,
                                                                            ResultStatus.DeletedData)
                                                                       .Set(result => result.OpaqueId,
