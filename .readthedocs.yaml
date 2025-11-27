@@ -10,8 +10,8 @@ build:
   tools:
     python: "3.13"
   apt_packages:
-    - dotnet-sdk-8.0
-    - dotnet8
+    - dotnet-sdk-10.0
+    - dotnet10
   jobs:
     pre_build:
       - PATH="$PATH":"$HOME/.dotnet/tools" tools/generate-csharp-doc.sh

@@ -68,7 +68,7 @@ internal class PushQueueStorage : IPushQueueStorage
                   // SQS supports a maximum of 10 messages per batch request, see quotas
                   .SelectMany(group => group.Chunk(10)
                                             .ToAsyncEnumerable()
-                                            .SelectAwait(async chunk =>
+                                            .ParallelSelect(async chunk =>
                                                          {
                                                            var queueName = client_.GetQueueName(options_,
                                                                                                 group.Key,

@@ -177,7 +177,7 @@ public class ObjectStorage : IObjectStorage
                                                                async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
                                                                                                                           cancellationToken)
                                                                                                          .ConfigureAwait(false))
-                                               .ToListAsync(cancellationToken)
+                                               .ToListAsync()
                                                .ConfigureAwait(false);
 
       var compRequest = new CompleteMultipartUploadRequest
@@ -223,9 +223,8 @@ public class ObjectStorage : IObjectStorage
     => await ids.ParallelSelect(async id => (id, await GetSizeAsync(id,
                                                                     cancellationToken)
                                                    .ConfigureAwait(false)))
-                .ToDictionaryAsync(tuple => tuple.id,
-                                   tuple => tuple.Item2,
-                                   cancellationToken)
+                .ToDictionaryAsync((tuple) => tuple.id,
+                                   (tuple) => tuple.Item2)
                 .ConfigureAwait(false);
 
   private async Task<GetObjectResponse> GetObjectStream(string            key,
