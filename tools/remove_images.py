@@ -1,7 +1,7 @@
 import requests
 import argparse
 import re
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 import logging
 
 logging.basicConfig(
@@ -56,14 +56,14 @@ def main():
     parser.add_argument("--months", dest="months", help="Number of months for which the prerelease images are kept", type=int, default=2)
     args = parser.parse_args()
 
-    now = datetime.today() - timedelta(days= args.months * 30)
+    now = datetime.now(timezone.utc) - timedelta(days=args.months * 30)
 
     token = get_token(args.user, args.token)
     tags = get_tags(token, f"{args.org}/{args.image}")
 
     for tag_info in tags:
         tag_name = tag_info["name"]
-        tag_date = datetime.strptime(tag_info["last_updated"], "%Y-%m-%dT%H:%M:%S.%fZ")
+        tag_date = datetime.fromisoformat(tag_info["last_updated"].replace("Z", "+00:00"))
         if tag_date < now and not match_release(tag_name):
             logging.info(f"Deleting tag: {tag_name} (last updated: {tag_date})")
             delete_tag(token, f"{args.org}/{args.image}", tag_name)
