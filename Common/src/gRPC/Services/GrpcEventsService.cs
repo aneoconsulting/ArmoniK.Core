@@ -1,22 +1,23 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2025. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Threading.Tasks;
+using System.Linq;
 
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -24,6 +25,9 @@ using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
+
+using AkUpdateType = ArmoniK.Core.Common.Storage.Events.SessionUpdateType;
+using EvtUpdateType = ArmoniK.Api.gRPC.V1.Events.SessionUpdateType;
 
 using Grpc.Core;
 
@@ -42,6 +46,7 @@ public class GrpcEventsService : Events.EventsBase
   private readonly IResultWatcher                              resultWatcher_;
   private readonly ITaskTable                                  taskTable_;
   private readonly ITaskWatcher                                taskWatcher_;
+  private readonly ISessionWatcher                             sessionWatcher_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="GrpcEventsService" /> class.
@@ -54,6 +59,7 @@ public class GrpcEventsService : Events.EventsBase
   /// <param name="logger">The logger for logging information.</param>
   public GrpcEventsService(ITaskTable                                  taskTable,
                            ITaskWatcher                                taskWatcher,
+                           ISessionWatcher                             sessionWatcher,
                            IResultTable                                resultTable,
                            IResultWatcher                              resultWatcher,
                            FunctionExecutionMetrics<GrpcEventsService> meter,
@@ -62,6 +68,7 @@ public class GrpcEventsService : Events.EventsBase
     logger_        = logger;
     taskTable_     = taskTable;
     taskWatcher_   = taskWatcher;
+    sessionWatcher_= sessionWatcher;
     resultTable_   = resultTable;
     resultWatcher_ = resultWatcher;
     meter_         = meter;
@@ -99,6 +106,67 @@ public class GrpcEventsService : Events.EventsBase
     {
       logger_.LogWarning(e,
                          "Subscription cancelled, no more messages will be sent.");
+    }
+  }
+
+  /// Gets a stream which will be published with session events
+  public override async Task GetSessionEvent(
+      SessionEventSubscriptionRequest request,
+      IServerStreamWriter<SessionEventSubscriptionResponse> responseStream,
+      ServerCallContext context)
+  {
+    try {
+      var changeSource = sessionWatcher_
+        .GetSessionsChangesAsync(context.CancellationToken);
+
+      Task? writer = null;
+
+      Predicate<SessionStatus> filter = _ => true;
+      var evts = request.ReturnedEvents.ToHashSet();
+      if (evts.Any())
+        filter = s => evts.Contains(translateStatus(s));
+
+      SessionEventSubscriptionResponse resp = new();
+      await foreach (var evt in changeSource)
+      {
+        if (!filter(evt.Status))
+          continue;
+
+        resp.SessionId = evt.SessionId;
+        resp.Status = translateStatus(evt.Status);
+        resp.UpdateType = evt.Type switch{
+          AkUpdateType.Create => EvtUpdateType.Created,
+          AkUpdateType.Update=> EvtUpdateType.Updated,
+          AkUpdateType.Delete=> EvtUpdateType.Deleted,
+          _ => throw new InvalidOperationException("unsupported update type")
+        };
+
+        if (writer != null)
+        {
+          await writer.ConfigureAwait(false);
+          writer = null;
+        }
+
+        writer = responseStream.WriteAsync(resp);
+      }
+    } catch(OperationCanceledException e) {
+      logger_.LogWarning(e,
+          "Session-Event subscription was cancelled, stopped sending updated");
+    }
+  }
+
+  private Api.gRPC.V1.SessionStatus translateStatus(SessionStatus status)
+  {
+    switch (status)
+    {
+      case SessionStatus.Unspecified: return Api.gRPC.V1.SessionStatus.Unspecified;
+      case SessionStatus.Running: return Api.gRPC.V1.SessionStatus.Running;
+      case SessionStatus.Cancelled: return Api.gRPC.V1.SessionStatus.Cancelled;
+      case SessionStatus.Paused: return Api.gRPC.V1.SessionStatus.Paused;
+      case SessionStatus.Closed: return Api.gRPC.V1.SessionStatus.Closed;
+      case SessionStatus.Purged: return Api.gRPC.V1.SessionStatus.Purged;
+      case SessionStatus.Deleted: return Api.gRPC.V1.SessionStatus.Deleted;
+      default: throw new NotSupportedException("Unsupported SessionStatus");
     }
   }
 }
