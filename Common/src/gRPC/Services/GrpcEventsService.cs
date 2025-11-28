@@ -121,17 +121,9 @@ public class GrpcEventsService : Events.EventsBase
 
       Task? writer = null;
 
-      Predicate<SessionStatus> filter = _ => true;
-      var evts = request.ReturnedEvents.ToHashSet();
-      if (evts.Any())
-        filter = s => evts.Contains(translateStatus(s));
-
       SessionEventSubscriptionResponse resp = new();
       await foreach (var evt in changeSource)
       {
-        if (!filter(evt.Status))
-          continue;
-
         resp.SessionId = evt.SessionId;
         resp.Status = translateStatus(evt.Status);
         resp.UpdateType = evt.Type switch{
