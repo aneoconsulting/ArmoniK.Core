@@ -15,12 +15,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using Microsoft.Extensions.Logging;
+
+using System;
 using System.IO;
 using System.Linq;
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
-
-using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Utils;
 
@@ -88,7 +89,10 @@ public static class CertificateValidator
          chain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
          chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
 
-         chain.ChainPolicy.ExtraStore.AddRange(authority);
+         chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+         //chain.ChainPolicy.CustomTrustStore.Clear();
+         chain.ChainPolicy.CustomTrustStore.AddRange(authority);
+
          if (!chain.Build(cert))
          {
            logger.LogWarning("SSL validation failed: unable to build the certificate chain");
