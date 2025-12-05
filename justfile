@@ -43,12 +43,6 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   } else {
     '{ name = "rabbitmq", image = "rabbitmq:4-management" }'
   }
-} else if queue == "rabbitmq091" {
-  if os_family() == "windows" {
-    '{ name = "rabbitmq", image = "micdenny/rabbitmq-windows:4.1.0", protocol = "amqp0_9_1" }'
-  } else {
-    '{ name = "rabbitmq", image = "rabbitmq:4-management", protocol = "amqp0_9_1" }'
-  }
 } else if queue == "artemis" {
   '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
 } else if queue == "activemq" {
@@ -171,7 +165,6 @@ _usage:
       queue: allowed values below
         activemq    :  for activemq (1.0.0 protocol) (default)
         rabbitmq    :  for rabbitmq (1.0.0 protocol)
-        rabbitmq091 :  for rabbitmq (0.9.1 protocol)
         artemis     :  for artemis  (1.0.0 protocol)
         pubsub      :  for Google PubSub
         nats        :  for Nats with JetStream
