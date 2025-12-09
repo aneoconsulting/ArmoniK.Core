@@ -163,9 +163,10 @@ _usage:
       tag: The core tag image to use, defaults to 0.0.0.0-local
 
       queue: allowed values below
-        activemq    :  for activemq (1.0.0 protocol) (default)
-        rabbitmq    :  for rabbitmq (1.0.0 protocol)
-        artemis     :  for artemis  (1.0.0 protocol)
+        activemq    :  for ActiveMQ (default)
+        rabbitmq    :  for RabbitMQ
+        artemis     :  for ActiveMQ Artemis
+        sqs         :  for AWS SQS (using localstack)
         pubsub      :  for Google PubSub
         nats        :  for Nats with JetStream
         none        :  for external queue configurations
