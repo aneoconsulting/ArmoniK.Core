@@ -223,8 +223,8 @@ public class ObjectStorage : IObjectStorage
     => await ids.ParallelSelect(async id => (id, await GetSizeAsync(id,
                                                                     cancellationToken)
                                                    .ConfigureAwait(false)))
-                .ToDictionaryAsync((tuple) => tuple.id,
-                                   (tuple) => tuple.Item2)
+                .ToDictionaryAsync(tuple => tuple.id,
+                                   tuple => tuple.Item2)
                 .ConfigureAwait(false);
 
   private async Task<GetObjectResponse> GetObjectStream(string            key,
