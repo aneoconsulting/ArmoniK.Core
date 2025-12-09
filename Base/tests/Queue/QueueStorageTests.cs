@@ -64,10 +64,6 @@ public class QueueStorageTests
         adapterAbsolutePath = "../../../../../../Adaptors/Amqp/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.Amqp.dll";
         break;
 
-      case "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder":
-        adapterAbsolutePath = "../../../../../../Adaptors/RabbitMQ/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.RabbitMQ.dll";
-        break;
-
       case "ArmoniK.Core.Adapters.SQS.QueueBuilder":
         adapterAbsolutePath = "../../../../../../Adaptors/SQS/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.SQS.dll";
         break;

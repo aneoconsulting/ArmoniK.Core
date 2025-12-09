@@ -26,7 +26,6 @@ COPY ["Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj", "Ad
 COPY ["Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj", "Adaptors/Memory/src/"]
 COPY ["Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj", "Adaptors/MongoDB/src/"]
 COPY ["Adaptors/QueueCommon/src/ArmoniK.Core.Adapters.QueueCommon.csproj", "Adaptors/QueueCommon/src/"]
-COPY ["Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj", "Adaptors/RabbitMQ/src/"]
 COPY ["Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj", "Adaptors/PubSub/src/"]
 COPY ["Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj", "Adaptors/Nats/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
@@ -46,7 +45,6 @@ RUN dotnet restore -a "${TARGETARCH}" "Control/Metrics/src/ArmoniK.Core.Control.
 RUN dotnet restore -a "${TARGETARCH}" "Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
@@ -61,7 +59,6 @@ COPY ["Adaptors/LocalStorage/src", "Adaptors/LocalStorage/src"]
 COPY ["Adaptors/Memory/src", "Adaptors/Memory/src"]
 COPY ["Adaptors/MongoDB/src", "Adaptors/MongoDB/src"]
 COPY ["Adaptors/QueueCommon/src", "Adaptors/QueueCommon/src"]
-COPY ["Adaptors/RabbitMQ/src", "Adaptors/RabbitMQ/src"]
 COPY ["Adaptors/PubSub/src", "Adaptors/PubSub/src"]
 COPY ["Adaptors/Nats/src", "Adaptors/Nats/src"]
 COPY ["Adaptors/Redis/src", "Adaptors/Redis/src"]
@@ -87,9 +84,6 @@ RUN dotnet publish "ArmoniK.Core.Adapters.Nats.csproj" -a "${TARGETARCH}" --no-r
 
 WORKDIR /src/Adaptors/Amqp/src
 RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/amqp /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/RabbitMQ/src
-RUN dotnet publish "ArmoniK.Core.Adapters.RabbitMQ.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/rabbit /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Adaptors/LocalStorage/src
 RUN dotnet publish "ArmoniK.Core.Adapters.LocalStorage.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/local_storage /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
@@ -125,8 +119,6 @@ WORKDIR /adapters/queue/nats
 COPY --from=build /app/publish/nats .
 WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
-WORKDIR /adapters/queue/rabbit
-COPY --from=build /app/publish/rabbit .
 WORKDIR /adapters/object/local_storage
 COPY --from=build /app/publish/local_storage .
 WORKDIR /adapters/object/redis
@@ -167,8 +159,6 @@ WORKDIR /adapters/queue/nats
 COPY --from=build /app/publish/nats .
 WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
-WORKDIR /adapters/queue/rabbit
-COPY --from=build /app/publish/rabbit .
 WORKDIR /adapters/object/local_storage
 COPY --from=build /app/publish/local_storage .
 WORKDIR /adapters/object/redis

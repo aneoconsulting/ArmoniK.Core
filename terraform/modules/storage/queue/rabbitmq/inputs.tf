@@ -7,10 +7,6 @@ variable "network" {
   type = string
 }
 
-variable "protocol" {
-  type = string
-}
-
 variable "queue_envs" {
   type = object({
     user         = string,
