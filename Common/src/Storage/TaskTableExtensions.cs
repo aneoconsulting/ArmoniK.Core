@@ -37,7 +37,15 @@ namespace ArmoniK.Core.Common.Storage;
 /// </summary>
 public static class TaskTableExtensions
 {
-  private static readonly List<TaskStatus> FinalStatus = [TaskStatus.Completed, TaskStatus.Cancelled, TaskStatus.Error, TaskStatus.Retried, TaskStatus.Timeout];
+  private static readonly List<TaskStatus> FinalStatus = new()
+                                                         {
+                                                           TaskStatus.Completed,
+                                                           TaskStatus.Cancelled,
+                                                           TaskStatus.Error,
+                                                           TaskStatus.Retried,
+                                                           TaskStatus.Timeout,
+                                                         };
+
 
   private static readonly Expression<Func<TaskData, TaskData>> Identity = data => data;
 
