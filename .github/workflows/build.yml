@@ -16,7 +16,7 @@ jobs:
       version: ${{ steps.genver.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: ${{ github.ref }}
         fetch-depth: 0
@@ -47,7 +47,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -62,7 +62,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+      uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
       with:
         tool: just
 
@@ -129,7 +129,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -144,7 +144,7 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+      uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
       with:
         tool: just
 
@@ -205,13 +205,13 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@3951f0dfe7a07e2313ec93c75700083e2005cbab # v4
+      uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4
       with:
         dotnet-version: 10.x
 
@@ -238,7 +238,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: ${{ github.ref }}
         submodules: true
@@ -255,7 +255,7 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: ${{ github.ref }}
 
@@ -290,7 +290,7 @@ jobs:
           - worker=htcmock buildWorker
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
       with:
         ref: ${{ github.ref }}
 
@@ -299,7 +299,7 @@ jobs:
       uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3  
 
     - name: Setup just
-      uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+      uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
       with:
         tool: just
 
@@ -371,7 +371,7 @@ jobs:
           - Verbose
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -381,7 +381,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -502,7 +502,7 @@ jobs:
     name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.socket_type }} ${{ matrix.target.cinit }}
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -512,7 +512,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
       
@@ -670,7 +670,7 @@ jobs:
     name: Docker Windows
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -805,7 +805,7 @@ jobs:
     name: "Test connectivity - Ca installed ${{ matrix.ca }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -815,7 +815,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -902,7 +902,7 @@ jobs:
     name: Bench ${{ matrix.runner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -912,7 +912,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -1029,7 +1029,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -1039,7 +1039,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -1110,7 +1110,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -1120,7 +1120,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -1189,7 +1189,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
         with:
           ref: ${{ github.ref }}
           submodules: true
@@ -1199,7 +1199,7 @@ jobs:
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@1d76762916ba18e4f0c3b2f71fee3da83a279745 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
