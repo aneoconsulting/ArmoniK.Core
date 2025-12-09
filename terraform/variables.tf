@@ -70,7 +70,7 @@ variable "object_storage" {
 variable "queue_storage" {
   type = object({
     name  = optional(string, "rabbitmq")
-    image = optional(string, "rabbitmq:3-management")
+    image = optional(string, "rabbitmq:4-management")
   })
   description = "Parameters to define the broker and protocol"
   validation {
