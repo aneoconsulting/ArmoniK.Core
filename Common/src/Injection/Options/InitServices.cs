@@ -16,12 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Common.Injection.Options.Database;
+using ArmoniK.Utils.DocAttribute;
 
 namespace ArmoniK.Core.Common.Injection.Options;
 
 /// <summary>
 ///   Configuration for ArmoniK services
 /// </summary>
+[ExtractDocumentation("Options for InitServices")]
 public class InitServices
 {
   /// <summary>

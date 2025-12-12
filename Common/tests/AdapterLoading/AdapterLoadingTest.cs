@@ -42,16 +42,13 @@ public class AdapterLoadingTest
                                   string.Empty));
 
   private static readonly string AmqpPath =
-    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}Amqp{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.Amqp.dll";
-
-  private static readonly string RabbitPath =
-    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}RabbitMQ{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.RabbitMQ.dll";
+    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}Amqp{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net10.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.Amqp.dll";
 
   private static readonly string SqsPath =
-    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}SQS{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.SQS.dll";
+    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}SQS{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net10.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.SQS.dll";
 
   private static readonly string PubSubPath =
-    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}PubSub{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.PubSub.dll";
+    $"{Path.DirectorySeparatorChar}Adaptors{Path.DirectorySeparatorChar}PubSub{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net10.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.PubSub.dll";
 
 
   public static IEnumerable TestCasesQueueLocation
@@ -60,8 +57,6 @@ public class AdapterLoadingTest
     {
       yield return new TestCaseData($"{SolutionRoot}{AmqpPath}",
                                     "ArmoniK.Core.Adapters.Amqp.QueueBuilder").SetArgDisplayNames("Amqp");
-      yield return new TestCaseData($"{SolutionRoot}{RabbitPath}",
-                                    "ArmoniK.Core.Adapters.RabbitMQ.QueueBuilder").SetArgDisplayNames("RabbitMQ");
       yield return new TestCaseData($"{SolutionRoot}{SqsPath}",
                                     "ArmoniK.Core.Adapters.SQS.QueueBuilder").SetArgDisplayNames("SQS");
     }

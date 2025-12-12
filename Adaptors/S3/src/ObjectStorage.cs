@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -175,7 +177,7 @@ public class ObjectStorage : IObjectStorage
                                                                async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
                                                                                                                           cancellationToken)
                                                                                                          .ConfigureAwait(false))
-                                               .ToListAsync(cancellationToken)
+                                               .ToListAsync()
                                                .ConfigureAwait(false);
 
       var compRequest = new CompleteMultipartUploadRequest
@@ -222,8 +224,7 @@ public class ObjectStorage : IObjectStorage
                                                                     cancellationToken)
                                                    .ConfigureAwait(false)))
                 .ToDictionaryAsync(tuple => tuple.id,
-                                   tuple => tuple.Item2,
-                                   cancellationToken)
+                                   tuple => tuple.Item2)
                 .ConfigureAwait(false);
 
   private async Task<GetObjectResponse> GetObjectStream(string            key,
@@ -247,9 +248,10 @@ public class ObjectStorage : IObjectStorage
       {
         logger_.LogError("The key {Key} was not found",
                          key);
-        throw new ObjectDataNotFoundException("Key not found");
+        throw new ObjectDataNotFoundException("Key not found",
+                                              ex);
       }
-      catch (AmazonS3Exception ex)
+      catch (Exception ex) when (ex is AmazonS3Exception or HttpRequestException or SocketException or IOException)
       {
         if (retryCount + 1 >= options_.MaxRetry)
         {

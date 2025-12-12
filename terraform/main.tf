@@ -70,7 +70,6 @@ module "queue_rabbitmq" {
   count      = var.queue_storage.name == "rabbitmq" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
-  protocol   = var.queue_storage.protocol
   network    = docker_network.armonik.id
   windows    = var.windows
 }

@@ -25,6 +25,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Stream.Worker;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
 using Calzolari.Grpc.AspNetCore.Validation;
@@ -33,6 +34,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using ConfigurationExt = ArmoniK.Core.Utils.ConfigurationExt;
@@ -209,4 +211,22 @@ public static class ServiceCollectionExt
                .AddValidator<EventSubscriptionRequestValidator>()
                .AddValidator<SubmitTasksRequestValidator>()
                .AddGrpcValidation();
+
+  /// <summary>
+  ///   Add singleton for <see cref="ExceptionManager" />
+  /// </summary>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <param name="optionsFactory">
+  ///   Function to create <see cref="ExceptionManager.Options" /> from
+  ///   <see cref="ServiceProvider" />
+  /// </param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
+  [PublicAPI]
+  public static IServiceCollection AddExceptionManager(this IServiceCollection                           services,
+                                                       Func<IServiceProvider, ExceptionManager.Options>? optionsFactory = null)
+    => services.AddSingleton<ExceptionManager>()
+               .AddSingleton(optionsFactory ?? (_ => new ExceptionManager.Options()))
+               .AddSingleton<IHostLifetime>(sp => sp.GetRequiredService<ExceptionManager>());
 }

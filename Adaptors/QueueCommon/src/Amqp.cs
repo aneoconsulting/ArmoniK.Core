@@ -15,11 +15,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Adapters.QueueCommon;
 
 /// <summary>
 ///   Represents the configuration settings for the AMQP (Advanced Message Queuing Protocol) connection.
 /// </summary>
+[ExtractDocumentation("Options for AMQP")]
 public class Amqp
 {
   /// <summary>

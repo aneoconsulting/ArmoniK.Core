@@ -105,10 +105,9 @@ public static class Program
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
-             .AddSingleton(sp => new ExceptionManager.Options(TimeSpan.Zero,
-                                                              sp.GetRequiredService<Common.Injection.Options.Submitter>()
-                                                                .MaxErrorAllowed))
-             .AddSingleton<ExceptionManager>()
+             .AddExceptionManager(sp => new ExceptionManager.Options(TimeSpan.Zero,
+                                                                     sp.GetRequiredService<Common.Injection.Options.Submitter>()
+                                                                       .MaxErrorAllowed))
              .AddGrpcReflection()
              .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()

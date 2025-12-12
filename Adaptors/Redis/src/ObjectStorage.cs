@@ -162,8 +162,7 @@ public class ObjectStorage : IObjectStorage
                                                                    cancellationToken)
                                                    .ConfigureAwait(false)))
                 .ToDictionaryAsync(tuple => tuple.id,
-                                   tuple => tuple.Item2,
-                                   cancellationToken)
+                                   tuple => tuple.Item2)
                 .ConfigureAwait(false);
 
   private async Task<long?> ExistsAsync(byte[]            id,
