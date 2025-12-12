@@ -8,7 +8,7 @@
 // (at your option) any later version.
 // 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 // 
@@ -26,6 +26,8 @@ using ArmoniK.Core.Base;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
+
+using MongoDB.Driver;
 
 namespace ArmoniK.Core.Common.Storage;
 
@@ -59,7 +61,7 @@ public static class ResultLifeCycleHelper
     resultIds ??= Array.Empty<string>();
 
     // Early exit if no abortion is actually requested
-    if (!taskIds.Any() && !resultIds.Any())
+    if (taskIds.Count == 0 && resultIds.Count == 0)
     {
       return;
     }
@@ -186,6 +188,166 @@ public static class ResultLifeCycleHelper
   }
 
   /// <summary>
+  ///   Purge all tasks and abort results that depend directly or indirectly of the specified tasks
+  /// </summary>
+  /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="taskIds">Root tasks that must be purged</param>
+  /// <param name="resultIds">Root results that must be purged</param>
+  /// <param name="reason">Abortion message</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Task representing the asynchronous execution of the method
+  /// </returns>
+  public static async Task PurgeTasksAndAbortResults(ITaskTable taskTable,
+                                                IResultTable resultTable,
+                                                ICollection<string>? taskIds = null,
+                                                ICollection<string>? resultIds = null,
+                                                string? reason = null,
+                                                CancellationToken cancellationToken = default)
+  {
+    taskIds ??= Array.Empty<string>();
+    resultIds ??= Array.Empty<string>();
+
+    // Early exit if no abortion is actually requested
+    if (!taskIds.Any() && !resultIds.Any())
+    {
+      taskTable.Logger.LogDebug("No tasks and results to purge");
+      return;
+    }
+
+    if (reason is null)
+    {
+      if (taskIds.Count == 0)
+      {
+        reason = $"Results {string.Join(", ", resultIds)} have been explicitly aborted.";
+      }
+      else if (resultIds.Count == 0)
+      {
+        reason = $"Tasks {string.Join(", ", taskIds)} have been explicitly aborted";
+      }
+      else
+      {
+        reason = $"Tasks {string.Join(", ", taskIds)} and Results {string.Join(", ", resultIds)} have been explicitly aborted";
+      }
+    }
+
+    resultIds = await TryGetResultsFromTaskIds(taskTable, taskIds, resultIds, reason, cancellationToken).ConfigureAwait(false);
+
+    // Early exit if no results need to be aborted (recursion is not needed)
+    if (!resultIds.Any())
+    {
+      taskTable.Logger.LogDebug("No results to purge");
+      return;
+    }
+
+    taskTable.Logger.LogInformation("Abort results {@results}: {reason}",
+                                    resultIds,
+                                    reason);
+
+    var updateFilter = Builders<Result>.Filter.In(result => result.ResultId, resultIds) &
+                       Builders<Result>.Filter.Or(
+                         Builders<Result>.Filter.In(result => result.OwnerTaskId, taskIds),
+                         Builders<Result>.Filter.Eq(result => result.OwnerTaskId, "")
+                       ) &
+                       Builders<Result>.Filter.Eq(result => result.Status, ResultStatus.Created);
+
+    var count = await resultTable.UpdateManyResults(updateFilter,
+                                                    new UpdateDefinition<Result>().Set(result => result.Status,
+                                                                                       ResultStatus.Aborted)
+                                                                                  .Set(result => result.CompletionDate,
+                                                                                       DateTime.UtcNow),
+                                                    cancellationToken)
+                                 .ConfigureAwait(false);
+
+    // Early exit if no result has been aborted
+    if (count == 0)
+    {
+      taskTable.Logger.LogDebug("No result has been aborted");
+      return;
+    }
+
+    // Find all the tasks that depend on the aborted results
+    var nextTasks = new HashSet<string>();
+
+    var getResultFilter = Builders<Result>.Filter.In(result => result.ResultId, resultIds) &
+                          Builders<Result>.Filter.Eq(result => result.Status, ResultStatus.Aborted) &
+                          Builders<Result>.Filter.In(result => result.OwnerTaskId, taskIds);
+    await foreach (var dependentTasks in resultTable.GetResults(getResultFilter,
+                                                                result => result.DependentTasks,
+                                                                cancellationToken)
+                                                    .ConfigureAwait(false))
+    {
+      nextTasks.UnionWith(dependentTasks);
+    }
+
+    // Recursively abort the tasks that indirectly depend on the purged tasks
+    await AbortTasksAndResults(taskTable,
+                               resultTable,
+                               nextTasks,
+                               Array.Empty<string>(),
+                               reason,
+                               TaskStatus.Cancelled,
+                               cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  private static async Task<ICollection<string>> TryGetResultsFromTaskIds(ITaskTable taskTable, ICollection<string> taskIds, ICollection<string> resultIds, string reason, CancellationToken cancellationToken)
+  {
+    if (taskIds.Any())
+    {
+      taskTable.Logger.LogInformation("Purge tasks {@tasks}: {reason}",
+                                      taskIds,
+                                      reason);
+
+      var taskStatusToSeek = new HashSet<TaskStatus>
+      {
+        TaskStatus.Creating,
+        TaskStatus.Pending,
+        TaskStatus.Paused,
+        TaskStatus.Cancelled,
+        TaskStatus.Cancelling,
+        TaskStatus.Error,
+        TaskStatus.Timeout
+      };
+
+      // Find all metadata about the tasks that must be aborted
+      var tasks = await taskTable.FindTasksAsync(task => taskIds.Contains(task.TaskId) && taskStatusToSeek.Contains(task.Status),
+                                                 task => new
+                                                 {
+                                                   task.TaskId,
+                                                   task.Status,
+                                                   task.ExpectedOutputIds,
+                                                   task.CreationDate,
+                                                   task.ProcessedDate,
+                                                   task.ReceptionDate,
+                                                 },
+                                                 cancellationToken)
+                                 .ToListAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+
+      if (tasks.Any())
+      {
+        // Filter Eligible tasks
+        // Purge all the eligible tasks
+        var now = DateTime.UtcNow;
+        await taskTable.DeleteTasksAsync(tasks.Select(td => td.TaskId)
+                                              .AsICollection(),
+                                         cancellationToken)
+                       .ConfigureAwait(false);
+
+        // All dependent results
+        resultIds = tasks.SelectMany(task => task.ExpectedOutputIds)
+                         .Concat(resultIds)
+                         .ToHashSet();
+      }
+    }
+
+    return resultIds;
+  }
+
+
+  /// <summary>
   ///   Delete all results for a given session
   /// </summary>
   /// <param name="resultTable">Interface to manage result states</param>
@@ -205,9 +367,13 @@ public static class ResultLifeCycleHelper
                                              string            sessionId,
                                              CancellationToken cancellationToken)
   {
-    await foreach (var ids in resultTable.GetResults(result => result.SessionId == sessionId &&
-                                                               (result.Status == ResultStatus.Completed || result.Status == ResultStatus.Created ||
-                                                                result.Status == ResultStatus.Aborted) && !result.ManualDeletion,
+    // Build filter for getting results to delete
+    var getResultsFilter = Builders<Result>.Filter.Eq(result => result.SessionId, sessionId) &
+                           Builders<Result>.Filter.In(result => result.Status, 
+                                                     new[] { ResultStatus.Completed, ResultStatus.Created, ResultStatus.Aborted }) &
+                           Builders<Result>.Filter.Eq(result => result.ManualDeletion, false);
+
+    await foreach (var ids in resultTable.GetResults(getResultsFilter,
                                                      result => result.OpaqueId,
                                                      cancellationToken)
                                          .ToChunksAsync(500,
@@ -220,7 +386,11 @@ public static class ResultLifeCycleHelper
                          .ConfigureAwait(false);
     }
 
-    await resultTable.UpdateManyResults(result => result.SessionId == sessionId && !result.ManualDeletion,
+    // Build filter for updating results
+    var updateResultsFilter = Builders<Result>.Filter.Eq(result => result.SessionId, sessionId) &
+                              Builders<Result>.Filter.Eq(result => result.ManualDeletion, false);
+
+    await resultTable.UpdateManyResults(updateResultsFilter,
                                         new UpdateDefinition<Result>().Set(result => result.Status,
                                                                            ResultStatus.DeletedData)
                                                                       .Set(result => result.OpaqueId,

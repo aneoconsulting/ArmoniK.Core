@@ -288,6 +288,21 @@ public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTab
   }
 
   /// <inheritdoc />
+  public IAsyncEnumerable<T> GetResults<T>(FilterDefinition<Result>    filter,
+                                           Expression<Func<Result, T>> convertor,
+                                           CancellationToken           cancellationToken = default)
+  {
+    using var activity         = StartActivity();
+    var       sessionHandle    = GetSession();
+    var       resultCollection = GetReadCollection();
+
+    return resultCollection.Find(sessionHandle,
+                                 filter)
+                           .Project(convertor)
+                           .ToAsyncEnumerable(cancellationToken);
+  }
+
+  /// <inheritdoc />
   public async Task DeleteResults(string            sessionId,
                                   CancellationToken cancellationToken = default)
   {
@@ -343,6 +358,30 @@ public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTab
   {
     using var activity         = StartActivity();
     var       resultCollection = GetCollection();
+
+    var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
+
+    foreach (var (selector, newValue) in updates.Setters)
+    {
+      updateDefinition = updateDefinition.Set(selector,
+                                              newValue);
+    }
+
+    var result = await resultCollection.UpdateManyAsync(filter,
+                                                        updateDefinition,
+                                                        cancellationToken: cancellationToken)
+                                       .ConfigureAwait(false);
+
+    return result.MatchedCount;
+  }
+
+  /// <inheritdoc />
+  public async Task<long> UpdateManyResults(FilterDefinition<Result> filter,
+                                            Core.Common.Storage.UpdateDefinition<Result> updates,
+                                            CancellationToken cancellationToken = default)
+  {
+    using var activity = StartActivity();
+    var resultCollection = GetCollection();
 
     var updateDefinition = new UpdateDefinitionBuilder<Result>().Combine();
 

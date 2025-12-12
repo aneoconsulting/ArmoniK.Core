@@ -1015,13 +1015,12 @@ public static class TaskLifeCycleHelper
                                           .ToListAsync(cancellationToken)
                                           .ConfigureAwait(false);
 
-    await ResultLifeCycleHelper.AbortTasksAndResults(taskTable,
-                                                     resultTable,
-                                                     subtasks.ViewSelect(td => td.TaskId),
-                                                     resultsToAbort,
-                                                     errorMessage,
-                                                     TaskStatus.Cancelled,
-                                                     cancellationToken)
+    await ResultLifeCycleHelper.PurgeTasksAndAbortResults(taskTable,
+                                                          resultTable,
+                                                          subtasks.ViewSelect(td => td.TaskId),
+                                                          resultsToAbort,
+                                                          errorMessage,
+                                                          cancellationToken)
                                .ConfigureAwait(false);
 
     // Retry or abort the current task
@@ -1031,7 +1030,7 @@ public static class TaskLifeCycleHelper
                                         pushQueueStorage,
                                         taskData,
                                         sessionData,
-                                        subtasks.ViewSelect(td => td.TaskId),
+                                        [],
                                         errorMessage,
                                         logger,
                                         cancellationToken)

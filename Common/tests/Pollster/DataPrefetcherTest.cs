@@ -123,6 +123,25 @@ public class DataPrefetcherTest
                                                             false)))
                    .ToAsyncEnumerable();
 
+    public IAsyncEnumerable<T> GetResults<T>(MongoDB.Driver.FilterDefinition<Result> filter,
+                                             Expression<Func<Result, T>>             convertor,
+                                             CancellationToken                       cancellationToken = default)
+      => resultIds_.Select(s => convertor.Compile()
+                                         .Invoke(new Result(sessionId_,
+                                                            s,
+                                                            "",
+                                                            "",
+                                                            "",
+                                                            "",
+                                                            ResultStatus.Completed,
+                                                            new List<string>(),
+                                                            DateTime.UtcNow,
+                                                            DateTime.UtcNow,
+                                                            100,
+                                                            Encoding.UTF8.GetBytes(s),
+                                                            false)))
+                   .ToAsyncEnumerable();
+
     public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
                                                                                 Expression<Func<Result, object?>> orderField,
                                                                                 bool                              ascOrder,
@@ -143,6 +162,11 @@ public class DataPrefetcherTest
     public Task<long> UpdateManyResults(Expression<Func<Result, bool>> filter,
                                         UpdateDefinition<Result>       updates,
                                         CancellationToken              cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<long> UpdateManyResults(MongoDB.Driver.FilterDefinition<Result> filter,
+                                        UpdateDefinition<Result>                 updates,
+                                        CancellationToken                        cancellationToken = default)
       => throw new NotImplementedException();
   }
 
