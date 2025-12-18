@@ -110,13 +110,15 @@ public record TaskOptions(IDictionary<string, string> Options,
     }
 
     return new TaskOptions(options,
-                           taskOption.MaxDuration == TimeSpan.Zero
+                           taskOption.MaxDuration != TimeSpan.Zero
                              ? taskOption.MaxDuration
                              : defaultOption.MaxDuration,
-                           taskOption.MaxRetries == 0
+                           taskOption.MaxRetries != 0
                              ? taskOption.MaxRetries
                              : defaultOption.MaxRetries,
-                           taskOption.Priority,
+                           taskOption.Priority != 0
+                             ? taskOption.Priority
+                             : defaultOption.Priority,
                            taskOption.PartitionId != string.Empty
                              ? taskOption.PartitionId
                              : defaultOption.PartitionId,
