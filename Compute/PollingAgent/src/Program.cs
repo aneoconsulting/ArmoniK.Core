@@ -116,10 +116,9 @@ public static class Program
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
              .AddSingleton(pollsterOptions)
-             .AddSingleton(new ExceptionManager.Options(pollsterOptions.GraceDelay,
-                                                        pollsterOptions.MaxErrorAllowed))
-             .AddSingleton<ExceptionManager>()
              .AddSingleton<HealthCheckRecord>()
+             .AddExceptionManager(_ => new ExceptionManager.Options(pollsterOptions.GraceDelay,
+                                                                    pollsterOptions.MaxErrorAllowed))
              .AddSingleton<IHealthCheckPublisher, HealthCheckRecord.Publisher>()
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()

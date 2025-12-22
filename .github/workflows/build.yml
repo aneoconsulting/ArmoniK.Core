@@ -2,11 +2,16 @@ name: Build and Test
 
 on:
   push:
-    branches-ignore:
-      - release
+    branches:
+      - main
+      - releases/*
     paths-ignore:
       - .github/workflows/manual-integration-test.yml
     tags-ignore: [ '**' ]
+  pull_request:
+    branches:
+      - main
+      - releases/*
 
 jobs:
   versionning:
@@ -16,9 +21,9 @@ jobs:
       version: ${{ steps.genver.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ github.head_ref || github.ref }}
         fetch-depth: 0
 
     - name: Generate Version
@@ -47,10 +52,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.ref }}
-        submodules: true
+        ref: ${{ github.head_ref || github.ref }}
 
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
@@ -62,7 +66,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
       with:
         tool: just
 
@@ -75,7 +79,7 @@ jobs:
           sudo apt-get install -y mongodb-org
 
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -122,7 +126,6 @@ jobs:
         queue:
           - activemq
           - rabbitmq
-          - rabbitmq091
           - sqs
           - pubsub
           - nats
@@ -130,10 +133,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.ref }}
-        submodules: true
+        ref: ${{ github.head_ref || github.ref }}
 
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
@@ -145,12 +147,12 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
       with:
         tool: just
 
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -206,10 +208,14 @@ jobs:
     runs-on: windows-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.ref }}
-        submodules: true
+        ref: ${{ github.head_ref || github.ref }}
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5
+      with:
+        dotnet-version: 10.x
 
     - name: Dotnet Restore
       run: dotnet restore
@@ -234,10 +240,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.ref }}
-        submodules: true
+        ref: ${{ github.head_ref || github.ref }}
 
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release -warnAsError:"CS1570;CS1571;CS1572;CS1573;CS1587;CS1591"
@@ -251,9 +256,9 @@ jobs:
       VERSION: ${{ needs.versionning.outputs.version }}
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ github.head_ref || github.ref }}
 
     - name: Build the package
       run: |
@@ -286,21 +291,21 @@ jobs:
           - worker=htcmock buildWorker
     steps:
     - name: Checkout
-      uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.ref }}
+        ref: ${{ github.head_ref || github.ref }}
 
     - name: Set up Docker Buildx
       id: buildx
       uses: docker/setup-buildx-action@e468171a9de216ec08956ac3ada2f0791b6bd435 # v3  
 
     - name: Setup just
-      uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+      uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
       with:
         tool: just
 
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -330,7 +335,7 @@ jobs:
           - dockerhubaneo/armonik_core_bench_test_client
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -359,7 +364,6 @@ jobs:
         queue:
           - activemq
           - rabbitmq
-          - rabbitmq091
           - sqs
           - pubsub
           - nats
@@ -368,17 +372,16 @@ jobs:
           - Verbose
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -388,7 +391,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -465,35 +468,30 @@ jobs:
         target:
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: rabbitmq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: rabbitmq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
-          - { queue: rabbitmq091, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: sqs, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: nats, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
 
           - { queue: activemq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true }
           - { queue: rabbitmq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq091, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: rabbitmq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq091, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: rabbitmq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
-          - { queue: rabbitmq091, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: pubsub, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: sqs, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: nats, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
@@ -504,17 +502,16 @@ jobs:
     name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.socket_type }} ${{ matrix.target.cinit }}
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
       
@@ -524,7 +521,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -672,10 +669,9 @@ jobs:
     name: Docker Windows
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Setup Terraform and other tools
         run: |
@@ -685,14 +681,14 @@ jobs:
           choco install just -y      
 
       - name: Setup AWS cli
-        uses: aws-actions/configure-aws-credentials@e3dd6a429d7300a6a4c196c26e071d42e0343502 # v4
+        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -807,17 +803,16 @@ jobs:
     name: "Test connectivity - Ca installed ${{ matrix.ca }}"
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -827,7 +822,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -887,9 +882,6 @@ jobs:
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           bash tools/export_mongodb.sh
           tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-database.tar.gz
-
-
-
   
   runBench:
     needs:
@@ -897,20 +889,26 @@ jobs:
       - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        runner:
+          - ubuntu-latest
+          - ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    name: Bench ${{ matrix.runner }}
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -920,7 +918,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -996,8 +994,8 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}.json.gz
+          tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
         if: always()
@@ -1008,14 +1006,14 @@ jobs:
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-container-logs.tar.gz
       - name: Export and upload database
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-database.tar.gz
 
 
   runCrash:
@@ -1027,17 +1025,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -1047,7 +1044,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -1108,17 +1105,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -1128,7 +1124,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}
@@ -1187,17 +1183,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.ref }}
-          submodules: true
+          ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
           pip install awscli
 
       - name: Setup just
-        uses: taiki-e/install-action@14083e64ac8cf1f5e54356df00b9779b23e192a1 # v2
+        uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
 
@@ -1207,7 +1202,7 @@ jobs:
           terraform_version: latest
 
       - name: Login to Docker Hub
-        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
           password: ${{ secrets.DOCKER_HUB_TOKEN }}

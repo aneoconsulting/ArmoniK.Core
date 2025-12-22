@@ -19,11 +19,14 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
+using System.Threading.Tasks;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Common.Utils;
 
@@ -33,9 +36,10 @@ namespace ArmoniK.Core.Common.Utils;
 ///   When the application is stopped, a grace delay is in place to let
 ///   all the running services to stop properly.
 /// </summary>
-public class ExceptionManager : IDisposable
+public class ExceptionManager : IDisposable, IHostApplicationLifetime, IHostLifetime
 {
   private readonly IHostApplicationLifetime applicationLifetime_;
+  private readonly ConsoleLifetime          console_;
   private readonly IList<IDisposable>       disposables_;
 
   [SuppressMessage("Usage",
@@ -55,11 +59,17 @@ public class ExceptionManager : IDisposable
   ///   Build an ExceptionManager
   /// </summary>
   /// <param name="applicationLifetime">The lifetime of the application</param>
+  /// <param name="consoleLifetimeOptions"></param>
+  /// <param name="environment"></param>
+  /// <param name="hostOptions"></param>
   /// <param name="logger">The logger for the ExceptionManager</param>
   /// <param name="options">Options for the ExceptionManager</param>
-  public ExceptionManager(IHostApplicationLifetime   applicationLifetime,
-                          ILogger<ExceptionManager>? logger  = null,
-                          Options?                   options = null)
+  public ExceptionManager(IHostApplicationLifetime         applicationLifetime,
+                          IOptions<ConsoleLifetimeOptions> consoleLifetimeOptions,
+                          IHostEnvironment                 environment,
+                          IOptions<HostOptions>            hostOptions,
+                          ILogger<ExceptionManager>?       logger  = null,
+                          Options?                         options = null)
   {
     options              ??= new Options();
     applicationLifetime_ =   applicationLifetime;
@@ -95,6 +105,12 @@ public class ExceptionManager : IDisposable
     maxError_               = options.MaxError ?? int.MaxValue / 2;
     logger_                 = logger;
     registeredApplications_ = 0;
+
+
+    console_ = new ConsoleLifetime(consoleLifetimeOptions,
+                                   environment,
+                                   this,
+                                   hostOptions);
   }
 
 
@@ -129,6 +145,50 @@ public class ExceptionManager : IDisposable
     // It is benign to leak those two Cts.
     earlyCts_.Cancel();
     lateCts_.Cancel();
+    console_.Dispose();
+  }
+
+
+  /// <inheritdoc />
+  public void StopApplication()
+    => StopApplication(true);
+
+  /// <inheritdoc />
+  public CancellationToken ApplicationStarted
+    => applicationLifetime_.ApplicationStarted;
+
+  /// <inheritdoc />
+  public CancellationToken ApplicationStopped
+    => applicationLifetime_.ApplicationStopped;
+
+  /// <inheritdoc />
+  public CancellationToken ApplicationStopping
+    => applicationLifetime_.ApplicationStopping;
+
+  /// <inheritdoc />
+  public Task StopAsync(CancellationToken cancellationToken)
+    => console_.StopAsync(cancellationToken);
+
+  /// <inheritdoc />
+  public Task WaitForStartAsync(CancellationToken cancellationToken)
+    => console_.WaitForStartAsync(cancellationToken);
+
+  /// <inheritdoc cref="StopApplication()" />
+  /// <param name="external">Whether cancellation is external</param>
+  public void StopApplication(bool external)
+  {
+    nbError_ = maxError_ + 1;
+
+    if (logger_ is not null)
+    {
+#pragma warning disable CA2254
+      logger_.LogInformation(external
+                               ? "Application shut down has been triggered externally."
+                               : "Application shut down has been triggered.");
+#pragma warning restore CA2254
+    }
+
+    earlyCts_.Cancel();
   }
 
   /// <summary>
@@ -174,8 +234,12 @@ public class ExceptionManager : IDisposable
     if (nbError == maxError_ + 1)
     {
       logger_?.LogCritical("Stop Application after too many errors");
-      Failed = true;
       earlyCts_.Cancel();
+    }
+
+    if (nbError >= maxError_ + 1)
+    {
+      Failed = true;
     }
   }
 
@@ -222,7 +286,7 @@ public class ExceptionManager : IDisposable
   }
 
   /// <summary>
-  ///   Registers a class that has to call <see cref="Stop" /> to trigger application stop.
+  ///   Registers a class that has to call <see cref="UnregisterAndStop" /> to trigger application stop.
   /// </summary>
   public void Register()
     => Interlocked.Increment(ref registeredApplications_);
@@ -265,7 +329,8 @@ public class ExceptionManager : IDisposable
   }
 
   /// <summary>
-  ///   Stop the Application without any error
+  ///   Unregister a service using the <see cref="ExceptionManager" /> and stop the Application
+  ///   when all services are unregistered.
   /// </summary>
   /// <param name="logger">Logger used to log the success</param>
   /// <param name="message">Message to be logged</param>
@@ -279,9 +344,9 @@ public class ExceptionManager : IDisposable
   ///     application lifetime.
   ///   </para>
   /// </remarks>
-  public void Stop(ILogger?                              logger,
-                   [StructuredMessageTemplate] string    message,
-                   params                      object?[] args)
+  public void UnregisterAndStop(ILogger?                              logger,
+                                [StructuredMessageTemplate] string    message,
+                                params                      object?[] args)
   {
     var registeredApplications = Interlocked.Decrement(ref registeredApplications_);
 

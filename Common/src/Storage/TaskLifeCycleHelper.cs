@@ -175,8 +175,7 @@ public static class TaskLifeCycleHelper
                                             cancellationToken)
                                 .Where(result => result.OwnerTaskId == "")
                                 .ToDictionaryAsync(result => result.ResultId,
-                                                   _ => "",
-                                                   cancellationToken)
+                                                   _ => "")
                                 .ConfigureAwait(false);
 
     foreach (var creationRequest in taskCreationRequests)
@@ -455,7 +454,7 @@ public static class TaskLifeCycleHelper
                                                       results,
                                                       cancellationToken)
                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
-                                          .ToHashSetAsync(cancellationToken)
+                                          .ToHashSetAsync(cancellationToken: cancellationToken)
                                           .ConfigureAwait(false);
 
     if (!dependentTasks.Any())
@@ -568,10 +567,7 @@ public static class TaskLifeCycleHelper
                                             .WithCancellation(cancellationToken)
                                             .ConfigureAwait(false))
     {
-      await foreach (var tasks in grouping.ToChunksAsync(100000,
-                                                         TimeSpan.FromSeconds(1),
-                                                         cancellationToken)
-                                          .ConfigureAwait(false))
+      foreach (var tasks in grouping.ToChunks(100000))
       {
         cancellationToken.ThrowIfCancellationRequested();
 
@@ -1001,10 +997,10 @@ public static class TaskLifeCycleHelper
       errorMessage = $"Task {taskData.TaskId} has been {action} because pod {taskData.OwnerPodId} seems to have crashed";
 
       logger.LogInformation("{Action} task {TaskId} on another pod, and cancel subtasks",
-                            taskData.TaskId,
                             retry
                               ? "Retry"
-                              : "Abort");
+                              : "Abort",
+                            taskData.TaskId);
     }
 
     // Revert ExpectedOutputIds to current task to avoid aborting them while aborting subtasks

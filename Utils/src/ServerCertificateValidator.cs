@@ -88,7 +88,10 @@ public static class CertificateValidator
          chain.ChainPolicy.RevocationMode    = X509RevocationMode.NoCheck;
          chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
 
-         chain.ChainPolicy.ExtraStore.AddRange(authority);
+         chain.ChainPolicy.TrustMode = X509ChainTrustMode.CustomRootTrust;
+         //chain.ChainPolicy.CustomTrustStore.Clear();
+         chain.ChainPolicy.CustomTrustStore.AddRange(authority);
+
          if (!chain.Build(cert))
          {
            logger.LogWarning("SSL validation failed: unable to build the certificate chain");

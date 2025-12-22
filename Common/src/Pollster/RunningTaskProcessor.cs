@@ -122,7 +122,7 @@ public class RunningTaskProcessor : BackgroundService
       }
     }
 
-    exceptionManager_.Stop(logger_,
-                           "End of running task processor; no more tasks will be executed");
+    exceptionManager_.UnregisterAndStop(logger_,
+                                        "End of running task processor; no more tasks will be executed");
   }
 }
