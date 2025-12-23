@@ -23,6 +23,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
+        repository: ${{ github.repository }}
         ref: ${{ github.head_ref || github.ref }}
         fetch-depth: 0
 
@@ -54,6 +55,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
+        repository: ${{ github.repository }}
         ref: ${{ github.head_ref || github.ref }}
 
     - name: Install AWSCLI (the one in the Github runner does not work)
@@ -135,6 +137,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
+        repository: ${{ github.repository }}
         ref: ${{ github.head_ref || github.ref }}
 
     - name: Install AWSCLI (the one in the Github runner does not work)
@@ -210,6 +213,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
+        repository: ${{ github.repository }}
         ref: ${{ github.head_ref || github.ref }}
 
     - name: Install .NET Core
@@ -242,6 +246,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
+        repository: ${{ github.repository }}
         ref: ${{ github.head_ref || github.ref }}
 
     - name: Build the solution
@@ -258,6 +263,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
+        repository: ${{ github.repository }}
         ref: ${{ github.head_ref || github.ref }}
 
     - name: Build the package
@@ -293,6 +299,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
+        repository: ${{ github.repository }}
         ref: ${{ github.head_ref || github.ref }}
 
     - name: Set up Docker Buildx
@@ -374,6 +381,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
@@ -504,6 +512,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
@@ -671,6 +680,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Setup Terraform and other tools
@@ -805,6 +815,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
@@ -901,6 +912,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
@@ -1027,6 +1039,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
@@ -1107,6 +1120,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
@@ -1185,6 +1199,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
+          repository: ${{ github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
       - name: Install AWSCLI (the one in the Github runner does not work)
