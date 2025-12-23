@@ -52,7 +52,7 @@ internal class PubSub
   /// <summary>
   ///   Time  in seconds between two modifications of acknowledgment deadline
   /// </summary>
-  public int AckExtendDeadlineStep { get; set; } = 60;
+  public int AckExtendDeadlineStep { get; set; } = 50;
 
   /// <summary>
   ///   Name of the KMS key used to protect messages
