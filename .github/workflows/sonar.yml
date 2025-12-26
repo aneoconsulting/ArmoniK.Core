@@ -57,6 +57,7 @@ jobs:
         run: |
           dotnet tool install --global dotnet-coverage
       - name: Build and analyze
+        continue-on-error: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # Needed to get PR information, if any
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

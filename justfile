@@ -22,6 +22,7 @@ grafana      := "true"
 seq          := "true"
 socket_type  := "unixdomainsocket"
 cinit        := "true"
+cache        := "false"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag          := tag
@@ -277,9 +278,13 @@ build imageTag dockerFile target="":
   if [ "{{load}}" == "true" ]; then
     load_parameter="--load"
   fi
+  cache_parameter=""
+  if [ "{{cache}}" == "true" ]; then
+    cache_parameter="--cache-from type=gha --cache-to type=gha,mode=max"
+  fi
 
   set -x
-  docker buildx build --progress=plain --build-arg VERSION={{tag}} $platform_parameter $load_parameter $push_parameter $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
+  docker buildx build --progress=plain --build-arg VERSION={{tag}} $platform_parameter $load_parameter $push_parameter $cache_parameter $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
 
 # Build Worker
 buildWorker: (build TF_VAR_worker_image TF_VAR_worker_docker_file_path + "Dockerfile")

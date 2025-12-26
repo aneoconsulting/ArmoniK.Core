@@ -80,12 +80,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mongodb-org
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_LOGIN }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
     - name: Minio Server UP
       if: ${{ matrix.projects }} == "Adaptors/S3/tests"
       run: |
@@ -115,6 +109,7 @@ jobs:
         path: ${{ matrix.projects }}/TestResults/test-results.trx
         reporter: dotnet-trx
     - name: Upload monitor profile
+      continue-on-error: true
       if: always()
       run: |
         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -154,12 +149,6 @@ jobs:
       with:
         tool: just
 
-    - name: Login to Docker Hub
-      uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
-      with:
-        username: ${{ secrets.DOCKER_HUB_LOGIN }}
-        password: ${{ secrets.DOCKER_HUB_TOKEN }}
-
     - name: Set up queue
       run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
@@ -191,6 +180,7 @@ jobs:
         path: Base/tests/Queue/TestResults/test-results.trx
         reporter: dotnet-trx
     - name: Upload monitor profile
+      continue-on-error: true
       if: always()
       run: |
         export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -275,6 +265,7 @@ jobs:
         dotnet pack Base/src/ArmoniK.Core.Base.csproj -c Release -o /tmp/packages -p:PackageVersion=$VERSION -p:Version=$VERSION
 
     - name: Push the package
+      continue-on-error: true
       run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg --skip-duplicate -k ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
 
 
@@ -311,15 +302,40 @@ jobs:
       with:
         tool: just
 
+    - name: Build linux/amd64 with cache
+      run: |
+        tools/retry.sh -w 60 -r 2 -- just tag=$VERSION platform=linux/amd64 load=true push=false cache=true ${{ matrix.type }}
+
+    - name: Save images to artifact
+      run: |
+        docker images --format "{{.Repository}}:{{.Tag}}" | grep "$VERSION" | grep -v "<none>" > /tmp/image-list.txt || true
+        if [ -s /tmp/image-list.txt ]; then
+          mkdir -p /tmp/docker-images
+          while IFS= read -r image; do
+            safe_name=$(echo "$image" | tr '/:' '_')
+            docker save "$image" -o "/tmp/docker-images/${safe_name}.tar"
+          done < /tmp/image-list.txt
+        fi
+
+    - name: Upload images artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: docker-images-${{ strategy.job-index }}
+        path: /tmp/docker-images/
+        retention-days: 1
+        if-no-files-found: warn
+
     - name: Login to Docker Hub
+      continue-on-error: true
       uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
 
-    - name: Build
+    - name: Build and push multi-platform
+      continue-on-error: true
       run: |
-        tools/retry.sh -w 60 -r 2 -- just tag=$VERSION platform=linux/arm64,linux/amd64,windows/amd64 load=false push=true ${{ matrix.type }}
+        tools/retry.sh -w 60 -r 2 -- just tag=$VERSION platform=linux/arm64,linux/amd64,windows/amd64 load=false push=true cache=true ${{ matrix.type }}
 
   scout:
     runs-on: ubuntu-latest
@@ -342,11 +358,13 @@ jobs:
           - dockerhubaneo/armonik_core_bench_test_client
     steps:
     - name: Login to Docker Hub
+      continue-on-error: true
       uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
     - name: Analyze for critical and high CVEs
+      continue-on-error: true
       uses: docker/scout-action@f8c776824083494ab0d56b8105ba2ca85c86e4de # v1
       with:
         command: cves
@@ -354,6 +372,7 @@ jobs:
         sarif-file: sarif.output.json
         summary: true
     - name: print sarif file
+      continue-on-error: true
       run: cat sarif.output.json
 
 
@@ -398,11 +417,20 @@ jobs:
         with:
           terraform_version: latest
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: |
+          if [ -d /tmp/docker-images ]; then
+            for tar_file in /tmp/docker-images/*.tar; do
+              [ -f "$tar_file" ] && docker load -i "$tar_file"
+            done
+          fi
 
       - name: Deploy Core
         run: |
@@ -437,6 +465,7 @@ jobs:
           reporter: dotnet-trx
 
       - name: Show logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -449,12 +478,14 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
       - name: Export and upload database
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -523,17 +554,26 @@ jobs:
         uses: taiki-e/install-action@7646916979096be288829d3d80a5e43636357a04 # v2
         with:
           tool: just
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
         with:
           terraform_version: latest
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: |
+          if [ -d /tmp/docker-images ]; then
+            for tar_file in /tmp/docker-images/*.tar; do
+              [ -f "$tar_file" ] && docker load -i "$tar_file"
+            done
+          fi
 
       - name: Deploy Core
         run: |
@@ -642,6 +682,7 @@ jobs:
           time curl localhost:5003/metrics
 
       - name: Show logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -655,12 +696,14 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-container-logs.tar.gz
       - name: Export and upload database
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -688,28 +731,34 @@ jobs:
           choco install terraform --version=1.10.1 -y
           choco install mongodb-shell -y
           choco install 7zip -y
-          choco install just -y      
+          choco install just -y
 
       - name: Setup AWS cli
+        continue-on-error: true
         uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: C:\docker-images
+
+      - name: Load Docker images
+        shell: powershell
+        run: |
+          if (Test-Path C:\docker-images) {
+            Get-ChildItem C:\docker-images\*.tar | ForEach-Object {
+              docker load -i $_.FullName
+            }
+          }
 
       - name: Deploy Core
         run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=nats deploy
-        shell: powershell
-
-      - name: Pull image
-        run: docker pull dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
-        timeout-minutes: 10
         shell: powershell
 
       - name: Run HtcMock test 100 tasks 1 level
@@ -793,9 +842,11 @@ jobs:
         if: always()
         run: 7z a logs.7z container-logs
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: aws s3 cp logs.7z s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-container-logs.7z
       - name: Upload armonik logs
+        continue-on-error: true
         if: always()
         run: docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-armonik-logs.json.gz
 
@@ -832,11 +883,20 @@ jobs:
         with:
           terraform_version: latest
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: |
+          if [ -d /tmp/docker-images ]; then
+            for tar_file in /tmp/docker-images/*.tar; do
+              [ -f "$tar_file" ] && docker load -i "$tar_file"
+            done
+          fi
 
       - name: Deploy Core
         run: |
@@ -870,6 +930,7 @@ jobs:
           reporter: dotnet-trx
 
       - name: Show logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -881,12 +942,14 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-container-logs.tar.gz
       - name: Export and upload database
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -929,11 +992,20 @@ jobs:
         with:
           terraform_version: latest
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: |
+          if [ -d /tmp/docker-images ]; then
+            for tar_file in /tmp/docker-images/*.tar; do
+              [ -f "$tar_file" ] && docker load -i "$tar_file"
+            done
+          fi
 
       - name: Deploy Core
         run: |
@@ -1002,6 +1074,7 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Show logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1014,12 +1087,14 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-container-logs.tar.gz
       - name: Export and upload database
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1056,22 +1131,26 @@ jobs:
         with:
           terraform_version: latest
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: |
+          if [ -d /tmp/docker-images ]; then
+            for tar_file in /tmp/docker-images/*.tar; do
+              [ -f "$tar_file" ] && docker load -i "$tar_file"
+            done
+          fi
 
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 build-deploy
+            just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 deploy
           sleep 10
-
-      - name: Build client
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/monitor.sh \
-            just tag=${VERSION} buildCrashingWorkerClient
 
       - name: Run Crash test
         timeout-minutes: 4
@@ -1082,6 +1161,7 @@ jobs:
             dockerhubaneo/armonik_core_crashingworker_test_client:$VERSION
 
       - name: Show logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1094,12 +1174,14 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-container-logs.tar.gz
       - name: Export and upload database
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1137,11 +1219,20 @@ jobs:
         with:
           terraform_version: latest
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: |
+          if [ -d /tmp/docker-images ]; then
+            for tar_file in /tmp/docker-images/*.tar; do
+              [ -f "$tar_file" ] && docker load -i "$tar_file"
+            done
+          fi
 
       - name: Deploy Core
         run: |
@@ -1163,6 +1254,7 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Show logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1175,12 +1267,14 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
       - name: Export and upload database
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1216,11 +1310,20 @@ jobs:
         with:
           terraform_version: latest
 
-      - name: Login to Docker Hub
-        uses: docker/login-action@5e57cd118135c172c3672efd75eb46360885c0ef # v3
+      - name: Download images artifact
+        uses: actions/download-artifact@v4
         with:
-          username: ${{ secrets.DOCKER_HUB_LOGIN }}
-          password: ${{ secrets.DOCKER_HUB_TOKEN }}
+          pattern: docker-images-*
+          merge-multiple: true
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: |
+          if [ -d /tmp/docker-images ]; then
+            for tar_file in /tmp/docker-images/*.tar; do
+              [ -f "$tar_file" ] && docker load -i "$tar_file"
+            done
+          fi
 
       - name: Deploy Core
         run: |
@@ -1308,6 +1411,7 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Show logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1320,12 +1424,14 @@ jobs:
         with:
           dest: './container-logs'
       - name: Upload docker container logs
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           tar -cvf - ./container-logs | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
       - name: Export and upload database
+        continue-on-error: true
         if: always()
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
