@@ -24,6 +24,9 @@ socket_type  := "unixdomainsocket"
 cinit        := "true"
 cache        := "false"
 
+# Docker build progress flag (Windows doesn't support --progress)
+docker_progress := if os_family() == "windows" { "" } else { "--progress=plain" }
+
 # Export them as terraform environment variables
 export TF_VAR_core_tag          := tag
 export TF_VAR_use_local_image   := local_images
@@ -284,7 +287,7 @@ build imageTag dockerFile target="":
   fi
 
   set -x
-  docker buildx build --progress=plain --build-arg VERSION={{tag}} $platform_parameter $load_parameter $push_parameter $cache_parameter $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
+  docker buildx build {{docker_progress}} --build-arg VERSION={{tag}} $platform_parameter $load_parameter $push_parameter $cache_parameter $target_parameter -t "{{imageTag}}" -f "{{dockerFile}}" ./
 
 # Build Worker
 buildWorker: (build TF_VAR_worker_image TF_VAR_worker_docker_file_path + "Dockerfile")

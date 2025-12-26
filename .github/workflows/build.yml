@@ -308,13 +308,25 @@ jobs:
 
     - name: Save images to artifact
       run: |
+        echo "=== Finding images to save with version: $VERSION ==="
         docker images --format "{{.Repository}}:{{.Tag}}" | grep "$VERSION" | grep -v "<none>" > /tmp/image-list.txt || true
+
         if [ -s /tmp/image-list.txt ]; then
+          echo "=== Images to be saved ==="
+          cat /tmp/image-list.txt
+
           mkdir -p /tmp/docker-images
           while IFS= read -r image; do
             safe_name=$(echo "$image" | tr '/:' '_')
+            echo "Saving: $image -> ${safe_name}.tar"
             docker save "$image" -o "/tmp/docker-images/${safe_name}.tar"
+            echo "  Size: $(du -h "/tmp/docker-images/${safe_name}.tar" | cut -f1)"
           done < /tmp/image-list.txt
+
+          echo "=== Artifact contents ==="
+          ls -lh /tmp/docker-images/
+        else
+          echo "WARNING: No images found with version $VERSION"
         fi
 
     - name: Upload images artifact
@@ -368,14 +380,26 @@ jobs:
     - name: Save images to artifact
       shell: powershell
       run: |
+        Write-Host "=== Finding images to save with version: $env:VERSION ==="
         docker images --format "{{.Repository}}:{{.Tag}}" | Select-String "$env:VERSION" | Select-String -NotMatch "<none>" | Out-File -FilePath C:\image-list.txt
+
         if ((Get-Item C:\image-list.txt).Length -gt 0) {
+          Write-Host "=== Images to be saved ==="
+          Get-Content C:\image-list.txt
+
           New-Item -ItemType Directory -Path C:\docker-images -Force
           Get-Content C:\image-list.txt | ForEach-Object {
             $image = $_.Trim()
             $safeName = $image -replace '[/:]', '_'
+            Write-Host "Saving: $image -> $safeName.tar"
             docker save $image -o "C:\docker-images\$safeName.tar"
+            Write-Host "  Size: $((Get-Item "C:\docker-images\$safeName.tar").Length / 1MB) MB"
           }
+
+          Write-Host "=== Artifact contents ==="
+          Get-ChildItem C:\docker-images\ | Format-Table Name, Length
+        } else {
+          Write-Host "WARNING: No images found with version $env:VERSION"
         }
 
     - name: Upload images artifact
@@ -475,11 +499,21 @@ jobs:
 
       - name: Load Docker images
         run: |
+          echo "=== Checking artifact directory ==="
+          ls -lh /tmp/docker-images/ || echo "Directory not found"
+
           if [ -d /tmp/docker-images ]; then
+            echo "=== Loading Docker images from tar files ==="
             for tar_file in /tmp/docker-images/*.tar; do
-              [ -f "$tar_file" ] && docker load -i "$tar_file"
+              if [ -f "$tar_file" ]; then
+                echo "Loading: $tar_file ($(du -h "$tar_file" | cut -f1))"
+                docker load -i "$tar_file"
+              fi
             done
           fi
+
+          echo "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}" | grep -E "(REPOSITORY|$VERSION)" || echo "No images found with version $VERSION"
 
       - name: Deploy Core
         run: |
@@ -618,11 +652,21 @@ jobs:
 
       - name: Load Docker images
         run: |
+          echo "=== Checking artifact directory ==="
+          ls -lh /tmp/docker-images/ || echo "Directory not found"
+
           if [ -d /tmp/docker-images ]; then
+            echo "=== Loading Docker images from tar files ==="
             for tar_file in /tmp/docker-images/*.tar; do
-              [ -f "$tar_file" ] && docker load -i "$tar_file"
+              if [ -f "$tar_file" ]; then
+                echo "Loading: $tar_file ($(du -h "$tar_file" | cut -f1))"
+                docker load -i "$tar_file"
+              fi
             done
           fi
+
+          echo "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}" | grep -E "(REPOSITORY|$VERSION)" || echo "No images found with version $VERSION"
 
       - name: Deploy Core
         run: |
@@ -801,11 +845,21 @@ jobs:
       - name: Load Docker images
         shell: powershell
         run: |
+          Write-Host "=== Checking artifact directory ==="
           if (Test-Path C:\docker-images) {
+            Get-ChildItem C:\docker-images\ | Format-Table Name, Length
+
+            Write-Host "=== Loading Docker images from tar files ==="
             Get-ChildItem C:\docker-images\*.tar | ForEach-Object {
+              Write-Host "Loading: $($_.Name) ($([math]::Round($_.Length / 1MB, 2)) MB)"
               docker load -i $_.FullName
             }
+          } else {
+            Write-Host "Directory C:\docker-images not found"
           }
+
+          Write-Host "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}`t{{.Tag}}`t{{.Size}}`t{{.ID}}" | Select-String -Pattern "(REPOSITORY|$env:VERSION)"
 
       - name: Deploy Core
         run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=nats local_images=true deploy
@@ -942,11 +996,21 @@ jobs:
 
       - name: Load Docker images
         run: |
+          echo "=== Checking artifact directory ==="
+          ls -lh /tmp/docker-images/ || echo "Directory not found"
+
           if [ -d /tmp/docker-images ]; then
+            echo "=== Loading Docker images from tar files ==="
             for tar_file in /tmp/docker-images/*.tar; do
-              [ -f "$tar_file" ] && docker load -i "$tar_file"
+              if [ -f "$tar_file" ]; then
+                echo "Loading: $tar_file ($(du -h "$tar_file" | cut -f1))"
+                docker load -i "$tar_file"
+              fi
             done
           fi
+
+          echo "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}" | grep -E "(REPOSITORY|$VERSION)" || echo "No images found with version $VERSION"
 
       - name: Deploy Core
         run: |
@@ -1051,11 +1115,21 @@ jobs:
 
       - name: Load Docker images
         run: |
+          echo "=== Checking artifact directory ==="
+          ls -lh /tmp/docker-images/ || echo "Directory not found"
+
           if [ -d /tmp/docker-images ]; then
+            echo "=== Loading Docker images from tar files ==="
             for tar_file in /tmp/docker-images/*.tar; do
-              [ -f "$tar_file" ] && docker load -i "$tar_file"
+              if [ -f "$tar_file" ]; then
+                echo "Loading: $tar_file ($(du -h "$tar_file" | cut -f1))"
+                docker load -i "$tar_file"
+              fi
             done
           fi
+
+          echo "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}" | grep -E "(REPOSITORY|$VERSION)" || echo "No images found with version $VERSION"
 
       - name: Deploy Core
         run: |
@@ -1190,11 +1264,21 @@ jobs:
 
       - name: Load Docker images
         run: |
+          echo "=== Checking artifact directory ==="
+          ls -lh /tmp/docker-images/ || echo "Directory not found"
+
           if [ -d /tmp/docker-images ]; then
+            echo "=== Loading Docker images from tar files ==="
             for tar_file in /tmp/docker-images/*.tar; do
-              [ -f "$tar_file" ] && docker load -i "$tar_file"
+              if [ -f "$tar_file" ]; then
+                echo "Loading: $tar_file ($(du -h "$tar_file" | cut -f1))"
+                docker load -i "$tar_file"
+              fi
             done
           fi
+
+          echo "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}" | grep -E "(REPOSITORY|$VERSION)" || echo "No images found with version $VERSION"
 
       - name: Deploy Core
         run: |
@@ -1278,11 +1362,21 @@ jobs:
 
       - name: Load Docker images
         run: |
+          echo "=== Checking artifact directory ==="
+          ls -lh /tmp/docker-images/ || echo "Directory not found"
+
           if [ -d /tmp/docker-images ]; then
+            echo "=== Loading Docker images from tar files ==="
             for tar_file in /tmp/docker-images/*.tar; do
-              [ -f "$tar_file" ] && docker load -i "$tar_file"
+              if [ -f "$tar_file" ]; then
+                echo "Loading: $tar_file ($(du -h "$tar_file" | cut -f1))"
+                docker load -i "$tar_file"
+              fi
             done
           fi
+
+          echo "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}" | grep -E "(REPOSITORY|$VERSION)" || echo "No images found with version $VERSION"
 
       - name: Deploy Core
         run: |
@@ -1369,11 +1463,21 @@ jobs:
 
       - name: Load Docker images
         run: |
+          echo "=== Checking artifact directory ==="
+          ls -lh /tmp/docker-images/ || echo "Directory not found"
+
           if [ -d /tmp/docker-images ]; then
+            echo "=== Loading Docker images from tar files ==="
             for tar_file in /tmp/docker-images/*.tar; do
-              [ -f "$tar_file" ] && docker load -i "$tar_file"
+              if [ -f "$tar_file" ]; then
+                echo "Loading: $tar_file ($(du -h "$tar_file" | cut -f1))"
+                docker load -i "$tar_file"
+              fi
             done
           fi
+
+          echo "=== Verifying loaded images ==="
+          docker images --format "table {{.Repository}}\t{{.Tag}}\t{{.Size}}\t{{.ID}}" | grep -E "(REPOSITORY|$VERSION)" || echo "No images found with version $VERSION"
 
       - name: Deploy Core
         run: |
