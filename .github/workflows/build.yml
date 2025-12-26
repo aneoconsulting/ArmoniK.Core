@@ -318,7 +318,7 @@ jobs:
         fi
 
     - name: Upload images artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: docker-images-${{ strategy.job-index }}
         path: /tmp/docker-images/
@@ -379,7 +379,7 @@ jobs:
         }
 
     - name: Upload images artifact
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: docker-images-windows-${{ strategy.job-index }}
         path: C:\docker-images\
@@ -467,7 +467,7 @@ jobs:
           terraform_version: latest
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -484,7 +484,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream local_images=true deploy
           sleep 10
 
       - name: Dotnet Restore
@@ -610,7 +610,7 @@ jobs:
           terraform_version: latest
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -627,7 +627,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=${{ matrix.target.log-level }} tag=${VERSION} queue=${{ matrix.target.queue }} object=${{ matrix.target.object }} socket_type=${{ matrix.target.socket_type }} cinit=${{ matrix.target.cinit }} worker=htcmock deploy
+            just log_level=${{ matrix.target.log-level }} tag=${VERSION} queue=${{ matrix.target.queue }} object=${{ matrix.target.object }} socket_type=${{ matrix.target.socket_type }} cinit=${{ matrix.target.cinit }} worker=htcmock local_images=true deploy
           sleep 10
 
       - name: Print And Time Metrics
@@ -792,7 +792,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -808,7 +808,7 @@ jobs:
           }
 
       - name: Deploy Core
-        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=nats deploy
+        run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=nats local_images=true deploy
         shell: powershell
 
       - name: Run HtcMock test 100 tasks 1 level
@@ -934,7 +934,7 @@ jobs:
           terraform_version: latest
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -950,7 +950,7 @@ jobs:
 
       - name: Deploy Core
         run: |
-          tools/retry.sh -w 30 -- just tag=${VERSION} deploy
+          tools/retry.sh -w 30 -- just tag=${VERSION} local_images=true deploy
           sleep 10
 
       - name: Add CA to store
@@ -1043,7 +1043,7 @@ jobs:
           terraform_version: latest
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -1060,7 +1060,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
+            just log_level=Information tag=${VERSION} queue=activemq worker=bench local_images=true deploy
           sleep 10
 
       - name: Run Bench test tasks - many tasks (400)
@@ -1182,7 +1182,7 @@ jobs:
           terraform_version: latest
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -1199,7 +1199,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 deploy
+            just log_level=Information tag=${VERSION} queue=activemq worker=crashingworker replicas=4 partitions=1 local_images=true deploy
           sleep 10
 
       - name: Run Crash test
@@ -1270,7 +1270,7 @@ jobs:
           terraform_version: latest
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -1287,7 +1287,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} worker=htcmock queue=activemq deploy
+            just log_level=Information tag=${VERSION} worker=htcmock queue=activemq local_images=true deploy
           sleep 10
 
       - name: Run HtcMock test
@@ -1361,7 +1361,7 @@ jobs:
           terraform_version: latest
 
       - name: Download images artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@fa0a91b85d4f404e444e00e005971372dc801d16 # v4
         with:
           pattern: docker-images-*
           merge-multiple: true
@@ -1378,7 +1378,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just tag=${VERSION} object=redis deploy
+            just tag=${VERSION} object=redis local_images=true deploy
           sleep 10
 
       - name: Run HtcMock test
