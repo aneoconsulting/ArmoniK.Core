@@ -45,9 +45,9 @@ public class ObjectBuilder : IDependencyInjectionBuildable
   {
     // ReSharper disable once InlineOutVariableDeclaration
     Options.Redis redisOptions;
-    serviceCollection.AddOption(configuration,
-                                Options.Redis.SettingSection,
-                                out redisOptions);
+    serviceCollection.AddInitializedOption(configuration,
+                                           Options.Redis.SettingSection,
+                                           out redisOptions);
 
     if (!string.IsNullOrEmpty(redisOptions.CredentialsPath))
     {
@@ -55,9 +55,9 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                                 false,
                                 false);
 
-      serviceCollection.AddOption(configuration,
-                                  Options.Redis.SettingSection,
-                                  out redisOptions);
+      serviceCollection.AddInitializedOption(configuration,
+                                             Options.Redis.SettingSection,
+                                             out redisOptions);
 
       logger.LogTrace("Loaded Redis credentials from file {path}",
                       redisOptions.CredentialsPath);

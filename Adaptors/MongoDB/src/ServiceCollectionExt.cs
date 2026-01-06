@@ -220,8 +220,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
-      services.AddOption<TableStorage>(configuration,
-                                       TableStorage.SettingSection)
+      services.AddInitializedOption<TableStorage>(configuration,
+                                                  TableStorage.SettingSection)
               .AddSingleton<ITaskTable, TaskTable>()
               .AddSingleton<ISessionTable, SessionTable>()
               .AddSingleton<IResultTable, ResultTable>()

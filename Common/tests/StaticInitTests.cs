@@ -83,8 +83,8 @@ internal class StaticInitTests
     configuration_.AddEnvironmentVariables();
 
     var services = new ServiceCollection();
-    services.AddOption<InitServices>(configuration_,
-                                     InitServices.SettingSection);
+    services.AddInitializedOption<InitServices>(configuration_,
+                                                InitServices.SettingSection);
     services.AddSingleton<InitDatabase>();
     provider_ = services.BuildServiceProvider();
 
