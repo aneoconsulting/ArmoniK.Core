@@ -400,7 +400,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                   TaskStatus.Cancelled)
                                     .ConfigureAwait(false);
 
-        await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+        await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
                                                          resultTable_,
                                                          new[]
                                                          {
@@ -431,7 +431,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                                     TaskStatus.Cancelled)
                                       .ConfigureAwait(false);
 
-          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+          await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
                                                            resultTable_,
                                                            new[]
                                                            {
@@ -464,7 +464,7 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Error:
           logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+          await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
                                                            resultTable_,
                                                            new[]
                                                            {
@@ -480,7 +480,7 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Cancelled:
           logger_.LogInformation("Task has been cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+          await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
                                                            resultTable_,
                                                            new[]
                                                            {
@@ -737,7 +737,7 @@ public sealed class TaskHandler : IAsyncDisposable
             taskData_ = await taskTable_.EndTaskAsync(taskData_,
                                                       TaskStatus.Cancelled)
                                         .ConfigureAwait(false);
-            await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
+            await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
                                                              resultTable_,
                                                              new[]
                                                              {
