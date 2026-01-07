@@ -683,6 +683,12 @@ jobs:
           repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
           ref: ${{ github.head_ref || github.ref }}
 
+      - name: Docker networks
+        run : docker network ls
+
+      - name: Docker info
+        run : docker info
+
       - name: Setup Terraform and other tools
         run: |
           choco install terraform --version=1.10.1 -y
