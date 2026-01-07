@@ -41,5 +41,11 @@ namespace ArmoniK.Core.Adapters.Couchbase.Options
     ///   Name of the collection within the scope. Default is "_default".
     /// </summary>
     public string CollectionName { get; init; } = "_default";
+    
+    /// <summary>
+    ///   Time-to-live (TTL) for documents stored in Couchbase. Default is 8 hours.
+    ///   Documents will be automatically deleted by Couchbase after this duration.
+    /// </summary>
+    public TimeSpan DocumentTimeToLive { get; init; } = TimeSpan.FromHours(8);
   }
 }

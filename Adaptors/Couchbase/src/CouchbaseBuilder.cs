@@ -29,6 +29,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ArmoniK.Core.Adapters.Couchbase
 {
@@ -38,7 +39,7 @@ namespace ArmoniK.Core.Adapters.Couchbase
     [PublicAPI]
     public void Build(IServiceCollection serviceCollection,
                       ConfigurationManager configuration,
-                      Microsoft.Extensions.Logging.ILogger logger)
+                      ILogger logger)
     {
       Options.CouchbaseSettings couchbaseOptions;
       Options.CouchbaseStorage couchbaseStorageOptions;
@@ -57,7 +58,14 @@ namespace ArmoniK.Core.Adapters.Couchbase
 
       try
       {
+        logger.LogDebug("Couchbase connection settings: ConnectionString={ConnectionString}, IsTls={IsTls}, BootstrapTimeout={BootstrapTimeout}, KvTimeout={KvTimeout}",
+                      couchbaseOptions.ConnectionString,
+                      couchbaseOptions.IsTls,
+                      couchbaseOptions.BootstrapTimeout,
+                      couchbaseOptions.KvTimeout);
+
         // Configure Couchbase using AddCouchbase with proper options configuration
+        // This registers IClusterProvider which should be used to get ICluster instances
         serviceCollection.AddCouchbase(options =>
         {
           options.ConnectionString = couchbaseOptions.ConnectionString;
@@ -83,11 +91,19 @@ namespace ArmoniK.Core.Adapters.Couchbase
           // Configure custom retry strategy
           options.RetryStrategy = new RetryCustom();
           
+          // Disable DNS-SRV resolution to connect directly to the hostname
+          // This avoids DNS-SRV lookup errors when SRV records are not configured
+          //options.EnableDnsSrvResolution = false;
+          
           if (couchbaseOptions.IsTls)
           {
             options.EnableTls = true;
           }
         });
+        
+        // Configure logging using PostConfigure to ensure it runs after AddCouchbase configuration
+        // and properly injects ILoggerFactory from DI
+        serviceCollection.AddSingleton<IPostConfigureOptions<ClusterOptions>, CouchbaseLoggingConfigurator>();
 
         serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, CouchbaseStorage>(nameof(IObjectStorage));
       }
@@ -114,6 +130,29 @@ namespace ArmoniK.Core.Adapters.Couchbase
       return request.Attempts < 3 
         ? RetryAction.Duration(TimeSpan.FromSeconds(1)) 
         : RetryAction.Duration(null);
+    }
+  }
+
+  /// <summary>
+  /// Configures Couchbase SDK logging using ILoggerFactory from DI.
+  /// Uses PostConfigure to ensure it runs after the main AddCouchbase configuration.
+  /// </summary>
+  internal class CouchbaseLoggingConfigurator : IPostConfigureOptions<ClusterOptions>
+  {
+    private readonly ILoggerFactory loggerFactory_;
+    private readonly ILogger logger_;
+
+    public CouchbaseLoggingConfigurator(ILoggerFactory loggerFactory, ILogger<CouchbaseLoggingConfigurator> logger)
+    {
+      loggerFactory_ = loggerFactory;
+      logger_ = logger;
+    }
+
+    public void PostConfigure(string? name, ClusterOptions options)
+    {
+      // Enable Couchbase SDK logging with the application's ILoggerFactory
+      options.WithLogging(loggerFactory_);
+      logger_.LogDebug("Couchbase SDK logging configured with ILoggerFactory from DI (PostConfigure)");
     }
   }
 }

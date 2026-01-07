@@ -22,6 +22,7 @@ using ArmoniK.Utils;
 
 using Couchbase;
 using Couchbase.Core.IO.Transcoders;
+using Couchbase.Extensions.DependencyInjection;
 using Couchbase.KeyValue;
 
 using DnsClient.Internal;
@@ -38,8 +39,9 @@ namespace ArmoniK.Core.Adapters.Couchbase
   public class CouchbaseStorage : IObjectStorage
   {
     private readonly ILogger<CouchbaseStorage> logger_;
-    private readonly ICluster couchbase_;
+    private readonly IClusterProvider clusterProvider_;
     private readonly Options.CouchbaseStorage couchbaseStorageOptions_;
+    private readonly Options.CouchbaseSettings couchbaseSettings_;
     private readonly Lazy<Task<ICouchbaseCollection>> collectionLazy_;
     private bool isInitialized_;
 
@@ -48,21 +50,25 @@ namespace ArmoniK.Core.Adapters.Couchbase
     /// <summary>
     ///   <see cref="IObjectStorage" /> implementation for Couchbase
     /// </summary>
-    /// <param name="couchbase">Connection to Couchbase database</param>
+    /// <param name="clusterProvider">Couchbase cluster provider from DI</param>
     /// <param name="couchbaseStorageOptions">Couchbase object storage options</param>
+    /// <param name="couchbaseSettings">Couchbase connection settings</param>
     /// <param name="logger">Logger used to print logs</param>
-    public CouchbaseStorage(ICluster couchbase,
+    public CouchbaseStorage(IClusterProvider clusterProvider,
                          Options.CouchbaseStorage couchbaseStorageOptions,
+                         Options.CouchbaseSettings couchbaseSettings,
                          ILogger<CouchbaseStorage> logger)
     {
-      couchbase_ = couchbase;
+      clusterProvider_ = clusterProvider;
       couchbaseStorageOptions_ = couchbaseStorageOptions;
+      couchbaseSettings_ = couchbaseSettings;
       logger_ = logger;
       
       collectionLazy_ = new Lazy<Task<ICouchbaseCollection>>(async () =>
       {
         logger_.LogDebug("Initializing Couchbase bucket and collection (lazy)");
-        var bucket = await couchbase_.BucketAsync(couchbaseStorageOptions_.BucketName).ConfigureAwait(false);
+        var cluster = await clusterProvider_.GetClusterAsync().ConfigureAwait(false);
+        var bucket = await cluster.BucketAsync(couchbaseStorageOptions_.BucketName).ConfigureAwait(false);
         var scope = bucket.Scope(couchbaseStorageOptions_.ScopeName);
         var collection = scope.Collection(couchbaseStorageOptions_.CollectionName);
         logger_.LogDebug("Couchbase collection initialized: {Bucket}/{Scope}/{Collection}",
@@ -73,10 +79,62 @@ namespace ArmoniK.Core.Adapters.Couchbase
       });
     }
 
+
     /// <summary>
     /// Gets the cached collection instance
     /// </summary>
     private Task<ICouchbaseCollection> GetCollectionAsync() => collectionLazy_.Value;
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    =>
+      tag switch
+      {
+        HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
+                                                                        ? HealthCheckResult.Healthy()
+                                                                        : HealthCheckResult.Unhealthy("Couchbase not initialized yet.")),
+        HealthCheckTag.Liveness => Task.FromResult(isInitialized_ ? HealthCheckResult.Healthy()
+                                                      : HealthCheckResult.Unhealthy("Couchbase not initialized or connection dropped.")),
+        _ => throw new ArgumentOutOfRangeException(nameof(tag),
+                                                    tag,
+                                                    null),
+      };
+
+    public async Task Init(CancellationToken cancellationToken)
+    {
+      if (!isInitialized_)
+      {
+        logger_.LogInformation("Initializing Couchbase storage - getting cluster...");
+        var cluster = await clusterProvider_.GetClusterAsync().ConfigureAwait(false);
+
+        try
+        {
+          logger_.LogInformation("Opening bucket: {Bucket} and waiting until ready with timeout {BootstrapTimeout}",
+                                couchbaseStorageOptions_.BucketName,
+                                couchbaseSettings_.BootstrapTimeout);
+
+          var bucket = await cluster.BucketAsync(couchbaseStorageOptions_.BucketName).ConfigureAwait(false);
+
+          await bucket.WaitUntilReadyAsync(couchbaseSettings_.BootstrapTimeout).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+          logger_.LogError(ex, "Failed to open or wait for bucket ready. Bucket={Bucket}, BootstrapTimeout={BootstrapTimeout}",
+                          couchbaseStorageOptions_.BucketName,
+                          couchbaseSettings_.BootstrapTimeout);
+          throw;
+        }
+
+        logger_.LogInformation("Initializing collection: {Bucket}/{Scope}/{Collection}",
+                              couchbaseStorageOptions_.BucketName,
+                              couchbaseStorageOptions_.ScopeName,
+                              couchbaseStorageOptions_.CollectionName);
+        _ = await GetCollectionAsync().ConfigureAwait(false);
+        logger_.LogInformation("Collection initialized successfully");
+      }
+
+      isInitialized_ = true;
+    }
+
 
     public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData data, IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks, CancellationToken cancellationToken = default)
     {
@@ -101,48 +159,30 @@ namespace ArmoniK.Core.Adapters.Couchbase
       // Process and write the chunks with size tracking
       var processedChunks = CouchbaseHelper.ProcessStreamAsync(key, TrackSizeAndPassThrough(cancellationToken), cancellationToken: cancellationToken);
       
-      // Write to Couchbase with default concurrency
-      var windowCount = await CouchbaseHelper.WriteStreamToCouchbaseAsync(collection, processedChunks, cancellationToken: cancellationToken).ConfigureAwait(false);
+      // Write to Couchbase with TTL
+      var windowCount = await CouchbaseHelper.WriteStreamToCouchbaseAsync(collection, processedChunks, couchbaseStorageOptions_.DocumentTimeToLive, cancellationToken: cancellationToken).ConfigureAwait(false);
 
       // Store the original size as metadata in a separate document
       var sizeMetadataKey = CouchbaseHelper.GetSizeMetadataKey(key);
       var sizeBytes = BitConverter.GetBytes(size);
-      await collection.UpsertAsync(sizeMetadataKey, sizeBytes, options => options.Transcoder(new LegacyTranscoder())).ConfigureAwait(false);
+      await collection.UpsertAsync(sizeMetadataKey, sizeBytes, options =>
+      {
+        options.Transcoder(new LegacyTranscoder());
+        options.Expiry(couchbaseStorageOptions_.DocumentTimeToLive);
+      }).ConfigureAwait(false);
 
       // Store the window count as metadata
       var windowCountMetadataKey = CouchbaseHelper.GetWindowCountMetadataKey(key);
       var windowCountBytes = BitConverter.GetBytes(windowCount);
-      await collection.UpsertAsync(windowCountMetadataKey, windowCountBytes, options => options.Transcoder(new LegacyTranscoder())).ConfigureAwait(false);
+      await collection.UpsertAsync(windowCountMetadataKey, windowCountBytes, options =>
+      {
+        options.Transcoder(new LegacyTranscoder());
+        options.Expiry(couchbaseStorageOptions_.DocumentTimeToLive);
+      }).ConfigureAwait(false);
 
       logger_.LogInformation("AddOrUpdateAsync: Completed for key {Key}, total uncompressed size = {Size}, window count = {WindowCount}", key, size, windowCount);
 
       return (Encoding.UTF8.GetBytes(key), size);
-    }
-
-    public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    =>
-      tag switch
-      {
-        HealthCheckTag.Startup or HealthCheckTag.Readiness => Task.FromResult(isInitialized_
-                                                                        ? HealthCheckResult.Healthy()
-                                                                        : HealthCheckResult.Unhealthy("Couchbase not initialized yet.")),
-        HealthCheckTag.Liveness => Task.FromResult(isInitialized_ ? HealthCheckResult.Healthy()
-                                                     : HealthCheckResult.Unhealthy("Couchbase not initialized or connection dropped.")),
-        _ => throw new ArgumentOutOfRangeException(nameof(tag),
-                                                   tag,
-                                                   null),
-      };
-      
-    public async Task Init(CancellationToken cancellationToken)
-    {
-      if (!isInitialized_)
-      {
-        await couchbase_.WaitUntilReadyAsync(TimeSpan.FromSeconds(10)).ConfigureAwait(false);
-        // Eagerly initialize the collection during Init to catch any errors early
-        _ = await GetCollectionAsync().ConfigureAwait(false);
-      }
-
-      isInitialized_ = true;
     }
 
     public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[] id, [EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -225,7 +265,7 @@ namespace ArmoniK.Core.Adapters.Couchbase
       {
         var key = Encoding.UTF8.GetString(id);
         var collection = await GetCollectionAsync().ConfigureAwait(false);
-        
+     
         // Try to get window count metadata using helper method
         int? windowCount = null;
         try

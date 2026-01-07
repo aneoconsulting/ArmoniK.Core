@@ -253,12 +253,14 @@ namespace ArmoniK.Core.Adapters.Couchbase
     /// </summary>
     /// <param name="collection">Couchbase collection to write to</param>
     /// <param name="processedStream">Stream of processed entries with window metadata</param>
+    /// <param name="ttl">Time-to-live for documents (optional)</param>
     /// <param name="maxConcurrency">Maximum number of concurrent writes per batch (default: 5)</param>
     /// <param name="cancellationToken">Cancellation token</param>
     /// <returns>Total number of windows written</returns>
     public static async Task<int> WriteStreamToCouchbaseAsync(
         ICouchbaseCollection collection,
         IAsyncEnumerable<(KeyValuePair<string, byte[]> Entry, int WindowIndex, bool IsLastWindow)> processedStream,
+        TimeSpan? ttl = null,
         int maxConcurrency = 5,
         CancellationToken cancellationToken = default)
     {
@@ -268,7 +270,7 @@ namespace ArmoniK.Core.Adapters.Couchbase
       await foreach (var (entry, windowIndex, isLastWindow) in processedStream.WithCancellation(cancellationToken).ConfigureAwait(false))
       {
         // Add write task to current batch
-        var writeTask = WriteEntryAsync(collection, entry, cancellationToken);
+        var writeTask = WriteEntryAsync(collection, entry, ttl, cancellationToken);
         batch.Add(writeTask);
 
         // Track max window index
@@ -297,13 +299,25 @@ namespace ArmoniK.Core.Adapters.Couchbase
     /// <summary>
     /// Writes a single entry to Couchbase.
     /// </summary>
+    /// <param name="collection">Couchbase collection to write to</param>
+    /// <param name="entry">Key-value pair to write</param>
+    /// <param name="ttl">Time-to-live for the document (optional)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
     private static async Task WriteEntryAsync(
         ICouchbaseCollection collection,
         KeyValuePair<string, byte[]> entry,
+        TimeSpan? ttl,
         CancellationToken cancellationToken)
     {
       var internalKey = GetInternalKey(entry.Key);
-      await collection.UpsertAsync(internalKey, entry.Value, options => options.Transcoder(new LegacyTranscoder())).ConfigureAwait(false);
+      await collection.UpsertAsync(internalKey, entry.Value, options =>
+      {
+        options.Transcoder(new LegacyTranscoder());
+        if (ttl.HasValue)
+        {
+          options.Expiry(ttl.Value);
+        }
+      }).ConfigureAwait(false);
     }
 
     /// <summary>
