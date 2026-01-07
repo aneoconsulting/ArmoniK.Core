@@ -51,23 +51,6 @@ public static class ServiceCollectionExt
     => services.AddSingleton(configuration.GetInitializedValue<T>(key));
 
   /// <summary>
-  ///   Fills in an option class and add it to the service collection
-  /// </summary>
-  /// <typeparam name="T">Type of option class to add</typeparam>
-  /// <param name="services">Collection of service descriptors</param>
-  /// <param name="configuration">Collection of configuration used to configure the option class</param>
-  /// <param name="key">Key to find the option to fill</param>
-  /// <returns>
-  ///   The updated collection of service descriptors
-  /// </returns>
-  [PublicAPI]
-  public static IServiceCollection AddOption<T>(this IServiceCollection services,
-                                                IConfiguration          configuration,
-                                                string                  key)
-    where T : class
-    => services.AddSingleton(configuration.GetRequiredValue<T>(key));
-
-  /// <summary>
   ///   Fills in an option class, add it in the service collection and return the initialized class
   /// </summary>
   /// <typeparam name="T">Type of option class to add</typeparam>
@@ -79,16 +62,15 @@ public static class ServiceCollectionExt
   ///   The updated collection of service descriptors
   /// </returns>
   [PublicAPI]
-  public static IServiceCollection AddOption<T>(this IServiceCollection services,
-                                                IConfiguration          configuration,
-                                                string                  key,
-                                                out T                   option)
-    where T : class
+  public static IServiceCollection AddInitializedOption<T>(this IServiceCollection services,
+                                                           IConfiguration          configuration,
+                                                           string                  key,
+                                                           out T                   option)
+    where T : class, new()
   {
-    option = configuration.GetRequiredValue<T>(key);
+    option = configuration.GetInitializedValue<T>(key);
     return services.AddSingleton(option);
   }
-
 
   /// <summary>
   ///   Add a singleton service of the specified type with health check capabilities

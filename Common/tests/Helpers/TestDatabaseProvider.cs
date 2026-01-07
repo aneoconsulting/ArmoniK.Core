@@ -151,8 +151,8 @@ public class TestDatabaseProvider : IDisposable
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
            .AddSingleton<IObjectStorage, ObjectStorage>()
-           .AddOption<Injection.Options.Submitter>(builder.Configuration,
-                                                   Injection.Options.Submitter.SettingSection)
+           .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,
+                                                              Injection.Options.Submitter.SettingSection)
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);

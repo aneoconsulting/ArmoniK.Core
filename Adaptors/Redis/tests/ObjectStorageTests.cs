@@ -79,9 +79,9 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                                     .GetDatabase());
     services.AddSingleton<IObjectStorage, ObjectStorage>();
 
-    services.AddOption(configuration,
-                       Options.Redis.SettingSection,
-                       out Options.Redis redisOptions);
+    services.AddInitializedOption(configuration,
+                                  Options.Redis.SettingSection,
+                                  out Options.Redis redisOptions);
 
     var provider = services.BuildServiceProvider(new ServiceProviderOptions
                                                  {

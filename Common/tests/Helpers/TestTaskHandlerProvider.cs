@@ -169,10 +169,10 @@ public class TestTaskHandlerProvider : IDisposable
            .AddLogging()
            .AddSingleton(loggerFactory_.CreateLogger(nameof(TestTaskHandlerProvider)))
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-           .AddOption<Injection.Options.Submitter>(builder.Configuration,
-                                                   Injection.Options.Submitter.SettingSection)
-           .AddOption<Injection.Options.Pollster>(builder.Configuration,
-                                                  Injection.Options.Pollster.SettingSection)
+           .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,
+                                                              Injection.Options.Submitter.SettingSection)
+           .AddInitializedOption<Injection.Options.Pollster>(builder.Configuration,
+                                                             Injection.Options.Pollster.SettingSection)
            .AddInitializedOption<InitServices>(builder.Configuration,
                                                InitServices.SettingSection)
            .AddSingleton<InitDatabase>()
