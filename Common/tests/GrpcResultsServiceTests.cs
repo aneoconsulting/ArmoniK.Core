@@ -451,6 +451,31 @@ public class GrpcResultsServiceTests
   }
 
   [Test]
+  public void ImportMultipleDataShouldPreserveOrder()
+  {
+    var resultClient = new Results.ResultsClient(channel_);
+
+    string[] colors = ["blue", "red", "green", "white", "black", "yellow", "cyan", "orange"];
+    var resultRequest = colors.Select(color => new CreateResultsRequest.Types.ResultCreate
+                                               {
+                                                 Name = color,
+                                                 Data = ByteString.CopyFromUtf8(color),
+                                               });
+
+    var resultResponse = resultClient.CreateResults(new CreateResultsRequest
+                                                    {
+                                                      SessionId = session_!.SessionId,
+                                                      Results =
+                                                      {
+                                                        resultRequest,
+                                                      },
+                                                    });
+
+    Assert.That(resultResponse.Results.Select(result => result.Name),
+                Is.EquivalentTo(colors));
+  }
+
+  [Test]
   public async Task PurgeDataShouldSucceed()
   {
     var objectStorage = helper_!.GetRequiredService<IObjectStorage>();
