@@ -454,7 +454,17 @@ public class GrpcResultsServiceTests
   {
     var resultClient = new Results.ResultsClient(channel_);
 
-    string[] colors = ["blue", "red", "green", "white", "black", "yellow", "cyan", "orange"];
+    var colors = new[]
+                 {
+                   "blue",
+                   "red",
+                   "green",
+                   "white",
+                   "black",
+                   "yellow",
+                   "cyan",
+                   "orange",
+                 };
     var resultRequest = colors.Select(color => new CreateResultsRequest.Types.ResultCreate
                                                {
                                                  Name = color,
