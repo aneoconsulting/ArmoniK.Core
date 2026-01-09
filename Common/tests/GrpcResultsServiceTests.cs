@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -451,6 +450,41 @@ public class GrpcResultsServiceTests
   }
 
   [Test]
+  public void ImportMultipleDataShouldPreserveOrder()
+  {
+    var resultClient = new Results.ResultsClient(channel_);
+
+    var colors = new[]
+                 {
+                   "blue",
+                   "red",
+                   "green",
+                   "white",
+                   "black",
+                   "yellow",
+                   "cyan",
+                   "orange",
+                 };
+    var resultRequest = colors.Select(color => new CreateResultsRequest.Types.ResultCreate
+                                               {
+                                                 Name = color,
+                                                 Data = ByteString.CopyFromUtf8(color),
+                                               });
+
+    var resultResponse = resultClient.CreateResults(new CreateResultsRequest
+                                                    {
+                                                      SessionId = session_!.SessionId,
+                                                      Results =
+                                                      {
+                                                        resultRequest,
+                                                      },
+                                                    });
+
+    Assert.That(resultResponse.Results.Select(result => result.Name),
+                Is.EquivalentTo(colors));
+  }
+
+  [Test]
   public async Task PurgeDataShouldSucceed()
   {
     var objectStorage = helper_!.GetRequiredService<IObjectStorage>();
@@ -530,12 +564,11 @@ public class GrpcResultsServiceTests
   }
 
   [Test]
-  public async Task IssueDuringCreateResultsShouldNotCreateAnything()
+  public void IssueDuringCreateResultsShouldNotCreateAnything()
   {
     var mock = new Mock<IResultTable>();
-    mock.Setup(table => table.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
-                                         It.IsAny<Expression<Func<Result, Result>>>(),
-                                         It.IsAny<CancellationToken>()))
+    mock.Setup(table => table.Create(It.IsAny<ICollection<Result>>(),
+                                     It.IsAny<CancellationToken>()))
         .Throws<OperationCanceledException>();
 
 
