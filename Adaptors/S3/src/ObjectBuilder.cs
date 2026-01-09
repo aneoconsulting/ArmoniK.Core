@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -42,9 +42,9 @@ public class ObjectBuilder : IDependencyInjectionBuildable
   {
     // ReSharper disable once InlineOutVariableDeclaration
     Options.S3 s3Options;
-    serviceCollection.AddOption(configuration,
-                                Options.S3.SettingSection,
-                                out s3Options);
+    serviceCollection.AddInitializedOption(configuration,
+                                           Options.S3.SettingSection,
+                                           out s3Options);
 
     logger.LogInformation("setup connection to S3 at {EndpointUrl} with user {user} with option ForcePathStyle = {ForcePathStyle} with BucketName = {BucketName}",
                           s3Options.EndpointUrl,

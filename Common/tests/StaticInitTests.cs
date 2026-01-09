@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -83,8 +83,8 @@ internal class StaticInitTests
     configuration_.AddEnvironmentVariables();
 
     var services = new ServiceCollection();
-    services.AddOption<InitServices>(configuration_,
-                                     InitServices.SettingSection);
+    services.AddInitializedOption<InitServices>(configuration_,
+                                                InitServices.SettingSection);
     services.AddSingleton<InitDatabase>();
     provider_ = services.BuildServiceProvider();
 
