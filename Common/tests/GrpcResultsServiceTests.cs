@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -555,12 +554,11 @@ public class GrpcResultsServiceTests
   }
 
   [Test]
-  public async Task IssueDuringCreateResultsShouldNotCreateAnything()
+  public void IssueDuringCreateResultsShouldNotCreateAnything()
   {
     var mock = new Mock<IResultTable>();
-    mock.Setup(table => table.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
-                                         It.IsAny<Expression<Func<Result, Result>>>(),
-                                         It.IsAny<CancellationToken>()))
+    mock.Setup(table => table.Create(It.IsAny<ICollection<Result>>(),
+                                     It.IsAny<CancellationToken>()))
         .Throws<OperationCanceledException>();
 
 
