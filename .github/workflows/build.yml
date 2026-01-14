@@ -472,6 +472,9 @@ jobs:
           only-summary: ${{ env.REPOSITORY != github.repository }}
 
       - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -480,9 +483,11 @@ jobs:
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
@@ -685,6 +690,9 @@ jobs:
           time curl localhost:5003/metrics
 
       - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -693,10 +701,13 @@ jobs:
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-monitor.tar.gz
 
       - name: Collect docker container logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
@@ -870,11 +881,15 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
 
       - name: Collect docker container logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: 'container-logs'
           shell: powershell
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
+        shell: bash
       - name: Zip docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: 7z a logs.7z container-logs
@@ -966,16 +981,22 @@ jobs:
           only-summary: ${{ env.REPOSITORY != github.repository }}
 
       - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
           export AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}
           docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.gz
       - name: Collect docker container logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
@@ -1107,6 +1128,9 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
       - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1114,10 +1138,13 @@ jobs:
           docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-monitor.tar.gz
       - name: Collect docker container logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
@@ -1189,6 +1216,9 @@ jobs:
             dockerhubaneo/armonik_core_crashingworker_test_client:$VERSION
 
       - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1196,10 +1226,13 @@ jobs:
           docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-monitor.tar.gz
       - name: Collect docker container logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
@@ -1279,6 +1312,9 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1286,10 +1322,13 @@ jobs:
           docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultPartition-monitor.tar.gz
       - name: Collect docker container logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
@@ -1433,6 +1472,9 @@ jobs:
             dockerhubaneo/armonik_core_htcmock_test_client:$VERSION
 
       - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
           export AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -1440,10 +1482,13 @@ jobs:
           docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.gz
           tar -czf - monitor/ | aws s3 cp - s3://${{ secrets.AWS_LOG_BUCKET_NAME }}/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-monitor.tar.gz
       - name: Collect docker container logs
+        if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
-        if: ${{ always() && env.REPOSITORY == github.repository }}
         with:
           dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
         run: |
