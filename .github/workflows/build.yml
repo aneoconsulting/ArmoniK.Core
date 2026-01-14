@@ -752,9 +752,42 @@ jobs:
       - name: Build images
         if: ${{ env.REPOSITORY != github.repository }}
         run: |
-          just tag=$env:VERSION worker=htcmock build-all
-          just tag=$env:VERSION buildHtcmockClient
-        shell: powershell
+          build() {
+            local target dockerfile context name
+            target="${1:-}"
+            name="dockerhubaneo/${2}:${VERSION}"
+            dockerfile="${3:-./Dockerfile}"
+            awk '
+              /^FROM/ {
+                skip = ($0 ~ /linux|tini/)
+              }
+              !skip {
+                gsub(/--platform=[^ ]* /, "");
+                gsub(/\$\{(BUILD|TARGET)OS\}/, "windows");
+                print
+              }' "$dockerfile" > "$dockerfile.win"
+            docker build \
+              ${target:+--target "$target"} \
+              --build-arg VERSION="$VERSION" \
+              --build-arg BUILDOS="windows" \
+              --build-arg TARGETOS="windows" \
+              --build-arg BUILDARCH="amd64" \
+              --build-arg TARGETARCH="amd64" \
+              -t "$name" \
+              -f "$dockerfile.win" \
+              ./
+          }
+
+          set -x
+
+          build polling_agent     armonik_pollingagent
+          build metrics           armonik_control_metrics
+          build partition_metrics armonik_control_partition_metrics
+          build submitter         armonik_control
+
+          build "" armonik_core_htcmock_test_worker ./Tests/HtcMock/Server/src/Dockerfile
+          build "" armonik_core_htcmock_test_client ./Tests/HtcMock/Client/src/Dockerfile
+        shell: bash
 
       - name: Deploy Core
         run: just -v tag=$env:VERSION object=local worker=htcmock ingress=false prometheus=false grafana=false seq=false queue=nats deploy
