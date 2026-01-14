@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;
 
@@ -88,5 +89,6 @@ public class ObjectStorage : IObjectStorage
   public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
                                                         CancellationToken   cancellationToken = default)
     => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
-                                                                    id => (long?)id.LongLength));
+                                                                    id => (long?)id.LongLength,
+                                                                    new ByteArrayComparer()));
 }

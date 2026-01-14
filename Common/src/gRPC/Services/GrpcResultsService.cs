@@ -508,45 +508,30 @@ public class GrpcResultsService : Results.ResultsBase
     var resultIds = request.Results.Select(id => id.ResultId)
                            .ToHashSet();
 
-    var requests = request.Results.ToDictionary(id => id.ResultId,
-                                                id => id.OpaqueId.ToByteArray());
+    var resultId2OpaqueId = request.Results.ToDictionary(id => id.ResultId,
+                                                         id => id.OpaqueId.ToByteArray());
 
-    var dictTask = objectStorage_.GetSizesAsync(requests.Values,
-                                                context.CancellationToken);
+    var opaqueId2ResultSizeTask = objectStorage_.GetSizesAsync(resultId2OpaqueId.Values,
+                                                               context.CancellationToken);
 
-    var resultIdsDatabase = await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
-                                                          result => new
-                                                                    {
-                                                                      result.ResultId,
-                                                                      result.Status,
-                                                                    },
-                                                          context.CancellationToken)
-                                              .ToDictionaryAsync(arg => arg.ResultId,
-                                                                 arg => arg.Status)
-                                              .ConfigureAwait(false);
+    var resultId2Result = await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
+                                                        result => result,
+                                                        context.CancellationToken)
+                                            .ToDictionaryAsync(arg => arg.ResultId)
+                                            .ConfigureAwait(false);
 
-    var dict = await dictTask.ConfigureAwait(false);
+    var opaqueId2ResultSize = await opaqueId2ResultSizeTask.ConfigureAwait(false);
 
-    Debug.Assert(dict.Count == request.Results.Count);
+    Debug.Assert(opaqueId2ResultSize.Count == request.Results.Count);
 
 #if DEBUG
-    foreach (var opaqueId in requests.Values)
+    foreach (var opaqueId in resultId2OpaqueId.Values)
     {
-      Debug.Assert(dict.ContainsKey(opaqueId));
+      Debug.Assert(opaqueId2ResultSize.ContainsKey(opaqueId));
     }
 #endif
 
-    if (dict.Values.Any(size => size is null))
-    {
-      logger_.LogError("Opaque ids : {OpaqueIds} does not exist in the object storage",
-                       dict.Where(pair => pair.Value is null)
-                           .Select(pair => pair.Key)
-                           .ToList());
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "OpaqueId not found in the object storage"));
-    }
-
-    var intersection = resultIds.Except(resultIdsDatabase.Select(pair => pair.Key))
+    var intersection = resultIds.Except(resultId2Result.Keys)
                                 .ToList();
 
     if (intersection.Any())
@@ -557,10 +542,20 @@ public class GrpcResultsService : Results.ResultsBase
                                         $"Input result IDs were not found in the database: {intersection}"));
     }
 
-    if (resultIdsDatabase.Any(pair => pair.Value != ResultStatus.Created))
+    if (opaqueId2ResultSize.Values.Any(size => size is null))
     {
-      var invalidResults = resultIdsDatabase.Where(pair => pair.Value != ResultStatus.Created)
-                                            .ToList();
+      logger_.LogError("Opaque ids : {OpaqueIds} does not exist in the object storage",
+                       opaqueId2ResultSize.Where(pair => pair.Value is null)
+                                          .Select(pair => pair.Key)
+                                          .ToList());
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "OpaqueId not found in the object storage"));
+    }
+
+    if (resultId2Result.Any(pair => pair.Value.Status != ResultStatus.Created))
+    {
+      var invalidResults = resultId2Result.Where(pair => pair.Value.Status != ResultStatus.Created)
+                                          .ToList();
       logger_.LogError("Imported result should be in {Status} but {ResultIds} were not",
                        ResultStatus.Created,
                        invalidResults);
@@ -568,10 +563,10 @@ public class GrpcResultsService : Results.ResultsBase
                                         $"Imported results should be in {ResultStatus.Created} status, invalid results {invalidResults}"));
     }
 
-    await resultTable_.CompleteManyResults(requests.ViewSelect(tuple => (tuple.Key, dict[tuple.Value]!.Value, tuple.Value)),
-                                           "",
-                                           context.CancellationToken)
-                      .ConfigureAwait(false);
+    var completionDate = await resultTable_.CompleteManyResults(resultId2OpaqueId.ViewSelect(tuple => (tuple.Key, opaqueId2ResultSize[tuple.Value]!.Value, tuple.Value)),
+                                                                "",
+                                                                context.CancellationToken)
+                                           .ConfigureAwait(false);
 
     await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
                                                   resultTable_,
@@ -586,12 +581,18 @@ public class GrpcResultsService : Results.ResultsBase
            {
              Results =
              {
-               await resultTable_.GetResults(request.SessionId,
-                                             resultIds,
-                                             context.CancellationToken)
-                                 .Select(result => result.ToGrpcResultRaw())
-                                 .ToListAsync()
-                                 .ConfigureAwait(false),
+               request.Results.Select(resultOpaqueId =>
+                                      {
+                                        var opaqueId = resultId2OpaqueId[resultOpaqueId.ResultId];
+                                        return resultId2Result[resultOpaqueId.ResultId] with
+                                               {
+                                                 OpaqueId = opaqueId,
+                                                 Size = opaqueId2ResultSize[opaqueId]!.Value,
+                                                 Status = ResultStatus.Completed,
+                                                 CompletionDate = completionDate,
+                                               };
+                                      })
+                      .Select(result => result.ToGrpcResultRaw()),
              },
            };
   }
