@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 
 namespace ArmoniK.Core.Utils;
@@ -49,15 +50,7 @@ public class ByteArrayComparer : IEqualityComparer<byte[]>
       return false;
     }
 
-    for (var i = 0; i < x.Length; i++)
-    {
-      if (x[i] != y[i])
-      {
-        return false;
-      }
-    }
-
-    return true;
+    return x.SequenceEqual(y);
   }
 
   /// <summary>
