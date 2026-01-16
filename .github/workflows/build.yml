@@ -737,6 +737,12 @@ jobs:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
 
+      - name: Docker networks
+        run : docker network ls
+
+      - name: Docker info
+        run : docker info
+
       - name: Setup Terraform and other tools
         run: |
           choco install terraform --version=1.10.1 -y
