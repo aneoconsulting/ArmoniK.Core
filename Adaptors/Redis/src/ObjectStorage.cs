@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -162,7 +163,9 @@ public class ObjectStorage : IObjectStorage
                                                                    cancellationToken)
                                                    .ConfigureAwait(false)))
                 .ToDictionaryAsync(tuple => tuple.id,
-                                   tuple => tuple.Item2)
+                                   tuple => tuple.Item2,
+                                   new ByteArrayComparer(),
+                                   cancellationToken)
                 .ConfigureAwait(false);
 
   private async Task<long?> ExistsAsync(byte[]            id,
