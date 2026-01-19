@@ -28,7 +28,11 @@ def get_tags(token, repository):
     url = f"{BASE_URL}/repositories/{repository}/tags?page_size=100"
     while url:
         response = requests.get(url, headers=headers)
-        response.raise_for_status()
+        if response.status_code == 404:
+            logging.warning(f"Not found for {url}")
+            return
+        else:
+            response.raise_for_status()
         data = response.json()
         url = data.get("next")
         for t in data["results"]:
