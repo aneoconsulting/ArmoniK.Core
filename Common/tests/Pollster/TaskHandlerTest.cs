@@ -18,6 +18,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -46,6 +47,7 @@ using Moq;
 using NUnit.Framework;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
+using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
@@ -1718,6 +1720,70 @@ public class TaskHandlerTest
                    taskData.ProcessingToEndDuration);
 
     Assert.AreEqual(QueueMessageStatus.Processed,
+                    sqmh.Status);
+  }
+
+
+  [Test]
+  [TestCase(typeof(IOException))]
+  [TestCase(typeof(TaskPausedException))]
+  [TestCase(typeof(TimeoutException))] // To get an ArmoniKException
+  public async Task ExecuteTaskThrowExceptionShouldRetry(Type exception)
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh = new SimpleWorkerStreamHandler();
+
+    var mock = new Mock<IAgentHandler>();
+    mock.Setup(handler => handler.Start(It.IsAny<string>(),
+                                        It.IsAny<ILogger>(),
+                                        It.IsAny<SessionData>(),
+                                        It.IsAny<TaskData>(),
+                                        It.IsAny<string>(),
+                                        It.IsAny<CancellationToken>()))
+        .Throws<Exception>(() => throw (Exception)Activator.CreateInstance(exception)!);
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                mock.Object,
+                                                                sqmh);
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    Assert.That(() => testServiceProvider.TaskHandler.ExecuteTask(),
+                Throws.InstanceOf(exception));
+
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    Console.WriteLine(taskData);
+
+    Assert.AreEqual(exception == typeof(TaskPausedException)
+                      ? TaskStatus.Paused
+                      : TaskStatus.Retried,
+                    taskData.Status);
+
+    Assert.AreEqual(exception == typeof(TaskPausedException)
+                      ? QueueMessageStatus.Processed
+                      : QueueMessageStatus.Cancelled,
                     sqmh.Status);
   }
 
