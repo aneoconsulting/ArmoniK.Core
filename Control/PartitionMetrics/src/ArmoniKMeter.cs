@@ -46,10 +46,10 @@ public class ArmoniKMeter : Meter, IHostedService
   private readonly IPartitionTable                                partitionTable_;
   private          int                                            i_;
 
-  public ArmoniKMeter(IPartitionTable       partitionTable,
+  public ArmoniKMeter(IPartitionTable          partitionTable,
                       PartitionMetricsExporter optionsPartitionMetricsExporter,
-                      IHttpClientFactory    httpClientFactory,
-                      ILogger<ArmoniKMeter> logger)
+                      IHttpClientFactory       httpClientFactory,
+                      ILogger<ArmoniKMeter>    logger)
     : base(nameof(ArmoniKMeter))
   {
     using var _ = logger.LogFunction();
