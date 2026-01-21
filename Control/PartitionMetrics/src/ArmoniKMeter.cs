@@ -47,7 +47,7 @@ public class ArmoniKMeter : Meter, IHostedService
   private          int                                            i_;
 
   public ArmoniKMeter(IPartitionTable       partitionTable,
-                      MetricsExporter       optionsMetricsExporter,
+                      PartitionMetricsExporter optionsPartitionMetricsExporter,
                       IHttpClientFactory    httpClientFactory,
                       ILogger<ArmoniKMeter> logger)
     : base(nameof(ArmoniKMeter))
@@ -65,7 +65,7 @@ public class ArmoniKMeter : Meter, IHostedService
 
     client_ = httpClientFactory.CreateClient();
 
-    metricsExporterUri_ = $"{optionsMetricsExporter.Host}:{optionsMetricsExporter.Port}{optionsMetricsExporter.Path}";
+    metricsExporterUri_ = $"{optionsPartitionMetricsExporter.Host}:{optionsPartitionMetricsExporter.Port}{optionsPartitionMetricsExporter.Path}";
     AddGauge("");
   }
 
