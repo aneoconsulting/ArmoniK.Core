@@ -178,7 +178,7 @@ public class ObjectStorage : IObjectStorage
                                                                async uploadPartRequest => await s3Client_.UploadPartAsync(uploadPartRequest,
                                                                                                                           cancellationToken)
                                                                                                          .ConfigureAwait(false))
-                                               .ToListAsync()
+                                               .ToListAsync(cancellationToken)
                                                .ConfigureAwait(false);
 
       var compRequest = new CompleteMultipartUploadRequest

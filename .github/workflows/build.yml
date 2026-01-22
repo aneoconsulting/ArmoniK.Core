@@ -210,11 +210,6 @@ jobs:
         ref: ${{ github.ref }}
         submodules: true
 
-    - name: Install .NET Core
-      uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5
-      with:
-        dotnet-version: 10.x
-
     - name: Dotnet Restore
       run: dotnet restore
 

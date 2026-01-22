@@ -175,7 +175,8 @@ public static class TaskLifeCycleHelper
                                             cancellationToken)
                                 .Where(result => result.OwnerTaskId == "")
                                 .ToDictionaryAsync(result => result.ResultId,
-                                                   _ => "")
+                                                   _ => "",
+                                                   cancellationToken)
                                 .ConfigureAwait(false);
 
     foreach (var creationRequest in taskCreationRequests)
@@ -454,7 +455,7 @@ public static class TaskLifeCycleHelper
                                                       results,
                                                       cancellationToken)
                                           .SelectMany(result => result.DependentTasks.ToAsyncEnumerable())
-                                          .ToHashSetAsync(cancellationToken: cancellationToken)
+                                          .ToHashSetAsync(cancellationToken)
                                           .ConfigureAwait(false);
 
     if (!dependentTasks.Any())
@@ -567,7 +568,10 @@ public static class TaskLifeCycleHelper
                                             .WithCancellation(cancellationToken)
                                             .ConfigureAwait(false))
     {
-      foreach (var tasks in grouping.ToChunks(100000))
+      await foreach (var tasks in grouping.ToChunksAsync(100000,
+                                                         TimeSpan.FromSeconds(1),
+                                                         cancellationToken)
+                                          .ConfigureAwait(false))
       {
         cancellationToken.ThrowIfCancellationRequested();
 

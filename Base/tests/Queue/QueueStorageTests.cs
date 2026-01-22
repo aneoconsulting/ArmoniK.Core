@@ -61,18 +61,18 @@ public class QueueStorageTests
     switch (className)
     {
       case "ArmoniK.Core.Adapters.Amqp.QueueBuilder":
-        adapterAbsolutePath = "../../../../../../Adaptors/Amqp/src/bin/Debug/net10.0/ArmoniK.Core.Adapters.Amqp.dll";
+        adapterAbsolutePath = "../../../../../../Adaptors/Amqp/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.Amqp.dll";
         break;
 
       case "ArmoniK.Core.Adapters.SQS.QueueBuilder":
-        adapterAbsolutePath = "../../../../../../Adaptors/SQS/src/bin/Debug/net10.0/ArmoniK.Core.Adapters.SQS.dll";
+        adapterAbsolutePath = "../../../../../../Adaptors/SQS/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.SQS.dll";
         break;
 
       case "ArmoniK.Core.Adapters.PubSub.QueueBuilder":
-        adapterAbsolutePath = "../../../../../../Adaptors/PubSub/src/bin/Debug/net10.0/ArmoniK.Core.Adapters.PubSub.dll";
+        adapterAbsolutePath = "../../../../../../Adaptors/PubSub/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.PubSub.dll";
         break;
       case "ArmoniK.Core.Adapters.Nats.QueueBuilder":
-        adapterAbsolutePath = "../../../../../../Adaptors/Nats/src/bin/Debug/net10.0/ArmoniK.Core.Adapters.Nats.dll";
+        adapterAbsolutePath = "../../../../../../Adaptors/Nats/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.Nats.dll";
         break;
 
       default:
