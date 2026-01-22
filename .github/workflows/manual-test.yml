@@ -24,6 +24,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -91,6 +94,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -150,6 +156,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Dotnet Restore
         run: |

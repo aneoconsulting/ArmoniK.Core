@@ -1,14 +1,7 @@
 name: Code Formatting
 
 on:
-  push:
-    branches:
-      - main
-      - releases/*
   pull_request:
-    branches:
-      - main
-      - releases/*
 
 jobs:
   format-csharp:
@@ -18,7 +11,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
 
     - name: Install .NET Core
       uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5
@@ -69,7 +62,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
@@ -86,7 +79,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
 
     - name: Set files mode to 644
       run: git grep -l "" | grep -v -E "\.sh$" | xargs chmod 644

@@ -2,16 +2,11 @@ name: Build and Test
 
 on:
   push:
-    branches:
-      - main
-      - releases/*
+    branches-ignore:
+      - release
     paths-ignore:
       - .github/workflows/manual-integration-test.yml
     tags-ignore: [ '**' ]
-  pull_request:
-    branches:
-      - main
-      - releases/*
 
 jobs:
   versionning:
@@ -23,7 +18,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
         fetch-depth: 0
 
     - name: Generate Version
@@ -54,7 +49,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
+        submodules: true
 
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
@@ -135,7 +131,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
+        submodules: true
 
     - name: Install AWSCLI (the one in the Github runner does not work)
       run: |
@@ -210,7 +207,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
+        submodules: true
 
     - name: Install .NET Core
       uses: actions/setup-dotnet@2016bd2012dba4e32de620c46fe006a3ac9f0602 # v5
@@ -242,7 +240,8 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
+        submodules: true
 
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release -warnAsError:"CS1570;CS1571;CS1572;CS1573;CS1587;CS1591"
@@ -258,7 +257,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
 
     - name: Build the package
       run: |
@@ -293,7 +292,7 @@ jobs:
     - name: Checkout
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
       with:
-        ref: ${{ github.head_ref || github.ref }}
+        ref: ${{ github.ref }}
 
     - name: Set up Docker Buildx
       id: buildx
@@ -374,7 +373,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -504,7 +504,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -671,7 +672,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Setup Terraform and other tools
         run: |
@@ -805,7 +807,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -901,7 +904,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -1027,7 +1031,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -1107,7 +1112,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
@@ -1185,7 +1191,8 @@ jobs:
       - name: Checkout
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
-          ref: ${{ github.head_ref || github.ref }}
+          ref: ${{ github.ref }}
+          submodules: true
 
       - name: Install AWSCLI (the one in the Github runner does not work)
         run: |
