@@ -26,12 +26,12 @@ namespace ArmoniK.Core.Control.PartitionMetrics.Options;
 /// </summary>
 [ExtractDocumentation("Options for PartitionMetricsExporter")]
 [PublicAPI]
-public class MetricsExporter
+public class PartitionMetricsExporter
 {
   /// <summary>
   ///   Configuration section name
   /// </summary>
-  public const string SettingSection = nameof(MetricsExporter);
+  public const string SettingSection = nameof(PartitionMetricsExporter);
 
   /// <summary>
   ///   Host of the metrics exporter
