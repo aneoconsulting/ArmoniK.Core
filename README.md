@@ -33,6 +33,7 @@ Therefore, features in development or testing that cannot fit within a branch an
 
 | Plugins  | Type           | Description                                   | Status  | TLS Support    |
 |----------|----------------|-----------------------------------------------|---------|----------------|
+| RabbitMQ | Queue          | RabbitMQ client using AMQP protocol 0.9.2     | GA      | Linux          | 
 | AMQP     | Queue          | AMQP client using AMQP protocol 1.0.0         | GA      | Linux          | 
 | PubSub   | Queue          | Google PubSub client                          | GA      | -              | 
 | SQS      | Queue          | AWS SQS client                                | GA      | -              | 
