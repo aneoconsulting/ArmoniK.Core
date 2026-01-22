@@ -26,9 +26,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.6.2">
-      <ExcludeAssets>runtime</ExcludeAssets>
-    </PackageReference>
     <PackageReference Include="StackExchange.Redis" Version="2.8.58" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="8.0.0">
       <ExcludeAssets>runtime</ExcludeAssets>

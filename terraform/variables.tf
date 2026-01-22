@@ -22,6 +22,7 @@ variable "mongodb_params" {
     use_direct_connection    = optional(bool, true)
     database_name            = optional(string, "database")
     exposed_port             = optional(number, 27017)
+    windows                  = optional(bool, false)
   })
   default = {}
 }
@@ -79,8 +80,8 @@ variable "queue_storage" {
     error_message = "Protocol must be amqp1_0|amqp0_9_1"
   }
   validation {
-    condition     = can(regex("^(activemq|rabbitmq|artemis|pubsub|nats|sqs|none)$", var.queue_storage.name))
-    error_message = "Must be activemq, rabbitmq, artemis, pubsub, nats, sqs or none"
+    condition     = can(regex("^(activemq|rabbitmq|artemis|pubsub|sqs|none)$", var.queue_storage.name))
+    error_message = "Must be activemq, rabbitmq, artemis, pubsub, sqs or none"
   }
   default = {}
 }
@@ -146,7 +147,7 @@ variable "compute_plane" {
 variable "partition_data" {
   description = "Template to create multiple partitions"
   type = object({
-    PartitionId          = optional(string, "TestPartition")
+    _id                  = optional(string, "TestPartition")
     Priority             = optional(number, 1)
     PodReserved          = optional(number, 50)
     PodMax               = optional(number, 100)
@@ -268,14 +269,4 @@ variable "tracing_ingestion_ports" {
   })
   default = {
   }
-}
-
-variable "container_init" {
-  type    = bool
-  default = true
-}
-
-variable "windows" {
-  type    = bool
-  default = false
 }

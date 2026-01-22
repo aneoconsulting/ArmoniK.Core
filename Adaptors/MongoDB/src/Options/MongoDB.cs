@@ -17,8 +17,6 @@
 
 using System;
 
-using ArmoniK.Utils.DocAttribute;
-
 using JetBrains.Annotations;
 
 // ReSharper disable InconsistentNaming
@@ -29,7 +27,6 @@ namespace ArmoniK.Core.Adapters.MongoDB.Options;
 ///   Represents the configuration settings for connecting to a MongoDB database.
 /// </summary>
 [PublicAPI]
-[ExtractDocumentation("Options for MongoDB")]
 public class MongoDB
 {
   /// <summary>

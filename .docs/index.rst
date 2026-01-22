@@ -20,6 +20,5 @@ ArmoniK.Core documentation
    content/services/tasks_service.md
    content/services/results_service.md
    content/services/sessions_service.md
-   content/envars/index.rst
    content/csharp/index.rst
 

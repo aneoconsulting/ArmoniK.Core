@@ -28,7 +28,6 @@ COPY ["Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj", "Adaptors/Mon
 COPY ["Adaptors/QueueCommon/src/ArmoniK.Core.Adapters.QueueCommon.csproj", "Adaptors/QueueCommon/src/"]
 COPY ["Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj", "Adaptors/RabbitMQ/src/"]
 COPY ["Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj", "Adaptors/PubSub/src/"]
-COPY ["Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj", "Adaptors/Nats/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj", "Adaptors/S3/src/"]
 COPY ["Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj", "Adaptors/SQS/src/"]
@@ -48,7 +47,6 @@ RUN dotnet restore -a "${TARGETARCH}" "Control/Submitter/src/ArmoniK.Core.Contro
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/RabbitMQ/src/ArmoniK.Core.Adapters.RabbitMQ.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj"
@@ -63,7 +61,6 @@ COPY ["Adaptors/MongoDB/src", "Adaptors/MongoDB/src"]
 COPY ["Adaptors/QueueCommon/src", "Adaptors/QueueCommon/src"]
 COPY ["Adaptors/RabbitMQ/src", "Adaptors/RabbitMQ/src"]
 COPY ["Adaptors/PubSub/src", "Adaptors/PubSub/src"]
-COPY ["Adaptors/Nats/src", "Adaptors/Nats/src"]
 COPY ["Adaptors/Redis/src", "Adaptors/Redis/src"]
 COPY ["Adaptors/S3/src", "Adaptors/S3/src"]
 COPY ["Adaptors/SQS/src", "Adaptors/SQS/src"]
@@ -81,9 +78,6 @@ RUN dotnet publish "ArmoniK.Core.Adapters.SQS.csproj" -a "${TARGETARCH}" --no-re
 
 WORKDIR /src/Adaptors/PubSub/src
 RUN dotnet publish "ArmoniK.Core.Adapters.PubSub.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/pubsub /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/Nats/src
-RUN dotnet publish "ArmoniK.Core.Adapters.Nats.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/nats /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Adaptors/Amqp/src
 RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/amqp /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
@@ -116,13 +110,11 @@ WORKDIR /src/Control/Submitter/src
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 
-FROM base-${TARGETOS} AS polling_agent
+FROM base-${TARGETOS} as polling_agent
 WORKDIR /adapters/queue/sqs
 COPY --from=build /app/publish/sqs .
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
-WORKDIR /adapters/queue/nats
-COPY --from=build /app/publish/nats .
 WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/queue/rabbit
@@ -142,7 +134,7 @@ EXPOSE 1080
 CMD ["ArmoniK.Core.Compute.PollingAgent.dll"]
 
 
-FROM base-${TARGETOS} AS metrics
+FROM base-${TARGETOS} as metrics
 WORKDIR /app
 COPY --from=build /app/publish/metrics .
 ENV ASPNETCORE_URLS http://+:1080
@@ -150,7 +142,7 @@ EXPOSE 1080
 CMD ["ArmoniK.Core.Control.Metrics.dll"]
 
 
-FROM base-${TARGETOS} AS partition_metrics
+FROM base-${TARGETOS} as partition_metrics
 WORKDIR /app
 COPY --from=build /app/publish/partition_metrics .
 ENV ASPNETCORE_URLS http://+:1080
@@ -158,13 +150,11 @@ EXPOSE 1080
 CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
-FROM base-${TARGETOS} AS submitter
+FROM base-${TARGETOS} as submitter
 WORKDIR /adapters/queue/sqs
 COPY --from=build /app/publish/sqs .
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
-WORKDIR /adapters/queue/nats
-COPY --from=build /app/publish/nats .
 WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/queue/rabbit

@@ -75,9 +75,6 @@ public class QueueStorageTests
       case "ArmoniK.Core.Adapters.PubSub.QueueBuilder":
         adapterAbsolutePath = "../../../../../../Adaptors/PubSub/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.PubSub.dll";
         break;
-      case "ArmoniK.Core.Adapters.Nats.QueueBuilder":
-        adapterAbsolutePath = "../../../../../../Adaptors/Nats/src/bin/Debug/net8.0/ArmoniK.Core.Adapters.Nats.dll";
-        break;
 
       default:
         throw new InvalidOperationException($"Unknown ClassName: {className}");

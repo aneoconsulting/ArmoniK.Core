@@ -6,10 +6,6 @@ variable "network" {
   type = string
 }
 
-variable "windows" {
-  type = bool
-}
-
 variable "mongodb_params" {
   type = object({
     max_connection_pool_size = string
@@ -19,5 +15,10 @@ variable "mongodb_params" {
     use_direct_connection    = bool
     database_name            = string
     exposed_port             = number
+    windows                  = bool
   })
+}
+
+variable "partition_list" {
+  type = map(any)
 }

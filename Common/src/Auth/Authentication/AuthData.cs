@@ -27,7 +27,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 ///   fingerprint of the certificate. If null, this entry matches with every certificates
 ///   matching the Common Name
 /// </param>
-public record AuthData(int     AuthId,
-                       int     UserId,
+public record AuthData(string  AuthId,
+                       string  UserId,
                        string  Cn,
                        string? Fingerprint);

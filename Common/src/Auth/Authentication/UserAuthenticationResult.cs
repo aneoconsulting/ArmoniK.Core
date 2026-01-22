@@ -27,7 +27,7 @@ namespace ArmoniK.Core.Common.Auth.Authentication;
 /// <param name="Username">User name</param>
 /// <param name="Roles">User roles</param>
 /// <param name="Permissions">User permissions</param>
-public record UserAuthenticationResult(int                 Id,
+public record UserAuthenticationResult(string              Id,
                                        string              Username,
                                        IEnumerable<string> Roles,
                                        IEnumerable<string> Permissions)
@@ -36,7 +36,7 @@ public record UserAuthenticationResult(int                 Id,
   ///   Creates an empty result
   /// </summary>
   public UserAuthenticationResult()
-    : this(0,
+    : this("",
            "",
            Array.Empty<string>(),
            Array.Empty<string>())

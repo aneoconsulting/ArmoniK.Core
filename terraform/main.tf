@@ -32,7 +32,7 @@ module "database" {
   image          = var.database_image
   network        = docker_network.armonik.id
   mongodb_params = var.mongodb_params
-  windows        = var.windows
+  partition_list = local.partition_list
 }
 
 module "object_redis" {
@@ -72,7 +72,6 @@ module "queue_rabbitmq" {
   image      = var.queue_storage.image
   protocol   = var.queue_storage.protocol
   network    = docker_network.armonik.id
-  windows    = var.windows
 }
 
 module "queue_activemq" {
@@ -99,15 +98,6 @@ module "queue_pubsub" {
   network    = docker_network.armonik.id
 }
 
-module "queue_nats" {
-  source     = "./modules/storage/queue/nats"
-  count      = var.queue_storage.name == "nats" ? 1 : 0
-  queue_envs = var.queue_env_vars
-  image      = var.queue_storage.image
-  network    = docker_network.armonik.id
-  windows    = var.windows
-}
-
 module "queue_sqs" {
   source     = "./modules/storage/queue/sqs"
   count      = var.queue_storage.name == "sqs" ? 1 : 0
@@ -131,7 +121,6 @@ module "submitter" {
   log_driver         = module.fluenbit.log_driver
   volumes            = local.volumes
   mounts             = local.mounts
-  container_init     = var.container_init
 }
 
 module "compute_plane" {
@@ -148,8 +137,6 @@ module "compute_plane" {
   network            = docker_network.armonik.id
   log_driver         = module.fluenbit.log_driver
   mounts             = local.mounts
-  container_init     = var.container_init
-  windows            = var.windows
 }
 
 module "metrics_exporter" {
@@ -160,7 +147,6 @@ module "metrics_exporter" {
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
   mounts             = local.mounts
-  container_init     = var.container_init
 }
 
 module "partition_metrics_exporter" {
@@ -172,7 +158,6 @@ module "partition_metrics_exporter" {
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
   mounts             = local.mounts
-  container_init     = var.container_init
 }
 
 module "ingress" {

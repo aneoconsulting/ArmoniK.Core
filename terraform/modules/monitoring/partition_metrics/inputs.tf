@@ -33,7 +33,3 @@ variable "log_driver" {
     log_opts = map(string),
   })
 }
-
-variable "container_init" {
-  type = bool
-}

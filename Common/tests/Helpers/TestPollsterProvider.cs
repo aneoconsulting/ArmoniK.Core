@@ -29,8 +29,6 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
-using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
@@ -203,9 +201,6 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
            .AddOption<Injection.Options.Pollster>(builder.Configuration,
                                                   Injection.Options.Pollster.SettingSection)
-           .AddInitializedOption<InitServices>(builder.Configuration,
-                                               InitServices.SettingSection)
-           .AddSingleton<InitDatabase>()
            .AddExceptionManager(sp => new ExceptionManager.Options(sp.GetRequiredService<Injection.Options.Pollster>()
                                                                      .GraceDelay,
                                                                    sp.GetRequiredService<Injection.Options.Pollster>()
