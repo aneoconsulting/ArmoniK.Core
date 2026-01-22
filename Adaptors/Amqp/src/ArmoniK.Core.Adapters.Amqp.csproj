@@ -26,7 +26,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="AMQPNetLite.Core" Version="2.5.1" />
+    <PackageReference Include="AMQPNetLite.Core" Version="2.4.11" />
     <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
