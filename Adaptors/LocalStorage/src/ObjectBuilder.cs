@@ -38,9 +38,9 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                     ConfigurationManager configuration,
                     ILogger              logger)
   {
-    serviceCollection.AddInitializedOption(configuration,
-                                           Options.LocalStorage.SettingSection,
-                                           out Options.LocalStorage storageOptions);
+    serviceCollection.AddOption(configuration,
+                                Options.LocalStorage.SettingSection,
+                                out Options.LocalStorage storageOptions);
 
     logger.LogDebug("setup local storage");
 

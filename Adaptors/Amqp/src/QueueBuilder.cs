@@ -41,9 +41,9 @@ public class QueueBuilder : IDependencyInjectionBuildable
     logger.LogInformation("Configure Amqp client");
 
 
-    serviceCollection.AddInitializedOption(configuration,
-                                           QueueCommon.Amqp.SettingSection,
-                                           out QueueCommon.Amqp amqpOptions);
+    serviceCollection.AddOption(configuration,
+                                QueueCommon.Amqp.SettingSection,
+                                out QueueCommon.Amqp amqpOptions);
 
     if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
     {
@@ -53,9 +53,9 @@ public class QueueBuilder : IDependencyInjectionBuildable
       logger.LogTrace("Loaded amqp credentials from file {path}",
                       amqpOptions.CredentialsPath);
 
-      serviceCollection.AddInitializedOption(configuration,
-                                             QueueCommon.Amqp.SettingSection,
-                                             out amqpOptions);
+      serviceCollection.AddOption(configuration,
+                                  QueueCommon.Amqp.SettingSection,
+                                  out amqpOptions);
     }
     else
     {

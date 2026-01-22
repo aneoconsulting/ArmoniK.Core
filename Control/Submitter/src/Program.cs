@@ -100,8 +100,8 @@ public static class Program
                          logger.GetLogger())
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
-             .AddInitializedOption<Common.Injection.Options.Submitter>(builder.Configuration,
-                                                                       Common.Injection.Options.Submitter.SettingSection)
+             .AddOption<Common.Injection.Options.Submitter>(builder.Configuration,
+                                                            Common.Injection.Options.Submitter.SettingSection)
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()

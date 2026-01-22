@@ -189,8 +189,8 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton(_ => client_)
            .AddLogging()
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-           .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,
-                                                              Injection.Options.Submitter.SettingSection)
+           .AddOption<Injection.Options.Submitter>(builder.Configuration,
+                                                   Injection.Options.Submitter.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<DataPrefetcher>()
@@ -201,8 +201,8 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
-           .AddInitializedOption<Injection.Options.Pollster>(builder.Configuration,
-                                                             Injection.Options.Pollster.SettingSection)
+           .AddOption<Injection.Options.Pollster>(builder.Configuration,
+                                                  Injection.Options.Pollster.SettingSection)
            .AddInitializedOption<InitServices>(builder.Configuration,
                                                InitServices.SettingSection)
            .AddSingleton<InitDatabase>()

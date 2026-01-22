@@ -100,10 +100,10 @@ public static class ServiceCollectionExt
 
     services.AddSingleton(parsedComputePlane)
             .AddSingleton(parsedComputePlane.WorkerChannel)
-            .AddInitializedOption<Components>(configuration,
-                                              Components.SettingSection)
-            .AddInitializedOption<InitWorker>(configuration,
-                                              InitWorker.SettingSection)
+            .AddOption<Components>(configuration,
+                                   Components.SettingSection)
+            .AddOption<InitWorker>(configuration,
+                                   InitWorker.SettingSection)
             .AddSingleton<GrpcChannelProvider>()
             .AddSingletonWithHealthCheck<IWorkerStreamHandler, WorkerStreamHandler>(nameof(IWorkerStreamHandler));
 

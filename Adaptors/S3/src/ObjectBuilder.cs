@@ -42,9 +42,9 @@ public class ObjectBuilder : IDependencyInjectionBuildable
   {
     // ReSharper disable once InlineOutVariableDeclaration
     Options.S3 s3Options;
-    serviceCollection.AddInitializedOption(configuration,
-                                           Options.S3.SettingSection,
-                                           out s3Options);
+    serviceCollection.AddOption(configuration,
+                                Options.S3.SettingSection,
+                                out s3Options);
 
     logger.LogInformation("setup connection to S3 at {EndpointUrl} with user {user} with option ForcePathStyle = {ForcePathStyle} with BucketName = {BucketName}",
                           s3Options.EndpointUrl,
