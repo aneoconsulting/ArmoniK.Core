@@ -49,7 +49,7 @@ public static class GrpcSubmitterExtensions
     IList<string> dataDependencies   = Array.Empty<string>();
     var           chunks             = new Queue<ReadOnlyMemory<byte>>();
 
-    while (await enumerator.MoveNextAsync()
+    while (await enumerator.MoveNextAsync(cancellationToken)
                            .ConfigureAwait(false))
     {
       switch (enumerator.Current.TypeCase)

@@ -68,19 +68,19 @@ internal class PushQueueStorage : IPushQueueStorage
                   // SQS supports a maximum of 10 messages per batch request, see quotas
                   .SelectMany(group => group.Chunk(10)
                                             .ToAsyncEnumerable()
-                                            .ParallelSelect(async chunk =>
-                                                            {
-                                                              var queueName = client_.GetQueueName(options_,
-                                                                                                   group.Key,
-                                                                                                   partitionId);
-                                                              var queueUrl = await cache_.GetOrCreateAsync(queueName,
-                                                                                                           _ => client_.GetOrCreateQueueUrlAsync(queueName,
-                                                                                                                                                 options_.Tags,
-                                                                                                                                                 options_.Attributes,
-                                                                                                                                                 cancellationToken))
-                                                                                         .ConfigureAwait(false);
-                                                              return (queueUrl, chunk);
-                                                            }))
+                                            .SelectAwait(async chunk =>
+                                                         {
+                                                           var queueName = client_.GetQueueName(options_,
+                                                                                                group.Key,
+                                                                                                partitionId);
+                                                           var queueUrl = await cache_.GetOrCreateAsync(queueName,
+                                                                                                        _ => client_.GetOrCreateQueueUrlAsync(queueName,
+                                                                                                                                              options_.Tags,
+                                                                                                                                              options_.Attributes,
+                                                                                                                                              cancellationToken))
+                                                                                      .ConfigureAwait(false);
+                                                           return (queueUrl, chunk);
+                                                         }))
                   .ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
                                    async entries =>
                                    {

@@ -44,7 +44,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                   string.Empty));
 
   private static readonly string S3Path =
-    $"{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net10.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.S3.dll";
+    $"{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net8.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.S3.dll";
 
 
   protected override void GetObjectStorageInstance()

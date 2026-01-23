@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -337,7 +338,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
       await using var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
                                                 .GetAsyncEnumerator(context.CancellationToken);
 
-      if (!await enumerator.MoveNextAsync()
+      if (!await enumerator.MoveNextAsync(context.CancellationToken)
                            .ConfigureAwait(false))
       {
         throw new RpcException(new Status(StatusCode.InvalidArgument,
@@ -652,7 +653,7 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                                Status = status.Status.ToGrpcStatus(),
                                                                TaskId = status.TaskId,
                                                              })
-                                           .ToBlockingEnumerable(),
+                                           .ToEnumerable(),
                                },
                              });
     }
