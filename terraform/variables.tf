@@ -69,10 +69,15 @@ variable "object_storage" {
 
 variable "queue_storage" {
   type = object({
-    name  = optional(string, "rabbitmq")
-    image = optional(string, "rabbitmq:4-management")
+    protocol = optional(string, "amqp1_0")
+    name     = optional(string, "rabbitmq")
+    image    = optional(string, "rabbitmq:3-management")
   })
   description = "Parameters to define the broker and protocol"
+  validation {
+    condition     = can(regex("^(amqp1_0|amqp0_9_1)$", var.queue_storage.protocol))
+    error_message = "Protocol must be amqp1_0|amqp0_9_1"
+  }
   validation {
     condition     = can(regex("^(activemq|rabbitmq|artemis|pubsub|nats|sqs|none)$", var.queue_storage.name))
     error_message = "Must be activemq, rabbitmq, artemis, pubsub, nats, sqs or none"
