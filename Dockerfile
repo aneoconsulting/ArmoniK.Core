@@ -8,7 +8,9 @@ RUN cmake . && make
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base-linux
 COPY --from=tini-build /tini-static /tini
-USER $APP_UID
+RUN groupadd --gid 5000 armonikuser && useradd --home-dir /home/armonikuser --create-home --uid 5000 --gid 5000 --shell /bin/sh --skel /dev/null armonikuser
+RUN mkdir /cache /local_storage /comm && chown armonikuser: /cache /local_storage /comm
+USER armonikuser
 ENTRYPOINT [ "/tini", "-s", "-vv", "--", "dotnet" ]
 
 FROM mcr.microsoft.com/dotnet/aspnet:8.0-nanoserver-ltsc2022 AS base-windows
