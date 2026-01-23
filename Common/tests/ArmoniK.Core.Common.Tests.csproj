@@ -19,12 +19,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="EphemeralMongo6" Version="1.1.3" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.22" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.21" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="NUnit" Version="3.14.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="4.6.0" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.14.1" />
-    <PackageReference Include="AMQPNetLite.Core" Version="2.5.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
+    <PackageReference Include="AMQPNetLite.Core" Version="2.4.11" />
   </ItemGroup>
 
   <ItemGroup>
