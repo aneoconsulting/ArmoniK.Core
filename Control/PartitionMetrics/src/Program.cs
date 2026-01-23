@@ -65,8 +65,8 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddInitializedOption<PartitionMetricsExporter>(builder.Configuration,
-                                                             PartitionMetricsExporter.SettingSection)
+             .AddInitializedOption<MetricsExporter>(builder.Configuration,
+                                                    MetricsExporter.SettingSection)
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
