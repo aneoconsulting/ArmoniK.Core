@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
@@ -44,7 +45,8 @@ public class SimpleObjectStorage : IObjectStorage
   public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
                                                         CancellationToken   cancellationToken = default)
     => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
-                                                                    _ => (long?)42));
+                                                                    _ => (long?)42,
+                                                                    new ByteArrayComparer()));
 
   public Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
                                                        IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,

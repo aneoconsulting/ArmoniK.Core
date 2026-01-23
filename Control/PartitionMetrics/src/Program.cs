@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -63,8 +63,8 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddMongoComponents(builder.Configuration,
                                  logger.GetLogger())
-             .AddOption<MetricsExporter>(builder.Configuration,
-                                         MetricsExporter.SettingSection)
+             .AddInitializedOption<MetricsExporter>(builder.Configuration,
+                                                    MetricsExporter.SettingSection)
              .AddHostedService<ArmoniKMeter>()
              .AddHttpClient()
              .AddControllers();

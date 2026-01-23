@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -41,9 +41,9 @@ public class QueueBuilder : IDependencyInjectionBuildable
     logger.LogInformation("Configure Amqp client");
 
 
-    serviceCollection.AddOption(configuration,
-                                QueueCommon.Amqp.SettingSection,
-                                out QueueCommon.Amqp amqpOptions);
+    serviceCollection.AddInitializedOption(configuration,
+                                           QueueCommon.Amqp.SettingSection,
+                                           out QueueCommon.Amqp amqpOptions);
 
     if (!string.IsNullOrEmpty(amqpOptions.CredentialsPath))
     {
@@ -53,9 +53,9 @@ public class QueueBuilder : IDependencyInjectionBuildable
       logger.LogTrace("Loaded amqp credentials from file {path}",
                       amqpOptions.CredentialsPath);
 
-      serviceCollection.AddOption(configuration,
-                                  QueueCommon.Amqp.SettingSection,
-                                  out amqpOptions);
+      serviceCollection.AddInitializedOption(configuration,
+                                             QueueCommon.Amqp.SettingSection,
+                                             out amqpOptions);
     }
     else
     {

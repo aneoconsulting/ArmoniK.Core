@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +27,7 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
@@ -349,6 +349,110 @@ public class GrpcResultsServiceTests
   }
 
   [Test]
+  public async Task ImportDataWithOpaqueIdShouldTriggerTaskSubmission()
+  {
+    var resultClient = new Results.ResultsClient(channel_);
+
+    var colors = new[]
+                 {
+                   "blue",
+                   "red",
+                   "green",
+                   "white",
+                   "black",
+                   "yellow",
+                   "cyan",
+                   "orange",
+                 };
+    var resultRaw = resultClient.CreateResultsMetaData(new CreateResultsMetaDataRequest
+                                                       {
+                                                         SessionId = session_!.SessionId,
+                                                         Results =
+                                                         {
+                                                           colors.Select(color => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                  {
+                                                                                    Name = color,
+                                                                                  }),
+                                                         },
+                                                       })
+                                .Results.ToArray();
+    var resultIds = resultRaw.Select(result => result.ResultId)
+                             .ToHashSet();
+
+    var objectStorage = helper_!.GetRequiredService<IObjectStorage>();
+    var resultTable   = helper_!.GetRequiredService<IResultTable>();
+
+    var colorsData = await colors.ParallelSelect(async color =>
+                                                 {
+                                                   var data = new List<ReadOnlyMemory<byte>>
+                                                              {
+                                                                new(Encoding.ASCII.GetBytes(color)),
+                                                              };
+                                                   return await objectStorage.AddOrUpdateAsync(new ObjectData
+                                                                                               {
+                                                                                                 ResultId  = "",
+                                                                                                 SessionId = "",
+                                                                                               },
+                                                                                               data.ToAsyncEnumerable())
+                                                                             .ConfigureAwait(false);
+                                                 })
+                                 .ToArrayAsync()
+                                 .ConfigureAwait(false);
+
+    var resultOpaqueIdList = new List<ImportResultsDataRequest.Types.ResultOpaqueId>();
+    for (var i = 0; i < colors.Length; i++)
+    {
+      resultOpaqueIdList.Add(new ImportResultsDataRequest.Types.ResultOpaqueId
+                             {
+                               OpaqueId = ByteString.CopyFrom(colorsData[i]
+                                                                .id),
+                               ResultId = resultRaw[i]
+                                 .ResultId,
+                             });
+    }
+
+    var resultsImport = resultClient.ImportResultsData(new ImportResultsDataRequest
+                                                       {
+                                                         SessionId = session_!.SessionId,
+                                                         Results =
+                                                         {
+                                                           resultOpaqueIdList,
+                                                         },
+                                                       })
+                                    .Results.ToArray();
+    var resultsUpdated = await resultTable.GetResults(result => resultIds.Contains(result.ResultId),
+                                                      result => result,
+                                                      CancellationToken.None)
+                                          .Select(result => result.ToGrpcResultRaw())
+                                          .ToArrayAsync()
+                                          .ConfigureAwait(false);
+
+    // Check that the order was preserved
+    Assert.That(resultsImport.Select(result => result.Name),
+                Is.EquivalentTo(colors));
+
+    // Check that the result returned by ImportResultsData matches the data in the database
+    foreach (var resultImport in resultsImport)
+    {
+      var resultUpdated = resultsUpdated.Single(result => result.ResultId == resultImport.ResultId);
+      Assert.That(resultImport.SessionId,
+                  Is.EqualTo(resultUpdated.SessionId));
+      Assert.That(resultImport.Name,
+                  Is.EqualTo(resultUpdated.Name));
+      Assert.That(resultImport.Status,
+                  Is.EqualTo(resultUpdated.Status));
+      Assert.That(resultImport.CreatedAt,
+                  Is.EqualTo(resultUpdated.CreatedAt));
+      Assert.That(resultImport.CompletedAt.Seconds,
+                  Is.EqualTo(resultUpdated.CompletedAt.Seconds));
+      Assert.That(resultImport.Size,
+                  Is.EqualTo(resultUpdated.Size));
+      Assert.That(resultImport.OpaqueId,
+                  Is.EqualTo(resultUpdated.OpaqueId));
+    }
+  }
+
+  [Test]
   public async Task ImportDataShouldTriggerTaskSubmission()
   {
     var resultClient = new Results.ResultsClient(channel_);
@@ -451,6 +555,41 @@ public class GrpcResultsServiceTests
   }
 
   [Test]
+  public void ImportMultipleDataShouldPreserveOrder()
+  {
+    var resultClient = new Results.ResultsClient(channel_);
+
+    var colors = new[]
+                 {
+                   "blue",
+                   "red",
+                   "green",
+                   "white",
+                   "black",
+                   "yellow",
+                   "cyan",
+                   "orange",
+                 };
+    var resultRequest = colors.Select(color => new CreateResultsRequest.Types.ResultCreate
+                                               {
+                                                 Name = color,
+                                                 Data = ByteString.CopyFromUtf8(color),
+                                               });
+
+    var resultResponse = resultClient.CreateResults(new CreateResultsRequest
+                                                    {
+                                                      SessionId = session_!.SessionId,
+                                                      Results =
+                                                      {
+                                                        resultRequest,
+                                                      },
+                                                    });
+
+    Assert.That(resultResponse.Results.Select(result => result.Name),
+                Is.EquivalentTo(colors));
+  }
+
+  [Test]
   public async Task PurgeDataShouldSucceed()
   {
     var objectStorage = helper_!.GetRequiredService<IObjectStorage>();
@@ -530,12 +669,11 @@ public class GrpcResultsServiceTests
   }
 
   [Test]
-  public async Task IssueDuringCreateResultsShouldNotCreateAnything()
+  public void IssueDuringCreateResultsShouldNotCreateAnything()
   {
     var mock = new Mock<IResultTable>();
-    mock.Setup(table => table.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
-                                         It.IsAny<Expression<Func<Result, Result>>>(),
-                                         It.IsAny<CancellationToken>()))
+    mock.Setup(table => table.Create(It.IsAny<ICollection<Result>>(),
+                                     It.IsAny<CancellationToken>()))
         .Throws<OperationCanceledException>();
 
 

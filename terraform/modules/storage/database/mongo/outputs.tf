@@ -17,7 +17,7 @@ output "generated_env_vars" {
     "MongoDB__ConnectionString"              = local.connection_string
     "MongoDB__TableStorage__PollingDelayMin" = "${var.mongodb_params.min_polling_delay}"
     "MongoDB__TableStorage__PollingDelayMax" = "${var.mongodb_params.max_polling_delay}"
-    "MongoDB__AllowInsecureTls"              = "true"
+    "MongoDB__AllowInsecureTls"              = "false"
     "MongoDB__CAFile"                        = "/mongo-certificate/ca.pem"
     "MongoDB__ServerSelectionTimeout"        = "00:00:20"
   }

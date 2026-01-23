@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -146,8 +146,8 @@ public class TestDatabaseProvider : IDisposable
            .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
            .AddSingleton<IObjectStorage, ObjectStorage>()
-           .AddOption<Injection.Options.Submitter>(builder.Configuration,
-                                                   Injection.Options.Submitter.SettingSection)
+           .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,
+                                                              Injection.Options.Submitter.SettingSection)
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
            .AddSingleton(_ => client_);
