@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -163,6 +164,7 @@ public class ObjectStorage : IObjectStorage
                                                    .ConfigureAwait(false)))
                 .ToDictionaryAsync(tuple => tuple.id,
                                    tuple => tuple.Item2,
+                                   new ByteArrayComparer(),
                                    cancellationToken)
                 .ConfigureAwait(false);
 

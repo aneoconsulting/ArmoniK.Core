@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -892,9 +892,10 @@ public sealed class TaskHandler : IAsyncDisposable
     }
     catch (ObjectDataNotFoundException e)
     {
-      await HandleErrorRequeueAsync(e,
-                                    taskData_,
-                                    earlyCts_.Token)
+      await HandleErrorInternalAsync(e,
+                                     taskData_,
+                                     false,
+                                     earlyCts_.Token)
         .ConfigureAwait(false);
     }
     catch (Exception e)
@@ -980,17 +981,17 @@ public sealed class TaskHandler : IAsyncDisposable
       }
       else
       {
-        await HandleErrorRequeueAsync(e,
-                                      taskData_,
-                                      earlyCts_.Token)
+        await HandleErrorResubmitAsync(e,
+                                       taskData_,
+                                       earlyCts_.Token)
           .ConfigureAwait(false);
       }
     }
     catch (Exception e)
     {
-      await HandleErrorRequeueAsync(e,
-                                    taskData_,
-                                    earlyCts_.Token)
+      await HandleErrorResubmitAsync(e,
+                                     taskData_,
+                                     earlyCts_.Token)
         .ConfigureAwait(false);
     }
 
@@ -1112,15 +1113,6 @@ public sealed class TaskHandler : IAsyncDisposable
 
     logger_.LogDebug("End Task Processing");
   }
-
-  private async Task HandleErrorRequeueAsync(Exception         e,
-                                             TaskData          taskData,
-                                             CancellationToken cancellationToken)
-    => await HandleErrorInternalAsync(e,
-                                      taskData,
-                                      false,
-                                      cancellationToken)
-         .ConfigureAwait(false);
 
   private async Task HandleErrorResubmitAsync(Exception         e,
                                               TaskData          taskData,

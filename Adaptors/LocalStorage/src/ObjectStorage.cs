@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -206,7 +207,8 @@ public class ObjectStorage : IObjectStorage
                                                         CancellationToken   cancellationToken = default)
     => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
                                                                     id => GetFileSize(Path.Combine(path_,
-                                                                                                   Encoding.UTF8.GetString(id)))));
+                                                                                                   Encoding.UTF8.GetString(id))),
+                                                                    new ByteArrayComparer()));
 
 
   private static long? GetFileSize(string filename)

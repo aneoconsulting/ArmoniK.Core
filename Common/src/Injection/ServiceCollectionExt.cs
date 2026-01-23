@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -100,10 +100,10 @@ public static class ServiceCollectionExt
 
     services.AddSingleton(parsedComputePlane)
             .AddSingleton(parsedComputePlane.WorkerChannel)
-            .AddOption<Components>(configuration,
-                                   Components.SettingSection)
-            .AddOption<InitWorker>(configuration,
-                                   InitWorker.SettingSection)
+            .AddInitializedOption<Components>(configuration,
+                                              Components.SettingSection)
+            .AddInitializedOption<InitWorker>(configuration,
+                                              InitWorker.SettingSection)
             .AddSingleton<GrpcChannelProvider>()
             .AddSingletonWithHealthCheck<IWorkerStreamHandler, WorkerStreamHandler>(nameof(IWorkerStreamHandler));
 

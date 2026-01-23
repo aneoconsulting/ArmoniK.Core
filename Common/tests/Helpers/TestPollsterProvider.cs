@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -187,8 +187,8 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton(_ => client_)
            .AddLogging()
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-           .AddOption<Injection.Options.Submitter>(builder.Configuration,
-                                                   Injection.Options.Submitter.SettingSection)
+           .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,
+                                                              Injection.Options.Submitter.SettingSection)
            .AddSingleton<IPushQueueStorage, PushQueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<DataPrefetcher>()
@@ -199,8 +199,8 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()
-           .AddOption<Injection.Options.Pollster>(builder.Configuration,
-                                                  Injection.Options.Pollster.SettingSection)
+           .AddInitializedOption<Injection.Options.Pollster>(builder.Configuration,
+                                                             Injection.Options.Pollster.SettingSection)
            .AddExceptionManager(sp => new ExceptionManager.Options(sp.GetRequiredService<Injection.Options.Pollster>()
                                                                      .GraceDelay,
                                                                    sp.GetRequiredService<Injection.Options.Pollster>()

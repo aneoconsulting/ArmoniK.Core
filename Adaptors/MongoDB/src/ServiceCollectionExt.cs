@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -220,8 +220,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
-      services.AddOption<TableStorage>(configuration,
-                                       TableStorage.SettingSection)
+      services.AddInitializedOption<TableStorage>(configuration,
+                                                  TableStorage.SettingSection)
               .AddSingleton<ITaskTable, TaskTable>()
               .AddSingleton<ISessionTable, SessionTable>()
               .AddSingleton<IResultTable, ResultTable>()

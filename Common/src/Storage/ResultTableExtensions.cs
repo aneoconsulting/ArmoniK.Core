@@ -1,6 +1,6 @@
 // This file is part of the ArmoniK project
 // 
-// Copyright (C) ANEO, 2021-2025. All rights reserved.
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
@@ -154,17 +154,17 @@ public static class ResultTableExtensions
   /// <param name="completedBy">Identifier of the task that completed the results</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   The new version of the result metadata
+  ///   The completion's date
   /// </returns>
   /// <exception cref="ResultNotFoundException">when result to update is not found</exception>
-  public static async Task CompleteManyResults(this IResultTable                                          resultTable,
-                                               ICollection<(string resultId, long size, byte[] opaqueId)> results,
-                                               string                                                     completedBy,
-                                               CancellationToken                                          cancellationToken = default)
+  public static async Task<DateTime?> CompleteManyResults(this IResultTable                                          resultTable,
+                                                          ICollection<(string resultId, long size, byte[] opaqueId)> results,
+                                                          string                                                     completedBy,
+                                                          CancellationToken                                          cancellationToken = default)
   {
     if (results.Count == 0)
     {
-      return;
+      return null;
     }
 
     var now = DateTime.UtcNow;
@@ -180,6 +180,7 @@ public static class ResultTableExtensions
                                                                                                             now))),
                                         cancellationToken)
                      .ConfigureAwait(false);
+    return now;
   }
 
   /// <summary>
