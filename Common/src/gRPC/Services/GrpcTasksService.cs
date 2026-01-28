@@ -348,11 +348,11 @@ public class GrpcTasksService : Task.TasksBase
                                         })
                        .ConfigureAwait(false);
 
-      await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                       resultTable_,
-                                                       request.TaskIds,
-                                                       reason: $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
-                                                       cancellationToken: context.CancellationToken)
+      await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                           resultTable_,
+                                                           request.TaskIds,
+                                                           reason: $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
+                                                           cancellationToken: context.CancellationToken)
                                  .ConfigureAwait(false);
 
       return new CancelTasksResponse

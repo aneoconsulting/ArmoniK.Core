@@ -1486,20 +1486,22 @@ public class TaskLifeCycleHelperTest
 
                       Assert.That(taskB,
                                   crashState >= CrashState.TasksCreated || !subtask
-                                    ? Has.ItemAt(0)
-                                         .Property("Status")
-                                         .EqualTo(committed || !subtask
-                                                    ? TaskStatus.Pending
-                                                    : TaskStatus.Cancelled)
+                                    ? committed || !subtask
+                                        ? Has.ItemAt(0)
+                                             .Property("Status")
+                                             .EqualTo(TaskStatus.Pending)
+                                        : Is.Empty // subtasks are deleted when not committed
                                     : Is.Empty);
 
                       Assert.That(outputB,
                                   crashState >= CrashState.ResultsCreated || !subtask
-                                    ? Has.ItemAt(0)
-                                         .Property("Status")
-                                         .EqualTo(committed || !subtask
-                                                    ? ResultStatus.Created
-                                                    : ResultStatus.Aborted)
+                                    ? committed || !subtask
+                                        ? Has.ItemAt(0)
+                                             .Property("Status")
+                                             .EqualTo(ResultStatus.Created)
+                                        : Has.ItemAt(0) // results are aborted when not committed
+                                             .Property("Status")
+                                             .EqualTo(ResultStatus.Aborted)
                                     : Is.Empty);
 
                       Assert.That(outputRoot.Status,
