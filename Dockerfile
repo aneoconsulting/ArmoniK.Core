@@ -1,4 +1,4 @@
-FROM alpine:3.22.2 AS tini-build
+FROM alpine:3.23.3 AS tini-build
 RUN apk add gcc cmake make musl-dev
 ADD https://github.com/krallin/tini.git .
 
