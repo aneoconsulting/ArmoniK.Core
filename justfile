@@ -46,7 +46,7 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 } else if queue == "artemis" {
   '{ name = "artemis", image = "quay.io/artemiscloud/activemq-artemis-broker:artemis.2.28.0" }'
 } else if queue == "activemq" {
-  '{ name = "activemq", image = "symptoma/activemq:5.16.3" }'
+  '{ name = "activemq", image = "apache/activemq-classic:latest" }'
 } else if queue == "pubsub" {
   '{ name = "pubsub", image = "gcr.io/google.com/cloudsdktool/google-cloud-cli:latest" }'
 } else if queue == "nats" { 
