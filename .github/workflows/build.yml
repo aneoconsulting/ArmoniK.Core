@@ -2,8 +2,10 @@ name: Build and Test
 
 on:
   push:
-    branches-ignore:
-      - release
+    branches:
+      - main
+      - releases/*
+      - fl/core-ltsc2019
     paths-ignore:
       - .github/workflows/manual-integration-test.yml
     tags-ignore: [ '**' ]
