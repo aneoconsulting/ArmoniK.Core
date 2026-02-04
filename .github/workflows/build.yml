@@ -745,7 +745,7 @@ jobs:
           choco install just -y      
 
       - name: Setup AWS cli
-        uses: aws-actions/configure-aws-credentials@61815dcd50bd041e203e49132bacad1fd04d2708 # v5
+        uses: aws-actions/configure-aws-credentials@8df5847569e6427dd6c4fb1cf565c83acfa8afa7 # v6
         if: ${{ env.REPOSITORY == github.repository }}
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
