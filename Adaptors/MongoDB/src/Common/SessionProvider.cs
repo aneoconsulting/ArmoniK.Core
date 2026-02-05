@@ -38,15 +38,21 @@ public class SessionProvider : IInitializable
 {
   private readonly IMongoClient          client_;
   private readonly object                lockObj_ = new();
+  private readonly Options.MongoDB       options_;
   private          IClientSessionHandle? clientSessionHandle_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="SessionProvider" /> class.
   /// </summary>
   /// <param name="client">The MongoDB client used to create sessions.</param>
+  /// <param name="options">Options for MongoDB</param>
   [UsedImplicitly]
-  public SessionProvider(IMongoClient client)
-    => client_ = client;
+  public SessionProvider(IMongoClient    client,
+                         Options.MongoDB options)
+  {
+    client_  = client;
+    options_ = options;
+  }
 
   /// <summary>
   ///   Checks the health of the MongoDB session provider.
@@ -84,7 +90,11 @@ public class SessionProvider : IInitializable
 
     lock (lockObj_)
     {
-      clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
+      clientSessionHandle_ ??= client_.StartSession(new ClientSessionOptions
+                                                    {
+                                                      CausalConsistency = options_.CausalConsistency,
+                                                    },
+                                                    cancellationToken);
     }
 
     return Task.CompletedTask;

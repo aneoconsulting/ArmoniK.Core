@@ -132,8 +132,10 @@ public class SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreationDate,
                                                                       expireAfter: options.DataRetention),
                         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CancellationDate),
-                        IndexHelper.CreateHashedIndex<SessionData>(model => model.Status),
-                        IndexHelper.CreateHashedIndex<SessionData>(model => model.Options.PartitionId),
+                        IndexHelper.CreateHashedOrAscendingIndex<SessionData>(model => model.Status,
+                                                                              options.UseHashed),
+                        IndexHelper.CreateHashedOrAscendingIndex<SessionData>(model => model.Options.PartitionId,
+                                                                              options.UseHashed),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

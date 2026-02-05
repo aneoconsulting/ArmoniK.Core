@@ -98,10 +98,14 @@ public class ResultDataModelMapping : IMongoDataModelMapping<Result>
   {
     var indexModels = new[]
                       {
-                        IndexHelper.CreateHashedIndex<Result>(model => model.SessionId),
-                        IndexHelper.CreateHashedIndex<Result>(model => model.CreatedBy),
-                        IndexHelper.CreateHashedIndex<Result>(model => model.CompletedBy),
-                        IndexHelper.CreateHashedIndex<Result>(model => model.OwnerTaskId),
+                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.SessionId,
+                                                                         options.UseHashed),
+                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.CreatedBy,
+                                                                         options.UseHashed),
+                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.CompletedBy,
+                                                                         options.UseHashed),
+                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.OwnerTaskId,
+                                                                         options.UseHashed),
                         IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
                                                                  expireAfter: options.DataRetention),
                         IndexHelper.CreateAscendingIndex<Result>(model => model.CompletionDate),

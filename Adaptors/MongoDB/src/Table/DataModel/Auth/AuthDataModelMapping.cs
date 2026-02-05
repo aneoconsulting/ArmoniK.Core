@@ -67,10 +67,13 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
   {
     var indexModels = new[]
                       {
-                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Descending, model => model.Fingerprint),
-                                                                (IndexType.Ascending, model => model.Cn)),
-                        IndexHelper.CreateHashedIndex<AuthData>(model => model.Fingerprint),
-                        IndexHelper.CreateHashedIndex<AuthData>(model => model.UserId),
+                        IndexHelper.CreateCombinedIndex<AuthData>(model => model.Fingerprint,
+                                                                  model => model.Cn,
+                                                                  true),
+                        IndexHelper.CreateHashedOrAscendingIndex<AuthData>(model => model.Fingerprint,
+                                                                           options.UseHashed),
+                        IndexHelper.CreateHashedOrAscendingIndex<AuthData>(model => model.UserId,
+                                                                           options.UseHashed),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,

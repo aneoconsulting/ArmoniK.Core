@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Linq;
 using System.Linq.Expressions;
 
 using FluentValidation.Internal;
@@ -24,32 +23,6 @@ using FluentValidation.Internal;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-
-/// <summary>
-///   Index Type
-/// </summary>
-public enum IndexType
-{
-  /// <summary>
-  ///   Index is based on ascending order of the keys.
-  /// </summary>
-  Ascending,
-
-  /// <summary>
-  ///   Index is based on descending order of the keys.
-  /// </summary>
-  Descending,
-
-  /// <summary>
-  ///   Index is based on the hash of the keys.
-  /// </summary>
-  Hashed,
-
-  /// <summary>
-  ///   Index is optimized for text search.
-  /// </summary>
-  Text,
-}
 
 /// <summary>
 ///   Helpers to created indexes for MongoDB
@@ -61,32 +34,29 @@ public class IndexHelper
   /// </summary>
   /// <typeparam name="T">Type stored in database</typeparam>
   /// <param name="expr">Expression to select the field for the index</param>
+  /// <param name="useHashed">Whether to use Hashed indexes</param>
   /// <returns>
   ///   The hashed index model
   /// </returns>
-  public static CreateIndexModel<T> CreateHashedIndex<T>(Expression<Func<T, object?>> expr)
+  public static CreateIndexModel<T> CreateHashedOrAscendingIndex<T>(Expression<Func<T, object?>> expr,
+                                                                    bool                         useHashed)
+    => useHashed
+         ? CreateHashedIndex(expr)
+         : CreateAscendingIndex(expr);
+
+  /// <summary>
+  ///   Creates an hashed index model from expression
+  /// </summary>
+  /// <typeparam name="T">Type stored in database</typeparam>
+  /// <param name="expr">Expression to select the field for the index</param>
+  /// <returns>
+  ///   The hashed index model
+  /// </returns>
+  private static CreateIndexModel<T> CreateHashedIndex<T>(Expression<Func<T, object?>> expr)
     => new(Builders<T>.IndexKeys.Hashed(new ExpressionFieldDefinition<T>(expr)),
            new CreateIndexOptions
            {
              Name = $"{expr.GetMember().Name}_h",
-           });
-
-  /// <summary>
-  ///   Creates an text index model from expression
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="expr">Expression to select the field for the index</param>
-  /// <param name="unique">Unicity constraint, default to false</param>
-  /// <returns>
-  ///   The text index model
-  /// </returns>
-  public static CreateIndexModel<T> CreateTextIndex<T>(Expression<Func<T, object?>> expr,
-                                                       bool                         unique = false)
-    => new(Builders<T>.IndexKeys.Text(new ExpressionFieldDefinition<T>(expr)),
-           new CreateIndexOptions
-           {
-             Name   = $"{expr.GetMember().Name}_t",
-             Unique = unique,
            });
 
   /// <summary>
@@ -113,199 +83,23 @@ public class IndexHelper
            });
 
   /// <summary>
-  ///   Creates an descending index model from expression
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="expr">Expression to select the field for the index</param>
-  /// <param name="unique">Unicity constraint, default to false</param>
-  /// <returns>
-  ///   The descending index model
-  /// </returns>
-  public static CreateIndexModel<T> CreateDescendingIndex<T>(Expression<Func<T, object?>> expr,
-                                                             bool                         unique = false)
-    => new(Builders<T>.IndexKeys.Descending(new ExpressionFieldDefinition<T>(expr)),
-           new CreateIndexOptions
-           {
-             Name   = $"{expr.GetMember().Name}_-1",
-             Unique = unique,
-           });
-
-  /// <summary>
   ///   Creates a combined index model from expression
   /// </summary>
   /// <typeparam name="T">Type stored in database</typeparam>
   /// <param name="first">Expression to select the field for the first index</param>
   /// <param name="second">Expression to select the field for the second index</param>
+  /// <param name="unique">Unicity constraint, default to false</param>
   /// <returns>
   ///   The combined index model
   /// </returns>
   public static CreateIndexModel<T> CreateCombinedIndex<T>(Expression<Func<T, object?>> first,
-                                                           Expression<Func<T, object?>> second)
+                                                           Expression<Func<T, object?>> second,
+                                                           bool                         unique = false)
     => new(Builders<T>.IndexKeys.Combine(Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(first)),
                                          Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(second))),
            new CreateIndexOptions
            {
-             Name = $"{first.GetMember().Name}_1_{second.GetMember().Name}_1",
+             Name   = $"{first.GetMember().Name}_1_{second.GetMember().Name}_1",
+             Unique = unique,
            });
-
-  /// <summary>
-  ///   Creates a combined index model (hashed + ascending) from expression
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="hashed">Expression to select the field for the hashed index</param>
-  /// <param name="ascending">Expression to select the field for the ascending index</param>
-  /// <returns>
-  ///   The combined index model
-  /// </returns>
-  public static CreateIndexModel<T> CreateHashedCombinedIndex<T>(Expression<Func<T, object?>> hashed,
-                                                                 Expression<Func<T, object?>> ascending)
-    => new(Builders<T>.IndexKeys.Combine(Builders<T>.IndexKeys.Hashed(new ExpressionFieldDefinition<T>(hashed)),
-                                         Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(ascending))),
-           new CreateIndexOptions
-           {
-             Name = $"{hashed.GetMember().Name}_h_{ascending.GetMember().Name}_1",
-           });
-
-  /// <summary>
-  ///   Creates a generic index from a list of indices type and expressions, with no unicity constraint
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="field">Type and Expressions to select the fields for the index</param>
-  /// <returns> The corresponding generated index</returns>
-  /// <exception cref="ArgumentException">Thrown when fields has no expression</exception>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateIndex<T>(params (IndexType type, Expression<Func<T, object?>> expression)[] field)
-    => CreateIndex(false,
-                   field);
-
-  /// <summary>
-  ///   Creates an index from an index type and expression, with no unicity constraint
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="type">Type of index</param>
-  /// <param name="expression">Expression to select the field for the index</param>
-  /// <returns> The corresponding generated index</returns>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateIndex<T>(IndexType                    type,
-                                                   Expression<Func<T, object?>> expression)
-    => CreateIndex(false,
-                   (type, expression));
-
-  /// <summary>
-  ///   Creates a generic index from a list of indices type and expressions with a unicity constraint
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="field">Expressions to select the fields for the index</param>
-  /// <returns> The corresponding generated index</returns>
-  /// <exception cref="ArgumentException">Thrown when fields has no expression</exception>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateUniqueIndex<T>(params (IndexType type, Expression<Func<T, object?>> expression)[] field)
-    => CreateIndex(true,
-                   field);
-
-  /// <summary>
-  ///   Creates an index from an index type and expression with a unicity constraint
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="type">Type of index</param>
-  /// <param name="expression">Expression to select the field for the index</param>
-  /// <returns> The corresponding generated index</returns>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateUniqueIndex<T>(IndexType                    type,
-                                                         Expression<Func<T, object?>> expression)
-    => CreateIndex(true,
-                   (type, expression));
-
-
-  /// <summary>
-  ///   Creates a generic index from a list of indices type and expressions
-  /// </summary>
-  /// <typeparam name="T">Type stored in database</typeparam>
-  /// <param name="unique">Unicity constraint</param>
-  /// <param name="field">Expressions to select the fields for the index</param>
-  /// <returns> The corresponding generated index</returns>
-  /// <exception cref="ArgumentException">Thrown when fields has no expression</exception>
-  /// <exception cref="ArgumentOutOfRangeException">Thrown for invalid IndexType, or hashed index related issues</exception>
-  public static CreateIndexModel<T> CreateIndex<T>(bool                                                               unique,
-                                                   params (IndexType type, Expression<Func<T, object?>> expression)[] field)
-  {
-    if (field.Length == 0)
-    {
-      throw new ArgumentException("CreateIndex should have at least one argument");
-    }
-
-    if (field.Length == 1)
-    {
-      if (unique && field[0]
-            .type == IndexType.Hashed)
-      {
-        throw new ArgumentOutOfRangeException(nameof(unique),
-                                              "A hashed index cannot be constrained to be unique");
-      }
-
-      return field[0]
-               .type switch
-             {
-               IndexType.Ascending => CreateAscendingIndex(field[0]
-                                                             .expression,
-                                                           unique),
-               IndexType.Descending => CreateAscendingIndex(field[0]
-                                                              .expression,
-                                                            unique),
-               IndexType.Hashed => CreateHashedIndex(field[0]
-                                                       .expression),
-               IndexType.Text => CreateTextIndex(field[0]
-                                                   .expression,
-                                                 unique),
-               _ => throw new ArgumentOutOfRangeException(nameof(field),
-                                                          "Invalid IndexType"),
-             };
-    }
-
-    if (field.Count(f => f.type == IndexType.Hashed) is var hashedCount && hashedCount > 1)
-    {
-      throw new ArgumentOutOfRangeException(nameof(field),
-                                            "At most one Hashed index is supported in a compound index");
-    }
-
-    if (unique && hashedCount > 0)
-    {
-      throw new ArgumentOutOfRangeException(nameof(unique),
-                                            "A hashed index cannot be constrained to be unique");
-    }
-
-    return new CreateIndexModel<T>(Builders<T>.IndexKeys.Combine(field.Select(f => f.type switch
-                                                                                   {
-                                                                                     IndexType.Ascending =>
-                                                                                       Builders<T>.IndexKeys.Ascending(new ExpressionFieldDefinition<T>(f.expression)),
-                                                                                     IndexType.Descending =>
-                                                                                       Builders<T>.IndexKeys.Descending(new ExpressionFieldDefinition<T>(f.expression)),
-                                                                                     IndexType.Hashed =>
-                                                                                       Builders<T>.IndexKeys.Hashed(new ExpressionFieldDefinition<T>(f.expression)),
-                                                                                     IndexType.Text =>
-                                                                                       Builders<T>.IndexKeys.Text(new ExpressionFieldDefinition<T>(f.expression)),
-                                                                                     _ => throw new ArgumentOutOfRangeException(nameof(field),
-                                                                                                                                "Invalid IndexType"),
-                                                                                   })
-                                                                      .ToArray()),
-                                   new CreateIndexOptions
-                                   {
-                                     Name = string.Join('_',
-                                                        field.SelectMany(f => new[]
-                                                                              {
-                                                                                f.expression.GetMember()
-                                                                                 .Name,
-                                                                                f.type switch
-                                                                                {
-                                                                                  IndexType.Ascending  => "1",
-                                                                                  IndexType.Descending => "-1",
-                                                                                  IndexType.Hashed     => "h",
-                                                                                  IndexType.Text       => "t",
-                                                                                  _ => throw new ArgumentOutOfRangeException(nameof(field),
-                                                                                                                             "Invalid IndexType"),
-                                                                                },
-                                                                              })),
-                                     Unique = unique,
-                                   });
-  }
 }

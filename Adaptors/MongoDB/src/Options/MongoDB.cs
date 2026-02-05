@@ -135,4 +135,20 @@ public class MongoDB
   ///   Authentication source for the MongoDB connection.
   /// </summary>
   public string AuthSource { get; set; } = "";
+
+  /// <summary>
+  ///   Activate causal consistency for MongoDB operations.
+  /// </summary>
+  public bool? CausalConsistency { get; set; }
+
+  /// <summary>
+  ///   Log requests made to the MongoDB server for debugging and monitoring purposes.
+  /// </summary>
+  public bool LogRequest { get; set; }
+
+  /// <summary>
+  ///   Whether to use hashed indexes when creating indexes for MongoDB collections. If true, hashed indexes will be created;
+  ///   otherwise, ascending indexes will be used.
+  /// </summary>
+  public bool UseHashed { get; set; } = true;
 }

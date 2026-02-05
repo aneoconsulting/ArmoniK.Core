@@ -65,9 +65,8 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   {
     var indexModels = new[]
                       {
-                        IndexHelper.CreateTextIndex<UserData>(model => model.Username,
-                                                              true),
-                        IndexHelper.CreateHashedIndex<UserData>(model => model.Username),
+                        IndexHelper.CreateAscendingIndex<UserData>(model => model.Username,
+                                                                   true),
                       };
     await collection.Indexes.CreateManyAsync(sessionHandle,
                                              indexModels)

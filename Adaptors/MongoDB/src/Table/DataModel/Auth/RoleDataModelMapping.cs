@@ -65,9 +65,8 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
   {
     var indexModels = new[]
                       {
-                        IndexHelper.CreateTextIndex<RoleData>(model => model.RoleName,
-                                                              true),
-                        IndexHelper.CreateHashedIndex<RoleData>(model => model.RoleName),
+                        IndexHelper.CreateAscendingIndex<RoleData>(model => model.RoleName,
+                                                                   true),
                       };
 
     await collection.Indexes.CreateManyAsync(sessionHandle,
