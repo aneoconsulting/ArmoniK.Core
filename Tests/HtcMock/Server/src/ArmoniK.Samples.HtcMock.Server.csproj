@@ -23,7 +23,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Api.Worker" Version="3.28.1" />
+    <PackageReference Include="ArmoniK.Api.Worker" Version="3.28.3" />
     <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.7.0">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
