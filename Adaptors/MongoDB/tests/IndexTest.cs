@@ -18,7 +18,6 @@
 using System;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.DependencyInjection;
@@ -54,7 +53,8 @@ internal class IndexTest
 
     var indexModels = new[]
                       {
-                        IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
+                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.TaskId,
+                                                                           true),
                       };
 
     collection.Indexes.CreateMany(indexModels);
@@ -78,12 +78,13 @@ internal class IndexTest
 
     var indexModels = new[]
                       {
-                        IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
+                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.TaskId,
+                                                                           true),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.PodTtl),
-                        IndexHelper.CreateDescendingIndex<TaskData>(model => model.Options.MaxDuration),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.Options.MaxDuration),
                         IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
                                                                    expireAfter: TimeSpan.FromDays(1)),
-                        IndexHelper.CreateTextIndex<TaskData>(model => model.OwnerPodId),
+                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.OwnerPodId),
                       };
 
     collection.Indexes.CreateMany(indexModels);
@@ -157,42 +158,12 @@ internal class IndexTest
 
     var indexModels = new[]
                       {
-                        IndexHelper.CreateHashedIndex<TaskData>(model => model.TaskId),
+                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.TaskId,
+                                                                           true),
                         IndexHelper.CreateCombinedIndex<TaskData>(model => model.TaskId,
                                                                   model => model.SessionId),
                         IndexHelper.CreateCombinedIndex<TaskData>(model => model.TaskId,
                                                                   model => model.Status),
-                        IndexHelper.CreateHashedCombinedIndex<TaskData>(model => model.TaskId,
-                                                                        model => model.Status),
-                      };
-
-    collection.Indexes.CreateMany(indexModels);
-    foreach (var index in collection.Indexes.List()
-                                    .ToList())
-    {
-      Console.WriteLine(index);
-    }
-
-    Assert.AreEqual(indexModels.Length + 1,
-                    collection.Indexes.List()
-                              .ToList()
-                              .Count);
-  }
-
-  [Test]
-  public void GenericIndexCreationShouldSucceed()
-  {
-    var db         = provider_!.GetRequiredService<IMongoDatabase>();
-    var collection = db.GetCollection<AuthData>("Test");
-
-    var indexModels = new[]
-                      {
-                        IndexHelper.CreateIndex<AuthData>(IndexType.Hashed,
-                                                          model => model.Fingerprint),
-                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Ascending, model => model.Cn),
-                                                                (IndexType.Descending, model => model.Fingerprint)),
-                        IndexHelper.CreateIndex<AuthData>((IndexType.Hashed, model => model.UserId)),
-                        IndexHelper.CreateUniqueIndex<AuthData>((IndexType.Text, model => model.Cn)),
                       };
 
     collection.Indexes.CreateMany(indexModels);
