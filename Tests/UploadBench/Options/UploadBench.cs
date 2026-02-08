@@ -33,6 +33,11 @@ public class UploadBench
   /// <summary>
   ///   Size of the gRPC messages used for the upload
   /// </summary>
+  /// <remarks>
+  ///   If MessageSize is greater than ResultSize, unitary rpc will be used.
+  ///   If MessageSize is multiple times greater than ResultSize, multiple results
+  ///   will be uploaded in the same request.
+  /// </remarks>
   public long MessageSize { get; set; } = 80000;
 
   /// <summary>

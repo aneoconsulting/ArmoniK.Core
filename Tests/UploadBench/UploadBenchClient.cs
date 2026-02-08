@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -43,16 +44,17 @@ namespace ArmoniK.Core.Tests.UploadBench;
 /// </summary>
 public class UploadBenchClient : IAsyncDisposable
 {
-  private readonly GrpcChannel             channel_;
-  private readonly GrpcClient              clientOptions_;
-  private readonly byte[]                  completeChunk_;
-  private readonly CancellationTokenSource cts_;
-  private readonly ILogger                 logger_;
-  private readonly ILoggerFactory          loggerFactory_;
-  private readonly ConcurrentBag<double[]> measurements_;
-  private readonly Options.UploadBench     options_;
-  private readonly byte[]                  partialChunk_;
-  private          string                  session_;
+  private readonly GrpcChannel                 channel_;
+  private readonly GrpcClient                  clientOptions_;
+  private readonly byte[]                      completeChunk_;
+  private readonly CancellationTokenSource     cts_;
+  private readonly ILogger                     logger_;
+  private readonly ILoggerFactory              loggerFactory_;
+  private readonly ConcurrentBag<List<double>> measurements_;
+  private readonly Options.UploadBench         options_;
+  private readonly byte[]                      partialChunk_;
+  private readonly int                         resultPerMessage_;
+  private          string                      session_;
 
   /// <summary>
   ///   Construct the benchmark client
@@ -72,14 +74,30 @@ public class UploadBenchClient : IAsyncDisposable
                                                 null,
                                                 loggerFactory);
 
-    completeChunk_ = new byte[options.MessageSize];
+    completeChunk_ = new byte[Math.Min(options.MessageSize,
+                                       options.ResultSize)];
     partialChunk_ = options.ResultSize % options.MessageSize == 0
                       ? completeChunk_
                       : new byte[options.ResultSize % options.MessageSize];
 
     session_      = "";
-    measurements_ = new ConcurrentBag<double[]>();
+    measurements_ = new ConcurrentBag<List<double>>();
     cts_          = new CancellationTokenSource();
+
+    resultPerMessage_ = options_.MessageSize > options_.ResultSize
+                          ? (int)(options_.MessageSize / options_.ResultSize)
+                          : 0;
+
+    if (!Stopwatch.IsHighResolution)
+    {
+      logger_.LogWarning("Timer is not high resolution: {Frequency}",
+                         Stopwatch.Frequency);
+    }
+    else
+    {
+      logger_.LogDebug("Timer frequency: {Frequency}",
+                       Stopwatch.Frequency);
+    }
   }
 
   /// <inheritdoc />
@@ -165,73 +183,125 @@ public class UploadBenchClient : IAsyncDisposable
     // Repeat the benchmark multiple times inside the same runner
     for (var r = 0; r < options_.Repeats; r += 1)
     {
-      // Create metadata for all the results to be uploaded during the run
-      var results = await client.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
-                                                            {
-                                                              SessionId = session_,
-                                                              Results =
-                                                              {
-                                                                Enumerable.Range(0,
-                                                                                 n)
-                                                                          .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
-                                                                                       {
-                                                                                         Name           = $"result-{threadId}-{r}-{i}",
-                                                                                         ManualDeletion = false,
-                                                                                       }),
-                                                              },
-                                                            },
-                                                            cancellationToken: cts_.Token)
-                                .ConfigureAwait(false);
+      var resultIds = new List<string>();
 
-      logger_.LogDebug("Created {ResultsCount} results for {ThreadId}",
-                       results.Results.Count,
-                       threadId);
+      if (resultPerMessage_ == 0)
+      {
+        // Create metadata for all the results to be uploaded during the run
+        var results = await client.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                              {
+                                                                SessionId = session_,
+                                                                Results =
+                                                                {
+                                                                  Enumerable.Range(0,
+                                                                                   n)
+                                                                            .Select(i => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                                                                         {
+                                                                                           Name           = $"result-{threadId}-{r}-{i}",
+                                                                                           ManualDeletion = false,
+                                                                                         }),
+                                                                },
+                                                              },
+                                                              cancellationToken: cts_.Token)
+                                  .ConfigureAwait(false);
+        resultIds = results.Results.Select(result => result.ResultId)
+                           .ToList();
+
+        logger_.LogDebug("Created {ResultsCount} results for {ThreadId}",
+                         results.Results.Count,
+                         threadId);
+      }
 
       try
       {
-        var measurements = new double[n];
+        var measurements = new List<double>();
         var t0           = Stopwatch.GetTimestamp();
 
-        // Upload sequentially all the results for this runner
-        for (var i = 0; i < n; i += 1)
+        if (resultPerMessage_ > 0)
         {
-          var stream = client.UploadResultData();
-          await stream.RequestStream.WriteAsync(new UploadResultDataRequest
-                                                {
-                                                  Id = new UploadResultDataRequest.Types.ResultIdentifier
-                                                       {
-                                                         SessionId = results.Results[i].SessionId,
-                                                         ResultId  = results.Results[i].ResultId,
-                                                       },
-                                                },
-                                                cts_.Token)
-                      .ConfigureAwait(false);
-
-          var size = options_.ResultSize;
-          while (size > options_.MessageSize)
+          // Upload sequentially all the results for this runner using unitary upload
+          for (var i = 0; i < n; i += resultPerMessage_)
           {
+            var nbResult = Math.Min(resultPerMessage_,
+                                    n - i);
+            var response = await client.CreateResultsAsync(new CreateResultsRequest
+                                                           {
+                                                             SessionId = session_,
+                                                             Results =
+                                                             {
+                                                               Enumerable.Range(i,
+                                                                                nbResult)
+                                                                         .Select(j => new CreateResultsRequest.Types.ResultCreate
+                                                                                      {
+                                                                                        Name           = $"result-{threadId}-{r}-{j}",
+                                                                                        Data           = UnsafeByteOperations.UnsafeWrap(completeChunk_),
+                                                                                        ManualDeletion = false,
+                                                                                      }),
+                                                             },
+                                                           },
+                                                           cancellationToken: cts_.Token)
+                                       .ConfigureAwait(false);
+            resultIds.AddRange(response.Results.Select(result => result.ResultId));
+            var t1 = Stopwatch.GetTimestamp();
+            var m  = (double)(t1 - t0) / (Stopwatch.Frequency * resultPerMessage_);
+            measurements.Add(m);
+            t0 = t1;
+
+            logger_.LogDebug("Created and uploaded {NbResults} for {ThreadId}: {UploadTime} s",
+                             nbResult,
+                             threadId,
+                             m);
+          }
+        }
+        else
+        {
+          // Upload sequentially all the results for this runner using a stream upload
+          for (var i = 0; i < n; i += 1)
+          {
+            var stream = client.UploadResultData();
             await stream.RequestStream.WriteAsync(new UploadResultDataRequest
                                                   {
-                                                    DataChunk = UnsafeByteOperations.UnsafeWrap(completeChunk_),
+                                                    Id = new UploadResultDataRequest.Types.ResultIdentifier
+                                                         {
+                                                           SessionId = session_,
+                                                           ResultId  = resultIds[i],
+                                                         },
                                                   },
                                                   cts_.Token)
                         .ConfigureAwait(false);
-            size -= options_.MessageSize;
+
+            var size = options_.ResultSize;
+            while (size > options_.MessageSize)
+            {
+              await stream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                                    {
+                                                      DataChunk = UnsafeByteOperations.UnsafeWrap(completeChunk_),
+                                                    },
+                                                    cts_.Token)
+                          .ConfigureAwait(false);
+              size -= options_.MessageSize;
+            }
+
+            await stream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                                  {
+                                                    DataChunk = UnsafeByteOperations.UnsafeWrap(partialChunk_),
+                                                  },
+                                                  cts_.Token)
+                        .ConfigureAwait(false);
+
+            await stream.RequestStream.CompleteAsync()
+                        .ConfigureAwait(false);
+            await stream.ResponseAsync.ConfigureAwait(false);
+            var t1 = Stopwatch.GetTimestamp();
+            var m  = (double)(t1 - t0) / Stopwatch.Frequency;
+            measurements.Add(m);
+            t0 = t1;
+
+            logger_.LogDebug("Uploaded {NbResults} for {ThreadId}: {UploadTime} s",
+                             1,
+                             threadId,
+                             m);
           }
-
-          await stream.RequestStream.WriteAsync(new UploadResultDataRequest
-                                                {
-                                                  DataChunk = UnsafeByteOperations.UnsafeWrap(partialChunk_),
-                                                },
-                                                cts_.Token)
-                      .ConfigureAwait(false);
-
-          await stream.RequestStream.CompleteAsync()
-                      .ConfigureAwait(false);
-          await stream.ResponseAsync.ConfigureAwait(false);
-          var t1 = Stopwatch.GetTimestamp();
-          measurements[i] = (double)(t1 - t0) / Stopwatch.Frequency;
-          t0              = t1;
         }
 
         measurements_.Add(measurements);
@@ -246,21 +316,21 @@ public class UploadBenchClient : IAsyncDisposable
                                                 SessionId = session_,
                                                 ResultId =
                                                 {
-                                                  results.Results.Select(result => result.ResultId),
+                                                  resultIds,
                                                 },
                                               },
                                               cancellationToken: CancellationToken.None)
                       .ConfigureAwait(false);
 
           logger_.LogDebug("Deleted {ResultsCount} results for {ThreadId}",
-                           results.Results.Count,
+                           resultIds.Count,
                            threadId);
         }
         catch (Exception e)
         {
           logger_.LogError(e,
                            "Failed to delete {ResultsCount} results for {ThreadId}",
-                           results.Results.Count,
+                           resultIds.Count,
                            threadId);
         }
       }
