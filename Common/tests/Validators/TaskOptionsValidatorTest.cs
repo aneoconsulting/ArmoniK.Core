@@ -39,96 +39,151 @@ public class TaskOptionsValidatorTest
                              Priority    = 2,
                            };
 
-  private readonly TaskOptionsValidator validator_ = new();
+  private readonly TaskOptionsValidator sessionValidator_ = new(true);
+  private readonly TaskOptionsValidator taskValidator_    = new();
   private          TaskOptions?         validTaskOptions_;
 
   [Test]
-  public void TaskOptionsShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validTaskOptions_!)
-                               .IsValid);
+  public void SessionTaskOptionsShouldBeValid()
+    => Assert.IsTrue(sessionValidator_.Validate(validTaskOptions_!)
+                                      .IsValid);
 
   [Test]
-  public void UndefinedMaxDurationShouldFail()
+  public void TaskTaskOptionsShouldBeValid()
+    => Assert.IsTrue(taskValidator_.Validate(validTaskOptions_!)
+                                   .IsValid);
+
+  [Test]
+  public void UndefinedSessionMaxDurationShouldFail()
   {
     validTaskOptions_!.MaxDuration = null;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.IsFalse(sessionValidator_.Validate(validTaskOptions_)
+                                    .IsValid);
   }
 
   [Test]
-  public void UndefinedMaxRetriesShouldFail()
+  public void UndefinedTaskMaxDurationShouldBeValid()
   {
-    validTaskOptions_!.MaxRetries = default;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    validTaskOptions_!.MaxDuration = null;
+    Assert.IsTrue(taskValidator_.Validate(validTaskOptions_)
+                                .IsValid);
   }
 
   [Test]
-  public void ZeroMaxRetryShouldFail()
+  public void ZeroSessionMaxRetryShouldFail()
   {
     validTaskOptions_!.MaxRetries = 0;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.IsFalse(sessionValidator_.Validate(validTaskOptions_)
+                                    .IsValid);
   }
 
   [Test]
-  public void NegativeMaxRetryShouldFail()
+  public void ZeroTaskMaxRetryShouldBeValid()
+  {
+    validTaskOptions_!.MaxRetries = 0;
+    Assert.IsTrue(taskValidator_.Validate(validTaskOptions_)
+                                .IsValid);
+  }
+
+  [Test]
+  public void NegativeSessionMaxRetryShouldFail()
   {
     validTaskOptions_!.MaxRetries = -6;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.IsFalse(sessionValidator_.Validate(validTaskOptions_)
+                                    .IsValid);
   }
 
   [Test]
-  public void UndefinedPriorityShouldFail()
+  public void NegativeTaskMaxRetryShouldFail()
   {
-    validTaskOptions_!.Priority = default;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    validTaskOptions_!.MaxRetries = -6;
+    Assert.IsFalse(taskValidator_.Validate(validTaskOptions_)
+                                 .IsValid);
   }
 
   [Test]
-  public void ZeroPriorityShouldFail()
+  public void ZeroSessionPriorityShouldFail()
   {
     validTaskOptions_!.Priority = 0;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.IsFalse(sessionValidator_.Validate(validTaskOptions_)
+                                    .IsValid);
   }
 
   [Test]
-  public void NegativePriorityShouldFail()
+  public void ZeroTaskPriorityShouldBeValid()
+  {
+    validTaskOptions_!.Priority = 0;
+    Assert.IsTrue(taskValidator_.Validate(validTaskOptions_)
+                                .IsValid);
+  }
+
+  [Test]
+  public void NegativeSessionPriorityShouldFail()
   {
     validTaskOptions_!.Priority = -6;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.IsFalse(sessionValidator_.Validate(validTaskOptions_)
+                                    .IsValid);
   }
 
   [Test]
-  public void TooBigPriorityShouldFail()
+  public void NegativeTaskPriorityShouldFail()
+  {
+    validTaskOptions_!.Priority = -6;
+    Assert.IsFalse(taskValidator_.Validate(validTaskOptions_)
+                                 .IsValid);
+  }
+
+  [Test]
+  public void TooBigSessionPriorityShouldFail()
   {
     validTaskOptions_!.Priority = 100;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.IsFalse(sessionValidator_.Validate(validTaskOptions_)
+                                    .IsValid);
   }
 
   [Test]
-  public void EmptyPartitionShouldSucceed()
+  public void TooBigTaskPriorityShouldFail()
+  {
+    validTaskOptions_!.Priority = 100;
+    Assert.IsFalse(taskValidator_.Validate(validTaskOptions_)
+                                 .IsValid);
+  }
+
+  [Test]
+  public void EmptySessionPartitionShouldSucceed()
   {
     validTaskOptions_!.PartitionId = string.Empty;
-    Assert.IsTrue(validator_.Validate(validTaskOptions_)
-                            .IsValid);
+    Assert.IsTrue(sessionValidator_.Validate(validTaskOptions_)
+                                   .IsValid);
   }
 
   [Test]
-  public void OnlyMaxRetryAndPriorityDefinedShouldFail()
+  public void EmptyTaskPartitionShouldSucceed()
+  {
+    validTaskOptions_!.PartitionId = string.Empty;
+    Assert.IsTrue(taskValidator_.Validate(validTaskOptions_)
+                                .IsValid);
+  }
+
+  [Test]
+  public void OnlySessionMaxRetryAndPriorityDefinedShouldFail()
   {
     var to = new TaskOptions
              {
                MaxRetries = 1,
-               Priority   = 100,
+               Priority   = 99,
              };
 
-    Assert.IsFalse(validator_.Validate(to)
-                             .IsValid);
+    Assert.IsFalse(sessionValidator_.Validate(to)
+                                    .IsValid);
+  }
+
+  [Test]
+  public void DefaultTaskTaskOptionsShouldBeValid()
+  {
+    var to = new TaskOptions();
+
+    Assert.IsTrue(taskValidator_.Validate(to)
+                                .IsValid);
   }
 }
