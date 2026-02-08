@@ -50,12 +50,12 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Logger for class ITaskTable
   /// </summary>
-  public ILogger Logger { get; }
+  ILogger Logger { get; }
 
   /// <summary>
   ///   Table targeting a secondary server for read operations
   /// </summary>
-  public ITaskTable Secondary
+  ITaskTable Secondary
     => this;
 
   /// <summary>

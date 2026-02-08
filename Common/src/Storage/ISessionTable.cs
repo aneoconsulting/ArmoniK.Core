@@ -41,7 +41,7 @@ public interface ISessionTable : IInitializable
   /// <summary>
   ///   Table targeting a secondary server for read operations
   /// </summary>
-  public ISessionTable Secondary
+  ISessionTable Secondary
     => this;
 
   /// <summary>

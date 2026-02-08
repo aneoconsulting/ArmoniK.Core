@@ -37,12 +37,12 @@ public interface IResultTable : IInitializable
   /// <summary>
   ///   Logger used to produce logs for this class
   /// </summary>
-  public ILogger Logger { get; }
+  ILogger Logger { get; }
 
   /// <summary>
   ///   Table targeting a secondary server for read operations
   /// </summary>
-  public IResultTable Secondary
+  IResultTable Secondary
     => this;
 
   /// <summary>
@@ -168,8 +168,8 @@ public interface IResultTable : IInitializable
   /// <returns>
   ///   Result metadata from the database
   /// </returns>
-  public async Task<Result> GetResult(string            key,
-                                      CancellationToken cancellationToken = default)
+  async Task<Result> GetResult(string            key,
+                               CancellationToken cancellationToken = default)
   {
     try
     {
@@ -242,6 +242,6 @@ public interface IResultTable : IInitializable
   /// </summary>
   /// <param name="Keys">Ids of the results that will change owner</param>
   /// <param name="NewTaskId">Task id of the new owner</param>
-  public record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
-                                             string              NewTaskId);
+  record ChangeResultOwnershipRequest(IEnumerable<string> Keys,
+                                      string              NewTaskId);
 }

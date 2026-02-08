@@ -35,7 +35,7 @@ public interface IPartitionTable : IInitializable
   /// <summary>
   ///   Table targeting a secondary server for read operations
   /// </summary>
-  public IPartitionTable Secondary
+  IPartitionTable Secondary
     => this;
 
   /// <summary>

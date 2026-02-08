@@ -28,12 +28,6 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 public class AuthenticationTableTest : AuthenticationTableTestBase
 {
-  public override void TearDown()
-  {
-    tableProvider_?.Dispose();
-    RunTests = false;
-  }
-
   private MongoDatabaseProvider? tableProvider_;
 
   static AuthenticationTableTest()
@@ -58,6 +52,12 @@ public class AuthenticationTableTest : AuthenticationTableTestBase
                                                                                                                     model.Permissions));
                                                               });
     }
+  }
+
+  public override void TearDown()
+  {
+    tableProvider_?.Dispose();
+    RunTests = false;
   }
 
   public override void GetAuthSource()

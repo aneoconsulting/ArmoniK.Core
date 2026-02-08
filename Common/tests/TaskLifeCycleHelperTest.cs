@@ -397,20 +397,16 @@ public class TaskLifeCycleHelperTest
                 {
                   new(Guid.NewGuid()
                           .ToString(),
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       holder.Options.ToTaskOptions(),
                       new List<string>
                       {
-                        results[3]
-                          .ResultId,
+                        results[3].ResultId,
                       },
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
-                        results[2]
-                          .ResultId,
+                        results[1].ResultId,
+                        results[2].ResultId,
                       }),
                 };
 
@@ -451,8 +447,7 @@ public class TaskLifeCycleHelperTest
 
     // complete first data dependency
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[1]
-                                              .ResultId,
+                                            results[1].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("first data dependency"))
                 .ConfigureAwait(false);
@@ -463,8 +458,7 @@ public class TaskLifeCycleHelperTest
                                                   sessionData,
                                                   new List<string>
                                                   {
-                                                    results[1]
-                                                      .ResultId,
+                                                    results[1].ResultId,
                                                   },
                                                   NullLogger.Instance)
                              .ConfigureAwait(false);
@@ -480,8 +474,7 @@ public class TaskLifeCycleHelperTest
 
     // complete second data dependency
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[2]
-                                              .ResultId,
+                                            results[2].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("second data dependency"))
                 .ConfigureAwait(false);
@@ -492,8 +485,7 @@ public class TaskLifeCycleHelperTest
                                                   sessionData,
                                                   new List<string>
                                                   {
-                                                    results[2]
-                                                      .ResultId,
+                                                    results[2].ResultId,
                                                   },
                                                   NullLogger.Instance)
                              .ConfigureAwait(false);
@@ -597,20 +589,16 @@ public class TaskLifeCycleHelperTest
                 {
                   new(Guid.NewGuid()
                           .ToString(),
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       holder.Options.ToTaskOptions(),
                       new List<string>
                       {
-                        results[3]
-                          .ResultId,
+                        results[3].ResultId,
                       },
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
-                        results[2]
-                          .ResultId,
+                        results[1].ResultId,
+                        results[2].ResultId,
                       }),
                 };
 
@@ -752,20 +740,16 @@ public class TaskLifeCycleHelperTest
                 {
                   new(Guid.NewGuid()
                           .ToString(),
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       holder.Options.ToTaskOptions(),
                       new List<string>
                       {
-                        results[3]
-                          .ResultId,
+                        results[3].ResultId,
                       },
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
-                        results[2]
-                          .ResultId,
+                        results[1].ResultId,
+                        results[2].ResultId,
                       }),
                 };
 
@@ -806,14 +790,12 @@ public class TaskLifeCycleHelperTest
 
     // complete first data dependency
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[1]
-                                              .ResultId,
+                                            results[1].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("first data dependency"))
                 .ConfigureAwait(false);
     await holder.ResultTable.CompleteResult(sessionId,
-                                            results[2]
-                                              .ResultId,
+                                            results[2].ResultId,
                                             10,
                                             Encoding.UTF8.GetBytes("second data dependency"))
                 .ConfigureAwait(false);
@@ -823,10 +805,8 @@ public class TaskLifeCycleHelperTest
                                                   sessionData,
                                                   new List<string>
                                                   {
-                                                    results[1]
-                                                      .ResultId,
-                                                    results[2]
-                                                      .ResultId,
+                                                    results[1].ResultId,
+                                                    results[2].ResultId,
                                                   },
                                                   NullLogger.Instance)
                              .ConfigureAwait(false);
@@ -973,20 +953,16 @@ public class TaskLifeCycleHelperTest
                 {
                   new(Guid.NewGuid()
                           .ToString(),
-                      results[0]
-                        .ResultId,
+                      results[0].ResultId,
                       holder.Options.ToTaskOptions(),
                       new List<string>
                       {
-                        results[3]
-                          .ResultId,
+                        results[3].ResultId,
                       },
                       new List<string>
                       {
-                        results[1]
-                          .ResultId,
-                        results[2]
-                          .ResultId,
+                        results[1].ResultId,
+                        results[2].ResultId,
                       }),
                 };
 
@@ -1009,10 +985,8 @@ public class TaskLifeCycleHelperTest
 
     await Task.WhenAll(FinalizeTask(),
                        FinalizeTask(),
-                       CompleteResult(results[1]
-                                        .ResultId),
-                       CompleteResult(results[2]
-                                        .ResultId))
+                       CompleteResult(results[1].ResultId),
+                       CompleteResult(results[2].ResultId))
               .ConfigureAwait(false);
 
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)

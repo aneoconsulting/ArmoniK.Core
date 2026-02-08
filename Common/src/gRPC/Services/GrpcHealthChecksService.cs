@@ -77,13 +77,13 @@ public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBa
   {
     using var measure = meter_.CountAndTime();
     var checks = await new[]
-                       {
-                         ("database", taskTable_.Check(HealthCheckTag.Liveness)),
-                         ("object", objectStorage_.Check(HealthCheckTag.Liveness)),
-                         ("queue", queueStorage_.Check(HealthCheckTag.Liveness)),
-                       }.Select(async service => (Name: service.Item1, Check: await service.Item2.ConfigureAwait(false)))
-                        .WhenAll()
-                        .ConfigureAwait(false);
+                   {
+                     ("database", taskTable_.Check(HealthCheckTag.Liveness)),
+                     ("object", objectStorage_.Check(HealthCheckTag.Liveness)),
+                     ("queue", queueStorage_.Check(HealthCheckTag.Liveness)),
+                   }.Select(async service => (Name: service.Item1, Check: await service.Item2.ConfigureAwait(false)))
+                    .WhenAll()
+                    .ConfigureAwait(false);
 
     return new CheckHealthResponse
            {

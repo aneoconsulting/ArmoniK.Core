@@ -37,7 +37,7 @@ public interface IPushQueueStorage : IQueueStorage
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  public Task PushMessagesAsync(IEnumerable<MessageData> messages,
-                                string                   partitionId,
-                                CancellationToken        cancellationToken = default);
+  Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                         string                   partitionId,
+                         CancellationToken        cancellationToken = default);
 }
