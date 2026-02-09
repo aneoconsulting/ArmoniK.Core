@@ -40,8 +40,8 @@ public interface IWorkerStreamHandler : IInitializable, IDisposable
   /// <param name="dataFolder">The path to the folder where task data can be stored.</param>
   /// <param name="cancellationToken">Token to cancel the task processing.</param>
   /// <returns>The output of the task processing, including status and any error information.</returns>
-  public Task<Output> StartTaskProcessing(TaskData          taskData,
-                                          string            token,
-                                          string            dataFolder,
-                                          CancellationToken cancellationToken);
+  Task<Output> StartTaskProcessing(TaskData          taskData,
+                                   string            token,
+                                   string            dataFolder,
+                                   CancellationToken cancellationToken);
 }

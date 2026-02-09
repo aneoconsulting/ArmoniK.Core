@@ -25,5 +25,5 @@ public interface IQueueStorage : IInitializable
   /// <summary>
   ///   Max priority supported by the queue
   /// </summary>
-  public int MaxPriority { get; }
+  int MaxPriority { get; }
 }

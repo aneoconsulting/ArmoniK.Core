@@ -1033,19 +1033,19 @@ public static class TaskLifeCycleHelper
                                         pushQueueStorage,
                                         taskData,
                                         sessionData,
-
-                         [],
-        errorMessage,
-        logger,
-        cancellationToken) : AbortTaskAsync(taskTable,
-                                            resultTable,
-                                            objectStorage,
-                                            options,
-                                            taskData,
-                                            OutputStatus.Error,
-                                            errorMessage,
-                                            logger,
-                                            cancellationToken);
+                                        [],
+                                        errorMessage,
+                                        logger,
+                                        cancellationToken)
+                       : AbortTaskAsync(taskTable,
+                                        resultTable,
+                                        objectStorage,
+                                        options,
+                                        taskData,
+                                        OutputStatus.Error,
+                                        errorMessage,
+                                        logger,
+                                        cancellationToken);
 
     return (await updateTask.ConfigureAwait(false)).Status;
   }

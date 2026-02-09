@@ -143,33 +143,27 @@ public class AuthenticationTableTestBase
                   "User1",
                   new[]
                   {
-                    Roles[0]
-                      .RoleId,
+                    Roles[0].RoleId,
                   }),
               new(22,
                   "User2",
                   new[]
                   {
-                    Roles[0]
-                      .RoleId,
-                    Roles[1]
-                      .RoleId,
+                    Roles[0].RoleId,
+                    Roles[1].RoleId,
                   }),
               new(23,
                   "User3",
                   new[]
                   {
-                    Roles[0]
-                      .RoleId,
-                    Roles[2]
-                      .RoleId,
+                    Roles[0].RoleId,
+                    Roles[2].RoleId,
                   }),
               new(24,
                   "User4",
                   new[]
                   {
-                    Roles[0]
-                      .RoleId,
+                    Roles[0].RoleId,
                     1000, // this one should not exist
                   }),
               new(25,
@@ -179,28 +173,23 @@ public class AuthenticationTableTestBase
     Auths = new List<AuthData>
             {
               new(31,
-                  Users[0]
-                    .UserId,
+                  Users[0].UserId,
                   "CNUser1",
                   "Fingerprint1"),
               new(32,
-                  Users[1]
-                    .UserId,
+                  Users[1].UserId,
                   "CNUser2",
                   "Fingerprint2"),
               new(33,
-                  Users[1]
-                    .UserId,
+                  Users[1].UserId,
                   "CNUser3",
                   "Fingerprint3"),
               new(34,
-                  Users[2]
-                    .UserId,
+                  Users[2].UserId,
                   "CNUser4",
                   "Fingerprint4"),
               new(35,
-                  Users[3]
-                    .UserId,
+                  Users[3].UserId,
                   "CNUser5",
                   "Fingerprint5"),
               new(36,
@@ -208,18 +197,15 @@ public class AuthenticationTableTestBase
                   "CNUser6",
                   "Fingerprint6"),
               new(37,
-                  Users[1]
-                    .UserId,
+                  Users[1].UserId,
                   "CNUser2",
                   "Fingerprint7"),
               new(38,
-                  Users[2]
-                    .UserId,
+                  Users[2].UserId,
                   "CNUserCommon",
                   null),
               new(39,
-                  Users[3]
-                    .UserId,
+                  Users[3].UserId,
                   "CNUser2",
                   null),
             };
@@ -315,8 +301,7 @@ public class AuthenticationTableTestBase
                                                                      CancellationToken.None)
                                     .Result;
     Assert.NotNull(ident);
-    Assert.AreEqual(Users[userid]
-                      .UserId,
+    Assert.AreEqual(Users[userid].UserId,
                     ident!.Id);
   }
 
@@ -350,13 +335,11 @@ public class AuthenticationTableTestBase
       return;
     }
 
-    var ident = AuthenticationTable!.GetIdentityFromUserAsync(Users[id]
-                                                                .UserId,
+    var ident = AuthenticationTable!.GetIdentityFromUserAsync(Users[id].UserId,
                                                               null)
                                     .Result;
     Assert.NotNull(ident);
-    Assert.AreEqual(Users[id]
-                      .UserId,
+    Assert.AreEqual(Users[id].UserId,
                     ident!.Id);
     Assert.AreEqual(username,
                     ident.Username);
@@ -393,8 +376,7 @@ public class AuthenticationTableTestBase
     Assert.NotNull(identity);
     Assert.AreEqual(name,
                     identity!.Username);
-    Assert.AreEqual(Users[id]
-                      .UserId,
+    Assert.AreEqual(Users[id].UserId,
                     identity.Id);
   }
 

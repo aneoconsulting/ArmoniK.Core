@@ -126,12 +126,9 @@ internal class PushQueueStorage : IPushQueueStorage
                                                                                            {
                                                                                              entry.Id,
                                                                                              entry.MessageBody,
-                                                                                             failed[entry.Id]
-                                                                                               .Code,
-                                                                                             failed[entry.Id]
-                                                                                               .Message,
-                                                                                             failed[entry.Id]
-                                                                                               .SenderFault,
+                                                                                             failed[entry.Id].Code,
+                                                                                             failed[entry.Id].Message,
+                                                                                             failed[entry.Id].SenderFault,
                                                                                            })
                                                                           .ToList();
 

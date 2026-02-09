@@ -35,9 +35,9 @@ public interface IAuthenticationTable : IInitializable
   /// <param name="fingerprint">Fingerprint of the certificate</param>
   /// <param name="cancellationToken">Cancellation token</param>
   /// <returns>User authentication data matching the provided certificate, null if not found</returns>
-  public Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
-                                                                         string            fingerprint,
-                                                                         CancellationToken cancellationToken = default);
+  Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
+                                                                  string            fingerprint,
+                                                                  CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Get the User authentication data from the database, based on the id or username. If id is not null, will be used for
@@ -47,25 +47,25 @@ public interface IAuthenticationTable : IInitializable
   /// <param name="username">User name</param>
   /// <param name="cancellationToken">Cancellation token</param>
   /// <returns>User authentication data matching the id, if not null, otherwise the username, null if not found</returns>
-  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(int?              id,
-                                                                  string?           username,
-                                                                  CancellationToken cancellationToken = default);
+  Task<UserAuthenticationResult?> GetIdentityFromUserAsync(int?              id,
+                                                           string?           username,
+                                                           CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   Adds roles to the database
   /// </summary>
   /// <param name="roles">Roles to be added</param>
-  public void AddRoles(IEnumerable<RoleData> roles);
+  void AddRoles(IEnumerable<RoleData> roles);
 
   /// <summary>
   ///   Adds users to the database
   /// </summary>
   /// <param name="users">Users to be added</param>
-  public void AddUsers(IEnumerable<UserData> users);
+  void AddUsers(IEnumerable<UserData> users);
 
   /// <summary>
   ///   Adds certificates to the database
   /// </summary>
   /// <param name="certificates">Certificates to be added</param>
-  public void AddCertificates(IEnumerable<AuthData> certificates);
+  void AddCertificates(IEnumerable<AuthData> certificates);
 }

@@ -24,13 +24,13 @@ namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
 public class SessionTableTests : SessionTableTestBase
 {
+  private MongoDatabaseProvider? tableProvider_;
+
   public override void TearDown()
   {
     tableProvider_?.Dispose();
     RunTests = false;
   }
-
-  private MongoDatabaseProvider? tableProvider_;
 
   public override void GetSessionTableInstance()
   {

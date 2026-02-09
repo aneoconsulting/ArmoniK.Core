@@ -404,10 +404,8 @@ public class GrpcResultsServiceTests
     {
       resultOpaqueIdList.Add(new ImportResultsDataRequest.Types.ResultOpaqueId
                              {
-                               OpaqueId = ByteString.CopyFrom(colorsData[i]
-                                                                .id),
-                               ResultId = resultRaw[i]
-                                 .ResultId,
+                               OpaqueId = ByteString.CopyFrom(colorsData[i].id),
+                               ResultId = resultRaw[i].ResultId,
                              });
     }
 
