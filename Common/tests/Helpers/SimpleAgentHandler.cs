@@ -39,7 +39,8 @@ public class SimpleAgentHandler : IAgentHandler
                             string            folder,
                             CancellationToken cancellationToken)
   {
-    Agent = new SimpleAgent();
+    Agent = new SimpleAgent(token,
+                            folder);
     return Task.FromResult(Agent);
   }
 }
