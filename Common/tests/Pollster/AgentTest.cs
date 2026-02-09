@@ -877,6 +877,12 @@ public class AgentTest
                        .ResultId,
                     reply.Single()
                          .PayloadId);
+    Assert.That(holder.Agent.CreatedResultIds,
+                Is.EqualTo(new List<string>
+                           {
+                             eok.Last()
+                                .ResultId,
+                           }));
 
     foreach (var eokResult in eok.SkipLast(1))
     {

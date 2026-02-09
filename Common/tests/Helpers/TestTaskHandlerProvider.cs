@@ -74,15 +74,14 @@ public class TestTaskHandlerProvider : IDisposable
   public IHostApplicationLifetime Lifetime;
 
 
-  public TestTaskHandlerProvider(IWorkerStreamHandler?   workerStreamHandler     = null,
-                                 IAgentHandler?          agentHandler            = null,
-                                 IQueueMessageHandler?   queueStorage            = null,
-                                 ITaskTable?             inputTaskTable          = null,
-                                 ISessionTable?          inputSessionTable       = null,
-                                 ITaskProcessingChecker? taskProcessingChecker   = null,
-                                 IObjectStorage?         objectStorage           = null,
-                                 TimeSpan?               graceDelay              = null,
-                                 TimeSpan?               messageDuplicationDelay = null)
+  public TestTaskHandlerProvider(IWorkerStreamHandler?        workerStreamHandler   = null,
+                                 IAgentHandler?               agentHandler          = null,
+                                 IQueueMessageHandler?        queueStorage          = null,
+                                 ITaskTable?                  inputTaskTable        = null,
+                                 ISessionTable?               inputSessionTable     = null,
+                                 ITaskProcessingChecker?      taskProcessingChecker = null,
+                                 IObjectStorage?              objectStorage         = null,
+                                 IDictionary<string, string>? additionalConfig      = null)
   {
     var logger = NullLogger.Instance;
 
@@ -129,10 +128,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                     "DefaultPartition"
                                                   },
                                                   {
-                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", graceDelay is null
-                                                                                                                                                      ? "00:00:02"
-                                                                                                                                                      : graceDelay
-                                                                                                                                                        .ToString()
+                                                    $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.GraceDelay)}", "00:00:02"
                                                   },
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.SharedCacheFolder)}",
@@ -146,11 +142,17 @@ public class TestTaskHandlerProvider : IDisposable
                                                   },
                                                   {
                                                     $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.MessageDuplicationDelay)}",
-                                                    messageDuplicationDelay is null
-                                                      ? "00:00:05"
-                                                      : messageDuplicationDelay.ToString()
+                                                    "00:00:05"
                                                   },
                                                 };
+
+    if (additionalConfig is not null)
+    {
+      foreach (var pair in additionalConfig)
+      {
+        minimalConfig[pair.Key] = pair.Value;
+      }
+    }
 
     Console.WriteLine(minimalConfig.ToJson());
 

@@ -91,4 +91,14 @@ public class Pollster
   ///   Indicates that readiness health check fails when no tasks are available for this pollster.
   /// </summary>
   public bool FailReadinessIfNoTasks { get; set; }
+
+  /// <summary>
+  ///   Gets or sets the threshold as a storage size fraction at which cache eviction is triggered.
+  /// </summary>
+  /// <remarks>
+  ///   When the cache usage reaches or exceeds this threshold, eviction policies may be applied to
+  ///   remove items and free up space. Adjust this value to control how aggressively the cache manages its
+  ///   capacity.
+  /// </remarks>
+  public double CacheEvictionThreshold { get; set; } = 0.75;
 }
