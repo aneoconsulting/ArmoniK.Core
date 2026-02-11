@@ -17,6 +17,8 @@
 
 using System;
 using System.Linq;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
@@ -30,6 +32,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 
@@ -42,6 +45,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSessionsService : Sessions.SessionsBase
 {
+  private readonly HttpClient                                    httpClient_;
   private readonly ILogger<GrpcSessionsService>                  logger_;
   private readonly FunctionExecutionMetrics<GrpcSessionsService> meter_;
   private readonly IObjectStorage                                objectStorage_;
@@ -63,6 +67,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
   /// <param name="pushQueueStorage">The interface to push tasks in the queue.</param>
   /// <param name="submitterOptions">The submitter options for session configuration.</param>
   /// <param name="meter">The metrics for function execution monitoring.</param>
+  /// <param name="httpClient">The HTTP client for making requests to agents.</param>
   /// <param name="logger">The logger for logging information and errors.</param>
   public GrpcSessionsService(ISessionTable                                 sessionTable,
                              IPartitionTable                               partitionTable,
@@ -72,6 +77,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
                              IPushQueueStorage                             pushQueueStorage,
                              Injection.Options.Submitter                   submitterOptions,
                              FunctionExecutionMetrics<GrpcSessionsService> meter,
+                             HttpClient                                    httpClient,
                              ILogger<GrpcSessionsService>                  logger)
   {
     logger_           = logger;
@@ -83,6 +89,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
     pushQueueStorage_ = pushQueueStorage;
     submitterOptions_ = submitterOptions;
     meter_            = meter;
+    httpClient_       = httpClient;
   }
 
   /// <inheritdoc />
@@ -103,6 +110,41 @@ public class GrpcSessionsService : Sessions.SessionsBase
 
       await tasks.ConfigureAwait(false);
       await results.ConfigureAwait(false);
+
+      // Notify agents to stop running tasks for this session
+      var ownerPodIds = await taskTable_.FindTasksAsync(data => data.SessionId == request.SessionId,
+                                                        data => data.OwnerPodId,
+                                                        context.CancellationToken)
+                                        .Distinct()
+                                        .ToListAsync()
+                                        .ConfigureAwait(false);
+
+      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(submitterOptions_.DegreeOfParallelism),
+                                        async podId =>
+                                        {
+                                          try
+                                          {
+                                            logger_.LogInformation("Notifying agent {OwnerPodId} to stop tasks for session {SessionId}",
+                                                                   podId,
+                                                                   request.SessionId);
+                                            await httpClient_.GetAsync("http://" + podId + ":1080/stopcancelledtask")
+                                                             .ConfigureAwait(false);
+                                          }
+                                          catch (HttpRequestException e) when (e is
+                                                                               {
+                                                                                 InnerException: SocketException
+                                                                                                 {
+                                                                                                   SocketErrorCode: SocketError.ConnectionRefused,
+                                                                                                 },
+                                                                               })
+                                          {
+                                            logger_.LogError(e,
+                                                             "The agent with {OwnerPodId} was not reached successfully",
+                                                             podId);
+                                          }
+                                        })
+                       .ConfigureAwait(false);
+
       return new CancelSessionResponse
              {
                Session = (await sessions.ConfigureAwait(false)).ToGrpcSessionRaw(),
