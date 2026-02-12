@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
@@ -41,6 +42,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
+using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
@@ -1011,12 +1014,17 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       activity?.AddEvent(new ActivityEvent("Start request"));
       logger_.LogDebug("Send request to worker");
+
+      var configuration = await submitter_.GetServiceConfiguration(new Empty(),
+                                                                   earlyCts_.Token)
+                                          .ConfigureAwait(false);
       // ReSharper disable once ExplicitCallerInfoArgument
       using (functionExecutionMetrics_.CountAndTime("RequestExecution"))
       {
         output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
                                                                  token_,
                                                                  folder_,
+                                                                 configuration,
                                                                  lateCts_.Token)
                                             .ConfigureAwait(false);
       }

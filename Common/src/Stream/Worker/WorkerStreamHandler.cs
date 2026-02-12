@@ -144,6 +144,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   public async Task<Output> StartTaskProcessing(TaskData          taskData,
                                                 string            token,
                                                 string            dataFolder,
+                                                Configuration     configuration,
                                                 CancellationToken cancellationToken)
   {
     if (workerClient_ is null)
@@ -156,10 +157,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       return (await workerClient_.ProcessAsync(new ProcessRequest
                                                {
                                                  CommunicationToken = token,
-                                                 Configuration = new Configuration
-                                                                 {
-                                                                   DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
-                                                                 },
+                                                 Configuration      = configuration,
                                                  DataDependencies =
                                                  {
                                                    taskData.DataDependencies,

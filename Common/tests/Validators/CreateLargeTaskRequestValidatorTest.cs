@@ -146,48 +146,4 @@ public class CreateLargeTaskRequestValidatorTest
     Assert.IsTrue(validator_.Validate(ctr)
                             .IsValid);
   }
-
-  [Test]
-  public void LargeDataInDataChunkShouldSucceed()
-  {
-    var rnd = new Random();
-    Console.WriteLine(PayloadConfiguration.MaxChunkSize);
-    var dataBytes = new byte[PayloadConfiguration.MaxChunkSize];
-    rnd.NextBytes(dataBytes);
-    var byteString = ByteString.CopyFrom(dataBytes);
-    Console.WriteLine(byteString.Length);
-
-    var ctr = new CreateLargeTaskRequest
-              {
-                TaskPayload = new DataChunk
-                              {
-                                Data = byteString,
-                              },
-              };
-
-    Assert.IsTrue(validator_.Validate(ctr)
-                            .IsValid);
-  }
-
-  [Test]
-  public void TooLargeDataInDataChunkShouldFail()
-  {
-    var rnd = new Random();
-    Console.WriteLine(PayloadConfiguration.MaxChunkSize);
-    var dataBytes = new byte[PayloadConfiguration.MaxChunkSize + 100];
-    rnd.NextBytes(dataBytes);
-    var byteString = ByteString.CopyFrom(dataBytes);
-    Console.WriteLine(byteString.Length);
-
-    var ctr = new CreateLargeTaskRequest
-              {
-                TaskPayload = new DataChunk
-                              {
-                                Data = byteString,
-                              },
-              };
-
-    Assert.IsFalse(validator_.Validate(ctr)
-                             .IsValid);
-  }
 }

@@ -380,6 +380,9 @@ public sealed class Agent : IAgent
 
   private async Task<Dictionary<string, (byte[] id, long size)>> StoreDataAsync(CancellationToken cancellationToken)
   {
+    var chunkSize = (await submitter_.GetServiceConfiguration(new Empty(),
+                                                              cancellationToken)
+                                     .ConfigureAwait(false)).DataChunkMaxSize;
     var resultsToComplete = new Dictionary<string, (byte[] id, long size)>();
 
     foreach (var result in notifiedResults_.SelectMany(x => x))
@@ -399,10 +402,10 @@ public sealed class Agent : IAgent
       int read;
       do
       {
-        var buffer = new byte[PayloadConfiguration.MaxChunkSize];
+        var buffer = new byte[chunkSize];
         read = await fs.ReadAsync(buffer,
                                   0,
-                                  PayloadConfiguration.MaxChunkSize,
+                                  chunkSize,
                                   cancellationToken)
                        .ConfigureAwait(false);
         if (read > 0)

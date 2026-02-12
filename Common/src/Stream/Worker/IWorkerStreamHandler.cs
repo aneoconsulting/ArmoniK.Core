@@ -19,10 +19,13 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 
 using JetBrains.Annotations;
+
+using Output = ArmoniK.Core.Common.Storage.Output;
 
 namespace ArmoniK.Core.Common.Stream.Worker;
 
@@ -38,10 +41,12 @@ public interface IWorkerStreamHandler : IInitializable, IDisposable
   /// <param name="taskData">The task data containing all information needed to process the task.</param>
   /// <param name="token">Authentication token for the worker.</param>
   /// <param name="dataFolder">The path to the folder where task data can be stored.</param>
+  /// <param name="configuration">The configuration to be sent to the worker</param>
   /// <param name="cancellationToken">Token to cancel the task processing.</param>
   /// <returns>The output of the task processing, including status and any error information.</returns>
   Task<Output> StartTaskProcessing(TaskData          taskData,
                                    string            token,
                                    string            dataFolder,
+                                   Configuration     configuration,
                                    CancellationToken cancellationToken);
 }
