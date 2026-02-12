@@ -995,12 +995,16 @@ public sealed class TaskHandler : IAsyncDisposable
                            .ConfigureAwait(false);
       foreach (var resultId in opaqueIds.Keys)
       {
+        var tmp = Path.Combine(cache_,
+                               $"{resultId}{Guid.NewGuid().ToString()}.tmp");
         try
         {
           File.Copy(Path.Combine(folder_,
                                  resultId),
-                    Path.Combine(cache_,
-                                 resultId));
+                    tmp);
+          FileExt.MoveOrDelete(tmp,
+                               Path.Combine(cache_,
+                                            resultId));
         }
         catch (IOException e)
         {
