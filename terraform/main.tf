@@ -65,6 +65,11 @@ module "object_embed" {
   count  = var.object_storage.name == "embed" ? 1 : 0
 }
 
+module "object_null" {
+  source = "./modules/storage/object/null"
+  count  = var.object_storage.name == "null" ? 1 : 0
+}
+
 module "queue_rabbitmq" {
   source     = "./modules/storage/queue/rabbitmq"
   count      = var.queue_storage.name == "rabbitmq" ? 1 : 0

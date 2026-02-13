@@ -61,7 +61,7 @@ public class CreateSmallTaskRequestValidator : AbstractValidator<CreateSmallTask
         .NotNull();
       RuleFor(r => r.Payload)
         .NotNull()
-        .Must(s => s.Length is > 0 and < PayloadConfiguration.MaxChunkSize)
+        .Must(s => s.Length > 0)
         .WithName(nameof(TaskRequest.Payload));
     }
   }
@@ -141,7 +141,6 @@ public class CreateLargeTaskRequestValidator : AbstractValidator<CreateLargeTask
         .NotEqual(DataChunk.TypeOneofCase.None);
       RuleFor(r => r.Data)
         .NotNull()
-        .Must(s => s.Length   <= PayloadConfiguration.MaxChunkSize)
         .When(r => r.TypeCase == DataChunk.TypeOneofCase.Data);
       RuleFor(r => r.DataComplete)
         .Equal(true)

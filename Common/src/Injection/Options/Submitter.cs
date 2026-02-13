@@ -52,4 +52,13 @@ public class Submitter
   ///   Parallelism used in the control plane when possible. Defaults to the number of threads.
   /// </summary>
   public int DegreeOfParallelism { get; set; } = 0;
+
+  /// <summary>
+  ///   Preferred message size for streamed upload and download.
+  ///   Serves as the threshold to switch from unitary CreateResults to UploadResultData in client codes.
+  /// </summary>
+  /// <remarks>
+  ///   The value must be less than the limit of gRPC messages accepted by the server.
+  /// </remarks>
+  public int PreferredMessageSize { get; set; } = 2 * 1024 * 1024;
 }

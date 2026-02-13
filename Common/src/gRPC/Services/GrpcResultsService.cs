@@ -381,7 +381,7 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
     return Task.FromResult(new ResultsServiceConfigurationResponse
                            {
-                             DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                             DataChunkMaxSize = options_.PreferredMessageSize,
                            });
   }
 

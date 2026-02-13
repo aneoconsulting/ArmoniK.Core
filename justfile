@@ -68,6 +68,8 @@ object_storage := if object == "redis" {
   '{ name = "minio", image = "quay.io/minio/minio" '
 } else if object == "embed" {
   '{ name = "embed"'
+} else if object == "null" {
+  '{ name = "null"'
 } else {
   '{ name = "local", image = "" '
 }

@@ -25,11 +25,11 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -46,6 +46,11 @@ using Moq;
 
 using NUnit.Framework;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
+using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
@@ -1904,6 +1909,7 @@ public class TaskHandlerTest
     mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                       It.IsAny<string>(),
                                                       It.IsAny<string>(),
+                                                      It.IsAny<Configuration>(),
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromResult(new Output(OutputStatus.Timeout,
                                                   "Deadline Exceeded")));
@@ -1978,6 +1984,7 @@ public class TaskHandlerTest
     mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                       It.IsAny<string>(),
                                                       It.IsAny<string>(),
+                                                      It.IsAny<Configuration>(),
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromException<Output>(exception));
     mock.Setup(handler => handler.Check(It.IsAny<HealthCheckTag>()))

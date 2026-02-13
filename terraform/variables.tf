@@ -61,8 +61,8 @@ variable "object_storage" {
     local_storage_path = optional(string, "/local_storage")
   })
   validation {
-    condition     = can(regex("^(redis|local|minio|embed)$", var.object_storage.name))
-    error_message = "Must be redis, minio, embed, or local"
+    condition     = can(regex("^(redis|local|minio|embed|null)$", var.object_storage.name))
+    error_message = "Must be redis, minio, embed, local, or null"
   }
   default = {}
 }

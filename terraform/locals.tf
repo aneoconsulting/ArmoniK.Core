@@ -16,7 +16,7 @@ locals {
   worker             = merge(var.compute_plane.worker, { image = var.worker_image })
   queue              = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_nats, module.queue_none))
   database           = module.database
-  object             = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed))
+  object             = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed, module.object_null))
   partition_env_vars = { for i in local.partitions : "InitServices__Partitioning__Partitions__${i}" => jsonencode(merge(var.partition_data, { PartitionId = "${var.partition_data.PartitionId}${i}" })) }
   env_maps = concat([
     local.queue.generated_env_vars,
