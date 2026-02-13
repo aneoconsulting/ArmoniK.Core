@@ -8,8 +8,9 @@ resource "docker_container" "queue" {
   image = docker_image.queue.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   wait = true
 

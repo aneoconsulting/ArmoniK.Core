@@ -27,8 +27,9 @@ resource "docker_container" "worker" {
   image = docker_image.worker.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env, local.common_env)
 
@@ -68,8 +69,9 @@ resource "docker_container" "polling_agent" {
   image = docker_image.polling_agent.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   env = concat(local.env, local.gen_env, local.common_env)
 

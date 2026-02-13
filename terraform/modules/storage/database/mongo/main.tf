@@ -10,8 +10,9 @@ resource "docker_container" "database" {
   command = ["mongod", "--bind_ip_all", "--replSet", var.mongodb_params.replica_set_name, "--tlsMode=requireTLS", "--tlsDisabledProtocols=TLS1_0", "--tlsCertificateKeyFile=/mongo-certificate/key.pem", "--tlsCAFile=/mongo-certificate/ca.pem", "--tlsAllowConnectionsWithoutCertificates"]
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   ports {
     internal = 27017
