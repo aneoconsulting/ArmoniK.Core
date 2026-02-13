@@ -9,9 +9,9 @@ resource "docker_container" "fluentbit" {
   restart = "always"
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
-  network_mode = "nat"
+  network_mode = var.network.driver
 
   upload {
     file   = "/fluent-bit/etc/fluent-bit.conf"

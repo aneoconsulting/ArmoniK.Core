@@ -11,7 +11,10 @@ variable "docker_image" {
 }
 
 variable "network" {
-  type = string
+  type = object({
+    name   = string
+    driver = string
+  })
 }
 
 variable "generated_env_vars" {
@@ -36,4 +39,3 @@ variable "log_driver" {
 variable "container_init" {
   type = bool
 }
-

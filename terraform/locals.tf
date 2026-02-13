@@ -32,7 +32,7 @@ locals {
   submitter           = merge(var.submitter, { tag = var.core_tag })
   compute_plane       = merge(var.compute_plane, { tag = var.core_tag }, { worker = local.worker })
   polling_agent_names = toset([for v in module.compute_plane : v.polling_agent_name])
-  network_id          = one(concat(docker_network.armonik, data.docker_network.armonik)).id
+  network             = one(concat(docker_network.armonik, data.docker_network.armonik))
 }
 resource "local_file" "queue_env" {
   filename = "${path.root}/generated/queue_env.sh"

@@ -8,9 +8,9 @@ resource "docker_container" "seq" {
   image = docker_image.seq.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
-  network_mode = "nat"
+  network_mode = var.network.driver
 
   env = [
     "ACCEPT_EULA=Y",

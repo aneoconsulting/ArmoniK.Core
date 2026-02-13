@@ -8,9 +8,9 @@ resource "docker_container" "ingress" {
   image = docker_image.ingress.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
-  network_mode = "nat"
+  network_mode = var.network.driver
 
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts

@@ -9,9 +9,9 @@ resource "docker_container" "zipkin" {
   count = var.exporters.zipkin ? 1 : 0
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
-  network_mode = "nat"
+  network_mode = var.network.driver
 
   ports {
     internal = 9411

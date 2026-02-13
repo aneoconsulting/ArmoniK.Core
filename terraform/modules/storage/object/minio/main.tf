@@ -10,9 +10,9 @@ resource "docker_container" "object" {
   command    = ["-c", "mkdir -p /data/${var.bucket_name} && minio server /data --console-address :9001"]
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
-  network_mode = "nat"
+  network_mode = var.network.driver
 
   ports {
     internal = var.port
