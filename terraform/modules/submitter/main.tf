@@ -11,6 +11,7 @@ resource "docker_container" "init" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   env = concat(local.common_env, local.gen_env, local.init_env)
 

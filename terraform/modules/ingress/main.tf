@@ -10,6 +10,7 @@ resource "docker_container" "ingress" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts

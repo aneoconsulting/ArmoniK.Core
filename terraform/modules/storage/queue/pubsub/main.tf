@@ -10,6 +10,7 @@ resource "docker_container" "queue" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   command = ["gcloud", "beta", "emulators", "pubsub", "start", "--project=plugincore", "--host-port=0.0.0.0:8085"]
   wait    = true

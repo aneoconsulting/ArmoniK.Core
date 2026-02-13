@@ -30,6 +30,7 @@ resource "docker_container" "object" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
   upload {
     file    = "/etc/redis/redis.conf"
     content = local_file.redis_conf.content

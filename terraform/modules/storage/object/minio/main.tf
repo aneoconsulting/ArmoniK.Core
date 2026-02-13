@@ -12,6 +12,7 @@ resource "docker_container" "object" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   ports {
     internal = var.port

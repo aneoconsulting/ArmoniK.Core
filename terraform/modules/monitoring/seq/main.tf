@@ -10,6 +10,7 @@ resource "docker_container" "seq" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   env = [
     "ACCEPT_EULA=Y",

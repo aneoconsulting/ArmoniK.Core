@@ -12,6 +12,7 @@ resource "docker_container" "database" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   ports {
     internal = 27017
