@@ -9,6 +9,7 @@ resource "docker_container" "grafana" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   env = [
     "GF_AUTH_ANONYMOUS_ENABLED=true",

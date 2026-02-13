@@ -10,6 +10,7 @@ resource "docker_container" "partition_metrics" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   env = concat(local.env, local.gen_env, local.init_env)
 

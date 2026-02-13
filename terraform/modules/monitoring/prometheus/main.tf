@@ -9,6 +9,7 @@ resource "docker_container" "prometheus" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   ports {
     internal = 9090

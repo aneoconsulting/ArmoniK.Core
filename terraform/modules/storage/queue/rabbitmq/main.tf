@@ -9,6 +9,7 @@ resource "docker_container" "queue" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   ports {
     internal = var.windows ? 5672 : 5671

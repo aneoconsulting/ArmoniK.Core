@@ -11,6 +11,7 @@ resource "docker_container" "fluentbit" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   upload {
     file   = "/fluent-bit/etc/fluent-bit.conf"

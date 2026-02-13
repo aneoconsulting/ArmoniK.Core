@@ -10,6 +10,7 @@ resource "docker_container" "queue" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   command = ["-js", "--http_port", "8222"]
   wait    = !var.windows

@@ -11,6 +11,7 @@ resource "docker_container" "zipkin" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   ports {
     internal = 9411

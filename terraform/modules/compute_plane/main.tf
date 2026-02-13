@@ -29,6 +29,7 @@ resource "docker_container" "worker" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   env = concat(["Serilog__Properties__Application=${var.worker.serilog_application_name}"], local.gen_env, local.common_env)
 
@@ -70,6 +71,7 @@ resource "docker_container" "polling_agent" {
   networks_advanced {
     name = var.network
   }
+  network_mode = "nat"
 
   env = concat(local.env, local.gen_env, local.common_env)
 
