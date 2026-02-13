@@ -103,7 +103,7 @@ public class Submitter : ISubmitter
                                                      CancellationToken cancellationToken)
     => Task.FromResult(new Configuration
                        {
-                         DataChunkMaxSize = PayloadConfiguration.MaxChunkSize,
+                         DataChunkMaxSize = submitterOptions_.PreferredMessageSize,
                        });
 
   /// <inheritdoc />

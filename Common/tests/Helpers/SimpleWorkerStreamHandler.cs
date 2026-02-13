@@ -19,11 +19,14 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+
+using Output = ArmoniK.Core.Common.Storage.Output;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
@@ -44,6 +47,7 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
   public Task<Output> StartTaskProcessing(TaskData          taskData,
                                           string            token,
                                           string            dataFolder,
+                                          Configuration     configuration,
                                           CancellationToken cancellationToken)
     => Task.FromResult(Output);
 }

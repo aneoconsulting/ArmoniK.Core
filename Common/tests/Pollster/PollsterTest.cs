@@ -23,6 +23,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
@@ -39,6 +40,10 @@ using Moq;
 
 using NUnit.Framework;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
@@ -227,6 +232,7 @@ public class PollsterTest
     public Task<Output> StartTaskProcessing(TaskData          taskData,
                                             string            token,
                                             string            dataFolder,
+                                            Configuration     configuration,
                                             CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
@@ -259,6 +265,7 @@ public class PollsterTest
     public Task<Output> StartTaskProcessing(TaskData          taskData,
                                             string            token,
                                             string            dataFolder,
+                                            Configuration     configuration,
                                             CancellationToken cancellationToken)
       => throw new NotImplementedException();
   }
@@ -452,6 +459,7 @@ public class PollsterTest
     public async Task<Output> StartTaskProcessing(TaskData          taskData,
                                                   string            token,
                                                   string            dataFolder,
+                                                  Configuration     configuration,
                                                   CancellationToken cancellationToken)
     {
       await Task.Delay(TimeSpan.FromMilliseconds(delay_),
@@ -765,6 +773,7 @@ public class PollsterTest
         mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                                                        It.IsAny<string>(),
                                                                                        It.IsAny<string>(),
+                                                                                       It.IsAny<Configuration>(),
                                                                                        It.IsAny<CancellationToken>()))
                              .Throws(new ApplicationException("Failed WorkerStreamHandler"));
         yield return new TestCaseData(mockStreamHandlerFail,
@@ -841,6 +850,7 @@ public class PollsterTest
     mockStreamHandlerFail.Setup(streamHandler => streamHandler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                                                    It.IsAny<string>(),
                                                                                    It.IsAny<string>(),
+                                                                                   It.IsAny<Configuration>(),
                                                                                    It.IsAny<CancellationToken>()))
                          .Throws(new TestUnavailableRpcException("Unavailable worker"));
 
