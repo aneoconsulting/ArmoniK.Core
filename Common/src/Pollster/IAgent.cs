@@ -46,6 +46,11 @@ public interface IAgent : IDisposable
   string SessionId { get; }
 
   /// <summary>
+  ///   Gets the collection of identifiers for results that were created (and their data are available) during the operation.
+  /// </summary>
+  ICollection<string> CreatedResultIds { get; }
+
+  /// <summary>
   ///   Create and populate results and submit child tasks after the parent task succeeds
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>

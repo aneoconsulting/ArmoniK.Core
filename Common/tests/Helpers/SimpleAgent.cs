@@ -27,16 +27,20 @@ using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
-public class SimpleAgent : IAgent
+public class SimpleAgent(string token,
+                         string folder) : IAgent
 {
-  public string Token
-    => "token";
+  public List<string> NotifiedResults = new();
 
-  public string Folder
-    => "folder";
+  public string Token { get; } = token;
+
+  public string Folder { get; } = folder;
 
   public string SessionId
     => "session";
+
+  public ICollection<string> CreatedResultIds
+    => NotifiedResults.AsICollection();
 
   public Task CreateResultsAndSubmitChildTasksAsync(CancellationToken cancellationToken)
     => Task.CompletedTask;
@@ -79,8 +83,10 @@ public class SimpleAgent : IAgent
   public Task<ICollection<string>> NotifyResultData(string              token,
                                                     ICollection<string> resultIds,
                                                     CancellationToken   cancellationToken)
-    => Task.FromResult(Array.Empty<string>()
-                            .AsICollection());
+  {
+    NotifiedResults.AddRange(resultIds);
+    return Task.FromResult(resultIds);
+  }
 
   public void Dispose()
     => GC.SuppressFinalize(this);

@@ -25,7 +25,6 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
-using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -40,7 +39,6 @@ public class DataPrefetcher : IInitializable
   private readonly ActivitySource?         activitySource_;
   private readonly ILogger<DataPrefetcher> logger_;
   private readonly IObjectStorage          objectStorage_;
-  private readonly IResultTable            resultTable_;
 
   private bool isInitialized_;
 
@@ -48,16 +46,13 @@ public class DataPrefetcher : IInitializable
   ///   Create data prefetcher for tasks
   /// </summary>
   /// <param name="objectStorage">Interface to manage data</param>
-  /// <param name="resultTable">Interface to manage results metadata</param>
   /// <param name="activitySource">Activity source for tracing</param>
   /// <param name="logger">Logger used to print logs</param>
   public DataPrefetcher(IObjectStorage          objectStorage,
-                        IResultTable            resultTable,
                         ActivitySource?         activitySource,
                         ILogger<DataPrefetcher> logger)
   {
     objectStorage_  = objectStorage;
-    resultTable_    = resultTable;
     logger_         = logger;
     activitySource_ = activitySource;
   }
@@ -82,43 +77,30 @@ public class DataPrefetcher : IInitializable
   /// <summary>
   ///   Method used to prefetch data before executing a task
   /// </summary>
-  /// <param name="taskData">Task metadata</param>
+  /// <param name="opaqueIds">Dictionary containing </param>
   /// <param name="folder">Path in which pre-fetched data are stored</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
   /// <exception cref="ObjectDataNotFoundException">input data are not found</exception>
-  public async Task PrefetchDataAsync(TaskData          taskData,
-                                      string            folder,
-                                      CancellationToken cancellationToken)
+  public async Task PrefetchDataAsync(Dictionary<string, byte[]> opaqueIds,
+                                      string                     folder,
+                                      CancellationToken          cancellationToken)
   {
     using var activity     = activitySource_?.StartActivity();
-    using var sessionScope = logger_.BeginPropertyScope(("sessionId", taskData.SessionId));
+    using var sessionScope = logger_.BeginPropertyScope(("results", opaqueIds));
 
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
-    var dependencies = new List<string>
-                       {
-                         taskData.PayloadId,
-                       };
-    dependencies.AddRange(taskData.DataDependencies);
 
-
-    await foreach (var id in resultTable_.GetResults(data => dependencies.Contains(data.ResultId),
-                                                     r => new
-                                                          {
-                                                            r.ResultId,
-                                                            r.OpaqueId,
-                                                          },
-                                                     cancellationToken)
-                                         .ConfigureAwait(false))
+    foreach (var (resultId, opaqueId) in opaqueIds)
     {
       await using var fs = new FileStream(Path.Combine(folder,
-                                                       id.ResultId),
+                                                       resultId),
                                           FileMode.OpenOrCreate);
       await using var w = new BinaryWriter(fs);
-      await foreach (var chunk in objectStorage_.GetValuesAsync(id.OpaqueId,
+      await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
                                                                 cancellationToken)
                                                 .ConfigureAwait(false))
       {
