@@ -7,9 +7,9 @@ resource "docker_container" "grafana" {
   image = docker_image.grafana.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
-  network_mode = "nat"
+  network_mode = var.network.driver
 
   env = [
     "GF_AUTH_ANONYMOUS_ENABLED=true",

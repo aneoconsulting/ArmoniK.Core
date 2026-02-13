@@ -4,7 +4,10 @@ variable "image" {
 }
 
 variable "network" {
-  type = string
+  type = object({
+    name   = string
+    driver = string
+  })
 }
 
 variable "queue_envs" {

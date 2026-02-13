@@ -819,7 +819,7 @@ jobs:
         timeout-minutes: 3
         shell: powershell
         run: |
-          docker run --net armonik_network --rm `
+          docker run --rm `
             -e HtcMock__NTasks=100 `
             -e HtcMock__TotalCalculationTime=00:00:00.100 `
             -e HtcMock__DataSize=1 `
@@ -833,7 +833,7 @@ jobs:
         timeout-minutes: 3
         shell: powershell
         run: |
-          docker run --net armonik_network --rm `
+          docker run --rm `
             -e HtcMock__NTasks=100 `
             -e HtcMock__TotalCalculationTime=00:00:00.100 `
             -e HtcMock__DataSize=1 `
@@ -847,7 +847,7 @@ jobs:
         timeout-minutes: 3
         shell: powershell
         run: |
-          docker run --net armonik_network --rm `
+          docker run --rm `
             -e HtcMock__NTasks=100 `
             -e HtcMock__TotalCalculationTime=00:00:00.100 `
             -e HtcMock__DataSize=1 `
@@ -862,7 +862,7 @@ jobs:
         timeout-minutes: 3
         shell: powershell
         run: |
-          docker run --net armonik_network --rm `
+          docker run --rm `
             -e HtcMock__NTasks=1000 `
             -e HtcMock__TotalCalculationTime=00:00:00.100 `
             -e HtcMock__DataSize=1 `
@@ -876,7 +876,7 @@ jobs:
         timeout-minutes: 3
         shell: powershell
         run: |
-          docker run --net armonik_network --rm `
+          docker run --rm `
             -e HtcMock__NTasks=1000 `
             -e HtcMock__TotalCalculationTime=00:00:00.100 `
             -e HtcMock__DataSize=1 `

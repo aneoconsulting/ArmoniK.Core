@@ -8,8 +8,9 @@ resource "docker_container" "otel_collector" {
   image = docker_image.otel_collector.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   ports {
     internal = 4317

@@ -49,7 +49,10 @@ variable "num_partitions" {
 }
 
 variable "network" {
-  type = string
+  type = object({
+    name   = string
+    driver = string
+  })
 }
 
 variable "log_driver" {
