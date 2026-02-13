@@ -1,4 +1,3 @@
 resource "docker_network" "armonik" {
-  name   = "armonik_network"
-  driver = "host"
+  name = "armonik_network"
 }
