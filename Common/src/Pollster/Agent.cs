@@ -108,6 +108,12 @@ public sealed class Agent : IAgent
     => sessionData_.SessionId;
 
   /// <inheritdoc />
+  public ICollection<string> CreatedResultIds
+    => resultsData_.SelectMany(tuples => tuples.Select(tuple => tuple.id))
+                   .Concat(notifiedResults_.SelectMany(collection => collection))
+                   .ToHashSet();
+
+  /// <inheritdoc />
   /// <exception cref="ArmoniKException"></exception>
   public async Task CreateResultsAndSubmitChildTasksAsync(CancellationToken cancellationToken)
   {

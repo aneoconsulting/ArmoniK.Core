@@ -61,6 +61,8 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly ActivityContext                       activityContext_;
   private readonly ActivitySource                        activitySource_;
   private readonly IAgentHandler                         agentHandler_;
+  private readonly string                                cache_;
+  private readonly double                                cacheEvictionThreshold_;
   private readonly DataPrefetcher                        dataPrefetcher_;
   private readonly TimeSpan                              delayBeforeAcquisition_;
   private readonly CancellationTokenSource               earlyCts_;
@@ -117,6 +119,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <param name="exceptionManager">The exception manager for handling cancellation and errors.</param>
   /// <param name="functionExecutionMetrics">The metrics collector for function execution.</param>
   /// <param name="healthCheckRecord">The health check record for agent health monitoring.</param>
+  /// <exception cref="ArgumentOutOfRangeException"></exception>
   public TaskHandler(ISessionTable                         sessionTable,
                      ITaskTable                            taskTable,
                      IResultTable                          resultTable,
@@ -178,9 +181,20 @@ public sealed class TaskHandler : IAsyncDisposable
 
     token_ = Guid.NewGuid()
                  .ToString();
+
+    cache_                  = pollsterOptions.InternalCacheFolder;
+    cacheEvictionThreshold_ = pollsterOptions.CacheEvictionThreshold;
+    if (cacheEvictionThreshold_ is < 0 or > 1)
+    {
+      throw new ArgumentOutOfRangeException(nameof(pollsterOptions.CacheEvictionThreshold),
+                                            cacheEvictionThreshold_,
+                                            "Cache eviction threshold should be between 0 and 1");
+    }
+
     folder_ = Path.Combine(pollsterOptions.SharedCacheFolder,
                            token_);
     Directory.CreateDirectory(folder_);
+    Directory.CreateDirectory(cache_);
     delayBeforeAcquisition_  = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
     messageDuplicationDelay_ = pollsterOptions.MessageDuplicationDelay;
     processingCrashedDelay_  = pollsterOptions.ProcessingCrashedDelay;
@@ -219,9 +233,60 @@ public sealed class TaskHandler : IAsyncDisposable
     {
     }
 
+    if (cacheEvictionThreshold_ > 0)
+    {
+      EvictIfNeeded();
+    }
+
     activity_?.Dispose();
     lateCts_.Dispose();
     earlyCts_.Dispose();
+  }
+
+  private bool IsEvictionNeeded()
+  {
+    var drive = new DriveInfo(Path.GetPathRoot(cache_)!);
+    var p     = (double)(drive.TotalSize - drive.AvailableFreeSpace) / drive.TotalSize;
+    return p > cacheEvictionThreshold_;
+  }
+
+  private void EvictIfNeeded()
+  {
+    if (!IsEvictionNeeded())
+    {
+      return;
+    }
+
+    logger_.LogInformation("Cache full, evicting cache folder {Folder}",
+                           cache_);
+
+
+    var entries = new DirectoryInfo(cache_).EnumerateFiles()
+                                           .Select(f => new
+                                                        {
+                                                          f.FullName,
+                                                          Access = Math.Max(f.LastAccessTimeUtc.Ticks,
+                                                                            f.LastWriteTimeUtc.Ticks),
+                                                        })
+                                           .OrderBy(e => e.Access)
+                                           .ToList();
+
+    foreach (var entry in entries)
+    {
+      try
+      {
+        File.Delete(entry.FullName);
+      }
+      catch (IOException)
+      {
+        // If the file is in use or already deleted, we ignore the exception and try to delete the next one
+      }
+
+      if (!IsEvictionNeeded())
+      {
+        break;
+      }
+    }
   }
 
   /// <summary>
@@ -885,12 +950,79 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("sessionId", taskData_.SessionId));
     logger_.LogDebug("Start prefetch data");
 
+    var dependencies = new List<string>
+                       {
+                         taskData_.PayloadId,
+                       };
+    dependencies.AddRange(taskData_.DataDependencies);
+
+    var opaqueIds = await resultTable_.GetResults(data => dependencies.Contains(data.ResultId),
+                                                  r => new
+                                                       {
+                                                         r.ResultId,
+                                                         r.OpaqueId,
+                                                       },
+                                                  earlyCts_.Token)
+                                      .ToDictionaryAsync(tuple => tuple.ResultId,
+                                                         tuple => tuple.OpaqueId,
+                                                         null,
+                                                         earlyCts_.Token)
+                                      .ConfigureAwait(false);
+
+    if (cacheEvictionThreshold_ > 0)
+    {
+      foreach (var resultId in opaqueIds.Keys)
+      {
+        try
+        {
+          File.Copy(Path.Combine(cache_,
+                                 resultId),
+                    Path.Combine(folder_,
+                                 resultId),
+                    true);
+          opaqueIds.Remove(resultId);
+        }
+        catch (FileNotFoundException)
+        {
+          // We try to copy the file from cache to folder, if it is not found in cache, we will prefetch it later
+        }
+      }
+    }
+
     try
     {
-      await dataPrefetcher_.PrefetchDataAsync(taskData_,
+      // Prefetch data that are not in cache yet. Data that are already in cache will not be prefetched again, so we avoid unnecessary prefetching from the object storage.
+      // We prefetch data in the folder_ and then copy them to cache_. This ensures that data are not evicted between the prefetching and the copy in the cache.
+      // This way, if the same data are needed for another task, they will be in cache_ and we will avoid prefetching them again from the object storage.
+      await dataPrefetcher_.PrefetchDataAsync(opaqueIds,
                                               folder_,
                                               earlyCts_.Token)
                            .ConfigureAwait(false);
+      if (cacheEvictionThreshold_ > 0)
+      {
+        foreach (var resultId in opaqueIds.Keys)
+        {
+          var tmp = Path.Combine(cache_,
+                                 $"{resultId}{Guid.NewGuid().ToString()}.tmp");
+          try
+          {
+            File.Copy(Path.Combine(folder_,
+                                   resultId),
+                      tmp);
+            FileExt.MoveOrDelete(tmp,
+                                 Path.Combine(cache_,
+                                              resultId));
+          }
+          catch (IOException e)
+          {
+            // If the file is not copied to cache, it will be prefetched again for the next task that needs it, so we can just log the error and continue
+            logger_.LogWarning(e,
+                               "Failed to copy file {ResultId} from folder to cache, it will be prefetched again for the next task that needs it",
+                               resultId);
+          }
+        }
+      }
+
       fetchedDate_ = DateTime.UtcNow;
     }
     catch (ObjectDataNotFoundException e)
@@ -1101,6 +1233,28 @@ public sealed class TaskHandler : IAsyncDisposable
         logger_.LogDebug("Complete processing of the request");
         await agent_.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                     .ConfigureAwait(false);
+
+        // add outputs to cache so they can be used as dependencies for other tasks without having to fetch them from the object storage
+        if (cacheEvictionThreshold_ > 0)
+        {
+          foreach (var id in agent_.CreatedResultIds)
+          {
+            try
+            {
+              File.Copy(Path.Combine(folder_,
+                                     id),
+                        Path.Combine(cache_,
+                                     id));
+            }
+            catch (IOException e)
+            {
+              // at this point, results are stored in the object storage, so it is not an issue if they are not copied to the cache, but we log it for debugging purposes
+              logger_.LogWarning(e,
+                                 "Output {ResultId} was not stored in the cache",
+                                 id);
+            }
+          }
+        }
       }
 
       await submitter_.CompleteTaskAsync(taskData_,
