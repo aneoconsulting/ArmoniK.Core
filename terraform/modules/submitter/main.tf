@@ -9,8 +9,9 @@ resource "docker_container" "init" {
   count = var.container_init ? 1 : 0
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   env = concat(local.common_env, local.gen_env, local.init_env)
 
@@ -41,8 +42,9 @@ resource "docker_container" "submitter" {
   image = docker_image.submitter.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   env = concat(local.common_env, local.gen_env, local.control_plane_env)
 

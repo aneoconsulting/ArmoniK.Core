@@ -1,28 +1,28 @@
 module "fluenbit" {
   source  = "./modules/monitoring/fluentbit"
   image   = var.log_driver_image
-  network = docker_network.armonik.id
+  network = local.network
 }
 
 module "seq" {
   count   = var.enable_seq ? 1 : 0
   source  = "./modules/monitoring/seq"
   image   = var.seq_image
-  network = docker_network.armonik.id
+  network = local.network
 }
 
 module "grafana" {
   count   = var.enable_grafana ? 1 : 0
   source  = "./modules/monitoring/grafana"
   image   = var.grafana_image
-  network = docker_network.armonik.id
+  network = local.network
 }
 
 module "prometheus" {
   count               = var.enable_prometheus ? 1 : 0
   source              = "./modules/monitoring/prometheus"
   image               = var.prometheus_image
-  network             = docker_network.armonik.id
+  network             = local.network
   polling_agent_names = local.polling_agent_names
   submitter_names     = [var.submitter.name]
 }
@@ -30,7 +30,7 @@ module "prometheus" {
 module "database" {
   source         = "./modules/storage/database/mongo"
   image          = var.database_image
-  network        = docker_network.armonik.id
+  network        = local.network
   mongodb_params = var.mongodb_params
   windows        = var.windows
 }
@@ -39,7 +39,7 @@ module "object_redis" {
   source  = "./modules/storage/object/redis"
   count   = var.object_storage.name == "redis" ? 1 : 0
   image   = var.object_storage.image
-  network = docker_network.armonik.id
+  network = local.network
 }
 
 module "object_minio" {
@@ -51,7 +51,7 @@ module "object_minio" {
   login       = var.object_storage.login
   password    = var.object_storage.password
   bucket_name = var.object_storage.bucket_name
-  network     = docker_network.armonik.id
+  network     = local.network
 }
 
 module "object_local" {
@@ -75,7 +75,7 @@ module "queue_rabbitmq" {
   count      = var.queue_storage.name == "rabbitmq" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
-  network    = docker_network.armonik.id
+  network    = local.network
   windows    = var.windows
 }
 
@@ -84,7 +84,7 @@ module "queue_activemq" {
   count      = var.queue_storage.name == "activemq" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
-  network    = docker_network.armonik.id
+  network    = local.network
 }
 
 module "queue_artemis" {
@@ -92,7 +92,7 @@ module "queue_artemis" {
   count      = var.queue_storage.name == "artemis" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
-  network    = docker_network.armonik.id
+  network    = local.network
 }
 
 module "queue_pubsub" {
@@ -100,7 +100,7 @@ module "queue_pubsub" {
   count      = var.queue_storage.name == "pubsub" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
-  network    = docker_network.armonik.id
+  network    = local.network
 }
 
 module "queue_nats" {
@@ -108,7 +108,7 @@ module "queue_nats" {
   count      = var.queue_storage.name == "nats" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
-  network    = docker_network.armonik.id
+  network    = local.network
   windows    = var.windows
 }
 
@@ -117,7 +117,7 @@ module "queue_sqs" {
   count      = var.queue_storage.name == "sqs" ? 1 : 0
   queue_envs = var.queue_env_vars
   image      = var.queue_storage.image
-  network    = docker_network.armonik.id
+  network    = local.network
 }
 
 module "queue_none" {
@@ -130,7 +130,7 @@ module "submitter" {
   container_name     = local.submitter.name
   core_tag           = local.submitter.tag
   docker_image       = local.submitter.image
-  network            = docker_network.armonik.id
+  network            = local.network
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
   volumes            = local.volumes
@@ -149,7 +149,7 @@ module "compute_plane" {
   socket_type        = var.socket_type
   generated_env_vars = local.environment
   volumes            = local.volumes
-  network            = docker_network.armonik.id
+  network            = local.network
   log_driver         = module.fluenbit.log_driver
   mounts             = local.mounts
   container_init     = var.container_init
@@ -160,7 +160,7 @@ module "metrics_exporter" {
   source             = "./modules/monitoring/metrics"
   tag                = var.core_tag
   image              = var.armonik_metrics_image
-  network            = docker_network.armonik.id
+  network            = local.network
   generated_env_vars = local.environment
   log_driver         = module.fluenbit.log_driver
   mounts             = local.mounts
@@ -171,7 +171,7 @@ module "partition_metrics_exporter" {
   source             = "./modules/monitoring/partition_metrics"
   tag                = var.core_tag
   image              = var.armonik_partition_metrics_image
-  network            = docker_network.armonik.id
+  network            = local.network
   generated_env_vars = local.environment
   metrics_env_vars   = module.metrics_exporter.metrics_env_vars
   log_driver         = module.fluenbit.log_driver
@@ -190,14 +190,14 @@ module "ingress" {
   tls        = each.value.tls
   mtls       = each.value.mtls
   port       = each.value.port
-  network    = docker_network.armonik.id
+  network    = local.network
   submitter  = module.submitter
   log_driver = module.fluenbit.log_driver
 }
 
 module "tracing" {
   source               = "./modules/tracing"
-  network              = docker_network.armonik.id
+  network              = local.network
   count                = var.tracing_exporters == null ? 0 : 1
   exporters            = var.tracing_exporters
   zipkin_image         = var.zipkin_image

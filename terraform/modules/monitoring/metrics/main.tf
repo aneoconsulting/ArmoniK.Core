@@ -8,8 +8,9 @@ resource "docker_container" "metrics" {
   image = docker_image.metrics.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   env = concat(local.gen_env, local.init_env)
 

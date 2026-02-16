@@ -7,8 +7,9 @@ resource "docker_container" "prometheus" {
   image = docker_image.prometheus.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   ports {
     internal = 9090
@@ -77,5 +78,3 @@ resource "local_file" "config" {
 
   filename = "${path.module}/prometheus.yml"
 }
-
-
