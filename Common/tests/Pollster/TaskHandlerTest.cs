@@ -2318,6 +2318,95 @@ public class TaskHandlerTest
   }
 
   [Test]
+  public async Task CacheShouldBeDeactivated()
+  {
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+               };
+
+    var sh    = new SimpleWorkerStreamHandler();
+    var cache = Directory.CreateTempSubdirectory();
+    var conf = new Dictionary<string, string>
+               {
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.InternalCacheFolder)}", cache.FullName
+                 },
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheEvictionThreshold)}", "0"
+                 },
+               };
+    var agentHandler = new SimpleAgentHandler();
+    using var testServiceProvider = new TestTaskHandlerProvider(sh,
+                                                                agentHandler,
+                                                                sqmh,
+                                                                additionalConfig: conf);
+
+    var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
+                                 .ConfigureAwait(false);
+
+    sqmh.TaskId = taskId;
+
+    var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId,
+                                                                     CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.AreEqual(AcquisitionStatus.Acquired,
+                    acquired);
+
+
+    Assert.That(cache.EnumerateFiles(),
+                Is.Empty);
+
+    await testServiceProvider.TaskHandler.PreProcessing()
+                             .ConfigureAwait(false);
+
+    Assert.That(cache.EnumerateFiles(),
+                Is.Empty);
+
+    await testServiceProvider.TaskHandler.ExecuteTask()
+                             .ConfigureAwait(false);
+
+    if (agentHandler.Agent is null)
+    {
+      throw new NullReferenceException(nameof(agentHandler.Agent));
+    }
+
+    var outputId = taskData.ExpectedOutputIds.Single();
+    var folder   = agentHandler.Agent.Folder;
+    File.WriteAllText(Path.Combine(folder,
+                                   outputId),
+                      new ReadOnlySpan<char>());
+    File.WriteAllText(Path.Combine(folder,
+                                   "test.txt"),
+                      new ReadOnlySpan<char>());
+
+    await agentHandler.Agent.NotifyResultData(agentHandler.Agent.Token,
+                                              new List<string>
+                                              {
+                                                outputId,
+                                              },
+                                              CancellationToken.None)
+                      .ConfigureAwait(false);
+
+    await testServiceProvider.TaskHandler.PostProcessing()
+                             .ConfigureAwait(false);
+
+    Assert.That(cache.EnumerateFiles(),
+                Is.Empty);
+
+    Assert.AreEqual(TaskStatus.Completed,
+                    await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                             .ConfigureAwait(false));
+  }
+
+  [Test]
   public async Task PrefetchShouldBeCalledOnce()
   {
     var sqmh = new SimpleQueueMessageHandler

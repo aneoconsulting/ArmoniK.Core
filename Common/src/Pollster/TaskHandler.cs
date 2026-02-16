@@ -233,7 +233,10 @@ public sealed class TaskHandler : IAsyncDisposable
     {
     }
 
-    EvictIfNeeded();
+    if (cacheEvictionThreshold_ > 0)
+    {
+      EvictIfNeeded();
+    }
 
     activity_?.Dispose();
     lateCts_.Dispose();
@@ -966,21 +969,23 @@ public sealed class TaskHandler : IAsyncDisposable
                                                          earlyCts_.Token)
                                       .ConfigureAwait(false);
 
-
-    foreach (var resultId in opaqueIds.Keys)
+    if (cacheEvictionThreshold_ > 0)
     {
-      try
+      foreach (var resultId in opaqueIds.Keys)
       {
-        File.Copy(Path.Combine(cache_,
-                               resultId),
-                  Path.Combine(folder_,
-                               resultId),
-                  true);
-        opaqueIds.Remove(resultId);
-      }
-      catch (FileNotFoundException)
-      {
-        // We try to copy the file from cache to folder, if it is not found in cache, we will prefetch it later
+        try
+        {
+          File.Copy(Path.Combine(cache_,
+                                 resultId),
+                    Path.Combine(folder_,
+                                 resultId),
+                    true);
+          opaqueIds.Remove(resultId);
+        }
+        catch (FileNotFoundException)
+        {
+          // We try to copy the file from cache to folder, if it is not found in cache, we will prefetch it later
+        }
       }
     }
 
@@ -993,25 +998,28 @@ public sealed class TaskHandler : IAsyncDisposable
                                               folder_,
                                               earlyCts_.Token)
                            .ConfigureAwait(false);
-      foreach (var resultId in opaqueIds.Keys)
+      if (cacheEvictionThreshold_ > 0)
       {
-        var tmp = Path.Combine(cache_,
-                               $"{resultId}{Guid.NewGuid().ToString()}.tmp");
-        try
+        foreach (var resultId in opaqueIds.Keys)
         {
-          File.Copy(Path.Combine(folder_,
-                                 resultId),
-                    tmp);
-          FileExt.MoveOrDelete(tmp,
-                               Path.Combine(cache_,
-                                            resultId));
-        }
-        catch (IOException e)
-        {
-          // If the file is not copied to cache, it will be prefetched again for the next task that needs it, so we can just log the error and continue
-          logger_.LogWarning(e,
-                             "Failed to copy file {ResultId} from folder to cache, it will be prefetched again for the next task that needs it",
-                             resultId);
+          var tmp = Path.Combine(cache_,
+                                 $"{resultId}{Guid.NewGuid().ToString()}.tmp");
+          try
+          {
+            File.Copy(Path.Combine(folder_,
+                                   resultId),
+                      tmp);
+            FileExt.MoveOrDelete(tmp,
+                                 Path.Combine(cache_,
+                                              resultId));
+          }
+          catch (IOException e)
+          {
+            // If the file is not copied to cache, it will be prefetched again for the next task that needs it, so we can just log the error and continue
+            logger_.LogWarning(e,
+                               "Failed to copy file {ResultId} from folder to cache, it will be prefetched again for the next task that needs it",
+                               resultId);
+          }
         }
       }
 
@@ -1227,21 +1235,24 @@ public sealed class TaskHandler : IAsyncDisposable
                     .ConfigureAwait(false);
 
         // add outputs to cache so they can be used as dependencies for other tasks without having to fetch them from the object storage
-        foreach (var id in agent_.CreatedResultIds)
+        if (cacheEvictionThreshold_ > 0)
         {
-          try
+          foreach (var id in agent_.CreatedResultIds)
           {
-            File.Copy(Path.Combine(folder_,
-                                   id),
-                      Path.Combine(cache_,
-                                   id));
-          }
-          catch (IOException e)
-          {
-            // at this point, results are stored in the object storage, so it is not an issue if they are not copied to the cache, but we log it for debugging purposes
-            logger_.LogWarning(e,
-                               "Output {ResultId} was not stored in the cache",
-                               id);
+            try
+            {
+              File.Copy(Path.Combine(folder_,
+                                     id),
+                        Path.Combine(cache_,
+                                     id));
+            }
+            catch (IOException e)
+            {
+              // at this point, results are stored in the object storage, so it is not an issue if they are not copied to the cache, but we log it for debugging purposes
+              logger_.LogWarning(e,
+                                 "Output {ResultId} was not stored in the cache",
+                                 id);
+            }
           }
         }
       }
