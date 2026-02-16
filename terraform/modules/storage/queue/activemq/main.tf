@@ -32,13 +32,7 @@ resource "docker_container" "queue" {
 
   mounts {
     type   = "bind"
-    target = "/opt/activemq/conf/jetty.xml"
-    source = abspath("${path.root}/activemq/jetty.xml")
-  }
-
-  mounts {
-    type   = "bind"
-    target = "/opt/activemq/conf/activemq.xml"
+    target = "/opt/apache-activemq/conf/activemq.xml"
     source = abspath("${path.root}/activemq/activemq.xml")
   }
 }
