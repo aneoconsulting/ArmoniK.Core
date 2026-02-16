@@ -26,11 +26,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.7.0">
+    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.7.1">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.0">
+    <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.1">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
     <ProjectReference Include="..\..\..\Base\src\ArmoniK.Core.Base.csproj">
