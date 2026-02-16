@@ -7,7 +7,10 @@ variable "zipkin_image" {
 }
 
 variable "network" {
-  type = string
+  type = object({
+    name   = string
+    driver = string
+  })
 }
 
 variable "ingestion_ports" {
