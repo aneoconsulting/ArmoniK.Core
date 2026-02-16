@@ -17,10 +17,10 @@
     <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.1">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="AWSSDK.S3" Version="3.7.507.2" />
+    <PackageReference Include="AWSSDK.S3" Version="3.7.510.6" />
     <!-- AWSSDK.SecurityToken is required to handle the default authentication -->
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.504.6" />
-    <PackageReference Include="AWSSDK.Core" Version="3.7.500.52" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.504.32" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.500.80" />
   </ItemGroup>
 
   <ItemGroup>
