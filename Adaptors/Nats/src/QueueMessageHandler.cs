@@ -33,11 +33,11 @@ namespace ArmoniK.Core.Adapters.Nats;
 /// </summary>
 internal class QueueMessageHandler : IQueueMessageHandler
 {
-  private readonly Heart             autoExtendAckDeadline_;
-  private readonly INatsJSContext    js_;
-  private readonly ILogger           logger_;
-  private readonly NatsJSMsg<string> message_;
-  private          StackTrace?       stackTrace_;
+  private readonly Heart              autoExtendAckDeadline_;
+  private readonly INatsJSContext     js_;
+  private readonly ILogger            logger_;
+  private readonly INatsJSMsg<string> message_;
+  private          StackTrace?        stackTrace_;
 
   /// <summary>
   ///   Set needed parameter and start the Heart <see cref="Heart" /> .
@@ -52,12 +52,12 @@ internal class QueueMessageHandler : IQueueMessageHandler
   /// </param>
   /// <param name="logger">Singleton use to aggregate logs</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method.</param>
-  public QueueMessageHandler(NatsJSMsg<string> message,
-                             INatsJSContext    js,
-                             int               AckWait,
-                             int               ackExtendDeadlineStep,
-                             ILogger           logger,
-                             CancellationToken cancellationToken)
+  public QueueMessageHandler(INatsJSMsg<string> message,
+                             INatsJSContext     js,
+                             int                AckWait,
+                             int                ackExtendDeadlineStep,
+                             ILogger            logger,
+                             CancellationToken  cancellationToken)
   {
     js_       = js;
     message_  = message;
