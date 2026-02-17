@@ -367,28 +367,28 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await TaskTable!.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await TaskTable.Check(HealthCheckTag.Readiness)
-                                         .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await TaskTable.Check(HealthCheckTag.Startup)
-                                         .ConfigureAwait(false)).Status);
+      Assert.That((await TaskTable!.Check(HealthCheckTag.Liveness)
+                                   .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskTable.Check(HealthCheckTag.Readiness)
+                                  .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskTable.Check(HealthCheckTag.Startup)
+                                  .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await TaskTable.Init(CancellationToken.None)
                      .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await TaskTable.Check(HealthCheckTag.Liveness)
-                                      .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await TaskTable.Check(HealthCheckTag.Readiness)
-                                      .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await TaskTable.Check(HealthCheckTag.Startup)
-                                      .ConfigureAwait(false)).Status);
+      Assert.That((await TaskTable.Check(HealthCheckTag.Liveness)
+                                  .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskTable.Check(HealthCheckTag.Readiness)
+                                  .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskTable.Check(HealthCheckTag.Startup)
+                                  .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -401,8 +401,8 @@ public class TaskTableTestBase
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual("TaskCompletedId",
-                      result.TaskId);
+      Assert.That(result.TaskId,
+                  Is.EqualTo("TaskCompletedId"));
     }
   }
 
@@ -415,18 +415,18 @@ public class TaskTableTestBase
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(Options.Options,
-                      result.Options.Options);
+      Assert.That(result.Options.Options,
+                  Is.EqualTo(Options.Options));
 
       var optDic = new Dictionary<string, string>();
-      Assert.AreEqual(Options with
-                      {
-                        Options = optDic,
-                      },
-                      result.Options with
-                      {
-                        Options = optDic,
-                      });
+      Assert.That(result.Options with
+                  {
+                    Options = optDic,
+                  },
+                  Is.EqualTo(Options with
+                             {
+                               Options = optDic,
+                             }));
     }
   }
 
@@ -478,7 +478,8 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
+      Assert.That(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout,
+                  Is.True);
     }
   }
 
@@ -509,7 +510,8 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.IsTrue(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout);
+      Assert.That(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout,
+                  Is.True);
     }
   }
 
@@ -539,17 +541,17 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Cancelling,
-                      resCreating);
-      Assert.AreEqual(TaskStatus.Cancelling,
-                      resProcessing);
+      Assert.That(resCreating,
+                  Is.EqualTo(TaskStatus.Cancelling));
+      Assert.That(resProcessing,
+                  Is.EqualTo(TaskStatus.Cancelling));
 
       var resAnotherProcessing = await TaskTable!.GetTaskStatus("TaskAnotherProcessingId",
                                                                 CancellationToken.None)
                                                  .ConfigureAwait(false);
 
-      Assert.AreNotEqual(TaskStatus.Cancelling,
-                         resAnotherProcessing);
+      Assert.That(resAnotherProcessing,
+                  Is.Not.EqualTo(TaskStatus.Cancelling));
     }
   }
 
@@ -597,7 +599,8 @@ public class TaskTableTestBase
                                                  CancellationToken.None);
       await result.ConfigureAwait(false);
 
-      Assert.IsTrue(result.IsCompletedSuccessfully);
+      Assert.That(result.IsCompletedSuccessfully,
+                  Is.True);
     }
   }
 
@@ -611,28 +614,28 @@ public class TaskTableTestBase
                                                            .ThenBy(r => r.PartitionId)
                                                            .AsIList();
 
-      Assert.AreEqual(6,
-                      result.Count);
-      Assert.AreEqual(new PartitionTaskStatusCount("part1",
-                                                   TaskStatus.Creating,
-                                                   1),
-                      result[0]);
-      Assert.AreEqual(new PartitionTaskStatusCount("part2",
-                                                   TaskStatus.Submitted,
-                                                   2),
-                      result[1]);
-      Assert.AreEqual(new PartitionTaskStatusCount("part1",
-                                                   TaskStatus.Completed,
-                                                   1),
-                      result[2]);
-      Assert.AreEqual(new PartitionTaskStatusCount("part1",
-                                                   TaskStatus.Error,
-                                                   2),
-                      result[3]);
-      Assert.AreEqual(new PartitionTaskStatusCount("part1",
-                                                   TaskStatus.Processing,
-                                                   2),
-                      result[4]);
+      Assert.That(result.Count,
+                  Is.EqualTo(6));
+      Assert.That(result[0],
+                  Is.EqualTo(new PartitionTaskStatusCount("part1",
+                                                          TaskStatus.Creating,
+                                                          1)));
+      Assert.That(result[1],
+                  Is.EqualTo(new PartitionTaskStatusCount("part2",
+                                                          TaskStatus.Submitted,
+                                                          2)));
+      Assert.That(result[2],
+                  Is.EqualTo(new PartitionTaskStatusCount("part1",
+                                                          TaskStatus.Completed,
+                                                          1)));
+      Assert.That(result[3],
+                  Is.EqualTo(new PartitionTaskStatusCount("part1",
+                                                          TaskStatus.Error,
+                                                          2)));
+      Assert.That(result[4],
+                  Is.EqualTo(new PartitionTaskStatusCount("part1",
+                                                          TaskStatus.Processing,
+                                                          2)));
     }
   }
 
@@ -667,8 +670,8 @@ public class TaskTableTestBase
       foreach (var taskStatusCount in result)
       {
         Console.WriteLine(taskStatusCount);
-        Assert.AreEqual(1,
-                        taskStatusCount.Count);
+        Assert.That(taskStatusCount.Count,
+                    Is.EqualTo(1));
       }
 
       result = await TaskTable!.CountTasksAsync(data => data.SessionId == "SessionId" && (data.Status == TaskStatus.Completed || data.Status == TaskStatus.Creating),
@@ -678,8 +681,8 @@ public class TaskTableTestBase
       foreach (var taskStatusCount in result)
       {
         Console.WriteLine(taskStatusCount);
-        Assert.AreEqual(1,
-                        taskStatusCount.Count);
+        Assert.That(taskStatusCount.Count,
+                    Is.EqualTo(1));
       }
     }
   }
@@ -692,7 +695,8 @@ public class TaskTableTestBase
       var result = await TaskTable!.CountAllTasksAsync(TaskStatus.Processing,
                                                        CancellationToken.None)
                                    .ConfigureAwait(false);
-      Assert.IsTrue(result == 2);
+      Assert.That(result == 2,
+                  Is.True);
     }
   }
 
@@ -709,19 +713,19 @@ public class TaskTableTestBase
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Completed,
-                      resStatus);
+      Assert.That(resStatus,
+                  Is.EqualTo(TaskStatus.Completed));
 
       var taskData = await TaskTable!.ReadTaskAsync(taskProcessingData_.TaskId,
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Completed,
-                      taskData.Status);
-      Assert.AreEqual(OutputStatus.Success,
-                      taskData.Output.Status);
-      Assert.AreEqual("",
-                      taskData.Output.Error);
+      Assert.That(taskData.Status,
+                  Is.EqualTo(TaskStatus.Completed));
+      Assert.That(taskData.Output.Status,
+                  Is.EqualTo(OutputStatus.Success));
+      Assert.That(taskData.Output.Error,
+                  Is.EqualTo(""));
     }
   }
 
@@ -739,17 +743,17 @@ public class TaskTableTestBase
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Error,
-                      resStatus);
+      Assert.That(resStatus,
+                  Is.EqualTo(TaskStatus.Error));
 
       var output = await TaskTable!.GetTaskOutput("TaskProcessingId",
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual("Testing SetTaskError",
-                      output.Error);
-      Assert.AreEqual(OutputStatus.Error,
-                      output.Status);
+      Assert.That(output.Error,
+                  Is.EqualTo("Testing SetTaskError"));
+      Assert.That(output.Status,
+                  Is.EqualTo(OutputStatus.Error));
     }
   }
 
@@ -766,16 +770,17 @@ public class TaskTableTestBase
                                                      CancellationToken.None)
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Cancelled,
-                      resStatus);
+      Assert.That(resStatus,
+                  Is.EqualTo(TaskStatus.Cancelled));
 
       var output = await TaskTable!.GetTaskOutput("TaskProcessingId",
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.IsEmpty(output.Error);
-      Assert.AreEqual(OutputStatus.Error,
-                      output.Status);
+      Assert.That(output.Error,
+                  Is.Empty);
+      Assert.That(output.Status,
+                  Is.EqualTo(OutputStatus.Error));
     }
   }
 
@@ -790,8 +795,8 @@ public class TaskTableTestBase
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(expectedOutput,
-                      result);
+      Assert.That(result,
+                  Is.EqualTo(expectedOutput));
     }
   }
 
@@ -822,8 +827,8 @@ public class TaskTableTestBase
                                                      CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(parentTaskIds,
-                      result.ToArray());
+      Assert.That(result.ToArray(),
+                  Is.EqualTo(parentTaskIds));
     }
   }
 
@@ -860,8 +865,8 @@ public class TaskTableTestBase
                              .Result.Single()
                              .expectedOutputKeys;
 
-      Assert.AreEqual(parentTaskIds,
-                      result);
+      Assert.That(result,
+                  Is.EqualTo(parentTaskIds));
     }
   }
 
@@ -884,20 +889,20 @@ public class TaskTableTestBase
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual("TaskSubmittedId",
-                      result.TaskId);
-      Assert.AreEqual(ownerPodId,
-                      result.OwnerPodId);
-      Assert.AreEqual(ownerPodName,
-                      result.OwnerPodName);
-      Assert.AreEqual(receptionDate,
-                      result.ReceptionDate);
-      Assert.Greater(DateTime.UtcNow,
-                     result.AcquisitionDate);
-      Assert.Greater(result.AcquisitionDate,
-                     result.ReceptionDate);
-      Assert.AreEqual(TaskStatus.Dispatched,
-                      result.Status);
+      Assert.That(result.TaskId,
+                  Is.EqualTo("TaskSubmittedId"));
+      Assert.That(result.OwnerPodId,
+                  Is.EqualTo(ownerPodId));
+      Assert.That(result.OwnerPodName,
+                  Is.EqualTo(ownerPodName));
+      Assert.That(result.ReceptionDate,
+                  Is.EqualTo(receptionDate));
+      Assert.That(DateTime.UtcNow,
+                  Is.GreaterThan(result.AcquisitionDate));
+      Assert.That(result.AcquisitionDate,
+                  Is.GreaterThan(result.ReceptionDate));
+      Assert.That(result.Status,
+                  Is.EqualTo(TaskStatus.Dispatched));
     }
   }
 
@@ -942,32 +947,32 @@ public class TaskTableTestBase
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual("TaskSubmittedId",
-                      result.TaskId);
-      Assert.AreEqual(ownerPodId,
-                      result.OwnerPodId);
-      Assert.AreEqual(ownerPodName,
-                      result.OwnerPodName);
-      Assert.AreEqual(receptionDate,
-                      result.ReceptionDate);
-      Assert.Greater(DateTime.UtcNow,
-                     result.AcquisitionDate);
-      Assert.Greater(result.AcquisitionDate,
-                     result.ReceptionDate);
+      Assert.That(result.TaskId,
+                  Is.EqualTo("TaskSubmittedId"));
+      Assert.That(result.OwnerPodId,
+                  Is.EqualTo(ownerPodId));
+      Assert.That(result.OwnerPodName,
+                  Is.EqualTo(ownerPodName));
+      Assert.That(result.ReceptionDate,
+                  Is.EqualTo(receptionDate));
+      Assert.That(DateTime.UtcNow,
+                  Is.GreaterThan(result.AcquisitionDate));
+      Assert.That(result.AcquisitionDate,
+                  Is.GreaterThan(result.ReceptionDate));
 
       var resultRelease = await TaskTable!.ReleaseTask(taskSubmitted,
                                                        cancellationToken: CancellationToken.None)
                                           .ConfigureAwait(false);
-      Assert.AreEqual("TaskSubmittedId",
-                      resultRelease.TaskId);
-      Assert.AreEqual("",
-                      resultRelease.OwnerPodId);
-      Assert.AreEqual("",
-                      resultRelease.OwnerPodName);
-      Assert.AreEqual(null,
-                      resultRelease.ReceptionDate);
-      Assert.AreEqual(null,
-                      resultRelease.AcquisitionDate);
+      Assert.That(resultRelease.TaskId,
+                  Is.EqualTo("TaskSubmittedId"));
+      Assert.That(resultRelease.OwnerPodId,
+                  Is.EqualTo(""));
+      Assert.That(resultRelease.OwnerPodName,
+                  Is.EqualTo(""));
+      Assert.That(resultRelease.ReceptionDate,
+                  Is.EqualTo(null));
+      Assert.That(resultRelease.AcquisitionDate,
+                  Is.EqualTo(null));
     }
   }
 
@@ -990,28 +995,28 @@ public class TaskTableTestBase
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
 
-      Assert.AreEqual("TaskSubmittedId",
-                      result1.TaskId);
-      Assert.AreEqual(hostname,
-                      result1.OwnerPodId);
+      Assert.That(result1.TaskId,
+                  Is.EqualTo("TaskSubmittedId"));
+      Assert.That(result1.OwnerPodId,
+                  Is.EqualTo(hostname));
 
       var result2 = await TaskTable!.AcquireTask(taskSubmitted,
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
-      Assert.AreEqual(result1.Status,
-                      result2.Status);
+      Assert.That(result2.Status,
+                  Is.EqualTo(result1.Status));
 
-      Assert.AreEqual(result1.OwnerPodId,
-                      result2.OwnerPodId);
+      Assert.That(result2.OwnerPodId,
+                  Is.EqualTo(result1.OwnerPodId));
 
-      Assert.AreEqual(result1.OwnerPodName,
-                      result2.OwnerPodName);
+      Assert.That(result2.OwnerPodName,
+                  Is.EqualTo(result1.OwnerPodName));
 
-      Assert.AreEqual(result1.ReceptionDate,
-                      result2.ReceptionDate);
+      Assert.That(result2.ReceptionDate,
+                  Is.EqualTo(result1.ReceptionDate));
 
-      Assert.AreEqual(result1.AcquisitionDate,
-                      result2.AcquisitionDate);
+      Assert.That(result2.AcquisitionDate,
+                  Is.EqualTo(result1.AcquisitionDate));
     }
   }
 
@@ -1032,11 +1037,11 @@ public class TaskTableTestBase
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreNotEqual(LocalIpFinder.LocalIpv4Address(),
-                         result.OwnerPodId);
+      Assert.That(result.OwnerPodId,
+                  Is.Not.EqualTo(LocalIpFinder.LocalIpv4Address()));
 
-      Assert.AreEqual(TaskStatus.Error,
-                      result.Status);
+      Assert.That(result.Status,
+                  Is.EqualTo(TaskStatus.Error));
     }
   }
 
@@ -1057,20 +1062,20 @@ public class TaskTableTestBase
                                                 CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreNotEqual(LocalIpFinder.LocalIpv4Address(),
-                         result.OwnerPodId);
+      Assert.That(result.OwnerPodId,
+                  Is.Not.EqualTo(LocalIpFinder.LocalIpv4Address()));
 
-      Assert.AreEqual(TaskStatus.Creating,
-                      result.Status);
+      Assert.That(result.Status,
+                  Is.EqualTo(TaskStatus.Creating));
 
-      Assert.AreEqual(null,
-                      result.AcquisitionDate);
+      Assert.That(result.AcquisitionDate,
+                  Is.EqualTo(null));
 
-      Assert.AreEqual(null,
-                      result.ReceptionDate);
+      Assert.That(result.ReceptionDate,
+                  Is.EqualTo(null));
 
-      Assert.AreEqual(null,
-                      result.SubmittedDate);
+      Assert.That(result.SubmittedDate,
+                  Is.EqualTo(null));
     }
   }
 
@@ -1087,15 +1092,15 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(1,
-                      result);
+      Assert.That(result,
+                  Is.EqualTo(1));
       var taskData = await TaskTable!.ReadTaskAsync("TaskPendingId",
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
-      Assert.AreEqual(paused
-                        ? TaskStatus.Paused
-                        : TaskStatus.Submitted,
-                      taskData.Status);
+      Assert.That(taskData.Status,
+                  Is.EqualTo(paused
+                               ? TaskStatus.Paused
+                               : TaskStatus.Submitted));
     }
   }
 
@@ -1112,8 +1117,8 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                    .ConfigureAwait(false);
 
-      Assert.AreNotEqual(1,
-                         result);
+      Assert.That(result,
+                  Is.Not.EqualTo(1));
     }
   }
 
@@ -1131,10 +1136,10 @@ public class TaskTableTestBase
                                               CancellationToken.None)
                                  .ConfigureAwait(false);
 
-      Assert.AreEqual("OwnerPodId",
-                      data.OwnerPodId);
-      Assert.AreEqual(TaskStatus.Dispatched,
-                      data.Status);
+      Assert.That(data.OwnerPodId,
+                  Is.EqualTo("OwnerPodId"));
+      Assert.That(data.Status,
+                  Is.EqualTo(TaskStatus.Dispatched));
 
       await TaskTable!.StartTask(taskSubmittedData_,
                                  CancellationToken.None)
@@ -1144,8 +1149,8 @@ public class TaskTableTestBase
                                                     CancellationToken.None)
                                      .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Processing,
-                      taskData.Status);
+      Assert.That(taskData.Status,
+                  Is.EqualTo(TaskStatus.Processing));
     }
   }
 
@@ -1304,8 +1309,8 @@ public class TaskTableTestBase
                                      .ToListAsync()
                                      .ConfigureAwait(false);
 
-      Assert.AreEqual(1,
-                      taskList.Count);
+      Assert.That(taskList.Count,
+                  Is.EqualTo(1));
     }
   }
 
@@ -1324,8 +1329,8 @@ public class TaskTableTestBase
                                                  CancellationToken.None)
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(expectedNewId,
-                      newTaskId);
+      Assert.That(newTaskId,
+                  Is.EqualTo(expectedNewId));
     }
   }
 
@@ -1347,8 +1352,8 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-        Assert.AreEqual(taskToRetry.PayloadId,
-                        retriedTask.PayloadId);
+        Assert.That(retriedTask.PayloadId,
+                    Is.EqualTo(taskToRetry.PayloadId));
 
         taskToRetry = retriedTask;
       }
@@ -1408,8 +1413,9 @@ public class TaskTableTestBase
                 };
 
       var validator = new ListApplicationsRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
+      Assert.That(validator.Validate(req)
+                           .IsValid,
+                  Is.True);
 
       var (applications, _) = await TaskTable!.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
                                                                      req.Sort.Fields.Select(sort => sort.ToField())
@@ -1426,11 +1432,11 @@ public class TaskTableTestBase
         Console.WriteLine(task);
       }
 
-      Assert.AreEqual(new Application(Options.ApplicationName,
-                                      Options.ApplicationNamespace,
-                                      Options.ApplicationVersion,
-                                      Options.ApplicationService),
-                      listTasksResponseTaskData.Single());
+      Assert.That(listTasksResponseTaskData.Single(),
+                  Is.EqualTo(new Application(Options.ApplicationName,
+                                             Options.ApplicationNamespace,
+                                             Options.ApplicationVersion,
+                                             Options.ApplicationService)));
     }
   }
 
@@ -1585,8 +1591,9 @@ public class TaskTableTestBase
                 };
 
       var validator = new ListApplicationsRequestValidator();
-      Assert.IsTrue(validator.Validate(req)
-                             .IsValid);
+      Assert.That(validator.Validate(req)
+                           .IsValid,
+                  Is.True);
 
       var (applications, _) = await TaskTable.ListApplicationsAsync(req.Filters.ToApplicationFilter(),
                                                                     req.Sort.Fields.Select(sort => sort.ToField())
@@ -1606,13 +1613,13 @@ public class TaskTableTestBase
 
       // First order by version => app2 then app3 or app1 because version2 is before version1 in desc order
       // app3 before app1 because desc ordering by service (service2 before service1 in desc)
-      Assert.AreEqual(new List<Application>
-                      {
-                        app2,
-                        app3,
-                        app1,
-                      },
-                      listTasksResponseTaskData);
+      Assert.That(listTasksResponseTaskData,
+                  Is.EqualTo(new List<Application>
+                             {
+                               app2,
+                               app3,
+                               app1,
+                             }));
     }
   }
 
@@ -1630,8 +1637,8 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(8,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(8));
     }
   }
 
@@ -1652,8 +1659,8 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(8,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(8));
     }
   }
 
@@ -1712,8 +1719,8 @@ public class TaskTableTestBase
                                                                   CancellationToken.None)
                                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(1,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(1));
 
       var taskData = await TaskTable.ReadTaskAsync("TaskSubmittedId",
                                                    CancellationToken.None)
@@ -1725,22 +1732,22 @@ public class TaskTableTestBase
                              .Options!;
         foreach (var tof in taskOptionField)
         {
-          Assert.AreEqual(TaskDataMask.FieldsToTaskOptions(tof)
-                                      .Compile()
-                                      .Invoke(taskData),
-                          TaskDataMask.FieldsToTaskOptionsHolder(tof)
-                                      .Compile()
-                                      .Invoke(options));
+          Assert.That(TaskDataMask.FieldsToTaskOptionsHolder(tof)
+                                  .Compile()
+                                  .Invoke(options),
+                      Is.EqualTo(TaskDataMask.FieldsToTaskOptions(tof)
+                                             .Compile()
+                                             .Invoke(taskData)));
         }
       }
       else
       {
-        Assert.AreEqual(TaskDataMask.FieldsToTaskData(field)
-                                    .Compile()
-                                    .Invoke(taskData),
-                        TaskDataMask.FieldsToTaskDataHolder(field)
-                                    .Compile()
-                                    .Invoke(results.Single()));
+        Assert.That(TaskDataMask.FieldsToTaskDataHolder(field)
+                                .Compile()
+                                .Invoke(results.Single()),
+                    Is.EqualTo(TaskDataMask.FieldsToTaskData(field)
+                                           .Compile()
+                                           .Invoke(taskData)));
       }
     }
   }
@@ -1802,8 +1809,8 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(8,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(8));
     }
   }
 
@@ -1827,8 +1834,8 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(3,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(3));
     }
   }
 
@@ -1858,8 +1865,8 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(0,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(0));
     }
   }
 
@@ -1879,8 +1886,8 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                             .ConfigureAwait(false);
 
-      Assert.AreEqual(count,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(count));
     }
   }
 
@@ -2066,13 +2073,13 @@ public class TaskTableTestBase
                                                            CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.AreEqual(0,
-                      cancelledTasks);
+      Assert.That(cancelledTasks,
+                  Is.EqualTo(0));
 
       var taskData = await TaskTable.ReadTaskAsync(taskId)
                                     .ConfigureAwait(false);
-      Assert.AreEqual(status,
-                      taskData.Status);
+      Assert.That(taskData.Status,
+                  Is.EqualTo(status));
     }
   }
 
@@ -2085,8 +2092,8 @@ public class TaskTableTestBase
                                                             CancellationToken.None)
                                            .ConfigureAwait(false);
 
-      Assert.AreEqual(0,
-                      cancelledTasks);
+      Assert.That(cancelledTasks,
+                  Is.EqualTo(0));
     }
   }
 
@@ -2106,8 +2113,8 @@ public class TaskTableTestBase
                                            .ToListAsync()
                                            .ConfigureAwait(false);
 
-      Assert.AreEqual(expectedCount,
-                      cancelledTasks.Count());
+      Assert.That(cancelledTasks.Count(),
+                  Is.EqualTo(expectedCount));
     }
   }
 
@@ -2122,11 +2129,11 @@ public class TaskTableTestBase
                                            .ToListAsync()
                                            .ConfigureAwait(false);
 
-      Assert.AreEqual(8,
-                      cancelledTasks.Count);
-      Assert.AreEqual(8,
-                      cancelledTasks.SelectMany(list => list)
-                                    .Count(s => s == "dependency1"));
+      Assert.That(cancelledTasks.Count,
+                  Is.EqualTo(8));
+      Assert.That(cancelledTasks.SelectMany(list => list)
+                                .Count(s => s == "dependency1"),
+                  Is.EqualTo(8));
     }
   }
 

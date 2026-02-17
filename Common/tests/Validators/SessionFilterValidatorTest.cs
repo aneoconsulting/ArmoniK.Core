@@ -43,8 +43,9 @@ public class SessionFilterValidatorTest
                           },
              };
 
-    Assert.IsTrue(validator_.Validate(sf)
-                            .IsValid);
+    Assert.That(validator_.Validate(sf)
+                          .IsValid,
+                Is.True);
   }
 
   [Test]
@@ -62,7 +63,8 @@ public class SessionFilterValidatorTest
                           },
              };
 
-    Assert.IsTrue(validator_.Validate(sf)
-                            .IsValid);
+    Assert.That(validator_.Validate(sf)
+                          .IsValid,
+                Is.True);
   }
 }

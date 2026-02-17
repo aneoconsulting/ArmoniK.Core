@@ -401,9 +401,9 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.AreEqual(0,
-                    holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
-                          .Count());
+    Assert.That(holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
+                      .Count(),
+                Is.EqualTo(0));
 
     var data = "Data1Data2";
     await File.WriteAllBytesAsync(Path.Combine(holder.Folder,
@@ -426,15 +426,16 @@ public class AgentTest
                                                         CancellationToken.None)
                                  .ConfigureAwait(false);
 
-    Assert.AreEqual(ExpectedOutput1,
-                    resultData.ResultId);
-    Assert.AreEqual(ResultStatus.Completed,
-                    resultData.Status);
-    Assert.NotNull(resultData.CompletionDate);
-    Assert.AreEqual(holder.TaskData.TaskId,
-                    resultData.OwnerTaskId);
-    Assert.AreEqual(data.Length,
-                    resultData.Size);
+    Assert.That(resultData.ResultId,
+                Is.EqualTo(ExpectedOutput1));
+    Assert.That(resultData.Status,
+                Is.EqualTo(ResultStatus.Completed));
+    Assert.That(resultData.CompletionDate,
+                Is.Not.Null);
+    Assert.That(resultData.OwnerTaskId,
+                Is.EqualTo(holder.TaskData.TaskId));
+    Assert.That(resultData.Size,
+                Is.EqualTo(data.Length));
 
     var datAsyncEnumerable = holder.ObjectStorage.GetValuesAsync(resultData.OpaqueId,
                                                                  CancellationToken.None);
@@ -442,8 +443,8 @@ public class AgentTest
     var dataStored = await datAsyncEnumerable.SingleAsync(CancellationToken.None)
                                              .ConfigureAwait(false);
 
-    Assert.AreEqual(data,
-                    dataStored);
+    Assert.That(dataStored,
+                Is.EqualTo(data));
 
     var dependents = await holder.ResultTable.GetDependents(holder.Session,
                                                             ExpectedOutput1,
@@ -451,37 +452,39 @@ public class AgentTest
                                  .ToListAsync()
                                  .ConfigureAwait(false);
 
-    Assert.Contains(holder.TaskWithDependencies1,
-                    dependents);
-    Assert.Contains(holder.TaskWithDependencies2,
-                    dependents);
+    Assert.That(dependents,
+                Does.Contain(holder.TaskWithDependencies1));
+    Assert.That(dependents,
+                Does.Contain(holder.TaskWithDependencies2));
 
-    Assert.Contains(holder.TaskWithDependencies1,
-                    holder.QueueStorage.Messages[Partition]);
-    Assert.Contains(holder.TaskWithDependencies2,
-                    holder.QueueStorage.Messages[Partition]);
-    Assert.AreEqual(2,
-                    holder.QueueStorage.Messages[Partition].Count);
+    Assert.That(holder.QueueStorage.Messages[Partition],
+                Does.Contain(holder.TaskWithDependencies1));
+    Assert.That(holder.QueueStorage.Messages[Partition],
+                Does.Contain(holder.TaskWithDependencies2));
+    Assert.That(holder.QueueStorage.Messages[Partition].Count,
+                Is.EqualTo(2));
 
     var taskData1 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies1,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.Contains(ExpectedOutput1,
-                    taskData1.DataDependencies.ToList());
-    Assert.IsEmpty(taskData1.RemainingDataDependencies);
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData1.Status);
+    Assert.That(taskData1.DataDependencies.ToList(),
+                Does.Contain(ExpectedOutput1));
+    Assert.That(taskData1.RemainingDataDependencies,
+                Is.Empty);
+    Assert.That(taskData1.Status,
+                Is.EqualTo(TaskStatus.Submitted));
 
     var taskData2 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies2,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.Contains(ExpectedOutput1,
-                    taskData2.DataDependencies.ToList());
-    Assert.IsEmpty(taskData2.RemainingDataDependencies);
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData2.Status);
+    Assert.That(taskData2.DataDependencies.ToList(),
+                Does.Contain(ExpectedOutput1));
+    Assert.That(taskData2.RemainingDataDependencies,
+                Is.Empty);
+    Assert.That(taskData2.Status,
+                Is.EqualTo(TaskStatus.Submitted));
   }
 
   private static async Task<ICollection<TaskCreationRequest>> CreatePayloadAndSubmit(IAgent              agent,
@@ -536,8 +539,8 @@ public class AgentTest
                                               results.ViewSelect(r => r.ResultId))
                    .ConfigureAwait(false);
 
-    Assert.AreEqual(2,
-                    submit.Count);
+    Assert.That(submit.Count,
+                Is.EqualTo(2));
 
 
     var results2 = await holder.Agent.CreateResultsMetaData(holder.Token,
@@ -554,8 +557,8 @@ public class AgentTest
                                                results2.ViewSelect(r => r.ResultId))
                     .ConfigureAwait(false);
 
-    Assert.AreEqual(1,
-                    submit2.Count);
+    Assert.That(submit2.Count,
+                Is.EqualTo(1));
 
     var taskId3 = submit2.Single()
                          .TaskId;
@@ -563,15 +566,15 @@ public class AgentTest
     await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);
 
-    Assert.AreEqual(3,
-                    holder.QueueStorage.Messages[Partition].Count);
+    Assert.That(holder.QueueStorage.Messages[Partition].Count,
+                Is.EqualTo(3));
 
     var taskData3 = await holder.TaskTable.ReadTaskAsync(taskId3,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData3.Status);
+    Assert.That(taskData3.Status,
+                Is.EqualTo(TaskStatus.Submitted));
   }
 
   [Test]
@@ -598,8 +601,8 @@ public class AgentTest
                                               results.ViewSelect(r => r.ResultId))
                    .ConfigureAwait(false);
 
-    Assert.AreEqual(200,
-                    submit.Count);
+    Assert.That(submit.Count,
+                Is.EqualTo(200));
 
     await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);
@@ -650,8 +653,8 @@ public class AgentTest
     var bytes = await File.ReadAllBytesAsync(Path.Combine(holder.Folder,
                                                           "ResourceData"))
                           .ConfigureAwait(false);
-    Assert.AreEqual(Encoding.ASCII.GetBytes("Data1Data2"),
-                    bytes);
+    Assert.That(bytes,
+                Is.EqualTo(Encoding.ASCII.GetBytes("Data1Data2")));
   }
 
   [Test]
@@ -681,21 +684,22 @@ public class AgentTest
                                                               CancellationToken.None)
                                        .ConfigureAwait(false);
 
-      Assert.AreEqual(result.Name,
-                      resultMetadata.Name);
-      Assert.AreEqual(ResultStatus.Completed,
-                      resultMetadata.Status);
-      Assert.NotNull(resultMetadata.CompletionDate);
-      Assert.AreEqual(7,
-                      resultMetadata.Size);
+      Assert.That(resultMetadata.Name,
+                  Is.EqualTo(result.Name));
+      Assert.That(resultMetadata.Status,
+                  Is.EqualTo(ResultStatus.Completed));
+      Assert.That(resultMetadata.CompletionDate,
+                  Is.Not.Null);
+      Assert.That(resultMetadata.Size,
+                  Is.EqualTo(7));
 
       var bytes = (await holder.ObjectStorage.GetValuesAsync(resultMetadata.OpaqueId)
                                .ToListAsync()
                                .ConfigureAwait(false)).Single();
 
-      Assert.AreEqual(ByteString.CopyFromUtf8(result.Name)
-                                .ToByteArray(),
-                      bytes);
+      Assert.That(bytes,
+                  Is.EqualTo(ByteString.CopyFromUtf8(result.Name)
+                                       .ToByteArray()));
     }
   }
 
@@ -783,22 +787,22 @@ public class AgentTest
                                                CancellationToken.None)
                             .ConfigureAwait(false);
 
-    Assert.AreEqual(1,
-                    reply.Count);
-    Assert.AreEqual(payload.Single()
-                           .ResultId,
-                    reply.Single()
-                         .PayloadId);
-    Assert.AreEqual(holder.TaskData.TaskId,
-                    payload.Single()
-                           .CreatedBy);
+    Assert.That(reply.Count,
+                Is.EqualTo(1));
+    Assert.That(reply.Single()
+                     .PayloadId,
+                Is.EqualTo(payload.Single()
+                                  .ResultId));
+    Assert.That(payload.Single()
+                       .CreatedBy,
+                Is.EqualTo(holder.TaskData.TaskId));
     foreach (var eokResult in eok)
     {
-      Assert.Contains(eokResult.ResultId,
-                      reply.Single()
-                           .ExpectedOutputKeys.ToList());
-      Assert.AreEqual(holder.TaskData.TaskId,
-                      eokResult.CreatedBy);
+      Assert.That(reply.Single()
+                       .ExpectedOutputKeys.ToList(),
+                  Does.Contain(eokResult.ResultId));
+      Assert.That(eokResult.CreatedBy,
+                  Is.EqualTo(holder.TaskData.TaskId));
     }
 
     await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
@@ -810,8 +814,8 @@ public class AgentTest
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
   }
 
 
@@ -871,12 +875,12 @@ public class AgentTest
                                         CancellationToken.None)
                 .ConfigureAwait(false);
 
-    Assert.AreEqual(1,
-                    reply.Count);
-    Assert.AreEqual(eok.Last()
-                       .ResultId,
-                    reply.Single()
-                         .PayloadId);
+    Assert.That(reply.Count,
+                Is.EqualTo(1));
+    Assert.That(reply.Single()
+                     .PayloadId,
+                Is.EqualTo(eok.Last()
+                              .ResultId));
     Assert.That(holder.Agent.CreatedResultIds,
                 Is.EqualTo(new List<string>
                            {
@@ -886,9 +890,9 @@ public class AgentTest
 
     foreach (var eokResult in eok.SkipLast(1))
     {
-      Assert.Contains(eokResult.ResultId,
-                      reply.Single()
-                           .ExpectedOutputKeys.ToList());
+      Assert.That(reply.Single()
+                       .ExpectedOutputKeys.ToList(),
+                  Does.Contain(eokResult.ResultId));
     }
 
     await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
@@ -898,20 +902,22 @@ public class AgentTest
                                                                    .ResultId)
                                          .ConfigureAwait(false);
 
-    Assert.AreEqual(ResultStatus.Completed,
-                    uploadedResultData.Status);
-    Assert.NotNull(uploadedResultData.CompletionDate);
-    Assert.AreEqual(10,
-                    uploadedResultData.Size);
+    Assert.That(uploadedResultData.Status,
+                Is.EqualTo(ResultStatus.Completed));
+    Assert.That(uploadedResultData.CompletionDate,
+                Is.Not.Null);
+    Assert.That(uploadedResultData.Size,
+                Is.EqualTo(10));
 
     var taskData = await holder.TaskTable.ReadTaskAsync(reply.Single()
                                                              .TaskId,
                                                         CancellationToken.None)
                                .ConfigureAwait(false);
 
-    Assert.IsEmpty(taskData.RemainingDataDependencies);
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
+    Assert.That(taskData.RemainingDataDependencies,
+                Is.Empty);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
   }
 
   [Test]

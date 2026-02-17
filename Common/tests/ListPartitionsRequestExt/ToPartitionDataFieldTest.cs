@@ -113,7 +113,7 @@ public class ToPartitionDataFieldTest
       }.Sort.ToField()
        .Compile();
 
-    Assert.AreEqual(expected,
-                    func.Invoke(PartitionData));
+    Assert.That(func.Invoke(PartitionData),
+                Is.EqualTo(expected));
   }
 }

@@ -55,8 +55,9 @@ public class CreateSessionRequestValidatorTest
   public void NullDefaultTaskOptionShouldFail()
   {
     validCreateSessionRequest_!.DefaultTaskOption = null;
-    Assert.IsFalse(validator_.Validate(validCreateSessionRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validCreateSessionRequest_)
+                          .IsValid,
+                Is.False);
   }
 
 
@@ -64,8 +65,9 @@ public class CreateSessionRequestValidatorTest
   public void EmptyPartitionIdInTaskOptionsShouldSucceed()
   {
     validCreateSessionRequest_!.DefaultTaskOption.PartitionId = string.Empty;
-    Assert.IsTrue(validator_.Validate(validCreateSessionRequest_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validCreateSessionRequest_)
+                          .IsValid,
+                Is.True);
   }
 
 
@@ -73,12 +75,14 @@ public class CreateSessionRequestValidatorTest
   public void EmptyPartitionIdShouldSucceed()
   {
     validCreateSessionRequest_!.PartitionIds.Clear();
-    Assert.IsTrue(validator_.Validate(validCreateSessionRequest_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validCreateSessionRequest_)
+                          .IsValid,
+                Is.True);
   }
 
   [Test]
   public void SessionShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validCreateSessionRequest_!)
-                               .IsValid);
+    => Assert.That(validator_.Validate(validCreateSessionRequest_!)
+                             .IsValid,
+                   Is.True);
 }

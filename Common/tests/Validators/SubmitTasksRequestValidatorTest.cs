@@ -35,8 +35,9 @@ public class SubmitTasksRequestValidatorTest
                SessionId = "session_id",
              };
 
-    Assert.IsFalse(validator_.Validate(sf)
-                             .IsValid);
+    Assert.That(validator_.Validate(sf)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -54,7 +55,8 @@ public class SubmitTasksRequestValidatorTest
                },
              };
 
-    Assert.IsTrue(validator_.Validate(sf)
-                            .IsValid);
+    Assert.That(validator_.Validate(sf)
+                          .IsValid,
+                Is.True);
   }
 }

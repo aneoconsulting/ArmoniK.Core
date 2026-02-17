@@ -48,7 +48,8 @@ public class LoggerExtTest
 
     var logger = loggerInit.GetLogger();
 
-    Assert.IsNotNull(logger);
+    Assert.That(logger,
+                Is.Not.Null);
 
     logger.LogVersion(typeof(LoggerExtTest));
   }

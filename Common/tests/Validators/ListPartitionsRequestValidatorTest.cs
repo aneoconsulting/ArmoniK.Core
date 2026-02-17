@@ -53,15 +53,17 @@ public class ListPartitionsRequestValidatorTest
 
   [Test]
   public void ListPartitionsRequestShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validListPartitionsRequest_!)
-                               .IsValid);
+    => Assert.That(validator_.Validate(validListPartitionsRequest_!)
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void ListPartitionsRequestDefaultFilterShouldFail()
   {
     validListPartitionsRequest_!.Filters = default;
-    Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -75,8 +77,9 @@ public class ListPartitionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -92,8 +95,9 @@ public class ListPartitionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -115,8 +119,9 @@ public class ListPartitionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -129,23 +134,26 @@ public class ListPartitionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListPartitionsRequestNegativePageSizeShouldFail()
   {
     validListPartitionsRequest_!.PageSize = -1;
-    Assert.IsFalse(validator_.Validate(validListPartitionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListPartitionsRequestZeroPageSizeShouldBeValid()
   {
     validListPartitionsRequest_!.PageSize = 0;
-    Assert.IsTrue(validator_.Validate(validListPartitionsRequest_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.True);
   }
 }

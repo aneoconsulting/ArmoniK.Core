@@ -52,8 +52,9 @@ public class TaskFilterValidatorTest
                          },
              };
 
-    Assert.IsTrue(validator_.Validate(tf)
-                            .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.True);
   }
 
   [Test]
@@ -78,8 +79,9 @@ public class TaskFilterValidatorTest
                          },
              };
 
-    Assert.IsTrue(validator_.Validate(tf)
-                            .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.True);
   }
 
   [Test]
@@ -90,8 +92,9 @@ public class TaskFilterValidatorTest
                Included = new TaskFilter.Types.StatusesRequest(),
              };
 
-    Assert.IsFalse(validator_.Validate(tf)
-                             .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -108,8 +111,9 @@ public class TaskFilterValidatorTest
                           },
              };
 
-    Assert.IsFalse(validator_.Validate(tf)
-                             .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -120,8 +124,9 @@ public class TaskFilterValidatorTest
                Excluded = new TaskFilter.Types.StatusesRequest(),
              };
 
-    Assert.IsFalse(validator_.Validate(tf)
-                             .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -132,8 +137,9 @@ public class TaskFilterValidatorTest
                Session = new TaskFilter.Types.IdsRequest(),
              };
 
-    Assert.False(validator_.Validate(tf)
-                           .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -144,8 +150,9 @@ public class TaskFilterValidatorTest
                Task = new TaskFilter.Types.IdsRequest(),
              };
 
-    Assert.False(validator_.Validate(tf)
-                           .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   // One of the two is ignored, this is the behavior expected by the OneOf token in proto file
@@ -158,8 +165,9 @@ public class TaskFilterValidatorTest
                Session = new TaskFilter.Types.IdsRequest(),
              };
 
-    Assert.False(validator_.Validate(tf)
-                           .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   // The empty is ignored
@@ -180,8 +188,9 @@ public class TaskFilterValidatorTest
 
     Console.WriteLine(tf);
 
-    Assert.IsTrue(validator_.Validate(tf)
-                            .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.True);
   }
 
   [Test]
@@ -200,8 +209,9 @@ public class TaskFilterValidatorTest
              };
 
 
-    Assert.IsFalse(validator_.Validate(tf)
-                             .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -220,8 +230,9 @@ public class TaskFilterValidatorTest
              };
 
 
-    Assert.IsFalse(validator_.Validate(tf)
-                             .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.False);
   }
 
   // It is valid but one is ignored
@@ -248,8 +259,9 @@ public class TaskFilterValidatorTest
 
     Console.WriteLine(tf);
 
-    Assert.IsTrue(validator_.Validate(tf)
-                            .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.True);
   }
 
   // The empty is ignored
@@ -268,7 +280,8 @@ public class TaskFilterValidatorTest
                       },
              };
 
-    Assert.IsTrue(validator_.Validate(tf)
-                            .IsValid);
+    Assert.That(validator_.Validate(tf)
+                          .IsValid,
+                Is.True);
   }
 }

@@ -55,8 +55,8 @@ public class EventSubscriptionRequestValidatorTest
 
     Console.WriteLine(validation);
 
-    Assert.AreEqual(expected,
-                    validation.IsValid);
+    Assert.That(validation.IsValid,
+                Is.EqualTo(expected));
   }
 
   public static IEnumerable<TestCaseData> TestCasesTasks()

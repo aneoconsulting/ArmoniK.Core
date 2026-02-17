@@ -265,8 +265,8 @@ public class ToSessionDataFilterTest
     var func = RequestToFunc(Sort,
                              filterFields);
 
-    Assert.AreEqual(expected,
-                    func.Invoke(sessionData_));
+    Assert.That(func.Invoke(sessionData_),
+                Is.EqualTo(expected));
   }
 
   public static IEnumerable<TestCaseData> TestCasesFilter()

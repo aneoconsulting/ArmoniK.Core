@@ -71,8 +71,8 @@ public class WatchToGrpcTests
                 },
                 Throws.InstanceOf<OperationCanceledException>());
 
-    Assert.AreEqual(8,
-                    list.Count);
+    Assert.That(list.Count,
+                Is.EqualTo(8));
   }
 
   [Test]

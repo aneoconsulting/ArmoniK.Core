@@ -79,14 +79,16 @@ public class CertificateValidatorTests
     var validator = CertificateValidator.ValidationCallback(logger,
                                                             authority,
                                                             false);
-    Assert.IsNotNull(validator);
+    Assert.That(validator,
+                Is.Not.Null);
 
     var validation = validator(this,
                                req,
                                chain,
                                SslPolicyErrors.None);
 
-    Assert.IsTrue(validation);
+    Assert.That(validation,
+                Is.True);
   }
 
   private static X509Certificate2 CreateSelfSignedCert(string subject = "CN=localhost")
@@ -120,7 +122,8 @@ public class CertificateValidatorTests
     mock.VerifyLog(LogLevel.Warning,
                    "Certificate or certificate chain is null",
                    Times.Once());
-    Assert.IsFalse(result);
+    Assert.That(result,
+                Is.False);
   }
 
   [Test] // ok
@@ -144,7 +147,8 @@ public class CertificateValidatorTests
     mock.VerifyLog(LogLevel.Warning,
                    "SSL validation failed: certificate name mismatch",
                    Times.Once());
-    Assert.IsFalse(result);
+    Assert.That(result,
+                Is.False);
   }
 
   [Test] // ok
@@ -166,7 +170,8 @@ public class CertificateValidatorTests
                     chain,
                     SslPolicyErrors.RemoteCertificateNameMismatch | SslPolicyErrors.RemoteCertificateChainErrors);
 
-    Assert.IsTrue(result);
+    Assert.That(result,
+                Is.True);
     mock.VerifyLog(LogLevel.Debug,
                    "SSL validation succeeded: certificate is trusted",
                    Times.Once());
@@ -193,7 +198,8 @@ public class CertificateValidatorTests
     mock.VerifyLog(LogLevel.Warning,
                    "SSL validation failed with errors:",
                    Times.Once());
-    Assert.IsFalse(result);
+    Assert.That(result,
+                Is.False);
   }
 
 
@@ -218,7 +224,8 @@ public class CertificateValidatorTests
                     chain,
                     SslPolicyErrors.RemoteCertificateChainErrors);
 
-    Assert.IsTrue(result);
+    Assert.That(result,
+                Is.True);
     mock.VerifyLog(LogLevel.Debug,
                    "SSL validation succeeded: certificate is trusted",
                    Times.Once());
@@ -248,7 +255,8 @@ public class CertificateValidatorTests
     mock.VerifyLog(LogLevel.Warning,
                    "SSL validation failed: certificate is not trusted",
                    Times.Once());
-    Assert.IsFalse(result);
+    Assert.That(result,
+                Is.False);
   }
 
   [Test]
@@ -277,7 +285,8 @@ public class CertificateValidatorTests
                                                  false,
                                                  logger);
 
-    Assert.NotNull(cb);
+    Assert.That(cb,
+                Is.Not.Null);
   }
 }
 

@@ -52,32 +52,34 @@ public class SessionProviderTests
   {
     var sessionProvider = provider_!.GetRequiredService<SessionProvider>();
 
-    Assert.NotNull(sessionProvider);
+    Assert.That(sessionProvider,
+                Is.Not.Null);
 
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await sessionProvider.Check(HealthCheckTag.Readiness)
-                                             .ConfigureAwait(false)).Status);
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await sessionProvider.Check(HealthCheckTag.Startup)
-                                             .ConfigureAwait(false)).Status);
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await sessionProvider!.Check(HealthCheckTag.Liveness)
-                                              .ConfigureAwait(false)).Status);
+    Assert.That((await sessionProvider.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await sessionProvider.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await sessionProvider!.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
 
     await sessionProvider.Init(CancellationToken.None)
                          .ConfigureAwait(false);
 
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await sessionProvider.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await sessionProvider.Check(HealthCheckTag.Readiness)
-                                          .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await sessionProvider.Check(HealthCheckTag.Startup)
-                                          .ConfigureAwait(false)).Status);
+    Assert.That((await sessionProvider.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await sessionProvider.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await sessionProvider.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
 
-    Assert.NotNull(sessionProvider.Get());
+    Assert.That(sessionProvider.Get(),
+                Is.Not.Null);
   }
 
   [Test]
@@ -85,7 +87,8 @@ public class SessionProviderTests
   {
     var sessionProvider = provider_!.GetRequiredService<SessionProvider>();
 
-    Assert.NotNull(sessionProvider);
+    Assert.That(sessionProvider,
+                Is.Not.Null);
 
     Assert.Throws<NullReferenceException>(() => sessionProvider.Get());
   }

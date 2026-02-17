@@ -78,7 +78,8 @@ public class TaskHandlerTest
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
                                                                 mockQueueMessageHandler.Object);
-    Assert.IsNotNull(testServiceProvider.TaskHandler);
+    Assert.That(testServiceProvider.TaskHandler,
+                Is.Not.Null);
   }
 
   [Test]
@@ -95,8 +96,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.TaskNotFound,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.TaskNotFound));
   }
 
   private static async Task<(string taskId, string taskUnresolvedDepId, string taskErrorId, string taskRetriedId, string sessionId)> InitProviderRunnableTask(
@@ -592,11 +593,11 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.SessionNotExecutable,
-                    acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.SessionNotExecutable));
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskId,
+                Is.EqualTo(taskId));
   }
 
   [Test]
@@ -625,11 +626,11 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.CancelledAfterFirstRead,
-                    acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.CancelledAfterFirstRead));
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskId,
+                Is.EqualTo(taskId));
   }
 
   [Test]
@@ -657,33 +658,33 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
-    Assert.AreEqual(TaskStatus.Dispatched,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskStatus);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskId,
+                Is.EqualTo(taskId));
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskStatus,
+                Is.EqualTo(TaskStatus.Dispatched));
 
 
     await testServiceProvider.TaskHandler.ReleaseAndPostponeTask()
                              .ConfigureAwait(false);
-    Assert.AreEqual(TaskStatus.Submitted,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskStatus);
-    Assert.AreEqual(QueueMessageStatus.Postponed,
-                    sqmh.Status);
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskStatus,
+                Is.EqualTo(TaskStatus.Submitted));
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Postponed));
 
     var taskData = await testServiceProvider.TaskTable.ReadTaskAsync(taskId)
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
-    Assert.AreEqual(string.Empty,
-                    taskData.OwnerPodId);
-    Assert.AreEqual(string.Empty,
-                    taskData.OwnerPodName);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
+    Assert.That(taskData.OwnerPodId,
+                Is.EqualTo(string.Empty));
+    Assert.That(taskData.OwnerPodName,
+                Is.EqualTo(string.Empty));
   }
 
   public record struct AcquireTaskReturn(AcquisitionStatus  AcquisitionStatus,
@@ -966,9 +967,9 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(taskData.TaskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskId,
+                Is.EqualTo(taskData.TaskId));
 
     var dbStatus = await testServiceProvider.TaskTable.FindTasksAsync(t => t.TaskId == taskData.TaskId,
                                                                       t => t.Status,
@@ -976,9 +977,9 @@ public class TaskHandlerTest
                                             .SingleAsync(CancellationToken.None)
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(dbStatus,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskStatus);
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskStatus,
+                Is.EqualTo(dbStatus));
 
     return new AcquireTaskReturn(acquired,
                                  dbStatus,
@@ -1034,9 +1035,9 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(taskData.TaskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskId,
+                Is.EqualTo(taskData.TaskId));
 
     var dbStatus = await testServiceProvider.TaskTable.FindTasksAsync(t => t.TaskId == taskData.TaskId,
                                                                       t => t.Status,
@@ -1044,19 +1045,19 @@ public class TaskHandlerTest
                                             .SingleAsync(CancellationToken.None)
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(dbStatus,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskStatus);
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskStatus,
+                Is.EqualTo(dbStatus));
 
     var retryData = await testServiceProvider.TaskTable.ReadTaskAsync(taskData.RetryId())
                                              .ConfigureAwait(false);
 
-    Assert.Contains(retryData.Status,
-                    new List<TaskStatus>
-                    {
-                      TaskStatus.Dispatched,
-                      TaskStatus.Submitted,
-                    });
+    Assert.That(new List<TaskStatus>
+                {
+                  TaskStatus.Dispatched,
+                  TaskStatus.Submitted,
+                },
+                Does.Contain(retryData.Status));
 
     return new AcquireTaskReturn(acquired,
                                  dbStatus,
@@ -1388,8 +1389,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreNotEqual(0,
-                       acquired);
+    Assert.That(acquired,
+                Is.Not.EqualTo(0));
   }
 
   [Test]
@@ -1433,9 +1434,9 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(taskId,
-                    testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
-                                       .TaskId);
+    Assert.That(testServiceProvider.TaskHandler.GetAcquiredTaskInfo()
+                                   .TaskId,
+                Is.EqualTo(taskId));
     return acquired;
   }
 
@@ -1502,8 +1503,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.TaskIsPending,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.TaskIsPending));
   }
 
   public class TestRpcException : RpcException
@@ -1650,8 +1651,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -1705,8 +1706,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     Assert.That(cache.EnumerateFiles(),
                 Is.Empty);
@@ -1742,17 +1743,21 @@ public class TaskHandlerTest
 
     Console.WriteLine(taskData);
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    taskData.Status);
-    Assert.IsNotNull(taskData.StartDate);
-    Assert.IsNotNull(taskData.EndDate);
-    Assert.IsNotNull(taskData.ProcessingToEndDuration);
-    Assert.IsNotNull(taskData.CreationToEndDuration);
-    Assert.Greater(taskData.CreationToEndDuration,
-                   taskData.ProcessingToEndDuration);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Completed));
+    Assert.That(taskData.StartDate,
+                Is.Not.Null);
+    Assert.That(taskData.EndDate,
+                Is.Not.Null);
+    Assert.That(taskData.ProcessingToEndDuration,
+                Is.Not.Null);
+    Assert.That(taskData.CreationToEndDuration,
+                Is.Not.Null);
+    Assert.That(taskData.CreationToEndDuration,
+                Is.GreaterThan(taskData.ProcessingToEndDuration));
 
-    Assert.AreEqual(QueueMessageStatus.Processed,
-                    sqmh.Status);
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Processed));
   }
 
 
@@ -1792,8 +1797,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -1808,15 +1813,15 @@ public class TaskHandlerTest
 
     Console.WriteLine(taskData);
 
-    Assert.AreEqual(exception == typeof(TaskPausedException)
-                      ? TaskStatus.Paused
-                      : TaskStatus.Retried,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(exception == typeof(TaskPausedException)
+                             ? TaskStatus.Paused
+                             : TaskStatus.Retried));
 
-    Assert.AreEqual(exception == typeof(TaskPausedException)
-                      ? QueueMessageStatus.Processed
-                      : QueueMessageStatus.Cancelled,
-                    sqmh.Status);
+    Assert.That(sqmh.Status,
+                Is.EqualTo(exception == typeof(TaskPausedException)
+                             ? QueueMessageStatus.Processed
+                             : QueueMessageStatus.Cancelled));
   }
 
   [Test]
@@ -1906,8 +1911,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -1925,10 +1930,10 @@ public class TaskHandlerTest
 
     Console.WriteLine(taskData);
 
-    Assert.AreEqual(TaskStatus.Paused,
-                    taskData.Status);
-    Assert.AreEqual(QueueMessageStatus.Processed,
-                    sqmh.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Paused));
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Processed));
   }
 
   [Test]
@@ -1966,8 +1971,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -1984,17 +1989,21 @@ public class TaskHandlerTest
 
     Console.WriteLine(taskData);
 
-    Assert.AreEqual(TaskStatus.Timeout,
-                    taskData.Status);
-    Assert.IsNotNull(taskData.StartDate);
-    Assert.IsNotNull(taskData.EndDate);
-    Assert.IsNotNull(taskData.ProcessingToEndDuration);
-    Assert.IsNotNull(taskData.CreationToEndDuration);
-    Assert.Greater(taskData.CreationToEndDuration,
-                   taskData.ProcessingToEndDuration);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Timeout));
+    Assert.That(taskData.StartDate,
+                Is.Not.Null);
+    Assert.That(taskData.EndDate,
+                Is.Not.Null);
+    Assert.That(taskData.ProcessingToEndDuration,
+                Is.Not.Null);
+    Assert.That(taskData.CreationToEndDuration,
+                Is.Not.Null);
+    Assert.That(taskData.CreationToEndDuration,
+                Is.GreaterThan(taskData.ProcessingToEndDuration));
 
-    Assert.AreEqual(QueueMessageStatus.Processed,
-                    sqmh.Status);
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Processed));
   }
 
   [Test]
@@ -2046,8 +2055,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -2112,8 +2121,8 @@ public class TaskHandlerTest
       var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                               .ConfigureAwait(false);
 
-      Assert.AreEqual(AcquisitionStatus.Acquired,
-                      acquired);
+      Assert.That(acquired,
+                  Is.EqualTo(AcquisitionStatus.Acquired));
 
       await testServiceProvider.TaskHandler.PreProcessing()
                                .ConfigureAwait(false);
@@ -2135,15 +2144,15 @@ public class TaskHandlerTest
 
       Console.WriteLine(taskData);
 
-      Assert.AreEqual(i != maxRetries
-                        ? TaskStatus.Retried
-                        : TaskStatus.Error,
-                      taskData.Status);
-      Assert.Greater(taskData.CreationToEndDuration,
-                     taskData.ProcessingToEndDuration);
+      Assert.That(taskData.Status,
+                  Is.EqualTo(i != maxRetries
+                               ? TaskStatus.Retried
+                               : TaskStatus.Error));
+      Assert.That(taskData.CreationToEndDuration,
+                  Is.GreaterThan(taskData.ProcessingToEndDuration));
 
-      Assert.AreEqual(QueueMessageStatus.Cancelled,
-                      sqmh.Status);
+      Assert.That(sqmh.Status,
+                  Is.EqualTo(QueueMessageStatus.Cancelled));
 
       var retries = await testServiceProvider.TaskTable.FindTasksAsync(data => data.InitialTaskId == initialTaskId,
                                                                        data => new
@@ -2158,10 +2167,10 @@ public class TaskHandlerTest
 
       // i == maxRetries means we are running the task that will be in error
       // therefore there is no new task that can be retry
-      Assert.AreEqual(i != maxRetries
-                        ? i + 1
-                        : i,
-                      lastRetry.RetryOfIds.Count);
+      Assert.That(lastRetry.RetryOfIds.Count,
+                  Is.EqualTo(i != maxRetries
+                               ? i + 1
+                               : i));
 
       taskId = lastRetry.TaskId;
     }
@@ -2193,8 +2202,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -2206,17 +2215,17 @@ public class TaskHandlerTest
                                                                      CancellationToken.None)
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Retried,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Retried));
 
-    Assert.AreEqual(QueueMessageStatus.Cancelled,
-                    sqmh.Status);
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Cancelled));
 
     var taskDataRetry = await testServiceProvider.TaskTable.ReadTaskAsync(taskId + "###1",
                                                                           CancellationToken.None)
                                                  .ConfigureAwait(false);
-    Assert.AreEqual(taskId,
-                    taskDataRetry.InitialTaskId);
+    Assert.That(taskDataRetry.InitialTaskId,
+                Is.EqualTo(taskId));
   }
 
   [Test]
@@ -2256,8 +2265,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
 
     Assert.That(cache.EnumerateFiles(),
@@ -2312,9 +2321,9 @@ public class TaskHandlerTest
                                                outputId),
                                 }));
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskId)
-                                             .ConfigureAwait(false));
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Completed));
   }
 
   [Test]
@@ -2357,8 +2366,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
 
     Assert.That(cache.EnumerateFiles(),
@@ -2401,9 +2410,9 @@ public class TaskHandlerTest
     Assert.That(cache.EnumerateFiles(),
                 Is.Empty);
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskId)
-                                             .ConfigureAwait(false));
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Completed));
   }
 
   [Test]
@@ -2445,8 +2454,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -2489,8 +2498,8 @@ public class TaskHandlerTest
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
-    Assert.AreEqual(AcquisitionStatus.Acquired,
-                    acquired);
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
 
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
@@ -2532,12 +2541,12 @@ public class TaskHandlerTest
     Assert.That(() => exec,
                 Throws.InstanceOf<OperationCanceledException>());
 
-    Assert.AreEqual(TaskStatus.Cancelling,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskId)
-                                             .ConfigureAwait(false));
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Cancelling));
 
-    Assert.AreEqual(QueueMessageStatus.Cancelled,
-                    sqmh.Status);
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Cancelled));
   }
 
   [Test]

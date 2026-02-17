@@ -183,28 +183,28 @@ public class ResultWatcherTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultWatcher!.Check(HealthCheckTag.Liveness)
-                                              .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultWatcher.Check(HealthCheckTag.Readiness)
-                                             .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultWatcher.Check(HealthCheckTag.Startup)
-                                             .ConfigureAwait(false)).Status);
+      Assert.That((await ResultWatcher!.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await ResultWatcher.Init(CancellationToken.None)
                          .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultWatcher.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultWatcher.Check(HealthCheckTag.Readiness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultWatcher.Check(HealthCheckTag.Startup)
-                                          .ConfigureAwait(false)).Status);
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -351,13 +351,13 @@ public class ResultWatcherTestBase
 
       Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
-      Assert.AreEqual(2,
-                      newResults.Count);
+      Assert.That(newResults.Count,
+                  Is.EqualTo(2));
 
-      Assert.AreEqual(ResultToNewResult(NewResult1),
-                      newResults[0]);
-      Assert.AreEqual(ResultToNewResult(NewResult2),
-                      newResults[1]);
+      Assert.That(newResults[0],
+                  Is.EqualTo(ResultToNewResult(NewResult1)));
+      Assert.That(newResults[1],
+                  Is.EqualTo(ResultToNewResult(NewResult2)));
     }
   }
 
@@ -396,21 +396,21 @@ public class ResultWatcherTestBase
 
       Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
-      Assert.AreEqual(3,
-                      newResults.Count);
+      Assert.That(newResults.Count,
+                  Is.EqualTo(3));
 
-      Assert.AreEqual(new ResultStatusUpdate("SessionId",
-                                             "ResultIsCreated",
-                                             ResultStatus.Aborted),
-                      newResults[0]);
-      Assert.AreEqual(new ResultStatusUpdate("SessionId",
-                                             "ResultIsCreated2",
-                                             ResultStatus.Aborted),
-                      newResults[1]);
-      Assert.AreEqual(new ResultStatusUpdate("SessionId",
-                                             "ResultIsCreated3",
-                                             ResultStatus.Aborted),
-                      newResults[2]);
+      Assert.That(newResults[0],
+                  Is.EqualTo(new ResultStatusUpdate("SessionId",
+                                                    "ResultIsCreated",
+                                                    ResultStatus.Aborted)));
+      Assert.That(newResults[1],
+                  Is.EqualTo(new ResultStatusUpdate("SessionId",
+                                                    "ResultIsCreated2",
+                                                    ResultStatus.Aborted)));
+      Assert.That(newResults[2],
+                  Is.EqualTo(new ResultStatusUpdate("SessionId",
+                                                    "ResultIsCreated3",
+                                                    ResultStatus.Aborted)));
     }
   }
 
@@ -450,14 +450,14 @@ public class ResultWatcherTestBase
 
       Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
-      Assert.AreEqual(1,
-                      newResults.Count);
+      Assert.That(newResults.Count,
+                  Is.EqualTo(1));
 
-      Assert.AreEqual(new ResultOwnerUpdate("SessionId",
-                                            "ResultIsCreated3",
-                                            "",
-                                            "NewOwnerId"),
-                      newResults.Single());
+      Assert.That(newResults.Single(),
+                  Is.EqualTo(new ResultOwnerUpdate("SessionId",
+                                                   "ResultIsCreated3",
+                                                   "",
+                                                   "NewOwnerId")));
     }
   }
 }

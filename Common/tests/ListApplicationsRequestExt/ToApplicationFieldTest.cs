@@ -116,8 +116,8 @@ public class ToApplicationFieldTest
        .ToField()
        .Compile();
 
-    Assert.AreEqual(expected,
-                    func.Invoke(taskData_));
+    Assert.That(func.Invoke(taskData_),
+                Is.EqualTo(expected));
   }
 
   [Test]
@@ -149,19 +149,19 @@ public class ToApplicationFieldTest
                          },
                 }.Sort.Fields;
 
-    Assert.AreEqual(2,
-                    field.Count);
+    Assert.That(field.Count,
+                Is.EqualTo(2));
 
-    Assert.AreEqual(Options.ApplicationService,
-                    field[0]
-                      .ToField()
-                      .Compile()
-                      .Invoke(taskData_));
+    Assert.That(field[0]
+                .ToField()
+                .Compile()
+                .Invoke(taskData_),
+                Is.EqualTo(Options.ApplicationService));
 
-    Assert.AreEqual(Options.ApplicationName,
-                    field[1]
-                      .ToField()
-                      .Compile()
-                      .Invoke(taskData_));
+    Assert.That(field[1]
+                .ToField()
+                .Compile()
+                .Invoke(taskData_),
+                Is.EqualTo(Options.ApplicationName));
   }
 }

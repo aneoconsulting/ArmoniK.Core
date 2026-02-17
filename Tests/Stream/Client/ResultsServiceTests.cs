@@ -115,8 +115,8 @@ internal class ResultsServiceTests
                                                                    CancellationToken.None)
                                                .ConfigureAwait(false);
 
-    Assert.AreEqual(payloadBytes,
-                    downloadedPayload);
+    Assert.That(downloadedPayload,
+                Is.EqualTo(payloadBytes));
   }
 
   [Test]
@@ -160,8 +160,8 @@ internal class ResultsServiceTests
                                                                    CancellationToken.None)
                                                .ConfigureAwait(false);
 
-    Assert.AreEqual(payloadBytes,
-                    downloadedPayload);
+    Assert.That(downloadedPayload,
+                Is.EqualTo(payloadBytes));
 
     await resultsClient.DeleteResultsDataAsync(new DeleteResultsDataRequest
                                                {
@@ -212,8 +212,9 @@ internal class ResultsServiceTests
                                          throw;
                                        }
                                      });
-    Assert.NotNull(ex);
-    Assert.AreEqual(StatusCode.NotFound,
-                    ex!.StatusCode);
+    Assert.That(ex,
+                Is.Not.Null);
+    Assert.That(ex!.StatusCode,
+                Is.EqualTo(StatusCode.NotFound));
   }
 }

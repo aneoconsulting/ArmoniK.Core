@@ -1218,8 +1218,10 @@ public class AuthenticationIntegrationTest
                           .Result;
     var client = Activator.CreateInstance(parameters.ClientType,
                                           channel);
-    Assert.IsNotNull(client);
-    Assert.IsInstanceOf<ClientBase>(client);
+    Assert.That(client,
+                Is.Not.Null);
+    Assert.That(client,
+                Is.InstanceOf<ClientBase>());
 
     var serviceName = ServicesPermissions.FromType(ClientServerTypeMapping[parameters.ClientType]);
 
@@ -1253,14 +1255,17 @@ public class AuthenticationIntegrationTest
     else
     {
       var exception = Assert.CatchAsync(TestFunction);
-      Assert.IsNotNull(exception);
+      Assert.That(exception,
+                  Is.Not.Null);
       var finalException = parameters.IsAsync || parameters.ClientStream || parameters.ServerStream
                              ? exception
                              : exception!.InnerException;
-      Assert.IsNotNull(finalException);
-      Assert.IsInstanceOf<RpcException>(finalException);
-      Assert.AreEqual(expectedError,
-                      ((RpcException)finalException!).StatusCode);
+      Assert.That(finalException,
+                  Is.Not.Null);
+      Assert.That(finalException,
+                  Is.InstanceOf<RpcException>());
+      Assert.That(((RpcException)finalException!).StatusCode,
+                  Is.EqualTo(expectedError));
     }
 
     GrpcSubmitterServiceHelper.DeleteChannel(channel)
@@ -1349,8 +1354,10 @@ public class AuthenticationIntegrationTest
                                 .ConfigureAwait(false);
     var client = Activator.CreateInstance(parameters.ClientType,
                                           channel);
-    Assert.IsNotNull(client);
-    Assert.IsInstanceOf<ClientBase>(client);
+    Assert.That(client,
+                Is.Not.Null);
+    Assert.That(client,
+                Is.InstanceOf<ClientBase>());
 
     if (shouldSucceed is ResultType.AlwaysTrue or ResultType.AuthorizedForSome)
     {
@@ -1364,28 +1371,32 @@ public class AuthenticationIntegrationTest
                                                             client,
                                                             parameters.Args);
                           });
-      Assert.IsNotNull(response);
-      Assert.IsInstanceOf<GetCurrentUserResponse>(response);
+      Assert.That(response,
+                  Is.Not.Null);
+      Assert.That(response,
+                  Is.InstanceOf<GetCurrentUserResponse>());
       var castedResponse = (GetCurrentUserResponse)response!;
       // Check if the returned username is correct
-      Assert.AreEqual(options_!.RequireAuthentication
-                        ? Identities[finalUserIndex].UserName
-                        : "Anonymous",
-                      castedResponse.User.Username);
+      Assert.That(castedResponse.User.Username,
+                  Is.EqualTo(options_!.RequireAuthentication
+                               ? Identities[finalUserIndex].UserName
+                               : "Anonymous"));
       // Check if the role list is empty when there is no authorization, otherwise returns the roles
-      Assert.IsTrue(options_!.RequireAuthorization
-                      ? !Identities[finalUserIndex]
-                         .Roles.Except(castedResponse.User.Roles)
-                         .Any()
-                      : castedResponse.User.Roles.Count == 0);
+      Assert.That(options_!.RequireAuthorization
+                    ? !Identities[finalUserIndex]
+                       .Roles.Except(castedResponse.User.Roles)
+                       .Any()
+                    : castedResponse.User.Roles.Count == 0,
+                  Is.True);
       // Check if the permission list corresponds to the identity's permissions
-      Assert.IsTrue(options_!.RequireAuthorization
-                      ? !Identities[finalUserIndex]
-                         .Permissions.Except(castedResponse.User.Permissions.Select(s => new Permission(s)))
-                         .Any()
-                      : !ServicesPermissions.PermissionsLists[ServicesPermissions.All]
-                                            .Except(castedResponse.User.Permissions.Select(s => new Permission(s)))
-                                            .Any());
+      Assert.That(options_!.RequireAuthorization
+                    ? !Identities[finalUserIndex]
+                       .Permissions.Except(castedResponse.User.Permissions.Select(s => new Permission(s)))
+                       .Any()
+                    : !ServicesPermissions.PermissionsLists[ServicesPermissions.All]
+                                          .Except(castedResponse.User.Permissions.Select(s => new Permission(s)))
+                                          .Any(),
+                  Is.True);
     }
     else
     {
@@ -1398,11 +1409,14 @@ public class AuthenticationIntegrationTest
                                                           client,
                                                           parameters.Args);
                                    });
-      Assert.IsNotNull(exception);
-      Assert.IsNotNull(exception!.InnerException);
-      Assert.IsInstanceOf<RpcException>(exception.InnerException);
-      Assert.AreEqual(expectedError,
-                      ((RpcException)exception.InnerException!).StatusCode);
+      Assert.That(exception,
+                  Is.Not.Null);
+      Assert.That(exception!.InnerException,
+                  Is.Not.Null);
+      Assert.That(exception.InnerException,
+                  Is.InstanceOf<RpcException>());
+      Assert.That(((RpcException)exception.InnerException!).StatusCode,
+                  Is.EqualTo(expectedError));
     }
 
     await GrpcSubmitterServiceHelper.DeleteChannel(channel)

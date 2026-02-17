@@ -172,28 +172,28 @@ public class ResultTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultTable!.Check(HealthCheckTag.Liveness)
-                                            .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultTable.Check(HealthCheckTag.Readiness)
-                                           .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultTable.Check(HealthCheckTag.Startup)
-                                           .ConfigureAwait(false)).Status);
+      Assert.That((await ResultTable!.Check(HealthCheckTag.Liveness)
+                                     .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultTable.Check(HealthCheckTag.Readiness)
+                                    .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultTable.Check(HealthCheckTag.Startup)
+                                    .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await ResultTable.Init(CancellationToken.None)
                        .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultTable.Check(HealthCheckTag.Liveness)
-                                        .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultTable.Check(HealthCheckTag.Readiness)
-                                        .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultTable.Check(HealthCheckTag.Startup)
-                                        .ConfigureAwait(false)).Status);
+      Assert.That((await ResultTable.Check(HealthCheckTag.Liveness)
+                                    .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultTable.Check(HealthCheckTag.Readiness)
+                                    .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultTable.Check(HealthCheckTag.Startup)
+                                    .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -216,7 +216,8 @@ public class ResultTableTestBase
       var result = await ResultTable.GetResult("ResultIsAvailable",
                                                CancellationToken.None)
                                     .ConfigureAwait(false);
-      Assert.IsTrue(result.OwnerTaskId == "NewOwnerId");
+      Assert.That(result.OwnerTaskId == "NewOwnerId",
+                  Is.True);
     }
   }
 
@@ -253,7 +254,8 @@ public class ResultTableTestBase
                                              CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    Assert.IsTrue(result.Status == ResultStatus.Completed);
+    Assert.That(result.Status == ResultStatus.Completed,
+                Is.True);
   }
 
   [Test]
@@ -304,7 +306,8 @@ public class ResultTableTestBase
                                      .ToListAsync()
                                      .ConfigureAwait(false);
 
-      Assert.IsEmpty(resList);
+      Assert.That(resList,
+                  Is.Empty);
     }
   }
 
@@ -358,15 +361,16 @@ public class ResultTableTestBase
                                                 CancellationToken.None)
                                      .ConfigureAwait(false);
 
-      Assert.AreEqual("ResultIsNotAvailable",
-                      result.ResultId);
-      Assert.AreEqual(5,
-                      result.Size);
-      Assert.AreEqual(id,
-                      result.OpaqueId);
-      Assert.AreEqual(ResultStatus.Completed,
-                      result.Status);
-      Assert.NotNull(result.CompletionDate);
+      Assert.That(result.ResultId,
+                  Is.EqualTo("ResultIsNotAvailable"));
+      Assert.That(result.Size,
+                  Is.EqualTo(5));
+      Assert.That(result.OpaqueId,
+                  Is.EqualTo(id));
+      Assert.That(result.Status,
+                  Is.EqualTo(ResultStatus.Completed));
+      Assert.That(result.CompletionDate,
+                  Is.Not.Null);
     }
   }
 
@@ -401,12 +405,12 @@ public class ResultTableTestBase
                                       .ToListAsync()
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(n,
-                      results.Count);
+      Assert.That(results.Count,
+                  Is.EqualTo(n));
       foreach (var result in results)
       {
-        Assert.AreEqual(ResultStatus.Completed,
-                        result.Status);
+        Assert.That(result.Status,
+                    Is.EqualTo(ResultStatus.Completed));
       }
     }
   }
@@ -444,12 +448,12 @@ public class ResultTableTestBase
                                      .ConfigureAwait(false));
       }
 
-      Assert.AreEqual(n,
-                      results.Count);
+      Assert.That(results.Count,
+                  Is.EqualTo(n));
       foreach (var result in results)
       {
-        Assert.AreEqual(ResultStatus.Completed,
-                        result.Status);
+        Assert.That(result.Status,
+                    Is.EqualTo(ResultStatus.Completed));
       }
     }
   }
@@ -470,17 +474,17 @@ public class ResultTableTestBase
                                                        CancellationToken.None)
                                       .ConfigureAwait(false)).ToList();
 
-      Assert.Contains(new ResultIdStatus("ResultIsAvailable",
-                                         ResultStatus.Completed),
-                      result);
+      Assert.That(result,
+                  Does.Contain(new ResultIdStatus("ResultIsAvailable",
+                                                  ResultStatus.Completed)));
 
-      Assert.Contains(new ResultIdStatus("ResultIsNotAvailable",
-                                         ResultStatus.Aborted),
-                      result);
+      Assert.That(result,
+                  Does.Contain(new ResultIdStatus("ResultIsNotAvailable",
+                                                  ResultStatus.Aborted)));
 
-      Assert.Contains(new ResultIdStatus("ResultIsCreated",
-                                         ResultStatus.Created),
-                      result);
+      Assert.That(result,
+                  Does.Contain(new ResultIdStatus("ResultIsCreated",
+                                                  ResultStatus.Created)));
     }
   }
 
@@ -497,8 +501,8 @@ public class ResultTableTestBase
                                                       CancellationToken.None)
                                      .ConfigureAwait(false);
 
-      Assert.AreEqual(0,
-                      result.Count());
+      Assert.That(result.Count(),
+                  Is.EqualTo(0));
     }
   }
 
@@ -523,10 +527,10 @@ public class ResultTableTestBase
                                                              CancellationToken.None)
                                             .ConfigureAwait(false)).ToList();
 
-      Assert.AreEqual(3,
-                      resultStatus.Count(status => status.Status == ResultStatus.Aborted));
-      Assert.AreEqual(0,
-                      resultStatus.Count(status => status.Status != ResultStatus.Aborted));
+      Assert.That(resultStatus.Count(status => status.Status == ResultStatus.Aborted),
+                  Is.EqualTo(3));
+      Assert.That(resultStatus.Count(status => status.Status != ResultStatus.Aborted),
+                  Is.EqualTo(0));
     }
   }
 
@@ -551,10 +555,10 @@ public class ResultTableTestBase
                                                              CancellationToken.None)
                                             .ConfigureAwait(false)).ToList();
 
-      Assert.AreEqual(1,
-                      resultStatus.Count(status => status.Status == ResultStatus.Aborted));
-      Assert.AreEqual(2,
-                      resultStatus.Count(status => status.Status != ResultStatus.Aborted));
+      Assert.That(resultStatus.Count(status => status.Status == ResultStatus.Aborted),
+                  Is.EqualTo(1));
+      Assert.That(resultStatus.Count(status => status.Status != ResultStatus.Aborted),
+                  Is.EqualTo(2));
     }
   }
 
@@ -571,8 +575,8 @@ public class ResultTableTestBase
                                                      CancellationToken.None)
                                    .ConfigureAwait(false)).results.ToList();
 
-      Assert.AreEqual(2,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(2));
     }
   }
 
@@ -589,8 +593,8 @@ public class ResultTableTestBase
                                                      CancellationToken.None)
                                    .ConfigureAwait(false)).results.ToList();
 
-      Assert.AreEqual(1,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(1));
     }
   }
 
@@ -607,8 +611,8 @@ public class ResultTableTestBase
                                                      CancellationToken.None)
                                    .ConfigureAwait(false)).results.ToList();
 
-      Assert.AreEqual(4,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(4));
     }
   }
 
@@ -621,12 +625,12 @@ public class ResultTableTestBase
                                                         "ResultIsCompletedWithDependents")
                                          .ToListAsync()
                                          .ConfigureAwait(false);
-      Assert.AreEqual(2,
-                      dependents.Count);
-      Assert.Contains("Dependent1",
-                      dependents);
-      Assert.Contains("Dependent2",
-                      dependents);
+      Assert.That(dependents.Count,
+                  Is.EqualTo(2));
+      Assert.That(dependents,
+                  Does.Contain("Dependent1"));
+      Assert.That(dependents,
+                  Does.Contain("Dependent2"));
     }
   }
 
@@ -639,8 +643,8 @@ public class ResultTableTestBase
                                                         "ResultIsCreated")
                                          .ToListAsync()
                                          .ConfigureAwait(false);
-      Assert.AreEqual(0,
-                      dependents.Count);
+      Assert.That(dependents.Count,
+                  Is.EqualTo(0));
     }
   }
 
@@ -698,12 +702,12 @@ public class ResultTableTestBase
                                                        resultId)
                                         .ToListAsync()
                                         .ConfigureAwait(false);
-      Assert.AreEqual(2,
-                      dependents.Count);
-      Assert.Contains("Task1",
-                      dependents);
-      Assert.Contains("Task2",
-                      dependents);
+      Assert.That(dependents.Count,
+                  Is.EqualTo(2));
+      Assert.That(dependents,
+                  Does.Contain("Task1"));
+      Assert.That(dependents,
+                  Does.Contain("Task2"));
     }
   }
 
@@ -740,8 +744,8 @@ public class ResultTableTestBase
       var res = await ResultTable.GetResult("ResultIsCreated2")
                                  .ConfigureAwait(false);
 
-      Assert.AreEqual("NewTaskId",
-                      res.OwnerTaskId);
+      Assert.That(res.OwnerTaskId,
+                  Is.EqualTo("NewTaskId"));
 
       // Overriding an existing result should succeed
       await ResultTable!.SetTaskOwnership(new[]
@@ -753,8 +757,8 @@ public class ResultTableTestBase
       res = await ResultTable.GetResult("ResultIsCreated2")
                              .ConfigureAwait(false);
 
-      Assert.AreEqual("NewTaskId2",
-                      res.OwnerTaskId);
+      Assert.That(res.OwnerTaskId,
+                  Is.EqualTo("NewTaskId2"));
     }
   }
 
@@ -807,23 +811,23 @@ public class ResultTableTestBase
                                                     CancellationToken.None)
                                     .ConfigureAwait(false);
 
-      Assert.AreEqual(ResultStatus.Completed,
-                      result.Status);
-      Assert.AreEqual(id,
-                      result.OpaqueId);
-      Assert.AreEqual(5,
-                      result.Size);
+      Assert.That(result.Status,
+                  Is.EqualTo(ResultStatus.Completed));
+      Assert.That(result.OpaqueId,
+                  Is.EqualTo(id));
+      Assert.That(result.Size,
+                  Is.EqualTo(5));
 
       result = await ResultTable.GetResult(resultId,
                                            CancellationToken.None)
                                 .ConfigureAwait(false);
 
-      Assert.AreEqual(ResultStatus.Completed,
-                      result.Status);
-      Assert.AreEqual(5,
-                      result.Size);
-      Assert.AreEqual(id,
-                      result.OpaqueId);
+      Assert.That(result.Status,
+                  Is.EqualTo(ResultStatus.Completed));
+      Assert.That(result.Size,
+                  Is.EqualTo(5));
+      Assert.That(result.OpaqueId,
+                  Is.EqualTo(id));
     }
   }
 

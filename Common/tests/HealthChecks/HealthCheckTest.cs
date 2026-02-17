@@ -76,8 +76,8 @@ public class HealthCheckTest
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
-    Assert.AreEqual(healthStatus,
-                    checkResult.Status);
+    Assert.That(checkResult.Status,
+                Is.EqualTo(healthStatus));
   }
 
   public static IEnumerable TestCases
@@ -112,8 +112,8 @@ public class HealthCheckTest
                                                 CancellationToken.None)
                               .ConfigureAwait(false);
 
-    Assert.AreEqual(healthCheckResultInput,
-                    checkResult);
+    Assert.That(checkResult,
+                Is.EqualTo(healthCheckResultInput));
   }
 
   private class TestHealthCheck : IInitializable
@@ -170,16 +170,16 @@ public class HealthCheckTest
 
     var healthCheckService = provider.GetRequiredService<HealthCheckService>();
 
-    Assert.AreEqual(HealthStatus.Degraded,
-                    (await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Liveness.ToString()))
-                                             .ConfigureAwait(false)).Status);
+    Assert.That((await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Liveness.ToString()))
+                                         .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Degraded));
 
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Startup.ToString()))
-                                             .ConfigureAwait(false)).Status);
+    Assert.That((await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Startup.ToString()))
+                                         .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
 
-    Assert.AreEqual(HealthStatus.Unhealthy,
-                    (await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Readiness.ToString()))
-                                             .ConfigureAwait(false)).Status);
+    Assert.That((await healthCheckService.CheckHealthAsync(registration => registration.Tags.Contains(HealthCheckTag.Readiness.ToString()))
+                                         .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Unhealthy));
   }
 }

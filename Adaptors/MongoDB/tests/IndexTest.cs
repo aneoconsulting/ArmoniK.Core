@@ -64,10 +64,10 @@ internal class IndexTest
       Console.WriteLine(index);
     }
 
-    Assert.AreEqual(2,
-                    collection.Indexes.List()
-                              .ToList()
-                              .Count);
+    Assert.That(collection.Indexes.List()
+                          .ToList()
+                          .Count,
+                Is.EqualTo(2));
   }
 
   [Test]
@@ -94,10 +94,10 @@ internal class IndexTest
       Console.WriteLine(index);
     }
 
-    Assert.AreEqual(indexModels.Length + 1,
-                    collection.Indexes.List()
-                              .ToList()
-                              .Count);
+    Assert.That(collection.Indexes.List()
+                          .ToList()
+                          .Count,
+                Is.EqualTo(indexModels.Length + 1));
   }
 
   [Test]
@@ -119,10 +119,10 @@ internal class IndexTest
       Console.WriteLine(index);
     }
 
-    Assert.AreEqual(indexModels.Length + 1,
-                    collection.Indexes.List()
-                              .ToList()
-                              .Count);
+    Assert.That(collection.Indexes.List()
+                          .ToList()
+                          .Count,
+                Is.EqualTo(indexModels.Length + 1));
   }
 
   [Test]
@@ -144,10 +144,10 @@ internal class IndexTest
       Console.WriteLine(index);
     }
 
-    Assert.AreEqual(indexModels.Length + 1,
-                    collection.Indexes.List()
-                              .ToList()
-                              .Count);
+    Assert.That(collection.Indexes.List()
+                          .ToList()
+                          .Count,
+                Is.EqualTo(indexModels.Length + 1));
   }
 
   [Test]
@@ -173,9 +173,9 @@ internal class IndexTest
       Console.WriteLine(index);
     }
 
-    Assert.AreEqual(indexModels.Length + 1,
-                    collection.Indexes.List()
-                              .ToList()
-                              .Count);
+    Assert.That(collection.Indexes.List()
+                          .ToList()
+                          .Count,
+                Is.EqualTo(indexModels.Length + 1));
   }
 }

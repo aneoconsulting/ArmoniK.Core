@@ -60,17 +60,18 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<SessionData>(serialized);
 
-    Assert.AreEqual(rdm.SessionId,
-                    deserialized.SessionId);
-    Assert.AreEqual(rdm.PartitionIds,
-                    deserialized.PartitionIds);
-    Assert.IsNotNull(deserialized.Options);
-    Assert.AreEqual(rdm.Options.MaxDuration,
-                    deserialized.Options.MaxDuration);
-    Assert.AreEqual(rdm.Options.MaxRetries,
-                    deserialized.Options.MaxRetries);
-    Assert.AreEqual(rdm.Options.Priority,
-                    deserialized.Options.Priority);
+    Assert.That(deserialized.SessionId,
+                Is.EqualTo(rdm.SessionId));
+    Assert.That(deserialized.PartitionIds,
+                Is.EqualTo(rdm.PartitionIds));
+    Assert.That(deserialized.Options,
+                Is.Not.Null);
+    Assert.That(deserialized.Options.MaxDuration,
+                Is.EqualTo(rdm.Options.MaxDuration));
+    Assert.That(deserialized.Options.MaxRetries,
+                Is.EqualTo(rdm.Options.MaxRetries));
+    Assert.That(deserialized.Options.Priority,
+                Is.EqualTo(rdm.Options.Priority));
   }
 
   [Test]
@@ -105,33 +106,34 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<Result>(serialized);
 
-    Assert.AreEqual(rdm.ResultId,
-                    deserialized.ResultId);
-    Assert.AreEqual(rdm.SessionId,
-                    deserialized.SessionId);
-    Assert.AreEqual(rdm.Name,
-                    deserialized.Name);
-    Assert.AreEqual(rdm.CreatedBy,
-                    deserialized.CreatedBy);
-    Assert.AreEqual(rdm.CompletedBy,
-                    deserialized.CompletedBy);
-    Assert.AreEqual(rdm.OwnerTaskId,
-                    deserialized.OwnerTaskId);
-    Assert.AreEqual(rdm.Status,
-                    deserialized.Status);
-    Assert.AreEqual(new List<string>
-                    {
-                      "Task1",
-                      "Task2",
-                    },
-                    deserialized.DependentTasks);
-    Assert.AreEqual(rdm.CreationDate,
-                    deserialized.CreationDate);
-    Assert.AreEqual(rdm.CompletionDate,
-                    deserialized.CompletionDate);
-    Assert.IsTrue(rdm.OpaqueId.SequenceEqual(deserialized.OpaqueId));
-    Assert.AreEqual(rdm.ManualDeletion,
-                    deserialized.ManualDeletion);
+    Assert.That(deserialized.ResultId,
+                Is.EqualTo(rdm.ResultId));
+    Assert.That(deserialized.SessionId,
+                Is.EqualTo(rdm.SessionId));
+    Assert.That(deserialized.Name,
+                Is.EqualTo(rdm.Name));
+    Assert.That(deserialized.CreatedBy,
+                Is.EqualTo(rdm.CreatedBy));
+    Assert.That(deserialized.CompletedBy,
+                Is.EqualTo(rdm.CompletedBy));
+    Assert.That(deserialized.OwnerTaskId,
+                Is.EqualTo(rdm.OwnerTaskId));
+    Assert.That(deserialized.Status,
+                Is.EqualTo(rdm.Status));
+    Assert.That(deserialized.DependentTasks,
+                Is.EqualTo(new List<string>
+                           {
+                             "Task1",
+                             "Task2",
+                           }));
+    Assert.That(deserialized.CreationDate,
+                Is.EqualTo(rdm.CreationDate));
+    Assert.That(deserialized.CompletionDate,
+                Is.EqualTo(rdm.CompletionDate));
+    Assert.That(rdm.OpaqueId.SequenceEqual(deserialized.OpaqueId),
+                Is.True);
+    Assert.That(deserialized.ManualDeletion,
+                Is.EqualTo(rdm.ManualDeletion));
   }
 
   [Test]
@@ -206,46 +208,54 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<TaskData>(serialized);
 
-    Assert.IsNotNull(deserialized);
-    Assert.IsNotNull(deserialized.Options);
-    Assert.AreEqual(tdm.Options.Priority,
-                    deserialized.Options.Priority);
-    Assert.AreEqual(tdm.Options.PartitionId,
-                    deserialized.Options.PartitionId);
-    Assert.IsNotNull(tdm.Options.Options);
-    Assert.AreEqual(tdm.Options.Options["key1"],
-                    deserialized.Options.Options["key1"]);
-    Assert.AreEqual(tdm.Options.Options["key2"],
-                    deserialized.Options.Options["key2"]);
-    Assert.IsTrue(tdm.DataDependencies.SequenceEqual(deserialized.DataDependencies));
-    Assert.IsTrue(tdm.RemainingDataDependencies.SequenceEqual(deserialized.RemainingDataDependencies));
-    Assert.AreEqual(tdm.Options.MaxDuration,
-                    deserialized.Options.MaxDuration);
-    Assert.AreEqual(tdm.Options.MaxRetries,
-                    deserialized.Options.MaxRetries);
-    Assert.AreEqual(tdm.TaskId,
-                    deserialized.TaskId);
-    Assert.AreEqual(tdm.Status,
-                    deserialized.Status);
-    Assert.AreEqual(tdm.SessionId,
-                    deserialized.SessionId);
-    Assert.AreEqual(tdm.OwnerPodId,
-                    deserialized.OwnerPodId);
-    Assert.AreEqual(tdm.SubmittedDate,
-                    deserialized.SubmittedDate);
-    Assert.AreEqual(tdm.CreationDate,
-                    deserialized.CreationDate);
-    Assert.AreEqual(tdm.ReceptionDate,
-                    deserialized.ReceptionDate);
-    Assert.AreEqual(tdm.AcquisitionDate,
-                    deserialized.AcquisitionDate);
-    Assert.AreEqual(tdm.CreationToEndDuration,
-                    deserialized.CreationToEndDuration);
-    Assert.AreEqual(tdm.ProcessingToEndDuration,
-                    deserialized.ProcessingToEndDuration);
-    Assert.IsTrue(tdm.RetryOfIds.SequenceEqual(deserialized.RetryOfIds));
-    Assert.IsTrue(tdm.ExpectedOutputIds.SequenceEqual(deserialized.ExpectedOutputIds));
-    Assert.IsTrue(tdm.ParentTaskIds.SequenceEqual(deserialized.ParentTaskIds));
+    Assert.That(deserialized,
+                Is.Not.Null);
+    Assert.That(deserialized.Options,
+                Is.Not.Null);
+    Assert.That(deserialized.Options.Priority,
+                Is.EqualTo(tdm.Options.Priority));
+    Assert.That(deserialized.Options.PartitionId,
+                Is.EqualTo(tdm.Options.PartitionId));
+    Assert.That(tdm.Options.Options,
+                Is.Not.Null);
+    Assert.That(deserialized.Options.Options["key1"],
+                Is.EqualTo(tdm.Options.Options["key1"]));
+    Assert.That(deserialized.Options.Options["key2"],
+                Is.EqualTo(tdm.Options.Options["key2"]));
+    Assert.That(tdm.DataDependencies.SequenceEqual(deserialized.DataDependencies),
+                Is.True);
+    Assert.That(tdm.RemainingDataDependencies.SequenceEqual(deserialized.RemainingDataDependencies),
+                Is.True);
+    Assert.That(deserialized.Options.MaxDuration,
+                Is.EqualTo(tdm.Options.MaxDuration));
+    Assert.That(deserialized.Options.MaxRetries,
+                Is.EqualTo(tdm.Options.MaxRetries));
+    Assert.That(deserialized.TaskId,
+                Is.EqualTo(tdm.TaskId));
+    Assert.That(deserialized.Status,
+                Is.EqualTo(tdm.Status));
+    Assert.That(deserialized.SessionId,
+                Is.EqualTo(tdm.SessionId));
+    Assert.That(deserialized.OwnerPodId,
+                Is.EqualTo(tdm.OwnerPodId));
+    Assert.That(deserialized.SubmittedDate,
+                Is.EqualTo(tdm.SubmittedDate));
+    Assert.That(deserialized.CreationDate,
+                Is.EqualTo(tdm.CreationDate));
+    Assert.That(deserialized.ReceptionDate,
+                Is.EqualTo(tdm.ReceptionDate));
+    Assert.That(deserialized.AcquisitionDate,
+                Is.EqualTo(tdm.AcquisitionDate));
+    Assert.That(deserialized.CreationToEndDuration,
+                Is.EqualTo(tdm.CreationToEndDuration));
+    Assert.That(deserialized.ProcessingToEndDuration,
+                Is.EqualTo(tdm.ProcessingToEndDuration));
+    Assert.That(tdm.RetryOfIds.SequenceEqual(deserialized.RetryOfIds),
+                Is.True);
+    Assert.That(tdm.ExpectedOutputIds.SequenceEqual(deserialized.ExpectedOutputIds),
+                Is.True);
+    Assert.That(tdm.ParentTaskIds.SequenceEqual(deserialized.ParentTaskIds),
+                Is.True);
   }
 
   [Test]
@@ -262,18 +272,20 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<UserData>(serialized);
 
-    Assert.IsNotNull(deserialized);
-    Assert.AreEqual(udm.UserId,
-                    deserialized.UserId);
-    Assert.AreEqual(udm.Username,
-                    deserialized.Username);
-    Assert.IsNotNull(deserialized.Roles);
-    Assert.AreEqual(udm.Roles.Length,
-                    deserialized.Roles.Length);
-    Assert.AreEqual(udm.Roles[0],
-                    deserialized.Roles[0]);
-    Assert.AreEqual(udm.Roles[1],
-                    deserialized.Roles[1]);
+    Assert.That(deserialized,
+                Is.Not.Null);
+    Assert.That(deserialized.UserId,
+                Is.EqualTo(udm.UserId));
+    Assert.That(deserialized.Username,
+                Is.EqualTo(udm.Username));
+    Assert.That(deserialized.Roles,
+                Is.Not.Null);
+    Assert.That(deserialized.Roles.Length,
+                Is.EqualTo(udm.Roles.Length));
+    Assert.That(deserialized.Roles[0],
+                Is.EqualTo(udm.Roles[0]));
+    Assert.That(deserialized.Roles[1],
+                Is.EqualTo(udm.Roles[1]));
   }
 
   [Test]
@@ -290,18 +302,20 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<RoleData>(serialized);
 
-    Assert.IsNotNull(deserialized);
-    Assert.AreEqual(rdm.RoleId,
-                    deserialized.RoleId);
-    Assert.AreEqual(rdm.RoleName,
-                    deserialized.RoleName);
-    Assert.IsNotNull(deserialized.Permissions);
-    Assert.AreEqual(rdm.Permissions.Length,
-                    deserialized.Permissions.Length);
-    Assert.AreEqual(rdm.Permissions[0],
-                    deserialized.Permissions[0]);
-    Assert.AreEqual(rdm.Permissions[1],
-                    deserialized.Permissions[1]);
+    Assert.That(deserialized,
+                Is.Not.Null);
+    Assert.That(deserialized.RoleId,
+                Is.EqualTo(rdm.RoleId));
+    Assert.That(deserialized.RoleName,
+                Is.EqualTo(rdm.RoleName));
+    Assert.That(deserialized.Permissions,
+                Is.Not.Null);
+    Assert.That(deserialized.Permissions.Length,
+                Is.EqualTo(rdm.Permissions.Length));
+    Assert.That(deserialized.Permissions[0],
+                Is.EqualTo(rdm.Permissions[0]));
+    Assert.That(deserialized.Permissions[1],
+                Is.EqualTo(rdm.Permissions[1]));
   }
 
   [Test]
@@ -317,15 +331,16 @@ internal class BsonSerializerTest
 
     var deserialized = BsonSerializer.Deserialize<AuthData>(serialized);
 
-    Assert.IsNotNull(deserialized);
-    Assert.AreEqual(adm.AuthId,
-                    deserialized.AuthId);
-    Assert.AreEqual(adm.UserId,
-                    deserialized.UserId);
-    Assert.AreEqual(adm.Cn,
-                    deserialized.Cn);
-    Assert.AreEqual(adm.Fingerprint,
-                    deserialized.Fingerprint);
+    Assert.That(deserialized,
+                Is.Not.Null);
+    Assert.That(deserialized.AuthId,
+                Is.EqualTo(adm.AuthId));
+    Assert.That(deserialized.UserId,
+                Is.EqualTo(adm.UserId));
+    Assert.That(deserialized.Cn,
+                Is.EqualTo(adm.Cn));
+    Assert.That(deserialized.Fingerprint,
+                Is.EqualTo(adm.Fingerprint));
   }
 
   [Test]
@@ -345,35 +360,42 @@ internal class BsonSerializerTest
                                             });
     var serialized   = uirm.ToBson();
     var deserialized = BsonSerializer.Deserialize<UserAuthenticationResult>(serialized);
-    Assert.IsNotNull(deserialized);
-    Assert.AreEqual(uirm.Id,
-                    deserialized.Id);
-    Assert.AreEqual(uirm.Username,
-                    deserialized.Username);
-    Assert.IsNotNull(deserialized.Roles);
-    Assert.AreEqual(uirm.Roles.Count(),
-                    deserialized.Roles.Count());
-    Assert.IsTrue(uirm.Roles.ToList()
-                      .All(s => deserialized.Roles.Contains(s)));
-    Assert.IsNotNull(deserialized.Permissions);
-    Assert.AreEqual(uirm.Permissions.Count(),
-                    deserialized.Permissions.Count());
-    Assert.IsTrue(uirm.Permissions.ToList()
-                      .All(s => deserialized.Permissions.Contains(s)));
+    Assert.That(deserialized,
+                Is.Not.Null);
+    Assert.That(deserialized.Id,
+                Is.EqualTo(uirm.Id));
+    Assert.That(deserialized.Username,
+                Is.EqualTo(uirm.Username));
+    Assert.That(deserialized.Roles,
+                Is.Not.Null);
+    Assert.That(deserialized.Roles.Count(),
+                Is.EqualTo(uirm.Roles.Count()));
+    Assert.That(uirm.Roles.ToList()
+                    .All(s => deserialized.Roles.Contains(s)),
+                Is.True);
+    Assert.That(deserialized.Permissions,
+                Is.Not.Null);
+    Assert.That(deserialized.Permissions.Count(),
+                Is.EqualTo(uirm.Permissions.Count()));
+    Assert.That(uirm.Permissions.ToList()
+                    .All(s => deserialized.Permissions.Contains(s)),
+                Is.True);
   }
 
   [Test]
   public void InitializeResultDataModelMapping()
   {
     _ = new ResultDataModelMapping();
-    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(Result)));
+    Assert.That(BsonClassMap.IsClassMapRegistered(typeof(Result)),
+                Is.True);
   }
 
   [Test]
   public void InitializeTaskDataModelMapping()
   {
     _ = new TaskDataModelMapping();
-    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(TaskData)));
+    Assert.That(BsonClassMap.IsClassMapRegistered(typeof(TaskData)),
+                Is.True);
   }
 
 
@@ -381,27 +403,31 @@ internal class BsonSerializerTest
   public void InitializeSessionDataModelMapping()
   {
     _ = new SessionDataModelMapping();
-    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(SessionData)));
+    Assert.That(BsonClassMap.IsClassMapRegistered(typeof(SessionData)),
+                Is.True);
   }
 
   [Test]
   public void InitializeUserDataModelMapping()
   {
     _ = new UserDataModelMapping();
-    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(UserData)));
+    Assert.That(BsonClassMap.IsClassMapRegistered(typeof(UserData)),
+                Is.True);
   }
 
   [Test]
   public void InitializeRoleDataModelMapping()
   {
     _ = new RoleDataModelMapping();
-    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(RoleData)));
+    Assert.That(BsonClassMap.IsClassMapRegistered(typeof(RoleData)),
+                Is.True);
   }
 
   [Test]
   public void InitializeAuthDataModelMapping()
   {
     _ = new AuthDataModelMapping();
-    Assert.IsTrue(BsonClassMap.IsClassMapRegistered(typeof(AuthData)));
+    Assert.That(BsonClassMap.IsClassMapRegistered(typeof(AuthData)),
+                Is.True);
   }
 }

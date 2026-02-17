@@ -391,8 +391,8 @@ public class SubmitterTests
                                      .ToListAsync()
                                      .ConfigureAwait(false);
 
-    Assert.AreEqual(session.SessionId,
-                    result.Single());
+    Assert.That(result.Single(),
+                Is.EqualTo(session.SessionId));
   }
 
   [Test]
@@ -453,8 +453,10 @@ public class SubmitterTests
                                                        defaultTaskOptions.ToTaskOptions(),
                                                        CancellationToken.None)
                                         .ConfigureAwait(false);
-    Assert.NotNull(sessionReply.SessionId);
-    Assert.IsNotEmpty(sessionReply.SessionId);
+    Assert.That(sessionReply.SessionId,
+                Is.Not.Null);
+    Assert.That(sessionReply.SessionId,
+                Is.Not.Empty);
   }
 
   [Test]
@@ -481,8 +483,8 @@ public class SubmitterTests
                                   .ToListAsync()
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(taskCreating,
-                    result.Single());
+    Assert.That(result.Single(),
+                Is.EqualTo(taskCreating));
   }
 
   [Test]
@@ -503,8 +505,9 @@ public class SubmitterTests
                       };
 
     var taskOptionsValidator = new TaskOptionsValidator();
-    Assert.IsTrue(taskOptionsValidator.Validate(taskOptions)
-                                      .IsValid);
+    Assert.That(taskOptionsValidator.Validate(taskOptions)
+                                    .IsValid,
+                Is.True);
 
     var sessionId = (await submitter_!.CreateSession(new List<string>(),
                                                      taskOptions.ToTaskOptions(),
@@ -529,10 +532,10 @@ public class SubmitterTests
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual(DefaultPartition,
-                    requests.Select(request => request.Options.PartitionId)
-                            .Distinct()
-                            .Single());
+    Assert.That(requests.Select(request => request.Options.PartitionId)
+                        .Distinct()
+                        .Single(),
+                Is.EqualTo(DefaultPartition));
 
     var result = await taskTable_!.ListTasksAsync(new TaskFilter
                                                   {
@@ -549,9 +552,9 @@ public class SubmitterTests
                                   .ToListAsync()
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(requests.Single()
-                            .TaskId,
-                    result.Single());
+    Assert.That(result.Single(),
+                Is.EqualTo(requests.Single()
+                                   .TaskId));
   }
 
   [Test]
@@ -607,8 +610,8 @@ public class SubmitterTests
     var taskData = await taskTable_!.ReadTaskAsync(taskId)
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Creating));
 
     await submitter_.FinalizeTaskCreation(requests,
                                           sessionData,
@@ -619,15 +622,15 @@ public class SubmitterTests
     taskData = await taskTable_!.ReadTaskAsync(taskId)
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(pause
-                      ? TaskStatus.Paused
-                      : TaskStatus.Submitted,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(pause
+                             ? TaskStatus.Paused
+                             : TaskStatus.Submitted));
 
     if (pause)
     {
-      Assert.AreEqual(0,
-                      pushQueueStorage_.Messages.Count);
+      Assert.That(pushQueueStorage_.Messages.Count,
+                  Is.EqualTo(0));
       await TaskLifeCycleHelper.ResumeAsync(taskTable_!,
                                             sessionTable_!,
                                             pushQueueStorage_,
@@ -638,11 +641,11 @@ public class SubmitterTests
     taskData = await taskTable_!.ReadTaskAsync(taskId)
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
 
-    Assert.AreEqual(1,
-                    pushQueueStorage_.Messages.Count);
+    Assert.That(pushQueueStorage_.Messages.Count,
+                Is.EqualTo(1));
   }
 
   [Test]
@@ -699,8 +702,9 @@ public class SubmitterTests
                              };
 
     var taskOptionsValidator = new TaskOptionsValidator();
-    Assert.IsTrue(taskOptionsValidator.Validate(taskOptions)
-                                      .IsValid);
+    Assert.That(taskOptionsValidator.Validate(taskOptions)
+                                    .IsValid,
+                Is.True);
 
     var sessionId = (await submitter_!.CreateSession(new List<string>
                                                      {
@@ -728,10 +732,10 @@ public class SubmitterTests
                                                  CancellationToken.None)
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual("part1",
-                    requests.Select(request => request.Options.PartitionId)
-                            .Distinct()
-                            .Single());
+    Assert.That(requests.Select(request => request.Options.PartitionId)
+                        .Distinct()
+                        .Single(),
+                Is.EqualTo("part1"));
 
     var result = await taskTable_!.ListTasksAsync(new TaskFilter
                                                   {
@@ -748,9 +752,9 @@ public class SubmitterTests
                                   .ToListAsync()
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(requests.Single()
-                            .TaskId,
-                    result.Single());
+    Assert.That(result.Single(),
+                Is.EqualTo(requests.Single()
+                                   .TaskId));
   }
 
   [Test]
@@ -812,15 +816,16 @@ public class SubmitterTests
     taskData = await taskTable_!.ReadTaskAsync(taskSubmitted)
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Timeout,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Timeout));
 
     var result = await resultTable_!.GetResult(taskData.ExpectedOutputIds.First())
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual(ResultStatus.Aborted,
-                    result.Status);
-    Assert.NotNull(result.CompletionDate);
+    Assert.That(result.Status,
+                Is.EqualTo(ResultStatus.Aborted));
+    Assert.That(result.CompletionDate,
+                Is.Not.Null);
   }
 
   [Test]
@@ -837,8 +842,8 @@ public class SubmitterTests
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    result);
+    Assert.That(result,
+                Is.EqualTo(TaskStatus.Submitted));
   }
 
   [Test]
@@ -875,11 +880,12 @@ public class SubmitterTests
                                   CancellationToken.None)
                     .ConfigureAwait(false);
 
-    Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[0].TypeCase);
-    Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    writer.Messages[1].TypeCase);
-    Assert.IsTrue(writer.Messages[1].Result.DataComplete);
+    Assert.That(writer.Messages[0].TypeCase,
+                Is.EqualTo(ResultReply.TypeOneofCase.Result));
+    Assert.That(writer.Messages[1].TypeCase,
+                Is.EqualTo(ResultReply.TypeOneofCase.Result));
+    Assert.That(writer.Messages[1].Result.DataComplete,
+                Is.True);
   }
 
   [Test]
@@ -926,9 +932,9 @@ public class SubmitterTests
 
     Console.WriteLine(writer.Messages.Single());
 
-    Assert.AreEqual(ResultReply.TypeOneofCase.NotCompletedTask,
-                    writer.Messages.Single()
-                          .TypeCase);
+    Assert.That(writer.Messages.Single()
+                      .TypeCase,
+                Is.EqualTo(ResultReply.TypeOneofCase.NotCompletedTask));
   }
 
   [Test]
@@ -945,9 +951,10 @@ public class SubmitterTests
                                     CancellationToken.None)
                      .ConfigureAwait(false);
 
-    Assert.IsTrue(await sessionTable_!.IsSessionCancelledAsync(session.SessionId,
-                                                               CancellationToken.None)
-                                      .ConfigureAwait(false));
+    Assert.That(await sessionTable_!.IsSessionCancelledAsync(session.SessionId,
+                                                             CancellationToken.None)
+                                    .ConfigureAwait(false),
+                Is.True);
   }
 
   [Test]
@@ -972,20 +979,20 @@ public class SubmitterTests
                                                           .ThenBy(r => r.PartitionId)
                                                           .AsIList();
 
-    Assert.AreEqual(3,
-                    result.Count);
-    Assert.AreEqual(new PartitionTaskStatusCount("part1",
-                                                 TaskStatus.Creating,
-                                                 1),
-                    result[0]);
-    Assert.AreEqual(new PartitionTaskStatusCount("part1",
-                                                 TaskStatus.Submitted,
-                                                 2),
-                    result[1]);
-    Assert.AreEqual(new PartitionTaskStatusCount("part2",
-                                                 TaskStatus.Completed,
-                                                 1),
-                    result[2]);
+    Assert.That(result.Count,
+                Is.EqualTo(3));
+    Assert.That(result[0],
+                Is.EqualTo(new PartitionTaskStatusCount("part1",
+                                                        TaskStatus.Creating,
+                                                        1)));
+    Assert.That(result[1],
+                Is.EqualTo(new PartitionTaskStatusCount("part1",
+                                                        TaskStatus.Submitted,
+                                                        2)));
+    Assert.That(result[2],
+                Is.EqualTo(new PartitionTaskStatusCount("part2",
+                                                        TaskStatus.Completed,
+                                                        1)));
   }
 
   [Test]
@@ -1075,8 +1082,8 @@ public class SubmitterTests
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
 
     await submitter_.CompleteTaskAsync(taskData,
                                        session,
@@ -1089,17 +1096,17 @@ public class SubmitterTests
                                                CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Error,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Error));
 
     taskData = await taskTable_!.ReadTaskAsync(taskWithDependencies,
                                                CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Error,
-                    taskData.Status);
-    Assert.AreEqual($"Task {abortedTask} failed:\nThis error should be propagated to other tasks",
-                    taskData.Output.Error);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Error));
+    Assert.That(taskData.Output.Error,
+                Is.EqualTo($"Task {abortedTask} failed:\nThis error should be propagated to other tasks"));
   }
 
 
@@ -1158,16 +1165,16 @@ public class SubmitterTests
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Creating));
 
-    Assert.AreEqual(string.Empty,
-                    taskData.CreatedBy);
+    Assert.That(taskData.CreatedBy,
+                Is.EqualTo(string.Empty));
     var resultData = await resultTable_!.GetResult(taskData.PayloadId)
                                         .ConfigureAwait(false);
 
-    Assert.AreEqual(string.Empty,
-                    resultData.CreatedBy);
+    Assert.That(resultData.CreatedBy,
+                Is.EqualTo(string.Empty));
   }
 
 
@@ -1225,16 +1232,16 @@ public class SubmitterTests
                                                    CancellationToken.None)
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Creating));
 
-    Assert.AreEqual(taskSubmitted,
-                    taskData.CreatedBy);
+    Assert.That(taskData.CreatedBy,
+                Is.EqualTo(taskSubmitted));
 
     var resultData = await resultTable_!.GetResult(taskData.PayloadId)
                                         .ConfigureAwait(false);
 
-    Assert.AreEqual(taskSubmitted,
-                    resultData.CreatedBy);
+    Assert.That(resultData.CreatedBy,
+                Is.EqualTo(taskSubmitted));
   }
 }

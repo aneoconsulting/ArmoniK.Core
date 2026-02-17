@@ -207,7 +207,8 @@ public class PollsterTest
                                                              mockAgentHandler.Object,
                                                              mockPullQueueStorage.Object);
 
-    Assert.NotNull(testServiceProvider.Pollster);
+    Assert.That(testServiceProvider.Pollster,
+                Is.Not.Null);
   }
 
   private class MockWorkerStreamHandler : IWorkerStreamHandler
@@ -309,12 +310,12 @@ public class PollsterTest
                                                                                  },
                                                                                });
 
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
-                                                 .ConfigureAwait(false)).Status);
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
-                                                 .ConfigureAwait(false)).Status);
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                          .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                          .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -324,18 +325,18 @@ public class PollsterTest
 
     Console.WriteLine(res.Description);
 
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
-                                              .ConfigureAwait(false)).Status);
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Liveness)
+                                          .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
     // Unhealthy because there are no tasks in queue
-    Assert.AreEqual(FailReadinessIfNoTasks
-                      ? HealthStatus.Unhealthy
-                      : HealthStatus.Healthy,
-                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
-                                              .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Healthy,
-                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
-                                              .ConfigureAwait(false)).Status);
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                          .ConfigureAwait(false)).Status,
+                Is.EqualTo(FailReadinessIfNoTasks
+                             ? HealthStatus.Unhealthy
+                             : HealthStatus.Healthy));
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                          .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
 
     testServiceProvider.AssertFailAfterError(6);
   }
@@ -361,12 +362,12 @@ public class PollsterTest
                                                              mockAgentHandler.Object,
                                                              new MockPullQueueStorage());
 
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
-                                                 .ConfigureAwait(false)).Status);
-    Assert.AreNotEqual(HealthStatus.Healthy,
-                       (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
-                                                 .ConfigureAwait(false)).Status);
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                          .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                          .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
 
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
@@ -379,26 +380,27 @@ public class PollsterTest
 
     Console.WriteLine(res.Description);
 
-    Assert.AreEqual(desc,
-                    healthResult.Description?.Trim());
-    Assert.AreEqual(new AggregateException(ex).Message,
-                    healthResult.Exception?.Message);
-    Assert.AreEqual(HealthStatus.Unhealthy,
-                    healthResult.Status);
-    Assert.AreEqual(data,
-                    healthResult.Data);
+    Assert.That(healthResult.Description?.Trim(),
+                Is.EqualTo(desc));
+    Assert.That(healthResult.Exception?.Message,
+                Is.EqualTo(new AggregateException(ex).Message));
+    Assert.That(healthResult.Status,
+                Is.EqualTo(HealthStatus.Unhealthy));
+    Assert.That(healthResult.Data,
+                Is.EqualTo(data));
 
-    Assert.AreEqual(HealthStatus.Unhealthy,
-                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
-                                              .ConfigureAwait(false)).Status);
-    Assert.AreEqual(HealthStatus.Unhealthy,
-                    (await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
-                                              .ConfigureAwait(false)).Status);
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Readiness)
+                                          .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Unhealthy));
+    Assert.That((await testServiceProvider.Pollster.Check(HealthCheckTag.Startup)
+                                          .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Unhealthy));
 
     // This test that we return from the mainloop after the health check is unhealthy
     await testServiceProvider.Pollster.MainLoop()
                              .ConfigureAwait(false);
-    Assert.True(testServiceProvider.ExceptionManager.Failed);
+    Assert.That(testServiceProvider.ExceptionManager.Failed,
+                Is.True);
   }
 
   [Test]
@@ -434,8 +436,8 @@ public class PollsterTest
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
-    Assert.AreEqual(Array.Empty<string>(),
-                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.That(testServiceProvider.Pollster.TaskProcessing,
+                Is.EqualTo(Array.Empty<string>()));
 
     testServiceProvider.AssertFailAfterError(6);
   }
@@ -509,10 +511,10 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
-                                                                      CancellationToken.None)
-                                             .ConfigureAwait(false));
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                  CancellationToken.None)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Completed));
 
     testServiceProvider.AssertFailAfterError(6);
   }
@@ -619,10 +621,10 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted2,
-                                                                      CancellationToken.None)
-                                             .ConfigureAwait(false));
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted2,
+                                                                  CancellationToken.None)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Submitted));
 
     testServiceProvider.AssertFailAfterError();
   }
@@ -753,8 +755,8 @@ public class PollsterTest
                 Is.AnyOf(TaskStatus.Cancelled,
                          TaskStatus.Cancelling));
 
-    Assert.AreEqual(Array.Empty<string>(),
-                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.That(testServiceProvider.Pollster.TaskProcessing,
+                Is.EqualTo(Array.Empty<string>()));
 
     testServiceProvider.AssertFailAfterError(5);
   }
@@ -833,9 +835,10 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => pollster.MainLoop());
     Assert.That(() => stop,
                 Throws.InstanceOf<OperationCanceledException>());
-    Assert.True(testServiceProvider.ExceptionManager.Failed);
-    Assert.AreEqual(Array.Empty<string>(),
-                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.That(testServiceProvider.ExceptionManager.Failed,
+                Is.True);
+    Assert.That(testServiceProvider.Pollster.TaskProcessing,
+                Is.EqualTo(Array.Empty<string>()));
   }
 
 
@@ -885,14 +888,15 @@ public class PollsterTest
     Assert.That(() => stop,
                 Throws.InstanceOf<OperationCanceledException>());
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
-                                                                      CancellationToken.None)
-                                             .ConfigureAwait(false));
-    Assert.AreEqual(Array.Empty<string>(),
-                    testServiceProvider.Pollster.TaskProcessing);
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                  CancellationToken.None)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Submitted));
+    Assert.That(testServiceProvider.Pollster.TaskProcessing,
+                Is.EqualTo(Array.Empty<string>()));
 
     testServiceProvider.AssertFailAfterError(0);
-    Assert.True(testServiceProvider.ExceptionManager.Failed);
+    Assert.That(testServiceProvider.ExceptionManager.Failed,
+                Is.True);
   }
 }

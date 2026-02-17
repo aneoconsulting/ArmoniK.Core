@@ -424,8 +424,8 @@ public class TaskLifeCycleHelperTest
     var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                                .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Creating));
 
     await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
                                                    holder.ResultTable,
@@ -439,10 +439,10 @@ public class TaskLifeCycleHelperTest
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                            .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Pending,
-                    taskData.Status);
-    Assert.AreEqual(2,
-                    taskData.RemainingDataDependencies.Count);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Pending));
+    Assert.That(taskData.RemainingDataDependencies.Count,
+                Is.EqualTo(2));
 
 
     // complete first data dependency
@@ -466,10 +466,10 @@ public class TaskLifeCycleHelperTest
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                            .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Pending,
-                    taskData.Status);
-    Assert.AreEqual(1,
-                    taskData.RemainingDataDependencies.Count);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Pending));
+    Assert.That(taskData.RemainingDataDependencies.Count,
+                Is.EqualTo(1));
 
 
     // complete second data dependency
@@ -493,15 +493,16 @@ public class TaskLifeCycleHelperTest
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                            .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
-    Assert.IsEmpty(taskData.RemainingDataDependencies);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
+    Assert.That(taskData.RemainingDataDependencies,
+                Is.Empty);
     holder.QueueStorage.Channel.Writer.Complete();
-    Assert.AreEqual(1,
-                    (await holder.QueueStorage.Channel.Reader.ReadAllAsync()
-                                 .ToListAsync()
-                                 .ConfigureAwait(false)).Select(handler => handler.TaskId)
-                                                        .Count(s => s == taskId));
+    Assert.That((await holder.QueueStorage.Channel.Reader.ReadAllAsync()
+                             .ToListAsync()
+                             .ConfigureAwait(false)).Select(handler => handler.TaskId)
+                                                    .Count(s => s == taskId),
+                Is.EqualTo(1));
   }
 
   [Test]
@@ -616,8 +617,8 @@ public class TaskLifeCycleHelperTest
     var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                                .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Creating));
 
     if (finalize)
     {
@@ -633,10 +634,10 @@ public class TaskLifeCycleHelperTest
       taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                              .ConfigureAwait(false);
 
-      Assert.AreEqual(TaskStatus.Pending,
-                      taskData.Status);
-      Assert.AreEqual(2,
-                      taskData.RemainingDataDependencies.Count);
+      Assert.That(taskData.Status,
+                  Is.EqualTo(TaskStatus.Pending));
+      Assert.That(taskData.RemainingDataDependencies.Count,
+                  Is.EqualTo(2));
     }
 
     await TaskLifeCycleHelper.DeleteTasksAsync(holder.TaskTable,
@@ -767,8 +768,8 @@ public class TaskLifeCycleHelperTest
     var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                                .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Creating));
 
     await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
                                                    holder.ResultTable,
@@ -782,10 +783,10 @@ public class TaskLifeCycleHelperTest
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                            .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Pending,
-                    taskData.Status);
-    Assert.AreEqual(2,
-                    taskData.RemainingDataDependencies.Count);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Pending));
+    Assert.That(taskData.RemainingDataDependencies.Count,
+                Is.EqualTo(2));
 
 
     // complete first data dependency
@@ -814,9 +815,10 @@ public class TaskLifeCycleHelperTest
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                            .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
-    Assert.IsEmpty(taskData.RemainingDataDependencies);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
+    Assert.That(taskData.RemainingDataDependencies,
+                Is.Empty);
     var count = 0;
     while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
     {
@@ -826,8 +828,8 @@ public class TaskLifeCycleHelperTest
       }
     }
 
-    Assert.AreEqual(1,
-                    count);
+    Assert.That(count,
+                Is.EqualTo(1));
 
     await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
                                                    holder.ResultTable,
@@ -850,8 +852,8 @@ public class TaskLifeCycleHelperTest
     taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                            .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Submitted,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Submitted));
     count = 0;
     while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
     {
@@ -861,8 +863,8 @@ public class TaskLifeCycleHelperTest
       }
     }
 
-    Assert.AreEqual(0,
-                    count);
+    Assert.That(count,
+                Is.EqualTo(0));
   }
 
   [Test]
@@ -980,8 +982,8 @@ public class TaskLifeCycleHelperTest
     var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
                                .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Creating,
-                    taskData.Status);
+    Assert.That(taskData.Status,
+                Is.EqualTo(TaskStatus.Creating));
 
     await Task.WhenAll(FinalizeTask(),
                        FinalizeTask(),

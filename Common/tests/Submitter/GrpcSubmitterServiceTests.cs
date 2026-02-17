@@ -122,8 +122,8 @@ public class GrpcSubmitterServiceTests
                                      TestServerCallContext.Create())
                  .ConfigureAwait(false);
 
-    Assert.AreEqual(0,
-                    helperServerStreamWriter.Messages.Count);
+    Assert.That(helperServerStreamWriter.Messages.Count,
+                Is.EqualTo(0));
   }
 
   [Test]
@@ -161,8 +161,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -201,8 +201,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 
@@ -241,8 +241,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 
@@ -281,8 +281,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 
@@ -321,8 +321,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -361,8 +361,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -396,8 +396,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -433,8 +433,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -465,8 +465,8 @@ public class GrpcSubmitterServiceTests
                                                 TestServerCallContext.Create())
                               .ConfigureAwait(false);
 
-    Assert.AreEqual(Api.gRPC.V1.Output.TypeOneofCase.Ok,
-                    output.TypeCase);
+    Assert.That(output.TypeCase,
+                Is.EqualTo(Api.gRPC.V1.Output.TypeOneofCase.Ok));
   }
 
   [Test]
@@ -496,8 +496,8 @@ public class GrpcSubmitterServiceTests
                                                 TestServerCallContext.Create())
                               .ConfigureAwait(false);
 
-    Assert.AreEqual(Api.gRPC.V1.Output.TypeOneofCase.Error,
-                    output.TypeCase);
+    Assert.That(output.TypeCase,
+                Is.EqualTo(Api.gRPC.V1.Output.TypeOneofCase.Error));
   }
 
   [Test]
@@ -527,8 +527,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -556,8 +556,8 @@ public class GrpcSubmitterServiceTests
                                                          TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(32,
-                    response.DataChunkMaxSize);
+    Assert.That(response.DataChunkMaxSize,
+                Is.EqualTo(32));
   }
 
   [Test]
@@ -584,8 +584,8 @@ public class GrpcSubmitterServiceTests
                                                TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreNotEqual(null,
-                       response);
+    Assert.That(response,
+                Is.Not.EqualTo(null));
   }
 
   [Test]
@@ -618,8 +618,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -653,8 +653,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -688,8 +688,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 
@@ -723,8 +723,8 @@ public class GrpcSubmitterServiceTests
                                              TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreNotEqual(null,
-                       response);
+    Assert.That(response,
+                Is.Not.EqualTo(null));
   }
 
   [Test]
@@ -762,8 +762,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -802,8 +802,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -838,8 +838,8 @@ public class GrpcSubmitterServiceTests
                                                TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreNotEqual(null,
-                       response);
+    Assert.That(response,
+                Is.Not.EqualTo(null));
   }
 
   [Test]
@@ -876,8 +876,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -921,8 +921,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -982,8 +982,8 @@ public class GrpcSubmitterServiceTests
                                                   TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
-                    response.ResponseCase);
+    Assert.That(response.ResponseCase,
+                Is.EqualTo(CreateTaskReply.ResponseOneofCase.CreationStatusList));
   }
 
   [Test]
@@ -1035,8 +1035,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -1089,8 +1089,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -1144,8 +1144,8 @@ public class GrpcSubmitterServiceTests
                                                   TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(CreateTaskReply.ResponseOneofCase.CreationStatusList,
-                    response.ResponseCase);
+    Assert.That(response.ResponseCase,
+                Is.EqualTo(CreateTaskReply.ResponseOneofCase.CreationStatusList));
   }
 
   [Test]
@@ -1182,8 +1182,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.InvalidArgument,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.InvalidArgument));
     }
   }
 
@@ -1231,8 +1231,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -1280,8 +1280,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -1328,12 +1328,12 @@ public class GrpcSubmitterServiceTests
                                                    TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(5,
-                    response.Values.Single()
-                            .Count);
-    Assert.AreEqual(TaskStatus.Completed,
-                    response.Values.Single()
-                            .Status);
+    Assert.That(response.Values.Single()
+                        .Count,
+                Is.EqualTo(5));
+    Assert.That(response.Values.Single()
+                        .Status,
+                Is.EqualTo(TaskStatus.Completed));
   }
 
   [Test]
@@ -1375,8 +1375,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -1419,8 +1419,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -1452,8 +1452,8 @@ public class GrpcSubmitterServiceTests
                                                      TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(AvailabilityReply.TypeOneofCase.Ok,
-                    response.TypeCase);
+    Assert.That(response.TypeCase,
+                Is.EqualTo(AvailabilityReply.TypeOneofCase.Ok));
   }
 
   [Test]
@@ -1487,8 +1487,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -1523,8 +1523,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -1559,8 +1559,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 
@@ -1595,8 +1595,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 
@@ -1632,9 +1632,9 @@ public class GrpcSubmitterServiceTests
                                                TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    response.IdStatuses.Single()
-                            .Status);
+    Assert.That(response.IdStatuses.Single()
+                        .Status,
+                Is.EqualTo(TaskStatus.Completed));
   }
 
   [Test]
@@ -1671,8 +1671,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.NotFound,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 
@@ -1710,8 +1710,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -1747,8 +1747,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -1786,11 +1786,11 @@ public class GrpcSubmitterServiceTests
                                            TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(new List<string>
-                    {
-                      "TaskId",
-                    },
-                    response.TaskIds);
+    Assert.That(response.TaskIds,
+                Is.EqualTo(new List<string>
+                           {
+                             "TaskId",
+                           }));
   }
 
   [Test]
@@ -1828,8 +1828,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Unknown,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Unknown));
     }
   }
 
@@ -1870,8 +1870,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -1911,8 +1911,8 @@ public class GrpcSubmitterServiceTests
     catch (RpcException e)
     {
       Console.WriteLine(e);
-      Assert.AreEqual(StatusCode.Internal,
-                      e.StatusCode);
+      Assert.That(e.StatusCode,
+                  Is.EqualTo(StatusCode.Internal));
     }
   }
 
@@ -1949,8 +1949,8 @@ public class GrpcSubmitterServiceTests
                                                  TestServerCallContext.Create())
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(Api.gRPC.V1.ResultStatus.Completed,
-                    response.IdStatuses.Single()
-                            .Status);
+    Assert.That(response.IdStatuses.Single()
+                        .Status,
+                Is.EqualTo(Api.gRPC.V1.ResultStatus.Completed));
   }
 }

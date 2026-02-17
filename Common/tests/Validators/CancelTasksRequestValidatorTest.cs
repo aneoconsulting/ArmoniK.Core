@@ -29,29 +29,32 @@ public class CancelTasksRequestValidatorTest
 
   [Test]
   public void NoTaskIdsShouldSucceed()
-    => Assert.IsTrue(validator_.Validate(new CancelTasksRequest())
-                               .IsValid);
+    => Assert.That(validator_.Validate(new CancelTasksRequest())
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void EmptyTaskIdsShouldSucceed()
-    => Assert.IsTrue(validator_.Validate(new CancelTasksRequest
+    => Assert.That(validator_.Validate(new CancelTasksRequest
+                                       {
+                                         TaskIds =
                                          {
-                                           TaskIds =
-                                           {
-                                             Capacity = 0,
-                                           },
-                                         })
-                               .IsValid);
+                                           Capacity = 0,
+                                         },
+                                       })
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void FilledTaskIdsShouldSucceed()
-    => Assert.IsTrue(validator_.Validate(new CancelTasksRequest
+    => Assert.That(validator_.Validate(new CancelTasksRequest
+                                       {
+                                         TaskIds =
                                          {
-                                           TaskIds =
-                                           {
-                                             "TaskA",
-                                             "TaskB",
-                                           },
-                                         })
-                               .IsValid);
+                                           "TaskA",
+                                           "TaskB",
+                                         },
+                                       })
+                             .IsValid,
+                   Is.True);
 }

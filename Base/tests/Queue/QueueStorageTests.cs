@@ -113,8 +113,10 @@ public class QueueStorageTests
   [Test]
   public void GetQueueStorageInstanceShouldLoad()
   {
-    Assert.NotNull(PullQueueStorage);
-    Assert.NotNull(PushQueueStorage);
+    Assert.That(PullQueueStorage,
+                Is.Not.Null);
+    Assert.That(PushQueueStorage,
+                Is.Not.Null);
   }
 
   [Test]

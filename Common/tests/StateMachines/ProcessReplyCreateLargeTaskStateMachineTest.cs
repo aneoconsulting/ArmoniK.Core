@@ -91,8 +91,8 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
 
     sm_.CompleteRequest();
 
-    Assert.AreEqual(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast,
-                    sm_.GetState());
+    Assert.That(sm_.GetState(),
+                Is.EqualTo(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast));
   }
 
   [Test]
@@ -105,8 +105,8 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
     sm_.CompleteData();
     sm_.CompleteRequest();
 
-    Assert.AreEqual(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast,
-                    sm_.GetState());
+    Assert.That(sm_.GetState(),
+                Is.EqualTo(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast));
   }
 
   [Test]
@@ -124,8 +124,8 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
 
     sm_.CompleteRequest();
 
-    Assert.AreEqual(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast,
-                    sm_.GetState());
+    Assert.That(sm_.GetState(),
+                Is.EqualTo(ProcessReplyCreateLargeTaskStateMachine.State.InitTaskRequestLast));
   }
 
   [Test]
@@ -169,6 +169,7 @@ public class ProcessReplyCreateLargeTaskStateMachineTest
   {
     var str = sm_!.GenerateGraph();
     Console.WriteLine(str);
-    Assert.IsFalse(string.IsNullOrEmpty(str));
+    Assert.That(string.IsNullOrEmpty(str),
+                Is.False);
   }
 }

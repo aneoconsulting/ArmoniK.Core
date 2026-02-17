@@ -160,16 +160,16 @@ internal class TaskSubmissionTests
                                                   })
                                     .ConfigureAwait(false);
 
-    Assert.Contains(taskData.Task.Status,
-                    new List<TaskStatus>
-                    {
-                      TaskStatus.Completed,
-                      TaskStatus.Submitted,
-                      TaskStatus.Dispatched,
-                      TaskStatus.Processing,
-                    });
-    Assert.AreEqual(string.Empty,
-                    taskData.Task.CreatedBy);
+    Assert.That(new List<TaskStatus>
+                {
+                  TaskStatus.Completed,
+                  TaskStatus.Submitted,
+                  TaskStatus.Dispatched,
+                  TaskStatus.Processing,
+                },
+                Does.Contain(taskData.Task.Status));
+    Assert.That(taskData.Task.CreatedBy,
+                Is.EqualTo(string.Empty));
 
     var resultData = await resultsClient.GetResultAsync(new GetResultRequest
                                                         {
@@ -177,8 +177,8 @@ internal class TaskSubmissionTests
                                                         })
                                         .ConfigureAwait(false);
 
-    Assert.AreEqual(string.Empty,
-                    resultData.Result.CreatedBy);
+    Assert.That(resultData.Result.CreatedBy,
+                Is.EqualTo(string.Empty));
 
     var eventClient = new Events.EventsClient(channel_);
     await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
@@ -197,8 +197,8 @@ internal class TaskSubmissionTests
                                               })
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    taskData.Task.Status);
+    Assert.That(taskData.Task.Status,
+                Is.EqualTo(TaskStatus.Completed));
 
     var data = await resultsClient.DownloadResultData(createSessionReply.SessionId,
                                                       results.Results.Single()
@@ -206,9 +206,9 @@ internal class TaskSubmissionTests
                                                       CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(9,
-                    BitConverter.ToInt32(TestPayload.Deserialize(data)
-                                                    ?.DataBytes));
+    Assert.That(BitConverter.ToInt32(TestPayload.Deserialize(data)
+                                                ?.DataBytes),
+                Is.EqualTo(9));
   }
 
   [Test]
@@ -286,11 +286,11 @@ internal class TaskSubmissionTests
                                                   })
                                     .ConfigureAwait(false);
 
-    Assert.Contains(taskData.Task.Status,
-                    new List<TaskStatus>
-                    {
-                      TaskStatus.Pending,
-                    });
+    Assert.That(new List<TaskStatus>
+                {
+                  TaskStatus.Pending,
+                },
+                Does.Contain(taskData.Task.Status));
 
     var uploadStream = resultsClient.UploadResultData();
     await uploadStream.RequestStream.WriteAsync(new UploadResultDataRequest
@@ -314,8 +314,8 @@ internal class TaskSubmissionTests
 
     var uploadStreamResponse = await uploadStream.ResponseAsync.ConfigureAwait(false);
 
-    Assert.AreEqual(ResultStatus.Completed,
-                    uploadStreamResponse.Result.Status);
+    Assert.That(uploadStreamResponse.Result.Status,
+                Is.EqualTo(ResultStatus.Completed));
 
     var eventClient = new Events.EventsClient(channel_);
     await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
@@ -337,17 +337,17 @@ internal class TaskSubmissionTests
                                               })
                                 .ConfigureAwait(false);
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    taskData.Task.Status);
+    Assert.That(taskData.Task.Status,
+                Is.EqualTo(TaskStatus.Completed));
 
     var data = await resultsClient.DownloadResultData(createSessionReply.SessionId,
                                                       resultId,
                                                       CancellationToken.None)
                                   .ConfigureAwait(false);
 
-    Assert.AreEqual(9,
-                    BitConverter.ToInt32(TestPayload.Deserialize(data)
-                                                    ?.DataBytes));
+    Assert.That(BitConverter.ToInt32(TestPayload.Deserialize(data)
+                                                ?.DataBytes),
+                Is.EqualTo(9));
   }
 
 
@@ -443,8 +443,8 @@ internal class TaskSubmissionTests
                                                   })
                                     .ConfigureAwait(false);
 
-    Assert.AreEqual(string.Empty,
-                    taskData.Task.CreatedBy);
+    Assert.That(taskData.Task.CreatedBy,
+                Is.EqualTo(string.Empty));
 
     var resultData = await resultsClient.GetResultAsync(new GetResultRequest
                                                         {
@@ -452,11 +452,11 @@ internal class TaskSubmissionTests
                                                         })
                                         .ConfigureAwait(false);
 
-    Assert.AreEqual(string.Empty,
-                    resultData.Result.CreatedBy);
+    Assert.That(resultData.Result.CreatedBy,
+                Is.EqualTo(string.Empty));
 
-    Assert.AreEqual(TaskStatus.Completed,
-                    taskData.Task.Status);
+    Assert.That(taskData.Task.Status,
+                Is.EqualTo(TaskStatus.Completed));
 
     var taskCount = (await tasksClient.ListTasksAsync(new ListTasksRequest
                                                       {
@@ -502,8 +502,8 @@ internal class TaskSubmissionTests
                                                         Page     = 0,
                                                       })).Total;
 
-    Assert.AreEqual(1,
-                    taskCount);
+    Assert.That(taskCount,
+                Is.EqualTo(1));
 
     var resultCount = (await resultsClient.ListResultsAsync(new ListResultsRequest
                                                             {
@@ -549,7 +549,7 @@ internal class TaskSubmissionTests
                                                               PageSize = 1,
                                                             })).Total;
 
-    Assert.AreEqual(1,
-                    resultCount);
+    Assert.That(resultCount,
+                Is.EqualTo(1));
   }
 }

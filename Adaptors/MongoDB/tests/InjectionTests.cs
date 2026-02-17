@@ -118,14 +118,16 @@ internal class InjectionTests
   public void MongoDbOptionsNotNull()
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
-    Assert.NotNull(options);
+    Assert.That(options,
+                Is.Not.Null);
   }
 
   [Test]
   public void MongoDbOptionsValueNotNull()
   {
     var options = configuration_!.GetRequiredValue<Options.MongoDB>(Options.MongoDB.SettingSection);
-    Assert.NotNull(options);
+    Assert.That(options,
+                Is.Not.Null);
   }
 
   [Test]
@@ -133,8 +135,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("localhost",
-                    options.Host);
+    Assert.That(options.Host,
+                Is.EqualTo("localhost"));
   }
 
   [Test]
@@ -142,8 +144,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("user",
-                    options.User);
+    Assert.That(options.User,
+                Is.EqualTo("user"));
   }
 
   [Test]
@@ -151,8 +153,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("password",
-                    options.Password);
+    Assert.That(options.Password,
+                Is.EqualTo("password"));
   }
 
   [Test]
@@ -160,8 +162,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("",
-                    options.CredentialsPath);
+    Assert.That(options.CredentialsPath,
+                Is.EqualTo(""));
   }
 
   [Test]
@@ -169,8 +171,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual("",
-                    options.CAFile);
+    Assert.That(options.CAFile,
+                Is.EqualTo(""));
   }
 
   [Test]
@@ -178,8 +180,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual(3232,
-                    options.Port);
+    Assert.That(options.Port,
+                Is.EqualTo(3232));
   }
 
   [Test]
@@ -187,16 +189,16 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual(true,
-                    options.Tls);
+    Assert.That(options.Tls,
+                Is.EqualTo(true));
   }
 
   [Test]
   public void ReadMongoDbDatabaseName()
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
-    Assert.AreEqual("database",
-                    options.DatabaseName);
+    Assert.That(options.DatabaseName,
+                Is.EqualTo("database"));
   }
 
   [Test]
@@ -204,8 +206,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<Options.MongoDB>();
 
-    Assert.AreEqual(TimeSpan.FromDays(10),
-                    options.DataRetention);
+    Assert.That(options.DataRetention,
+                Is.EqualTo(TimeSpan.FromDays(10)));
   }
 
   [Test]
@@ -213,7 +215,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<TableStorage>();
 
-    Assert.NotNull(options);
+    Assert.That(options,
+                Is.Not.Null);
   }
 
   [Test]
@@ -221,8 +224,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<TableStorage>();
 
-    Assert.AreEqual(TimeSpan.FromSeconds(10),
-                    options.PollingDelayMin);
+    Assert.That(options.PollingDelayMin,
+                Is.EqualTo(TimeSpan.FromSeconds(10)));
   }
 
   [Test]
@@ -230,8 +233,8 @@ internal class InjectionTests
   {
     var options = provider_!.GetRequiredService<TableStorage>();
 
-    Assert.AreEqual(TimeSpan.FromSeconds(20),
-                    options.PollingDelayMax);
+    Assert.That(options.PollingDelayMax,
+                Is.EqualTo(TimeSpan.FromSeconds(20)));
   }
 
   [Test]
@@ -239,7 +242,8 @@ internal class InjectionTests
   {
     var table = provider_!.GetRequiredService<TableStorage>();
 
-    Assert.NotNull(table);
+    Assert.That(table,
+                Is.Not.Null);
   }
 
   [Test]
@@ -247,8 +251,8 @@ internal class InjectionTests
   {
     var table = provider_!.GetRequiredService<TableStorage>();
 
-    Assert.AreEqual(TimeSpan.FromSeconds(10),
-                    table.PollingDelayMin);
+    Assert.That(table.PollingDelayMin,
+                Is.EqualTo(TimeSpan.FromSeconds(10)));
   }
 
   [Test]
@@ -256,7 +260,7 @@ internal class InjectionTests
   {
     var table = provider_!.GetRequiredService<TableStorage>();
 
-    Assert.AreEqual(TimeSpan.FromSeconds(20),
-                    table.PollingDelayMax);
+    Assert.That(table.PollingDelayMax,
+                Is.EqualTo(TimeSpan.FromSeconds(20)));
   }
 }

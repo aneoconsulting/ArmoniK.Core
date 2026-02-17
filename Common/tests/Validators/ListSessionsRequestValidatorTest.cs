@@ -53,15 +53,17 @@ public class ListSessionsRequestValidatorTest
 
   [Test]
   public void ListSessionsRequestShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validListSessionsRequest_!)
-                               .IsValid);
+    => Assert.That(validator_.Validate(validListSessionsRequest_!)
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void ListSessionsRequestDefaultFilterShouldFail()
   {
     validListSessionsRequest_!.Filters = default;
-    Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -75,8 +77,9 @@ public class ListSessionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -92,8 +95,9 @@ public class ListSessionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -115,8 +119,9 @@ public class ListSessionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -129,23 +134,26 @@ public class ListSessionsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListSessionsRequestNegativePageSizeShouldFail()
   {
     validListSessionsRequest_!.PageSize = -1;
-    Assert.IsFalse(validator_.Validate(validListSessionsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListSessionsRequestZeroPageSizeShouldBeValid()
   {
     validListSessionsRequest_!.PageSize = 0;
-    Assert.IsTrue(validator_.Validate(validListSessionsRequest_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.True);
   }
 }

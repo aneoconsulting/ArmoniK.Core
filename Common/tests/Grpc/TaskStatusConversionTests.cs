@@ -32,8 +32,8 @@ public class TaskStatusConversionTests
   {
     foreach (var status in Enum.GetValues<TaskStatus>())
     {
-      Assert.Contains(status.ToInternalStatus(),
-                      Enum.GetValues<Storage.TaskStatus>());
+      Assert.That(Enum.GetValues<Storage.TaskStatus>(),
+                  Does.Contain(status.ToInternalStatus()));
     }
   }
 
@@ -42,8 +42,8 @@ public class TaskStatusConversionTests
   {
     foreach (var status in Enum.GetValues<Storage.TaskStatus>())
     {
-      Assert.Contains(status.ToGrpcStatus(),
-                      Enum.GetValues<TaskStatus>());
+      Assert.That(Enum.GetValues<TaskStatus>(),
+                  Does.Contain(status.ToGrpcStatus()));
     }
   }
 }

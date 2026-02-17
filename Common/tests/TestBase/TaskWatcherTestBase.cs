@@ -313,28 +313,28 @@ public class TaskWatcherTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await TaskWatcher!.Check(HealthCheckTag.Liveness)
-                                            .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await TaskWatcher.Check(HealthCheckTag.Readiness)
-                                           .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await TaskWatcher.Check(HealthCheckTag.Startup)
-                                           .ConfigureAwait(false)).Status);
+      Assert.That((await TaskWatcher!.Check(HealthCheckTag.Liveness)
+                                     .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskWatcher.Check(HealthCheckTag.Readiness)
+                                    .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskWatcher.Check(HealthCheckTag.Startup)
+                                    .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await TaskWatcher.Init(CancellationToken.None)
                        .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await TaskWatcher.Check(HealthCheckTag.Liveness)
-                                        .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await TaskWatcher.Check(HealthCheckTag.Readiness)
-                                        .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await TaskWatcher.Check(HealthCheckTag.Startup)
-                                        .ConfigureAwait(false)).Status);
+      Assert.That((await TaskWatcher.Check(HealthCheckTag.Liveness)
+                                    .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskWatcher.Check(HealthCheckTag.Readiness)
+                                    .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await TaskWatcher.Check(HealthCheckTag.Startup)
+                                    .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -430,12 +430,12 @@ public class TaskWatcherTestBase
 
       Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
-      Assert.AreEqual(2,
-                      newResults.Count);
-      Assert.AreEqual(TaskDataToNewTask(TaskEventCreating1),
-                      newResults[0]);
-      Assert.AreEqual(TaskDataToNewTask(TaskEventCreating2),
-                      newResults[1]);
+      Assert.That(newResults.Count,
+                  Is.EqualTo(2));
+      Assert.That(newResults[0],
+                  Is.EqualTo(TaskDataToNewTask(TaskEventCreating1)));
+      Assert.That(newResults[1],
+                  Is.EqualTo(TaskDataToNewTask(TaskEventCreating2)));
     }
   }
 
@@ -474,24 +474,24 @@ public class TaskWatcherTestBase
 
       Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
-      Assert.AreEqual(4,
-                      newResults.Count);
-      Assert.AreEqual(new TaskStatusUpdate("SessionId",
-                                           TaskProcessingData.TaskId,
-                                           TaskStatus.Error),
-                      newResults[0]);
-      Assert.AreEqual(new TaskStatusUpdate("SessionId",
-                                           TaskSubmittedData.TaskId,
-                                           TaskStatus.Dispatched),
-                      newResults[1]);
-      Assert.AreEqual(new TaskStatusUpdate("SessionId",
-                                           TaskSubmittedData.TaskId,
-                                           TaskStatus.Processing),
-                      newResults[2]);
-      Assert.AreEqual(new TaskStatusUpdate("SessionId",
-                                           TaskSubmittedData.TaskId,
-                                           TaskStatus.Cancelling),
-                      newResults[3]);
+      Assert.That(newResults.Count,
+                  Is.EqualTo(4));
+      Assert.That(newResults[0],
+                  Is.EqualTo(new TaskStatusUpdate("SessionId",
+                                                  TaskProcessingData.TaskId,
+                                                  TaskStatus.Error)));
+      Assert.That(newResults[1],
+                  Is.EqualTo(new TaskStatusUpdate("SessionId",
+                                                  TaskSubmittedData.TaskId,
+                                                  TaskStatus.Dispatched)));
+      Assert.That(newResults[2],
+                  Is.EqualTo(new TaskStatusUpdate("SessionId",
+                                                  TaskSubmittedData.TaskId,
+                                                  TaskStatus.Processing)));
+      Assert.That(newResults[3],
+                  Is.EqualTo(new TaskStatusUpdate("SessionId",
+                                                  TaskSubmittedData.TaskId,
+                                                  TaskStatus.Cancelling)));
     }
   }
 
@@ -532,12 +532,12 @@ public class TaskWatcherTestBase
 
       Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
 
-      Assert.AreEqual(1,
-                      newResults.Count);
-      Assert.AreEqual(new TaskStatusUpdate("SessionId",
-                                           TaskProcessingData.TaskId,
-                                           TaskStatus.Error),
-                      newResults[0]);
+      Assert.That(newResults.Count,
+                  Is.EqualTo(1));
+      Assert.That(newResults[0],
+                  Is.EqualTo(new TaskStatusUpdate("SessionId",
+                                                  TaskProcessingData.TaskId,
+                                                  TaskStatus.Error)));
     }
   }
 }

@@ -124,28 +124,28 @@ public class ObjectStorageTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorage!.Check(HealthCheckTag.Liveness)
-                                              .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorage.Check(HealthCheckTag.Readiness)
-                                             .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ObjectStorage.Check(HealthCheckTag.Startup)
-                                             .ConfigureAwait(false)).Status);
+      Assert.That((await ObjectStorage!.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ObjectStorage.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ObjectStorage.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await ObjectStorage.Init(CancellationToken.None)
                          .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorage.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorage.Check(HealthCheckTag.Readiness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ObjectStorage.Check(HealthCheckTag.Startup)
-                                          .ConfigureAwait(false)).Status);
+      Assert.That((await ObjectStorage.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ObjectStorage.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ObjectStorage.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -168,10 +168,10 @@ public class ObjectStorageTestBase
         data.AddRange(chunk);
       }
 
-      Assert.AreEqual(0,
-                      data.Count);
-      Assert.AreEqual(0,
-                      size);
+      Assert.That(data.Count,
+                  Is.EqualTo(0));
+      Assert.That(size,
+                  Is.EqualTo(0));
     }
   }
 
@@ -213,10 +213,10 @@ public class ObjectStorageTestBase
       var input = Encoding.ASCII.GetBytes(string.Join(null,
                                                       inputChunks));
 
-      Assert.AreEqual(input,
-                      data);
-      Assert.AreEqual(input.Length,
-                      size);
+      Assert.That(data,
+                  Is.EqualTo(input));
+      Assert.That(size,
+                  Is.EqualTo(input.Length));
 
 
       var dict = await ObjectStorage!.GetSizesAsync(new[]
@@ -250,8 +250,8 @@ public class ObjectStorageTestBase
           data.AddRange(chunk);
         }
 
-        Assert.AreEqual(id,
-                        data.ToArray());
+        Assert.That(data.ToArray(),
+                    Is.EqualTo(id));
       }
       catch (ObjectDataNotFoundException)
       {
@@ -278,8 +278,8 @@ public class ObjectStorageTestBase
 
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
-      Assert.AreEqual("AAAABBBB",
-                      str);
+      Assert.That(str,
+                  Is.EqualTo("AAAABBBB"));
     }
   }
 
@@ -299,8 +299,8 @@ public class ObjectStorageTestBase
 
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
-      Assert.AreEqual("AAAABBBBCCCCDDDD",
-                      str);
+      Assert.That(str,
+                  Is.EqualTo("AAAABBBBCCCCDDDD"));
     }
   }
 
@@ -321,18 +321,18 @@ public class ObjectStorageTestBase
 
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
-      Assert.AreEqual(string.Empty,
-                      str);
+      Assert.That(str,
+                  Is.EqualTo(string.Empty));
 
       var dict = await ObjectStorage!.GetSizesAsync(new[]
                                                     {
                                                       datakeyEmpty_!,
                                                     })
                                      .ConfigureAwait(false);
-      Assert.AreEqual(1,
-                      dict.Count);
-      Assert.AreEqual(0,
-                      dict[datakeyEmpty_!]);
+      Assert.That(dict.Count,
+                  Is.EqualTo(1));
+      Assert.That(dict[datakeyEmpty_!],
+                  Is.EqualTo(0));
     }
   }
 
