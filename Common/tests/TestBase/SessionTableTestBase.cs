@@ -361,8 +361,8 @@ public class SessionTableTestBase
                                    .ToListAsync()
                                    .ConfigureAwait(false);
 
-      Assert.That(res.Count,
-                  Is.EqualTo(0));
+      Assert.That(res,
+                  Is.Empty);
     }
   }
 

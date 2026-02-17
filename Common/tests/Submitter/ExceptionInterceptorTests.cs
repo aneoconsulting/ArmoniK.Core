@@ -141,7 +141,8 @@ internal class ExceptionInterceptorTests
     foreach (var _ in Enumerable.Range(0,
                                        4))
     {
-      Assert.Throws<RpcException>(() => client.CreateSession(request));
+      Assert.That(() => client.CreateSession(request),
+                  Throws.InstanceOf<RpcException>());
       Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                     .ConfigureAwait(false)).Status,
                   Is.EqualTo(HealthStatus.Healthy));
@@ -149,13 +150,15 @@ internal class ExceptionInterceptorTests
 
     // Call #9 with server error
     ex = new ApplicationException("server error");
-    Assert.Throws<RpcException>(() => client.CreateSession(request));
+    Assert.That(() => client.CreateSession(request),
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.EqualTo(HealthStatus.Healthy));
     // Call #10 with server error
     ex = new ApplicationException("server error");
-    Assert.Throws<RpcException>(() => client.CreateSession(request));
+    Assert.That(() => client.CreateSession(request),
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.Not.EqualTo(HealthStatus.Healthy));
@@ -360,7 +363,8 @@ internal class ExceptionInterceptorTests
                                        4))
     {
       failAfter = i;
-      Assert.ThrowsAsync<RpcException>(() => CreateLargeTasks(10));
+      Assert.That(() => CreateLargeTasks(10),
+                  Throws.InstanceOf<RpcException>());
       Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                     .ConfigureAwait(false)).Status,
                   Is.EqualTo(HealthStatus.Healthy));
@@ -369,14 +373,16 @@ internal class ExceptionInterceptorTests
     // Call #9 with server error
     ex        = new ApplicationException("server error");
     failAfter = 0;
-    Assert.ThrowsAsync<RpcException>(() => CreateLargeTasks(10));
+    Assert.That(() => CreateLargeTasks(10),
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.EqualTo(HealthStatus.Healthy));
     // Call #10 with server error
     ex        = new ApplicationException("server error");
     failAfter = 1;
-    Assert.ThrowsAsync<RpcException>(() => CreateLargeTasks(10));
+    Assert.That(() => CreateLargeTasks(10),
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.Not.EqualTo(HealthStatus.Healthy));
@@ -471,7 +477,8 @@ internal class ExceptionInterceptorTests
     foreach (var _ in Enumerable.Range(0,
                                        4))
     {
-      Assert.DoesNotThrowAsync(TryGetResult);
+      Assert.That(TryGetResult,
+                  Throws.Nothing);
       Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                     .ConfigureAwait(false)).Status,
                   Is.EqualTo(HealthStatus.Healthy));
@@ -483,7 +490,8 @@ internal class ExceptionInterceptorTests
                                        4))
     {
       failAfter = i;
-      Assert.ThrowsAsync<RpcException>(TryGetResult);
+      Assert.That(TryGetResult,
+                  Throws.InstanceOf<RpcException>());
       Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                     .ConfigureAwait(false)).Status,
                   Is.EqualTo(HealthStatus.Healthy));
@@ -492,28 +500,32 @@ internal class ExceptionInterceptorTests
     // Call #9 with server error
     ex        = new ApplicationException("server error");
     failAfter = 0;
-    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.That(TryGetResult,
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.EqualTo(HealthStatus.Healthy));
     // Call #10 with server error
     ex        = new ApplicationException("server error");
     failAfter = 1;
-    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.That(TryGetResult,
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.EqualTo(HealthStatus.Healthy));
     // Call #11 with server error
     ex        = new ApplicationException("server error");
     failAfter = 2;
-    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.That(TryGetResult,
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.EqualTo(HealthStatus.Healthy));
     // Call #12 with server error
     ex        = new ApplicationException("server error");
     failAfter = 3;
-    Assert.ThrowsAsync<RpcException>(TryGetResult);
+    Assert.That(TryGetResult,
+                Throws.InstanceOf<RpcException>());
     Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
                                   .ConfigureAwait(false)).Status,
                 Is.Not.EqualTo(HealthStatus.Healthy));

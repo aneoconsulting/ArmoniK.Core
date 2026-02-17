@@ -101,6 +101,6 @@ internal class CreateSessionTests
                                                       },
                                                     });
     Assert.That(createSessionReply.SessionId,
-                Is.Not.EqualTo(""));
+                Is.Not.Empty);
   }
 }

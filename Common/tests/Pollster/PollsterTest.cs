@@ -437,7 +437,7 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
     Assert.That(testServiceProvider.Pollster.TaskProcessing,
-                Is.EqualTo(Array.Empty<string>()));
+                Is.Empty);
 
     testServiceProvider.AssertFailAfterError(6);
   }
@@ -756,7 +756,7 @@ public class PollsterTest
                          TaskStatus.Cancelling));
 
     Assert.That(testServiceProvider.Pollster.TaskProcessing,
-                Is.EqualTo(Array.Empty<string>()));
+                Is.Empty);
 
     testServiceProvider.AssertFailAfterError(5);
   }
@@ -832,13 +832,14 @@ public class PollsterTest
 
     var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(10));
 
-    Assert.DoesNotThrowAsync(() => pollster.MainLoop());
+    Assert.That(pollster.MainLoop,
+                Throws.Nothing);
     Assert.That(() => stop,
                 Throws.InstanceOf<OperationCanceledException>());
     Assert.That(testServiceProvider.ExceptionManager.Failed,
                 Is.True);
     Assert.That(testServiceProvider.Pollster.TaskProcessing,
-                Is.EqualTo(Array.Empty<string>()));
+                Is.Empty);
   }
 
 
@@ -893,7 +894,7 @@ public class PollsterTest
                                          .ConfigureAwait(false),
                 Is.EqualTo(TaskStatus.Submitted));
     Assert.That(testServiceProvider.Pollster.TaskProcessing,
-                Is.EqualTo(Array.Empty<string>()));
+                Is.Empty);
 
     testServiceProvider.AssertFailAfterError(0);
     Assert.That(testServiceProvider.ExceptionManager.Failed,

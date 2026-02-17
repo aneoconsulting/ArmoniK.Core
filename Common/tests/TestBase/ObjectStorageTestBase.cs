@@ -168,8 +168,8 @@ public class ObjectStorageTestBase
         data.AddRange(chunk);
       }
 
-      Assert.That(data.Count,
-                  Is.EqualTo(0));
+      Assert.That(data,
+                  Is.Empty);
       Assert.That(size,
                   Is.EqualTo(0));
     }
@@ -322,7 +322,7 @@ public class ObjectStorageTestBase
       var str = Encoding.ASCII.GetString(data.ToArray());
       Console.WriteLine(str);
       Assert.That(str,
-                  Is.EqualTo(string.Empty));
+                  Is.Empty);
 
       var dict = await ObjectStorage!.GetSizesAsync(new[]
                                                     {

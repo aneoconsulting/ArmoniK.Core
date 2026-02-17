@@ -478,8 +478,10 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.That(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout,
-                  Is.True);
+      Assert.That(resProcessing,
+                  Is.EqualTo(TaskStatus.Timeout));
+      Assert.That(resCreating,
+                  Is.EqualTo(TaskStatus.Timeout));
     }
   }
 
@@ -510,8 +512,10 @@ public class TaskTableTestBase
                                                          CancellationToken.None)
                                           .ConfigureAwait(false);
 
-      Assert.That(resCreating == TaskStatus.Timeout && resProcessing == TaskStatus.Timeout,
-                  Is.True);
+      Assert.That(resProcessing,
+                  Is.EqualTo(TaskStatus.Timeout));
+      Assert.That(resCreating,
+                  Is.EqualTo(TaskStatus.Timeout));
     }
   }
 
@@ -580,13 +584,10 @@ public class TaskTableTestBase
                                      },
                                    },
                        };
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable!.UpdateAllTaskStatusAsync(testFilter,
-                                                                                       TaskStatus.Timeout,
-                                                                                       CancellationToken.None)
-                                                             .ConfigureAwait(false);
-                                           });
+      Assert.That(() => TaskTable!.UpdateAllTaskStatusAsync(testFilter,
+                                                            TaskStatus.Timeout,
+                                                            CancellationToken.None),
+                  Throws.InstanceOf<ArmoniKException>());
     }
   }
 
@@ -614,28 +615,28 @@ public class TaskTableTestBase
                                                            .ThenBy(r => r.PartitionId)
                                                            .AsIList();
 
-      Assert.That(result.Count,
-                  Is.EqualTo(6));
-      Assert.That(result[0],
-                  Is.EqualTo(new PartitionTaskStatusCount("part1",
-                                                          TaskStatus.Creating,
-                                                          1)));
-      Assert.That(result[1],
-                  Is.EqualTo(new PartitionTaskStatusCount("part2",
-                                                          TaskStatus.Submitted,
-                                                          2)));
-      Assert.That(result[2],
-                  Is.EqualTo(new PartitionTaskStatusCount("part1",
-                                                          TaskStatus.Completed,
-                                                          1)));
-      Assert.That(result[3],
-                  Is.EqualTo(new PartitionTaskStatusCount("part1",
-                                                          TaskStatus.Error,
-                                                          2)));
-      Assert.That(result[4],
-                  Is.EqualTo(new PartitionTaskStatusCount("part1",
-                                                          TaskStatus.Processing,
-                                                          2)));
+      Assert.That(result,
+                  Is.EqualTo(new List<PartitionTaskStatusCount>
+                             {
+                               new("part1",
+                                   TaskStatus.Creating,
+                                   1),
+                               new("part2",
+                                   TaskStatus.Submitted,
+                                   2),
+                               new("part1",
+                                   TaskStatus.Completed,
+                                   1),
+                               new("part1",
+                                   TaskStatus.Error,
+                                   2),
+                               new("part1",
+                                   TaskStatus.Processing,
+                                   2),
+                               new("part2",
+                                   TaskStatus.Pending,
+                                   1),
+                             }));
     }
   }
 
@@ -695,8 +696,8 @@ public class TaskTableTestBase
       var result = await TaskTable!.CountAllTasksAsync(TaskStatus.Processing,
                                                        CancellationToken.None)
                                    .ConfigureAwait(false);
-      Assert.That(result == 2,
-                  Is.True);
+      Assert.That(result,
+                  Is.EqualTo(2));
     }
   }
 
@@ -725,7 +726,7 @@ public class TaskTableTestBase
       Assert.That(taskData.Output.Status,
                   Is.EqualTo(OutputStatus.Success));
       Assert.That(taskData.Output.Error,
-                  Is.EqualTo(""));
+                  Is.Empty);
     }
   }
 
@@ -805,12 +806,9 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable!.GetTaskOutput("NonExistingTaskId",
-                                                                                 CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                                });
+      Assert.That(() => TaskTable!.GetTaskOutput("NonExistingTaskId",
+                                                 CancellationToken.None),
+                  Throws.InstanceOf<TaskNotFoundException>());
     }
   }
 
@@ -837,12 +835,9 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable!.GetParentTaskIds("NonExistingTaskId",
-                                                                                    CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                                });
+      Assert.That(() => TaskTable!.GetParentTaskIds("NonExistingTaskId",
+                                                    CancellationToken.None),
+                  Throws.InstanceOf<TaskNotFoundException>());
     }
   }
 
@@ -915,15 +910,16 @@ public class TaskTableTestBase
       var ownerPodName  = Dns.GetHostName();
       var receptionDate = DateTime.UtcNow.Date;
 
-      Assert.ThrowsAsync<TaskNotFoundException>(() => TaskTable!.AcquireTask(taskSubmittedData_ with
-                                                                             {
-                                                                               TaskId = "Unknown",
-                                                                               OwnerPodId = ownerPodId,
-                                                                               OwnerPodName = ownerPodName,
-                                                                               ReceptionDate = receptionDate,
-                                                                               AcquisitionDate = DateTime.UtcNow,
-                                                                             },
-                                                                             CancellationToken.None));
+      Assert.That(() => TaskTable!.AcquireTask(taskSubmittedData_ with
+                                               {
+                                                 TaskId = "Unknown",
+                                                 OwnerPodId = ownerPodId,
+                                                 OwnerPodName = ownerPodName,
+                                                 ReceptionDate = receptionDate,
+                                                 AcquisitionDate = DateTime.UtcNow,
+                                               },
+                                               CancellationToken.None),
+                  Throws.InstanceOf<TaskNotFoundException>());
     }
   }
 
@@ -966,13 +962,13 @@ public class TaskTableTestBase
       Assert.That(resultRelease.TaskId,
                   Is.EqualTo("TaskSubmittedId"));
       Assert.That(resultRelease.OwnerPodId,
-                  Is.EqualTo(""));
+                  Is.Empty);
       Assert.That(resultRelease.OwnerPodName,
-                  Is.EqualTo(""));
+                  Is.Empty);
       Assert.That(resultRelease.ReceptionDate,
-                  Is.EqualTo(null));
+                  Is.Null);
       Assert.That(resultRelease.AcquisitionDate,
-                  Is.EqualTo(null));
+                  Is.Null);
     }
   }
 
@@ -1069,13 +1065,13 @@ public class TaskTableTestBase
                   Is.EqualTo(TaskStatus.Creating));
 
       Assert.That(result.AcquisitionDate,
-                  Is.EqualTo(null));
+                  Is.Null);
 
       Assert.That(result.ReceptionDate,
-                  Is.EqualTo(null));
+                  Is.Null);
 
       Assert.That(result.SubmittedDate,
-                  Is.EqualTo(null));
+                  Is.Null);
     }
   }
 
@@ -1159,15 +1155,12 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable!.StartTask(taskSubmittedData_ with
-                                                                             {
-                                                                               TaskId = "NotExistingTask",
-                                                                             },
-                                                                             CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                                });
+      Assert.That(() => TaskTable!.StartTask(taskSubmittedData_ with
+                                             {
+                                               TaskId = "NotExistingTask",
+                                             },
+                                             CancellationToken.None),
+                  Throws.InstanceOf<TaskNotFoundException>());
     }
   }
 
@@ -1202,15 +1195,12 @@ public class TaskTableTestBase
                                    })
                       .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<ArmoniKException>(async () =>
-                                           {
-                                             await TaskTable!.StartTask(taskSubmittedData_ with
-                                                                        {
-                                                                          TaskId = taskId,
-                                                                        },
-                                                                        CancellationToken.None)
-                                                             .ConfigureAwait(false);
-                                           });
+      Assert.That(() => TaskTable!.StartTask(taskSubmittedData_ with
+                                             {
+                                               TaskId = taskId,
+                                             },
+                                             CancellationToken.None),
+                  Throws.InstanceOf<ArmoniKException>());
     }
   }
 
@@ -1219,12 +1209,9 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable!.DeleteTaskAsync("NonExistingTaskId",
-                                                                                   CancellationToken.None)
-                                                                  .ConfigureAwait(false);
-                                                });
+      Assert.That(() => TaskTable!.DeleteTaskAsync("NonExistingTaskId",
+                                                   CancellationToken.None),
+                  Throws.InstanceOf<TaskNotFoundException>());
     }
   }
 
@@ -1237,12 +1224,9 @@ public class TaskTableTestBase
                                        CancellationToken.None)
                       .ConfigureAwait(false);
 
-      Assert.ThrowsAsync<TaskNotFoundException>(async () =>
-                                                {
-                                                  await TaskTable.ReadTaskAsync("TaskSubmittedId",
-                                                                                CancellationToken.None)
-                                                                 .ConfigureAwait(false);
-                                                });
+      Assert.That(() => TaskTable.ReadTaskAsync("TaskSubmittedId",
+                                                CancellationToken.None),
+                  Throws.InstanceOf<TaskNotFoundException>());
     }
   }
 

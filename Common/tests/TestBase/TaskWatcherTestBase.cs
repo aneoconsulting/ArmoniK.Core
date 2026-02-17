@@ -428,14 +428,15 @@ public class TaskWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromSeconds(1));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.That(newResults.Count,
-                  Is.EqualTo(2));
-      Assert.That(newResults[0],
-                  Is.EqualTo(TaskDataToNewTask(TaskEventCreating1)));
-      Assert.That(newResults[1],
-                  Is.EqualTo(TaskDataToNewTask(TaskEventCreating2)));
+      Assert.That(newResults,
+                  Is.EquivalentTo(new List<NewTask>
+                                  {
+                                    TaskDataToNewTask(TaskEventCreating1),
+                                    TaskDataToNewTask(TaskEventCreating2),
+                                  }));
     }
   }
 
@@ -472,26 +473,25 @@ public class TaskWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.That(newResults.Count,
-                  Is.EqualTo(4));
-      Assert.That(newResults[0],
-                  Is.EqualTo(new TaskStatusUpdate("SessionId",
-                                                  TaskProcessingData.TaskId,
-                                                  TaskStatus.Error)));
-      Assert.That(newResults[1],
-                  Is.EqualTo(new TaskStatusUpdate("SessionId",
-                                                  TaskSubmittedData.TaskId,
-                                                  TaskStatus.Dispatched)));
-      Assert.That(newResults[2],
-                  Is.EqualTo(new TaskStatusUpdate("SessionId",
-                                                  TaskSubmittedData.TaskId,
-                                                  TaskStatus.Processing)));
-      Assert.That(newResults[3],
-                  Is.EqualTo(new TaskStatusUpdate("SessionId",
-                                                  TaskSubmittedData.TaskId,
-                                                  TaskStatus.Cancelling)));
+      Assert.That(newResults,
+                  Is.EqualTo(new List<TaskStatusUpdate>
+                             {
+                               new("SessionId",
+                                   TaskProcessingData.TaskId,
+                                   TaskStatus.Error),
+                               new("SessionId",
+                                   TaskSubmittedData.TaskId,
+                                   TaskStatus.Dispatched),
+                               new("SessionId",
+                                   TaskSubmittedData.TaskId,
+                                   TaskStatus.Processing),
+                               new("SessionId",
+                                   TaskSubmittedData.TaskId,
+                                   TaskStatus.Cancelling),
+                             }));
     }
   }
 
@@ -530,14 +530,16 @@ public class TaskWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.That(newResults.Count,
-                  Is.EqualTo(1));
-      Assert.That(newResults[0],
-                  Is.EqualTo(new TaskStatusUpdate("SessionId",
-                                                  TaskProcessingData.TaskId,
-                                                  TaskStatus.Error)));
+      Assert.That(newResults,
+                  Is.EqualTo(new List<TaskStatusUpdate>
+                             {
+                               new("SessionId",
+                                   TaskProcessingData.TaskId,
+                                   TaskStatus.Error),
+                             }));
     }
   }
 }

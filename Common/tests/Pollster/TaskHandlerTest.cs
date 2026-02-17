@@ -682,9 +682,9 @@ public class TaskHandlerTest
     Assert.That(taskData.Status,
                 Is.EqualTo(TaskStatus.Submitted));
     Assert.That(taskData.OwnerPodId,
-                Is.EqualTo(string.Empty));
+                Is.Empty);
     Assert.That(taskData.OwnerPodName,
-                Is.EqualTo(string.Empty));
+                Is.Empty);
   }
 
   public record struct AcquireTaskReturn(AcquisitionStatus  AcquisitionStatus,
@@ -1052,12 +1052,9 @@ public class TaskHandlerTest
     var retryData = await testServiceProvider.TaskTable.ReadTaskAsync(taskData.RetryId())
                                              .ConfigureAwait(false);
 
-    Assert.That(new List<TaskStatus>
-                {
-                  TaskStatus.Dispatched,
-                  TaskStatus.Submitted,
-                },
-                Does.Contain(retryData.Status));
+    Assert.That(retryData.Status,
+                Is.EqualTo(TaskStatus.Dispatched)
+                  .Or.EqualTo(TaskStatus.Submitted));
 
     return new AcquireTaskReturn(acquired,
                                  dbStatus,

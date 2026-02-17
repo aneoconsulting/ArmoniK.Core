@@ -401,9 +401,8 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.That(holder.QueueStorage.Messages.SelectMany(pair => pair.Value)
-                      .Count(),
-                Is.EqualTo(0));
+    Assert.That(holder.QueueStorage.Messages.SelectMany(pair => pair.Value),
+                Is.Empty);
 
     var data = "Data1Data2";
     await File.WriteAllBytesAsync(Path.Combine(holder.Folder,
@@ -453,22 +452,23 @@ public class AgentTest
                                  .ConfigureAwait(false);
 
     Assert.That(dependents,
-                Does.Contain(holder.TaskWithDependencies1));
-    Assert.That(dependents,
-                Does.Contain(holder.TaskWithDependencies2));
-
+                Is.EquivalentTo(new List<string>
+                                {
+                                  holder.TaskWithDependencies1,
+                                  holder.TaskWithDependencies2,
+                                }));
     Assert.That(holder.QueueStorage.Messages[Partition],
-                Does.Contain(holder.TaskWithDependencies1));
-    Assert.That(holder.QueueStorage.Messages[Partition],
-                Does.Contain(holder.TaskWithDependencies2));
-    Assert.That(holder.QueueStorage.Messages[Partition].Count,
-                Is.EqualTo(2));
+                Is.EquivalentTo(new List<string>
+                                {
+                                  holder.TaskWithDependencies1,
+                                  holder.TaskWithDependencies2,
+                                }));
 
     var taskData1 = await holder.TaskTable.ReadTaskAsync(holder.TaskWithDependencies1,
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.That(taskData1.DataDependencies.ToList(),
+    Assert.That(taskData1.DataDependencies,
                 Does.Contain(ExpectedOutput1));
     Assert.That(taskData1.RemainingDataDependencies,
                 Is.Empty);
@@ -479,7 +479,7 @@ public class AgentTest
                                                          CancellationToken.None)
                                 .ConfigureAwait(false);
 
-    Assert.That(taskData2.DataDependencies.ToList(),
+    Assert.That(taskData2.DataDependencies,
                 Does.Contain(ExpectedOutput1));
     Assert.That(taskData2.RemainingDataDependencies,
                 Is.Empty);
@@ -799,7 +799,7 @@ public class AgentTest
     foreach (var eokResult in eok)
     {
       Assert.That(reply.Single()
-                       .ExpectedOutputKeys.ToList(),
+                       .ExpectedOutputKeys,
                   Does.Contain(eokResult.ResultId));
       Assert.That(eokResult.CreatedBy,
                   Is.EqualTo(holder.TaskData.TaskId));
@@ -888,12 +888,10 @@ public class AgentTest
                                 .ResultId,
                            }));
 
-    foreach (var eokResult in eok.SkipLast(1))
-    {
-      Assert.That(reply.Single()
-                       .ExpectedOutputKeys.ToList(),
-                  Does.Contain(eokResult.ResultId));
-    }
+    Assert.That(reply.Single()
+                     .ExpectedOutputKeys,
+                Is.EquivalentTo(eok.SkipLast(1)
+                                   .Select(result => result.ResultId)));
 
     await holder.Agent.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                 .ConfigureAwait(false);

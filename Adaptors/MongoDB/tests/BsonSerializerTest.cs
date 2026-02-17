@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Auth;
@@ -130,8 +129,8 @@ internal class BsonSerializerTest
                 Is.EqualTo(rdm.CreationDate));
     Assert.That(deserialized.CompletionDate,
                 Is.EqualTo(rdm.CompletionDate));
-    Assert.That(rdm.OpaqueId.SequenceEqual(deserialized.OpaqueId),
-                Is.True);
+    Assert.That(rdm.OpaqueId,
+                Is.EqualTo(deserialized.OpaqueId));
     Assert.That(deserialized.ManualDeletion,
                 Is.EqualTo(rdm.ManualDeletion));
   }
@@ -222,10 +221,10 @@ internal class BsonSerializerTest
                 Is.EqualTo(tdm.Options.Options["key1"]));
     Assert.That(deserialized.Options.Options["key2"],
                 Is.EqualTo(tdm.Options.Options["key2"]));
-    Assert.That(tdm.DataDependencies.SequenceEqual(deserialized.DataDependencies),
-                Is.True);
-    Assert.That(tdm.RemainingDataDependencies.SequenceEqual(deserialized.RemainingDataDependencies),
-                Is.True);
+    Assert.That(tdm.DataDependencies,
+                Is.EqualTo(deserialized.DataDependencies));
+    Assert.That(tdm.RemainingDataDependencies,
+                Is.EqualTo(deserialized.RemainingDataDependencies));
     Assert.That(deserialized.Options.MaxDuration,
                 Is.EqualTo(tdm.Options.MaxDuration));
     Assert.That(deserialized.Options.MaxRetries,
@@ -250,12 +249,12 @@ internal class BsonSerializerTest
                 Is.EqualTo(tdm.CreationToEndDuration));
     Assert.That(deserialized.ProcessingToEndDuration,
                 Is.EqualTo(tdm.ProcessingToEndDuration));
-    Assert.That(tdm.RetryOfIds.SequenceEqual(deserialized.RetryOfIds),
-                Is.True);
-    Assert.That(tdm.ExpectedOutputIds.SequenceEqual(deserialized.ExpectedOutputIds),
-                Is.True);
-    Assert.That(tdm.ParentTaskIds.SequenceEqual(deserialized.ParentTaskIds),
-                Is.True);
+    Assert.That(tdm.RetryOfIds,
+                Is.EqualTo(deserialized.RetryOfIds));
+    Assert.That(tdm.ExpectedOutputIds,
+                Is.EqualTo(deserialized.ExpectedOutputIds));
+    Assert.That(tdm.ParentTaskIds,
+                Is.EqualTo(deserialized.ParentTaskIds));
   }
 
   [Test]
@@ -280,12 +279,8 @@ internal class BsonSerializerTest
                 Is.EqualTo(udm.Username));
     Assert.That(deserialized.Roles,
                 Is.Not.Null);
-    Assert.That(deserialized.Roles.Length,
-                Is.EqualTo(udm.Roles.Length));
-    Assert.That(deserialized.Roles[0],
-                Is.EqualTo(udm.Roles[0]));
-    Assert.That(deserialized.Roles[1],
-                Is.EqualTo(udm.Roles[1]));
+    Assert.That(deserialized.Roles,
+                Is.EqualTo(udm.Roles));
   }
 
   [Test]
@@ -310,12 +305,8 @@ internal class BsonSerializerTest
                 Is.EqualTo(rdm.RoleName));
     Assert.That(deserialized.Permissions,
                 Is.Not.Null);
-    Assert.That(deserialized.Permissions.Length,
-                Is.EqualTo(rdm.Permissions.Length));
-    Assert.That(deserialized.Permissions[0],
-                Is.EqualTo(rdm.Permissions[0]));
-    Assert.That(deserialized.Permissions[1],
-                Is.EqualTo(rdm.Permissions[1]));
+    Assert.That(deserialized.Permissions,
+                Is.EqualTo(rdm.Permissions));
   }
 
   [Test]
@@ -368,18 +359,12 @@ internal class BsonSerializerTest
                 Is.EqualTo(uirm.Username));
     Assert.That(deserialized.Roles,
                 Is.Not.Null);
-    Assert.That(deserialized.Roles.Count(),
-                Is.EqualTo(uirm.Roles.Count()));
-    Assert.That(uirm.Roles.ToList()
-                    .All(s => deserialized.Roles.Contains(s)),
-                Is.True);
+    Assert.That(uirm.Roles,
+                Is.EqualTo(deserialized.Roles));
     Assert.That(deserialized.Permissions,
                 Is.Not.Null);
-    Assert.That(deserialized.Permissions.Count(),
-                Is.EqualTo(uirm.Permissions.Count()));
-    Assert.That(uirm.Permissions.ToList()
-                    .All(s => deserialized.Permissions.Contains(s)),
-                Is.True);
+    Assert.That(uirm.Permissions,
+                Is.EqualTo(deserialized.Permissions));
   }
 
   [Test]

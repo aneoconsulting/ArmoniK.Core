@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
@@ -256,42 +257,38 @@ internal class StaticInitTests
     var init = provider_!.GetRequiredService<InitServices>();
     logger_!.LogInformation("{@init}",
                             init);
-    Assert.That(init.Authentication.UserCertificates.Count,
-                Is.EqualTo(3));
-    Assert.That(init.Authentication.Users.Count,
-                Is.EqualTo(3));
-    Assert.That(init.Authentication.Roles.Count,
-                Is.EqualTo(3));
-    Assert.That(init.Partitioning.Partitions.Count,
-                Is.EqualTo(3));
 
-    Assert.That(Certificate.FromJson(init.Authentication.UserCertificates[0]),
-                Is.EqualTo(Cert1));
-    Assert.That(Certificate.FromJson(init.Authentication.UserCertificates[1]),
-                Is.EqualTo(Cert2));
-    Assert.That(Certificate.FromJson(init.Authentication.UserCertificates[2]),
-                Is.EqualTo(Cert3));
+    Assert.That(init.Authentication.UserCertificates.Select(Certificate.FromJson),
+                Is.EqualTo(new List<Certificate>
+                           {
+                             Cert1,
+                             Cert2,
+                             Cert3,
+                           }));
 
-    Assert.That(User.FromJson(init.Authentication.Users[0]),
-                Is.EqualTo(User1));
-    Assert.That(User.FromJson(init.Authentication.Users[1]),
-                Is.EqualTo(User2));
-    Assert.That(User.FromJson(init.Authentication.Users[2]),
-                Is.EqualTo(User3));
+    Assert.That(init.Authentication.Users.Select(User.FromJson),
+                Is.EqualTo(new List<User>
+                           {
+                             User1,
+                             User2,
+                             User3,
+                           }));
 
-    Assert.That(Role.FromJson(init.Authentication.Roles[0]),
-                Is.EqualTo(Role1));
-    Assert.That(Role.FromJson(init.Authentication.Roles[1]),
-                Is.EqualTo(Role2));
-    Assert.That(Role.FromJson(init.Authentication.Roles[2]),
-                Is.EqualTo(Role3));
+    Assert.That(init.Authentication.Roles.Select(Role.FromJson),
+                Is.EqualTo(new List<Role>
+                           {
+                             Role1,
+                             Role2,
+                             Role3,
+                           }));
 
-    Assert.That(Partition.FromJson(init.Partitioning.Partitions[0]),
-                Is.EqualTo(PartitionData1));
-    Assert.That(Partition.FromJson(init.Partitioning.Partitions[1]),
-                Is.EqualTo(PartitionData2));
-    Assert.That(Partition.FromJson(init.Partitioning.Partitions[2]),
-                Is.EqualTo(PartitionData3));
+    Assert.That(init.Partitioning.Partitions.Select(Partition.FromJson),
+                Is.EqualTo(new List<Partition>
+                           {
+                             PartitionData1,
+                             PartitionData2,
+                             PartitionData3,
+                           }));
 
     var initDb = provider_!.GetRequiredService<InitDatabase>();
     Assert.That(initDb.Users.Count,

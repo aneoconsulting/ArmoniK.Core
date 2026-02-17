@@ -16,9 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Common.gRPC.Convertors;
+using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
@@ -29,21 +30,13 @@ public class TaskStatusConversionTests
 {
   [Test]
   public void GrpcToInternal()
-  {
-    foreach (var status in Enum.GetValues<TaskStatus>())
-    {
-      Assert.That(Enum.GetValues<Storage.TaskStatus>(),
-                  Does.Contain(status.ToInternalStatus()));
-    }
-  }
+    => Assert.That(Enum.GetValues<TaskStatus>(),
+                   Is.EquivalentTo(Enum.GetValues<Api.gRPC.V1.TaskStatus>()
+                                       .Select(s => s.ToInternalStatus())));
 
   [Test]
   public void InternalToGrpc()
-  {
-    foreach (var status in Enum.GetValues<Storage.TaskStatus>())
-    {
-      Assert.That(Enum.GetValues<TaskStatus>(),
-                  Does.Contain(status.ToGrpcStatus()));
-    }
-  }
+    => Assert.That(Enum.GetValues<Api.gRPC.V1.TaskStatus>(),
+                   Is.EquivalentTo(Enum.GetValues<TaskStatus>()
+                                       .Select(s => s.ToGrpcStatus())));
 }

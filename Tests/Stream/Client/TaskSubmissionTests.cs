@@ -160,16 +160,16 @@ internal class TaskSubmissionTests
                                                   })
                                     .ConfigureAwait(false);
 
-    Assert.That(new List<TaskStatus>
-                {
-                  TaskStatus.Completed,
-                  TaskStatus.Submitted,
-                  TaskStatus.Dispatched,
-                  TaskStatus.Processing,
-                },
-                Does.Contain(taskData.Task.Status));
+    Assert.That(taskData.Task.Status,
+                Is.AnyOf(new List<TaskStatus>
+                         {
+                           TaskStatus.Completed,
+                           TaskStatus.Submitted,
+                           TaskStatus.Dispatched,
+                           TaskStatus.Processing,
+                         }));
     Assert.That(taskData.Task.CreatedBy,
-                Is.EqualTo(string.Empty));
+                Is.Empty);
 
     var resultData = await resultsClient.GetResultAsync(new GetResultRequest
                                                         {
@@ -178,7 +178,7 @@ internal class TaskSubmissionTests
                                         .ConfigureAwait(false);
 
     Assert.That(resultData.Result.CreatedBy,
-                Is.EqualTo(string.Empty));
+                Is.Empty);
 
     var eventClient = new Events.EventsClient(channel_);
     await eventClient.WaitForResultsAsync(createSessionReply.SessionId,
@@ -286,11 +286,8 @@ internal class TaskSubmissionTests
                                                   })
                                     .ConfigureAwait(false);
 
-    Assert.That(new List<TaskStatus>
-                {
-                  TaskStatus.Pending,
-                },
-                Does.Contain(taskData.Task.Status));
+    Assert.That(taskData.Task.Status,
+                Is.EqualTo(TaskStatus.Pending));
 
     var uploadStream = resultsClient.UploadResultData();
     await uploadStream.RequestStream.WriteAsync(new UploadResultDataRequest
@@ -444,7 +441,7 @@ internal class TaskSubmissionTests
                                     .ConfigureAwait(false);
 
     Assert.That(taskData.Task.CreatedBy,
-                Is.EqualTo(string.Empty));
+                Is.Empty);
 
     var resultData = await resultsClient.GetResultAsync(new GetResultRequest
                                                         {
@@ -453,7 +450,7 @@ internal class TaskSubmissionTests
                                         .ConfigureAwait(false);
 
     Assert.That(resultData.Result.CreatedBy,
-                Is.EqualTo(string.Empty));
+                Is.Empty);
 
     Assert.That(taskData.Task.Status,
                 Is.EqualTo(TaskStatus.Completed));

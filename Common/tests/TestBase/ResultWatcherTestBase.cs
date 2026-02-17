@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -349,15 +348,15 @@ public class ResultWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.That(newResults.Count,
-                  Is.EqualTo(2));
-
-      Assert.That(newResults[0],
-                  Is.EqualTo(ResultToNewResult(NewResult1)));
-      Assert.That(newResults[1],
-                  Is.EqualTo(ResultToNewResult(NewResult2)));
+      Assert.That(newResults,
+                  Is.EquivalentTo(new List<NewResult>
+                                  {
+                                    ResultToNewResult(NewResult1),
+                                    ResultToNewResult(NewResult2),
+                                  }));
     }
   }
 
@@ -394,23 +393,22 @@ public class ResultWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.That(newResults.Count,
-                  Is.EqualTo(3));
-
-      Assert.That(newResults[0],
-                  Is.EqualTo(new ResultStatusUpdate("SessionId",
-                                                    "ResultIsCreated",
-                                                    ResultStatus.Aborted)));
-      Assert.That(newResults[1],
-                  Is.EqualTo(new ResultStatusUpdate("SessionId",
-                                                    "ResultIsCreated2",
-                                                    ResultStatus.Aborted)));
-      Assert.That(newResults[2],
-                  Is.EqualTo(new ResultStatusUpdate("SessionId",
-                                                    "ResultIsCreated3",
-                                                    ResultStatus.Aborted)));
+      Assert.That(newResults,
+                  Is.EqualTo(new List<ResultStatusUpdate>
+                             {
+                               new("SessionId",
+                                   "ResultIsCreated",
+                                   ResultStatus.Aborted),
+                               new("SessionId",
+                                   "ResultIsCreated2",
+                                   ResultStatus.Aborted),
+                               new("SessionId",
+                                   "ResultIsCreated3",
+                                   ResultStatus.Aborted),
+                             }));
     }
   }
 
@@ -448,16 +446,17 @@ public class ResultWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.That(newResults.Count,
-                  Is.EqualTo(1));
-
-      Assert.That(newResults.Single(),
-                  Is.EqualTo(new ResultOwnerUpdate("SessionId",
-                                                   "ResultIsCreated3",
-                                                   "",
-                                                   "NewOwnerId")));
+      Assert.That(newResults,
+                  Is.EqualTo(new List<ResultOwnerUpdate>
+                             {
+                               new("SessionId",
+                                   "ResultIsCreated3",
+                                   "",
+                                   "NewOwnerId"),
+                             }));
     }
   }
 }
