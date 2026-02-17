@@ -235,28 +235,28 @@ public class AuthenticationTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await AuthenticationTable!.Check(HealthCheckTag.Liveness)
-                                                    .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await AuthenticationTable.Check(HealthCheckTag.Readiness)
-                                                   .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await AuthenticationTable.Check(HealthCheckTag.Startup)
-                                                   .ConfigureAwait(false)).Status);
+      Assert.That((await AuthenticationTable!.Check(HealthCheckTag.Liveness)
+                                             .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await AuthenticationTable.Check(HealthCheckTag.Readiness)
+                                            .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await AuthenticationTable.Check(HealthCheckTag.Startup)
+                                            .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await AuthenticationTable.Init(CancellationToken.None)
                                .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await AuthenticationTable.Check(HealthCheckTag.Liveness)
-                                                .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await AuthenticationTable.Check(HealthCheckTag.Readiness)
-                                                .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await AuthenticationTable.Check(HealthCheckTag.Startup)
-                                                .ConfigureAwait(false)).Status);
+      Assert.That((await AuthenticationTable.Check(HealthCheckTag.Liveness)
+                                            .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await AuthenticationTable.Check(HealthCheckTag.Readiness)
+                                            .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await AuthenticationTable.Check(HealthCheckTag.Startup)
+                                            .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -300,9 +300,10 @@ public class AuthenticationTableTestBase
                                                                      fingerprint,
                                                                      CancellationToken.None)
                                     .Result;
-    Assert.NotNull(ident);
-    Assert.AreEqual(Users[userid].UserId,
-                    ident!.Id);
+    Assert.That(ident,
+                Is.Not.Null);
+    Assert.That(ident!.Id,
+                Is.EqualTo(Users[userid].UserId));
   }
 
   [TestCase("CNUser6",
@@ -317,10 +318,11 @@ public class AuthenticationTableTestBase
       return;
     }
 
-    Assert.IsNull(AuthenticationTable!.GetIdentityFromCertificateAsync(cn,
-                                                                       fingerprint,
-                                                                       CancellationToken.None)
-                                      .Result);
+    Assert.That(AuthenticationTable!.GetIdentityFromCertificateAsync(cn,
+                                                                     fingerprint,
+                                                                     CancellationToken.None)
+                                    .Result,
+                Is.Null);
   }
 
   [TestCase(0,
@@ -338,11 +340,12 @@ public class AuthenticationTableTestBase
     var ident = AuthenticationTable!.GetIdentityFromUserAsync(Users[id].UserId,
                                                               null)
                                     .Result;
-    Assert.NotNull(ident);
-    Assert.AreEqual(Users[id].UserId,
-                    ident!.Id);
-    Assert.AreEqual(username,
-                    ident.Username);
+    Assert.That(ident,
+                Is.Not.Null);
+    Assert.That(ident!.Id,
+                Is.EqualTo(Users[id].UserId));
+    Assert.That(ident.Username,
+                Is.EqualTo(username));
   }
 
   [TestCase(1000)]
@@ -353,9 +356,10 @@ public class AuthenticationTableTestBase
       return;
     }
 
-    Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(id,
-                                                                null)
-                                      .Result);
+    Assert.That(AuthenticationTable!.GetIdentityFromUserAsync(id,
+                                                              null)
+                                    .Result,
+                Is.Null);
   }
 
   [TestCase("User1",
@@ -373,11 +377,12 @@ public class AuthenticationTableTestBase
     var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
                                                                  name)
                                        .Result;
-    Assert.NotNull(identity);
-    Assert.AreEqual(name,
-                    identity!.Username);
-    Assert.AreEqual(Users[id].UserId,
-                    identity.Id);
+    Assert.That(identity,
+                Is.Not.Null);
+    Assert.That(identity!.Username,
+                Is.EqualTo(name));
+    Assert.That(identity.Id,
+                Is.EqualTo(Users[id].UserId));
   }
 
   [TestCase("UserDontExist")]
@@ -388,9 +393,10 @@ public class AuthenticationTableTestBase
       return;
     }
 
-    Assert.IsNull(AuthenticationTable!.GetIdentityFromUserAsync(null,
-                                                                name)
-                                      .Result);
+    Assert.That(AuthenticationTable!.GetIdentityFromUserAsync(null,
+                                                              name)
+                                    .Result,
+                Is.Null);
   }
 
   [TestCase("User1",
@@ -420,9 +426,10 @@ public class AuthenticationTableTestBase
     var identity = AuthenticationTable!.GetIdentityFromUserAsync(null,
                                                                  username)
                                        .Result;
-    Assert.NotNull(identity);
-    Assert.AreEqual(identity!.Roles.Contains(rolename),
-                    hasRole);
+    Assert.That(identity,
+                Is.Not.Null);
+    Assert.That(hasRole,
+                Is.EqualTo(identity!.Roles.Contains(rolename)));
   }
 
   [TestCase("User1",
@@ -457,10 +464,11 @@ public class AuthenticationTableTestBase
                                                                  CancellationToken.None)
                                        .Result;
     var expected = new Permission(claim).Claim;
-    Assert.NotNull(identity);
-    Assert.AreEqual(identity!.Permissions.Select(perm => new Permission(perm).Claim)
-                             .Any(c => c.Type == expected.Type && (expected.Value == PermissionScope.Default || c.Value == expected.Value)),
-                    hasClaim);
+    Assert.That(identity,
+                Is.Not.Null);
+    Assert.That(hasClaim,
+                Is.EqualTo(identity!.Permissions.Select(perm => new Permission(perm).Claim)
+                                    .Any(c => c.Type == expected.Type && (expected.Value == PermissionScope.Default || c.Value == expected.Value))));
   }
 
   [TestCaseSource(nameof(Users))]
@@ -474,14 +482,16 @@ public class AuthenticationTableTestBase
     var identity = AuthenticationTable!.GetIdentityFromUserAsync(user.UserId,
                                                                  null)
                                        .Result;
-    Assert.NotNull(identity);
-    Assert.IsTrue(user.Roles.SelectMany(id => Roles.Find(r => r.RoleId == id)
-                                                   ?.Permissions ?? Array.Empty<string>())
-                      .All(p =>
-                           {
-                             var expected = new Permission(p).Claim;
-                             return identity!.Permissions.Select(perm => new Permission(perm).Claim)
-                                             .Any(c => c.Type == expected.Type && c.Value == expected.Value);
-                           }));
+    Assert.That(identity,
+                Is.Not.Null);
+    Assert.That(user.Roles.SelectMany(id => Roles.Find(r => r.RoleId == id)
+                                                 ?.Permissions ?? Array.Empty<string>())
+                    .All(p =>
+                         {
+                           var expected = new Permission(p).Claim;
+                           return identity!.Permissions.Select(perm => new Permission(perm).Claim)
+                                           .Any(c => c.Type == expected.Type && c.Value == expected.Value);
+                         }),
+                Is.True);
   }
 }

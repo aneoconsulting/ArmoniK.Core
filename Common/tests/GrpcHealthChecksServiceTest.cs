@@ -50,15 +50,17 @@ public class GrpcHealthChecksServiceTest
     var sp      = sc.BuildServiceProvider();
     var service = sp.GetRequiredService<GrpcHealthChecksService>();
 
-    Assert.IsNotNull(service);
+    Assert.That(service,
+                Is.Not.Null);
     var response = await service.CheckHealth(new CheckHealthRequest(),
                                              TestServerCallContext.Create())
                                 .ConfigureAwait(false);
-    Assert.IsNotNull(response);
+    Assert.That(response,
+                Is.Not.Null);
     foreach (var serviceHealth in response.Services)
     {
-      Assert.AreEqual(HealthStatusEnum.Healthy,
-                      serviceHealth.Healthy);
+      Assert.That(serviceHealth.Healthy,
+                  Is.EqualTo(HealthStatusEnum.Healthy));
     }
   }
 }

@@ -72,8 +72,8 @@ public class ToPartitionDataFilterTest
     var func = RequestToFunc(Sort,
                              filterFields);
 
-    Assert.AreEqual(expected,
-                    func.Invoke(partitionData_));
+    Assert.That(func.Invoke(partitionData_),
+                Is.EqualTo(expected));
   }
 
   public static IEnumerable<TestCaseData> TestCasesFilter()

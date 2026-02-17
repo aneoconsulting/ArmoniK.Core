@@ -53,12 +53,12 @@ public class TaskOptionsTests
 
   [Test]
   public void NullTaskOptionsShouldBeEqual()
-    => Assert.AreSame(null,
-                      options_.ToNullableTaskOptions());
+    => Assert.That(options_.ToNullableTaskOptions(),
+                   Is.SameAs(null));
 
   [Test]
   public void ConversionShouldBeEqual()
-    => Assert.AreEqual(completeOptions_,
-                       completeOptions_.ToGrpcTaskOptions()
-                                       .ToTaskOptions());
+    => Assert.That(completeOptions_.ToGrpcTaskOptions()
+                                   .ToTaskOptions(),
+                   Is.EqualTo(completeOptions_));
 }

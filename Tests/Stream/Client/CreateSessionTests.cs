@@ -100,7 +100,7 @@ internal class CreateSessionTests
                                                         partition_,
                                                       },
                                                     });
-    Assert.AreNotEqual("",
-                       createSessionReply.SessionId);
+    Assert.That(createSessionReply.SessionId,
+                Is.Not.Empty);
   }
 }

@@ -51,8 +51,9 @@ public class CreateLargeTaskRequestValidatorTest
                               },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr)
-                            .IsValid);
+    Assert.That(validator_.Validate(ctr)
+                          .IsValid,
+                Is.True);
   }
 
   [Test]
@@ -72,8 +73,9 @@ public class CreateLargeTaskRequestValidatorTest
                               },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr)
-                             .IsValid);
+    Assert.That(validator_.Validate(ctr)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -94,8 +96,9 @@ public class CreateLargeTaskRequestValidatorTest
                               },
               };
 
-    Assert.IsFalse(validator_.Validate(ctr)
-                             .IsValid);
+    Assert.That(validator_.Validate(ctr)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -106,8 +109,9 @@ public class CreateLargeTaskRequestValidatorTest
                 TaskPayload = null,
               };
 
-    Assert.IsFalse(validator_.Validate(ctr)
-                             .IsValid);
+    Assert.That(validator_.Validate(ctr)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -118,8 +122,9 @@ public class CreateLargeTaskRequestValidatorTest
                 TaskPayload = new DataChunk(),
               };
 
-    Assert.IsFalse(validator_.Validate(ctr)
-                             .IsValid);
+    Assert.That(validator_.Validate(ctr)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -143,7 +148,8 @@ public class CreateLargeTaskRequestValidatorTest
                               },
               };
 
-    Assert.IsTrue(validator_.Validate(ctr)
-                            .IsValid);
+    Assert.That(validator_.Validate(ctr)
+                          .IsValid,
+                Is.True);
   }
 }

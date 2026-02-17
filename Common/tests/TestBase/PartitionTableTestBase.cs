@@ -143,28 +143,28 @@ public class PartitionTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await PartitionTable!.Check(HealthCheckTag.Liveness)
-                                               .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await PartitionTable.Check(HealthCheckTag.Readiness)
-                                              .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await PartitionTable.Check(HealthCheckTag.Startup)
-                                              .ConfigureAwait(false)).Status);
+      Assert.That((await PartitionTable!.Check(HealthCheckTag.Liveness)
+                                        .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await PartitionTable.Check(HealthCheckTag.Readiness)
+                                       .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await PartitionTable.Check(HealthCheckTag.Startup)
+                                       .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await PartitionTable.Init(CancellationToken.None)
                           .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await PartitionTable.Check(HealthCheckTag.Liveness)
-                                           .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await PartitionTable.Check(HealthCheckTag.Readiness)
-                                           .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await PartitionTable.Check(HealthCheckTag.Startup)
-                                           .ConfigureAwait(false)).Status);
+      Assert.That((await PartitionTable.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await PartitionTable.Check(HealthCheckTag.Readiness)
+                                       .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await PartitionTable.Check(HealthCheckTag.Startup)
+                                       .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -178,8 +178,8 @@ public class PartitionTableTestBase
                                                             CancellationToken.None)
                                         .ConfigureAwait(false);
 
-      Assert.AreEqual("PartitionId0",
-                      result.PartitionId);
+      Assert.That(result.PartitionId,
+                  Is.EqualTo("PartitionId0"));
     }
   }
 
@@ -192,12 +192,12 @@ public class PartitionTableTestBase
                                                             CancellationToken.None)
                                         .ConfigureAwait(false);
 
-      Assert.AreEqual(PartitionEnv.PartitionId,
-                      result.PartitionId);
-      Assert.AreEqual(PartitionEnv.PodReserved,
-                      result.PodReserved);
-      Assert.AreEqual(PartitionEnv.PodConfiguration,
-                      result.PodConfiguration!.Configuration);
+      Assert.That(result.PartitionId,
+                  Is.EqualTo(PartitionEnv.PartitionId));
+      Assert.That(result.PodReserved,
+                  Is.EqualTo(PartitionEnv.PodReserved));
+      Assert.That(result.PodConfiguration!.Configuration,
+                  Is.EqualTo(PartitionEnv.PodConfiguration));
     }
   }
 
@@ -252,7 +252,8 @@ public class PartitionTableTestBase
                                                                     CancellationToken.None)
                                         .ConfigureAwait(false);
 
-      Assert.IsTrue(result);
+      Assert.That(result,
+                  Is.True);
     }
   }
 
@@ -269,7 +270,8 @@ public class PartitionTableTestBase
                                                                     CancellationToken.None)
                                         .ConfigureAwait(false);
 
-      Assert.IsFalse(result);
+      Assert.That(result,
+                  Is.False);
     }
   }
 
@@ -286,8 +288,8 @@ public class PartitionTableTestBase
                                                                       CancellationToken.None)
                                                  .ConfigureAwait(false);
 
-      Assert.AreEqual(0,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(0));
     }
   }
 
@@ -304,8 +306,8 @@ public class PartitionTableTestBase
                                                                       CancellationToken.None)
                                                  .ConfigureAwait(false);
 
-      Assert.AreEqual(1,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(1));
     }
   }
 
@@ -324,8 +326,8 @@ public class PartitionTableTestBase
                                                                       CancellationToken.None)
                                                  .ConfigureAwait(false);
 
-      Assert.AreEqual(count,
-                      totalCount);
+      Assert.That(totalCount,
+                  Is.EqualTo(count));
     }
   }
 

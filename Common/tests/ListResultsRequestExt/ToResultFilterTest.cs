@@ -75,8 +75,8 @@ public class ToResultFilterTest
     var func = RequestToFunc(Sort,
                              filterFields);
 
-    Assert.AreEqual(expected,
-                    func.Invoke(result_));
+    Assert.That(func.Invoke(result_),
+                Is.EqualTo(expected));
   }
 
   public static IEnumerable<TestCaseData> TestCasesFilter()

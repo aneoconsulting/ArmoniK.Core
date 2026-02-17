@@ -110,7 +110,8 @@ public class CheckAuthenticationAttributes
     => Assert.That(method.GetCustomAttributes<IgnoreAuthorizationAttribute>()
                          .Any() || method.GetCustomAttributes<RequiresPermissionAttribute>()
                                          .Any(),
-                   "Method {0} of service {1} does not have either the RequirePermission Attribute or the IgnoreAuthorization Attribute",
-                   method.Name,
-                   service.Name);
+                   Is.True,
+                   string.Format("Method {0} of service {1} does not have either the RequirePermission Attribute or the IgnoreAuthorization Attribute",
+                                 method.Name,
+                                 service.Name));
 }

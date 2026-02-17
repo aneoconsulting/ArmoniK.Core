@@ -104,8 +104,8 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     var response = client.GetServiceConfiguration(new Empty());
 
-    Assert.AreEqual(42,
-                    response.DataChunkMaxSize);
+    Assert.That(response.DataChunkMaxSize,
+                Is.EqualTo(42));
   }
 
   [Test]
@@ -147,8 +147,8 @@ internal class IntegrationGrpcSubmitterServiceTest
 
     Console.WriteLine(result);
 
-    Assert.AreEqual(ResultReply.TypeOneofCase.Result,
-                    result.TypeCase);
+    Assert.That(result.TypeCase,
+                Is.EqualTo(ResultReply.TypeOneofCase.Result));
   }
 
   public class AsyncThrowExceptionSubmitter<T> : ISubmitter

@@ -145,8 +145,8 @@ public class ToApplicationFilterTest
     var func = RequestToFunc(Sort,
                              filterFields);
 
-    Assert.AreEqual(expected,
-                    func.Invoke(taskData_));
+    Assert.That(func.Invoke(taskData_),
+                Is.EqualTo(expected));
   }
 
   public static IEnumerable<TestCaseData> TestCasesFilter()

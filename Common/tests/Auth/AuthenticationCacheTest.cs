@@ -51,9 +51,10 @@ public class AuthenticationCacheTest
   public void CacheShouldHit()
   {
     var result = cache_!.Get(BaseKey);
-    Assert.IsNotNull(result);
-    Assert.AreEqual(BaseIdentity,
-                    result);
+    Assert.That(result,
+                Is.Not.Null);
+    Assert.That(result,
+                Is.EqualTo(BaseIdentity));
   }
 
   [Test]
@@ -98,38 +99,46 @@ public class AuthenticationCacheTest
                                                         fingerprint,
                                                         impersonationId,
                                                         impersonationUsername));
-    Assert.IsTrue(result is null || BaseIdentity != result);
+    Assert.That(result,
+                Is.Null.Or.Not.EqualTo(BaseIdentity));
   }
 
   [Test]
   public void CacheShouldMissOnConnectionReset()
   {
-    Assert.AreEqual(BaseIdentity,
-                    cache_!.Get(BaseKey));
+    Assert.That(cache_!.Get(BaseKey),
+                Is.EqualTo(BaseIdentity));
     cache_.FlushConnection(ConnectionId);
-    Assert.IsNull(cache_!.Get(BaseKey));
+    Assert.That(cache_!.Get(BaseKey),
+                Is.Null);
   }
 
   [Test]
   public void CacheShouldMissOnClear()
   {
-    Assert.AreEqual(BaseIdentity,
-                    cache_!.Get(BaseKey));
+    Assert.That(cache_!.Get(BaseKey),
+                Is.EqualTo(BaseIdentity));
     cache_.Clear();
-    Assert.IsNull(cache_!.Get(BaseKey));
+    Assert.That(cache_!.Get(BaseKey),
+                Is.Null);
   }
 
   [Test]
   public void CacheKeyEquatableShouldMatch()
   {
-    Assert.IsTrue(BaseKey.Equals(BaseKey));
-    Assert.IsTrue(BaseKey.Equals(new AuthenticationCacheKey(ConnectionId,
-                                                            Cn,
-                                                            Fingerprint)));
-    Assert.IsFalse(BaseKey.Equals(null));
-    Assert.IsFalse(BaseKey!.Equals(new AuthenticationCacheKey(ConnectionId,
-                                                              Cn + "0",
-                                                              Fingerprint)));
-    Assert.IsFalse(BaseKey.Equals(new object()));
+    Assert.That(BaseKey.Equals(BaseKey),
+                Is.True);
+    Assert.That(BaseKey.Equals(new AuthenticationCacheKey(ConnectionId,
+                                                          Cn,
+                                                          Fingerprint)),
+                Is.True);
+    Assert.That(BaseKey.Equals(null),
+                Is.False);
+    Assert.That(BaseKey!.Equals(new AuthenticationCacheKey(ConnectionId,
+                                                           Cn + "0",
+                                                           Fingerprint)),
+                Is.False);
+    Assert.That(BaseKey.Equals(new object()),
+                Is.False);
   }
 }

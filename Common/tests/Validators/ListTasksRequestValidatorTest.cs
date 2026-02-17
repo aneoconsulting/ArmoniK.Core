@@ -53,15 +53,17 @@ public class ListTasksRequestValidatorTest
 
   [Test]
   public void ListTasksRequestShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validListTasksRequest_!)
-                               .IsValid);
+    => Assert.That(validator_.Validate(validListTasksRequest_!)
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void ListTasksRequestDefaultFilterShouldFail()
   {
     validListTasksRequest_!.Filters = default;
-    Assert.IsFalse(validator_.Validate(validListTasksRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -75,8 +77,9 @@ public class ListTasksRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListTasksRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -92,8 +95,9 @@ public class ListTasksRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListTasksRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -115,8 +119,9 @@ public class ListTasksRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListTasksRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -129,23 +134,26 @@ public class ListTasksRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListTasksRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListTasksRequestNegativePageSizeShouldFail()
   {
     validListTasksRequest_!.PageSize = -1;
-    Assert.IsFalse(validator_.Validate(validListTasksRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListTasksRequestZeroPageSizeShouldBeValid()
   {
     validListTasksRequest_!.PageSize = 0;
-    Assert.IsTrue(validator_.Validate(validListTasksRequest_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.True);
   }
 }

@@ -220,8 +220,8 @@ public class ToTaskDataFieldTest
       }.Sort.ToField()
        .Compile();
 
-    Assert.AreEqual(expected,
-                    func.Invoke(TaskData));
+    Assert.That(func.Invoke(TaskData),
+                Is.EqualTo(expected));
   }
 
   [Test]

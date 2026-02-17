@@ -137,13 +137,13 @@ public class HowHealthCheckWorkTest
     server_ = app_.GetTestServer();
     var client = server_.CreateClient();
 
-    Assert.AreEqual("Healthy",
-                    await client.GetStringAsync("/startup")
-                                .ConfigureAwait(false));
+    Assert.That(await client.GetStringAsync("/startup")
+                            .ConfigureAwait(false),
+                Is.EqualTo("Healthy"));
 
-    Assert.AreEqual(HttpStatusCode.ServiceUnavailable,
-                    (await client.GetAsync("/liveness")
-                                 .ConfigureAwait(false)).StatusCode);
+    Assert.That((await client.GetAsync("/liveness")
+                             .ConfigureAwait(false)).StatusCode,
+                Is.EqualTo(HttpStatusCode.ServiceUnavailable));
   }
 
   [Test]
@@ -155,8 +155,8 @@ public class HowHealthCheckWorkTest
     server_ = app_.GetTestServer();
     var client = server_.CreateClient();
 
-    Assert.AreEqual(HttpStatusCode.ServiceUnavailable,
-                    (await client.GetAsync("/readiness")
-                                 .ConfigureAwait(false)).StatusCode);
+    Assert.That((await client.GetAsync("/readiness")
+                             .ConfigureAwait(false)).StatusCode,
+                Is.EqualTo(HttpStatusCode.ServiceUnavailable));
   }
 }

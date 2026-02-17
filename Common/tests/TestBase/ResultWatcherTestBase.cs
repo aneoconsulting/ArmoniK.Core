@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -183,28 +182,28 @@ public class ResultWatcherTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultWatcher!.Check(HealthCheckTag.Liveness)
-                                              .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultWatcher.Check(HealthCheckTag.Readiness)
-                                             .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await ResultWatcher.Check(HealthCheckTag.Startup)
-                                             .ConfigureAwait(false)).Status);
+      Assert.That((await ResultWatcher!.Check(HealthCheckTag.Liveness)
+                                       .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await ResultWatcher.Init(CancellationToken.None)
                          .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultWatcher.Check(HealthCheckTag.Liveness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultWatcher.Check(HealthCheckTag.Readiness)
-                                          .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await ResultWatcher.Check(HealthCheckTag.Startup)
-                                          .ConfigureAwait(false)).Status);
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Readiness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await ResultWatcher.Check(HealthCheckTag.Startup)
+                                      .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -349,15 +348,15 @@ public class ResultWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.AreEqual(2,
-                      newResults.Count);
-
-      Assert.AreEqual(ResultToNewResult(NewResult1),
-                      newResults[0]);
-      Assert.AreEqual(ResultToNewResult(NewResult2),
-                      newResults[1]);
+      Assert.That(newResults,
+                  Is.EquivalentTo(new List<NewResult>
+                                  {
+                                    ResultToNewResult(NewResult1),
+                                    ResultToNewResult(NewResult2),
+                                  }));
     }
   }
 
@@ -394,23 +393,22 @@ public class ResultWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.AreEqual(3,
-                      newResults.Count);
-
-      Assert.AreEqual(new ResultStatusUpdate("SessionId",
-                                             "ResultIsCreated",
-                                             ResultStatus.Aborted),
-                      newResults[0]);
-      Assert.AreEqual(new ResultStatusUpdate("SessionId",
-                                             "ResultIsCreated2",
-                                             ResultStatus.Aborted),
-                      newResults[1]);
-      Assert.AreEqual(new ResultStatusUpdate("SessionId",
-                                             "ResultIsCreated3",
-                                             ResultStatus.Aborted),
-                      newResults[2]);
+      Assert.That(newResults,
+                  Is.EqualTo(new List<ResultStatusUpdate>
+                             {
+                               new("SessionId",
+                                   "ResultIsCreated",
+                                   ResultStatus.Aborted),
+                               new("SessionId",
+                                   "ResultIsCreated2",
+                                   ResultStatus.Aborted),
+                               new("SessionId",
+                                   "ResultIsCreated3",
+                                   ResultStatus.Aborted),
+                             }));
     }
   }
 
@@ -448,16 +446,17 @@ public class ResultWatcherTestBase
 
       cts.CancelAfter(TimeSpan.FromMilliseconds(100));
 
-      Assert.ThrowsAsync<OperationCanceledException>(async () => await watch.ConfigureAwait(false));
+      Assert.That(() => watch,
+                  Throws.InstanceOf<OperationCanceledException>());
 
-      Assert.AreEqual(1,
-                      newResults.Count);
-
-      Assert.AreEqual(new ResultOwnerUpdate("SessionId",
-                                            "ResultIsCreated3",
-                                            "",
-                                            "NewOwnerId"),
-                      newResults.Single());
+      Assert.That(newResults,
+                  Is.EqualTo(new List<ResultOwnerUpdate>
+                             {
+                               new("SessionId",
+                                   "ResultIsCreated3",
+                                   "",
+                                   "NewOwnerId"),
+                             }));
     }
   }
 }

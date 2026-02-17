@@ -50,8 +50,8 @@ public class ApplicationRawTests
 
   [Test]
   public void ApplicationRawShouldBeEquals()
-    => Assert.AreEqual(app1_,
-                       app2_);
+    => Assert.That(app2_,
+                   Is.EqualTo(app1_));
 
   [Test]
   public void DistinctShouldWork()
@@ -62,8 +62,8 @@ public class ApplicationRawTests
                  app2_,
                };
 
-    Assert.AreEqual(1,
-                    list.Distinct()
-                        .Count());
+    Assert.That(list.Distinct()
+                    .Count(),
+                Is.EqualTo(1));
   }
 }

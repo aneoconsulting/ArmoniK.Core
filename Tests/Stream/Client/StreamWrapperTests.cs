@@ -148,8 +148,8 @@ internal class StreamWrapperTests
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
 #pragma warning restore CS0612 // Type or member is obsolete
 
-    Assert.AreEqual(availabilityReply.TypeCase,
-                    AvailabilityReply.TypeOneofCase.Ok);
+    Assert.That(AvailabilityReply.TypeOneofCase.Ok,
+                Is.EqualTo(availabilityReply.TypeCase));
 
     client_.TryGetResultStream(resultRequest);
 
@@ -302,7 +302,8 @@ internal class StreamWrapperTests
                                       return taskOutput.TypeCase;
                                     });
 
-    Assert.IsTrue(taskOutput.All(status => status == Output.TypeOneofCase.Error));
+    Assert.That(taskOutput.All(status => status == Output.TypeOneofCase.Error),
+                Is.True);
   }
 
 
@@ -374,7 +375,8 @@ internal class StreamWrapperTests
                                                       return availabilityReply.TypeCase;
                                                     });
 
-    Assert.IsTrue(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
+    Assert.That(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok),
+                Is.True);
 
     var resultList = taskRequestList.Select(async request =>
                                             {
@@ -395,8 +397,8 @@ internal class StreamWrapperTests
 
     var sum = resultList.Aggregate((t1,
                                     t2) => Task.FromResult(t1.Result + t2.Result));
-    Assert.AreEqual(n * (n - 1) * (2 * n - 1) / 6,
-                    sum.Result);
+    Assert.That(sum.Result,
+                Is.EqualTo(n * (n - 1) * (2 * n - 1) / 6));
   }
 
   [Test]
@@ -466,7 +468,8 @@ internal class StreamWrapperTests
                                                        return availabilityReply.TypeCase;
                                                      });
 
-    Assert.IsTrue(resultAvailability1.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
+    Assert.That(resultAvailability1.All(t => t == AvailabilityReply.TypeOneofCase.Ok),
+                Is.True);
 
     var resultAvailability2 = taskRequestList.Select(request =>
                                                      {
@@ -481,7 +484,8 @@ internal class StreamWrapperTests
                                                        return availabilityReply.TypeCase;
                                                      });
 
-    Assert.IsTrue(resultAvailability2.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
+    Assert.That(resultAvailability2.All(t => t == AvailabilityReply.TypeOneofCase.Ok),
+                Is.True);
 
     var results = taskRequestList.Select(async request =>
                                          {
@@ -500,7 +504,8 @@ internal class StreamWrapperTests
 
                                            return 2 * resultInt2 == resultInt1;
                                          });
-    Assert.IsTrue(results.All(task => task.Result));
+    Assert.That(results.All(task => task.Result),
+                Is.True);
   }
 
 
@@ -582,7 +587,8 @@ internal class StreamWrapperTests
                                                       return availabilityReply.TypeCase;
                                                     });
 
-    Assert.IsTrue(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok));
+    Assert.That(resultAvailability.All(t => t == AvailabilityReply.TypeOneofCase.Ok),
+                Is.True);
 
     var resultList = taskRequestList.Select(async request =>
                                             {
@@ -599,7 +605,8 @@ internal class StreamWrapperTests
                                               return false;
                                             });
 
-    Assert.IsTrue(resultList.All(_ => true));
+    Assert.That(resultList.All(_ => true),
+                Is.True);
   }
 
   [Test]
@@ -647,8 +654,8 @@ internal class StreamWrapperTests
     var availabilityReply = client_!.WaitForAvailability(resultRequest);
 #pragma warning restore CS0612 // Type or member is obsolete
 
-    Assert.AreEqual(AvailabilityReply.TypeOneofCase.Error,
-                    availabilityReply.TypeCase);
+    Assert.That(availabilityReply.TypeCase,
+                Is.EqualTo(AvailabilityReply.TypeOneofCase.Error));
 
     var taskOutput = client_.TryGetTaskOutput(new TaskOutputRequest
                                               {
@@ -657,8 +664,8 @@ internal class StreamWrapperTests
                                               });
     Console.WriteLine(outputId + " - " + taskOutput);
 
-    Assert.AreEqual(Output.TypeOneofCase.Error,
-                    taskOutput.TypeCase);
+    Assert.That(taskOutput.TypeCase,
+                Is.EqualTo(Output.TypeOneofCase.Error));
   }
 
   [Test]

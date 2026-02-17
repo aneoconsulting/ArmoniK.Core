@@ -80,7 +80,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsTrue(func(model));
+    Assert.That(func(model),
+                Is.True);
   }
 
   [Test]
@@ -122,7 +123,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsFalse(func(model));
+    Assert.That(func(model),
+                Is.False);
   }
 
   [Test]
@@ -172,7 +174,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsTrue(func(model));
+    Assert.That(func(model),
+                Is.True);
   }
 
   [Test]
@@ -221,7 +224,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsFalse(func(model));
+    Assert.That(func(model),
+                Is.False);
   }
 
   [Test]
@@ -271,7 +275,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsTrue(func(model));
+    Assert.That(func(model),
+                Is.True);
   }
 
   [Test]
@@ -321,7 +326,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsFalse(func(model));
+    Assert.That(func(model),
+                Is.False);
   }
 
   [Test]
@@ -370,7 +376,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsFalse(func(model));
+    Assert.That(func(model),
+                Is.False);
   }
 
   [Test]
@@ -419,7 +426,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsTrue(func(model));
+    Assert.That(func(model),
+                Is.True);
   }
 
   [Test]
@@ -469,7 +477,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsFalse(func(model));
+    Assert.That(func(model),
+                Is.False);
   }
 
   [Test]
@@ -519,7 +528,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsTrue(func(model));
+    Assert.That(func(model),
+                Is.True);
   }
 
   [Test]
@@ -562,7 +572,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsTrue(func(model));
+    Assert.That(func(model),
+                Is.True);
   }
 
   [Test]
@@ -606,7 +617,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsTrue(func(model));
+    Assert.That(func(model),
+                Is.True);
   }
 
   [Test]
@@ -649,7 +661,8 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsFalse(func(model));
+    Assert.That(func(model),
+                Is.False);
   }
 
   [Test]
@@ -693,6 +706,7 @@ internal class TaskFilterExtTests
                              new Output(OutputStatus.Success,
                                         ""));
 
-    Assert.IsFalse(func(model));
+    Assert.That(func(model),
+                Is.False);
   }
 }

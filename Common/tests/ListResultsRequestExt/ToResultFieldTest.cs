@@ -97,7 +97,7 @@ public class ToResultFieldTest
       }.Sort.ToField()
        .Compile();
 
-    Assert.AreEqual(expected,
-                    func.Invoke(Result));
+    Assert.That(func.Invoke(Result),
+                Is.EqualTo(expected));
   }
 }

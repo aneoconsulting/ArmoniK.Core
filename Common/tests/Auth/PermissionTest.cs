@@ -38,12 +38,12 @@ public class PermissionTest
                                               string? suffix)
   {
     var perm = new Permission(actionName);
-    Assert.AreEqual(perm.Service,
-                    prefix);
-    Assert.AreEqual(perm.Name,
-                    name);
-    Assert.AreEqual(perm.Target,
-                    suffix);
+    Assert.That(prefix,
+                Is.EqualTo(perm.Service));
+    Assert.That(name,
+                Is.EqualTo(perm.Name));
+    Assert.That(suffix,
+                Is.EqualTo(perm.Target));
   }
 
   [TestCase("prefix:name:suffix",
@@ -57,10 +57,10 @@ public class PermissionTest
                                            string claimValue)
   {
     var perm = new Permission(actionName);
-    Assert.AreEqual(perm.Claim.Type,
-                    claimType);
-    Assert.AreEqual(perm.Claim.Value,
-                    claimValue);
+    Assert.That(claimType,
+                Is.EqualTo(perm.Claim.Type));
+    Assert.That(claimValue,
+                Is.EqualTo(perm.Claim.Value));
   }
 
   [TestCase("")]
@@ -70,10 +70,11 @@ public class PermissionTest
   [TestCase(":testprefix:")]
   [TestCase("::testprefix")]
   public void PermissionCreationShouldThrow(string actionstring)
-    => Assert.NotNull(Assert.Catch(() =>
-                                   {
-                                     var _ = new Permission(actionstring);
-                                   }));
+    => Assert.That(Assert.Catch(() =>
+                                {
+                                  var _ = new Permission(actionstring);
+                                }),
+                   Is.Not.Null);
 
   [Test]
   public void PrintPermissions()

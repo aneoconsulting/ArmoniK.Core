@@ -53,15 +53,17 @@ public class ListResultsRequestValidatorTest
 
   [Test]
   public void ListResultsRequestShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validListResultsRequest_!)
-                               .IsValid);
+    => Assert.That(validator_.Validate(validListResultsRequest_!)
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void ListResultsRequestDefaultFilterShouldFail()
   {
     validListResultsRequest_!.Filters = default;
-    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -75,8 +77,9 @@ public class ListResultsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -92,8 +95,9 @@ public class ListResultsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -115,8 +119,9 @@ public class ListResultsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -129,23 +134,26 @@ public class ListResultsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListResultsRequestNegativePageSizeShouldFail()
   {
     validListResultsRequest_!.PageSize = -1;
-    Assert.IsFalse(validator_.Validate(validListResultsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListResultsRequestZeroPageSizeShouldBeValid()
   {
     validListResultsRequest_!.PageSize = 0;
-    Assert.IsTrue(validator_.Validate(validListResultsRequest_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.True);
   }
 }

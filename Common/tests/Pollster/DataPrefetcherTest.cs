@@ -97,10 +97,12 @@ public class DataPrefetcherTest
                                            CancellationToken.None)
                         .ConfigureAwait(false);
 
-    Assert.IsTrue(File.Exists(Path.Combine(sharedFolder,
-                                           payloadId)));
-    Assert.IsTrue(File.Exists(Path.Combine(sharedFolder,
-                                           dependency1)));
+    Assert.That(File.Exists(Path.Combine(sharedFolder,
+                                         payloadId)),
+                Is.True);
+    Assert.That(File.Exists(Path.Combine(sharedFolder,
+                                         dependency1)),
+                Is.True);
   }
 
 
@@ -150,8 +152,9 @@ public class DataPrefetcherTest
                                            CancellationToken.None)
                         .ConfigureAwait(false);
 
-    Assert.IsTrue(File.Exists(Path.Combine(sharedFolder,
-                                           payloadId)));
+    Assert.That(File.Exists(Path.Combine(sharedFolder,
+                                         payloadId)),
+                Is.True);
   }
 
   [Test]
@@ -164,27 +167,27 @@ public class DataPrefetcherTest
                                             activitySource_,
                                             loggerFactory.CreateLogger<DataPrefetcher>());
 
-    Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                       await dataPrefetcher.Check(HealthCheckTag.Liveness)
-                                           .ConfigureAwait(false));
-    Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                       await dataPrefetcher.Check(HealthCheckTag.Readiness)
-                                           .ConfigureAwait(false));
-    Assert.AreNotEqual(HealthCheckResult.Healthy(),
-                       await dataPrefetcher.Check(HealthCheckTag.Startup)
-                                           .ConfigureAwait(false));
+    Assert.That(await dataPrefetcher.Check(HealthCheckTag.Liveness)
+                                    .ConfigureAwait(false),
+                Is.Not.EqualTo(HealthCheckResult.Healthy()));
+    Assert.That(await dataPrefetcher.Check(HealthCheckTag.Readiness)
+                                    .ConfigureAwait(false),
+                Is.Not.EqualTo(HealthCheckResult.Healthy()));
+    Assert.That(await dataPrefetcher.Check(HealthCheckTag.Startup)
+                                    .ConfigureAwait(false),
+                Is.Not.EqualTo(HealthCheckResult.Healthy()));
 
     await dataPrefetcher.Init(CancellationToken.None)
                         .ConfigureAwait(false);
 
-    Assert.AreEqual(HealthCheckResult.Healthy(),
-                    await dataPrefetcher.Check(HealthCheckTag.Liveness)
-                                        .ConfigureAwait(false));
-    Assert.AreEqual(HealthCheckResult.Healthy(),
-                    await dataPrefetcher.Check(HealthCheckTag.Readiness)
-                                        .ConfigureAwait(false));
-    Assert.AreEqual(HealthCheckResult.Healthy(),
-                    await dataPrefetcher.Check(HealthCheckTag.Startup)
-                                        .ConfigureAwait(false));
+    Assert.That(await dataPrefetcher.Check(HealthCheckTag.Liveness)
+                                    .ConfigureAwait(false),
+                Is.EqualTo(HealthCheckResult.Healthy()));
+    Assert.That(await dataPrefetcher.Check(HealthCheckTag.Readiness)
+                                    .ConfigureAwait(false),
+                Is.EqualTo(HealthCheckResult.Healthy()));
+    Assert.That(await dataPrefetcher.Check(HealthCheckTag.Startup)
+                                    .ConfigureAwait(false),
+                Is.EqualTo(HealthCheckResult.Healthy()));
   }
 }

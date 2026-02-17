@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
@@ -240,10 +241,14 @@ internal class StaticInitTests
   public void InitServicesNotNull()
   {
     var init = provider_!.GetRequiredService<InitServices>();
-    Assert.NotNull(init);
-    Assert.True(init.InitDatabase);
-    Assert.True(init.InitObjectStorage);
-    Assert.True(init.InitQueue);
+    Assert.That(init,
+                Is.Not.Null);
+    Assert.That(init.InitDatabase,
+                Is.True);
+    Assert.That(init.InitObjectStorage,
+                Is.True);
+    Assert.That(init.InitQueue,
+                Is.True);
   }
 
   [Test]
@@ -252,65 +257,63 @@ internal class StaticInitTests
     var init = provider_!.GetRequiredService<InitServices>();
     logger_!.LogInformation("{@init}",
                             init);
-    Assert.AreEqual(3,
-                    init.Authentication.UserCertificates.Count);
-    Assert.AreEqual(3,
-                    init.Authentication.Users.Count);
-    Assert.AreEqual(3,
-                    init.Authentication.Roles.Count);
-    Assert.AreEqual(3,
-                    init.Partitioning.Partitions.Count);
 
-    Assert.AreEqual(Cert1,
-                    Certificate.FromJson(init.Authentication.UserCertificates[0]));
-    Assert.AreEqual(Cert2,
-                    Certificate.FromJson(init.Authentication.UserCertificates[1]));
-    Assert.AreEqual(Cert3,
-                    Certificate.FromJson(init.Authentication.UserCertificates[2]));
+    Assert.That(init.Authentication.UserCertificates.Select(Certificate.FromJson),
+                Is.EqualTo(new List<Certificate>
+                           {
+                             Cert1,
+                             Cert2,
+                             Cert3,
+                           }));
 
-    Assert.AreEqual(User1,
-                    User.FromJson(init.Authentication.Users[0]));
-    Assert.AreEqual(User2,
-                    User.FromJson(init.Authentication.Users[1]));
-    Assert.AreEqual(User3,
-                    User.FromJson(init.Authentication.Users[2]));
+    Assert.That(init.Authentication.Users.Select(User.FromJson),
+                Is.EqualTo(new List<User>
+                           {
+                             User1,
+                             User2,
+                             User3,
+                           }));
 
-    Assert.AreEqual(Role1,
-                    Role.FromJson(init.Authentication.Roles[0]));
-    Assert.AreEqual(Role2,
-                    Role.FromJson(init.Authentication.Roles[1]));
-    Assert.AreEqual(Role3,
-                    Role.FromJson(init.Authentication.Roles[2]));
+    Assert.That(init.Authentication.Roles.Select(Role.FromJson),
+                Is.EqualTo(new List<Role>
+                           {
+                             Role1,
+                             Role2,
+                             Role3,
+                           }));
 
-    Assert.AreEqual(PartitionData1,
-                    Partition.FromJson(init.Partitioning.Partitions[0]));
-    Assert.AreEqual(PartitionData2,
-                    Partition.FromJson(init.Partitioning.Partitions[1]));
-    Assert.AreEqual(PartitionData3,
-                    Partition.FromJson(init.Partitioning.Partitions[2]));
+    Assert.That(init.Partitioning.Partitions.Select(Partition.FromJson),
+                Is.EqualTo(new List<Partition>
+                           {
+                             PartitionData1,
+                             PartitionData2,
+                             PartitionData3,
+                           }));
 
     var initDb = provider_!.GetRequiredService<InitDatabase>();
-    Assert.AreEqual(3,
-                    initDb.Users.Count);
-    Assert.AreEqual(3,
-                    initDb.Auths.Count);
-    Assert.AreEqual(3,
-                    initDb.Roles.Count);
-    Assert.AreEqual(3,
-                    initDb.Partitions.Count);
+    Assert.That(initDb.Users.Count,
+                Is.EqualTo(3));
+    Assert.That(initDb.Auths.Count,
+                Is.EqualTo(3));
+    Assert.That(initDb.Roles.Count,
+                Is.EqualTo(3));
+    Assert.That(initDb.Partitions.Count,
+                Is.EqualTo(3));
   }
 
   [Test]
   public void NoFingerprintShouldSucceed()
   {
     var cert = Certificate.FromJson("{\"User\": \"User1\", \"Cn\": \"CN1\"}");
-    Assert.IsNull(cert.Fingerprint);
+    Assert.That(cert.Fingerprint,
+                Is.Null);
   }
 
   [Test]
   public void NullFingerprintShouldSucceed()
   {
     var cert = Certificate.FromJson("{\"User\": \"User1\", \"Cn\": \"CN1\", \"Fingerprint\": null}");
-    Assert.IsNull(cert.Fingerprint);
+    Assert.That(cert.Fingerprint,
+                Is.Null);
   }
 }

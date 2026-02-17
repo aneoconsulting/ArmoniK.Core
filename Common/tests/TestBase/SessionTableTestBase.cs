@@ -143,28 +143,28 @@ public class SessionTableTestBase
   {
     if (RunTests)
     {
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await SessionTable!.Check(HealthCheckTag.Liveness)
-                                             .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await SessionTable.Check(HealthCheckTag.Readiness)
-                                            .ConfigureAwait(false)).Status);
-      Assert.AreNotEqual(HealthStatus.Healthy,
-                         (await SessionTable.Check(HealthCheckTag.Startup)
-                                            .ConfigureAwait(false)).Status);
+      Assert.That((await SessionTable!.Check(HealthCheckTag.Liveness)
+                                      .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await SessionTable.Check(HealthCheckTag.Readiness)
+                                     .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
+      Assert.That((await SessionTable.Check(HealthCheckTag.Startup)
+                                     .ConfigureAwait(false)).Status,
+                  Is.Not.EqualTo(HealthStatus.Healthy));
 
       await SessionTable.Init(CancellationToken.None)
                         .ConfigureAwait(false);
 
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await SessionTable.Check(HealthCheckTag.Liveness)
-                                         .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await SessionTable.Check(HealthCheckTag.Readiness)
-                                         .ConfigureAwait(false)).Status);
-      Assert.AreEqual(HealthStatus.Healthy,
-                      (await SessionTable.Check(HealthCheckTag.Startup)
-                                         .ConfigureAwait(false)).Status);
+      Assert.That((await SessionTable.Check(HealthCheckTag.Liveness)
+                                     .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await SessionTable.Check(HealthCheckTag.Readiness)
+                                     .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
+      Assert.That((await SessionTable.Check(HealthCheckTag.Startup)
+                                     .ConfigureAwait(false)).Status,
+                  Is.EqualTo(HealthStatus.Healthy));
     }
   }
 
@@ -176,7 +176,8 @@ public class SessionTableTestBase
       var res = await SessionTable!.IsSessionCancelledAsync(rootSessionId1_!,
                                                             CancellationToken.None)
                                    .ConfigureAwait(false);
-      Assert.IsFalse(res);
+      Assert.That(res,
+                  Is.False);
     }
   }
 
@@ -202,7 +203,8 @@ public class SessionTableTestBase
       var res = await SessionTable!.GetDefaultTaskOptionAsync(rootSessionId1_!,
                                                               CancellationToken.None)
                                    .ConfigureAwait(false);
-      Assert.NotNull(res);
+      Assert.That(res,
+                  Is.Not.Null);
     }
   }
 
@@ -229,13 +231,14 @@ public class SessionTableTestBase
                                                                CancellationToken.None)
                                            .ConfigureAwait(false);
 
-      Assert.AreEqual(SessionStatus.Cancelled,
-                      sessionData.Status);
+      Assert.That(sessionData.Status,
+                  Is.EqualTo(SessionStatus.Cancelled));
 
       var wasSessionCanceled = await SessionTable!.IsSessionCancelledAsync(rootSessionId1_!,
                                                                            CancellationToken.None)
                                                   .ConfigureAwait(false);
-      Assert.IsTrue(wasSessionCanceled);
+      Assert.That(wasSessionCanceled,
+                  Is.True);
     }
   }
 
@@ -281,7 +284,8 @@ public class SessionTableTestBase
                                                  CancellationToken.None);
       await res.ConfigureAwait(false);
 
-      Assert.IsTrue(res.IsCompletedSuccessfully);
+      Assert.That(res.IsCompletedSuccessfully,
+                  Is.True);
     }
   }
 
@@ -315,8 +319,8 @@ public class SessionTableTestBase
                                    .ToListAsync()
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(3,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(3));
     }
   }
 
@@ -336,8 +340,8 @@ public class SessionTableTestBase
                                    .ToListAsync()
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(1,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(1));
     }
   }
 
@@ -357,8 +361,8 @@ public class SessionTableTestBase
                                    .ToListAsync()
                                    .ConfigureAwait(false);
 
-      Assert.AreEqual(0,
-                      res.Count);
+      Assert.That(res,
+                  Is.Empty);
     }
   }
 
@@ -375,8 +379,8 @@ public class SessionTableTestBase
                                                        CancellationToken.None)
                                     .ConfigureAwait(false)).sessions.ToList();
 
-      Assert.AreEqual(3,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(3));
     }
   }
 
@@ -394,8 +398,8 @@ public class SessionTableTestBase
                                     .ConfigureAwait(false)).sessions.ToList();
 
 
-      Assert.AreEqual(1,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(1));
     }
   }
 
@@ -412,8 +416,8 @@ public class SessionTableTestBase
                                                        CancellationToken.None)
                                     .ConfigureAwait(false)).sessions.ToList();
 
-      Assert.AreEqual(2,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(2));
     }
   }
 
@@ -430,8 +434,8 @@ public class SessionTableTestBase
                                                        CancellationToken.None)
                                     .ConfigureAwait(false)).sessions.ToList();
 
-      Assert.AreEqual(3,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(3));
     }
   }
 
@@ -464,8 +468,8 @@ public class SessionTableTestBase
                                                        CancellationToken.None)
                                     .ConfigureAwait(false)).sessions.ToList();
 
-      Assert.AreEqual(3,
-                      res.Count);
+      Assert.That(res.Count,
+                  Is.EqualTo(3));
     }
   }
 
@@ -484,49 +488,52 @@ public class SessionTableTestBase
       var session = await SessionTable.PauseSessionAsync(sessionId)
                                       .ConfigureAwait(false);
 
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Paused);
+      Assert.That(SessionStatus.Paused,
+                  Is.EqualTo(session.Status));
 
       session = await SessionTable.GetSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Paused);
+      Assert.That(SessionStatus.Paused,
+                  Is.EqualTo(session.Status));
 
       session = await SessionTable.ResumeSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Running);
+      Assert.That(SessionStatus.Running,
+                  Is.EqualTo(session.Status));
 
       session = await SessionTable.CloseSessionAsync(sessionId,
                                                      session.CreationDate)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Closed);
-      Assert.NotNull(session.ClosureDate);
+      Assert.That(SessionStatus.Closed,
+                  Is.EqualTo(session.Status));
+      Assert.That(session.ClosureDate,
+                  Is.Not.Null);
 
       session = await SessionTable.GetSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Closed);
+      Assert.That(SessionStatus.Closed,
+                  Is.EqualTo(session.Status));
 
       session = await SessionTable.PurgeSessionAsync(sessionId,
                                                      session.CreationDate)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Purged);
-      Assert.NotNull(session.PurgeDate);
+      Assert.That(SessionStatus.Purged,
+                  Is.EqualTo(session.Status));
+      Assert.That(session.PurgeDate,
+                  Is.Not.Null);
 
       session = await SessionTable.GetSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(session.Status,
-                      SessionStatus.Purged);
-      Assert.NotNull(session.PurgeDate);
+      Assert.That(SessionStatus.Purged,
+                  Is.EqualTo(session.Status));
+      Assert.That(session.PurgeDate,
+                  Is.Not.Null);
 
 
       await SessionTable.DeleteSessionAsync(sessionId)
@@ -564,23 +571,29 @@ public class SessionTableTestBase
       var session = await SessionTable.GetSessionAsync(sessionId)
                                       .ConfigureAwait(false);
 
-      Assert.IsTrue(session.WorkerSubmission);
-      Assert.IsTrue(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.True);
+      Assert.That(session.ClientSubmission,
+                  Is.True);
 
       session = await SessionTable.StopSubmissionAsync(sessionId,
                                                        true,
                                                        false)
                                   .ConfigureAwait(false);
 
-      Assert.IsTrue(session.WorkerSubmission);
-      Assert.IsFalse(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.True);
+      Assert.That(session.ClientSubmission,
+                  Is.False);
 
       session = await SessionTable.StopSubmissionAsync(sessionId,
                                                        false,
                                                        true)
                                   .ConfigureAwait(false);
-      Assert.IsFalse(session.WorkerSubmission);
-      Assert.IsFalse(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.False);
+      Assert.That(session.ClientSubmission,
+                  Is.False);
     }
   }
 
@@ -600,40 +613,50 @@ public class SessionTableTestBase
       var session = await SessionTable.GetSessionAsync(sessionId)
                                       .ConfigureAwait(false);
 
-      Assert.IsTrue(session.WorkerSubmission);
-      Assert.IsTrue(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.True);
+      Assert.That(session.ClientSubmission,
+                  Is.True);
 
       session = await SessionTable.StopSubmissionAsync(sessionId,
                                                        false,
                                                        false)
                                   .ConfigureAwait(false);
       // stopping with bath false should not modify submission properties
-      Assert.IsTrue(session.WorkerSubmission);
-      Assert.IsTrue(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.True);
+      Assert.That(session.ClientSubmission,
+                  Is.True);
 
       session = await SessionTable.StopSubmissionAsync(sessionId,
                                                        true,
                                                        true)
                                   .ConfigureAwait(false);
 
-      Assert.IsFalse(session.WorkerSubmission);
-      Assert.IsFalse(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.False);
+      Assert.That(session.ClientSubmission,
+                  Is.False);
 
       session = await SessionTable.StopSubmissionAsync(sessionId,
                                                        true,
                                                        true)
                                   .ConfigureAwait(false);
       // stopping submission a second time should work
-      Assert.IsFalse(session.WorkerSubmission);
-      Assert.IsFalse(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.False);
+      Assert.That(session.ClientSubmission,
+                  Is.False);
 
       session = await SessionTable.StopSubmissionAsync(sessionId,
                                                        false,
                                                        false)
                                   .ConfigureAwait(false);
       // stopping with bath false should not modify submission properties
-      Assert.IsFalse(session.WorkerSubmission);
-      Assert.IsFalse(session.ClientSubmission);
+      Assert.That(session.WorkerSubmission,
+                  Is.False);
+      Assert.That(session.ClientSubmission,
+                  Is.False);
     }
   }
 
@@ -661,8 +684,8 @@ public class SessionTableTestBase
       session = await SessionTable.GetSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(SessionStatus.Closed,
-                      session.Status);
+      Assert.That(session.Status,
+                  Is.EqualTo(SessionStatus.Closed));
 
       await SessionTable.PurgeSessionAsync(sessionId,
                                            session.CreationDate,
@@ -672,8 +695,8 @@ public class SessionTableTestBase
       session = await SessionTable.GetSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(SessionStatus.Purged,
-                      session.Status);
+      Assert.That(session.Status,
+                  Is.EqualTo(SessionStatus.Purged));
 
       Assert.ThrowsAsync<InvalidSessionTransitionException>(async () =>
                                                             {
@@ -708,8 +731,8 @@ public class SessionTableTestBase
       session = await SessionTable.GetSessionAsync(sessionId)
                                   .ConfigureAwait(false);
 
-      Assert.AreEqual(SessionStatus.Closed,
-                      session.Status);
+      Assert.That(session.Status,
+                  Is.EqualTo(SessionStatus.Closed));
 
       Assert.ThrowsAsync<InvalidSessionTransitionException>(async () =>
                                                             {

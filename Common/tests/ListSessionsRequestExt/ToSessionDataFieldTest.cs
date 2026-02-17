@@ -111,7 +111,7 @@ public class ToSessionDataFieldTest
       }.Sort.ToField()
        .Compile();
 
-    Assert.AreEqual(expected,
-                    func.Invoke(SessionData));
+    Assert.That(func.Invoke(SessionData),
+                Is.EqualTo(expected));
   }
 }

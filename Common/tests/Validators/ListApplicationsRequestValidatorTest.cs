@@ -56,15 +56,17 @@ public class ListApplicationsRequestValidatorTest
 
   [Test]
   public void ListApplicationsRequestShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validListApplicationsRequest_!)
-                               .IsValid);
+    => Assert.That(validator_.Validate(validListApplicationsRequest_!)
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void ListApplicationsRequestDefaultFilterShouldFail()
   {
     validListApplicationsRequest_!.Filters = default;
-    Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -78,8 +80,9 @@ public class ListApplicationsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -95,8 +98,9 @@ public class ListApplicationsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -121,8 +125,9 @@ public class ListApplicationsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
@@ -135,23 +140,26 @@ public class ListApplicationsRequestValidatorTest
       Console.WriteLine(error);
     }
 
-    Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListApplicationsRequestNegativePageSizeShouldFail()
   {
     validListApplicationsRequest_!.PageSize = -1;
-    Assert.IsFalse(validator_.Validate(validListApplicationsRequest_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ListApplicationsRequestZeroPageSizeShouldBeValid()
   {
     validListApplicationsRequest_!.PageSize = 0;
-    Assert.IsTrue(validator_.Validate(validListApplicationsRequest_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.True);
   }
 }

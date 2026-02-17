@@ -44,79 +44,89 @@ public class TaskOptionsValidatorTest
 
   [Test]
   public void TaskOptionsShouldBeValid()
-    => Assert.IsTrue(validator_.Validate(validTaskOptions_!)
-                               .IsValid);
+    => Assert.That(validator_.Validate(validTaskOptions_!)
+                             .IsValid,
+                   Is.True);
 
   [Test]
   public void UndefinedMaxDurationShouldFail()
   {
     validTaskOptions_!.MaxDuration = null;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void UndefinedMaxRetriesShouldFail()
   {
     validTaskOptions_!.MaxRetries = default;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ZeroMaxRetryShouldFail()
   {
     validTaskOptions_!.MaxRetries = 0;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void NegativeMaxRetryShouldFail()
   {
     validTaskOptions_!.MaxRetries = -6;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void UndefinedPriorityShouldFail()
   {
     validTaskOptions_!.Priority = default;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void ZeroPriorityShouldFail()
   {
     validTaskOptions_!.Priority = 0;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void NegativePriorityShouldFail()
   {
     validTaskOptions_!.Priority = -6;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void TooBigPriorityShouldFail()
   {
     validTaskOptions_!.Priority = 100;
-    Assert.IsFalse(validator_.Validate(validTaskOptions_)
-                             .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.False);
   }
 
   [Test]
   public void EmptyPartitionShouldSucceed()
   {
     validTaskOptions_!.PartitionId = string.Empty;
-    Assert.IsTrue(validator_.Validate(validTaskOptions_)
-                            .IsValid);
+    Assert.That(validator_.Validate(validTaskOptions_)
+                          .IsValid,
+                Is.True);
   }
 
   [Test]
@@ -128,7 +138,8 @@ public class TaskOptionsValidatorTest
                Priority   = 100,
              };
 
-    Assert.IsFalse(validator_.Validate(to)
-                             .IsValid);
+    Assert.That(validator_.Validate(to)
+                          .IsValid,
+                Is.False);
   }
 }
