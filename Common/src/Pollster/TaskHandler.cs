@@ -277,7 +277,7 @@ public sealed class TaskHandler : IAsyncDisposable
       {
         File.Delete(entry.FullName);
       }
-      catch (IOException)
+      catch (Exception e) when (e is IOException or UnauthorizedAccessException)
       {
         // If the file is in use or already deleted, we ignore the exception and try to delete the next one
       }
@@ -982,7 +982,7 @@ public sealed class TaskHandler : IAsyncDisposable
                     true);
           opaqueIds.Remove(resultId);
         }
-        catch (FileNotFoundException)
+        catch (Exception e) when (e is FileNotFoundException or UnauthorizedAccessException)
         {
           // We try to copy the file from cache to folder, if it is not found in cache, we will prefetch it later
         }
@@ -1013,7 +1013,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                  Path.Combine(cache_,
                                               resultId));
           }
-          catch (IOException e)
+          catch (Exception e) when (e is IOException or UnauthorizedAccessException)
           {
             // If the file is not copied to cache, it will be prefetched again for the next task that needs it, so we can just log the error and continue
             logger_.LogWarning(e,
@@ -1246,7 +1246,7 @@ public sealed class TaskHandler : IAsyncDisposable
                         Path.Combine(cache_,
                                      id));
             }
-            catch (IOException e)
+            catch (Exception e) when (e is IOException or UnauthorizedAccessException)
             {
               // at this point, results are stored in the object storage, so it is not an issue if they are not copied to the cache, but we log it for debugging purposes
               logger_.LogWarning(e,
