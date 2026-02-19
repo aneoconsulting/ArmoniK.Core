@@ -16,8 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -103,7 +103,7 @@ public class GrpcSessionsServiceTests
   public async Task CancelSessionShouldNotifyAgents()
   {
     var httpMessageHandlerMock = new Mock<HttpMessageHandler>();
-    var capturedUris           = new List<string>();
+    var capturedUris           = new ConcurrentBag<string>();
 
     httpMessageHandlerMock.Protected()
                           .Setup<Task<HttpResponseMessage>>("SendAsync",
@@ -189,6 +189,8 @@ public class GrpcSessionsServiceTests
                       .ToString();
     var taskId3 = Guid.NewGuid()
                       .ToString();
+    var taskId4 = Guid.NewGuid()
+                      .ToString();
 
     await taskTable.CreateTasks(new[]
                                 {
@@ -234,6 +236,20 @@ public class GrpcSessionsServiceTests
                                                new Base.DataStructures.TaskOptions(),
                                                new Output(OutputStatus.Success,
                                                           "")),
+                                  new TaskData(sessionId,
+                                               taskId4,
+                                               "ownerPodId1",
+                                               "ownerPodName3",
+                                               payloadId,
+                                               "CreatedBy",
+                                               new List<string>(),
+                                               new List<string>(),
+                                               new List<string>(),
+                                               Array.Empty<string>(),
+                                               TaskStatus.Completed,
+                                               new Base.DataStructures.TaskOptions(),
+                                               new Output(OutputStatus.Success,
+                                                          "")),
                                 })
                    .ConfigureAwait(false);
 
@@ -251,15 +267,6 @@ public class GrpcSessionsServiceTests
                          "http://ownerpodid2:1080/stopcancelledtask",
                        };
 
-    // Wait for async agent notifications to complete with polling
-    var timeout = TimeSpan.FromSeconds(5);
-    var sw      = Stopwatch.StartNew();
-    while (capturedUris.Count < expectedUris.Length && sw.Elapsed < timeout)
-    {
-      await Task.Delay(100)
-                .ConfigureAwait(false);
-    }
-
     Assert.Multiple(() =>
                     {
                       Assert.That(response,
@@ -269,6 +276,13 @@ public class GrpcSessionsServiceTests
                       Assert.That(capturedUris,
                                   Is.EquivalentTo(expectedUris));
                     });
+
+
+    httpMessageHandlerMock.Protected()
+                          .Verify("SendAsync",
+                                  Times.Exactly(2),
+                                  ItExpr.IsAny<HttpRequestMessage>(),
+                                  ItExpr.IsAny<CancellationToken>());
   }
 
   [Test]
@@ -376,11 +390,6 @@ public class GrpcSessionsServiceTests
                                                {
                                                  SessionId = sessionId,
                                                });
-
-    // Wait for async agent notification attempts to complete
-    // Even though they fail, we want to ensure they've been attempted
-    await Task.Delay(500)
-              .ConfigureAwait(false);
 
     Assert.Multiple(() =>
                     {

@@ -39,6 +39,8 @@ using Grpc.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
+
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Sessions" />
@@ -101,18 +103,12 @@ public class GrpcSessionsService : Sessions.SessionsBase
     using var measure = meter_.CountAndTime();
     try
     {
-      var tasks = taskTable_.CancelSessionAsync(request.SessionId,
-                                                context.CancellationToken);
-      var results = resultTable_.AbortSessionResults(request.SessionId,
-                                                     context.CancellationToken);
-      var sessions = sessionTable_.CancelSessionAsync(request.SessionId,
-                                                      context.CancellationToken);
-
-      await tasks.ConfigureAwait(false);
-      await results.ConfigureAwait(false);
+      var session = await sessionTable_.CancelSessionAsync(request.SessionId,
+                                                           context.CancellationToken)
+                                       .ConfigureAwait(false);
 
       // Notify agents to stop running tasks for this session
-      await taskTable_.FindTasksAsync(data => data.SessionId == request.SessionId,
+      await taskTable_.FindTasksAsync(data => data.SessionId == request.SessionId && (data.Status == TaskStatus.Dispatched || data.Status == TaskStatus.Processing),
                                       data => data.OwnerPodId,
                                       context.CancellationToken)
                       .Distinct()
@@ -142,9 +138,17 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                        })
                       .ConfigureAwait(false);
 
+      var results = resultTable_.AbortSessionResults(request.SessionId,
+                                                     context.CancellationToken);
+      await taskTable_.CancelSessionAsync(request.SessionId,
+                                          context.CancellationToken)
+                      .ConfigureAwait(false);
+
+      await results.ConfigureAwait(false);
+
       return new CancelSessionResponse
              {
-               Session = (await sessions.ConfigureAwait(false)).ToGrpcSessionRaw(),
+               Session = session.ToGrpcSessionRaw(),
              };
     }
     catch (SessionNotFoundException e)

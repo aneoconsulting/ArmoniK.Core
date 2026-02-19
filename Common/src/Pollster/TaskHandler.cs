@@ -380,7 +380,10 @@ public sealed class TaskHandler : IAsyncDisposable
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
-      if (taskData_.Status is TaskStatus.Cancelling)
+      sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
+                                                         CancellationToken.None)
+                                        .ConfigureAwait(false);
+      if (taskData_.Status is TaskStatus.Cancelling || sessionData_.Status is SessionStatus.Cancelled)
       {
         logger_.LogWarning("Task has been cancelled, trigger cancellation from exterior.");
         await earlyCts_.CancelAsync()
