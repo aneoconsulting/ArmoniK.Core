@@ -112,38 +112,35 @@ public class GrpcSessionsService : Sessions.SessionsBase
       await results.ConfigureAwait(false);
 
       // Notify agents to stop running tasks for this session
-      var ownerPodIds = await taskTable_.FindTasksAsync(data => data.SessionId == request.SessionId,
-                                                        data => data.OwnerPodId,
-                                                        context.CancellationToken)
-                                        .Distinct()
-                                        .ToListAsync()
-                                        .ConfigureAwait(false);
-
-      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(submitterOptions_.DegreeOfParallelism),
-                                        async podId =>
-                                        {
-                                          try
-                                          {
-                                            logger_.LogInformation("Notifying agent {OwnerPodId} to stop tasks for session {SessionId}",
-                                                                   podId,
-                                                                   request.SessionId);
-                                            await httpClient_.GetAsync("http://" + podId + ":1080/stopcancelledtask")
-                                                             .ConfigureAwait(false);
-                                          }
-                                          catch (HttpRequestException e) when (e is
-                                                                               {
-                                                                                 InnerException: SocketException
-                                                                                                 {
-                                                                                                   SocketErrorCode: SocketError.ConnectionRefused,
-                                                                                                 },
-                                                                               })
-                                          {
-                                            logger_.LogError(e,
-                                                             "The agent with {OwnerPodId} was not reached successfully",
-                                                             podId);
-                                          }
-                                        })
-                       .ConfigureAwait(false);
+      await taskTable_.FindTasksAsync(data => data.SessionId == request.SessionId,
+                                      data => data.OwnerPodId,
+                                      context.CancellationToken)
+                      .Distinct()
+                      .ParallelForEach(new ParallelTaskOptions(submitterOptions_.DegreeOfParallelism),
+                                       async podId =>
+                                       {
+                                         try
+                                         {
+                                           logger_.LogInformation("Notifying agent {OwnerPodId} to stop tasks for session {SessionId}",
+                                                                  podId,
+                                                                  request.SessionId);
+                                           await httpClient_.GetAsync("http://" + podId + ":1080/stopcancelledtask")
+                                                            .ConfigureAwait(false);
+                                         }
+                                         catch (HttpRequestException e) when (e is
+                                                                              {
+                                                                                InnerException: SocketException
+                                                                                                {
+                                                                                                  SocketErrorCode: SocketError.ConnectionRefused,
+                                                                                                },
+                                                                              })
+                                         {
+                                           logger_.LogError(e,
+                                                            "The agent with {OwnerPodId} was not reached successfully",
+                                                            podId);
+                                         }
+                                       })
+                      .ConfigureAwait(false);
 
       return new CancelSessionResponse
              {
