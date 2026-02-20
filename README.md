@@ -25,11 +25,11 @@ Breaking changes will be limited as much as possible or gated behind feature fla
 If breaking changes should happen, they will be documented in the releases.
 Therefore, features in development or testing that cannot fit within a branch and need to be integrated into main will be marked as preview so that users know that these features are still in development and subject to changes.
 
-**General availability (GA):** The APIs, plugins and features are thoroughly tested and support is available.
-**Preview:** The APIs, plugins and features that are available on main but still in development. Their API should be stable enough for advanced users who want to test them before GA. Breaking changes should be minimal and will be notified in the release notes. Any feedback or issue encountered with these features are welcome !
-**Beta (Internal preview):** The APIs, plugins and features in active development. They are not stable enough and breaking changes may occur without any notice. Breaking changes will not always be documented. They can be used by the community for testing purposes. Before being  moved to the "Preview" stage, issues might be closed with the minimal messages "Under Active Development".
-**Deprecated:** The deprecated APIs, plugins and features. Features are flagged for future removal. Only production critical bug fixes will be considered.
-**Work in progress (WIP):** The APIs, plugins and features are not fully implemented and may have some missing parts.
+- **General availability (GA):** The APIs, plugins and features are thoroughly tested and support is available.
+- **Preview:** The APIs, plugins and features that are available on main but still in development. Their API should be stable enough for advanced users who want to test them before GA. Breaking changes should be minimal and will be notified in the release notes. Any feedback or issue encountered with these features are welcome !
+- **Beta (Internal preview):** The APIs, plugins and features in active development. They are not stable enough and breaking changes may occur without any notice. Breaking changes will not always be documented. They can be used by the community for testing purposes. Before being  moved to the "Preview" stage, issues might be closed with the minimal messages "Under Active Development".
+- **Deprecated:** The deprecated APIs, plugins and features. Features are flagged for future removal. Only production critical bug fixes will be considered.
+- **Work in progress (WIP):** The APIs, plugins and features are not fully implemented and may have some missing parts.
 
 | Plugins  | Type           | Description                                   | Status  | TLS Support    |
 |----------|----------------|-----------------------------------------------|---------|----------------|
@@ -68,12 +68,12 @@ Therefore, features in development or testing that cannot fit within a branch an
 | linux/arm64           | Preview |
 | windows/amd64         | Beta    |
 
-<!--
-| Feature Flags | Value | Description | Status |
-|---------------|-------|-------------|--------|
-|               |       |             |        |
-|               |       |             |        |
--->
+
+| Feature Flags                    | Value | Description                                                                                                                                                                | Status  |
+|----------------------------------|-------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
+| Pollster__CacheEvictionThreshold | 0.75  | Agent level cache for tasks input and output data. These data can be reused locally directly. Cache folder can be shared between agents on the same node. Disabled with 0. | Preview |
+|                                  |       |                                                                                                                                                                            |
+
 
 ## Installation
 
