@@ -159,11 +159,6 @@ variable "armonik_metrics_image" {
   default = "dockerhubaneo/armonik_control_metrics"
 }
 
-variable "armonik_partition_metrics_image" {
-  type    = string
-  default = "dockerhubaneo/armonik_control_partition_metrics"
-}
-
 variable "log_driver_image" {
   type    = string
   default = "fluent/fluent-bit:latest"

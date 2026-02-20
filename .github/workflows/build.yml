@@ -356,7 +356,6 @@ jobs:
         image:
           - dockerhubaneo/armonik_pollingagent
           - dockerhubaneo/armonik_control_metrics
-          - dockerhubaneo/armonik_control_partition_metrics
           - dockerhubaneo/armonik_control
           - dockerhubaneo/armonik_core_stream_test_worker
           - dockerhubaneo/armonik_core_stream_test_client
@@ -593,7 +592,6 @@ jobs:
         run: |
           set -x
           time curl localhost:5002/metrics
-          time curl localhost:5003/metrics
 
       - name: Run HtcMock test 100 tasks 1 level
         timeout-minutes: 3
@@ -687,7 +685,6 @@ jobs:
         run: |
           set -x
           time curl localhost:5002/metrics
-          time curl localhost:5003/metrics
 
       - name: Show logs
         if: ${{ always() }}
@@ -798,7 +795,6 @@ jobs:
 
           build polling_agent     armonik_pollingagent
           build metrics           armonik_control_metrics
-          build partition_metrics armonik_control_partition_metrics
           build submitter         armonik_control
 
           build "" armonik_core_htcmock_test_worker ./Tests/HtcMock/Server/src/Dockerfile
