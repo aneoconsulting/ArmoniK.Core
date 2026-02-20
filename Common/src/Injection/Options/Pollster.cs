@@ -94,7 +94,7 @@ public class Pollster
 
   /// <summary>
   ///   Gets or sets the threshold as a storage size fraction at which cache eviction is triggered.
-  ///   Deactivated when set to 0.
+  ///   Disabled when set to 0 (default).
   /// </summary>
   /// <remarks>
   ///   When the cache usage reaches or exceeds this threshold, eviction policies may be applied to
