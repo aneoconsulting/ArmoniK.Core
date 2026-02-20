@@ -71,7 +71,7 @@ Therefore, features in development or testing that cannot fit within a branch an
 
 | Feature Flags                    | Value | Description                                                                                                                                                                | Status  |
 |----------------------------------|-------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------|
-| Pollster__CacheEvictionThreshold | 0.75  | Agent level cache for tasks input and output data. These data can be reused locally directly. Cache folder can be shared between agents on the same node. Disabled with 0. | Preview |
+| Pollster__CacheEvictionThreshold | 0     | Agent level cache for tasks input and output data. These data can be reused locally directly. Cache folder can be shared between agents on the same node. Disabled with 0. | Preview |
 |                                  |       |                                                                                                                                                                            |
 
 
