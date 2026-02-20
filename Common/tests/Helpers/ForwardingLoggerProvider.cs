@@ -90,7 +90,7 @@ internal class ForwardingLoggerProvider : ILoggerProvider
                     eventId,
                     formatter(state,
                               exception),
-                    states_,
+                    states_.ToArray(),
                     exception);
   }
 }
