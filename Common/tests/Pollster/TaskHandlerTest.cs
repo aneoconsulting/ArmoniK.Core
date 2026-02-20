@@ -1685,6 +1685,9 @@ public class TaskHandlerTest
                  {
                    $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.InternalCacheFolder)}", cache.FullName
                  },
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheEvictionThreshold)}", "0.5"
+                 },
                };
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
@@ -2243,6 +2246,9 @@ public class TaskHandlerTest
                  {
                    $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.InternalCacheFolder)}", cache.FullName
                  },
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheEvictionThreshold)}", "0.5"
+                 },
                };
     var agentHandler = new SimpleAgentHandler();
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
@@ -2438,10 +2444,17 @@ public class TaskHandlerTest
                                             Convert.FromBase64String("4444"),
                                           }.ToAsyncEnumerable());
 
+    var conf = new Dictionary<string, string>
+               {
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheEvictionThreshold)}", "0.5"
+                 },
+               };
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
                                                                 agentHandler,
                                                                 sqmh,
-                                                                objectStorage: mock.Object);
+                                                                objectStorage: mock.Object,
+                                                                additionalConfig: conf);
 
     var (taskId, _, _, _, _) = await InitProviderRunnableTask(testServiceProvider)
                                  .ConfigureAwait(false);
