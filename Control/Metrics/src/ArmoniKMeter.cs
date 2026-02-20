@@ -17,17 +17,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.Metrics;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Control.Metrics.Options;
 using ArmoniK.Utils;
 
-using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
@@ -36,7 +34,7 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Control.Metrics;
 
-public class ArmoniKMeter : Meter, IHostedService
+public class ArmoniKMeter
 {
   private const string QueuedName = "queued";
 
@@ -52,32 +50,24 @@ public class ArmoniKMeter : Meter, IHostedService
                                                                                 },
                                                                               };
 
-  private readonly IDictionary<string, HashSet<string>> computedStatuses_;
+  private readonly ExecutionSingleizer<string> exec_;
+  private readonly ILogger<ArmoniKMeter>       logger_;
+  private readonly int                         parallelism_;
+  private readonly IPartitionTable             partitionTable_;
+  private readonly HashSet<TaskStatus>         statuses_ = new();
+  private readonly ITaskTable                  taskTable_;
 
-  private readonly TimeSpan expireAfter_;
-
-  private readonly IDictionary<(string partition, string status), MeasurementReader<long>> gauges_;
-  private readonly ILogger                                                                 logger_;
-  private readonly IPartitionTable                                                         partitionTable_;
-
-  private readonly HashSet<TaskStatus> statuses_;
-  private readonly ITaskTable          taskTable_;
 
   public ArmoniKMeter(ITaskTable            taskTable,
                       IPartitionTable       partitionTable,
                       MetricsExporter       configuration,
                       ILogger<ArmoniKMeter> logger)
-    : base(nameof(ArmoniKMeter))
   {
-    using var _ = logger.LogFunction();
-
-    taskTable_        = taskTable;
-    partitionTable_   = partitionTable;
-    expireAfter_      = configuration.CacheValidity;
-    logger_           = logger;
-    gauges_           = new Dictionary<(string partition, string status), MeasurementReader<long>>();
-    statuses_         = new HashSet<TaskStatus>();
-    computedStatuses_ = new Dictionary<string, HashSet<string>>();
+    taskTable_      = taskTable;
+    partitionTable_ = partitionTable;
+    logger_         = logger;
+    exec_           = new ExecutionSingleizer<string>(configuration.CacheValidity);
+    parallelism_    = configuration.DegreeOfParallelism;
 
     IEnumerable<string> allMetrics = new[]
                                      {
@@ -90,19 +80,15 @@ public class ArmoniKMeter : Meter, IHostedService
                                                   .Split(","));
     }
 
-    // Get all the metrics that are required from the configuration
-    foreach (var metrics in allMetrics)
+    foreach (var metric in allMetrics)
     {
-      if (ComputedStatuses.TryGetValue(metrics,
-                                       out var statuses))
+      if (ComputedStatuses.TryGetValue(metric,
+                                       out var computed))
       {
-        computedStatuses_.Add(metrics,
-                              statuses.Select(status => status.ToString()
-                                                              .ToLower())
-                                      .ToHashSet());
-        statuses_.UnionWith(statuses);
+        ComputedStatuses[metric] = computed;
+        statuses_.UnionWith(computed);
       }
-      else if (Enum.TryParse<TaskStatus>(metrics,
+      else if (Enum.TryParse<TaskStatus>(metric,
                                          true,
                                          out var status))
       {
@@ -110,108 +96,15 @@ public class ArmoniKMeter : Meter, IHostedService
       }
       else
       {
-        logger_.LogWarning("{Metrics} is not a valid metrics, ignored",
-                           metrics);
+        logger_.LogWarning("{Metric} is not a valid metric, ignored",
+                           metric);
       }
     }
-
-
-    // Add root gauges
-    var partitionExec = new ExecutionSingleizer<ICollection<string>>(expireAfter_);
-
-    foreach (var statusName in statuses_.Select(status => status.ToString()
-                                                                .ToLower())
-                                        .Concat(computedStatuses_.Keys))
-    {
-      AddGauge("",
-               statusName,
-               async ct =>
-               {
-                 var partitions = await partitionExec.Call(AddPartitionGauges,
-                                                           ct)
-                                                     .ConfigureAwait(false);
-                 var counts = await partitions.Select(partition => gauges_[(partition, statusName)]
-                                                        .ReadAsync(ct))
-                                              .WhenAll()
-                                              .ConfigureAwait(false);
-                 return counts.Sum();
-               });
-    }
   }
 
-  /// <inheritdoc />
-  public async Task StartAsync(CancellationToken cancellationToken)
-  {
-    // Call an aggregate gauge in order to populate all gauges.
-    await gauges_[("", QueuedName)]
-          .ReadAsync(cancellationToken)
-          .ConfigureAwait(false);
-
-    logger_.LogDebug("Added the following gauges: {Gauges}",
-                     gauges_.Values.Select(reader => reader.Name));
-  }
-
-  /// <inheritdoc />
-  public Task StopAsync(CancellationToken cancellationToken)
-    => Task.CompletedTask;
-
-  private async Task<ICollection<string>> AddPartitionGauges(CancellationToken cancellationToken)
-  {
-    var partitions = await partitionTable_.FindPartitionsAsync(partition => true,
-                                                               partition => partition.PartitionId,
-                                                               cancellationToken)
-                                          .ToListAsync(cancellationToken)
-                                          .ConfigureAwait(false);
-
-    foreach (var partition in partitions)
-    {
-      foreach (var status in statuses_)
-      {
-        AddGauge(partition,
-                 status.ToString()
-                       .ToLower(),
-                 ct => CountPartitionStatus(partition,
-                                            status,
-                                            ct));
-      }
-
-      foreach (var (metrics, statusNames) in computedStatuses_)
-      {
-        AddGauge(partition,
-                 metrics,
-                 async ct =>
-                 {
-                   var counts = await statusNames.Select(statusName => gauges_[(partition, statusName)]
-                                                           .ReadAsync(ct))
-                                                 .WhenAll()
-                                                 .ConfigureAwait(false);
-                   return counts.Sum();
-                 });
-      }
-    }
-
-    return partitions;
-  }
-
-  private void AddGauge(string                              partition,
-                        string                              statusName,
-                        Func<CancellationToken, Task<long>> f)
-  {
-    if (gauges_.TryGetValue((partition, statusName),
-                            out var reader))
-    {
-      return;
-    }
-
-    reader = new MeasurementReader<long>(partition,
-                                         statusName,
-                                         expireAfter_,
-                                         f);
-    CreateObservableGauge(reader.Name,
-                          reader.Read);
-    gauges_.Add((partition, statusName),
-                reader);
-  }
+  public Task<string> GetMetricsAsync(CancellationToken cancellationToken)
+    => exec_.Call(BuildMetricsAsync,
+                  cancellationToken);
 
   private async Task<long> CountPartitionStatus(string            partitionId,
                                                 TaskStatus        status,
@@ -229,32 +122,93 @@ public class ArmoniKMeter : Meter, IHostedService
     return count;
   }
 
-  private sealed class MeasurementReader<T>
-    where T : struct
+  private async Task<string> BuildMetricsAsync(CancellationToken cancellationToken)
   {
-    private readonly ExecutionSingleizer<T>           exec_;
-    private readonly Func<CancellationToken, Task<T>> readFunc_;
+    var partitions = await partitionTable_.FindPartitionsAsync(partition => true,
+                                                               partition => partition.PartitionId,
+                                                               cancellationToken)
+                                          .ToListAsync(cancellationToken)
+                                          .ConfigureAwait(false);
 
-    public MeasurementReader(string                           partition,
-                             string                           status,
-                             TimeSpan                         expireAfter,
-                             Func<CancellationToken, Task<T>> readFunc)
+    var product =
+      from p in partitions
+      from s in statuses_
+      select new PartitionStatusCount(p,
+                                      s,
+                                      0);
+
+    var counts = await product.ParallelSelect(new ParallelTaskOptions(parallelism_),
+                                              async psc => psc with
+                                                           {
+                                                             Count = await CountPartitionStatus(psc.Partition,
+                                                                                                psc.Status,
+                                                                                                cancellationToken)
+                                                                       .ConfigureAwait(false),
+                                                           })
+                              .ToDictionaryAsync(count => (count.Partition, count.Status),
+                                                 count => count.Count,
+                                                 cancellationToken: cancellationToken)
+                              .ConfigureAwait(false);
+
+
+    var sb = new StringBuilder();
+    foreach (var status in statuses_)
     {
-      Name = string.IsNullOrEmpty(partition)
-               ? $"armonik_tasks_{status.ToLower()}"
-               : $"armonik_{partition}_tasks_{status.ToLower()}";
-      exec_     = new ExecutionSingleizer<T>(expireAfter);
-      readFunc_ = readFunc;
+      EmitGauge(sb,
+                "",
+                status.ToString()
+                      .ToLower(),
+                partitions.Select(partition => counts[(partition, status)])
+                          .Sum());
     }
 
-    public string Name { get; }
+    foreach (var (metrics, statusNames) in ComputedStatuses)
+    {
+      EmitGauge(sb,
+                "",
+                metrics,
+                counts.Where(pair => statusNames.Contains(pair.Key.Status))
+                      .Select(pair => pair.Value)
+                      .Sum());
+    }
 
-    public Task<T> ReadAsync(CancellationToken cancellationToken)
-      => exec_.Call(readFunc_,
-                    cancellationToken);
+    foreach (var partition in partitions)
+    {
+      foreach (var status in statuses_)
+      {
+        EmitGauge(sb,
+                  partition,
+                  status.ToString()
+                        .ToLower(),
+                  counts[(partition, status)]);
+      }
 
-    public T Read()
-      => ReadAsync(CancellationToken.None)
-        .WaitSync();
+      foreach (var (metrics, statusNames) in ComputedStatuses)
+      {
+        EmitGauge(sb,
+                  partition,
+                  metrics,
+                  statusNames.Select(status => counts[(partition, status)])
+                             .Sum());
+      }
+    }
+
+    return sb.ToString();
+  }
+
+  private static void EmitGauge(StringBuilder sb,
+                                string        partition,
+                                string        metricName,
+                                long          value)
+  {
+    var name = string.IsNullOrEmpty(partition)
+                 ? $"armonik_tasks_{metricName}"
+                 : $"armonik_{partition}_tasks_{metricName}";
+    sb.AppendLine($"# TYPE {name} gauge");
+    sb.AppendLine($"{name} {value}");
   }
 }
+
+internal record PartitionStatusCount(string     Partition,
+                                     TaskStatus Status,
+                                     long       Count);

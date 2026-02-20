@@ -31,13 +31,11 @@ using ArmoniK.Core.Utils;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-
-using OpenTelemetry.Metrics;
-using OpenTelemetry.Resources;
 
 using Serilog;
 
@@ -71,17 +69,8 @@ public static class Program
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
-             .AddHostedService<ArmoniKMeter>()
+             .AddSingleton<ArmoniKMeter>()
              .AddControllers();
-
-      builder.Services.AddOpenTelemetry()
-             .WithMetrics(b =>
-                          {
-                            b.AddPrometheusExporter(options => options.ScrapeResponseCacheDurationMilliseconds = 2000);
-                            b.SetResourceBuilder(ResourceBuilder.CreateDefault()
-                                                                .AddService("armonik-service"));
-                            b.AddMeter(nameof(ArmoniKMeter));
-                          });
 
       var app = builder.Build();
 
@@ -91,9 +80,7 @@ public static class Program
       }
 
       app.UseSerilogRequestLogging();
-      app.UseOpenTelemetryPrometheusScrapingEndpoint();
       app.UseRouting();
-      app.UseHttpsRedirection();
       app.UseAuthorization();
 
       app.MapHealthChecks("/startup",
@@ -107,6 +94,16 @@ public static class Program
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
                           });
+      app.MapGet("/metrics",
+                 async (ArmoniKMeter      meter,
+                        CancellationToken ct) =>
+                 {
+                   var text = await meter.GetMetricsAsync(ct)
+                                         .ConfigureAwait(false);
+                   return Results.Text(text,
+                                       "text/plain; version=0.0.4; charset=utf-8");
+                 });
+
       app.MapControllers();
 
 

@@ -76,4 +76,8 @@ public class MetricsExporter
   ///   This defines the time span for which the cached metrics are considered valid.
   /// </summary>
   public TimeSpan CacheValidity { get; set; } = TimeSpan.FromSeconds(5);
+
+  /// <summary>
+  /// </summary>
+  public int DegreeOfParallelism { get; set; }
 }
