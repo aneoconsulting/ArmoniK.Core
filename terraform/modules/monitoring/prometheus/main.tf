@@ -51,16 +51,6 @@ resource "local_file" "config" {
         ]
       },
       {
-        job_name = "armonik.control.partition_metrics"
-        static_configs = [
-          {
-            targets = [
-              "armonik.control.partition_metrics:1080"
-            ]
-          }
-        ]
-      },
-      {
         job_name = "armonik.compute.polling_agent"
         static_configs = [
           {

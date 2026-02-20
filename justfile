@@ -102,7 +102,6 @@ export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE_
 
 # Armonik docker image names
 image_metrics               := env_var_or_default('METRICS_IMAGE', "dockerhubaneo/armonik_control_metrics")
-image_partition_metrics     := env_var_or_default('PARTITION_METRICS_IMAGE', "dockerhubaneo/armonik_control_partition_metrics")
 image_submitter             := env_var_or_default('SUBMITTER_IMAGE', "dockerhubaneo/armonik_control")
 image_polling_agent         := env_var_or_default('POLLING_AGENT_IMAGE', "dockerhubaneo/armonik_pollingagent")
 image_client_mock           := env_var_or_default('MOCK_CLIENT_IMAGE', "dockerhubaneo/armonik_core_htcmock_test_client")
@@ -112,7 +111,6 @@ image_client_crashingworker := env_var_or_default('CRASHINGWORKER_CLIENT_IMAGE',
 
 # Armonik docker images full name (image + tag)
 export ARMONIK_METRICS             := image_metrics + ":" + tag
-export ARMONIK_PARTITIONMETRICS    := image_partition_metrics + ":" + tag
 export ARMONIK_SUBMITTER           := image_submitter + ":" + tag
 export ARMONIK_POLLINGAGENT        := image_polling_agent + ":" + tag
 export HTCMOCK_CLIENT_IMAGE        := image_client_mock + ":" + tag
@@ -122,7 +120,6 @@ export CRASHINGWORKER_CLIENT_IMAGE := image_client_crashingworker + ":" + tag
 
 export TF_VAR_submitter                       := '{ image = "' + image_submitter + '" }'
 export TF_VAR_armonik_metrics_image           := image_metrics
-export TF_VAR_armonik_partition_metrics_image := image_partition_metrics
 
 export TF_VAR_ingress:= if ingress == "false" {
   '{"configs": {} }'
@@ -289,9 +286,6 @@ buildWorker: (build TF_VAR_worker_image TF_VAR_worker_docker_file_path + "Docker
 # Build Metrics
 buildMetrics: (build ARMONIK_METRICS "./Dockerfile" "metrics")
 
-# Build Partition Metrics
-buildPartitionMetrics: (build ARMONIK_PARTITIONMETRICS "./Dockerfile" "partition_metrics")
-
 # Build Submitter
 buildSubmitter: (build ARMONIK_SUBMITTER "./Dockerfile" "submitter")
 
@@ -311,7 +305,7 @@ buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfil
 buildCrashingWorkerClient: (build CRASHINGWORKER_CLIENT_IMAGE  "./Tests/CrashingWorker/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment
-build-core: buildMetrics buildPartitionMetrics buildSubmitter buildPollingAgent
+build-core: buildMetrics buildSubmitter buildPollingAgent
 
 # Build all images necessary for the deployment and the worker
 build-all: buildWorker build-core

@@ -167,18 +167,6 @@ module "metrics_exporter" {
   container_init     = var.container_init
 }
 
-module "partition_metrics_exporter" {
-  source             = "./modules/monitoring/partition_metrics"
-  tag                = var.core_tag
-  image              = var.armonik_partition_metrics_image
-  network            = local.network
-  generated_env_vars = local.environment
-  metrics_env_vars   = module.metrics_exporter.metrics_env_vars
-  log_driver         = module.fluenbit.log_driver
-  mounts             = local.mounts
-  container_init     = var.container_init
-}
-
 module "ingress" {
   source   = "./modules/ingress"
   for_each = var.ingress.configs

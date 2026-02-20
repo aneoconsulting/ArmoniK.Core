@@ -45,13 +45,11 @@ COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
 COPY ["Common/src/ArmoniK.Core.Common.csproj", "Common/src/"]
 COPY ["Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj", "Compute/PollingAgent/src/"]
 COPY ["Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj", "Control/Metrics/src/"]
-COPY ["Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj", "Control/PartitionMetrics/src/"]
 COPY ["Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj", "Control/Submitter/src/"]
 COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 
 RUN dotnet restore -a "${TARGETARCH}" "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Control/PartitionMetrics/src/ArmoniK.Core.Control.PartitionMetrics.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
@@ -80,7 +78,6 @@ COPY ["Base/src", "Base/src"]
 COPY ["Common/src", "Common/src"]
 COPY ["Compute/PollingAgent/src", "Compute/PollingAgent/src"]
 COPY ["Control/Metrics/src", "Control/Metrics/src"]
-COPY ["Control/PartitionMetrics/src", "Control/PartitionMetrics/src"]
 COPY ["Control/Submitter/src", "Control/Submitter/src"]
 COPY ["Utils/src", "Utils/src"]
 
@@ -116,9 +113,6 @@ RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -a "${TARGETARCH}"
 
 WORKDIR /src/Control/Metrics/src
 RUN dotnet publish "ArmoniK.Core.Control.Metrics.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/metrics /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Control/PartitionMetrics/src
-RUN dotnet publish "ArmoniK.Core.Control.PartitionMetrics.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/partition_metrics /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 WORKDIR /src/Control/Submitter/src
 RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
@@ -156,14 +150,6 @@ COPY --from=build /app/publish/metrics .
 ENV ASPNETCORE_URLS http://+:1080
 EXPOSE 1080
 CMD ["ArmoniK.Core.Control.Metrics.dll"]
-
-
-FROM base-${TARGETOS} AS partition_metrics
-WORKDIR /app
-COPY --from=build /app/publish/partition_metrics .
-ENV ASPNETCORE_URLS http://+:1080
-EXPOSE 1080
-CMD ["ArmoniK.Core.Control.PartitionMetrics.dll"]
 
 
 FROM base-${TARGETOS} AS submitter
