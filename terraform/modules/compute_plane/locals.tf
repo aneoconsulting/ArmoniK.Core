@@ -4,6 +4,7 @@ locals {
     "Pollster__MaxErrorAllowed=${var.polling_agent.max_error_allowed}",
     "Pollster__InternalCacheFolder=${var.polling_agent.shared_data}/internal",
     "Pollster__SharedCacheFolder=${var.polling_agent.shared_data}/shared",
+    "Pollster__CacheEvictionThreshold=0.75",
     "InitWorker__WorkerCheckRetries=${var.polling_agent.worker_check_retries}",
     "InitWorker__WorkerCheckDelay=${var.polling_agent.worker_check_delay}",
     "Pollster__PartitionId=TestPartition${local.partition_chooser}",
