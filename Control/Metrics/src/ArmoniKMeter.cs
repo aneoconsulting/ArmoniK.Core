@@ -204,8 +204,9 @@ public class ArmoniKMeter
     var name = string.IsNullOrEmpty(partition)
                  ? $"armonik_tasks_{metricName}"
                  : $"armonik_{partition}_tasks_{metricName}";
-    sb.AppendLine($"# TYPE {name} gauge");
-    sb.AppendLine($"{name} {value}");
+    sb.Append($"# HELP {name} \n");
+    sb.Append($"# TYPE {name} gauge\n");
+    sb.Append($"{name} {value}\n");
   }
 }
 

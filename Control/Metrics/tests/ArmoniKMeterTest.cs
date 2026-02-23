@@ -154,6 +154,27 @@ public class ArmoniKMeterTest
              .ToDictionary(l => l.Split(' ')[0],
                            l => long.Parse(l.Split(' ')[1]));
 
+
+  [Test]
+  public void ParseMetricsShouldBeOk()
+  {
+    var sb = new StringBuilder();
+    sb.AppendLine("# HELP armonik_tasks_queued Total number of queued tasks");
+    sb.AppendLine("# TYPE armonik_tasks_queued gauge");
+    sb.AppendLine("armonik_tasks_queued 5");
+    sb.AppendLine("# HELP armonik_tasks_queued Total number of queued tasks");
+    sb.AppendLine("# TYPE armonik_tasks_queued gauge");
+    sb.AppendLine("armonik_tasks_submitted 3");
+
+    var metrics = ParseMetrics(sb.ToString());
+
+    // Root metrics are always emitted even with no partitions
+    Assert.That(metrics["armonik_tasks_queued"],
+                Is.EqualTo(5));
+    Assert.That(metrics["armonik_tasks_submitted"],
+                Is.EqualTo(3));
+  }
+
   [Test]
   public async Task GetMetricsWithNoPartitionsShouldOnlyEmitRootMetricsAtZero()
   {
@@ -384,33 +405,11 @@ public class ArmoniKMeterTest
     var output = await meter.GetMetricsAsync(CancellationToken.None)
                             .ConfigureAwait(false);
 
-    // Every value line must be immediately preceded by its "# TYPE name gauge"
-    var lines = output.Split('\n',
-                             StringSplitOptions.RemoveEmptyEntries)
-                      .Select(l => l.TrimEnd('\r'))
-                      .ToArray();
-    for (var i = 0; i < lines.Length; i++)
-    {
-      if (lines[i]
-          .StartsWith('#'))
-      {
-        continue;
-      }
-
-      var name = lines[i]
-        .Split(' ')[0];
-      Assert.That(i > 0 && lines[i - 1] == $"# TYPE {name} gauge",
-                  Is.True,
-                  $"Expected '# TYPE {name} gauge' immediately before '{lines[i]}'");
-    }
-
     // Use prometheus-net (the authoritative reference implementation) to
     // serialise the same gauges and compare name→value pairs with our output.
     var registry = Prometheus.Metrics.NewCustomRegistry();
     var factory  = Prometheus.Metrics.WithCustomRegistry(registry);
-    factory.CreateGauge("armonik_tasks_queued",
-                        "")
-           .Set(5); // 3+2
+
     factory.CreateGauge("armonik_tasks_submitted",
                         "")
            .Set(3);
@@ -420,9 +419,10 @@ public class ArmoniKMeterTest
     factory.CreateGauge("armonik_tasks_processing",
                         "")
            .Set(2);
-    factory.CreateGauge("armonik_p1_tasks_queued",
+    factory.CreateGauge("armonik_tasks_queued",
                         "")
-           .Set(5);
+           .Set(5); // 3+2
+
     factory.CreateGauge("armonik_p1_tasks_submitted",
                         "")
            .Set(3);
@@ -432,6 +432,9 @@ public class ArmoniKMeterTest
     factory.CreateGauge("armonik_p1_tasks_processing",
                         "")
            .Set(2);
+    factory.CreateGauge("armonik_p1_tasks_queued",
+                        "")
+           .Set(5);
 
     using var ms = new MemoryStream();
     await registry.CollectAndExportAsTextAsync(ms,
@@ -439,8 +442,8 @@ public class ArmoniKMeterTest
                   .ConfigureAwait(false);
     var reference = Encoding.UTF8.GetString(ms.ToArray());
 
-    Assert.That(ParseMetrics(output),
-                Is.EquivalentTo(ParseMetrics(reference)));
+    Assert.That(output,
+                Is.EqualTo(reference));
   }
 
   [Test]
