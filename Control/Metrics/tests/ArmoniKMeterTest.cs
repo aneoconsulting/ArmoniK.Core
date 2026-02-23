@@ -24,8 +24,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using Prometheus;
-
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Control.Metrics.Options;
@@ -52,8 +50,6 @@ public class ArmoniKMeterTest
 
   private Mock<IPartitionTable> partitionTableMock_ = null!;
   private Mock<ITaskTable>      taskTableMock_      = null!;
-
-  // ── Helpers ──────────────────────────────────────────────────────────────
 
   /// <summary>
   ///   Creates a minimal TaskData whose Options.PartitionId and Status match the given values,
@@ -157,8 +153,6 @@ public class ArmoniKMeterTest
              .Where(l => !l.StartsWith('#'))
              .ToDictionary(l => l.Split(' ')[0],
                            l => long.Parse(l.Split(' ')[1]));
-
-  // ── Tests ─────────────────────────────────────────────────────────────────
 
   [Test]
   public async Task GetMetricsWithNoPartitionsShouldOnlyEmitRootMetricsAtZero()
@@ -390,7 +384,6 @@ public class ArmoniKMeterTest
     var output = await meter.GetMetricsAsync(CancellationToken.None)
                             .ConfigureAwait(false);
 
-    // ── Format structure ───────────────────────────────────────────────────────
     // Every value line must be immediately preceded by its "# TYPE name gauge"
     var lines = output.Split('\n',
                              StringSplitOptions.RemoveEmptyEntries)
@@ -398,27 +391,47 @@ public class ArmoniKMeterTest
                       .ToArray();
     for (var i = 0; i < lines.Length; i++)
     {
-      if (lines[i].StartsWith('#'))
+      if (lines[i]
+          .StartsWith('#'))
+      {
         continue;
-      var name = lines[i].Split(' ')[0];
+      }
+
+      var name = lines[i]
+        .Split(' ')[0];
       Assert.That(i > 0 && lines[i - 1] == $"# TYPE {name} gauge",
                   Is.True,
                   $"Expected '# TYPE {name} gauge' immediately before '{lines[i]}'");
     }
 
-    // ── Value correctness ─────────────────────────────────────────────────────
     // Use prometheus-net (the authoritative reference implementation) to
     // serialise the same gauges and compare name→value pairs with our output.
-    var registry = global::Prometheus.Metrics.NewCustomRegistry();
-    var factory  = global::Prometheus.Metrics.WithCustomRegistry(registry);
-    factory.CreateGauge("armonik_tasks_queued",         "").Set(5); // 3+2
-    factory.CreateGauge("armonik_tasks_submitted",      "").Set(3);
-    factory.CreateGauge("armonik_tasks_dispatched",     "").Set(0);
-    factory.CreateGauge("armonik_tasks_processing",     "").Set(2);
-    factory.CreateGauge("armonik_p1_tasks_queued",      "").Set(5);
-    factory.CreateGauge("armonik_p1_tasks_submitted",   "").Set(3);
-    factory.CreateGauge("armonik_p1_tasks_dispatched",  "").Set(0);
-    factory.CreateGauge("armonik_p1_tasks_processing",  "").Set(2);
+    var registry = Prometheus.Metrics.NewCustomRegistry();
+    var factory  = Prometheus.Metrics.WithCustomRegistry(registry);
+    factory.CreateGauge("armonik_tasks_queued",
+                        "")
+           .Set(5); // 3+2
+    factory.CreateGauge("armonik_tasks_submitted",
+                        "")
+           .Set(3);
+    factory.CreateGauge("armonik_tasks_dispatched",
+                        "")
+           .Set(0);
+    factory.CreateGauge("armonik_tasks_processing",
+                        "")
+           .Set(2);
+    factory.CreateGauge("armonik_p1_tasks_queued",
+                        "")
+           .Set(5);
+    factory.CreateGauge("armonik_p1_tasks_submitted",
+                        "")
+           .Set(3);
+    factory.CreateGauge("armonik_p1_tasks_dispatched",
+                        "")
+           .Set(0);
+    factory.CreateGauge("armonik_p1_tasks_processing",
+                        "")
+           .Set(2);
 
     using var ms = new MemoryStream();
     await registry.CollectAndExportAsTextAsync(ms,
