@@ -17,10 +17,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Prometheus;
 
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
@@ -373,6 +377,57 @@ public class ArmoniKMeterTest
                                                   It.IsAny<int>(),
                                                   It.IsAny<CancellationToken>()),
                           Times.Exactly(3)); // 1 partition × 3 statuses
+  }
+
+  [Test]
+  public async Task GetMetricsShouldProduceValidPrometheusTextFormat()
+  {
+    SetupPartitions("p1");
+    SetupTaskCounts(("p1", TaskStatus.Submitted, 3),
+                    ("p1", TaskStatus.Processing, 2));
+    var meter = CreateMeter();
+
+    var output = await meter.GetMetricsAsync(CancellationToken.None)
+                            .ConfigureAwait(false);
+
+    // ── Format structure ───────────────────────────────────────────────────────
+    // Every value line must be immediately preceded by its "# TYPE name gauge"
+    var lines = output.Split('\n',
+                             StringSplitOptions.RemoveEmptyEntries)
+                      .Select(l => l.TrimEnd('\r'))
+                      .ToArray();
+    for (var i = 0; i < lines.Length; i++)
+    {
+      if (lines[i].StartsWith('#'))
+        continue;
+      var name = lines[i].Split(' ')[0];
+      Assert.That(i > 0 && lines[i - 1] == $"# TYPE {name} gauge",
+                  Is.True,
+                  $"Expected '# TYPE {name} gauge' immediately before '{lines[i]}'");
+    }
+
+    // ── Value correctness ─────────────────────────────────────────────────────
+    // Use prometheus-net (the authoritative reference implementation) to
+    // serialise the same gauges and compare name→value pairs with our output.
+    var registry = global::Prometheus.Metrics.NewCustomRegistry();
+    var factory  = global::Prometheus.Metrics.WithCustomRegistry(registry);
+    factory.CreateGauge("armonik_tasks_queued",         "").Set(5); // 3+2
+    factory.CreateGauge("armonik_tasks_submitted",      "").Set(3);
+    factory.CreateGauge("armonik_tasks_dispatched",     "").Set(0);
+    factory.CreateGauge("armonik_tasks_processing",     "").Set(2);
+    factory.CreateGauge("armonik_p1_tasks_queued",      "").Set(5);
+    factory.CreateGauge("armonik_p1_tasks_submitted",   "").Set(3);
+    factory.CreateGauge("armonik_p1_tasks_dispatched",  "").Set(0);
+    factory.CreateGauge("armonik_p1_tasks_processing",  "").Set(2);
+
+    using var ms = new MemoryStream();
+    await registry.CollectAndExportAsTextAsync(ms,
+                                               CancellationToken.None)
+                  .ConfigureAwait(false);
+    var reference = Encoding.UTF8.GetString(ms.ToArray());
+
+    Assert.That(ParseMetrics(output),
+                Is.EquivalentTo(ParseMetrics(reference)));
   }
 
   [Test]
