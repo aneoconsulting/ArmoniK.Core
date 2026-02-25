@@ -31,10 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AWSSDK.SQS" Version="3.7.502.39" />
+    <PackageReference Include="AWSSDK.SQS" Version="3.7.502.44" />
     <!-- AWSSDK.SecurityToken is required to handle the default authentication -->
-    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.504.32" />
-    <PackageReference Include="AWSSDK.Core" Version="3.7.500.80" />
+    <PackageReference Include="AWSSDK.SecurityToken" Version="3.7.504.37" />
+    <PackageReference Include="AWSSDK.Core" Version="3.7.500.85" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="10.0.3" />
   </ItemGroup>
 
