@@ -44,13 +44,13 @@ namespace ArmoniK.Core.Adapters.Couchbase
       Options.CouchbaseSettings couchbaseOptions;
       Options.CouchbaseStorage couchbaseStorageOptions;
 
-      serviceCollection.AddInitializedOption(configuration,
+      serviceCollection.AddOption(configuration,
                                              Options.CouchbaseSettings.SettingSection,
                                              out couchbaseOptions);
 
-      serviceCollection.AddInitializedOption(configuration,
-                                             Options.CouchbaseStorage.SettingSection,
-                                             out couchbaseStorageOptions);
+      serviceCollection.AddOption(configuration,
+                                  Options.CouchbaseStorage.SettingSection,
+                                  out couchbaseStorageOptions);
 
       logger.LogDebug("Couchbase connection settings: ConnectionString={ConnectionString}, IsTls={IsTls}, BootstrapTimeout={BootstrapTimeout}, KvTimeout={KvTimeout}",
               couchbaseOptions.ConnectionString,

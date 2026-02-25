@@ -243,7 +243,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
       services.AddSingleton(_sharedBucket);
       services.AddSingleton<IObjectStorage, CouchbaseStorage>();
 
-      services.AddInitializedOption(configuration,
+      services.AddOption(configuration,
                          Options.CouchbaseStorage.SettingSection,
                          out Options.CouchbaseStorage couchbaseStorageOptions);
 
