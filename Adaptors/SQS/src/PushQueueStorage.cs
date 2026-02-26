@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 
+using ArmoniK.Core.Adapters.SQS.Extensions;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
@@ -85,12 +86,7 @@ internal class PushQueueStorage : IPushQueueStorage
                                    async entries =>
                                    {
                                      var (queueUrl, chunk) = entries;
-                                     var remainingEntries = chunk.Select(data => new SendMessageBatchRequestEntry
-                                                                                 {
-                                                                                   Id = Guid.NewGuid()
-                                                                                            .ToString(),
-                                                                                   MessageBody = data.TaskId,
-                                                                                 })
+                                     var remainingEntries = chunk.Select(data => data.ToBatchRequestEntry(options_))
                                                                  .ToList();
                                      var retry = 0;
                                      while (remainingEntries.Any())

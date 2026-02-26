@@ -88,4 +88,9 @@ internal class SQS
   ///   Maximum number of retry attempts for failed operations.
   /// </summary>
   public int MaxRetries { get; set; } = 5;
+
+  /// <summary>
+  ///   Use the message group Id SQS property to ensure that messages are sent within groupId.
+  /// </summary>
+  public bool UseSessionMessageGroupId { get; set; } = false;
 }
