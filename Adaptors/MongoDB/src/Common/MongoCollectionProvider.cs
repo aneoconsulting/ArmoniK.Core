@@ -237,6 +237,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                               output,
                                               initDatabase)
                    .ConfigureAwait(false);
+        logger.LogInformation("Collection {CollectionName} initialised : {Partitions}",
+                              model.CollectionName,
+                              initDatabase);
         break;
       }
       catch (Exception ex)
