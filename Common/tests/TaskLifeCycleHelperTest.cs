@@ -1,31 +1,33 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
@@ -41,6 +43,7 @@ using NUnit.Framework;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
@@ -1496,5 +1499,69 @@ public class TaskLifeCycleHelperTest
                                                       : "A")
                                      .And.No.Member("root"));
                     });
+  }
+
+  [Test]
+  public void GroupMessageByPartitionAndOrderItByPriority_Should_GroupMessagesByPartition_AndOrderByPriorityDescending()
+  {
+    const int numberOfPartitions                 = 5;
+    const int minimalNumberOfMessagesInPartition = 10;
+    const int maximalNumberOfMessagesInPartition = 21;
+    const int minimalTaskPriority                = 1;
+    const int maximalTaskPriority                = 11;
+    var       dataMessagesByPartition            = new ConcurrentDictionary<string, Queue<MessageData>>();
+    var       dataMessagesCollection             = new ConcurrentBag<MessageData>();
+
+
+    // The parallel to have mix of messages
+    Parallel.For(0,
+                 numberOfPartitions,
+                 i =>
+                 {
+                   var currentPartition              = $"PartionId_{i}";
+                   var currentDataMessagesForSession = new List<MessageData>();
+                   dataMessagesByPartition.TryAdd(currentPartition,
+                                                                       new Queue<MessageData>());
+
+                   Span<byte> numberOfPartitionMessageByteSeed = stackalloc byte[4];
+                   RandomNumberGenerator.Fill(numberOfPartitionMessageByteSeed);
+                   var seedToUseWithinRandom = BitConverter.ToInt32(numberOfPartitionMessageByteSeed);
+
+                   var random = new Random(seedToUseWithinRandom);
+
+                   var numberOfMessages = random.Next(minimalNumberOfMessagesInPartition,
+                                                      maximalNumberOfMessagesInPartition);
+
+                   for (var j = 0; j <= numberOfMessages; j++)
+                   {
+
+                     var currentSession = Guid.NewGuid()
+                                              .ToString();
+                     var currentTask = Guid.NewGuid()
+                                           .ToString();
+
+                     var priority = random.Next(minimalTaskPriority,
+                                                maximalTaskPriority);
+                     var currentOption = new Base.DataStructures.TaskOptions
+                                         {
+                                           Priority = priority,
+                                           PartitionId = currentPartition,
+                                         };
+                     var messageData = new MessageData(currentTask,
+                                                       currentSession,
+                                                       currentOption);
+                     currentDataMessagesForSession.Add(messageData);
+                     dataMessagesCollection.Add(messageData);
+                   }
+
+                   foreach (var messageData in currentDataMessagesForSession.OrderByDescending(p => p.Options.Priority))
+                   {
+                     dataMessagesByPartition[currentPartition].Enqueue(messageData);
+                   }
+                 });
+
+    var messageGroupedByPartitionAndOrderedByPriority = TaskLifeCycleHelper.GroupMessageByPartitionAndOrderItByPriority(dataMessagesCollection);
+
+
   }
 }
