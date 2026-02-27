@@ -137,7 +137,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                              .ConfigureAwait(false);
           break;
         }
-        catch (MongoCommandException ex) when (ex.CodeName == "NamespaceExists")
+        catch (MongoCommandException ex)
         {
           logger.LogDebug(ex,
                           "Use already existing instance of Collection {CollectionName}",
@@ -184,7 +184,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                    .ConfigureAwait(false);
         break;
       }
-      catch (MongoCommandException ex) when (ex.CodeName == "IndexOptionsConflict")
+      catch (MongoCommandException ex)
       {
         logger.LogWarning(ex,
                           "Index options conflict for {CollectionName} collection",
@@ -237,6 +237,9 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                               output,
                                               initDatabase)
                    .ConfigureAwait(false);
+        logger.LogInformation("Collection {CollectionName} initialised : {Partitions}",
+                              model.CollectionName,
+                              initDatabase);
         break;
       }
       catch (Exception ex)
