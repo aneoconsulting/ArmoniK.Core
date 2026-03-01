@@ -1,23 +1,22 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,8 +67,9 @@ internal class PullQueueStorage : IPullQueueStorage
 
     var queueInfos = new List<(string queueUrl, string queueName, int priority)>();
 
-    for (var i = 0; i < int.Max(options_.MaxPriority,
-                                1); i++)
+    var maxPriority = int.Max(options_.MaxPriority,
+                              1);
+    for (var i = maxPriority; i >= 1; i--)
     {
       var priority = i + 1;
       logger_.LogDebug("Getting queue for priority #{SqsPriority} with options {@SqsOptions}",
@@ -91,7 +91,7 @@ internal class PullQueueStorage : IPullQueueStorage
       queueInfos.Add((queueUrl, queueName, priority));
     }
 
-    foreach (var (queueUrl, queueName, priority) in queueInfos.OrderByDescending(x => x.priority))
+    foreach (var (queueUrl, queueName, priority) in queueInfos)
     {
       logger_.LogDebug("Try pulling {NbMessages} from {QueueUrl} (priority {Priority}) with options {@SqsOptions}",
                        nbMessages,
