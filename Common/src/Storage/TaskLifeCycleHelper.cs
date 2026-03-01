@@ -538,10 +538,10 @@ public static class TaskLifeCycleHelper
                    .ConfigureAwait(false);
   }
 
-  internal static IEnumerable<IGrouping<(string PartitionId, int PriorityId), MessageData>> GroupMessageByPartitionAndOrderItByPriority(IEnumerable<MessageData> dataMessages)
-  {
-    return dataMessages.OrderByDescending(dm => dm.Options.Priority).GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority));
-  }
+  internal static IEnumerable<IGrouping<(string PartitionId, int PriorityId), MessageData>> GroupMessageByPartitionAndOrderItByPriority(
+    IEnumerable<MessageData> dataMessages)
+    => dataMessages.OrderByDescending(dm => dm.Options.Priority)
+                   .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority));
 
   /// <summary>
   ///   Resume session and its paused tasks
