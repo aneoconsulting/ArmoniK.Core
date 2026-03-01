@@ -540,7 +540,7 @@ public static class TaskLifeCycleHelper
 
   internal static IEnumerable<IGrouping<(string PartitionId, int PriorityId), MessageData>> GroupMessageByPartitionAndOrderItByPriority(IEnumerable<MessageData> dataMessages)
   {
-    return dataMessages.GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority));
+    return dataMessages.OrderByDescending(dm => dm.Options.Priority).GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority));
   }
 
   /// <summary>
