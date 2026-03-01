@@ -569,6 +569,7 @@ public static class TaskLifeCycleHelper
                                                                                     data.SessionId,
                                                                                     data.Options),
                                                             cancellationToken)
+                                            .OrderByDescending(msg => msg.Options.Priority)
                                             .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority))
                                             .WithCancellation(cancellationToken)
                                             .ConfigureAwait(false))
