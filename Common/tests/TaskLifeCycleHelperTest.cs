@@ -1509,19 +1509,26 @@ public class TaskLifeCycleHelperTest
     const int maximalNumberOfMessagesInPartition = 21;
     const int minimalTaskPriority                = 1;
     const int maximalTaskPriority                = 11;
-    var       dataMessagesByPartition            = new ConcurrentDictionary<string, Queue<MessageData>>();
     var       dataMessagesCollection             = new ConcurrentBag<MessageData>();
 
+    // The dictionary will serve to get the sessions with the right priority, and we will avoid some edge cases
+    //
+    var dataMessagesByPrioritiesByPartition = new ConcurrentDictionary<string, OrderedDictionary<int, HashSet<MessageData>>>();
 
-    // The parallel to have mix of messages
+
+    // The parallel to have mixed messages
     Parallel.For(0,
                  numberOfPartitions,
                  i =>
                  {
                    var currentPartition              = $"PartionId_{i}";
                    var currentDataMessagesForSession = new List<MessageData>();
-                   dataMessagesByPartition.TryAdd(currentPartition,
-                                                                       new Queue<MessageData>());
+
+                   // We will consider here that we will have different sessions on partition.
+                   var dataMessagesSessionIdByPriority = new OrderedDictionary<int, HashSet<MessageData>>();
+
+                   dataMessagesByPrioritiesByPartition.TryAdd(currentPartition,
+                                                              dataMessagesSessionIdByPriority);
 
                    Span<byte> numberOfPartitionMessageByteSeed = stackalloc byte[4];
                    RandomNumberGenerator.Fill(numberOfPartitionMessageByteSeed);
@@ -1534,7 +1541,6 @@ public class TaskLifeCycleHelperTest
 
                    for (var j = 0; j <= numberOfMessages; j++)
                    {
-
                      var currentSession = Guid.NewGuid()
                                               .ToString();
                      var currentTask = Guid.NewGuid()
@@ -1542,9 +1548,10 @@ public class TaskLifeCycleHelperTest
 
                      var priority = random.Next(minimalTaskPriority,
                                                 maximalTaskPriority);
+
                      var currentOption = new Base.DataStructures.TaskOptions
                                          {
-                                           Priority = priority,
+                                           Priority    = priority,
                                            PartitionId = currentPartition,
                                          };
                      var messageData = new MessageData(currentTask,
@@ -1552,16 +1559,48 @@ public class TaskLifeCycleHelperTest
                                                        currentOption);
                      currentDataMessagesForSession.Add(messageData);
                      dataMessagesCollection.Add(messageData);
+
                    }
 
                    foreach (var messageData in currentDataMessagesForSession.OrderByDescending(p => p.Options.Priority))
                    {
-                     dataMessagesByPartition[currentPartition].Enqueue(messageData);
+                     var priority = messageData.Options.Priority;
+                     if (!dataMessagesSessionIdByPriority.ContainsKey(priority))
+                     {
+                       dataMessagesSessionIdByPriority.Add(priority,
+                                                           new HashSet<MessageData>());
+                     }
+                     dataMessagesSessionIdByPriority[priority]
+                       .Add(messageData);
                    }
                  });
 
-    var messageGroupedByPartitionAndOrderedByPriority = TaskLifeCycleHelper.GroupMessageByPartitionAndOrderItByPriority(dataMessagesCollection);
+    var messagesGroupedByPartitionAndOrderedByPriority = TaskLifeCycleHelper.GroupMessageByPartitionAndOrderItByPriority(dataMessagesCollection)
+                                                                            .ToList();
 
+    Assert.That(messagesGroupedByPartitionAndOrderedByPriority,
+                Is.Not.Empty);
+    foreach (var messageGrouped in messagesGroupedByPartitionAndOrderedByPriority)
+    {
+      var messageGroupPartition    = messageGrouped.Key.PartitionId;
+      var messageGroupPriority = messageGrouped.Key.PriorityId;
 
+      var dataMessagesForPartition = dataMessagesByPrioritiesByPartition[messageGroupPartition];
+
+      var firstElementOfDictionary = dataMessagesForPartition.FirstOrDefault();
+
+      var expectedPriority = firstElementOfDictionary.Key;
+      Assert.That(messageGroupPriority, Is.EqualTo(expectedPriority));
+
+      var messageDataWithinPartitionAndPriority = dataMessagesForPartition[messageGroupPriority];
+
+      foreach (var messageData in messageGrouped)
+      {
+        Assert.That(messageDataWithinPartitionAndPriority.Contains(messageData),
+                    Is.True);
+      }
+
+      dataMessagesForPartition.Remove(messageGroupPriority);
+    }
   }
 }
