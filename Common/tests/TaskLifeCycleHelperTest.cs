@@ -1559,7 +1559,6 @@ public class TaskLifeCycleHelperTest
                                                        currentOption);
                      currentDataMessagesForSession.Add(messageData);
                      dataMessagesCollection.Add(messageData);
-
                    }
 
                    foreach (var messageData in currentDataMessagesForSession.OrderByDescending(p => p.Options.Priority))
@@ -1570,6 +1569,7 @@ public class TaskLifeCycleHelperTest
                        dataMessagesSessionIdByPriority.Add(priority,
                                                            new HashSet<MessageData>());
                      }
+
                      dataMessagesSessionIdByPriority[priority]
                        .Add(messageData);
                    }
@@ -1582,15 +1582,16 @@ public class TaskLifeCycleHelperTest
                 Is.Not.Empty);
     foreach (var messageGrouped in messagesGroupedByPartitionAndOrderedByPriority)
     {
-      var messageGroupPartition    = messageGrouped.Key.PartitionId;
-      var messageGroupPriority = messageGrouped.Key.PriorityId;
+      var messageGroupPartition = messageGrouped.Key.PartitionId;
+      var messageGroupPriority  = messageGrouped.Key.PriorityId;
 
       var dataMessagesForPartition = dataMessagesByPrioritiesByPartition[messageGroupPartition];
 
       var firstElementOfDictionary = dataMessagesForPartition.FirstOrDefault();
 
       var expectedPriority = firstElementOfDictionary.Key;
-      Assert.That(messageGroupPriority, Is.EqualTo(expectedPriority));
+      Assert.That(messageGroupPriority,
+                  Is.EqualTo(expectedPriority));
 
       var messageDataWithinPartitionAndPriority = dataMessagesForPartition[messageGroupPriority];
 
