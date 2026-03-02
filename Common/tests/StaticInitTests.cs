@@ -316,4 +316,22 @@ internal class StaticInitTests
     Assert.That(cert.Fingerprint,
                 Is.Null);
   }
+
+  [Test]
+  public void NullPodConfigurationShouldSucceed()
+  {
+    var cert =
+      Partition.FromJson("{\"ParentPartitionIds\":[],\"PartitionId\":\"TestPartition0\",\"PodConfiguration\":null,\"PodMax\":100,\"PodReserved\":50,\"PreemptionPercentage\":20,\"Priority\":1}");
+    Assert.That(cert.PodConfiguration,
+                Is.Null);
+  }
+
+  [Test]
+  public void NoPodConfigurationShouldSucceed()
+  {
+    var cert =
+      Partition.FromJson("{\"ParentPartitionIds\":[],\"PartitionId\":\"TestPartition0\",\"PodMax\":100,\"PodReserved\":50,\"PreemptionPercentage\":20,\"Priority\":1}");
+    Assert.That(cert.PodConfiguration,
+                Is.Empty);
+  }
 }
