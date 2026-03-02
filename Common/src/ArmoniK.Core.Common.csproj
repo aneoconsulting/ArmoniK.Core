@@ -33,7 +33,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.2" />
-    <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="9.0.0" />
+    <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="10.0.0" />
     <PackageReference Include="Destructurama.Attributed" Version="5.2.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.76.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
