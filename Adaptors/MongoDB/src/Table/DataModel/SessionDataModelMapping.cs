@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -123,25 +124,17 @@ public class SessionDataModelMapping : IMongoDataModelMapping<SessionData>
     => nameof(SessionData);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle          sessionHandle,
-                                           IMongoCollection<SessionData> collection,
-                                           Options.MongoDB               options)
-  {
-    var indexModels = new[]
-                      {
-                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreationDate,
-                                                                      expireAfter: options.DataRetention),
-                        IndexHelper.CreateAscendingIndex<SessionData>(model => model.CancellationDate),
-                        IndexHelper.CreateHashedOrAscendingIndex<SessionData>(model => model.Status,
-                                                                              options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<SessionData>(model => model.Options.PartitionId,
-                                                                              options.UseHashed),
-                      };
-
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
-  }
+  public ICollection<CreateIndexModel<SessionData>> InitializeIndexes(Options.MongoDB options)
+    => new[]
+       {
+         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreationDate,
+                                                       expireAfter: options.DataRetention),
+         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CancellationDate),
+         IndexHelper.CreateHashedOrAscendingIndex<SessionData>(model => model.Status,
+                                                               options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<SessionData>(model => model.Options.PartitionId,
+                                                               options.UseHashed),
+       };
 
   /// <inheritdoc />
   public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,

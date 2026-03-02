@@ -187,39 +187,31 @@ public class TaskDataModelMapping : IMongoDataModelMapping<TaskData>
 
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<TaskData> collection,
-                                           Options.MongoDB            options)
-  {
-    var indexModels = new[]
-                      {
-                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.Status,
-                                                                           options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.Options.PartitionId,
-                                                                           options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.SessionId,
-                                                                           options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.OwnerPodId,
-                                                                           options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.InitialTaskId,
-                                                                           options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.CreatedBy,
-                                                                           options.UseHashed),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
-                                                                   expireAfter: options.DataRetention),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.SubmittedDate),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.StartDate),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.EndDate),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationToEndDuration),
-                        IndexHelper.CreateAscendingIndex<TaskData>(model => model.ProcessingToEndDuration),
-                        IndexHelper.CreateCombinedIndex<TaskData>(model => model.Options.PartitionId,
-                                                                  model => model.Status),
-                      };
-
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
-  }
+  public ICollection<CreateIndexModel<TaskData>> InitializeIndexes(Options.MongoDB options)
+    => new[]
+       {
+         IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.Status,
+                                                            options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.Options.PartitionId,
+                                                            options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.SessionId,
+                                                            options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.OwnerPodId,
+                                                            options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.InitialTaskId,
+                                                            options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<TaskData>(model => model.CreatedBy,
+                                                            options.UseHashed),
+         IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationDate,
+                                                    expireAfter: options.DataRetention),
+         IndexHelper.CreateAscendingIndex<TaskData>(model => model.SubmittedDate),
+         IndexHelper.CreateAscendingIndex<TaskData>(model => model.StartDate),
+         IndexHelper.CreateAscendingIndex<TaskData>(model => model.EndDate),
+         IndexHelper.CreateAscendingIndex<TaskData>(model => model.CreationToEndDuration),
+         IndexHelper.CreateAscendingIndex<TaskData>(model => model.ProcessingToEndDuration),
+         IndexHelper.CreateCombinedIndex<TaskData>(model => model.Options.PartitionId,
+                                                   model => model.Status),
+       };
 
   /// <inheritdoc />
   public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,

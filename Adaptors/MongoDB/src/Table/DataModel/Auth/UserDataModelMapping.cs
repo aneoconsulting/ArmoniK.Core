@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -59,19 +60,12 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
     => nameof(UserData);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<UserData> collection,
-                                           Options.MongoDB            options)
-  {
-    var indexModels = new[]
-                      {
-                        IndexHelper.CreateAscendingIndex<UserData>(model => model.Username,
-                                                                   true),
-                      };
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
-  }
+  public ICollection<CreateIndexModel<UserData>> InitializeIndexes(Options.MongoDB options)
+    => new[]
+       {
+         IndexHelper.CreateAscendingIndex<UserData>(model => model.Username,
+                                                    true),
+       };
 
   /// <inheritdoc />
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,

@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Injection.Options.Database;
@@ -38,15 +39,11 @@ public interface IMongoDataModelMapping<T>
   ///   Setup indexes for the collection
   ///   Can be called multiple times
   /// </summary>
-  /// <param name="sessionHandle">MongoDB Client session</param>
-  /// <param name="collection">MongoDDB Collection in which to insert data</param>
   /// <param name="options">Options for MongoDB</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  Task InitializeIndexesAsync(IClientSessionHandle sessionHandle,
-                              IMongoCollection<T>  collection,
-                              Options.MongoDB      options);
+  ICollection<CreateIndexModel<T>> InitializeIndexes(Options.MongoDB options);
 
   /// <summary>
   ///   Setup sharding for the collection

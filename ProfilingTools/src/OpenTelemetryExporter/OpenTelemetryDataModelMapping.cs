@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
@@ -81,9 +82,7 @@ public class OpenTelemetryDataModelMapping : IMongoDataModelMapping<OpenTelemetr
 
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle                sessionHandle,
-                                           IMongoCollection<OpenTelemetryData> collection,
-                                           Adapters.MongoDB.Options.MongoDB    options)
+  public ICollection<CreateIndexModel<OpenTelemetryData>> InitializeIndexes(Adapters.MongoDB.Options.MongoDB options)
   {
     var sourceNameIndex  = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.SourceName);
     var displayNameIndex = Builders<OpenTelemetryData>.IndexKeys.Hashed(model => model.DisplayName);
@@ -92,23 +91,19 @@ public class OpenTelemetryDataModelMapping : IMongoDataModelMapping<OpenTelemetr
     var combinedIndex = Builders<OpenTelemetryData>.IndexKeys.Combine(sourceNameIndex,
                                                                       displayNameIndex);
 
-    var indexModels = new CreateIndexModel<OpenTelemetryData>[]
-                      {
-                        new(combinedIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(combinedIndex),
-                            }),
-                        new(activityIdIndex,
-                            new CreateIndexOptions
-                            {
-                              Name = nameof(activityIdIndex),
-                            }),
-                      };
-
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
+    return new CreateIndexModel<OpenTelemetryData>[]
+           {
+             new(combinedIndex,
+                 new CreateIndexOptions
+                 {
+                   Name = nameof(combinedIndex),
+                 }),
+             new(activityIdIndex,
+                 new CreateIndexOptions
+                 {
+                   Name = nameof(activityIdIndex),
+                 }),
+           };
   }
 
   public Task ShardCollectionAsync(IClientSessionHandle             sessionHandle,

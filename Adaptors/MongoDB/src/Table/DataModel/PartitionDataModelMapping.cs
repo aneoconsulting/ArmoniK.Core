@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -82,20 +83,12 @@ public class PartitionDataModelMapping : IMongoDataModelMapping<PartitionData>
 
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle            sessionHandle,
-                                           IMongoCollection<PartitionData> collection,
-                                           Options.MongoDB                 options)
-  {
-    var indexModels = new[]
-                      {
-                        IndexHelper.CreateHashedOrAscendingIndex<PartitionData>(model => model.PartitionId,
-                                                                                options.UseHashed),
-                      };
-
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
-  }
+  public ICollection<CreateIndexModel<PartitionData>> InitializeIndexes(Options.MongoDB options)
+    => new[]
+       {
+         IndexHelper.CreateHashedOrAscendingIndex<PartitionData>(model => model.PartitionId,
+                                                                 options.UseHashed),
+       };
 
   /// <inheritdoc />
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
