@@ -92,29 +92,21 @@ public class ResultDataModelMapping : IMongoDataModelMapping<Result>
     => nameof(Result);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle     sessionHandle,
-                                           IMongoCollection<Result> collection,
-                                           Options.MongoDB          options)
-  {
-    var indexModels = new[]
-                      {
-                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.SessionId,
-                                                                         options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.CreatedBy,
-                                                                         options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.CompletedBy,
-                                                                         options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.OwnerTaskId,
-                                                                         options.UseHashed),
-                        IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
-                                                                 expireAfter: options.DataRetention),
-                        IndexHelper.CreateAscendingIndex<Result>(model => model.CompletionDate),
-                      };
-
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
-  }
+  public ICollection<CreateIndexModel<Result>> InitializeIndexes(Options.MongoDB options)
+    => new[]
+       {
+         IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.SessionId,
+                                                          options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.CreatedBy,
+                                                          options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.CompletedBy,
+                                                          options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<Result>(model => model.OwnerTaskId,
+                                                          options.UseHashed),
+         IndexHelper.CreateAscendingIndex<Result>(model => model.CreationDate,
+                                                  expireAfter: options.DataRetention),
+         IndexHelper.CreateAscendingIndex<Result>(model => model.CompletionDate),
+       };
 
   /// <inheritdoc />
   public async Task ShardCollectionAsync(IClientSessionHandle sessionHandle,

@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -61,27 +62,6 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
     => nameof(AuthData);
 
   /// <inheritdoc />
-  public async Task InitializeIndexesAsync(IClientSessionHandle       sessionHandle,
-                                           IMongoCollection<AuthData> collection,
-                                           Options.MongoDB            options)
-  {
-    var indexModels = new[]
-                      {
-                        IndexHelper.CreateCombinedIndex<AuthData>(model => model.Fingerprint,
-                                                                  model => model.Cn,
-                                                                  true),
-                        IndexHelper.CreateHashedOrAscendingIndex<AuthData>(model => model.Fingerprint,
-                                                                           options.UseHashed),
-                        IndexHelper.CreateHashedOrAscendingIndex<AuthData>(model => model.UserId,
-                                                                           options.UseHashed),
-                      };
-
-    await collection.Indexes.CreateManyAsync(sessionHandle,
-                                             indexModels)
-                    .ConfigureAwait(false);
-  }
-
-  /// <inheritdoc />
   public Task ShardCollectionAsync(IClientSessionHandle sessionHandle,
                                    Options.MongoDB      options)
     => Task.CompletedTask;
@@ -104,4 +84,17 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
                       .ConfigureAwait(false);
     }
   }
+
+  /// <inheritdoc />
+  public ICollection<CreateIndexModel<AuthData>> InitializeIndexes(Options.MongoDB options)
+    => new[]
+       {
+         IndexHelper.CreateCombinedIndex<AuthData>(model => model.Fingerprint,
+                                                   model => model.Cn,
+                                                   true),
+         IndexHelper.CreateHashedOrAscendingIndex<AuthData>(model => model.Fingerprint,
+                                                            options.UseHashed),
+         IndexHelper.CreateHashedOrAscendingIndex<AuthData>(model => model.UserId,
+                                                            options.UseHashed),
+       };
 }

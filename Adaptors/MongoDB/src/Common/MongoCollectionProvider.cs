@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -131,17 +132,19 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
         lastException = null;
         try
         {
+          if (await mongoDatabase.ListCollectionNamesAsync(cancellationToken: cancellationToken)
+                                 .ToAsyncEnumerable(cancellationToken)
+                                 .AnyAsync(name => name == model.CollectionName,
+                                           cancellationToken)
+                                 .ConfigureAwait(false))
+          {
+            break;
+          }
+
           await mongoDatabase.CreateCollectionAsync(model.CollectionName,
                                                     null,
                                                     cancellationToken)
                              .ConfigureAwait(false);
-          break;
-        }
-        catch (MongoCommandException ex) when (ex.CodeName == "NamespaceExists")
-        {
-          logger.LogDebug(ex,
-                          "Use already existing instance of Collection {CollectionName}",
-                          model.CollectionName);
           break;
         }
         catch (Exception ex)
@@ -163,14 +166,14 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       }
     }
 
-    var output = mongoDatabase.GetCollection<TData>(model.CollectionName);
+    var collection = mongoDatabase.GetCollection<TData>(model.CollectionName);
     await sessionProvider.Init(cancellationToken)
                          .ConfigureAwait(false);
     var session = sessionProvider.Get();
 
     if (!initDatabase.Init)
     {
-      return output;
+      return collection;
     }
 
     for (var indexRetry = 1; indexRetry < options.MaxRetries; indexRetry++)
@@ -178,17 +181,30 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       lastException = null;
       try
       {
-        await model.InitializeIndexesAsync(session,
-                                           output,
-                                           options)
-                   .ConfigureAwait(false);
-        break;
-      }
-      catch (MongoCommandException ex) when (ex.CodeName == "IndexOptionsConflict")
-      {
-        logger.LogWarning(ex,
-                          "Index options conflict for {CollectionName} collection",
-                          model.CollectionName);
+        var indexModels = model.InitializeIndexes(options);
+
+        if (!indexModels.Any())
+        {
+          break;
+        }
+
+        var existingIndexes = await collection.Indexes.ListAsync(cancellationToken)
+                                              .ToAsyncEnumerable(cancellationToken)
+                                              .Select(document => document["name"].AsString)
+                                              .ToHashSetAsync(cancellationToken: cancellationToken)
+                                              .ConfigureAwait(false);
+
+        indexModels = indexModels.Where(indexModel => !existingIndexes.Contains(indexModel.Options.Name))
+                                 .ToList();
+
+        if (!indexModels.Any())
+        {
+          break;
+        }
+
+        await collection.Indexes.CreateManyAsync(indexModels,
+                                                 cancellationToken)
+                        .ConfigureAwait(false);
         break;
       }
       catch (Exception ex)
@@ -200,6 +216,12 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
         await Task.Delay(1000 * indexRetry,
                          cancellationToken)
                   .ConfigureAwait(false);
+      }
+
+      if (lastException is not null)
+      {
+        throw new TimeoutException($"Index creation {model.CollectionName}: Max retries reached",
+                                   lastException);
       }
     }
 
@@ -226,6 +248,12 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                     .ConfigureAwait(false);
         }
       }
+
+      if (lastException is not null)
+      {
+        throw new TimeoutException($"Shard collection {model.CollectionName}: Max retries reached",
+                                   lastException);
+      }
     }
 
     for (var indexRetry = 1; indexRetry < options.MaxRetries; indexRetry++)
@@ -234,7 +262,7 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
       try
       {
         await model.InitializeCollectionAsync(session,
-                                              output,
+                                              collection,
                                               initDatabase)
                    .ConfigureAwait(false);
         break;
@@ -257,7 +285,10 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
                                  lastException);
     }
 
-    return output;
+    logger.LogInformation("Collection {CollectionName} initialized",
+                          model.CollectionName);
+
+    return collection;
   }
 
   /// <summary>
