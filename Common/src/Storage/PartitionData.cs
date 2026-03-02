@@ -24,11 +24,11 @@ namespace ArmoniK.Core.Common.Storage;
 /// </summary>
 /// <param name="PartitionId">Unique name of the partition</param>
 /// <param name="ParentPartitionIds">List of parents up to the first partition</param>
-/// <param name="PodReserved">Number of reserved pods</param>
-/// <param name="PodMax">Max number of pods</param>
-/// <param name="PreemptionPercentage">Percentage of pods that can be preempted</param>
-/// <param name="Priority">Priority of the partition</param>
-/// <param name="PodConfiguration">Configuration for compute plane instances in this Partition</param>
+/// <param name="PodReserved">Number of pods permanently reserved for this partition</param>
+/// <param name="PodMax">Maximum number of pods that may be allocated to this partition</param>
+/// <param name="PreemptionPercentage">Percentage of this partition's pods that higher-priority work may preempt</param>
+/// <param name="Priority">Scheduling priority of the partition relative to others</param>
+/// <param name="PodConfiguration">Arbitrary key-value pairs passed as configuration to partition deployment tool</param>
 public record PartitionData(string            PartitionId,
                             IList<string>     ParentPartitionIds,
                             int               PodReserved,

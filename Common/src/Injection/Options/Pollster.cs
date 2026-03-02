@@ -62,12 +62,14 @@ public class Pollster
   public int NbAcquisitionRetry { get; set; } = 3;
 
   /// <summary>
-  ///   Shared folder between Agent and Worker
+  ///   Root directory for per-task staging folders.
+  ///   Sub-directories are created here for each task and deleted after it completes
   /// </summary>
   public string SharedCacheFolder { get; set; } = "/cache/shared";
 
   /// <summary>
-  ///   Internal cache for data
+  ///   Persistent cache directory. Files are keyed by ResultId.
+  ///   Can be shared across multiple agent processes on the same node.
   /// </summary>
   public string InternalCacheFolder { get; set; } = "/cache/internal";
 
@@ -93,8 +95,8 @@ public class Pollster
   public bool FailReadinessIfNoTasks { get; set; }
 
   /// <summary>
-  ///   Gets or sets the threshold as a storage size fraction at which cache eviction is triggered.
-  ///   Disabled when set to 0 (default).
+  ///   Fraction of disk space used (0–1) above which LRU eviction is triggered.
+  ///   Set to `0` to disable caching entirely.
   /// </summary>
   /// <remarks>
   ///   When the cache usage reaches or exceeds this threshold, eviction policies may be applied to
