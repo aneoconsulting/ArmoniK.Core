@@ -188,8 +188,7 @@ public static class ServiceCollectionExt
     var mongoOptions = provider.GetRequiredService<Options.MongoDB>();
     using var _ = logger.BeginNamedScope("MongoDB configuration",
                                          ("host", mongoOptions.Host),
-                                         ("port", mongoOptions.Port),
-                                         ("connectionString", mongoOptions.ConnectionString));
+                                         ("port", mongoOptions.Port));
 
     var settings = GetMongoSettings(mongoOptions,
                                     logger);
