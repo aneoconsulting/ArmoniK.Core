@@ -447,6 +447,26 @@ public class ArmoniKMeterTest
   }
 
   [Test]
+  public async Task GetMetricsWithDashInPartitionNameShouldEscapeDashToUnderscore()
+  {
+    SetupPartitions("my-partition");
+    SetupTaskCounts(("my-partition", TaskStatus.Submitted, 4));
+    var meter = CreateMeter();
+
+    var output = await meter.GetMetricsAsync(CancellationToken.None)
+                            .ConfigureAwait(false);
+
+    // Dashes in partition names must be replaced by underscores in metric names
+    Assert.That(output,
+                Does.Not.Contain("-"));
+    var metrics = ParseMetrics(output);
+    Assert.That(metrics["armonik_my_partition_tasks_submitted"],
+                Is.EqualTo(4));
+    Assert.That(metrics["armonik_my_partition_tasks_queued"],
+                Is.EqualTo(4));
+  }
+
+  [Test]
   public async Task GetMetricsAfterCacheExpiryWindowShouldQueryDbAgain()
   {
     SetupPartitions("p1");
