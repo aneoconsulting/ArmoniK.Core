@@ -193,6 +193,8 @@ public class ArmoniKMeter
       }
     }
 
+    sb.Replace("-",
+               "_");
     return sb.ToString();
   }
 
