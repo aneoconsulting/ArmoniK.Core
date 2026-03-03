@@ -187,7 +187,7 @@ internal static class Mapping
       CreatedBy                 = t.CreatedBy,
       Options                   = t.Options.ToWire(),
       Output                    = t.Output?.ToWire(),
-      CreationDate              = t.CreationDate ?? DateTime.MinValue,
+      CreationDate              = t.CreationDate,
       SubmittedDate             = t.SubmittedDate ?? DateTime.MinValue,
       StartDate                 = t.StartDate ?? DateTime.MinValue,
       EndDate                   = t.EndDate ?? DateTime.MinValue,
@@ -200,30 +200,34 @@ internal static class Mapping
     };
 
   public static TaskData ToDomain(this WireTaskData w)
-    => new(w.TaskId,
-           w.ParentTaskIds,
-           w.DataDependencies,
-           w.RemainingDataDependencies.ToDictionary(id => id, _ => true),
-           w.ExpectedOutputIds,
-           w.RetryOfIds,
-           w.Status.ToDomain(),
-           w.SessionId,
-           w.InitialTaskId,
-           w.OwnerPodId,
-           w.OwnerPodName,
-           w.CreatedBy,
-           w.Options.ToDomain(),
-           w.Output?.ToDomain(),
-           NullIfMinValue(w.CreationDate),
-           NullIfMinValue(w.SubmittedDate),
-           NullIfMinValue(w.StartDate),
-           NullIfMinValue(w.EndDate),
-           NullIfMinValue(w.ReceptionDate),
-           NullIfMinValue(w.AcquisitionDate),
-           NullIfMinValue(w.ProcessedDate),
-           NullIfMinValue(w.FetchedDate),
-           NullIfMinValue(w.PodTtl),
-           w.PayloadId);
+  => new(w.SessionId,
+         w.TaskId,
+         w.OwnerPodId,
+         w.OwnerPodName,
+         w.PayloadId,
+         w.ParentTaskIds,
+         w.DataDependencies,
+         w.RemainingDataDependencies.ToDictionary(id => id, _ => true),
+         w.ExpectedOutputIds,
+         w.InitialTaskId,
+         w.CreatedBy,
+         w.RetryOfIds,
+         w.Status.ToDomain(),
+         "",                              // StatusMessage — not in wire format
+         w.Options.ToDomain(),
+         w.CreationDate,                  // non-nullable DateTime, no NullIfMinValue
+         NullIfMinValue(w.SubmittedDate),
+         NullIfMinValue(w.StartDate),
+         NullIfMinValue(w.EndDate),
+         NullIfMinValue(w.ReceptionDate),
+         NullIfMinValue(w.AcquisitionDate),
+         NullIfMinValue(w.ProcessedDate),
+         NullIfMinValue(w.FetchedDate),
+         NullIfMinValue(w.PodTtl),
+         null,                            // ProcessingToEndDuration — not in wire format
+         null,                            // CreationToEndDuration   — not in wire format
+         null,                            // ReceivedToEndDuration   — not in wire format
+         w.Output?.ToDomain());
 
   // ── Result ───────────────────────────────────────────────────────────────
 
@@ -238,23 +242,18 @@ internal static class Mapping
       CompletedBy    = r.CompletedBy,
       Status         = r.Status.ToWire(),
       DependentTasks = r.DependentTasks.ToList(),
-      CreationDate   = r.CreationDate ?? DateTime.MinValue,
+      CreationDate   = r.CreationDate,
       CompletionDate = r.CompletionDate ?? DateTime.MinValue,
       Size           = r.Size,
     };
 
-  public static Result ToDomain(this WireResultData w)
-    => new(w.SessionId,
-           w.ResultId,
-           w.Name,
-           w.OwnerTaskId,
-           w.CreatedBy,
-           w.CompletedBy,
-           w.Status.ToDomain(),
-           w.DependentTasks,
-           NullIfMinValue(w.CreationDate),
-           NullIfMinValue(w.CompletionDate),
-           w.Size);
+    public static Result ToDomain(this WireResultData w)
+    => new(w.SessionId, w.ResultId, w.Name, w.CreatedBy, w.CompletedBy, w.OwnerTaskId,
+            w.Status.ToDomain(), w.DependentTasks,
+            w.CreationDate, NullIfMinValue(w.CompletionDate),
+            w.Size,
+            Array.Empty<byte>(),  // OpaqueId — not in wire format yet
+            false);    
 
   // ── SessionData ──────────────────────────────────────────────────────────
 
@@ -265,28 +264,28 @@ internal static class Mapping
       Status           = s.Status.ToWire(),
       PartitionIds     = s.PartitionIds.ToList(),
       Options          = s.Options.ToWire(),
-      CreationDate     = s.CreationDate ?? DateTime.MinValue,
+      CreationDate     = s.CreationDate,
       CancellationDate = s.CancellationDate ?? DateTime.MinValue,
       ClosureDate      = s.ClosureDate ?? DateTime.MinValue,
       PurgeDate        = s.PurgeDate ?? DateTime.MinValue,
-      DeleteDate       = s.DeleteDate ?? DateTime.MinValue,
       DeletionTtl      = s.DeletionTtl ?? DateTime.MinValue,
       DurationTicks    = s.Duration?.Ticks ?? 0,
     };
 
-  public static SessionData ToDomain(this WireSessionData w)
-    => new(w.SessionId,
-           w.Status.ToDomain(),
-           w.PartitionIds,
-           w.Options.ToDomain(),
-           NullIfMinValue(w.CreationDate),
-           NullIfMinValue(w.CancellationDate),
-           NullIfMinValue(w.ClosureDate),
-           NullIfMinValue(w.PurgeDate),
-           NullIfMinValue(w.DeleteDate),
-           NullIfMinValue(w.DeletionTtl),
-           w.DurationTicks == 0 ? null : TimeSpan.FromTicks(w.DurationTicks));
-
+public static SessionData ToDomain(this WireSessionData w)
+  => new(w.SessionId,
+         w.Status.ToDomain(),
+         true,  // ClientSubmission
+         true,  // WorkerSubmission
+         w.CreationDate,
+         NullIfMinValue(w.CancellationDate),
+         NullIfMinValue(w.ClosureDate),
+         NullIfMinValue(w.PurgeDate),
+         NullIfMinValue(w.DeleteDate),   // was: DeleteDate
+         NullIfMinValue(w.DeletionTtl),
+         w.DurationTicks == 0 ? null : TimeSpan.FromTicks(w.DurationTicks),
+         w.PartitionIds,   // ← was missing
+         w.Options.ToDomain());
   // ── PartitionData ────────────────────────────────────────────────────────
 
   public static WirePartitionData ToWire(this PartitionData p)
@@ -298,17 +297,19 @@ internal static class Mapping
       PodMax               = p.PodMax,
       PreemptionPercentage = p.PreemptionPercentage,
       Priority             = p.Priority,
-      PodConfiguration     = p.PodConfiguration?.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new(),
+      PodConfiguration = p.PodConfiguration?.Configuration.ToDictionary(kv => kv.Key, kv => kv.Value) ?? new(),
     };
 
-  public static PartitionData ToDomain(this WirePartitionData w)
+    public static PartitionData ToDomain(this WirePartitionData w)
     => new(w.PartitionId,
-           w.ParentPartitionIds,
-           w.PodReserved,
-           w.PodMax,
-           w.PreemptionPercentage,
-           w.Priority,
-           w.PodConfiguration);
+            w.ParentPartitionIds,
+            w.PodReserved,
+            w.PodMax,
+            w.PreemptionPercentage,
+            w.Priority,
+            w.PodConfiguration.Count == 0
+                ? null
+                : new PodConfiguration(w.PodConfiguration));
 
   // ── UpdateDefinition → FieldUpdates ──────────────────────────────────────
 

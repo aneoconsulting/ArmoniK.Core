@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.TaskDB.Protocol;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Storage;
+using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
