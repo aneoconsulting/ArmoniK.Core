@@ -27,12 +27,20 @@ module "prometheus" {
   submitter_names     = [var.submitter.name]
 }
 
+# module "database" {
+#   source         = "./modules/storage/database/mongo"
+#   image          = var.database_image
+#   network        = local.network
+#   mongodb_params = var.mongodb_params
+#   windows        = var.windows
+# }
+
 module "database" {
-  source         = "./modules/storage/database/mongo"
-  image          = var.database_image
-  network        = local.network
-  mongodb_params = var.mongodb_params
-  windows        = var.windows
+  source         = "./modules/storage/database/taskdb"
+  # image          = var.database_image
+  # network        = local.network
+  # mongodb_params = var.mongodb_params
+  # windows        = var.windows
 }
 
 module "object_redis" {

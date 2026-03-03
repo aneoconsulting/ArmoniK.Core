@@ -39,6 +39,8 @@ COPY ["Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj", "Adaptors/Nats/src/
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj", "Adaptors/S3/src/"]
 COPY ["Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj", "Adaptors/SQS/src/"]
+COPY ["Adaptors/TaskDB/src/ArmoniK.Core.Adapters.TaskDB.csproj", "Adaptors/TaskDB/src/"]
+
 COPY ["Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj", "Adaptors/Embed/src/"]
 COPY ["Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj", "Adaptors/NullStorage/src/"]
 COPY ["Base/src/ArmoniK.Core.Base.csproj", "Base/src/"]
@@ -55,6 +57,8 @@ RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.A
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/TaskDB/src/ArmoniK.Core.Adapters.TaskDB.csproj"
+
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj"
@@ -72,6 +76,8 @@ COPY ["Adaptors/Nats/src", "Adaptors/Nats/src"]
 COPY ["Adaptors/Redis/src", "Adaptors/Redis/src"]
 COPY ["Adaptors/S3/src", "Adaptors/S3/src"]
 COPY ["Adaptors/SQS/src", "Adaptors/SQS/src"]
+COPY ["Adaptors/TaskDB/src", "Adaptors/TaskDB/src"]
+
 COPY ["Adaptors/Embed/src", "Adaptors/Embed/src"]
 COPY ["Adaptors/NullStorage/src", "Adaptors/NullStorage/src"]
 COPY ["Base/src", "Base/src"]
@@ -83,6 +89,10 @@ COPY ["Utils/src", "Utils/src"]
 
 WORKDIR /src/Adaptors/SQS/src
 RUN dotnet publish "ArmoniK.Core.Adapters.SQS.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/sqs /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+
+WORKDIR /src/Adaptors/TaskDB/src
+RUN dotnet publish "ArmoniK.Core.Adapters.TaskDB.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/taskdb /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+
 
 WORKDIR /src/Adaptors/PubSub/src
 RUN dotnet publish "ArmoniK.Core.Adapters.PubSub.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/pubsub /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
@@ -121,6 +131,9 @@ RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --
 FROM base-${TARGETOS} AS polling_agent
 WORKDIR /adapters/queue/sqs
 COPY --from=build /app/publish/sqs .
+WORKDIR /adapters/queue/taskdb
+COPY --from=build /app/publish/taskdb .
+
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/nats
@@ -155,6 +168,9 @@ CMD ["ArmoniK.Core.Control.Metrics.dll"]
 FROM base-${TARGETOS} AS submitter
 WORKDIR /adapters/queue/sqs
 COPY --from=build /app/publish/sqs .
+WORKDIR /adapters/queue/taskdb
+COPY --from=build /app/publish/taskdb .
+
 WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/nats

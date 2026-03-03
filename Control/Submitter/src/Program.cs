@@ -16,16 +16,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.TaskDB;
+
+
+// using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -38,6 +43,7 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -45,8 +51,10 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using OpenTelemetry.Metrics;
 using OpenTelemetry.Resources;
@@ -57,6 +65,33 @@ using Serilog;
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace ArmoniK.Core.Control.Submitter;
+
+internal class NullAuthenticationTable : IAuthenticationTable
+{
+  public Microsoft.Extensions.Logging.ILogger Logger => NullLogger.Instance;
+
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(HealthCheckResult.Healthy());
+
+  public Task Init(CancellationToken cancellationToken)
+    => Task.CompletedTask;
+
+  public Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
+                                                                          string            fingerprint,
+                                                                          CancellationToken cancellationToken = default)
+    => Task.FromResult<UserAuthenticationResult?>(null);
+
+  public Task<UserAuthenticationResult?> GetIdentityFromUserAsync(int?              id,
+                                                                   string?           username,
+                                                                   CancellationToken cancellationToken = default)
+    => Task.FromResult<UserAuthenticationResult?>(null);
+
+  public void AddRoles(IEnumerable<RoleData> roles) { }
+
+  public void AddUsers(IEnumerable<UserData> users) { }
+
+  public void AddCertificates(IEnumerable<AuthData> certificates) { }
+}
 
 public static class Program
 {
@@ -90,7 +125,7 @@ public static class Program
 
       builder.Services.AddLogging(logger.Configure)
              .AddHttpClient()
-             .AddMongoComponents(builder.Configuration,
+             .AddTaskDBComponents(builder.Configuration,
                                  logger.GetLogger())
              .AddAdapter(builder.Configuration,
                          nameof(Components.QueueAdaptorSettings),
@@ -163,9 +198,22 @@ public static class Program
                          });
       }
 
-      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration);
-      builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
-                                                      out var authCache);
+      // builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration);
+      // builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
+      //        
+      // 
+      builder.Services.Configure<AuthenticatorOptions>(opts =>
+      {
+        opts.RequireAuthentication = false;
+        opts.RequireAuthorization  = false;
+      });
+      builder.Services.AddSingleton<AuthenticationCache>();
+      builder.Services.AddSingleton<IAuthenticationTable, NullAuthenticationTable>();
+      builder.Services.AddAuthentication()
+                      .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName, _ => { });
+      builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
+                      .AddAuthorization();
+
 
       builder.WebHost.UseKestrel(options =>
                                  {
@@ -173,13 +221,13 @@ public static class Program
                                                        listenOptions =>
                                                        {
                                                          listenOptions.Protocols = HttpProtocols.Http2;
-                                                         listenOptions.Use(async (context,
-                                                                                  func) =>
-                                                                           {
-                                                                             await func.Invoke()
-                                                                                       .ConfigureAwait(false);
-                                                                             authCache.FlushConnection(context.ConnectionId);
-                                                                           });
+                                                      //    listenOptions.Use(async (context,
+                                                      //                             func) =>
+                                                      //                      {
+                                                      //                        await func.Invoke()
+                                                      //                                  .ConfigureAwait(false);
+                                                      //                        authCache.FlushConnection(context.ConnectionId);
+                                                      //                      });
                                                        });
                                    options.ListenAnyIP(1081,
                                                        listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
@@ -247,7 +295,7 @@ public static class Program
       var resultTable          = app.Services.GetRequiredService<IResultTable>();
       var partitionTable       = app.Services.GetRequiredService<IPartitionTable>();
       var sessionTable         = app.Services.GetRequiredService<ISessionTable>();
-      var authTable            = app.Services.GetRequiredService<IAuthenticationTable>();
+      // var authTable            = app.Services.GetRequiredService<IAuthenticationTable>();
       var taskObjectFactory    = objectStorage.Init(CancellationToken.None);
       var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
 
@@ -259,8 +307,8 @@ public static class Program
                           .ConfigureAwait(false);
       await sessionTable.Init(CancellationToken.None)
                         .ConfigureAwait(false);
-      await authTable.Init(CancellationToken.None)
-                     .ConfigureAwait(false);
+      // await authTable.Init(CancellationToken.None)
+      //                .ConfigureAwait(false);
 
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);

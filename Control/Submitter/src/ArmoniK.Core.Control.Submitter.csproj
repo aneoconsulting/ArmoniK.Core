@@ -38,6 +38,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Adaptors\TaskDB\src\ArmoniK.Core.Adapters.TaskDB.csproj" />
     <ProjectReference Include="..\..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
     <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>

@@ -22,7 +22,8 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Adapters.MongoDB;
+// using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.TaskDB;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common;
@@ -94,8 +95,9 @@ public static class Program
 
       builder.Services.AddLogging(logger.Configure)
              .AddArmoniKWorkerConnection(builder.Configuration)
-             .AddMongoComponents(builder.Configuration,
-                                 logger.GetLogger())
+            //  .AddMongoComponents(builder.Configuration,
+            //                      logger.GetLogger())
+             .AddTaskDBComponents(builder.Configuration, logger.GetLogger())
              .AddAdapter(builder.Configuration,
                          nameof(Components.QueueAdaptorSettings),
                          logger.GetLogger())

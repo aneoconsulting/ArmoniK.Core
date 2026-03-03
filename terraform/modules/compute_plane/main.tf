@@ -68,8 +68,14 @@ resource "docker_container" "polling_agent" {
   name  = "${var.polling_agent.name}${var.replica_counter}"
   image = docker_image.polling_agent.image_id
 
+  host {
+    host = "host.docker.internal"
+    ip   = "host-gateway"
+  }
+
   networks_advanced {
     name = var.network.name
+  
   }
   network_mode = var.network.driver
 

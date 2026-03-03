@@ -1,0 +1,19 @@
+"global":
+  "evaluation_interval": "15s"
+  "scrape_interval": "15s"
+"scrape_configs":
+- "job_name": "prometheus"
+  "static_configs":
+  - "targets":
+    - "localhost:9090"
+- "job_name": "armonik.control.metrics"
+  "static_configs":
+  - "targets":
+    - "armonik.control.metrics:1080"
+- "job_name": "armonik.compute.polling_agent"
+  "static_configs":
+  - "targets":
+    - "armonik.compute.pollingagent0:1080"
+    - "armonik.compute.pollingagent1:1080"
+    - "armonik.compute.pollingagent2:1080"
+    - "armonik.control.submitter:1081"

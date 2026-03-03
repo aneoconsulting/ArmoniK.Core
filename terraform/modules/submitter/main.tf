@@ -51,6 +51,11 @@ resource "docker_container" "submitter" {
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts
 
+  host {
+    host = "host.docker.internal"
+    ip   = "host-gateway"
+  }
+
   ports {
     internal = 1080
     external = 5001
