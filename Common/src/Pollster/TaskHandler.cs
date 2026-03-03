@@ -194,7 +194,22 @@ public sealed class TaskHandler : IAsyncDisposable
     folder_ = Path.Combine(pollsterOptions.SharedCacheFolder,
                            token_);
     Directory.CreateDirectory(folder_);
-    Directory.CreateDirectory(cache_);
+
+    if (cacheEvictionThreshold_ > 0)
+    {
+      try
+      {
+        Directory.CreateDirectory(cache_);
+      }
+      catch (Exception ex)
+      {
+        // cache should be best effort, if it fails we continue without cache
+        logger_.LogWarning(ex,
+                           "Cache folder {Cache} was not created",
+                           cache_);
+      }
+    }
+
     delayBeforeAcquisition_  = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
     messageDuplicationDelay_ = pollsterOptions.MessageDuplicationDelay;
     processingCrashedDelay_  = pollsterOptions.ProcessingCrashedDelay;
