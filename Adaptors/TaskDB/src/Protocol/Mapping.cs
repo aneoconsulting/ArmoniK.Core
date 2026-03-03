@@ -278,11 +278,11 @@ public static SessionData ToDomain(this WireSessionData w)
          true,  // ClientSubmission
          true,  // WorkerSubmission
          w.CreationDate,
-         NullIfMinValue(w.CancellationDate),
-         NullIfMinValue(w.ClosureDate),
-         NullIfMinValue(w.PurgeDate),
-         NullIfMinValue(w.DeleteDate),   // was: DeleteDate
-         NullIfMinValue(w.DeletionTtl),
+         NullIfMinValue(w.CancellationDate ?? DateTime.MinValue),
+         NullIfMinValue(w.ClosureDate ?? DateTime.MinValue),
+         NullIfMinValue(w.PurgeDate ?? DateTime.MinValue),
+         NullIfMinValue(w.DeleteDate?? DateTime.MinValue),   // was: DeleteDate
+         NullIfMinValue(w.DeletionTtl?? DateTime.MinValue),
          w.DurationTicks == 0 ? null : TimeSpan.FromTicks(w.DurationTicks),
          w.PartitionIds,   // ← was missing
          w.Options.ToDomain());

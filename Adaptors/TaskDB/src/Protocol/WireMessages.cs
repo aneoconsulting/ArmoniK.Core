@@ -136,11 +136,11 @@ internal class WireSessionData
   [Key("PartitionIds")]     public List<string>     PartitionIds     { get; set; } = new();
   [Key("Options")]          public WireTaskOptions  Options          { get; set; } = new();
   [Key("CreationDate")]     public DateTime         CreationDate     { get; set; }
-  [Key("CancellationDate")] public DateTime         CancellationDate { get; set; }
-  [Key("ClosureDate")]      public DateTime         ClosureDate      { get; set; }
-  [Key("PurgeDate")]        public DateTime         PurgeDate        { get; set; }
-  [Key("DeleteDate")]       public DateTime         DeleteDate       { get; set; }
-  [Key("DeletionTtl")]      public DateTime         DeletionTtl      { get; set; }
+  [Key("CancellationDate")] public DateTime? CancellationDate { get; set; }
+  [Key("ClosureDate")]      public DateTime? ClosureDate      { get; set; }
+  [Key("PurgeDate")]        public DateTime? PurgeDate        { get; set; }
+  [Key("DeleteDate")]       public DateTime? DeleteDate       { get; set; }
+  [Key("DeletionTtl")]      public DateTime? DeletionTtl      { get; set; }
   [Key("Duration")]         public long             DurationTicks    { get; set; }
 }
 
