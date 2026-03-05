@@ -33,7 +33,12 @@ jobs:
       run: pip install requests
 
     - name: Remove old branch images
-      run: python tools/remove_images.py dockerhubaneo "armonik_${{ matrix.image }}" "${{ secrets.DOCKER_HUB_LOGIN }}" "${{ secrets.DOCKER_HUB_TOKEN }}"
+      uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/remove-images@main
+      with:
+        org: dockerhubaneo
+        image: ${{ matrix.image }}
+        user: ${{ secrets.DOCKERHUB_USER }}
+        token: ${{ secrets.DOCKERHUB_TOKEN }}
 
   nugets:
     runs-on: ubuntu-latest
@@ -53,4 +58,7 @@ jobs:
       run: pip install requests
 
     - name: Unlist old branch nugets
-      run: python tools/unlist_nugets.py "${{ matrix.nuget }}" "${{ secrets.NUGET_API_KEY }}"
+      uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/unlist-nugets@main
+      with:
+        nuget: ${{ matrix.nuget }}
+        token: ${{ secrets.NUGET_API_KEY }}
