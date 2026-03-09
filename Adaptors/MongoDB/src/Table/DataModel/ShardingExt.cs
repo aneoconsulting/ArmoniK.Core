@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using MongoDB.Bson;
@@ -48,7 +49,9 @@ public static class ShardingExt
                                   "key", new Dictionary<string, object>
                                          {
                                            {
-                                             "_id", "hashed"
+                                             "_id", options.UseHashed
+                                                      ? "hashed"
+                                                      : 1
                                            },
                                          }
                                 },
@@ -57,5 +60,32 @@ public static class ShardingExt
     var shardingCommand = new BsonDocumentCommand<BsonDocument>(new BsonDocument(shardingCommandDict));
     await adminDb.RunCommandAsync(shardingCommand)
                  .ConfigureAwait(false);
+  }
+
+
+  /// <summary>
+  ///   Determines whether the specified MongoDB collection is sharded.
+  /// </summary>
+  /// <remarks>
+  ///   This method queries the collection's statistics to determine if sharding is enabled. The
+  ///   operation requires appropriate database permissions to run the 'collStats' command.
+  /// </remarks>
+  /// <typeparam name="T">The type of the documents in the collection.</typeparam>
+  /// <param name="collection">The MongoDB collection to check for sharding. Cannot be null.</param>
+  /// <param name="cancellationToken">A token to cancel the asynchronous operation.</param>
+  /// <returns>
+  ///   A task that represents the asynchronous operation. The task result contains <see langword="true" /> if the
+  ///   collection is sharded; otherwise, <see langword="false" />.
+  /// </returns>
+  public static async Task<bool> IsShardedAsync<T>(this IMongoCollection<T> collection,
+                                                   CancellationToken        cancellationToken)
+  {
+    var stats = await collection.Database.RunCommandAsync<BsonDocument>(new BsonDocument("collStats",
+                                                                                         collection.CollectionNamespace.CollectionName),
+                                                                        cancellationToken: cancellationToken)
+                                .ConfigureAwait(false);
+    return stats.GetValue("sharded",
+                          false)
+                .AsBoolean;
   }
 }
