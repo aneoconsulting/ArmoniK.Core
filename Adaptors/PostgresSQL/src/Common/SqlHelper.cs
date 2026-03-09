@@ -176,6 +176,11 @@ public static class SqlHelper
                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
                                       col.ToArray());
           break;
+        case IEnumerable<string> en:
+          cmd.Parameters.AddWithValue(name,
+                                      NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                      en.ToArray());
+          break;
         default:
           cmd.Parameters.AddWithValue(name,
                                       value);

@@ -317,10 +317,10 @@ public class ExpressionToSql<T>
       }
     }
 
-    // Convert IList<string> to string[] for PostgreSQL arrays
-    if (value is IList<string> stringList)
+    // Convert IEnumerable<string> to string[] for PostgreSQL arrays
+    if (value is IEnumerable<string> stringEnumerable)
     {
-      value = stringList.ToArray();
+      value = stringEnumerable.ToArray();
     }
 
     // Convert IDictionary<string, bool> to its keys for PostgreSQL

@@ -27,6 +27,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using ConfigurationExt = ArmoniK.Core.Utils.ConfigurationExt;
@@ -40,6 +41,7 @@ public static class ServiceCollectionExt
 {
   /// <summary>
   ///   Adds PostgreSQL components to the specified service collection.
+  ///   This method configures the PostgreSQL connection and storage services based on the provided configuration.
   /// </summary>
   /// <param name="services">The service collection to which the PostgreSQL components will be added.</param>
   /// <param name="configuration">The configuration manager used to retrieve PostgreSQL settings.</param>
@@ -49,6 +51,25 @@ public static class ServiceCollectionExt
   public static IServiceCollection AddPostgresComponents(this IServiceCollection services,
                                                           ConfigurationManager    configuration,
                                                           ILogger                 logger)
+  {
+    services.AddPostgresClient(configuration,
+                               logger);
+    services.AddPostgresStorages(configuration,
+                                 logger);
+    return services;
+  }
+
+  /// <summary>
+  ///   Adds PostgreSQL storage services to the specified service collection.
+  /// </summary>
+  /// <param name="services">The service collection to which the PostgreSQL storage services will be added.</param>
+  /// <param name="configuration">The configuration manager used to retrieve PostgreSQL settings.</param>
+  /// <param name="logger">The logger instance used for logging purposes.</param>
+  /// <returns>The updated service collection with PostgreSQL storage services added.</returns>
+  [PublicAPI]
+  public static IServiceCollection AddPostgresStorages(this IServiceCollection services,
+                                                        ConfigurationManager    configuration,
+                                                        ILogger                 logger)
   {
     logger.LogInformation("Configure PostgreSQL Components");
 
@@ -66,10 +87,27 @@ public static class ServiceCollectionExt
               .AddSingleton<IResultWatcher, ResultWatcher>();
     }
 
-    services.AddSingleton(ConfigurationExt.GetRequiredValue<Options.PostgreSQL>(configuration,
-                                                                                Options.PostgreSQL.SettingSection))
-            .AddSingletonWithHealthCheck<NpgsqlConnectionProvider>("PostgreSQL.ConnectionProvider");
+    services.TryAddSingleton(_ => ConfigurationExt.GetRequiredValue<Options.PostgreSQL>(configuration,
+                                                                                         Options.PostgreSQL.SettingSection));
+    services.AddSingletonWithHealthCheck<NpgsqlConnectionProvider>("PostgreSQL.ConnectionProvider");
 
+    return services;
+  }
+
+  /// <summary>
+  ///   Adds a PostgreSQL client to the specified service collection.
+  /// </summary>
+  /// <param name="services">The service collection to which the PostgreSQL client will be added.</param>
+  /// <param name="configuration">The configuration manager used to retrieve PostgreSQL settings.</param>
+  /// <param name="logger">The logger instance used for logging purposes.</param>
+  /// <returns>The updated service collection with the PostgreSQL client added.</returns>
+  [PublicAPI]
+  public static IServiceCollection AddPostgresClient(this IServiceCollection services,
+                                                      ConfigurationManager    configuration,
+                                                      ILogger                 logger)
+  {
+    services.TryAddSingleton(_ => ConfigurationExt.GetRequiredValue<Options.PostgreSQL>(configuration,
+                                                                                         Options.PostgreSQL.SettingSection));
     return services;
   }
 

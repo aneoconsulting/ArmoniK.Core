@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.PostgresSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -89,10 +90,14 @@ public static class Program
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
-             .AddHttpClient()
-             .AddMongoComponents(builder.Configuration,
-                                 logger.GetLogger())
-             .AddAdapter(builder.Configuration,
+             .AddHttpClient();
+
+        builder.Services.AddPostgresComponents(builder.Configuration,
+                                               logger.GetLogger());
+        builder.Services.AddMongoComponents(builder.Configuration,
+                                            logger.GetLogger());
+
+      builder.Services.AddAdapter(builder.Configuration,
                          nameof(Components.QueueAdaptorSettings),
                          logger.GetLogger())
              .AddAdapter(builder.Configuration,
@@ -163,7 +168,10 @@ public static class Program
                          });
       }
 
-      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration);
+        ArmoniK.Core.Adapters.PostgresSQL.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
+                                                                                                       builder.Configuration);
+        ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
+                                                                                                   builder.Configuration);
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
                                                       out var authCache);
 

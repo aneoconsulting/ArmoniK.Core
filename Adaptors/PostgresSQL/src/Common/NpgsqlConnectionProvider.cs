@@ -92,11 +92,26 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable
     await using var connection = await GetConnectionAsync(cancellationToken)
                                    .ConfigureAwait(false);
 
+    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
+                                                  .ConfigureAwait(false);
+
+    await using (var lockCmd = connection.CreateCommand())
+    {
+      lockCmd.Transaction = transaction;
+      lockCmd.CommandText = "SELECT pg_advisory_xact_lock(7243658712345678)";
+      await lockCmd.ExecuteNonQueryAsync(cancellationToken)
+                   .ConfigureAwait(false);
+    }
+
     await using var cmd = connection.CreateCommand();
+    cmd.Transaction  = transaction;
     cmd.CommandText = SchemaDdl;
 
     await cmd.ExecuteNonQueryAsync(cancellationToken)
              .ConfigureAwait(false);
+
+    await transaction.CommitAsync(cancellationToken)
+                     .ConfigureAwait(false);
 
     await SeedInitData(connection,
                        cancellationToken)

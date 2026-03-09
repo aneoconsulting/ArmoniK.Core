@@ -27,12 +27,22 @@ module "prometheus" {
   submitter_names     = [var.submitter.name]
 }
 
-module "database" {
+module "database_mongo" {
   source         = "./modules/storage/database/mongo"
-  image          = var.database_image
+  count          = var.database_storage.name == "mongo" ? 1 : 0
+  image          = var.database_storage.image
   network        = local.network
   mongodb_params = var.mongodb_params
   windows        = var.windows
+}
+
+module "database_postgresql" {
+  source            = "./modules/storage/database/postgresql"
+  count             = var.database_storage.name == "postgresql" ? 1 : 0
+  image             = var.database_storage.image
+  network           = local.network
+  postgresql_params = var.postgresql_params
+  windows           = var.windows
 }
 
 module "object_redis" {

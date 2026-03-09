@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.PostgresSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common;
@@ -93,10 +94,14 @@ public static class Program
              .ConfigureHostOptions(options => options.ShutdownTimeout = 2 * pollsterOptions.GraceDelay);
 
       builder.Services.AddLogging(logger.Configure)
-             .AddArmoniKWorkerConnection(builder.Configuration)
-             .AddMongoComponents(builder.Configuration,
-                                 logger.GetLogger())
-             .AddAdapter(builder.Configuration,
+             .AddArmoniKWorkerConnection(builder.Configuration);
+
+        builder.Services.AddPostgresComponents(builder.Configuration,
+                                               logger.GetLogger());
+        builder.Services.AddMongoComponents(builder.Configuration,
+                                            logger.GetLogger());
+
+      builder.Services.AddAdapter(builder.Configuration,
                          nameof(Components.QueueAdaptorSettings),
                          logger.GetLogger())
              .AddAdapter(builder.Configuration,

@@ -73,7 +73,8 @@ public static class RowMapper
                         (TaskStatus)reader.GetInt32(reader.GetOrdinal("status")),
                         reader.GetString(reader.GetOrdinal("status_message")),
                         options,
-                        reader.GetDateTime(reader.GetOrdinal("creation_date")),
+                        GetUtcDateTime(reader,
+                                       reader.GetOrdinal("creation_date")),
                         GetNullableDateTime(reader,
                                             "submitted_date"),
                         GetNullableDateTime(reader,
@@ -121,7 +122,8 @@ public static class RowMapper
                            (SessionStatus)reader.GetInt32(reader.GetOrdinal("status")),
                            reader.GetBoolean(reader.GetOrdinal("client_submission")),
                            reader.GetBoolean(reader.GetOrdinal("worker_submission")),
-                           reader.GetDateTime(reader.GetOrdinal("creation_date")),
+                           GetUtcDateTime(reader,
+                                          reader.GetOrdinal("creation_date")),
                            GetNullableDateTime(reader,
                                                "cancellation_date"),
                            GetNullableDateTime(reader,
@@ -155,7 +157,8 @@ public static class RowMapper
            GetStringArray(reader,
                           "dependent_tasks")
              .ToList(),
-           reader.GetDateTime(reader.GetOrdinal("creation_date")),
+           GetUtcDateTime(reader,
+                          reader.GetOrdinal("creation_date")),
            GetNullableDateTime(reader,
                                "completion_date"),
            reader.GetInt64(reader.GetOrdinal("size")),
@@ -213,13 +216,19 @@ public static class RowMapper
     return reader.GetFieldValue<byte[]>(ordinal);
   }
 
+  private static DateTime GetUtcDateTime(NpgsqlDataReader reader,
+                                         int              ordinal)
+    => DateTime.SpecifyKind(reader.GetDateTime(ordinal),
+                            DateTimeKind.Utc);
+
   private static DateTime? GetNullableDateTime(NpgsqlDataReader reader,
                                                string           columnName)
   {
     var ordinal = reader.GetOrdinal(columnName);
     return reader.IsDBNull(ordinal)
              ? null
-             : reader.GetDateTime(ordinal);
+             : GetUtcDateTime(reader,
+                              ordinal);
   }
 
   private static TimeSpan? GetNullableTimeSpan(NpgsqlDataReader reader,

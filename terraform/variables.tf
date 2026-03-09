@@ -203,9 +203,31 @@ variable "enable_prometheus" {
   default = true
 }
 
-variable "database_image" {
-  type    = string
-  default = "mongo"
+variable "database_storage" {
+  type = object({
+    name  = optional(string, "mongo")
+    image = optional(string, "mongo")
+  })
+  description = "Parameters to define the database backend"
+  validation {
+    condition     = can(regex("^(mongo|postgresql)$", var.database_storage.name))
+    error_message = "Must be mongo or postgresql"
+  }
+  default = {}
+}
+
+variable "postgresql_params" {
+  type = object({
+    user              = optional(string, "postgres")
+    password          = optional(string, "postgres")
+    database_name     = optional(string, "database")
+    ssl               = optional(bool, false)
+    max_pool_size     = optional(number, 100)
+    exposed_port      = optional(number, 5432)
+    min_polling_delay = optional(string, "00:00:01")
+    max_polling_delay = optional(string, "00:00:10")
+  })
+  default = {}
 }
 
 variable "otel_collector_image" {
