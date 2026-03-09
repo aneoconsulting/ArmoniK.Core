@@ -20,6 +20,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common;
@@ -232,6 +233,12 @@ public class MongoCollectionProvider<TData, TModelMapping> : IInitializable, IAs
         lastException = null;
         try
         {
+          if (await collection.IsShardedAsync(cancellationToken)
+                              .ConfigureAwait(false))
+          {
+            break;
+          }
+
           await model.ShardCollectionAsync(session,
                                            options)
                      .ConfigureAwait(false);
