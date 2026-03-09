@@ -49,7 +49,9 @@ public static class ShardingExt
                                   "key", new Dictionary<string, object>
                                          {
                                            {
-                                             "_id", "hashed"
+                                             "_id", options.UseHashed
+                                                      ? "hashed"
+                                                      : 1
                                            },
                                          }
                                 },
