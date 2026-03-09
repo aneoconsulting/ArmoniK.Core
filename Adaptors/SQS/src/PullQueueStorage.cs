@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -68,8 +67,9 @@ internal class PullQueueStorage : IPullQueueStorage
 
     var queueInfos = new List<(string queueUrl, string queueName, int priority)>();
 
-    for (var i = 0; i < int.Max(options_.MaxPriority,
-                                1); i++)
+    var maxPriority = int.Max(options_.MaxPriority,
+                              1);
+    for (var i = maxPriority; i >= 1; i--)
     {
       var priority = i + 1;
       logger_.LogDebug("Getting queue for priority #{SqsPriority} with options {@SqsOptions}",
@@ -91,7 +91,7 @@ internal class PullQueueStorage : IPullQueueStorage
       queueInfos.Add((queueUrl, queueName, priority));
     }
 
-    foreach (var (queueUrl, queueName, priority) in queueInfos.OrderByDescending(x => x.priority))
+    foreach (var (queueUrl, queueName, priority) in queueInfos)
     {
       logger_.LogDebug("Try pulling {NbMessages} from {QueueUrl} (priority {Priority}) with options {@SqsOptions}",
                        nbMessages,

@@ -51,5 +51,8 @@
     <ProjectReference Include="..\..\Utils\src\ArmoniK.Core.Utils.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <InternalsVisibleTo Include="ArmoniK.Core.Common.Tests" />
+  </ItemGroup>
 
 </Project>
