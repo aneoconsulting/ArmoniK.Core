@@ -16,16 +16,18 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
@@ -41,6 +43,7 @@ using NUnit.Framework;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
+using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
@@ -1496,5 +1499,109 @@ public class TaskLifeCycleHelperTest
                                                       : "A")
                                      .And.No.Member("root"));
                     });
+  }
+
+  [Test]
+  public void GroupMessageByPartitionAndOrderItByPriority_Should_GroupMessagesByPartition_AndOrderByPriorityDescending()
+  {
+    const int numberOfPartitions                 = 5;
+    const int minimalNumberOfMessagesInPartition = 10;
+    const int maximalNumberOfMessagesInPartition = 21;
+    const int minimalTaskPriority                = 1;
+    const int maximalTaskPriority                = 11;
+    var       dataMessagesCollection             = new ConcurrentBag<MessageData>();
+
+    // The dictionary will serve to get the sessions with the right priority, and we will avoid some edge cases
+    //
+    var dataMessagesByPrioritiesByPartition = new ConcurrentDictionary<string, OrderedDictionary<int, HashSet<MessageData>>>();
+
+
+    // The parallel to have mixed messages
+    Parallel.For(0,
+                 numberOfPartitions,
+                 i =>
+                 {
+                   var currentPartition              = $"PartionId_{i}";
+                   var currentDataMessagesForSession = new List<MessageData>();
+
+                   // We will consider here that we will have different sessions on partition.
+                   var dataMessagesSessionIdByPriority = new OrderedDictionary<int, HashSet<MessageData>>();
+
+                   dataMessagesByPrioritiesByPartition.TryAdd(currentPartition,
+                                                              dataMessagesSessionIdByPriority);
+
+                   Span<byte> numberOfPartitionMessageByteSeed = stackalloc byte[4];
+                   RandomNumberGenerator.Fill(numberOfPartitionMessageByteSeed);
+                   var seedToUseWithinRandom = BitConverter.ToInt32(numberOfPartitionMessageByteSeed);
+
+                   var random = new Random(seedToUseWithinRandom);
+
+                   var numberOfMessages = random.Next(minimalNumberOfMessagesInPartition,
+                                                      maximalNumberOfMessagesInPartition);
+
+                   for (var j = 0; j <= numberOfMessages; j++)
+                   {
+                     var currentSession = Guid.NewGuid()
+                                              .ToString();
+                     var currentTask = Guid.NewGuid()
+                                           .ToString();
+
+                     var priority = random.Next(minimalTaskPriority,
+                                                maximalTaskPriority);
+
+                     var currentOption = new Base.DataStructures.TaskOptions
+                                         {
+                                           Priority    = priority,
+                                           PartitionId = currentPartition,
+                                         };
+                     var messageData = new MessageData(currentTask,
+                                                       currentSession,
+                                                       currentOption);
+                     currentDataMessagesForSession.Add(messageData);
+                     dataMessagesCollection.Add(messageData);
+                   }
+
+                   foreach (var messageData in currentDataMessagesForSession.OrderByDescending(p => p.Options.Priority))
+                   {
+                     var priority = messageData.Options.Priority;
+                     if (!dataMessagesSessionIdByPriority.ContainsKey(priority))
+                     {
+                       dataMessagesSessionIdByPriority.Add(priority,
+                                                           new HashSet<MessageData>());
+                     }
+
+                     dataMessagesSessionIdByPriority[priority]
+                       .Add(messageData);
+                   }
+                 });
+
+    var messagesGroupedByPartitionAndOrderedByPriority = TaskLifeCycleHelper.GroupMessageByPartitionAndOrderItByPriority(dataMessagesCollection)
+                                                                            .ToList();
+
+    Assert.That(messagesGroupedByPartitionAndOrderedByPriority,
+                Is.Not.Empty);
+    foreach (var messageGrouped in messagesGroupedByPartitionAndOrderedByPriority)
+    {
+      var messageGroupPartition = messageGrouped.Key.PartitionId;
+      var messageGroupPriority  = messageGrouped.Key.PriorityId;
+
+      var dataMessagesForPartition = dataMessagesByPrioritiesByPartition[messageGroupPartition];
+
+      var firstElementOfDictionary = dataMessagesForPartition.FirstOrDefault();
+
+      var expectedPriority = firstElementOfDictionary.Key;
+      Assert.That(messageGroupPriority,
+                  Is.EqualTo(expectedPriority));
+
+      var messageDataWithinPartitionAndPriority = dataMessagesForPartition[messageGroupPriority];
+
+      foreach (var messageData in messageGrouped)
+      {
+        Assert.That(messageDataWithinPartitionAndPriority.Contains(messageData),
+                    Is.True);
+      }
+
+      dataMessagesForPartition.Remove(messageGroupPriority);
+    }
   }
 }

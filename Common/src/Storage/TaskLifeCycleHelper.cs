@@ -516,9 +516,10 @@ public static class TaskLifeCycleHelper
       return;
     }
 
-    if (sessionData.Status != SessionStatus.Paused)
+    if (sessionData.Status is not SessionStatus.Paused)
     {
-      foreach (var group in messages.GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority)))
+      var groupedMessageByPartitionAndOrderedByPriority = GroupMessageByPartitionAndOrderItByPriority(messages);
+      foreach (var group in groupedMessageByPartitionAndOrderedByPriority)
       {
         await pushQueueStorage.PushMessagesAsync(group,
                                                  group.Key.PartitionId,
@@ -536,6 +537,11 @@ public static class TaskLifeCycleHelper
                                          cancellationToken)
                    .ConfigureAwait(false);
   }
+
+  internal static IEnumerable<IGrouping<(string PartitionId, int PriorityId), MessageData>> GroupMessageByPartitionAndOrderItByPriority(
+    IEnumerable<MessageData> dataMessages)
+    => dataMessages.OrderByDescending(dm => dm.Options.Priority)
+                   .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority));
 
   /// <summary>
   ///   Resume session and its paused tasks
@@ -563,6 +569,7 @@ public static class TaskLifeCycleHelper
                                                                                     data.SessionId,
                                                                                     data.Options),
                                                             cancellationToken)
+                                            .OrderByDescending(msg => msg.Options.Priority)
                                             .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority))
                                             .WithCancellation(cancellationToken)
                                             .ConfigureAwait(false))
