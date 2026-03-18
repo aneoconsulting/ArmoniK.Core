@@ -257,12 +257,12 @@ public class TestTaskHandlerProvider : IDisposable
 
   public void Dispose()
   {
-    ((IDisposable)app_)?.Dispose();
-    loggerFactory_?.Dispose();
-    runner_?.Dispose();
     TaskHandler.DisposeAsync()
                .AsTask()
                .Wait();
+    ((IDisposable)app_)?.Dispose();
+    runner_?.Dispose();
+    loggerFactory_?.Dispose();
     GC.SuppressFinalize(this);
   }
 

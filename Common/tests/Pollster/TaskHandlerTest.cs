@@ -2306,8 +2306,15 @@ public class TaskHandlerTest
                     await testServiceProvider.TaskTable.GetTaskStatus(taskId)
                                              .ConfigureAwait(false));
 
-    Assert.AreEqual(QueueMessageStatus.Cancelled,
-                    sqmh.Status);
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Processed));
+
+    await testServiceProvider.TaskHandler.DisposeAsync()
+                             .ConfigureAwait(false);
+
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Cancelled));
   }
 
   [Test]
