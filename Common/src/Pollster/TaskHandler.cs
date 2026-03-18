@@ -93,6 +93,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private          Action?                               onDispose_;
   private          Output?                               output_;
   private          SessionData?                          sessionData_;
+  private          bool                                  taskCancelled_;
   private          TaskData?                             taskData_;
 
   /// <summary>
@@ -234,6 +235,13 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("taskId", messageHandler_.TaskId),
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
+
+    if (taskData_ != null && (taskCancelled_ || taskData_.Status is TaskStatus.Cancelling))
+    {
+      taskData_ = await taskTable_.SetCancelledAsync(taskData_.TaskId,
+                                                     CancellationToken.None)
+                                  .ConfigureAwait(false) ?? taskData_;
+    }
 
     await ReleaseTaskHandler()
       .ConfigureAwait(false);
@@ -390,7 +398,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
 
-    if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
+    if (taskData_?.Status is not null)
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                  CancellationToken.None)
@@ -398,7 +406,7 @@ public sealed class TaskHandler : IAsyncDisposable
       sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
                                                          CancellationToken.None)
                                         .ConfigureAwait(false);
-      if (taskData_.Status is TaskStatus.Cancelling || sessionData_.Status is SessionStatus.Cancelled)
+      if (taskData_.Status is TaskStatus.Cancelling or TaskStatus.Cancelled || sessionData_.Status is SessionStatus.Cancelled)
       {
         logger_.LogWarning("Task has been cancelled, trigger cancellation from exterior.");
         await earlyCts_.CancelAsync()
@@ -408,10 +416,8 @@ public sealed class TaskHandler : IAsyncDisposable
 
         // Upon cancellation, dispose the messageHandler to remove the message from the queue, and call onDispose
         // Calling the TaskHandler dispose is not possible here as the cancellationTokenSource is still in use
-        messageHandler_.Status = QueueMessageStatus.Cancelled;
-        await ReleaseTaskHandler()
-          .ConfigureAwait(false);
-
+        messageHandler_.Status = QueueMessageStatus.Processed;
+        taskCancelled_         = true;
         return true;
       }
     }
@@ -1315,7 +1321,7 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(sessionData_) + " is null.");
     }
 
-    if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
+    if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling || taskCancelled_)
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
     }

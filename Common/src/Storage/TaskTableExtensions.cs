@@ -163,6 +163,30 @@ public static class TaskTableExtensions
   }
 
   /// <summary>
+  ///   Marks the specified task as cancelled in the task table asynchronously, if it has not already reached a final
+  ///   status.
+  /// </summary>
+  /// <remarks>
+  ///   If the task has already reached a final status, its status will not be updated. The method sets
+  ///   the task's status to Cancelled and updates its end date to the current UTC time.
+  /// </remarks>
+  /// <param name="taskTable">The task table in which the task status will be updated. Cannot be null.</param>
+  /// <param name="taskId">The unique identifier of the task to mark as cancelled. Cannot be null or empty.</param>
+  /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+  /// <returns>A task that represents the asynchronous operation.</returns>
+  public static async Task<TaskData?> SetCancelledAsync(this ITaskTable   taskTable,
+                                                        string            taskId,
+                                                        CancellationToken cancellationToken = default)
+    => await taskTable.UpdateOneTask(taskId,
+                                     data => !FinalStatus.Contains(data.Status),
+                                     new UpdateDefinition<TaskData>().Set(tdm => tdm.Status,
+                                                                          TaskStatus.Cancelled)
+                                                                     .Set(tdm => tdm.EndDate,
+                                                                          DateTime.UtcNow),
+                                     cancellationToken: cancellationToken)
+                      .ConfigureAwait(false);
+
+  /// <summary>
   ///   Tag a collection of tasks as submitted
   /// </summary>
   /// <param name="taskTable">Interface to manage tasks lifecycle</param>
