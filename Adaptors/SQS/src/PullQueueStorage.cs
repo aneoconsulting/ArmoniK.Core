@@ -21,8 +21,15 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Amazon.SQS;
+using Amazon.SQS.Model;
+
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.SQS;
 
