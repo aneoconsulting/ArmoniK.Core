@@ -1,45 +1,32 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Base;
-using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Utils;
-
-using Google.Protobuf.WellKnownTypes;
-
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging.Abstractions;
-
-using NUnit.Framework;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
@@ -52,229 +39,14 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class TaskLifeCycleHelperTest
 {
-  private class Holder : IDisposable
+  public enum CrashState
   {
-    public const  string Partition       = "PartitionId";
-    private const string ExpectedOutput1 = "ExpectedOutput1";
-    private const string ExpectedOutput2 = "ExpectedOutput2";
-    private const string DataDependency1 = "DataDependency1";
-    private const string DataDependency2 = "DataDependency2";
-
-    private static readonly Injection.Options.Submitter SubmitterOptions = new()
-                                                                           {
-                                                                             DefaultPartition = Partition,
-                                                                             MaxErrorAllowed  = -1,
-                                                                           };
-
-
-    public readonly string         Folder;
-    public readonly IObjectStorage ObjectStorage;
-
-    public readonly TaskOptions Options = new()
-                                          {
-                                            ApplicationName      = "applicationName",
-                                            ApplicationNamespace = "applicationNamespace",
-                                            ApplicationVersion   = "applicationVersion",
-                                            ApplicationService   = "applicationService",
-                                            EngineType           = "engineType",
-                                            PartitionId          = Partition,
-                                            MaxDuration          = Duration.FromTimeSpan(TimeSpan.FromMinutes(10)),
-                                            MaxRetries           = 5,
-                                            Priority             = 1,
-                                            Options =
-                                            {
-                                              {
-                                                "key1", "val1"
-                                              },
-                                              {
-                                                "key2", "val2"
-                                              },
-                                            },
-                                          };
-
-    public readonly  IPartitionTable               PartitionTable;
-    private readonly TestDatabaseProvider          prov_;
-    public readonly  IPullQueueStorage             PullQueueStorage;
-    public readonly  IPushQueueStorage             PushQueueStorage;
-    public readonly  SimplePullQueueStorageChannel QueueStorage;
-    public readonly  IResultTable                  ResultTable;
-    public readonly  string                        Session;
-    public readonly  ISessionTable                 SessionTable;
-    public readonly  ISubmitter                    Submitter;
-    public readonly  ITaskTable                    TaskTable;
-
-    public Holder()
-    {
-      QueueStorage     = new SimplePullQueueStorageChannel();
-      PushQueueStorage = QueueStorage;
-      PullQueueStorage = QueueStorage;
-      prov_ = new TestDatabaseProvider(collection => collection.AddSingleton<ISubmitter, gRPC.Services.Submitter>()
-                                                               .AddSingleton(SubmitterOptions)
-                                                               .AddSingleton(PushQueueStorage)
-                                                               .AddSingleton(PullQueueStorage));
-
-      ResultTable    = prov_.GetRequiredService<IResultTable>();
-      TaskTable      = prov_.GetRequiredService<ITaskTable>();
-      ObjectStorage  = prov_.GetRequiredService<IObjectStorage>();
-      SessionTable   = prov_.GetRequiredService<ISessionTable>();
-      PartitionTable = prov_.GetRequiredService<IPartitionTable>();
-      Submitter      = prov_.GetRequiredService<ISubmitter>();
-
-      PartitionTable.CreatePartitionsAsync(new List<PartitionData>
-                                           {
-                                             new(Partition,
-                                                 new List<string>(),
-                                                 1,
-                                                 1,
-                                                 1,
-                                                 1,
-                                                 null),
-                                           })
-                    .Wait();
-
-      Session = SessionTable.SetSessionDataAsync(new[]
-                                                 {
-                                                   Partition,
-                                                 },
-                                                 Options.ToTaskOptions(),
-                                                 CancellationToken.None)
-                            .Result;
-
-      var sessionData = SessionTable.GetSessionAsync(Session,
-                                                     CancellationToken.None)
-                                    .Result;
-
-      ResultTable.Create(new[]
-                         {
-                           new Result(sessionData.SessionId,
-                                      DataDependency1,
-                                      "",
-                                      "",
-                                      "",
-                                      "",
-                                      ResultStatus.Completed,
-                                      new List<string>(),
-                                      DateTime.UtcNow,
-                                      DateTime.UtcNow,
-                                      0,
-                                      Array.Empty<byte>(),
-                                      false),
-                           new Result(sessionData.SessionId,
-                                      DataDependency2,
-                                      "",
-                                      "",
-                                      "",
-                                      "",
-                                      ResultStatus.Completed,
-                                      new List<string>(),
-                                      DateTime.UtcNow,
-                                      DateTime.UtcNow,
-                                      0,
-                                      Array.Empty<byte>(),
-                                      false),
-                           new Result(Session,
-                                      ExpectedOutput1,
-                                      "",
-                                      "",
-                                      "",
-                                      "",
-                                      ResultStatus.Created,
-                                      new List<string>(),
-                                      DateTime.UtcNow,
-                                      null,
-                                      0,
-                                      Array.Empty<byte>(),
-                                      false),
-                           new Result(Session,
-                                      ExpectedOutput2,
-                                      "",
-                                      "",
-                                      "",
-                                      "",
-                                      ResultStatus.Created,
-                                      new List<string>(),
-                                      DateTime.UtcNow,
-                                      null,
-                                      0,
-                                      Array.Empty<byte>(),
-                                      false),
-                         },
-                         CancellationToken.None)
-                 .Wait();
-
-      Folder = Path.Combine(Path.GetTempPath(),
-                            "data");
-      Directory.CreateDirectory(Folder);
-
-      var createdTasks = Submitter.CreateTasks(Session,
-                                               Session,
-                                               Options.ToTaskOptions(),
-                                               new[]
-                                               {
-                                                 new TaskRequest(new List<string>
-                                                                 {
-                                                                   ExpectedOutput1,
-                                                                 },
-                                                                 new List<string>(),
-                                                                 new List<byte[]>
-                                                                   {
-                                                                     Encoding.ASCII.GetBytes("Payload1"),
-                                                                     Encoding.ASCII.GetBytes("Payload2"),
-                                                                   }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
-                                                                    .ToAsyncEnumerable()),
-                                               }.ToAsyncEnumerable(),
-                                               CancellationToken.None)
-                                  .Result;
-
-      Submitter.FinalizeTaskCreation(createdTasks,
-                                     sessionData,
-                                     Session,
-                                     CancellationToken.None)
-               .Wait();
-
-      var createdTasks2 = Submitter.CreateTasks(Session,
-                                                Session,
-                                                Options.ToTaskOptions(),
-                                                new[]
-                                                {
-                                                  new TaskRequest(new List<string>
-                                                                  {
-                                                                    ExpectedOutput2,
-                                                                  },
-                                                                  new List<string>
-                                                                  {
-                                                                    ExpectedOutput1,
-                                                                  },
-                                                                  new List<byte[]>
-                                                                    {
-                                                                      Encoding.ASCII.GetBytes("Payload1"),
-                                                                      Encoding.ASCII.GetBytes("Payload2"),
-                                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
-                                                                     .ToAsyncEnumerable()),
-                                                  new TaskRequest(new List<string>(),
-                                                                  new List<string>
-                                                                  {
-                                                                    ExpectedOutput1,
-                                                                  },
-                                                                  new List<byte[]>
-                                                                    {
-                                                                      Encoding.ASCII.GetBytes("Payload1"),
-                                                                      Encoding.ASCII.GetBytes("Payload2"),
-                                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
-                                                                     .ToAsyncEnumerable()),
-                                                }.ToAsyncEnumerable(),
-                                                CancellationToken.None)
-                                   .Result;
-
-      Submitter.FinalizeTaskCreation(createdTasks2,
-                                     sessionData,
-                                     Session,
-                                     CancellationToken.None)
-               .Wait();
-    }
-
-    public void Dispose()
-      => prov_.Dispose();
+    Processing,
+    ResultsCreated,
+    ResultsCompleted,
+    TasksCreated,
+    TasksFinalized,
+    DependenciesResolved,
   }
 
 
@@ -1182,16 +954,6 @@ public class TaskLifeCycleHelperTest
                     });
   }
 
-  public enum CrashState
-  {
-    Processing,
-    ResultsCreated,
-    ResultsCompleted,
-    TasksCreated,
-    TasksFinalized,
-    DependenciesResolved,
-  }
-
   [Test]
   public async Task HandleCrashedWhileProcessing([Values] CrashState crashState,
                                                  [Values] bool       subtask)
@@ -1499,5 +1261,230 @@ public class TaskLifeCycleHelperTest
                                                       : "A")
                                      .And.No.Member("root"));
                     });
+  }
+
+  private class Holder : IDisposable
+  {
+    public const  string Partition       = "PartitionId";
+    private const string ExpectedOutput1 = "ExpectedOutput1";
+    private const string ExpectedOutput2 = "ExpectedOutput2";
+    private const string DataDependency1 = "DataDependency1";
+    private const string DataDependency2 = "DataDependency2";
+
+    private static readonly Injection.Options.Submitter SubmitterOptions = new()
+                                                                           {
+                                                                             DefaultPartition = Partition,
+                                                                             MaxErrorAllowed  = -1,
+                                                                           };
+
+
+    public readonly string         Folder;
+    public readonly IObjectStorage ObjectStorage;
+
+    public readonly TaskOptions Options = new()
+                                          {
+                                            ApplicationName      = "applicationName",
+                                            ApplicationNamespace = "applicationNamespace",
+                                            ApplicationVersion   = "applicationVersion",
+                                            ApplicationService   = "applicationService",
+                                            EngineType           = "engineType",
+                                            PartitionId          = Partition,
+                                            MaxDuration          = Duration.FromTimeSpan(TimeSpan.FromMinutes(10)),
+                                            MaxRetries           = 5,
+                                            Priority             = 1,
+                                            Options =
+                                            {
+                                              {
+                                                "key1", "val1"
+                                              },
+                                              {
+                                                "key2", "val2"
+                                              },
+                                            },
+                                          };
+
+    public readonly  IPartitionTable               PartitionTable;
+    private readonly TestDatabaseProvider          prov_;
+    public readonly  IPullQueueStorage             PullQueueStorage;
+    public readonly  IPushQueueStorage             PushQueueStorage;
+    public readonly  SimplePullQueueStorageChannel QueueStorage;
+    public readonly  IResultTable                  ResultTable;
+    public readonly  string                        Session;
+    public readonly  ISessionTable                 SessionTable;
+    public readonly  ISubmitter                    Submitter;
+    public readonly  ITaskTable                    TaskTable;
+
+    public Holder()
+    {
+      QueueStorage     = new SimplePullQueueStorageChannel();
+      PushQueueStorage = QueueStorage;
+      PullQueueStorage = QueueStorage;
+      prov_ = new TestDatabaseProvider(collection => collection.AddSingleton<ISubmitter, gRPC.Services.Submitter>()
+                                                               .AddSingleton(SubmitterOptions)
+                                                               .AddSingleton(PushQueueStorage)
+                                                               .AddSingleton(PullQueueStorage));
+
+      ResultTable    = prov_.GetRequiredService<IResultTable>();
+      TaskTable      = prov_.GetRequiredService<ITaskTable>();
+      ObjectStorage  = prov_.GetRequiredService<IObjectStorage>();
+      SessionTable   = prov_.GetRequiredService<ISessionTable>();
+      PartitionTable = prov_.GetRequiredService<IPartitionTable>();
+      Submitter      = prov_.GetRequiredService<ISubmitter>();
+
+      PartitionTable.CreatePartitionsAsync(new List<PartitionData>
+                                           {
+                                             new(Partition,
+                                                 new List<string>(),
+                                                 1,
+                                                 1,
+                                                 1,
+                                                 1,
+                                                 null),
+                                           })
+                    .Wait();
+
+      Session = SessionTable.SetSessionDataAsync(new[]
+                                                 {
+                                                   Partition,
+                                                 },
+                                                 Options.ToTaskOptions(),
+                                                 CancellationToken.None)
+                            .Result;
+
+      var sessionData = SessionTable.GetSessionAsync(Session,
+                                                     CancellationToken.None)
+                                    .Result;
+
+      ResultTable.Create(new[]
+                         {
+                           new Result(sessionData.SessionId,
+                                      DataDependency1,
+                                      "",
+                                      "",
+                                      "",
+                                      "",
+                                      ResultStatus.Completed,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      DateTime.UtcNow,
+                                      0,
+                                      Array.Empty<byte>(),
+                                      false),
+                           new Result(sessionData.SessionId,
+                                      DataDependency2,
+                                      "",
+                                      "",
+                                      "",
+                                      "",
+                                      ResultStatus.Completed,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      DateTime.UtcNow,
+                                      0,
+                                      Array.Empty<byte>(),
+                                      false),
+                           new Result(Session,
+                                      ExpectedOutput1,
+                                      "",
+                                      "",
+                                      "",
+                                      "",
+                                      ResultStatus.Created,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      null,
+                                      0,
+                                      Array.Empty<byte>(),
+                                      false),
+                           new Result(Session,
+                                      ExpectedOutput2,
+                                      "",
+                                      "",
+                                      "",
+                                      "",
+                                      ResultStatus.Created,
+                                      new List<string>(),
+                                      DateTime.UtcNow,
+                                      null,
+                                      0,
+                                      Array.Empty<byte>(),
+                                      false),
+                         },
+                         CancellationToken.None)
+                 .Wait();
+
+      Folder = Path.Combine(Path.GetTempPath(),
+                            "data");
+      Directory.CreateDirectory(Folder);
+
+      var createdTasks = Submitter.CreateTasks(Session,
+                                               Session,
+                                               Options.ToTaskOptions(),
+                                               new[]
+                                               {
+                                                 new TaskRequest(new List<string>
+                                                                 {
+                                                                   ExpectedOutput1,
+                                                                 },
+                                                                 new List<string>(),
+                                                                 new List<byte[]>
+                                                                   {
+                                                                     Encoding.ASCII.GetBytes("Payload1"),
+                                                                     Encoding.ASCII.GetBytes("Payload2"),
+                                                                   }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                                    .ToAsyncEnumerable()),
+                                               }.ToAsyncEnumerable(),
+                                               CancellationToken.None)
+                                  .Result;
+
+      Submitter.FinalizeTaskCreation(createdTasks,
+                                     sessionData,
+                                     Session,
+                                     CancellationToken.None)
+               .Wait();
+
+      var createdTasks2 = Submitter.CreateTasks(Session,
+                                                Session,
+                                                Options.ToTaskOptions(),
+                                                new[]
+                                                {
+                                                  new TaskRequest(new List<string>
+                                                                  {
+                                                                    ExpectedOutput2,
+                                                                  },
+                                                                  new List<string>
+                                                                  {
+                                                                    ExpectedOutput1,
+                                                                  },
+                                                                  new List<byte[]>
+                                                                    {
+                                                                      Encoding.ASCII.GetBytes("Payload1"),
+                                                                      Encoding.ASCII.GetBytes("Payload2"),
+                                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                                     .ToAsyncEnumerable()),
+                                                  new TaskRequest(new List<string>(),
+                                                                  new List<string>
+                                                                  {
+                                                                    ExpectedOutput1,
+                                                                  },
+                                                                  new List<byte[]>
+                                                                    {
+                                                                      Encoding.ASCII.GetBytes("Payload1"),
+                                                                      Encoding.ASCII.GetBytes("Payload2"),
+                                                                    }.Select(bytes => new ReadOnlyMemory<byte>(bytes))
+                                                                     .ToAsyncEnumerable()),
+                                                }.ToAsyncEnumerable(),
+                                                CancellationToken.None)
+                                   .Result;
+
+      Submitter.FinalizeTaskCreation(createdTasks2,
+                                     sessionData,
+                                     Session,
+                                     CancellationToken.None)
+               .Wait();
+    }
+
+    public void Dispose()
+      => prov_.Dispose();
   }
 }
