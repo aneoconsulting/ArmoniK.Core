@@ -41,4 +41,11 @@ public class InitWorker
   ///   Delay duration between each retry attempt.
   /// </summary>
   public TimeSpan WorkerCheckDelay { get; set; } = TimeSpan.FromSeconds(2);
+
+  /// <summary>
+  ///   Maximum time to wait for a worker health check RPC to complete.
+  ///   A short deadline ensures a lost gRPC connection is detected quickly
+  ///   instead of hanging until the OS TCP stack times out.
+  /// </summary>
+  public TimeSpan WorkerCheckTimeout { get; set; } = TimeSpan.FromSeconds(5);
 }
