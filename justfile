@@ -56,7 +56,7 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "nats", image = "nats:alpine" }'
   }
 } else if queue == "sqs" {
-  '{ name = "sqs", image = "localstack/localstack:latest" }'
+  '{ name = "sqs", image = "softwaremill/elasticmq:latest" }'
 } else {
   '{ name = "none" }'
 }
@@ -165,7 +165,7 @@ _usage:
         activemq    :  for ActiveMQ (default)
         rabbitmq    :  for RabbitMQ
         artemis     :  for ActiveMQ Artemis
-        sqs         :  for AWS SQS (using localstack)
+        sqs         :  for AWS SQS (using elasticmq)
         pubsub      :  for Google PubSub
         nats        :  for Nats with JetStream
         none        :  for external queue configurations

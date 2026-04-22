@@ -15,19 +15,12 @@ resource "docker_container" "queue" {
   wait = true
 
   ports {
-    internal = 4566
+    internal = 9324
     external = var.exposed_ports.connection
   }
 
-  env = [
-    "SERVICES=sqs",
-    "LOCALSTACK_HOST=queue",
-    "AWS_ACCESS_KEY_ID=localkey",
-    "AWS_SECRET_ACCESS_KEY=localsecret"
-  ]
-
   healthcheck {
-    test         = concat(["CMD", "curl", "-fsSl", "localhost:4566"])
+    test         = concat(["CMD", "curl", "-fsSl", "http://localhost:9324/?Action=ListQueues&Version=2012-11-05"])
     interval     = "10s"
     timeout      = "3s"
     start_period = "10s"
