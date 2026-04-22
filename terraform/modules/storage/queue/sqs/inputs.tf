@@ -27,6 +27,6 @@ variable "exposed_ports" {
     connection = number,
   })
   default = {
-    connection = 4566
+    connection = 9324
   }
 }
