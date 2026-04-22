@@ -133,6 +133,12 @@ export TF_VAR_log_driver_image:= if os_family() == "windows" {
   "fluent/fluent-bit:latest"
 }
 
+export TF_VAR_database_image:= if os_family() == "windows" {
+  "mongo:nanoserver"
+} else {
+  "mongo"
+}
+
 export TF_VAR_windows:= if os_family() == "windows" {
   "true"
 } else {
