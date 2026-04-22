@@ -30,67 +30,87 @@ internal class SQS
   public const string SettingSection = nameof(SQS);
 
   /// <summary>
-  ///   AWS endpoint containing the SQS instance
+  ///   URL of the AWS endpoint hosting the SQS service.
+  ///   Leave empty to use the default AWS endpoint resolution (recommended for production).
+  ///   Override for local testing (e.g. <c>http://localhost:4566</c> for LocalStack).
   /// </summary>
   // ReSharper disable once InconsistentNaming
   public string ServiceURL { get; set; } = string.Empty;
 
   /// <summary>
-  ///   Prefix to add to the created topics and subscriptions
+  ///   String prepended to every queue name created by this adapter.
+  ///   Useful to disambiguate queues when multiple ArmoniK deployments share the same AWS account.
   /// </summary>
   public string Prefix { get; set; } = string.Empty;
 
   /// <summary>
-  ///   AWS Tags to add to the Queues when they are created
+  ///   AWS resource tags applied to each queue at creation time.
+  ///   Keys and values must comply with
+  ///   <a href="https://docs.aws.amazon.com/tag-editor/latest/userguide/tagging.html">AWS tagging rules</a>.
   /// </summary>
   public Dictionary<string, string> Tags { get; set; } = new();
 
   /// <summary>
-  ///   Acknowledgment deadline in seconds: If a message wasn't acknowledged within this deadline, it will be
-  ///   redelivered .
+  ///   Visibility timeout in seconds for received messages.
+  ///   A message that has not been deleted within this window becomes visible again and will be redelivered.
+  ///   Defaults to <c>120</c> seconds.
   /// </summary>
   public int AckDeadlinePeriod { get; set; } = 120;
 
   /// <summary>
-  ///   Time  in seconds between two modifications of acknowledgment deadline
+  ///   Interval in seconds at which the visibility timeout is renewed for messages that are still being processed.
+  ///   Must be strictly less than <see cref="AckDeadlinePeriod" /> to avoid premature redelivery.
+  ///   Allow sufficient buffer time to account for clock skew and processing delays.
+  ///   Defaults to <c>60</c> seconds.
   /// </summary>
   public int AckExtendDeadlineStep { get; set; } = 60;
 
   /// <summary>
-  ///   SQS long polling wait time in seconds (1-20).
-  ///   Set to 0 in order to disable long polling.
+  ///   Duration in seconds the adapter waits for messages during a single SQS <c>ReceiveMessage</c> call.
+  ///   Valid range is 0–20. <c>0</c> uses short polling; 1–20 uses long polling.
+  ///   Long polling is recommended as it reduces empty responses and lowers cost.
+  ///   Defaults to <c>20</c> seconds.
   /// </summary>
   public int WaitTimeSeconds { get; set; } = 20;
 
   /// <summary>
-  ///   Parallelism used in the control plane when possible. Defaults to the number of threads.
+  ///   Maximum number of concurrent operations when the adapter processes items in parallel.
+  ///   Set to <c>0</c> to use the number of logical processors on the machine (
+  ///   <see cref="System.Environment.ProcessorCount" />).
   /// </summary>
   public int DegreeOfParallelism { get; set; } = 0;
 
   /// <summary>
-  ///   Number of priority levels supported. Each priority level will create its own SQS topic.
+  ///   Number of distinct priority levels. One SQS queue is created per priority level.
+  ///   Set to <c>0</c> to disable priority-based routing (single queue).
   /// </summary>
   public int MaxPriority { get; set; } = 0;
 
   /// <summary>
-  ///   Attributes of the created SQS
+  ///   Additional SQS queue attributes applied at queue creation time (e.g. <c>FifoQueue</c>, <c>KmsMasterKeyId</c>).
+  ///   These are merged with any attributes set by the adapter itself; adapter-managed attributes take precedence.
   /// </summary>
   /// <remarks>
-  ///   Attributes reference can be found in
+  ///   For the full list of supported attributes, see the
   ///   <a
   ///     href="https://docs.aws.amazon.com/AWSSimpleQueueService/latest/APIReference/API_CreateQueue.html#SQS-CreateQueue-request-Attributes">
-  ///     AWS documentation
+  ///     AWS CreateQueue API reference
   ///   </a>
+  ///   .
   /// </remarks>
   public Dictionary<string, string> Attributes { get; set; } = new();
 
   /// <summary>
-  ///   Maximum number of retry attempts for failed operations.
+  ///   Maximum number of retry attempts for transient AWS SDK errors before the operation is considered failed.
+  ///   Defaults to <c>5</c>.
   /// </summary>
   public int MaxRetries { get; set; } = 5;
 
   /// <summary>
-  ///   Use the message group Id SQS property to ensure that messages are sent within groupId.
+  ///   When <c>true</c>, the SQS <c>MessageGroupId</c> attribute is set to the task's session ID,
+  ///   ensuring that all messages belonging to the same session are delivered in order on a FIFO queue.
+  ///   Requires the target queues to be FIFO queues (suffix <c>.fifo</c>).
+  ///   Defaults to <c>false</c>.
   /// </summary>
   public bool UseSessionMessageGroupId { get; set; } = false;
 }
