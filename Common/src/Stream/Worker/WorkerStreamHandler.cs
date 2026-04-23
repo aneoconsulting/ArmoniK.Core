@@ -46,7 +46,6 @@ public class WorkerStreamHandler : IWorkerStreamHandler
   private readonly ILogger<WorkerStreamHandler>            logger_;
   private readonly InitWorker                              optionsInitWorker_;
   private          bool                                    isInitialized_;
-  private          int                                     retryCheck_;
   private          Api.gRPC.V1.Worker.Worker.WorkerClient? workerClient_;
 
   /// <summary>
@@ -117,16 +116,14 @@ public class WorkerStreamHandler : IWorkerStreamHandler
         return HealthCheckResult.Unhealthy("Worker not yet initialized");
       }
 
-      retryCheck_++;
       var check = await CheckWorker(CancellationToken.None)
                     .ConfigureAwait(false);
 
       if (!check)
       {
-        return HealthCheckResult.Unhealthy("Health check on worker was not successful (too many retries)");
+        return HealthCheckResult.Unhealthy("Health check on worker was not successful");
       }
 
-      retryCheck_ = 0;
       return HealthCheckResult.Healthy();
     }
     catch (Exception ex)
@@ -201,6 +198,7 @@ public class WorkerStreamHandler : IWorkerStreamHandler
       }
 
       var reply = workerClient_.HealthCheck(new Empty(),
+                                            deadline: DateTime.UtcNow + optionsInitWorker_.WorkerCheckTimeout,
                                             cancellationToken: cancellationToken);
       if (reply.Status != HealthCheckReply.Types.ServingStatus.Serving)
       {
