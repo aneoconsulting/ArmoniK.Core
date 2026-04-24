@@ -41,6 +41,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   private readonly TimeSpan                                             baseDelay_               = TimeSpan.FromMilliseconds(100);
   private readonly ILogger<PushQueueStorage>                            logger_;
   private readonly int                                                  parallelismLimit_;
+  private readonly string                                               prefix_;
   private readonly ConcurrentDictionary<string, ObjectPool<SenderLink>> senders_ = new();
 
   public PushQueueStorage(QueueCommon.Amqp          options,
@@ -51,6 +52,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   {
     parallelismLimit_ = options.ParallelismLimit;
     logger_           = logger;
+    prefix_           = options.Prefix;
   }
 
   /// <inheritdoc />
@@ -86,8 +88,9 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     var whichQueue       = (priority - 1) / MaxInternalQueuePriority;
     var internalPriority = (priority - 1) % MaxInternalQueuePriority;
 
-    logger_.LogDebug("Priority is {priority} ; will use queue {partitionId}###q{whichQueue} with internal priority {internalPriority}",
+    logger_.LogDebug("Priority is {priority} ; will use queue {prefix_}{partitionId}q{whichQueue} with internal priority {internalPriority}",
                      priority,
+                     prefix_,
                      partitionId,
                      whichQueue,
                      internalPriority);
@@ -101,7 +104,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                      {
                                        try
                                        {
-                                         var pool = GetPool($"{partitionId}###q{whichQueue}");
+                                         var pool = GetPool($"{prefix_}{partitionId}q{whichQueue}");
 
                                          await pool.WithInstanceAsync(sender => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
                                                                                                  {

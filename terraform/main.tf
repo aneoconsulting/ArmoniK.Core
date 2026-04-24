@@ -74,6 +74,7 @@ module "queue_rabbitmq" {
   source     = "./modules/storage/queue/rabbitmq"
   count      = var.queue_storage.name == "rabbitmq" ? 1 : 0
   queue_envs = var.queue_env_vars
+  queue_list = local.queue_list
   image      = var.queue_storage.image
   network    = local.network
   windows    = var.windows
@@ -83,6 +84,7 @@ module "queue_activemq" {
   source     = "./modules/storage/queue/activemq"
   count      = var.queue_storage.name == "activemq" ? 1 : 0
   queue_envs = var.queue_env_vars
+  queue_list = local.queue_list
   image      = var.queue_storage.image
   network    = local.network
 }
@@ -91,6 +93,7 @@ module "queue_artemis" {
   source     = "./modules/storage/queue/artemis"
   count      = var.queue_storage.name == "artemis" ? 1 : 0
   queue_envs = var.queue_env_vars
+  queue_list = local.queue_list
   image      = var.queue_storage.image
   network    = local.network
 }
@@ -99,6 +102,7 @@ module "queue_pubsub" {
   source     = "./modules/storage/queue/pubsub"
   count      = var.queue_storage.name == "pubsub" ? 1 : 0
   queue_envs = var.queue_env_vars
+  queue_list = local.queue_list
   image      = var.queue_storage.image
   network    = local.network
 }
@@ -107,6 +111,7 @@ module "queue_nats" {
   source     = "./modules/storage/queue/nats"
   count      = var.queue_storage.name == "nats" ? 1 : 0
   queue_envs = var.queue_env_vars
+  queue_list = local.queue_list
   image      = var.queue_storage.image
   network    = local.network
   windows    = var.windows
@@ -116,6 +121,7 @@ module "queue_sqs" {
   source     = "./modules/storage/queue/sqs"
   count      = var.queue_storage.name == "sqs" ? 1 : 0
   queue_envs = var.queue_env_vars
+  queue_list = local.queue_list
   image      = var.queue_storage.image
   network    = local.network
 }

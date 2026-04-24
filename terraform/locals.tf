@@ -1,6 +1,7 @@
 locals {
   partitions = toset([for s in range(var.num_partitions) : tostring(s)])
   replicas   = toset([for s in range(var.num_replicas) : tostring(s)])
+  queue_list = [for i in sort(tolist(local.partitions)) : "${var.partition_data.PartitionId}${i}"]
   logging_env_vars = { "Serilog__MinimumLevel" = "${var.serilog.loggin_level}",
     "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Hosting.Diagnostics"              = "${var.serilog.loggin_level_routing}",
     "Serilog__MinimumLevel__Override__Microsoft.AspNetCore.Routing"                          = "${var.serilog.loggin_level_routing}",

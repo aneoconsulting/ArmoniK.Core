@@ -100,4 +100,9 @@ public class Amqp
   ///   Whether to allow insecure TLS connections.
   /// </summary>
   public bool AllowInsecureTls { get; set; }
+
+  /// <summary>
+  ///   Path prefix for the AMQP resources.
+  /// </summary>
+  public string Prefix { get; set; } = "";
 }

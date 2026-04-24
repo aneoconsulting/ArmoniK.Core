@@ -38,6 +38,11 @@ resource "docker_container" "queue" {
     content = "[rabbitmq_management ,rabbitmq_management_agent]."
   }
 
+  upload {
+    file    = "/etc/rabbitmq/definitions.json"
+    content = local.definitions_json
+  }
+
   dynamic "upload" {
     for_each = var.windows ? [] : [
       {
