@@ -39,10 +39,12 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
 {
   private readonly TimeSpan                  baseDelay_ = TimeSpan.FromMilliseconds(100);
   private readonly ILogger<PullQueueStorage> logger_;
+  private readonly string                    prefix_;
 
 
   private readonly ConcurrentDictionary<string, AsyncLazy<IReceiverLink>[]> receivers_;
   private readonly ConcurrentDictionary<string, AsyncLazy<ISenderLink>[]>   senders_;
+  private readonly string                                                   separator_;
 
   public PullQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -53,6 +55,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
     logger_    = logger;
     receivers_ = new ConcurrentDictionary<string, AsyncLazy<IReceiverLink>[]>();
     senders_   = new ConcurrentDictionary<string, AsyncLazy<ISenderLink>[]>();
+    prefix_    = options.Prefix;
+    separator_ = options.Separator;
   }
 
   public override Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -94,8 +98,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
                                                         .Select(i => new AsyncLazy<ISenderLink>(async () => new SenderLink(new Session(await ConnectionAmqp
                                                                                                                                              .GetConnectionAsync()
                                                                                                                                              .ConfigureAwait(false)),
-                                                                                                                           $"{partitionId}###SenderLink{i}",
-                                                                                                                           $"{partitionId}###q{i}")))
+                                                                                                                           $"{prefix_}{partitionId}{separator_}SenderLink{i}",
+                                                                                                                           $"{prefix_}{partitionId}{separator_}q{i}")))
                                                         .ToArray());
     while (nbPulledMessage < nbMessages)
     {
@@ -174,8 +178,8 @@ public class PullQueueStorage : QueueStorage, IPullQueueStorage
            {
              var rl = new ReceiverLink(new Session(await connection.GetConnectionAsync()
                                                                    .ConfigureAwait(false)),
-                                       $"{partitionId}###ReceiverLink{link}",
-                                       $"{partitionId}###q{link}");
+                                       $"{prefix_}{partitionId}{separator_}ReceiverLink{link}",
+                                       $"{prefix_}{partitionId}{separator_}q{link}");
 
              /* linkCredit_: the maximum number of messages the
               * remote peer can send to the receiver.

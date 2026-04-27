@@ -89,7 +89,6 @@ variable "queue_env_vars" {
     max_priority = optional(number, 10)
     max_retries  = optional(number, 10)
     link_credit  = optional(number, 2)
-    partition    = optional(string, "TestPartition")
   })
   description = "Environment variables for the queue"
   default     = {}

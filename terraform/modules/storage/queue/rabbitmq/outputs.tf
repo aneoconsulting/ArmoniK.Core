@@ -17,6 +17,8 @@ output "generated_env_vars" {
     "Amqp__LinkCredit"                                      = "${var.queue_envs.link_credit}"
     "Amqp__EndpointUrl"                                     = "queue:${var.windows ? 5672 : 5671}"
     "Amqp__AllowInsecureTls"                                = !var.windows ? true : false
+    "Amqp__Prefix"                                          = "/queues/"
+    "Amqp__Separator"                                       = ""
   })
 }
 

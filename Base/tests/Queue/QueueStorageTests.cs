@@ -188,7 +188,7 @@ public class QueueStorageTests
                                           TimeSpan.FromHours(2),
                                           2,
                                           1,
-                                          "testPartition",
+                                          "TestPartition0",
                                           "testApplication",
                                           "testVersion",
                                           "testNamespace",
@@ -214,7 +214,7 @@ public class QueueStorageTests
                        };
 
     await PushQueueStorage.PushMessagesAsync(testMessages,
-                                             "testPartition",
+                                             "TestPartition0",
                                              CancellationToken.None)
                           .ConfigureAwait(false);
   }
@@ -236,7 +236,7 @@ public class QueueStorageTests
                                           TimeSpan.FromHours(2),
                                           2,
                                           1,
-                                          "testPartition",
+                                          "TestPartition0",
                                           "testApplication",
                                           "testVersion",
                                           "testNamespace",
@@ -262,13 +262,13 @@ public class QueueStorageTests
                        };
     /* Push 5 messages to the queue to test the pull */
     await PushQueueStorage.PushMessagesAsync(testMessages,
-                                             "testPartition",
+                                             "TestPartition0",
                                              CancellationToken.None)
                           .ConfigureAwait(false);
 
     /* Pull 3 messages from the queue, their default status being pending means that
      they should be pushed again to the queue */
-    var messages = PullQueueStorage.PullMessagesAsync("testPartition",
+    var messages = PullQueueStorage.PullMessagesAsync("TestPartition0",
                                                       3,
                                                       CancellationToken.None);
 
@@ -284,7 +284,7 @@ public class QueueStorageTests
     /* Pull 2 messages from the queue and change their status to processing; this means that
      these two should be treated as dequeued  by the broker and the remaining three
      as Pending if the test passes */
-    var messages2 = PullQueueStorage.PullMessagesAsync("testPartition",
+    var messages2 = PullQueueStorage.PullMessagesAsync("TestPartition0",
                                                        2,
                                                        CancellationToken.None);
 
@@ -317,7 +317,7 @@ public class QueueStorageTests
                                           TimeSpan.FromHours(2),
                                           2,
                                           1,
-                                          "testPartition",
+                                          "TestPartition0",
                                           "testApplication",
                                           "testVersion",
                                           "testNamespace",
@@ -342,11 +342,11 @@ public class QueueStorageTests
                              testTaskOptions),
                        };
     await PushQueueStorage.PushMessagesAsync(testMessages,
-                                             "testPartition",
+                                             "TestPartition0",
                                              CancellationToken.None)
                           .ConfigureAwait(false);
 
-    var messages = PullQueueStorage.PullMessagesAsync("testPartition",
+    var messages = PullQueueStorage.PullMessagesAsync("TestPartition0",
                                                       5,
                                                       CancellationToken.None);
 

@@ -19,8 +19,11 @@ variable "queue_envs" {
     max_priority = number,
     max_retries  = number,
     link_credit  = number,
-    partition    = string
   })
+}
+
+variable "queue_list" {
+  type = list(string)
 }
 
 variable "exposed_ports" {
