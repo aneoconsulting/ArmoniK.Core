@@ -43,6 +43,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   private readonly int                                                  parallelismLimit_;
   private readonly string                                               prefix_;
   private readonly ConcurrentDictionary<string, ObjectPool<SenderLink>> senders_ = new();
+  private readonly string                                               separator_;
 
   public PushQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
@@ -53,6 +54,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     parallelismLimit_ = options.ParallelismLimit;
     logger_           = logger;
     prefix_           = options.Prefix;
+    separator_        = options.Separator;
   }
 
   /// <inheritdoc />
@@ -88,10 +90,11 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     var whichQueue       = (priority - 1) / MaxInternalQueuePriority;
     var internalPriority = (priority - 1) % MaxInternalQueuePriority;
 
-    logger_.LogDebug("Priority is {priority} ; will use queue {prefix_}{partitionId}q{whichQueue} with internal priority {internalPriority}",
+    logger_.LogDebug("Priority is {priority} ; will use queue {prefix_}{partitionId}{separator_}q{whichQueue} with internal priority {internalPriority}",
                      priority,
                      prefix_,
                      partitionId,
+                     separator_,
                      whichQueue,
                      internalPriority);
 
@@ -104,7 +107,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                      {
                                        try
                                        {
-                                         var pool = GetPool($"{prefix_}{partitionId}q{whichQueue}");
+                                         var pool = GetPool($"{prefix_}{partitionId}{separator_}q{whichQueue}");
 
                                          await pool.WithInstanceAsync(sender => sender.SendAsync(new Message(Encoding.UTF8.GetBytes(msgData.TaskId))
                                                                                                  {

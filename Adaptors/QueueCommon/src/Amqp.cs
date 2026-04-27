@@ -105,4 +105,9 @@ public class Amqp
   ///   Path prefix for the AMQP resources.
   /// </summary>
   public string Prefix { get; set; } = "";
+
+  /// <summary>
+  ///   Separator inserted between the partition ID and the queue/link index in AMQP resource names.
+  /// </summary>
+  public string Separator { get; set; } = "###";
 }
