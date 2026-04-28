@@ -12,9 +12,15 @@ terraform {
       source  = "registry.opentofu.org/hashicorp/external"
       version = "~> 2.3"
     }
+    pkcs12 = {
+      source  = "chilicat/pkcs12"
+      version = ">= 0.3.2"
+    }
   }
 }
 
 provider "docker" {
 
 }
+
+provider "pkcs12" {}
