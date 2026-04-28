@@ -34,7 +34,7 @@
     </PackageReference>
     <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.3" />
     <PackageReference Include="Calzolari.Grpc.AspNetCore.Validation" Version="9.0.0" />
-    <PackageReference Include="Destructurama.Attributed" Version="5.2.0" />
+    <PackageReference Include="Destructurama.Attributed" Version="5.3.0" />
     <PackageReference Include="Grpc.HealthCheck" Version="2.76.0" />
     <PackageReference Include="JetBrains.Annotations" Version="2025.2.4" />
     <PackageReference Include="Serilog.AspNetCore" Version="10.0.0" />
@@ -43,7 +43,7 @@
     <PackageReference Include="Serilog.Settings.Configuration" Version="10.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Serilog.Formatting.Compact" Version="3.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.7" />
   </ItemGroup>
 
 
