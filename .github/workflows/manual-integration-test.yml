@@ -51,7 +51,7 @@ jobs:
          dotnet test --logger "trx;LogFileName=test-results.trx"
 
       - name: Test Report
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@3eeb9fc888e82e8be2fb356bbeec2750231672bc # v1
         if: success() || failure()
         with:
           name: Test - Stream
