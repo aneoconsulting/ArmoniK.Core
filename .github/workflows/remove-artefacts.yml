@@ -37,8 +37,8 @@ jobs:
       with:
         org: dockerhubaneo
         image: ${{ matrix.image }}
-        user: ${{ secrets.DOCKERHUB_USER }}
-        token: ${{ secrets.DOCKERHUB_TOKEN }}
+        user: ${{ secrets.DOCKER_HUB_LOGIN }}
+        token: ${{ secrets.DOCKER_HUB_TOKEN }}
 
   nugets:
     runs-on: ubuntu-latest
