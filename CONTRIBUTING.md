@@ -8,6 +8,28 @@ Hi! We are very happy that you are interested in contributing to ArmoniK.Core pr
 2. Make sure you clearly define the changes in the description of the PR
 3. Make sure all tests pass by following the instructions available [here](.docs/content/0.installation/3.execute-tests.md)
 
+## Coding Standards
+
+### Naming
+
+| Element | Convention | Example |
+|---|---|---|
+| Classes, structs, records | `PascalCase` | `TaskHandler` |
+| Interfaces | `I` prefix + `PascalCase` | `ITaskTable`, `IObjectStorage` |
+| Methods and properties | `PascalCase` | `GetStatus`, `CancelSession` |
+| Async methods | `Async` suffix | `CreateSessionAsync` |
+| Private fields | `_camelCase` | `_logger`, `_taskTable` |
+| Local variables and parameters | `camelCase` | `taskId`, `cancellationToken` |
+| Constants and `static readonly` | `PascalCase` | `MaxRetries`, `DefaultPartition` |
+
+### Style
+
+- Use `var` when the type is obvious from the right-hand side
+- Prefer `async`/`await` over raw `Task` continuations
+- No magic numbers — use named constants or config-bound values
+- `<Nullable>enable</Nullable>` is set project-wide; all new code must annotate nullability
+- Run `just cleanupcode` (JetBrains `jb cleanupcode`) before committing C# changes
+
 ## Release Process
 
 When necessary, maintainers can release a new version. This new version will publish packages to registries.
