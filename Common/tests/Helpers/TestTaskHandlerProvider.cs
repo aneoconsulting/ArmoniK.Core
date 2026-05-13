@@ -72,15 +72,16 @@ public class TestTaskHandlerProvider : IDisposable
   public IHostApplicationLifetime Lifetime;
 
 
-  public TestTaskHandlerProvider(IWorkerStreamHandler?   workerStreamHandler     = null,
-                                 IAgentHandler?          agentHandler            = null,
-                                 IQueueMessageHandler?   queueStorage            = null,
-                                 ITaskTable?             inputTaskTable          = null,
-                                 ISessionTable?          inputSessionTable       = null,
-                                 ITaskProcessingChecker? taskProcessingChecker   = null,
-                                 IObjectStorage?         objectStorage           = null,
-                                 TimeSpan?               graceDelay              = null,
-                                 TimeSpan?               messageDuplicationDelay = null)
+  public TestTaskHandlerProvider(IWorkerStreamHandler?        workerStreamHandler     = null,
+                                 IAgentHandler?               agentHandler            = null,
+                                 IQueueMessageHandler?        queueStorage            = null,
+                                 ITaskTable?                  inputTaskTable          = null,
+                                 ISessionTable?               inputSessionTable       = null,
+                                 ITaskProcessingChecker?      taskProcessingChecker   = null,
+                                 IObjectStorage?              objectStorage           = null,
+                                 TimeSpan?                    graceDelay              = null,
+                                 TimeSpan?                    messageDuplicationDelay = null,
+                                 IDictionary<string, string>? additionalConfig        = null)
   {
     var logger = NullLogger.Instance;
 
@@ -149,6 +150,14 @@ public class TestTaskHandlerProvider : IDisposable
                                                       : messageDuplicationDelay.ToString()
                                                   },
                                                 };
+
+    if (additionalConfig is not null)
+    {
+      foreach (var pair in additionalConfig)
+      {
+        minimalConfig[pair.Key] = pair.Value;
+      }
+    }
 
     Console.WriteLine(minimalConfig.ToJson());
 
