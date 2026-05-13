@@ -62,6 +62,18 @@ public class Pollster
   public int NbAcquisitionRetry { get; set; } = 3;
 
   /// <summary>
+  ///   Delay between consecutive re-reads of a task that is still in Pending status during acquisition,
+  ///   to allow the submitter time to complete the transition to Submitted.
+  /// </summary>
+  public TimeSpan PendingRetryDelay { get; set; } = TimeSpan.FromMilliseconds(100);
+
+  /// <summary>
+  ///   Number of times to re-read a Pending task before postponing the message.
+  ///   Covers the window between the queue push and the status update to Submitted that occurs during task submission.
+  /// </summary>
+  public int NbPendingRetry { get; set; } = 3;
+
+  /// <summary>
   ///   Root directory for per-task staging folders.
   ///   Sub-directories are created here for each task and deleted after it completes
   /// </summary>
