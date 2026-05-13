@@ -77,6 +77,8 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IObjectStorage                        objectStorage_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
+  private readonly TimeSpan                              pendingRetryDelay_;
+  private readonly int                                   pendingRetryNb_;
   private readonly TimeSpan                              processingCrashedDelay_;
   private readonly IPushQueueStorage                     pushQueueStorage_;
   private readonly IResultTable                          resultTable_;
@@ -214,6 +216,8 @@ public sealed class TaskHandler : IAsyncDisposable
     delayBeforeAcquisition_  = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
     messageDuplicationDelay_ = pollsterOptions.MessageDuplicationDelay;
     processingCrashedDelay_  = pollsterOptions.ProcessingCrashedDelay;
+    pendingRetryDelay_       = pollsterOptions.PendingRetryDelay;
+    pendingRetryNb_          = pollsterOptions.NbPendingRetry;
 
     earlyCts_ = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.EarlyCancellationToken);
     lateCts_  = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.LateCancellationToken);
@@ -510,6 +514,23 @@ public sealed class TaskHandler : IAsyncDisposable
         logger_.LogDebug("Session paused; message deleted");
         messageHandler_.Status = QueueMessageStatus.Processed;
         return AcquisitionStatus.SessionPaused;
+      }
+
+      // During task submission, the task is pushed to the queue before its status is set to Submitted.
+      // An agent may therefore dequeue a task that is still Pending. Retry a few times to give the
+      // submitter time to complete the status transition before falling through to TaskIsPending.
+      for (var i = 0; i < pendingRetryNb_ && taskData_.Status == TaskStatus.Pending; i++)
+      {
+        logger_.LogInformation("Task is pending, waiting for {PendingRetryDelay} before retrying (retry {Retry}/{MaxRetries})",
+                               pendingRetryDelay_,
+                               i + 1,
+                               pendingRetryNb_);
+        await Task.Delay(pendingRetryDelay_,
+                         CancellationToken.None)
+                  .ConfigureAwait(false);
+        taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
       }
 
       switch (taskData_.Status)
