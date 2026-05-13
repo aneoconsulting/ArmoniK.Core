@@ -381,4 +381,7 @@ terraform/terraform.tfstate.backup
 terraform/logs/armonik-logs.json
 terraform/generated
 
+# Local agent overrides
+.agents-local.md
+
 tmp

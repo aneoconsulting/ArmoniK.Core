@@ -23,6 +23,42 @@ seq          := "true"
 socket_type  := "unixdomainsocket"
 cinit        := "true"
 
+# Shared test parameters
+ntasks    := "100"
+network   := "armonik_network"
+net_arg   := if network != "" { "--net " + network } else { "" }
+partition := ""
+endpoint  := "http://armonik.control.submitter:1080"
+
+# HtcMock test client parameters (defaults match HtcMock.cs)
+htcmock_time               := "00:00:00.100"
+htcmock_datasize           := "1"
+htcmock_memsize            := "1"
+htcmock_levels             := "4"
+htcmock_fast_compute       := "true"
+htcmock_low_mem            := "true"
+htcmock_small_output       := "true"
+htcmock_purge_data         := "true"
+htcmock_task_rpc_exception := ""
+htcmock_task_error         := ""
+
+# Bench test client parameters (defaults match BenchOptions.cs)
+bench_duration_ms              := "100"
+bench_payload_size             := "1"
+bench_result_size              := "1"
+bench_batch_size               := "100"
+bench_max_retries              := "1"
+bench_degree_of_parallelism    := "1"
+bench_show_events              := "false"
+bench_purge_data               := "true"
+bench_download_results         := "true"
+bench_exit_after_submission    := "false"
+bench_pause_session            := "false"
+bench_max_duration             := "01:00:00"
+bench_priority                 := "1"
+bench_task_rpc_exception       := ""
+bench_task_error               := ""
+
 # Export them as terraform environment variables
 export TF_VAR_core_tag          := tag
 export TF_VAR_use_local_image   := local_images
@@ -300,6 +336,51 @@ buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile
 
 # Build Bench Client
 buildBenchClient: (build BENCH_CLIENT_IMAGE  "./Tests/Bench/Client/src/Dockerfile")
+
+# Run HtcMock test client against a running deployment
+# Note: always rebuilds the client image to pick up local changes
+# Override any variable: just ntasks=1000 htcmock_levels=1 runHtcmock
+runHtcmock: buildHtcmockClient
+  docker run {{net_arg}} --rm \
+    -e HtcMock__NTasks={{ntasks}} \
+    -e HtcMock__TotalCalculationTime={{htcmock_time}} \
+    -e HtcMock__DataSize={{htcmock_datasize}} \
+    -e HtcMock__MemorySize={{htcmock_memsize}} \
+    -e HtcMock__SubTasksLevels={{htcmock_levels}} \
+    -e HtcMock__EnableFastCompute={{htcmock_fast_compute}} \
+    -e HtcMock__EnableUseLowMem={{htcmock_low_mem}} \
+    -e HtcMock__EnableSmallOutput={{htcmock_small_output}} \
+    -e HtcMock__Partition={{partition}} \
+    -e HtcMock__PurgeData={{htcmock_purge_data}} \
+    -e HtcMock__TaskRpcException={{htcmock_task_rpc_exception}} \
+    -e HtcMock__TaskError={{htcmock_task_error}} \
+    -e GrpcClient__Endpoint={{endpoint}} \
+    {{HTCMOCK_CLIENT_IMAGE}}
+
+# Run Bench test client against a running deployment
+# Note: always rebuilds the client image to pick up local changes
+# Override any variable: just ntasks=1000 bench_payload_size=1000 runBench
+runBench: buildBenchClient
+  docker run {{net_arg}} --rm \
+    -e BenchOptions__NTasks={{ntasks}} \
+    -e BenchOptions__TaskDurationMs={{bench_duration_ms}} \
+    -e BenchOptions__PayloadSize={{bench_payload_size}} \
+    -e BenchOptions__ResultSize={{bench_result_size}} \
+    -e BenchOptions__BatchSize={{bench_batch_size}} \
+    -e BenchOptions__Partition={{partition}} \
+    -e BenchOptions__MaxRetries={{bench_max_retries}} \
+    -e BenchOptions__DegreeOfParallelism={{bench_degree_of_parallelism}} \
+    -e BenchOptions__ShowEvents={{bench_show_events}} \
+    -e BenchOptions__PurgeData={{bench_purge_data}} \
+    -e BenchOptions__DownloadResults={{bench_download_results}} \
+    -e BenchOptions__ExitAfterSubmission={{bench_exit_after_submission}} \
+    -e BenchOptions__PauseSessionDuringSubmission={{bench_pause_session}} \
+    -e BenchOptions__MaxDuration={{bench_max_duration}} \
+    -e BenchOptions__TaskPriority={{bench_priority}} \
+    -e BenchOptions__TaskRpcException={{bench_task_rpc_exception}} \
+    -e BenchOptions__TaskError={{bench_task_error}} \
+    -e GrpcClient__Endpoint={{endpoint}} \
+    {{BENCH_CLIENT_IMAGE}}
 
 # Build Crashing Worker Client
 buildCrashingWorkerClient: (build CRASHINGWORKER_CLIENT_IMAGE  "./Tests/CrashingWorker/Client/src/Dockerfile")
