@@ -471,7 +471,7 @@ jobs:
           only-summary: ${{ env.REPOSITORY != github.repository }}
 
       - name: Show logs
-        if: ${{ always() }}
+        if: ${{ always() && (env.REPOSITORY != github.repository || matrix.log-level != 'Verbose') }}
         run: docker cp fluentd:/armonik-logs.json -
       - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
@@ -485,7 +485,7 @@ jobs:
         with:
           dest: './container-logs'
       - name: Show docker container logs
-        if: ${{ always() }}
+        if: ${{ always() && (env.REPOSITORY != github.repository || matrix.log-level != 'Verbose') }}
         run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
@@ -687,7 +687,7 @@ jobs:
           time curl localhost:5002/metrics
 
       - name: Show logs
-        if: ${{ always() }}
+        if: ${{ always() && (env.REPOSITORY != github.repository || matrix.target.log-level != 'Verbose') }}
         run: docker cp fluentd:/armonik-logs.json -
       - name: Upload logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
@@ -703,7 +703,7 @@ jobs:
         with:
           dest: './container-logs'
       - name: Show docker container logs
-        if: ${{ always() }}
+        if: ${{ always() && (env.REPOSITORY != github.repository || matrix.target.log-level != 'Verbose') }}
         run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
       - name: Upload docker container logs
         if: ${{ always() && env.REPOSITORY == github.repository }}
