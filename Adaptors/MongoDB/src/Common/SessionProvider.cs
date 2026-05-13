@@ -26,6 +26,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Core.Clusters;
 
@@ -75,11 +76,11 @@ public class SessionProvider : IInitializable
   /// </summary>
   /// <param name="cancellationToken">A cancellation token to observe while waiting for the initialization to complete.</param>
   /// <returns>A task that represents the asynchronous initialization operation.</returns>
-  public Task Init(CancellationToken cancellationToken)
+  public async Task Init(CancellationToken cancellationToken)
   {
     if (clientSessionHandle_ is not null)
     {
-      return Task.CompletedTask;
+      return;
     }
 
     lock (lockObj_)
@@ -87,7 +88,13 @@ public class SessionProvider : IInitializable
       clientSessionHandle_ ??= client_.StartSession(cancellationToken: cancellationToken);
     }
 
-    return Task.CompletedTask;
+    // Force cluster topology discovery to complete so that the liveness check (which inspects
+    // ClusterState) sees Connected immediately after Init returns.
+    await client_.GetDatabase("admin")
+                 .RunCommandAsync<BsonDocument>(new BsonDocument("ping",
+                                                                 1),
+                                                cancellationToken: cancellationToken)
+                 .ConfigureAwait(false);
   }
 
   /// <summary>
