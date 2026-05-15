@@ -2,15 +2,15 @@ terraform {
   required_providers {
     docker = {
       source  = "registry.opentofu.org/kreuzwerker/docker"
-      version = ">= 4.3.0"
+      version = ">= 4.4.0"
     }
     random = {
       source  = "registry.opentofu.org/hashicorp/random"
-      version = ">= 3.8.1"
+      version = ">= 3.9.0"
     }
     external = {
       source  = "registry.opentofu.org/hashicorp/external"
-      version = ">= 2.3.5"
+      version = ">= 2.4.0"
     }
   }
 }
