@@ -59,10 +59,15 @@ variable "object_storage" {
     password           = optional(string, "minioadmin")
     bucket_name        = optional(string, "miniobucket")
     local_storage_path = optional(string, "/local_storage")
+    # used by gcs (fake-gcs-server) :
+    gcs_host        = optional(string, "fake-gcs")
+    gcs_port        = optional(number, 4443)
+    gcs_project_id  = optional(string, "armonik-project")
+    gcs_bucket_name = optional(string, "armonik-bucket")
   })
   validation {
-    condition     = can(regex("^(redis|local|minio|embed|null)$", var.object_storage.name))
-    error_message = "Must be redis, minio, embed, local, or null"
+    condition     = can(regex("^(redis|local|minio|gcs|embed|null)$", var.object_storage.name))
+    error_message = "Must be redis, minio, gcs, embed, local, or null"
   }
   default = {}
 }
