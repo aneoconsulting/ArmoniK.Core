@@ -62,8 +62,8 @@ variable "object_storage" {
     # used by gcs (fake-gcs-server) :
     gcs_host        = optional(string, "fake-gcs")
     gcs_port        = optional(number, 4443)
-    gcs_project_id  = optional(string, "armonik-project")
-    gcs_bucket_name = optional(string, "armonik-bucket")
+    gcs_project_id  = optional(string, "test-project")
+    gcs_bucket_name = optional(string, "armonik-test-bucket")
   })
   validation {
     condition     = can(regex("^(redis|local|minio|gcs|embed|null)$", var.object_storage.name))
