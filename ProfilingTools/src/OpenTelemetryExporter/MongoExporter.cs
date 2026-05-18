@@ -74,5 +74,8 @@ internal class MongoExporter : BaseExporter<Activity>
 
   /// <inheritdoc />
   protected override void Dispose(bool disposing)
-    => session_.Dispose();
+  {
+    session_.Dispose();
+    client_.Dispose();
+  }
 }

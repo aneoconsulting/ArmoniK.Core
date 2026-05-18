@@ -53,8 +53,8 @@ public class TestDatabaseProvider : IDisposable
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   public readonly         WebApplication App;
-  private readonly        IMongoClient   client_;
-  private readonly        IMongoRunner   runner_;
+
+  private readonly IMongoRunner runner_;
 
 
   public TestDatabaseProvider(Action<IServiceCollection>?    collectionConfigurator           = null,
@@ -69,8 +69,8 @@ public class TestDatabaseProvider : IDisposable
                   {
                     UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
 #pragma warning disable CA2254 // log inputs should be constant
-                    StandardOuputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger = line => logger.LogError(line),
+                    StandardOutputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger  = line => logger.LogError(line),
 #pragma warning restore CA2254
                   };
 
@@ -96,7 +96,7 @@ public class TestDatabaseProvider : IDisposable
                                      };
     }
 
-    client_ = new MongoClient(settings);
+    var client = new MongoClient(settings);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -155,7 +155,7 @@ public class TestDatabaseProvider : IDisposable
                                                               Injection.Options.Submitter.SettingSection)
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
-           .AddSingleton(_ => client_);
+           .AddSingleton<IMongoClient>(client);
 
     if (validateGrpcRequests)
     {

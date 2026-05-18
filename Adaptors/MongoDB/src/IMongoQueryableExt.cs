@@ -29,8 +29,8 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 
 internal static class IMongoQueryableExt
 {
-  public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this                     IMongoQueryable<T> queryable,
-                                                               [EnumeratorCancellation] CancellationToken  cancellationToken = default)
+  public static async IAsyncEnumerable<T> ToAsyncEnumerable<T>(this                     IQueryable<T>     queryable,
+                                                               [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var cursor = await queryable.ToCursorAsync(cancellationToken)
                                 .ConfigureAwait(false);
@@ -63,9 +63,9 @@ internal static class IMongoQueryableExt
   }
 
 
-  public static IOrderedMongoQueryable<T> OrderByList<T>(this IMongoQueryable<T>                   queryable,
-                                                         ICollection<Expression<Func<T, object?>>> orderFields,
-                                                         bool                                      ascOrder = true)
+  public static IOrderedQueryable<T> OrderByList<T>(this IQueryable<T>                        queryable,
+                                                    ICollection<Expression<Func<T, object?>>> orderFields,
+                                                    bool                                      ascOrder = true)
   {
     if (ascOrder)
     {

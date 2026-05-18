@@ -64,8 +64,8 @@ public class TestPollingAgentProvider : IDisposable
                   {
                     UseSingleNodeReplicaSet = false,
 #pragma warning disable CA2254 // log inputs should be constant
-                    StandardOuputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger = line => logger.LogError(line),
+                    StandardOutputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger  = line => logger.LogError(line),
 #pragma warning restore CA2254
                   };
 
