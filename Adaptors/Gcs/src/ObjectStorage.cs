@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -103,8 +103,8 @@ public class ObjectStorage : IObjectStorage
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
-    var key                   = Guid.NewGuid()
-                                    .ToString();
+    var key = Guid.NewGuid()
+                  .ToString();
     var objectStorageFullName = $"{objectStorageName_}{key}";
 
     logger_.LogDebug("Upload object {Key} to bucket {Bucket}",
@@ -116,10 +116,10 @@ public class ObjectStorage : IObjectStorage
 
     await client_.UploadObjectAsync(options_.BucketName,
                                     objectStorageFullName,
-                                    contentType: null,
-                                    source: source,
-                                    options: null,
-                                    cancellationToken: cancellationToken)
+                                    null,
+                                    source,
+                                    null,
+                                    cancellationToken)
                  .ConfigureAwait(false);
 
     return (Encoding.UTF8.GetBytes(key), source.TotalBytes);
@@ -144,8 +144,8 @@ public class ObjectStorage : IObjectStorage
                                     await client_.DownloadObjectAsync(options_.BucketName,
                                                                       objectStorageFullName,
                                                                       stream,
-                                                                      options: null,
-                                                                      cancellationToken: cancellationToken)
+                                                                      null,
+                                                                      cancellationToken)
                                                  .ConfigureAwait(false);
                                     await pipe.Writer.CompleteAsync()
                                               .ConfigureAwait(false);
@@ -231,8 +231,8 @@ public class ObjectStorage : IObjectStorage
 
       var obj = await client_.GetObjectAsync(options_.BucketName,
                                              objectStorageFullName,
-                                             options: null,
-                                             cancellationToken: cancellationToken)
+                                             null,
+                                             cancellationToken)
                              .ConfigureAwait(false);
 
       return (long?)obj.Size;
@@ -253,8 +253,8 @@ public class ObjectStorage : IObjectStorage
     {
       await client_.DeleteObjectAsync(options_.BucketName,
                                       objectStorageFullName,
-                                      options: null,
-                                      cancellationToken: cancellationToken)
+                                      null,
+                                      cancellationToken)
                    .ConfigureAwait(false);
       logger_.LogInformation("Deleted data with {resultId}",
                              key);
@@ -276,14 +276,12 @@ public class ObjectStorage : IObjectStorage
     private readonly IAsyncEnumerator<ReadOnlyMemory<byte>> source_;
     private          ReadOnlyMemory<byte>                   current_ = ReadOnlyMemory<byte>.Empty;
     private          bool                                   finished_;
-    private          long                                   totalBytes_;
 
     public AsyncChunkReadStream(IAsyncEnumerable<ReadOnlyMemory<byte>> source,
                                 CancellationToken                      cancellationToken)
       => source_ = source.GetAsyncEnumerator(cancellationToken);
 
-    public long TotalBytes
-      => totalBytes_;
+    public long TotalBytes { get; private set; }
 
     public override bool CanRead
       => true;
@@ -324,9 +322,9 @@ public class ObjectStorage : IObjectStorage
                              int    count)
       => ReadAsync(buffer.AsMemory(offset,
                                    count))
-        .AsTask()
-        .GetAwaiter()
-        .GetResult();
+         .AsTask()
+         .GetAwaiter()
+         .GetResult();
 
     public override async ValueTask<int> ReadAsync(Memory<byte>      buffer,
                                                    CancellationToken cancellationToken = default)
@@ -353,8 +351,8 @@ public class ObjectStorage : IObjectStorage
       current_.Slice(0,
                      toCopy)
               .CopyTo(buffer);
-      current_    =  current_.Slice(toCopy);
-      totalBytes_ += toCopy;
+      current_   =  current_.Slice(toCopy);
+      TotalBytes += toCopy;
       return toCopy;
     }
 
