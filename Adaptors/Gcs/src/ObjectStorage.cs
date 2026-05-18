@@ -79,7 +79,7 @@ public class ObjectStorage : IObjectStorage
     }
 
     logger_.LogInformation("ObjectStorage has correctly been initialized with options {@Options}",
-                           options_.Confidential());
+                           options_);
     isInitialized_ = true;
   }
 
@@ -99,7 +99,7 @@ public class ObjectStorage : IObjectStorage
        };
 
   /// <inheritdoc />
-  public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             metaData,
+  public async Task<(byte[] id, long size)> AddOrUpdateAsync(ObjectData                             data,
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
@@ -168,12 +168,13 @@ public class ObjectStorage : IObjectStorage
           result = await pipe.Reader.ReadAsync(cancellationToken)
                              .ConfigureAwait(false);
         }
-        catch (GoogleApiException ex) when (ex.HttpStatusCode == HttpStatusCode.NotFound)
+        catch (GoogleApiException e) when (e.HttpStatusCode == HttpStatusCode.NotFound)
         {
-          logger_.LogError("The key {Key} was not found",
+          logger_.LogError(e,
+                           "The key {Key} was not found",
                            objectStorageFullName);
           throw new ObjectDataNotFoundException("Key not found",
-                                                ex);
+                                                e);
         }
 
         foreach (var segment in result.Buffer)
@@ -261,7 +262,8 @@ public class ObjectStorage : IObjectStorage
     }
     catch (GoogleApiException e) when (e.HttpStatusCode == HttpStatusCode.NotFound)
     {
-      logger_.LogDebug("Delete is a no-op: key {Key} not found",
+      logger_.LogDebug(e,
+                       "Delete is a no-op: key {Key} not found",
                        objectStorageFullName);
     }
   }
@@ -322,9 +324,7 @@ public class ObjectStorage : IObjectStorage
                              int    count)
       => ReadAsync(buffer.AsMemory(offset,
                                    count))
-         .AsTask()
-         .GetAwaiter()
-         .GetResult();
+        .WaitSync();
 
     public override async ValueTask<int> ReadAsync(Memory<byte>      buffer,
                                                    CancellationToken cancellationToken = default)

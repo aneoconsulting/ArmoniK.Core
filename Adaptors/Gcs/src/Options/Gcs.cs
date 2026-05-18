@@ -60,7 +60,7 @@ public class Gcs
   /// <summary>
   ///   Size of one chunk when downloading an object by chunks
   /// </summary>
-  public int ChunkDownloadSize { get; set; } = 65536;
+  public int ChunkDownloadSize { get; set; } = 2 * 1024 * 1024;
 
   /// <summary>
   ///   Number of retry in case of a connection error
@@ -71,23 +71,4 @@ public class Gcs
   ///   Delay in milliseconds after an error
   /// </summary>
   public int MsAfterRetry { get; set; } = 500;
-
-  /// <summary>
-  ///   Get a copy of the options with confidential fields removed
-  /// </summary>
-  /// <returns>Confidential copy</returns>
-  public Gcs Confidential()
-    => new()
-       {
-         ProjectId  = ProjectId,
-         BucketName = BucketName,
-         CredentialsFilePath = string.IsNullOrEmpty(CredentialsFilePath)
-                                 ? ""
-                                 : "[CONFIDENTIAL]",
-         EmulatorEndpoint    = EmulatorEndpoint,
-         DegreeOfParallelism = DegreeOfParallelism,
-         ChunkDownloadSize   = ChunkDownloadSize,
-         MaxRetry            = MaxRetry,
-         MsAfterRetry        = MsAfterRetry,
-       };
 }
