@@ -25,10 +25,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
-
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
         with:
@@ -91,10 +87,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
-
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
 
       - name: Setup just
         run: |
