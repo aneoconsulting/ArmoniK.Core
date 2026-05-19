@@ -50,6 +50,7 @@ jobs:
           - Adaptors/MongoDB/tests
           - Adaptors/Memory/tests
           - Adaptors/S3/tests
+          - Adaptors/Gcs/tests
           - Adaptors/Embed/tests
         os:
           - ubuntu-latest
@@ -98,6 +99,12 @@ jobs:
       run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
             just object=minio deployTargetObject
+
+    - name: Fake GCS Server UP
+      if: ${{ matrix.projects }} == "Adaptors/Gcs/tests"
+      run: |
+          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+            just object=gcs deployTargetObject
 
     - name: Dotnet Restore
       run: |
@@ -535,6 +542,8 @@ jobs:
           - { queue: pubsub, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+
+          - { queue: activemq, object: gcs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: rabbitmq, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }

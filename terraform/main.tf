@@ -54,6 +54,17 @@ module "object_minio" {
   network     = local.network
 }
 
+module "object_gcs" {
+  source      = "./modules/storage/object/gcs"
+  count       = var.object_storage.name == "gcs" ? 1 : 0
+  image       = var.object_storage.image
+  host        = var.object_storage.gcs_host
+  port        = var.object_storage.gcs_port
+  project_id  = var.object_storage.gcs_project_id
+  bucket_name = var.object_storage.gcs_bucket_name
+  network     = local.network
+}
+
 module "object_local" {
   source     = "./modules/storage/object/local"
   count      = var.object_storage.name == "local" ? 1 : 0

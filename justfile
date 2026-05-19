@@ -102,6 +102,8 @@ object_storage := if object == "redis" {
   '{ name = "redis", image = "redis:bullseye" '
 } else if object == "minio" {
   '{ name = "minio", image = "quay.io/minio/minio" '
+} else if object == "gcs" {
+  '{ name = "gcs", image = "fsouza/fake-gcs-server:latest" '
 } else if object == "embed" {
   '{ name = "embed"'
 } else if object == "null" {
@@ -220,6 +222,7 @@ _usage:
       object: allowed values below
         redis: to use redis for object storage (default)
         minio: to use minio for object storage.
+        gcs: to use fake-gcs-server (Google Cloud Storage emulator) for object storage.
         local: to mount a local volume for object storage
         embed: to use the database as an object storage
         

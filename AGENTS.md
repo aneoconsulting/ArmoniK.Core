@@ -24,6 +24,7 @@ Adaptors/         Pluggable backends
   MongoDB/        Database — MongoDB
   Redis/          Object storage — Redis
   S3/             Object storage — AWS S3
+  Gcs/            Object storage — Google Cloud Storage
   LocalStorage/   Object storage — local filesystem
   Embed/          Object storage — embedded
   NullStorage/    Object storage — no-op (testing)
@@ -60,7 +61,7 @@ just tag=<tag> queue=<q> worker=<w> object=<o> build-deploy   # full build + dep
 just destroy                          # tear down the deployment
 ```
 
-Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|minio|local|embed|null), `replicas`, `partitions`, `log_level`.
+Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|minio|gcs|local|embed|null), `replicas`, `partitions`, `log_level`.
 
 ## Tests
 
@@ -72,7 +73,7 @@ dotnet test Adaptors/<Name>/tests/    # specific adapter tests
 
 Test categories:
 - **Unit** (no external services): Common, Memory, MongoDB (uses EphemeralMongo), Redis adapters
-- **Partial** (need one service running): AMQP, RabbitMQ, S3, LocalStorage adapters
+- **Partial** (need one service running): AMQP, RabbitMQ, S3, Gcs, LocalStorage adapters
 - **Integration** (full deployment required): HtcMock, Stream, Bench, Connectivity
 
 Integration tests run against a live deployment. Deploy first, then run the client:

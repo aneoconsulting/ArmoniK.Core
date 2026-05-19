@@ -31,6 +31,10 @@ ArmoniK provides multiple queue adapter implementations:
 - **Amazon S3** - `ArmoniK.Core.Adapters.S3`
   - AWS S3 compatible object storage
 
+- **Google Cloud Storage** - `ArmoniK.Core.Adapters.Gcs`
+  - Google Cloud Storage backed by `Google.Cloud.Storage.V1`
+  - Supports fake-gcs-server for local development and Application Default Credentials in production
+
 - **Local Storage** - `ArmoniK.Core.Adapters.LocalStorage`
   - File system-based storage for development and testing
 

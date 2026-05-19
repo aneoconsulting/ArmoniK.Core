@@ -38,6 +38,7 @@ COPY ["Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj", "Adaptors/PubSu
 COPY ["Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj", "Adaptors/Nats/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj", "Adaptors/S3/src/"]
+COPY ["Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj", "Adaptors/Gcs/src/"]
 COPY ["Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj", "Adaptors/SQS/src/"]
 COPY ["Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj", "Adaptors/Embed/src/"]
 COPY ["Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj", "Adaptors/NullStorage/src/"]
@@ -56,6 +57,7 @@ RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj"
+RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj"
 RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj"
@@ -71,6 +73,7 @@ COPY ["Adaptors/PubSub/src", "Adaptors/PubSub/src"]
 COPY ["Adaptors/Nats/src", "Adaptors/Nats/src"]
 COPY ["Adaptors/Redis/src", "Adaptors/Redis/src"]
 COPY ["Adaptors/S3/src", "Adaptors/S3/src"]
+COPY ["Adaptors/Gcs/src", "Adaptors/Gcs/src"]
 COPY ["Adaptors/SQS/src", "Adaptors/SQS/src"]
 COPY ["Adaptors/Embed/src", "Adaptors/Embed/src"]
 COPY ["Adaptors/NullStorage/src", "Adaptors/NullStorage/src"]
@@ -108,6 +111,9 @@ RUN dotnet publish "ArmoniK.Core.Adapters.Redis.csproj" -a "${TARGETARCH}" --no-
 WORKDIR /src/Adaptors/S3/src
 RUN dotnet publish "ArmoniK.Core.Adapters.S3.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/s3 /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
+WORKDIR /src/Adaptors/Gcs/src
+RUN dotnet publish "ArmoniK.Core.Adapters.Gcs.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/gcs /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+
 WORKDIR /src/Compute/PollingAgent/src
 RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/polling_agent /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
@@ -137,6 +143,8 @@ WORKDIR /adapters/object/null_storage
 COPY --from=build /app/publish/null_storage .
 WORKDIR /adapters/object/s3
 COPY --from=build /app/publish/s3 .
+WORKDIR /adapters/object/gcs
+COPY --from=build /app/publish/gcs .
 WORKDIR /app
 COPY --from=build /app/publish/polling_agent .
 ENV ASPNETCORE_URLS http://+:1080
@@ -171,6 +179,8 @@ WORKDIR /adapters/object/null_storage
 COPY --from=build /app/publish/null_storage .
 WORKDIR /adapters/object/s3
 COPY --from=build /app/publish/s3 .
+WORKDIR /adapters/object/gcs
+COPY --from=build /app/publish/gcs .
 WORKDIR /app
 COPY --from=build /app/publish/submitter .
 ENV ASPNETCORE_URLS http://+:1080, http://+:1081
