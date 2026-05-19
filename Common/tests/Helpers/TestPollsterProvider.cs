@@ -60,13 +60,13 @@ public class TestPollsterProvider : IDisposable
   private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   private readonly        WebApplication app_;
-  private readonly        IMongoClient   client_;
 
   [SuppressMessage("Usage",
                    "CA2213: Disposable fields must be disposed")]
   public readonly ExceptionManager ExceptionManager;
 
-  private readonly TimeSpan?                graceDelay_;
+  private readonly TimeSpan? graceDelay_;
+
   public readonly  HealthCheckRecord        HealthCheckRecord;
   public readonly  IHostApplicationLifetime Lifetime;
   private readonly IObjectStorage           objectStorage_;
@@ -93,8 +93,8 @@ public class TestPollsterProvider : IDisposable
                   {
                     UseSingleNodeReplicaSet = false,
 #pragma warning disable CA2254 // log inputs should be constant
-                    StandardOuputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger = line => logger.LogError(line),
+                    StandardOutputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger  = line => logger.LogError(line),
 #pragma warning restore CA2254
                   };
 
@@ -105,7 +105,7 @@ public class TestPollsterProvider : IDisposable
     }
 
     runner_ = MongoRunner.Run(options);
-    client_ = new MongoClient(runner_.ConnectionString);
+    var client = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -186,7 +186,7 @@ public class TestPollsterProvider : IDisposable
     builder.Services.AddMongoStorages(builder.Configuration,
                                       NullLogger.Instance)
            .AddSingleton(ActivitySource)
-           .AddSingleton(_ => client_)
+           .AddSingleton<IMongoClient>(client)
            .AddLogging()
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,

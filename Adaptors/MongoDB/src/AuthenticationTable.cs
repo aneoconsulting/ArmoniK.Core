@@ -34,6 +34,7 @@ using JetBrains.Annotations;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 
@@ -316,17 +317,37 @@ public class AuthenticationTable : IAuthenticationTable
     - Roles : user's role names
     - Permissions : permissions list, extracted from the roles. Permissions are not repeated
     */
-    var projectionStage = PipelineStageDefinitionBuilder.Project<UserDataAfterLookup, MongoAuthResult>(ual => new MongoAuthResult(ual.UserId,
-                                                                                                                                  ual.Username,
-                                                                                                                                  ual.Roles.Select(r => r.RoleName),
-                                                                                                                                  ual.Roles
-                                                                                                                                     .Aggregate<RoleData,
-                                                                                                                                       IEnumerable<string>>(new HashSet<
-                                                                                                                                                              string>(),
-                                                                                                                                                            (set,
-                                                                                                                                                             data) => set
-                                                                                                                                                              .Union(data
-                                                                                                                                                                       .Permissions))));
+    var projectionDoc = new BsonDocument("$project",
+                                         new BsonDocument
+                                         {
+                                           {
+                                             "Username", "$Username"
+                                           },
+                                           {
+                                             "Roles", "$Roles.RoleName"
+                                           },
+                                           {
+                                             "Permissions", new BsonDocument("$reduce",
+                                                                             new BsonDocument
+                                                                             {
+                                                                               {
+                                                                                 "input", "$Roles"
+                                                                               },
+                                                                               {
+                                                                                 "initialValue", new BsonArray()
+                                                                               },
+                                                                               {
+                                                                                 "in", new BsonDocument("$setUnion",
+                                                                                                        new BsonArray
+                                                                                                        {
+                                                                                                          "$$value",
+                                                                                                          "$$this.Permissions",
+                                                                                                        })
+                                                                               },
+                                                                             })
+                                           },
+                                         });
+    var projectionStage = new BsonDocumentPipelineStageDefinition<UserDataAfterLookup, MongoAuthResult>(projectionDoc);
     var pipeline = new IPipelineStageDefinition[]
                    {
                      lookup,

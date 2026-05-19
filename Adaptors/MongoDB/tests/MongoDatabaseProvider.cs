@@ -59,9 +59,9 @@ internal class MongoDatabaseProvider : IDisposable
                   {
                     UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
 #pragma warning disable CA2254 // log inputs should be constant
-                    StandardOuputLogger = showMongoLogs
-                                            ? line => logger.LogInformation(line)
-                                            : null,
+                    StandardOutputLogger = showMongoLogs
+                                             ? line => logger.LogInformation(line)
+                                             : null,
                     StandardErrorLogger = showMongoLogs
                                             ? line => logger.LogError(line)
                                             : null,

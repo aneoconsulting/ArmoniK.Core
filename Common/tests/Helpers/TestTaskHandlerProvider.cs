@@ -56,19 +56,19 @@ public class TestTaskHandlerProvider : IDisposable
   private const           string            DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
   private readonly        WebApplication    app_;
-  private readonly        IMongoClient      client_;
   public readonly         HealthCheckRecord HealthCheckRecord;
   public readonly         ILogger           Logger;
-  private readonly        LoggerFactory     loggerFactory_;
-  private readonly        IObjectStorage    objectStorage_;
-  public readonly         IPartitionTable   PartitionTable;
-  public readonly         IPushQueueStorage PushQueueStorage;
-  public readonly         IResultTable      ResultTable;
-  private readonly        IMongoRunner      runner_;
-  public readonly         ISessionTable     SessionTable;
-  public readonly         ISubmitter        Submitter;
-  public readonly         TaskHandler       TaskHandler;
-  public readonly         ITaskTable        TaskTable;
+
+  private readonly LoggerFactory     loggerFactory_;
+  private readonly IObjectStorage    objectStorage_;
+  public readonly  IPartitionTable   PartitionTable;
+  public readonly  IPushQueueStorage PushQueueStorage;
+  public readonly  IResultTable      ResultTable;
+  private readonly IMongoRunner      runner_;
+  public readonly  ISessionTable     SessionTable;
+  public readonly  ISubmitter        Submitter;
+  public readonly  TaskHandler       TaskHandler;
+  public readonly  ITaskTable        TaskTable;
 
 
   public IHostApplicationLifetime Lifetime;
@@ -89,8 +89,8 @@ public class TestTaskHandlerProvider : IDisposable
                   {
                     UseSingleNodeReplicaSet = false,
 #pragma warning disable CA2254 // log inputs should be constant
-                    StandardOuputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger = line => logger.LogError(line),
+                    StandardOutputLogger = line => logger.LogInformation(line),
+                    StandardErrorLogger  = line => logger.LogError(line),
 #pragma warning restore CA2254
                   };
 
@@ -101,7 +101,7 @@ public class TestTaskHandlerProvider : IDisposable
     }
 
     runner_ = MongoRunner.Run(options);
-    client_ = new MongoClient(runner_.ConnectionString);
+    var client = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -167,7 +167,7 @@ public class TestTaskHandlerProvider : IDisposable
     builder.Services.AddMongoStorages(builder.Configuration,
                                       logger)
            .AddSingleton(ActivitySource)
-           .AddSingleton(_ => client_)
+           .AddSingleton<IMongoClient>(client)
            .AddLogging()
            .AddSingleton(loggerFactory_.CreateLogger(nameof(TestTaskHandlerProvider)))
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
