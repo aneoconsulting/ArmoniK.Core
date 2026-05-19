@@ -63,10 +63,6 @@ jobs:
         repository: ${{ env.REPOSITORY }}
         ref: ${{ env.REFERENCE }}
 
-    - name: Install AWSCLI (the one in the Github runner does not work)
-      run: |
-        pip install awscli
-     
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
       with:
@@ -155,10 +151,6 @@ jobs:
         repository: ${{ env.REPOSITORY }}
         ref: ${{ env.REFERENCE }}
 
-    - name: Install AWSCLI (the one in the Github runner does not work)
-      run: |
-        pip install awscli
-   
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
       with:
@@ -416,10 +408,6 @@ jobs:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
-
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
         with:
@@ -561,10 +549,6 @@ jobs:
         with:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
-
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
 
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
@@ -930,10 +914,6 @@ jobs:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
-
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
         with:
@@ -1042,10 +1022,6 @@ jobs:
         with:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
-
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
 
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
@@ -1184,10 +1160,6 @@ jobs:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
 
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
-
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
         with:
@@ -1273,10 +1245,6 @@ jobs:
         with:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
-
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
 
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
@@ -1367,10 +1335,6 @@ jobs:
         with:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
-
-      - name: Install AWSCLI (the one in the Github runner does not work)
-        run: |
-          pip install awscli
 
       - name: Setup just
         uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
