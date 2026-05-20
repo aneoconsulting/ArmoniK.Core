@@ -68,7 +68,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz"
 
   testsQueueProtos:
     strategy:
@@ -131,7 +131,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz"
 
   testsWinOnly:
     strategy:

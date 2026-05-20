@@ -133,7 +133,7 @@ jobs:
         AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
       run: |
         project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
-        tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz
+        tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz"
 
   testsQueueProtos:
     strategy:
@@ -211,7 +211,7 @@ jobs:
         AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
       run: |
         project="$(echo "Base/tests/Queue"| sed 's:/:_:')"
-        tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz
+        tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz"
 
   testsWinOnly:
     strategy:
@@ -294,7 +294,7 @@ jobs:
       if: ${{ always() && env.REPOSITORY == github.repository }}
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg --skip-duplicate -k $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg --skip-duplicate -k "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
 
   images:
     runs-on: ubuntu-latest
@@ -481,8 +481,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz"
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
         with:
@@ -497,7 +497,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -506,7 +506,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-database.tar.gz"
 
   testHtcMockDC:
     needs:
@@ -701,8 +701,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-monitor.tar.gz"
 
       - name: Collect docker container logs
         if: ${{ always() }}
@@ -719,7 +719,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -728,7 +728,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-database.tar.gz"
 
   testWindowsDocker:
     needs:
@@ -1003,7 +1003,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}.json.gz"
       - name: Collect docker container logs
         if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -1019,7 +1019,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1028,7 +1028,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/connectivity-ca${{ matrix.ca }}-database.tar.gz"
   
   runBench:
     needs:
@@ -1152,8 +1152,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-monitor.tar.gz"
       - name: Collect docker container logs
         if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -1169,7 +1169,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1178,7 +1178,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-database.tar.gz"
 
   runCrash:
     needs:
@@ -1242,8 +1242,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-monitor.tar.gz"
       - name: Collect docker container logs
         if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -1259,7 +1259,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1268,7 +1268,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runCrash-database.tar.gz"
 
 
 
@@ -1340,8 +1340,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultPartition-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultPartition-monitor.tar.gz"
       - name: Collect docker container logs
         if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -1357,7 +1357,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1366,7 +1366,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-defaultpartition-database.tar.gz"
 
   healthCheckTest:
     needs:
@@ -1502,8 +1502,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.gz
-          tar -czf - monitor/ | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-monitor.tar.gz
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-monitor.tar.gz"
       - name: Collect docker container logs
         if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -1519,7 +1519,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1528,7 +1528,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-database.tar.gz
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-database.tar.gz"
 
   canMerge:
     needs:

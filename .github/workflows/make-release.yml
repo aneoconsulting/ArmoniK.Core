@@ -95,7 +95,7 @@ jobs:
       env:
         DOCKER_HUB_TOKEN: ${{ secrets.DOCKER_HUB_TOKEN }}
         DOCKER_HUB_LOGIN: ${{ secrets.DOCKER_HUB_LOGIN }}
-      run: echo $DOCKER_HUB_TOKEN | docker login -u $DOCKER_HUB_LOGIN --password-stdin
+      run: echo "$DOCKER_HUB_TOKEN" | docker login -u "$DOCKER_HUB_LOGIN" --password-stdin
 
     - name: Build
       run: just tag=$VERSION platform=linux/arm64,linux/amd64,windows/amd64 load=false push=true ${{ matrix.type }}
@@ -122,5 +122,5 @@ jobs:
     - name: Push the package
       env:
         NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k $NUGET_API_KEY --source https://api.nuget.org/v3/index.json
+      run: dotnet nuget push /tmp/packages/ArmoniK.Core.*.nupkg -k "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json
 
