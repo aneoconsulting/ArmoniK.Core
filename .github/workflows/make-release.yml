@@ -1,8 +1,5 @@
 name: Release
 
-permissions:
-  contents: write
-
 on:
   push:
     tags:
@@ -11,6 +8,8 @@ on:
 jobs:
   versionning:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     outputs:
       version: ${{ steps.snapshot.outputs.version }}
       release: ${{ steps.release.outputs.version }}
