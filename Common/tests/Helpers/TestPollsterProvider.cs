@@ -178,6 +178,8 @@ public class TestPollsterProvider : IDisposable
 
     var builder = WebApplication.CreateBuilder();
 
+    builder.WebHost.UseUrls("http://127.0.0.1:0");
+
     builder.Configuration.AddInMemoryCollection(minimalConfig);
 
     builder.Logging.ClearProviders();
