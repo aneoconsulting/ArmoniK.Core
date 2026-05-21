@@ -29,9 +29,6 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
 
-    - name: Install dependencies
-      run: pip install requests
-
     - name: Remove old branch images
       uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/remove-images@40131ac01ff60baea9e02612ced7ac9b69916a3d # main
       with:
@@ -53,9 +50,6 @@ jobs:
 
     - name: Set up Python
       uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405 # v6
-
-    - name: Install dependencies
-      run: pip install requests
 
     - name: Unlist old branch nugets
       uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/unlist-nugets@40131ac01ff60baea9e02612ced7ac9b69916a3d # main
