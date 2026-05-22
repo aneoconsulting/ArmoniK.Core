@@ -285,7 +285,8 @@ public static class Program
     }
     finally
     {
-      Log.CloseAndFlush();
+      await Log.CloseAndFlushAsync()
+               .ConfigureAwait(false);
     }
   }
 }

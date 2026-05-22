@@ -153,15 +153,15 @@ public static class GrpcChannelExt
 
     foreach (var agg in taskAggregation)
     {
-      var result2Task = resultClient.GetOwnerTaskId(new GetOwnerTaskIdRequest
-                                                    {
-                                                      ResultId =
-                                                      {
-                                                        agg.DataDependencies,
-                                                      },
-                                                      SessionId = sessionId,
-                                                    })
-                                    .ResultTask.Select(m => m.TaskId);
+      var result2Task = (await resultClient.GetOwnerTaskIdAsync(new GetOwnerTaskIdRequest
+                                                                {
+                                                                  ResultId =
+                                                                  {
+                                                                    agg.DataDependencies,
+                                                                  },
+                                                                  SessionId = sessionId,
+                                                                })
+                                           .ConfigureAwait(false)).ResultTask.Select(m => m.TaskId);
 
       var lastDependencyFinished = taskDependencies.Where(pair => result2Task.Contains(pair.Key) && pair.Value.EndedAt is not null)
                                                    .Select(pair => pair.Value)

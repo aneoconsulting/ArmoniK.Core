@@ -18,5 +18,5 @@
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Extensions.Common.StreamWrapper.Tests.Server;
 
-WorkerServer.Create<WorkerService>()
-            .Run();
+await WorkerServer.Create<WorkerService>()
+                  .RunAsync();
