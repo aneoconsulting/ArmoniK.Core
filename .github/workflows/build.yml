@@ -69,7 +69,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+      uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
       with:
         tool: just
 
@@ -159,7 +159,7 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+      uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
       with:
         tool: just
 
@@ -325,7 +325,7 @@ jobs:
       uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3  
 
     - name: Setup just
-      uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+      uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
       with:
         tool: just
 
@@ -415,7 +415,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
         with:
           tool: just
 
@@ -563,7 +563,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
         with:
           tool: just
       
@@ -937,7 +937,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
         with:
           tool: just
 
@@ -1052,7 +1052,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
         with:
           tool: just
 
@@ -1195,7 +1195,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
         with:
           tool: just
 
@@ -1287,7 +1287,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
         with:
           tool: just
 
@@ -1383,7 +1383,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@213ccc1a076163c093f914550b94feb90fab916d # v2
+        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
         with:
           tool: just
 
