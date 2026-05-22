@@ -64,7 +64,7 @@ jobs:
         ref: ${{ env.REFERENCE }}
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
       with:
           terraform_version: latest
 
@@ -118,7 +118,7 @@ jobs:
             dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
-      uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
       if: ${{ success() || failure() }}
       with:
         name: Test - ${{ matrix.os }} ${{ matrix.projects }}
@@ -154,7 +154,7 @@ jobs:
         ref: ${{ env.REFERENCE }}
 
     - name: Setup Terraform
-      uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+      uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
       with:
        terraform_version: latest
 
@@ -196,7 +196,7 @@ jobs:
            dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
-      uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
       if: ${{ success() || failure() }}
       with:
         name: Test - ${{ matrix.queue }} Base/tests/Queue
@@ -248,7 +248,7 @@ jobs:
         dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
-      uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
       if: ${{ success() || failure() }}
       with:
         name: Test - windows ${{ matrix.projects }}
@@ -322,7 +322,7 @@ jobs:
 
     - name: Set up Docker Buildx
       id: buildx
-      uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3  
+      uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4  
 
     - name: Setup just
       uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
@@ -339,7 +339,7 @@ jobs:
         sudo systemctl restart docker
 
     - name: Login to Docker Hub
-      uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
       if: ${{ always() && env.REPOSITORY == github.repository }}
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
@@ -370,7 +370,7 @@ jobs:
           - dockerhubaneo/armonik_core_bench_test_client
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
       if: ${{ env.REPOSITORY == github.repository }}
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
@@ -420,7 +420,7 @@ jobs:
           tool: just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: latest
 
@@ -463,7 +463,7 @@ jobs:
             dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
-        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         if: ${{ success() || failure() }}
         with:
           name: Test - ${{ matrix.queue }} x ${{ matrix.log-level }}
@@ -568,7 +568,7 @@ jobs:
           tool: just
       
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: latest
 
@@ -767,7 +767,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9 # v3
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
         if: ${{ env.REPOSITORY == github.repository }}
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
@@ -942,7 +942,7 @@ jobs:
           tool: just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: latest
 
@@ -985,7 +985,7 @@ jobs:
         run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
-        uses: dorny/test-reporter@df6247429542221bc30d46a036ee47af1102c451 # v2.7.0
+        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         if: ${{ success() || failure() }}
         with:
           name: Test - Connectivity CA ${{ matrix.ca }}
@@ -1057,7 +1057,7 @@ jobs:
           tool: just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: latest
 
@@ -1200,7 +1200,7 @@ jobs:
           tool: just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: latest
 
@@ -1292,7 +1292,7 @@ jobs:
           tool: just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: latest
 
@@ -1388,7 +1388,7 @@ jobs:
           tool: just
 
       - name: Setup Terraform
-        uses: hashicorp/setup-terraform@b9cd54a3c349d3f38e8881555d616ced269862dd # v3
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
         with:
           terraform_version: latest
 
