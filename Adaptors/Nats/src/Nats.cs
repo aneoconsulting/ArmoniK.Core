@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace ArmoniK.Core.Adapters.Nats;
 
 /// <summary>
@@ -51,4 +53,16 @@ internal class Nats
   ///   If DegreeOfParallelism is negative, no limit is enforced.
   /// </summary>
   public int DegreeOfParallelism { get; set; }
+
+
+  /// <summary>
+  ///   Number of priority levels supported. Each priority level will create its own Nats subject.
+  /// </summary>
+  public int MaxPriority { get; set; } = 0;
+
+  /// <summary>
+  ///   Nats long polling wait time in seconds (5).
+  ///   Set to 0 in order to disable long polling.
+  /// </summary>
+  public TimeSpan WaitTimeSeconds { get; set; } = TimeSpan.FromSeconds(20);
 }

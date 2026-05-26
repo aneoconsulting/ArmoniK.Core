@@ -101,13 +101,13 @@ internal class QueueMessageHandler : IQueueMessageHandler
       case QueueMessageStatus.Failed:
       case QueueMessageStatus.Running:
       case QueueMessageStatus.Postponed:
-        await message_.NakAsync()
+        await message_.NakAsync(cancellationToken: CancellationToken.None)
                       .ConfigureAwait(false);
         break;
       case QueueMessageStatus.Cancelled:
       case QueueMessageStatus.Processed:
       case QueueMessageStatus.Poisonous:
-        await message_.AckAsync()
+        await message_.AckAsync(cancellationToken: CancellationToken.None)
                       .ConfigureAwait(false);
         break;
       default:
@@ -121,7 +121,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
   ///   Extends the acknowledgement deadline for the current message.
   /// </summary>
   private async Task ModifyAckDeadline(CancellationToken cancellationToken)
-    => await message_.AckProgressAsync()
+    => await message_.AckProgressAsync(cancellationToken: cancellationToken)
                      .ConfigureAwait(false);
 
   /// <summary>
