@@ -69,7 +69,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+      uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
       with:
         tool: just
 
@@ -159,7 +159,7 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+      uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
       with:
         tool: just
 
@@ -232,7 +232,7 @@ jobs:
         ref: ${{ env.REFERENCE }}
 
     - name: Install .NET Core
-      uses: actions/setup-dotnet@c2fa09f4bde5ebb9d1777cf28262a3eb3db3ced7 # v5
+      uses: actions/setup-dotnet@9a946fdbd5fb07b82b2f5a4466058b876ab72bb2 # v5
       with:
         dotnet-version: 10.x
 
@@ -325,7 +325,7 @@ jobs:
       uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f # v3  
 
     - name: Setup just
-      uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+      uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
       with:
         tool: just
 
@@ -415,7 +415,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+        uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
         with:
           tool: just
 
@@ -563,7 +563,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+        uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
         with:
           tool: just
       
@@ -759,7 +759,7 @@ jobs:
           choco install just -y      
 
       - name: Setup AWS cli
-        uses: aws-actions/configure-aws-credentials@d979d5b3a71173a29b74b5b88418bfda9437d885 # v6
+        uses: aws-actions/configure-aws-credentials@99214aa6889fcddfa57764031d71add364327e59 # v6
         if: ${{ env.REPOSITORY == github.repository }}
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -937,7 +937,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+        uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
         with:
           tool: just
 
@@ -1052,7 +1052,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+        uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
         with:
           tool: just
 
@@ -1195,7 +1195,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+        uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
         with:
           tool: just
 
@@ -1287,7 +1287,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+        uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
         with:
           tool: just
 
@@ -1383,7 +1383,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@e0eafa9a0d485c37f97c0f7beb930a58a2facbac # v2
+        uses: taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538 # v2
         with:
           tool: just
 
