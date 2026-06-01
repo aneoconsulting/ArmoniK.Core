@@ -16,7 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 
 using ArmoniK.Utils;
 
@@ -48,16 +50,16 @@ internal class ForwardingLoggerProvider : ILoggerProvider
 
   internal class ForwardingLogger : ILogger
   {
-    private readonly string                           categoryName_;
-    private readonly LogMessage                       logAction_;
-    private readonly List<Dictionary<string, object>> states_;
+    private readonly string                                                 categoryName_;
+    private readonly LogMessage                                             logAction_;
+    private readonly ConcurrentDictionary<Dictionary<string, object>, byte> states_;
 
     public ForwardingLogger(string     categoryName,
                             LogMessage logAction)
     {
       categoryName_ = categoryName;
       logAction_    = logAction;
-      states_       = new List<Dictionary<string, object>>();
+      states_       = new ConcurrentDictionary<Dictionary<string, object>, byte>(ReferenceEqualityComparer.Instance);
     }
 
     public bool IsEnabled(LogLevel logLevel)
@@ -73,11 +75,11 @@ internal class ForwardingLoggerProvider : ILoggerProvider
                             });
       }
 
-      states_.Add(d);
-      return new Deferrer(() =>
-                          {
-                            states_.Remove(d);
-                          });
+      states_.TryAdd(d,
+                     0);
+
+      return new Deferrer(() => states_.TryRemove(d,
+                                                  out _));
     }
 
     public void Log<TState>(LogLevel                         logLevel,
@@ -90,7 +92,7 @@ internal class ForwardingLoggerProvider : ILoggerProvider
                     eventId,
                     formatter(state,
                               exception),
-                    states_.ToArray(),
+                    states_.Keys.ToArray(),
                     exception);
   }
 }
