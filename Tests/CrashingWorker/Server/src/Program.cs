@@ -18,5 +18,5 @@
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Samples.CrashingWorker.Server;
 
-WorkerServer.Create<CrashingService>()
-            .Run();
+await WorkerServer.Create<CrashingService>()
+                  .RunAsync();

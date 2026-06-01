@@ -18,5 +18,5 @@
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Samples.Bench.Server;
 
-WorkerServer.Create<BenchComputerService>()
-            .Run();
+await WorkerServer.Create<BenchComputerService>()
+                  .RunAsync();

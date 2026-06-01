@@ -37,8 +37,11 @@ namespace ArmoniK.Core.Adapters.MongoDB.Common;
 /// </summary>
 public class SessionProvider : IInitializable
 {
-  private readonly IMongoClient          client_;
-  private readonly object                lockObj_ = new();
+  private readonly IMongoClient client_;
+
+  private readonly SemaphoreSlim initSemaphore_ = new(1,
+                                                      1);
+
   private readonly Options.MongoDB       options_;
   private          IClientSessionHandle? clientSessionHandle_;
 
@@ -89,13 +92,20 @@ public class SessionProvider : IInitializable
       return;
     }
 
-    lock (lockObj_)
+    await initSemaphore_.WaitAsync(cancellationToken)
+                        .ConfigureAwait(false);
+    try
     {
-      clientSessionHandle_ ??= client_.StartSession(new ClientSessionOptions
-                                                    {
-                                                      CausalConsistency = options_.CausalConsistency,
-                                                    },
-                                                    cancellationToken);
+      clientSessionHandle_ ??= await client_.StartSessionAsync(new ClientSessionOptions
+                                                               {
+                                                                 CausalConsistency = options_.CausalConsistency,
+                                                               },
+                                                               cancellationToken)
+                                            .ConfigureAwait(false);
+    }
+    finally
+    {
+      initSemaphore_.Release();
     }
 
     // Force cluster topology discovery to complete so that the liveness check (which inspects

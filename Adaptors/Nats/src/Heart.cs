@@ -59,7 +59,7 @@ public class Heart
   /// <returns>A task finishing with the last heartbeat</returns>
   public async Task Stop()
   {
-    stoppedHeartCts_?.Cancel();
+    await (stoppedHeartCts_?.CancelAsync() ?? Task.CompletedTask).ConfigureAwait(false);
     try
     {
       if (runningTask_ is not null)

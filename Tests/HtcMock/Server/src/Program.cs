@@ -18,5 +18,5 @@
 using ArmoniK.Api.Worker.Utils;
 using ArmoniK.Samples.HtcMock.Server;
 
-WorkerServer.Create<SampleComputerService>()
-            .Run();
+await WorkerServer.Create<SampleComputerService>()
+                  .RunAsync();
