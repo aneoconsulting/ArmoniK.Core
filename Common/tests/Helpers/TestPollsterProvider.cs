@@ -42,6 +42,7 @@ using ArmoniK.Core.Utils;
 using EphemeralMongo;
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -177,6 +178,8 @@ public class TestPollsterProvider : IDisposable
     Console.WriteLine(minimalConfig.ToJson());
 
     var builder = WebApplication.CreateBuilder();
+
+    builder.WebHost.UseUrls("http://127.0.0.1:0");
 
     builder.Configuration.AddInMemoryCollection(minimalConfig);
 
