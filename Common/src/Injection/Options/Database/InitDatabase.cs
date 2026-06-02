@@ -30,32 +30,6 @@ namespace ArmoniK.Core.Common.Injection.Options.Database;
 public class InitDatabase
 {
   /// <summary>
-  ///   Collection of data to insert in the database for Authentication during ArmoniK initialization
-  /// </summary>
-  public readonly IReadOnlyCollection<AuthData> Auths;
-
-  /// <summary>
-  ///   Whether to init the database
-  /// </summary>
-  public readonly bool Init;
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Partitions during ArmoniK initialization
-  /// </summary>
-  public readonly IReadOnlyCollection<PartitionData> Partitions;
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Roles during ArmoniK initialization
-  /// </summary>
-  public readonly IReadOnlyCollection<RoleData> Roles;
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Users during ArmoniK initialization
-  /// </summary>
-  public readonly IReadOnlyCollection<UserData> Users;
-
-
-  /// <summary>
   ///   Instantiate <see cref="InitDatabase" /> from the configurations received from the Dependency Injection
   /// </summary>
   /// <param name="initServices">Data structure containing the raw data</param>
@@ -105,4 +79,29 @@ public class InitDatabase
                                                                     new PodConfiguration(partition.PodConfiguration)))
                              .ToList();
   }
+
+  /// <summary>
+  ///   Whether to init the database
+  /// </summary>
+  public bool Init { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Partitions during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<PartitionData> Partitions { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Roles during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<RoleData> Roles { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Users during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<UserData> Users { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Authentication during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<AuthData> Auths { get; init; }
 }
