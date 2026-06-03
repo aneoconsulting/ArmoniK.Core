@@ -39,7 +39,7 @@ echo "$mon_pid" > "$prefix.pid"
 
 trap "kill $mon_pid" EXIT
 
-if [ -n "$MONITOR_CD" ]; then
+if [[ -n "$MONITOR_CD" ]]; then
   cd "$MONITOR_CD"
 fi
 

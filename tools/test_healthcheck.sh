@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-if [ $# -ne 1 ]; then
+if [[ $# -ne 1 ]]; then
   echo This script expects only one parameter : the service to restart
   exit 1
 fi
