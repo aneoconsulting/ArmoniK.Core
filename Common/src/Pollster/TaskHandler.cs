@@ -361,14 +361,14 @@ public sealed class TaskHandler : IAsyncDisposable
                      catch (OperationCanceledException)
                      {
                        logger_.LogDebug("Agent stopping: MessageHandler for {Task} is released with status {Status}",
-                                        taskData_.TaskId,
+                                        taskData_?.TaskId ?? "",
                                         messageHandler_.Status);
                      }
                      catch (Exception ex)
                      {
                        logger_.LogError(ex,
                                         "Error while checking other pod for {Task}: MessageHandler is released with status {Status}",
-                                        taskData_.TaskId,
+                                        taskData_?.TaskId ?? "",
                                         messageHandler_.Status);
                      }
                      finally
