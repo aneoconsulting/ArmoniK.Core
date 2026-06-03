@@ -20,7 +20,6 @@ using System.Linq;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Utils;
 
 namespace ArmoniK.Core.Common.Injection.Options.Database;
 
@@ -30,32 +29,6 @@ namespace ArmoniK.Core.Common.Injection.Options.Database;
 /// </summary>
 public class InitDatabase
 {
-  /// <summary>
-  ///   Collection of data to insert in the database for Authentication during ArmoniK initialization
-  /// </summary>
-  public readonly ICollection<AuthData> Auths;
-
-  /// <summary>
-  ///   Whether to init the database
-  /// </summary>
-  public readonly bool Init;
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Partitions during ArmoniK initialization
-  /// </summary>
-  public readonly ICollection<PartitionData> Partitions;
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Roles during ArmoniK initialization
-  /// </summary>
-  public readonly ICollection<RoleData> Roles;
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Users during ArmoniK initialization
-  /// </summary>
-  public readonly ICollection<UserData> Users;
-
-
   /// <summary>
   ///   Instantiate <see cref="InitDatabase" /> from the configurations received from the Dependency Injection
   /// </summary>
@@ -70,7 +43,7 @@ public class InitDatabase
                                  i) => new RoleData(i,
                                                     role.Name,
                                                     role.Permissions.ToArray()))
-                        .AsICollection();
+                        .ToList();
 
     var roleDic = Roles.ToDictionary(data => data.RoleName,
                                      data => data.RoleId);
@@ -82,7 +55,7 @@ public class InitDatabase
                                                     user.Name,
                                                     user.Roles.Select(roleName => roleDic[roleName])
                                                         .ToArray()))
-                        .AsICollection();
+                        .ToList();
 
     var userDic = Users.ToDictionary(data => data.Username,
                                      data => data.UserId);
@@ -94,7 +67,7 @@ public class InitDatabase
                                                     userDic[certificate.User],
                                                     certificate.Cn,
                                                     certificate.Fingerprint))
-                        .AsICollection();
+                        .ToList();
 
     Partitions = initServices.Partitioning.Partitions.Select(Partition.FromJson)
                              .Select(partition => new PartitionData(partition.PartitionId,
@@ -104,6 +77,31 @@ public class InitDatabase
                                                                     partition.PreemptionPercentage,
                                                                     partition.Priority,
                                                                     new PodConfiguration(partition.PodConfiguration)))
-                             .AsICollection();
+                             .ToList();
   }
+
+  /// <summary>
+  ///   Whether to init the database
+  /// </summary>
+  public bool Init { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Partitions during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<PartitionData> Partitions { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Roles during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<RoleData> Roles { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Users during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<UserData> Users { get; init; }
+
+  /// <summary>
+  ///   Collection of data to insert in the database for Authentication during ArmoniK initialization
+  /// </summary>
+  public IReadOnlyCollection<AuthData> Auths { get; init; }
 }
