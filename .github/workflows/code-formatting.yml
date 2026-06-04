@@ -43,7 +43,7 @@ jobs:
       run: |
         DIFF="$(git diff --name-only)"
 
-        if [ -z "$DIFF" ]; then
+        if [[ -z "$DIFF" ]]; then
           echo "OK: Format is clean"
         else
           echo "Error: Format was not clean"
@@ -99,7 +99,7 @@ jobs:
       run: |
         DIFF="$(git diff --name-only)"
 
-        if [ -z "$DIFF" ]; then
+        if [[ -z "$DIFF" ]]; then
           echo "OK: Files mode is clean"
         else
           echo "Error: Files mode was not clean"
