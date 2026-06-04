@@ -1,4 +1,4 @@
-#! /usr/bin/env bash
+#! /bin/sh
 
 now() {
   date '+%Y-%m-%d-%H.%M.%S'
@@ -28,7 +28,7 @@ mon() {
     time="$(now)"
     echo "========== ${time} =========="
     top -bn1 | head -20
-    echo "-----------${time//?/-}-----------"
+    echo "-----------------------------------------"
     df -ah
     sleep 10
   done
@@ -39,7 +39,7 @@ echo "$mon_pid" > "$prefix.pid"
 
 trap "kill $mon_pid" EXIT
 
-if [[ -n "$MONITOR_CD" ]]; then
+if [ -n "$MONITOR_CD" ]; then
   cd "$MONITOR_CD"
 fi
 
