@@ -30,6 +30,38 @@ Hi! We are very happy that you are interested in contributing to ArmoniK.Core pr
 - `<Nullable>enable</Nullable>` is set project-wide; all new code must annotate nullability
 - Run `just cleanupcode` (JetBrains `jb cleanupcode`) before committing C# changes
 
+## Commit Message Format
+
+Pull request titles must follow the [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/) specification. This is enforced by CI on every PR.
+
+Format: `<type>(<scope>): <description>`
+
+The `<scope>` is optional. Allowed types:
+
+| Type | When to use |
+|------|-------------|
+| `feat` | A new feature |
+| `fix` | A bug fix |
+| `docs` | Documentation changes only |
+| `refactor` | Code change that neither fixes a bug nor adds a feature |
+| `test` | Adding or updating tests |
+| `perf` | Performance improvement |
+| `ci` | Changes to CI/CD configuration or workflows |
+| `build` | Changes to build system or external dependencies |
+| `chore` | Routine tasks, dependency updates, tooling |
+| `revert` | Reverts a previous commit |
+| `style` | Code style/formatting changes (no logic change) |
+
+Examples:
+```
+feat(auth): add mTLS certificate impersonation support
+fix(mongodb): handle connection pool exhaustion on high load
+docs: update local deployment prerequisites
+chore(deps): update RabbitMQ client to 7.x
+```
+
+> **Note:** Individual commit messages within a branch are not validated — only the PR title is checked.
+
 ## Release Process
 
 When necessary, maintainers can release a new version. This new version will publish packages to registries.
