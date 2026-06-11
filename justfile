@@ -21,7 +21,7 @@ prometheus   := "true"           # If true, deploy Prometheus for metrics collec
 grafana      := "true"           # If true, deploy Grafana dashboards
 seq          := "true"           # If true, deploy Seq for structured log search (UI at http://localhost:9080)
 socket_type  := "unixdomainsocket" # Socket type for PollingAgent↔Worker communication: unixdomainsocket or tcp
-cinit        := "true"           # If true, use container-init (cinit) as PID 1 in worker containers
+cinit        := "true"           # If true, run a one-shot init container to initialize the database before services start; services self-initialize when false
 
 # Shared test parameters
 ntasks    := "100"
