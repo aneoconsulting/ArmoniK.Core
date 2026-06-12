@@ -5,23 +5,23 @@ set shell := ["bash", "-exc"]
 set windows-shell := ["powershell.exe", "-NoLogo", "-Command"]
 
 # Default values for the deployment
-tag          := "0.0.0.0-local"
-local_images := "false"
-log_level    := "Information"
-queue        := "activemq"
-worker       := "htcmock"
-object       := "redis"
-replicas     := "3"
-partitions   := "2"
-platform     := ""
-push         := "false"
-load         := "true"
-ingress      := "true"
-prometheus   := "true"
-grafana      := "true"
-seq          := "true"
-socket_type  := "unixdomainsocket"
-cinit        := "true"
+tag          := "0.0.0.0-local"  # Docker image tag; use "0.0.0.0-local" for locally built images
+local_images := "false"          # If true, Terraform builds images locally instead of pulling from registry
+log_level    := "Information"    # Serilog log level: Verbose, Debug, Information, Warning, Error, Fatal
+queue        := "activemq"       # Queue backend: activemq, rabbitmq, nats, sqs, pubsub, none
+worker       := "htcmock"        # Test worker: htcmock, stream, bench, crashingworker
+object       := "redis"          # Object storage: redis, minio, gcs, local, embed, null
+replicas     := "3"              # Number of PollingAgent+Worker pairs to deploy
+partitions   := "2"              # Number of ArmoniK partitions
+platform     := ""               # Docker build platform override (e.g. "linux/amd64"); empty = host platform
+push         := "false"          # If true, push built images to registry (requires login)
+load         := "true"           # If true, load built images into local Docker daemon
+ingress      := "true"           # If true, deploy the ingress (load balancer) container
+prometheus   := "true"           # If true, deploy Prometheus for metrics collection
+grafana      := "true"           # If true, deploy Grafana dashboards
+seq          := "true"           # If true, deploy Seq for structured log search (UI at http://localhost:9080)
+socket_type  := "unixdomainsocket" # Socket type for PollingAgent↔Worker communication: unixdomainsocket or tcp
+cinit        := "true"           # If true, run a one-shot init container to initialize the database before services start; services self-initialize when false
 
 # Shared test parameters
 ntasks    := "100"
@@ -238,6 +238,7 @@ _usage:
     same parameters used for deploy
   EOF
 
+# Print all environment variables (useful for debugging Terraform variable values)
 env:
   env
 
@@ -265,7 +266,7 @@ deploy: (init)
 deployTargetObject: (init)
   terraform -chdir=terraform apply -target="module.object_{{object}}" -auto-approve
 
-# Destroy target: queue standalone
+# Destroy target: object standalone
 destroyTargetObject:
   terraform -chdir=terraform destroy -target="module.object_{{object}}" -auto-approve
 
