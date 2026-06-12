@@ -8,11 +8,7 @@ services corresponding to the specific deployment choices.
 ArmoniK provides multiple queue adapter implementations:
 
 - **AMQP (Generic)** - `ArmoniK.Core.Adapters.Amqp`
-  - Supports any AMQP 1.0 compatible server (ActiveMQ, IBM MQ, etc.)
-
-- **RabbitMQ** - `ArmoniK.Core.Adapters.RabbitMQ`
-  - Dedicated RabbitMQ adapter using AMQP 0.9.1 protocol
-  - Enhanced priority support
+  - Supports any AMQP 1.0 compatible server (ActiveMQ, RabbitMQ, IBM MQ, etc.)
 
 - **Amazon SQS** - `ArmoniK.Core.Adapters.SQS`
   - AWS Simple Queue Service integration
