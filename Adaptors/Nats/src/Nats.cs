@@ -15,12 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Utils.DocAttribute;
+
 namespace ArmoniK.Core.Adapters.Nats;
 
 /// <summary>
 ///   All Allowed option for Nats queue in ArmoniK.
 ///   Can be set through configuration sources.
 /// </summary>
+[ExtractDocumentation("Options for Nats")]
 internal class Nats
 {
   /// <summary>
