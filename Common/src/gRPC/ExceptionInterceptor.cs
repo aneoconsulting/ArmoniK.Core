@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -16,12 +16,11 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
 using Grpc.Core.Interceptors;
@@ -37,48 +36,42 @@ namespace ArmoniK.Core.Common.gRPC;
 /// </summary>
 public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
 {
-  private readonly ConcurrentQueue<Exception> errors_;
-  private readonly ILogger                    logger_;
-  private readonly int                        maxAllowedErrors_;
+  private readonly ExceptionManager exceptionManager_;
+  private readonly ILogger          logger_;
 
   /// <summary>
   ///   Construct the interceptor
   /// </summary>
-  /// <param name="submitterOptions">Map containing the submitter options, and especially `Options.Submitter.MaxErrorAllowed`</param>
+  /// <param name="exceptionManager">Component that record errors and success</param>
   /// <param name="logger">Logger to be used by the interceptor</param>
-  public ExceptionInterceptor(Submitter                     submitterOptions,
+  public ExceptionInterceptor(ExceptionManager              exceptionManager,
                               ILogger<ExceptionInterceptor> logger)
   {
-    maxAllowedErrors_ = submitterOptions.MaxErrorAllowed;
-    errors_           = new ConcurrentQueue<Exception>();
+    exceptionManager_ = exceptionManager;
     logger_           = logger;
-    logger_.LogDebug("Interceptor created with {maxAllowedErrors_} maximum errors",
-                     maxAllowedErrors_);
   }
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    _ = tag;
-    logger_.LogDebug("Interceptor HealthCheck: errors {nbErrors}/{maxAllowedErrors}",
-                     errors_.Count,
-                     maxAllowedErrors_);
-    return Task.FromResult(maxAllowedErrors_ < 0 || errors_.Count <= maxAllowedErrors_
-                             ? HealthCheckResult.Healthy()
-                             : HealthCheckResult.Unhealthy("Too many errors recorded",
-                                                           new AggregateException(errors_)));
-  }
+    => Task.FromResult((tag, exceptionManager_.Failed) switch
+                       {
+                         // If there is too many errors, the pod is marked as not ready to avoid Kubernetes sending new requests to the controller.
+                         // Liveness Unhealthy is not needed as the pod is killing itself, without the intervention of Kubernetes.
+                         (HealthCheckTag.Readiness, true) => HealthCheckResult.Unhealthy("Too many error recorded, application is shutting down"),
+                         _                                => HealthCheckResult.Healthy(),
+                       });
 
   /// <inheritdoc />
   public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest                               request,
                                                                                 ServerCallContext                      context,
                                                                                 UnaryServerMethod<TRequest, TResponse> continuation)
   {
+    TResponse response;
     try
     {
-      return await continuation(request,
-                                context)
-               .ConfigureAwait(false);
+      response = await continuation(request,
+                                    context)
+                   .ConfigureAwait(false);
     }
     catch (Exception e)
     {
@@ -87,6 +80,11 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
         .ConfigureAwait(false);
       throw;
     }
+
+    await HandleSuccess(context)
+      .ConfigureAwait(false);
+
+    return response;
   }
 
   /// <inheritdoc />
@@ -94,12 +92,13 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                                                           ServerCallContext                                context,
                                                                                           ClientStreamingServerMethod<TRequest, TResponse> continuation)
   {
+    TResponse response;
     try
     {
-      return await base.ClientStreamingServerHandler(requestStream,
-                                                     context,
-                                                     continuation)
-                       .ConfigureAwait(false);
+      response = await base.ClientStreamingServerHandler(requestStream,
+                                                         context,
+                                                         continuation)
+                           .ConfigureAwait(false);
     }
     catch (Exception e)
     {
@@ -108,6 +107,11 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
         .ConfigureAwait(false);
       throw;
     }
+
+    await HandleSuccess(context)
+      .ConfigureAwait(false);
+
+    return response;
   }
 
   /// <inheritdoc />
@@ -131,6 +135,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
         .ConfigureAwait(false);
       throw;
     }
+
+    await HandleSuccess(context)
+      .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -154,6 +161,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
         .ConfigureAwait(false);
       throw;
     }
+
+    await HandleSuccess(context)
+      .ConfigureAwait(false);
   }
 
   private ValueTask HandleException(Exception         e,
@@ -189,13 +199,18 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
       }
     }
 
-    logger_.LogDebug(e,
-                     "An exception has been thrown during handling of request");
-    // If we have already too many errors, stop recording
-    if (errors_.Count <= maxAllowedErrors_)
-    {
-      errors_.Enqueue(e);
-    }
+    exceptionManager_.RecordError(logger_,
+                                  e,
+                                  "An exception has been thrown during handling of request");
+
+    return ValueTask.CompletedTask;
+  }
+
+  private ValueTask HandleSuccess(ServerCallContext context)
+  {
+    _ = context;
+
+    exceptionManager_.RecordSuccess(logger_);
 
     return ValueTask.CompletedTask;
   }
