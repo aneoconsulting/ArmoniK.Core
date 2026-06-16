@@ -329,6 +329,7 @@ public static class TaskLifeCycleHelper
 
     var allDependencies       = new HashSet<string>();
     var completedDependencies = new List<string>();
+    var invalidDependencies   = new List<string>();
 
     // Get all the results that are a dependency of at least one task
     foreach (var request in taskRequests)
@@ -340,14 +341,57 @@ public static class TaskLifeCycleHelper
     logger.LogDebug("Check Result status for results {@ResultIds}",
                     allDependencies);
 
-    // Get the dependencies that are already completed to avoid tracking already completed results
-    await foreach (var resultId in resultTable.GetResults(result => allDependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
-                                                          result => result.ResultId,
-                                                          cancellationToken)
-                                              .ConfigureAwait(false))
+    // Fetch all dependencies in a single query so we can validate existence and status before tracking
+    var results = await resultTable.GetResults(result => allDependencies.Contains(result.ResultId),
+                                               result => new
+                                                         {
+                                                           result.ResultId,
+                                                           result.Status,
+                                                         },
+                                               cancellationToken)
+                                   .ToListAsync(cancellationToken)
+                                   .ConfigureAwait(false);
+
+    // A missing result means the caller referenced a result that was never created; fail fast rather than
+    // leaving tasks permanently stuck waiting for a dependency that will never appear
+    if (results.Count != allDependencies.Count)
     {
-      allDependencies.Remove(resultId);
-      completedDependencies.Add(resultId);
+      var existingResultIds = results.Select(r => r.ResultId)
+                                     .ToHashSet();
+      var missingResultIds = allDependencies.Where(id => !existingResultIds.Contains(id));
+      logger.LogError("The following dependencies do not exist in the ResultTable: {@ResultIds}",
+                      missingResultIds);
+      throw new ResultNotFoundException($"Some dependencies do not exist in the ResultTable: {string.Join(", ", missingResultIds)}");
+    }
+
+    // Check the status of the dependencies. Completed dependencies can be removed from the tasks right away,
+    // while Aborted or DeletedData dependencies should mark the task as invalid
+    foreach (var result in results)
+    {
+      switch (result.Status)
+      {
+        case ResultStatus.Completed:
+          allDependencies.Remove(result.ResultId);
+          completedDependencies.Add(result.ResultId);
+          break;
+        case ResultStatus.Created:
+          break;
+        case ResultStatus.Aborted:
+        case ResultStatus.DeletedData:
+        case ResultStatus.Unspecified:
+        default:
+          invalidDependencies.Add(result.ResultId);
+          break;
+      }
+    }
+
+    // Aborted and DeletedData are terminal states: a result in these states can never become Completed,
+    // so any task depending on them would block forever
+    if (invalidDependencies.Any())
+    {
+      logger.LogError("The following dependencies have invalid status: {@InvalidResults}",
+                      invalidDependencies);
+      throw new ResultInvalidStatusException($"Some dependencies have invalid status: {string.Join(", ", invalidDependencies)}");
     }
 
     // Build the mapping between tasks and their dependencies
