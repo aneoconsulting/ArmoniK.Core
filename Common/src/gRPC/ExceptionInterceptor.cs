@@ -20,6 +20,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Utils;
 
 using Grpc.Core;
@@ -169,41 +171,87 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
   private ValueTask HandleException(Exception         e,
                                     ServerCallContext context)
   {
-    _ = context;
-    if (e is RpcException rpcException)
+    switch (e)
     {
-      switch (rpcException.Status.StatusCode)
-      {
-        case StatusCode.OK:
-        case StatusCode.Cancelled:
-        case StatusCode.InvalidArgument:
-        case StatusCode.NotFound:
-        case StatusCode.AlreadyExists:
-        case StatusCode.PermissionDenied:
-        case StatusCode.Unauthenticated:
-        case StatusCode.FailedPrecondition:
-        case StatusCode.OutOfRange:
-          logger_.LogDebug(e,
-                           "An exception has been thrown during handling of request due to client error");
-          return ValueTask.CompletedTask;
-        case StatusCode.Unknown:
-        case StatusCode.DeadlineExceeded:
-        case StatusCode.ResourceExhausted:
-        case StatusCode.Aborted:
-        case StatusCode.Unimplemented:
-        case StatusCode.Internal:
-        case StatusCode.Unavailable:
-        case StatusCode.DataLoss:
-        default:
-          break;
-      }
+      case OperationCanceledException:
+        if (context.CancellationToken.IsCancellationRequested)
+        {
+          logger_.LogWarning(e,
+                             "Client has cancelled the request");
+        }
+        else
+        {
+          exceptionManager_.RecordError(logger_,
+                                        e,
+                                        "Request has been canceled by internal means");
+        }
+
+        break;
+      case ObjectDataNotFoundException:
+      case PartitionNotFoundException:
+      case ResultNotFoundException:
+      case SessionNotFoundException:
+      case TaskNotFoundException:
+        logger_.LogWarning(e,
+                           e.Message);
+        return ValueTask.FromException(new RpcException(new Status(StatusCode.NotFound,
+                                                                   e.Message)));
+      case InvalidSessionTransitionException:
+      case ResultInvalidStatusException:
+      case SubmissionClosedException:
+        logger_.LogWarning(e,
+                           e.Message);
+        return ValueTask.FromException(new RpcException(new Status(StatusCode.FailedPrecondition,
+                                                                   e.Message)));
+      case ArmoniKException:
+        exceptionManager_.RecordError(logger_,
+                                      e,
+                                      e.Message);
+        return ValueTask.FromException(new RpcException(new Status(StatusCode.Internal,
+                                                                   e.Message)));
+
+      case RpcException rpcException:
+
+        switch (rpcException.Status.StatusCode)
+        {
+          case StatusCode.OK:
+          case StatusCode.Cancelled:
+          case StatusCode.InvalidArgument:
+          case StatusCode.NotFound:
+          case StatusCode.AlreadyExists:
+          case StatusCode.PermissionDenied:
+          case StatusCode.Unauthenticated:
+          case StatusCode.FailedPrecondition:
+          case StatusCode.OutOfRange:
+            logger_.LogError(e,
+                             "An exception has been thrown during handling of request due to client error");
+            break;
+          case StatusCode.Unknown:
+          case StatusCode.DeadlineExceeded:
+          case StatusCode.ResourceExhausted:
+          case StatusCode.Aborted:
+          case StatusCode.Unimplemented:
+          case StatusCode.Internal:
+          case StatusCode.Unavailable:
+          case StatusCode.DataLoss:
+          default:
+            exceptionManager_.RecordError(logger_,
+                                          e,
+                                          "An exception has been thrown during handling of request");
+            break;
+        }
+
+        break;
+      default:
+        exceptionManager_.RecordError(logger_,
+                                      e,
+                                      "An unknown exception has been thrown during handling of request");
+
+        throw new RpcException(new Status(StatusCode.Unknown,
+                                          "Unknown Exception, see application logs"));
     }
 
-    exceptionManager_.RecordError(logger_,
-                                  e,
-                                  "An exception has been thrown during handling of request");
-
-    return ValueTask.CompletedTask;
+    return ValueTask.FromException(e);
   }
 
   private ValueTask HandleSuccess(ServerCallContext context)

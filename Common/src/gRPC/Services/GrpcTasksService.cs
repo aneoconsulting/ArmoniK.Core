@@ -27,10 +27,8 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -161,37 +159,14 @@ public class GrpcTasksService : Task.TasksBase
                                                       ServerCallContext context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      return new GetTaskResponse
-             {
-               Task = (await taskTable_.ReadTaskAsync(request.TaskId,
-                                                      taskDetailedMask_.GetProjection(),
-                                                      context.CancellationToken)
-                                       .ConfigureAwait(false)).ToTaskDetailed(),
-             };
-    }
-    catch (TaskNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting task");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Task not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting task");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting task");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+
+    return new GetTaskResponse
+           {
+             Task = (await taskTable_.ReadTaskAsync(request.TaskId,
+                                                    taskDetailedMask_.GetProjection(),
+                                                    context.CancellationToken)
+                                     .ConfigureAwait(false)).ToTaskDetailed(),
+           };
   }
 
   /// <inheritdoc />
@@ -206,52 +181,35 @@ public class GrpcTasksService : Task.TasksBase
                       ? taskTable_.Secondary
                       : taskTable_;
 
-    try
+    if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
     {
-      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
-      {
-        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
-                           request.Sort.Field.TaskOptionGenericField.Field);
-      }
+      logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                         request.Sort.Field.TaskOptionGenericField.Field);
+    }
 
-      var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
-                                                                 ? data => true
-                                                                 : request.Filters.ToTaskDataFilter(),
-                                                               request.Sort is null
-                                                                 ? data => data.TaskId
-                                                                 : request.Sort.ToField(),
-                                                               taskSummaryMask_.GetProjection(),
-                                                               request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                               request.Page,
-                                                               request.PageSize,
-                                                               context.CancellationToken)
-                                               .ConfigureAwait(false);
+    var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
+                                                               ? data => true
+                                                               : request.Filters.ToTaskDataFilter(),
+                                                             request.Sort is null
+                                                               ? data => data.TaskId
+                                                               : request.Sort.ToField(),
+                                                             taskSummaryMask_.GetProjection(),
+                                                             request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                             request.Page,
+                                                             request.PageSize,
+                                                             context.CancellationToken)
+                                             .ConfigureAwait(false);
 
-      return new ListTasksResponse
+    return new ListTasksResponse
+           {
+             Page     = request.Page,
+             PageSize = request.PageSize,
+             Tasks =
              {
-               Page     = request.Page,
-               PageSize = request.PageSize,
-               Tasks =
-               {
-                 tasks.Select(data => data.ToTaskSummary()),
-               },
-               Total = (int)totalCount,
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+               tasks.Select(data => data.ToTaskSummary()),
+             },
+             Total = (int)totalCount,
+           };
   }
 
   /// <inheritdoc />
@@ -261,41 +219,25 @@ public class GrpcTasksService : Task.TasksBase
                                                                 ServerCallContext   context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      return new GetResultIdsResponse
+
+    return new GetResultIdsResponse
+           {
+             TaskResults =
              {
-               TaskResults =
-               {
-                 await taskTable_.GetTasksExpectedOutputKeys(request.TaskId,
-                                                             context.CancellationToken)
-                                 .Select(r => new GetResultIdsResponse.Types.MapTaskResult
+               await taskTable_.GetTasksExpectedOutputKeys(request.TaskId,
+                                                           context.CancellationToken)
+                               .Select(r => new GetResultIdsResponse.Types.MapTaskResult
+                                            {
+                                              TaskId = r.taskId,
+                                              ResultIds =
                                               {
-                                                TaskId = r.taskId,
-                                                ResultIds =
-                                                {
-                                                  r.expectedOutputKeys,
-                                                },
-                                              })
-                                 .ToListAsync(context.CancellationToken)
-                                 .ConfigureAwait(false),
-               },
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting results ids from tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting results ids from tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+                                                r.expectedOutputKeys,
+                                              },
+                                            })
+                               .ToListAsync(context.CancellationToken)
+                               .ConfigureAwait(false),
+             },
+           };
   }
 
   /// <inheritdoc />
@@ -305,82 +247,66 @@ public class GrpcTasksService : Task.TasksBase
                                                               ServerCallContext  context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      await taskTable_.CancelTaskAsync(request.TaskIds,
-                                       context.CancellationToken)
-                      .ConfigureAwait(false);
-      var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
-                                                        data => new
-                                                                {
-                                                                  data.OwnerPodId,
-                                                                  data.TaskId,
-                                                                })
-                                        .ToListAsync()
-                                        .ConfigureAwait(false);
 
-      await ownerPodIds.ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
-                                        async t =>
+    await taskTable_.CancelTaskAsync(request.TaskIds,
+                                     context.CancellationToken)
+                    .ConfigureAwait(false);
+    var ownerPodIds = await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                      data => new
+                                                              {
+                                                                data.OwnerPodId,
+                                                                data.TaskId,
+                                                              })
+                                      .ToListAsync()
+                                      .ConfigureAwait(false);
+
+    await ownerPodIds.ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
+                                      async t =>
+                                      {
+                                        try
                                         {
-                                          try
-                                          {
-                                            logger_.LogInformation("Cancel task {TaskId} on {OwnerPodId}",
-                                                                   t.TaskId,
-                                                                   t.OwnerPodId);
+                                          logger_.LogInformation("Cancel task {TaskId} on {OwnerPodId}",
+                                                                 t.TaskId,
+                                                                 t.OwnerPodId);
 
-                                            await (string.IsNullOrEmpty(t.OwnerPodId)
-                                                     ? System.Threading.Tasks.Task.CompletedTask
-                                                     : httpClient_.GetAsync("http://" + t.OwnerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false);
-                                          }
-                                          // Ignore unreachable agents
-                                          catch (HttpRequestException e) when (e is
-                                                                               {
-                                                                                 InnerException: SocketException
-                                                                                                 {
-                                                                                                   SocketErrorCode: SocketError.ConnectionRefused,
-                                                                                                 },
-                                                                               })
-                                          {
-                                            logger_.LogError(e,
-                                                             "The agent with {OwnerPodId} was not reached successfully",
-                                                             t.OwnerPodId);
-                                          }
-                                        })
-                       .ConfigureAwait(false);
+                                          await (string.IsNullOrEmpty(t.OwnerPodId)
+                                                   ? System.Threading.Tasks.Task.CompletedTask
+                                                   : httpClient_.GetAsync("http://" + t.OwnerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false);
+                                        }
+                                        // Ignore unreachable agents
+                                        catch (HttpRequestException e) when (e is
+                                                                             {
+                                                                               InnerException: SocketException
+                                                                                               {
+                                                                                                 SocketErrorCode: SocketError.ConnectionRefused,
+                                                                                               },
+                                                                             })
+                                        {
+                                          logger_.LogError(e,
+                                                           "The agent with {OwnerPodId} was not reached successfully",
+                                                           t.OwnerPodId);
+                                        }
+                                      })
+                     .ConfigureAwait(false);
 
-      await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
-                                                           resultTable_,
-                                                           request.TaskIds,
-                                                           reason: $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
-                                                           cancellationToken: context.CancellationToken)
-                                 .ConfigureAwait(false);
+    await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                         resultTable_,
+                                                         request.TaskIds,
+                                                         reason: $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
+                                                         cancellationToken: context.CancellationToken)
+                               .ConfigureAwait(false);
 
-      return new CancelTasksResponse
+    return new CancelTasksResponse
+           {
+             Tasks =
              {
-               Tasks =
-               {
-                 (await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
-                                                  taskSummaryMask_.GetProjection(),
-                                                  context.CancellationToken)
-                                  .ToListAsync(context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(data => data.ToTaskSummary()),
-               },
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while cancelling tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while cancelling tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+               (await taskTable_.FindTasksAsync(data => request.TaskIds.Contains(data.TaskId),
+                                                taskSummaryMask_.GetProjection(),
+                                                context.CancellationToken)
+                                .ToListAsync(context.CancellationToken)
+                                .ConfigureAwait(false)).Select(data => data.ToTaskSummary()),
+             },
+           };
   }
 
   /// <inheritdoc />
@@ -390,38 +316,22 @@ public class GrpcTasksService : Task.TasksBase
                                                                             ServerCallContext         context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      return new CountTasksByStatusResponse
+
+    return new CountTasksByStatusResponse
+           {
+             Status =
              {
-               Status =
-               {
-                 (await taskTable_.Secondary.CountTasksAsync(request.Filters is null
-                                                               ? data => true
-                                                               : request.Filters.ToTaskDataFilter(),
-                                                             context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(count => new StatusCount
-                                                                          {
-                                                                            Status = count.Status.ToGrpcStatus(),
-                                                                            Count  = count.Count,
-                                                                          }),
-               },
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+               (await taskTable_.Secondary.CountTasksAsync(request.Filters is null
+                                                             ? data => true
+                                                             : request.Filters.ToTaskDataFilter(),
+                                                           context.CancellationToken)
+                                .ConfigureAwait(false)).Select(count => new StatusCount
+                                                                        {
+                                                                          Status = count.Status.ToGrpcStatus(),
+                                                                          Count  = count.Count,
+                                                                        }),
+             },
+           };
   }
 
   /// <inheritdoc />
@@ -436,52 +346,35 @@ public class GrpcTasksService : Task.TasksBase
                       ? taskTable_.Secondary
                       : taskTable_;
 
-    try
+    if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
     {
-      if (request.Sort is not null && request.Sort.Field.FieldCase == TaskField.FieldOneofCase.TaskOptionGenericField)
-      {
-        logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
-                           request.Sort.Field.TaskOptionGenericField.Field);
-      }
+      logger_.LogWarning("Sorting on the field {field} is not advised because this field is not part of ArmoniK data schema.",
+                         request.Sort.Field.TaskOptionGenericField.Field);
+    }
 
-      var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
-                                                                 ? data => true
-                                                                 : request.Filters.ToTaskDataFilter(),
-                                                               request.Sort is null
-                                                                 ? data => data.TaskId
-                                                                 : request.Sort.ToField(),
-                                                               taskDetailedMask_.GetProjection(),
-                                                               request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                               request.Page,
-                                                               request.PageSize,
-                                                               context.CancellationToken)
-                                               .ConfigureAwait(false);
+    var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
+                                                               ? data => true
+                                                               : request.Filters.ToTaskDataFilter(),
+                                                             request.Sort is null
+                                                               ? data => data.TaskId
+                                                               : request.Sort.ToField(),
+                                                             taskDetailedMask_.GetProjection(),
+                                                             request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                             request.Page,
+                                                             request.PageSize,
+                                                             context.CancellationToken)
+                                             .ConfigureAwait(false);
 
-      return new ListTasksDetailedResponse
+    return new ListTasksDetailedResponse
+           {
+             Page     = request.Page,
+             PageSize = request.PageSize,
+             Tasks =
              {
-               Page     = request.Page,
-               PageSize = request.PageSize,
-               Tasks =
-               {
-                 tasks.Select(data => data.ToTaskDetailed()),
-               },
-               Total = (int)totalCount,
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+               tasks.Select(data => data.ToTaskDetailed()),
+             },
+             Total = (int)totalCount,
+           };
   }
 
   /// <inheritdoc />
@@ -491,99 +384,76 @@ public class GrpcTasksService : Task.TasksBase
                                                               ServerCallContext  context)
   {
     using var measure = meter_.CountAndTime();
+
+    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                          context.CancellationToken)
+                                         .ConfigureAwait(false);
+
+
+    var submissionOptions = TaskLifeCycleHelper.ValidateSession(sessionData,
+                                                                request.TaskOptions.ToNullableTaskOptions(),
+                                                                request.SessionId,
+                                                                pushQueueStorage_.MaxPriority,
+                                                                logger_,
+                                                                context.CancellationToken);
+
+    var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
+                                                                                                .ToString(),
+                                                                                            creation.PayloadId,
+                                                                                            TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                              submissionOptions),
+                                                                                            creation.ExpectedOutputKeys,
+                                                                                            creation.DataDependencies))
+                                  .ToList();
     try
     {
-      var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                            context.CancellationToken)
-                                           .ConfigureAwait(false);
+      await TaskLifeCycleHelper.CreateTasks(taskTable_,
+                                            resultTable_,
+                                            request.SessionId,
+                                            request.SessionId,
+                                            creationRequests,
+                                            logger_,
+                                            context.CancellationToken)
+                               .ConfigureAwait(false);
 
+      await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
+                                                     resultTable_,
+                                                     pushQueueStorage_,
+                                                     creationRequests,
+                                                     sessionData,
+                                                     request.SessionId,
+                                                     logger_,
+                                                     context.CancellationToken)
+                               .ConfigureAwait(false);
 
-      var submissionOptions = TaskLifeCycleHelper.ValidateSession(sessionData,
-                                                                  request.TaskOptions.ToNullableTaskOptions(),
-                                                                  request.SessionId,
-                                                                  pushQueueStorage_.MaxPriority,
-                                                                  logger_,
-                                                                  context.CancellationToken);
-
-      var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
-                                                                                                  .ToString(),
-                                                                                              creation.PayloadId,
-                                                                                              TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                                submissionOptions),
-                                                                                              creation.ExpectedOutputKeys,
-                                                                                              creation.DataDependencies))
-                                    .ToList();
-      try
-      {
-        await TaskLifeCycleHelper.CreateTasks(taskTable_,
-                                              resultTable_,
-                                              request.SessionId,
-                                              request.SessionId,
-                                              creationRequests,
-                                              logger_,
-                                              context.CancellationToken)
-                                 .ConfigureAwait(false);
-
-        await TaskLifeCycleHelper.FinalizeTaskCreation(taskTable_,
-                                                       resultTable_,
-                                                       pushQueueStorage_,
-                                                       creationRequests,
-                                                       sessionData,
-                                                       request.SessionId,
-                                                       logger_,
-                                                       context.CancellationToken)
-                                 .ConfigureAwait(false);
-
-        return new SubmitTasksResponse
+      return new SubmitTasksResponse
+             {
+               TaskInfos =
                {
-                 TaskInfos =
-                 {
-                   creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
+                 creationRequests.Select(creationRequest => new SubmitTasksResponse.Types.TaskInfo
+                                                            {
+                                                              DataDependencies =
                                                               {
-                                                                DataDependencies =
-                                                                {
-                                                                  creationRequest.DataDependencies,
-                                                                },
-                                                                ExpectedOutputIds =
-                                                                {
-                                                                  creationRequest.ExpectedOutputKeys,
-                                                                },
-                                                                TaskId    = creationRequest.TaskId,
-                                                                PayloadId = creationRequest.PayloadId,
-                                                              }),
-                 },
-               };
-      }
-      catch (Exception)
-      {
-        await TaskLifeCycleHelper.DeleteTasksAsync(taskTable_,
-                                                   resultTable_,
-                                                   creationRequests,
-                                                   CancellationToken.None)
-                                 .ConfigureAwait(false);
-        throw;
-      }
+                                                                creationRequest.DataDependencies,
+                                                              },
+                                                              ExpectedOutputIds =
+                                                              {
+                                                                creationRequest.ExpectedOutputKeys,
+                                                              },
+                                                              TaskId    = creationRequest.TaskId,
+                                                              PayloadId = creationRequest.PayloadId,
+                                                            }),
+               },
+             };
     }
-    catch (SubmissionClosedException e)
+    catch (Exception)
     {
-      logger_.LogWarning(e,
-                         "Error while submitting tasks");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Client submission is closed, no tasks can be submitted"));
-    }
-    catch (ResultInvalidStatusException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while submitting tasks due to invalid dependency status");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "One or more dependencies have an invalid status"));
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while submitting tasks due to dependency that does not exist");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "One or more dependencies do not exist"));
+      await TaskLifeCycleHelper.DeleteTasksAsync(taskTable_,
+                                                 resultTable_,
+                                                 creationRequests,
+                                                 CancellationToken.None)
+                               .ConfigureAwait(false);
+      throw;
     }
   }
 }
