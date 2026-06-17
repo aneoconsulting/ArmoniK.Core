@@ -202,7 +202,7 @@ _usage:
       queue: allowed values below
         activemq    :  for ActiveMQ (default)
         rabbitmq    :  for RabbitMQ
-        artemis     :  for ActiveMQ Artemis
+        artemis     :  for ActiveMQ Artemis (abandoned, unsupported - use activemq instead)
         sqs         :  for AWS SQS (using elasticmq)
         pubsub      :  for Google PubSub
         nats        :  for Nats with JetStream
