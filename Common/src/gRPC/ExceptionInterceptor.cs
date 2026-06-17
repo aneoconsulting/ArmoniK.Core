@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -57,7 +57,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                        {
                          // If there is too many errors, the pod is marked as not ready to avoid Kubernetes sending new requests to the controller.
                          // Liveness Unhealthy is not needed as the pod is killing itself, without the intervention of Kubernetes.
-                         (HealthCheckTag.Readiness, true) => HealthCheckResult.Unhealthy("Too many error recorded, application is shutting down"),
+                         (HealthCheckTag.Readiness, true) => HealthCheckResult.Unhealthy("Too many errors recorded, application is shutting down"),
                          _                                => HealthCheckResult.Healthy(),
                        });
 
