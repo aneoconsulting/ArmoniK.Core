@@ -77,14 +77,11 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e,
-                            context)
-        .ConfigureAwait(false);
-      throw;
+      throw HandleException(e,
+                            context);
     }
 
-    await HandleSuccess(context)
-      .ConfigureAwait(false);
+    HandleSuccess(context);
 
     return response;
   }
@@ -104,14 +101,11 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e,
-                            context)
-        .ConfigureAwait(false);
-      throw;
+      throw HandleException(e,
+                            context);
     }
 
-    await HandleSuccess(context)
-      .ConfigureAwait(false);
+    HandleSuccess(context);
 
     return response;
   }
@@ -132,14 +126,11 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e,
-                            context)
-        .ConfigureAwait(false);
-      throw;
+      throw HandleException(e,
+                            context);
     }
 
-    await HandleSuccess(context)
-      .ConfigureAwait(false);
+    HandleSuccess(context);
   }
 
   /// <inheritdoc />
@@ -158,108 +149,186 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     }
     catch (Exception e)
     {
-      await HandleException(e,
-                            context)
-        .ConfigureAwait(false);
-      throw;
+      throw HandleException(e,
+                            context);
     }
 
-    await HandleSuccess(context)
-      .ConfigureAwait(false);
+    HandleSuccess(context);
   }
 
-  private ValueTask HandleException(Exception         e,
-                                    ServerCallContext context)
-  {
-    switch (e)
-    {
-      case OperationCanceledException:
-        if (context.CancellationToken.IsCancellationRequested)
-        {
-          logger_.LogWarning(e,
-                             "Client has cancelled the request");
-        }
-        else
-        {
-          exceptionManager_.RecordError(logger_,
-                                        e,
-                                        "Request has been canceled by internal means");
-        }
+  /// <summary>
+  ///   Handle the exception that was thrown by the RPC
+  /// </summary>
+  /// <param name="e">Exception thrown by the RPC</param>
+  /// <param name="context">Context of the RPC</param>
+  /// <returns>RpcException that is returned to the client</returns>
+  private RpcException HandleException(Exception         e,
+                                       ServerCallContext context)
+    => e switch
+       {
+         OperationCanceledException when context.CancellationToken.IsCancellationRequested => ProcessException(ExceptionAction.Warning,
+                                                                                                               e,
+                                                                                                               context,
+                                                                                                               StatusCode.Cancelled,
+                                                                                                               "Cancelled by client"),
+         OperationCanceledException => ProcessException(ExceptionAction.Record,
+                                                        e,
+                                                        context,
+                                                        StatusCode.Cancelled,
+                                                        "Canceled by internal means"),
+         ObjectDataNotFoundException => ProcessException(ExceptionAction.Warning,
+                                                         e,
+                                                         context,
+                                                         StatusCode.NotFound,
+                                                         "Result data was not found"),
+         PartitionNotFoundException => ProcessException(ExceptionAction.Warning,
+                                                        e,
+                                                        context,
+                                                        StatusCode.NotFound,
+                                                        "Partition was not found"),
+         ResultNotFoundException => ProcessException(ExceptionAction.Warning,
+                                                     e,
+                                                     context,
+                                                     StatusCode.NotFound,
+                                                     "Result was not found"),
+         SessionNotFoundException => ProcessException(ExceptionAction.Warning,
+                                                      e,
+                                                      context,
+                                                      StatusCode.NotFound,
+                                                      "Session was not found"),
+         TaskNotFoundException => ProcessException(ExceptionAction.Warning,
+                                                   e,
+                                                   context,
+                                                   StatusCode.NotFound,
+                                                   "Task was not found"),
+         InvalidSessionTransitionException => ProcessException(ExceptionAction.Warning,
+                                                               e,
+                                                               context,
+                                                               StatusCode.FailedPrecondition,
+                                                               "The session transition is invalid"),
+         ResultInvalidStatusException => ProcessException(ExceptionAction.Warning,
+                                                          e,
+                                                          context,
+                                                          StatusCode.FailedPrecondition,
+                                                          "Result status is invalid"),
+         SubmissionClosedException => ProcessException(ExceptionAction.Warning,
+                                                       e,
+                                                       context,
+                                                       StatusCode.FailedPrecondition,
+                                                       "Submission for the session is closed"),
+         ArmoniKException => ProcessException(ExceptionAction.Warning,
+                                              e,
+                                              context,
+                                              StatusCode.Internal,
+                                              "Internal error, see ArmoniK logs",
+                                              true),
+         RpcException
+         {
+           StatusCode: StatusCode.OK or StatusCode.Cancelled or StatusCode.InvalidArgument or StatusCode.NotFound or StatusCode.AlreadyExists or
+                       StatusCode.PermissionDenied or StatusCode.Unauthenticated or StatusCode.FailedPrecondition or StatusCode.OutOfRange,
+         } r => ProcessException(ExceptionAction.Warning,
+                                 e,
+                                 context,
+                                 r.StatusCode,
+                                 r.Status.Detail,
+                                 true),
+         RpcException r => ProcessException(ExceptionAction.Record,
+                                            e,
+                                            context,
+                                            r.StatusCode,
+                                            r.Status.Detail,
+                                            true),
+         _ => ProcessException(ExceptionAction.Record,
+                               e,
+                               context,
+                               StatusCode.Unknown,
+                               "Unknown exception, see ArmoniK logs",
+                               true),
+       };
 
-        break;
-      case ObjectDataNotFoundException:
-      case PartitionNotFoundException:
-      case ResultNotFoundException:
-      case SessionNotFoundException:
-      case TaskNotFoundException:
-        logger_.LogWarning(e,
-                           e.Message);
-        return ValueTask.FromException(new RpcException(new Status(StatusCode.NotFound,
-                                                                   e.Message)));
-      case InvalidSessionTransitionException:
-      case ResultInvalidStatusException:
-      case SubmissionClosedException:
-        logger_.LogWarning(e,
-                           e.Message);
-        return ValueTask.FromException(new RpcException(new Status(StatusCode.FailedPrecondition,
-                                                                   e.Message)));
-      case ArmoniKException:
-        exceptionManager_.RecordError(logger_,
-                                      e,
-                                      e.Message);
-        return ValueTask.FromException(new RpcException(new Status(StatusCode.Internal,
-                                                                   e.Message)));
-
-      case RpcException rpcException:
-
-        switch (rpcException.Status.StatusCode)
-        {
-          case StatusCode.OK:
-          case StatusCode.Cancelled:
-          case StatusCode.InvalidArgument:
-          case StatusCode.NotFound:
-          case StatusCode.AlreadyExists:
-          case StatusCode.PermissionDenied:
-          case StatusCode.Unauthenticated:
-          case StatusCode.FailedPrecondition:
-          case StatusCode.OutOfRange:
-            logger_.LogError(e,
-                             "An exception has been thrown during handling of request due to client error");
-            break;
-          case StatusCode.Unknown:
-          case StatusCode.DeadlineExceeded:
-          case StatusCode.ResourceExhausted:
-          case StatusCode.Aborted:
-          case StatusCode.Unimplemented:
-          case StatusCode.Internal:
-          case StatusCode.Unavailable:
-          case StatusCode.DataLoss:
-          default:
-            exceptionManager_.RecordError(logger_,
-                                          e,
-                                          "An exception has been thrown during handling of request");
-            break;
-        }
-
-        break;
-      default:
-        exceptionManager_.RecordError(logger_,
-                                      e,
-                                      "An unknown exception has been thrown during handling of request");
-
-        throw new RpcException(new Status(StatusCode.Unknown,
-                                          "Unknown Exception, see application logs"));
-    }
-
-    return ValueTask.FromException(e);
-  }
-
-  private ValueTask HandleSuccess(ServerCallContext context)
+  /// <summary>
+  ///   Records the success of an RPC
+  /// </summary>
+  /// <param name="context">Context of the RPC</param>
+  private void HandleSuccess(ServerCallContext context)
   {
     _ = context;
 
     exceptionManager_.RecordSuccess(logger_);
+  }
 
-    return ValueTask.CompletedTask;
+  /// <summary>
+  ///   Converts an exception into a <see cref="RpcException" />
+  /// </summary>
+  /// <param name="action">Action to do: either log warning, log error, or record error</param>
+  /// <param name="e">Exception that was thrown by the RPC</param>
+  /// <param name="context">Context of the RPC</param>
+  /// <param name="statusCode">Response status code</param>
+  /// <param name="details">Details for the status</param>
+  /// <param name="skipMessageInRpc">
+  ///   If true, the message of the exception is not added to the details in the response to the
+  ///   client
+  /// </param>
+  /// <returns>The <see cref="RpcException" /> sent to the client</returns>
+  private RpcException ProcessException(ExceptionAction   action,
+                                        Exception         e,
+                                        ServerCallContext context,
+                                        StatusCode        statusCode,
+                                        string            details,
+                                        bool              skipMessageInRpc = false)
+  {
+    switch (action)
+    {
+      case ExceptionAction.Warning:
+        logger_.LogWarning(e,
+                           "Error while processing the request {RequestPath} with status {ErrorStatus}: {ErrorDetails}: {ErrorMessage}",
+                           context.Method,
+                           statusCode,
+                           details,
+                           e.Message);
+        break;
+      case ExceptionAction.Error:
+        logger_.LogError(e,
+                         "Error while processing the request {RequestPath} with status {ErrorStatus}: {ErrorDetails}: {ErrorMessage}",
+                         context.Method,
+                         statusCode,
+                         details,
+                         e.Message);
+        break;
+      case ExceptionAction.Record:
+      default:
+        exceptionManager_.RecordError(logger_,
+                                      e,
+                                      "Error while processing the request {RequestPath} with status {ErrorStatus}: {ErrorDetails}: {ErrorMessage}",
+                                      context.Method,
+                                      statusCode,
+                                      details,
+                                      e.Message);
+        break;
+    }
+
+    if (!skipMessageInRpc && !string.IsNullOrEmpty(details) && details != e.Message)
+    {
+      details = $"{details}: {e.Message}";
+    }
+
+    return new RpcException(new Status(statusCode,
+                                       details),
+                            e.Message);
+  }
+
+  /// <summary>
+  ///   Action to perform on the exception
+  /// </summary>
+  private enum ExceptionAction
+  {
+    /// <summary>Log with warning level</summary>
+    Warning,
+
+    /// <summary>Log with error level</summary>
+    Error,
+
+    /// <summary>Record the exception (and log with error level)</summary>
+    Record,
   }
 }
