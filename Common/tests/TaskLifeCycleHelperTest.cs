@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
@@ -43,6 +44,7 @@ using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
+using Type = System.Type;
 
 namespace ArmoniK.Core.Common.Tests;
 
@@ -1496,5 +1498,107 @@ public class TaskLifeCycleHelperTest
                                                       : "A")
                                      .And.No.Member("root"));
                     });
+  }
+
+  [TestCase(null,
+            typeof(ResultNotFoundException))]
+  [TestCase(ResultStatus.Aborted,
+            typeof(ResultInvalidStatusException))]
+  [TestCase(ResultStatus.DeletedData,
+            typeof(ResultInvalidStatusException))]
+  public async Task TaskCreationWithInvalidDependencyShouldThrow(ResultStatus? dependencyStatus,
+                                                                 Type          expectedException)
+  {
+    using var holder = new Holder();
+
+    var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
+                                                               holder.PartitionTable,
+                                                               new List<string>
+                                                               {
+                                                                 Holder.Partition,
+                                                               },
+                                                               holder.Options.ToTaskOptions(),
+                                                               Holder.Partition)
+                                                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+    var payloadId = Guid.NewGuid()
+                        .ToString();
+    var dependencyId = Guid.NewGuid()
+                           .ToString();
+
+    var resultsToCreate = new List<Result>
+                          {
+                            new(sessionId,
+                                payloadId,
+                                "Payload",
+                                "",
+                                "",
+                                "",
+                                ResultStatus.Completed,
+                                new List<string>(),
+                                DateTime.UtcNow,
+                                DateTime.UtcNow,
+                                0,
+                                Array.Empty<byte>(),
+                                false),
+                          };
+
+    // When dependencyStatus is null the dependency result is never inserted, simulating a missing result
+    if (dependencyStatus is not null)
+    {
+      resultsToCreate.Add(new Result(sessionId,
+                                     dependencyId,
+                                     "Dependency",
+                                     "",
+                                     "",
+                                     "",
+                                     dependencyStatus.Value,
+                                     new List<string>(),
+                                     DateTime.UtcNow,
+                                     null,
+                                     0,
+                                     Array.Empty<byte>(),
+                                     false));
+    }
+
+    await holder.ResultTable.Create(resultsToCreate)
+                .ConfigureAwait(false);
+
+    var tasks = new List<TaskCreationRequest>
+                {
+                  new(Guid.NewGuid()
+                          .ToString(),
+                      payloadId,
+                      holder.Options.ToTaskOptions(),
+                      new List<string>
+                      {
+                        Guid.NewGuid()
+                            .ToString(),
+                      },
+                      new List<string>
+                      {
+                        dependencyId,
+                      }),
+                };
+
+    await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                          holder.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          tasks,
+                                          NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    Assert.ThrowsAsync(expectedException,
+                       () => TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                                      holder.ResultTable,
+                                                                      holder.PushQueueStorage,
+                                                                      tasks,
+                                                                      sessionData,
+                                                                      sessionId,
+                                                                      NullLogger.Instance));
   }
 }

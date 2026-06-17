@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Setup just
-        uses: taiki-e/install-action@4bc351f7f2614e48088386e2a0ad917ca3a7e4ba # v2
+        uses: taiki-e/install-action@15449e3094499af05d8d964a1c884208e4b8b595 # v2
         with:
           tool: just
 
