@@ -30,6 +30,8 @@ using Grpc.Core.Interceptors;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledException;
+
 namespace ArmoniK.Core.Common.gRPC;
 
 /// <summary>
@@ -216,6 +218,21 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                        context,
                                                        StatusCode.FailedPrecondition,
                                                        "Submission for the session is closed"),
+         TaskAlreadyInFinalStateException => ProcessException(ExceptionAction.Warning,
+                                                              e,
+                                                              context,
+                                                              StatusCode.FailedPrecondition,
+                                                              "Task is already in a final state"),
+         TaskCanceledException => ProcessException(ExceptionAction.Warning,
+                                                   e,
+                                                   context,
+                                                   StatusCode.FailedPrecondition,
+                                                   "Task is canceled"),
+         TaskPausedException => ProcessException(ExceptionAction.Warning,
+                                                 e,
+                                                 context,
+                                                 StatusCode.FailedPrecondition,
+                                                 "Task is paused"),
          ArmoniKException => ProcessException(ExceptionAction.Warning,
                                               e,
                                               context,

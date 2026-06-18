@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
@@ -49,6 +50,8 @@ using NUnit.Framework;
 
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
+using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
+using Type = System.Type;
 
 // ReSharper disable AccessToModifiedClosure
 
@@ -93,6 +96,61 @@ internal class ExceptionInterceptorTests
            NullLogger<ExceptionManager>.Instance,
            new ExceptionManager.Options(TimeSpan.Zero,
                                         maxError));
+
+  /// <summary>
+  ///   All concrete exception types deriving from <see cref="ArmoniKException" />, discovered by reflection across the
+  ///   Base and Common assemblies.
+  /// </summary>
+  private static IEnumerable<Type> ArmoniKExceptionTypes
+    => new[]
+      {
+        typeof(ArmoniKException).Assembly,     // ArmoniK.Core.Base
+        typeof(ExceptionInterceptor).Assembly, // ArmoniK.Core.Common
+      }.SelectMany(assembly => assembly.GetTypes())
+       .Where(type => typeof(ArmoniKException).IsAssignableFrom(type) && !type.IsAbstract)
+       .Distinct();
+
+  /// <summary>
+  ///   Exception types that are intentionally allowed to resolve to the generic <see cref="ArmoniKException" /> ->
+  ///   <see cref="StatusCode.Internal" /> mapping. Any other exception reaching that fallback must be given a dedicated
+  ///   mapping in <see cref="ExceptionInterceptor" /> or added here on purpose.
+  /// </summary>
+  private static readonly HashSet<Type> InternalFallbackWhitelist = new()
+                                                                    {
+                                                                      typeof(ArmoniKException),
+                                                                      typeof(TaskAlreadyExistsException),
+                                                                      typeof(WorkerDownException),
+                                                                      typeof(QueueInsertionFailedException),
+                                                                      typeof(TimeoutException),
+                                                                    };
+
+  [Test]
+  [TestCaseSource(nameof(ArmoniKExceptionTypes))]
+  public void ArmoniKExceptionShouldNeverMapToUnknown(Type exceptionType)
+  {
+    using var exceptionManager = BuildExceptionManager(int.MaxValue / 2);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+    var exception = (Exception)Activator.CreateInstance(exceptionType)!;
+
+    var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                               TestServerCallContext.Create(),
+                                                                                                               (_,
+                                                                                                                _) => throw exception)
+                                                                           .ConfigureAwait(false));
+
+    Assert.That(rpc!.StatusCode,
+                Is.Not.EqualTo(StatusCode.Unknown),
+                $"{exceptionType.Name} maps to Unknown; add a mapping in ExceptionInterceptor.HandleException.");
+
+    if (rpc.StatusCode == StatusCode.Internal)
+    {
+      Assert.That(InternalFallbackWhitelist,
+                  Does.Contain(exceptionType),
+                  $"{exceptionType.Name} falls through to the generic ArmoniKException -> Internal mapping. " +
+                  "Add a dedicated arm in ExceptionInterceptor.HandleException, or add it to InternalFallbackWhitelist.");
+    }
+  }
 
   [Test]
   [Obsolete]
