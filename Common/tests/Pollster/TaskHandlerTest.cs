@@ -52,7 +52,6 @@ using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
-using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
@@ -2072,7 +2071,7 @@ public class TaskHandlerTest
   [Test]
   [TestCase(typeof(IOException))]
   [TestCase(typeof(TaskPausedException))]
-  [TestCase(typeof(TimeoutException))] // To get an ArmoniKException
+  [TestCase(typeof(WorkerDownException))] // To get an ArmoniKException
   public async Task ExecuteTaskThrowExceptionShouldRetry(Type exception)
   {
     var sqmh = new SimpleQueueMessageHandler
