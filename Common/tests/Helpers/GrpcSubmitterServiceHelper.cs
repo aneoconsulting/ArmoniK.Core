@@ -24,12 +24,14 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Auth;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Grpc.Core;
@@ -91,12 +93,16 @@ public class GrpcSubmitterServiceHelper : IDisposable
     builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
            .AddAuthorization();
 
+    builder.Services.AddSingleton<ExceptionManager>()
+           .AddSingleton(new ExceptionManager.Options())
+           .AddSingleton<ExceptionInterceptor>();
+
     if (validateGrpcRequests)
     {
       builder.Services.ValidateGrpcRequests();
     }
 
-    builder.Services.AddGrpc();
+    builder.Services.AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>());
 
     serviceConfigurator?.Invoke(builder.Services);
 

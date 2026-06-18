@@ -128,8 +128,7 @@ internal class ExceptionInterceptorTests
     var interceptor = new ExceptionInterceptor(exceptionManager,
                                                NullLogger<ExceptionInterceptor>.Instance);
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object,
-                                             services => services.AddSingleton(interceptor)
-                                                                 .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()));
+                                             services => services.AddSingleton(interceptor));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -250,8 +249,7 @@ internal class ExceptionInterceptorTests
     var interceptor = new ExceptionInterceptor(exceptionManager,
                                                NullLogger<ExceptionInterceptor>.Instance);
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object,
-                                             services => services.AddSingleton(interceptor)
-                                                                 .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()));
+                                             services => services.AddSingleton(interceptor));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 
@@ -458,8 +456,7 @@ internal class ExceptionInterceptorTests
     var interceptor = new ExceptionInterceptor(exceptionManager,
                                                NullLogger<ExceptionInterceptor>.Instance);
     helper_ = new GrpcSubmitterServiceHelper(mockSubmitter.Object,
-                                             services => services.AddSingleton(interceptor)
-                                                                 .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()));
+                                             services => services.AddSingleton(interceptor));
     var client = new Api.gRPC.V1.Submitter.Submitter.SubmitterClient(await helper_.CreateChannel()
                                                                                   .ConfigureAwait(false));
 

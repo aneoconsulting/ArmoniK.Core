@@ -27,6 +27,7 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
@@ -62,7 +63,7 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder => builder.MapGrpcService<GrpcTasksService>(),
@@ -116,7 +117,7 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>
@@ -227,7 +228,7 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>
@@ -288,7 +289,7 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>
@@ -360,7 +361,7 @@ public class GrpcTasksServiceTests
     queue.Setup(storage => storage.PushMessagesAsync(It.IsAny<ICollection<MessageData>>(),
                                                      It.IsAny<string>(),
                                                      It.IsAny<CancellationToken>()))
-         .Throws<OperationCanceledException>();
+         .Throws<Exception>();
 
     var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
                                                                   .AddSingleton(queue.Object)
@@ -370,7 +371,7 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>
@@ -474,7 +475,7 @@ public class GrpcTasksServiceTests
     mock.Setup(table => table.GetResults(It.IsAny<Expression<Func<Result, bool>>>(),
                                          It.IsAny<Expression<Func<Result, Result>>>(),
                                          It.IsAny<CancellationToken>()))
-        .Throws<OperationCanceledException>();
+        .Throws<Exception>();
 
     var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
                                                                   .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
@@ -485,7 +486,7 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>

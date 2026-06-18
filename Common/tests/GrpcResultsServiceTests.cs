@@ -27,6 +27,7 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
@@ -69,7 +70,7 @@ public class GrpcResultsServiceTests
                                                                .AddSingleton<AgentIdentifier>()
                                                                .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                .AddHttpClient()
-                                                               .AddGrpc(),
+                                                               .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                        builder => builder.UseRouting()
                                                          .UseAuthorization(),
                                        builder =>
@@ -672,7 +673,7 @@ public class GrpcResultsServiceTests
     var mock = new Mock<IResultTable>();
     mock.Setup(table => table.Create(It.IsAny<ICollection<Result>>(),
                                      It.IsAny<CancellationToken>()))
-        .Throws<OperationCanceledException>();
+        .Throws<Exception>();
 
 
     helper_ = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
@@ -684,7 +685,7 @@ public class GrpcResultsServiceTests
                                                                .AddSingleton<AgentIdentifier>()
                                                                .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                .AddHttpClient()
-                                                               .AddGrpc(),
+                                                               .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                        builder => builder.UseRouting()
                                                          .UseAuthorization(),
                                        builder =>

@@ -798,8 +798,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     get
     {
-      yield return new TestCaseData(new ThrowExceptionSubmitter<TaskNotFoundException>()).Returns(StatusCode.Internal);
-      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<TaskNotFoundException>()).Returns(StatusCode.Internal);
+      yield return new TestCaseData(new ThrowExceptionSubmitter<TaskNotFoundException>()).Returns(StatusCode.NotFound);
+      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<TaskNotFoundException>()).Returns(StatusCode.NotFound);
     }
   }
 
@@ -807,8 +807,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     get
     {
-      yield return new TestCaseData(new ThrowExceptionSubmitter<ResultNotFoundException>()).Returns(StatusCode.Internal);
-      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<ResultNotFoundException>()).Returns(StatusCode.Internal);
+      yield return new TestCaseData(new ThrowExceptionSubmitter<ResultNotFoundException>()).Returns(StatusCode.NotFound);
+      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<ResultNotFoundException>()).Returns(StatusCode.NotFound);
     }
   }
 
@@ -816,8 +816,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     get
     {
-      yield return new TestCaseData(new ThrowExceptionSubmitter<SessionNotFoundException>()).Returns(StatusCode.Internal);
-      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<SessionNotFoundException>()).Returns(StatusCode.Internal);
+      yield return new TestCaseData(new ThrowExceptionSubmitter<SessionNotFoundException>()).Returns(StatusCode.NotFound);
+      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<SessionNotFoundException>()).Returns(StatusCode.NotFound);
     }
   }
 
@@ -825,8 +825,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     get
     {
-      yield return new TestCaseData(new ThrowExceptionSubmitter<ObjectDataNotFoundException>()).Returns(StatusCode.Internal);
-      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<ObjectDataNotFoundException>()).Returns(StatusCode.Internal);
+      yield return new TestCaseData(new ThrowExceptionSubmitter<ObjectDataNotFoundException>()).Returns(StatusCode.NotFound);
+      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<ObjectDataNotFoundException>()).Returns(StatusCode.NotFound);
     }
   }
 
@@ -834,8 +834,8 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     get
     {
-      yield return new TestCaseData(new ThrowExceptionSubmitter<PartitionNotFoundException>()).Returns(StatusCode.InvalidArgument);
-      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<PartitionNotFoundException>()).Returns(StatusCode.InvalidArgument);
+      yield return new TestCaseData(new ThrowExceptionSubmitter<PartitionNotFoundException>()).Returns(StatusCode.NotFound);
+      yield return new TestCaseData(new AsyncThrowExceptionSubmitter<PartitionNotFoundException>()).Returns(StatusCode.NotFound);
     }
   }
 
@@ -939,7 +939,7 @@ internal class IntegrationGrpcSubmitterServiceTest
   {
     get
     {
-      yield return new TestCaseData(new ThrowExceptionTaskTable<TaskNotFoundException>()).Returns(StatusCode.Internal);
+      yield return new TestCaseData(new ThrowExceptionTaskTable<TaskNotFoundException>()).Returns(StatusCode.NotFound);
       yield return new TestCaseData(new ThrowExceptionTaskTable<Exception>()).Returns(StatusCode.Unknown);
     }
   }
@@ -962,7 +962,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     {
       foreach (var (exception, statusCode) in new[]
                                               {
-                                                (new TaskNotFoundException(), StatusCode.Internal),
+                                                (new TaskNotFoundException(), StatusCode.NotFound),
                                                 (new ResultNotFoundException(), StatusCode.NotFound),
                                                 (new Exception(), StatusCode.Unknown),
                                               })

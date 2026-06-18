@@ -26,10 +26,12 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
@@ -155,7 +157,10 @@ public class TestDatabaseProvider : IDisposable
                                                               Injection.Options.Submitter.SettingSection)
            .AddSingleton(loggerProvider.CreateLogger("root"))
            .AddSingleton(ActivitySource)
-           .AddSingleton<IMongoClient>(client);
+           .AddSingleton<IMongoClient>(client)
+           .AddSingleton<ExceptionManager>()
+           .AddSingleton(new ExceptionManager.Options())
+           .AddSingleton<ExceptionInterceptor>();
 
     if (validateGrpcRequests)
     {
