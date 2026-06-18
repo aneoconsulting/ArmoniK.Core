@@ -335,6 +335,21 @@ buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Dockerfile" "polling_agent")
 # Build Htcmock Client
 buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile")
 
+# Publish self-contained single-file HtcMock client binary
+# Supported rid values: linux-x64, linux-arm64, win-x64
+publishHtcmockClient rid="linux-x64":
+  dotnet publish Tests/HtcMock/Client/src/ArmoniK.Samples.HtcMock.Client.csproj \
+    -r {{rid}} \
+    --self-contained true \
+    -p:PublishSingleFile=true \
+    -p:PublishReadyToRun=true \
+    -p:Version={{tag}} \
+    -c Release \
+    -o ./publish/htcmock-client-{{rid}}
+
+# Publish self-contained HtcMock client for all supported platforms
+publishHtcmockClientAll: (publishHtcmockClient "linux-x64") (publishHtcmockClient "linux-arm64") (publishHtcmockClient "win-x64")
+
 # Build Stream Client
 buildStreamClient: (build STREAM_CLIENT_IMAGE  "./Tests/Stream/Client/Dockerfile")
 

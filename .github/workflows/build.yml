@@ -917,6 +917,129 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - s3://$env:AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/docker-windows-armonik-logs.json.gz
 
+  testHtcMockBinary:
+    needs:
+      - versionning
+      - images
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    name: HtcMock self-contained binary
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          repository: ${{ env.REPOSITORY }}
+          ref: ${{ env.REFERENCE }}
+
+      - name: Setup just
+        uses: taiki-e/install-action@15449e3094499af05d8d964a1c884208e4b8b595 # v2
+        with:
+          tool: just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_version: latest
+
+      - name: Use GCR cache
+        run: |
+          cat <<EOF | sudo tee /etc/docker/daemon.json
+          {
+            "registry-mirrors": ["https://mirror.gcr.io"]
+          }
+          EOF
+          sudo systemctl restart docker
+
+      - name: Build images
+        if: ${{ env.REPOSITORY != github.repository }}
+        run: |
+          tools/retry.sh -w 60 -r 2 -- just tag=${VERSION} worker=htcmock build-all
+
+      - name: Build self-contained client binaries
+        run: just tag=${VERSION} publishHtcmockClientAll
+
+      - name: Upload self-contained binaries
+        uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
+        with:
+          name: htcmock-client-${{ needs.versionning.outputs.version }}
+          path: ./publish/
+          retention-days: 5
+
+      - name: Deploy Core
+        run: |
+          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+            just log_level=Information tag=${VERSION} queue=activemq object=redis socket_type=tcp cinit=true worker=htcmock deploy
+          sleep 10
+
+      - name: Print And Time Metrics
+        run: |
+          set -x
+          time curl localhost:5002/metrics
+
+      - name: Run HtcMock test 100 tasks 1 level
+        timeout-minutes: 3
+        run: |
+          export HtcMock__NTasks=100
+          export HtcMock__TotalCalculationTime=00:00:00.100
+          export HtcMock__DataSize=1
+          export HtcMock__MemorySize=1
+          export HtcMock__SubTasksLevels=1
+          export HtcMock__Partition=TestPartition0
+          export GrpcClient__Endpoint=http://localhost:5001
+          ./publish/htcmock-client-linux-x64/ArmoniK.Samples.HtcMock.Client
+
+      - name: Run HtcMock test 100 tasks 4 levels
+        timeout-minutes: 3
+        run: |
+          export HtcMock__NTasks=100
+          export HtcMock__TotalCalculationTime=00:00:00.100
+          export HtcMock__DataSize=1
+          export HtcMock__MemorySize=1
+          export HtcMock__SubTasksLevels=4
+          export HtcMock__Partition=TestPartition0
+          export GrpcClient__Endpoint=http://localhost:5001
+          ./publish/htcmock-client-linux-x64/ArmoniK.Samples.HtcMock.Client
+
+      - name: Show logs
+        if: ${{ always() && env.REPOSITORY != github.repository }}
+        run: docker cp fluentd:/armonik-logs.json -
+      - name: Upload logs
+        if: ${{ always() && env.REPOSITORY == github.repository }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
+        run: |
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-monitor.tar.gz"
+
+      - name: Collect docker container logs
+        if: ${{ always() }}
+        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+        with:
+          dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() && env.REPOSITORY != github.repository }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
+      - name: Upload docker container logs
+        if: ${{ always() && env.REPOSITORY == github.repository }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
+        run: |
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-container-logs.tar.gz"
+      - name: Export and upload database
+        if: ${{ always() && env.REPOSITORY == github.repository }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
+        run: |
+          bash tools/export_mongodb.sh
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-database.tar.gz"
+
   testConnectivity:
     needs:
       - versionning
@@ -1536,6 +1659,7 @@ jobs:
       - testsQueueProtos
       - testsWinOnly
       - testHtcMockDC
+      - testHtcMockBinary
       - defaultPartitionMock
       - testStreamDC
       - images
