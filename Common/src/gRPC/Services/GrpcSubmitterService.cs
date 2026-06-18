@@ -23,10 +23,8 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -82,28 +80,9 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<Configuration> GetServiceConfiguration(Empty             request,
                                                                     ServerCallContext context)
-  {
-    try
-    {
-      return await submitter_.GetServiceConfiguration(request,
-                                                      context.CancellationToken)
-                             .ConfigureAwait(false);
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting service configuration");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting service configuration");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => await submitter_.GetServiceConfiguration(request,
+                                                context.CancellationToken)
+                       .ConfigureAwait(false);
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -112,34 +91,10 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   public override async Task<Empty> CancelSession(Session           request,
                                                   ServerCallContext context)
   {
-    try
-    {
-      await submitter_.CancelSession(request.Id,
-                                     context.CancellationToken)
-                      .ConfigureAwait(false);
-      return new Empty();
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while canceling session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while canceling session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while canceling session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
+    await submitter_.CancelSession(request.Id,
+                                   context.CancellationToken)
+                    .ConfigureAwait(false);
+    return new Empty();
   }
 
   /// <inheritdoc />
@@ -149,31 +104,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   public override async Task<Empty> CancelTasks(TaskFilter        request,
                                                 ServerCallContext context)
   {
-    try
-    {
-      logger_.LogTrace("request received {request}",
-                       request);
-      await taskTable_.CancelTasks(request,
-                                   context.CancellationToken)
-                      .ConfigureAwait(false);
+    logger_.LogTrace("request received {request}",
+                     request);
+    await taskTable_.CancelTasks(request,
+                                 context.CancellationToken)
+                    .ConfigureAwait(false);
 
 
-      return new Empty();
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while canceling tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while canceling tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
+    return new Empty();
   }
 
   /// <inheritdoc />
@@ -182,36 +120,10 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                                ServerCallContext    context)
-  {
-    try
-    {
-      return await submitter_.CreateSession(request.PartitionIds,
-                                            request.DefaultTaskOption.ToTaskOptions(),
-                                            context.CancellationToken)
-                             .ConfigureAwait(false);
-    }
-    catch (PartitionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Partition not found while creating session");
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Partition not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => await submitter_.CreateSession(request.PartitionIds,
+                                      request.DefaultTaskOption.ToTaskOptions(),
+                                      context.CancellationToken)
+                       .ConfigureAwait(false);
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -220,165 +132,29 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
                                                                ServerCallContext      context)
   {
+    var sessionTask = sessionTable_.GetSessionAsync(request.SessionId);
+
+    var requests = await submitter_.CreateTasks(request.SessionId,
+                                                request.SessionId,
+                                                request.TaskOptions.ToTaskOptions(),
+                                                request.TaskRequests.ToAsyncEnumerable()
+                                                       .Select(taskRequest => new TaskRequest(taskRequest.ExpectedOutputKeys,
+                                                                                              taskRequest.DataDependencies,
+                                                                                              new[]
+                                                                                              {
+                                                                                                taskRequest.Payload.Memory,
+                                                                                              }.ToAsyncEnumerable())),
+                                                context.CancellationToken)
+                                   .ConfigureAwait(false);
+
+
+    var sessionData = await sessionTask.ConfigureAwait(false);
+
     try
     {
-      var sessionTask = sessionTable_.GetSessionAsync(request.SessionId);
-
-      var requests = await submitter_.CreateTasks(request.SessionId,
-                                                  request.SessionId,
-                                                  request.TaskOptions.ToTaskOptions(),
-                                                  request.TaskRequests.ToAsyncEnumerable()
-                                                         .Select(taskRequest => new TaskRequest(taskRequest.ExpectedOutputKeys,
-                                                                                                taskRequest.DataDependencies,
-                                                                                                new[]
-                                                                                                {
-                                                                                                  taskRequest.Payload.Memory,
-                                                                                                }.ToAsyncEnumerable())),
-                                                  context.CancellationToken)
-                                     .ConfigureAwait(false);
-
-
-      var sessionData = await sessionTask.ConfigureAwait(false);
-
-      try
-      {
-        await submitter_.FinalizeTaskCreation(requests,
-                                              sessionData,
-                                              request.SessionId,
-                                              context.CancellationToken)
-                        .ConfigureAwait(false);
-
-        return new CreateTaskReply
-               {
-                 CreationStatusList = new CreateTaskReply.Types.CreationStatusList
-                                      {
-                                        CreationStatuses =
-                                        {
-                                          requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
-                                                                         {
-                                                                           TaskInfo = new CreateTaskReply.Types.TaskInfo
-                                                                                      {
-                                                                                        TaskId = taskRequest.TaskId,
-                                                                                      },
-                                                                         }),
-                                        },
-                                      },
-               };
-      }
-      catch (Exception e)
-      {
-        await TaskLifeCycleHelper.DeleteTasksAsync(taskTable_,
-                                                   resultTable_,
-                                                   requests,
-                                                   CancellationToken.None)
-                                 .ConfigureAwait(false);
-        var payloads = requests.Select(creationRequest => creationRequest.PayloadId)
-                               .AsICollection();
-        var outputs = requests.SelectMany(creationRequest => creationRequest.ExpectedOutputKeys)
-                              .ToList();
-        outputs.AddRange(payloads);
-        await resultTable_.GetResults(result => payloads.Contains(result.ResultId),
-                                      result => result.OpaqueId,
-                                      CancellationToken.None)
-                          .ParallelForEach(opaqueId =>
-                                           {
-                                             Task.Factory.StartNew(async () =>
-                                                                   {
-                                                                     await objectStorage_.TryDeleteAsync(new[]
-                                                                                                         {
-                                                                                                           opaqueId,
-                                                                                                         },
-                                                                                                         CancellationToken.None)
-                                                                                         .ConfigureAwait(false);
-                                                                   },
-                                                                   CancellationToken.None);
-                                             return Task.CompletedTask;
-                                           })
-                          .ConfigureAwait(false);
-        await resultTable_.DeleteResults(outputs,
-                                         CancellationToken.None)
-                          .ConfigureAwait(false);
-        throw;
-      }
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating tasks");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session not found"));
-    }
-    catch (ResultInvalidStatusException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while submitting tasks due to invalid dependency status");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "One or more dependencies have an invalid status"));
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while submitting tasks due to dependency that does not exist");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "One or more dependencies do not exist"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
-
-
-  /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcSubmitterService),
-                      nameof(CreateLargeTasks))]
-  [Obsolete]
-  public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
-                                                               ServerCallContext                          context)
-  {
-    try
-    {
-      await using var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
-                                                .GetAsyncEnumerator(context.CancellationToken);
-
-      if (!await enumerator.MoveNextAsync()
-                           .ConfigureAwait(false))
-      {
-        throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                          "stream contained no message"));
-      }
-
-      var first = enumerator.Current;
-
-      if (first.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitRequest)
-      {
-        throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                          "First message in stream must be of type InitRequest"),
-                               "First message in stream must be of type InitRequest");
-      }
-
-      var sessionTask = sessionTable_.GetSessionAsync(first.InitRequest.SessionId);
-      var requests = await submitter_.CreateTasks(first.InitRequest.SessionId,
-                                                  first.InitRequest.SessionId,
-                                                  first.InitRequest.TaskOptions.ToNullableTaskOptions(),
-                                                  enumerator.BuildRequests(context.CancellationToken),
-                                                  context.CancellationToken)
-                                     .ConfigureAwait(false);
-
-      var sessionData = await sessionTask.ConfigureAwait(false);
       await submitter_.FinalizeTaskCreation(requests,
                                             sessionData,
-                                            first.InitRequest.SessionId,
+                                            request.SessionId,
                                             context.CancellationToken)
                       .ConfigureAwait(false);
 
@@ -393,62 +169,116 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                                          TaskInfo = new CreateTaskReply.Types.TaskInfo
                                                                                     {
                                                                                       TaskId = taskRequest.TaskId,
-                                                                                      DataDependencies =
-                                                                                      {
-                                                                                        taskRequest.DataDependencies,
-                                                                                      },
-                                                                                      ExpectedOutputKeys =
-                                                                                      {
-                                                                                        taskRequest.ExpectedOutputKeys,
-                                                                                      },
-                                                                                      PayloadId = taskRequest.PayloadId,
                                                                                     },
                                                                        }),
                                       },
                                     },
              };
     }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating tasks");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session not found"));
-    }
-    catch (ResultInvalidStatusException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while submitting tasks due to invalid dependency status");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "One or more dependencies have an invalid status"));
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while submitting tasks due to dependency that does not exist");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "One or more dependencies do not exist"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (RpcException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating tasks");
-      throw;
-    }
     catch (Exception e)
     {
-      logger_.LogWarning(e,
-                         "Error while creating tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
+      await TaskLifeCycleHelper.DeleteTasksAsync(taskTable_,
+                                                 resultTable_,
+                                                 requests,
+                                                 CancellationToken.None)
+                               .ConfigureAwait(false);
+      var payloads = requests.Select(creationRequest => creationRequest.PayloadId)
+                             .AsICollection();
+      var outputs = requests.SelectMany(creationRequest => creationRequest.ExpectedOutputKeys)
+                            .ToList();
+      outputs.AddRange(payloads);
+      await resultTable_.GetResults(result => payloads.Contains(result.ResultId),
+                                    result => result.OpaqueId,
+                                    CancellationToken.None)
+                        .ParallelForEach(opaqueId =>
+                                         {
+                                           Task.Factory.StartNew(async () =>
+                                                                 {
+                                                                   await objectStorage_.TryDeleteAsync(new[]
+                                                                                                       {
+                                                                                                         opaqueId,
+                                                                                                       },
+                                                                                                       CancellationToken.None)
+                                                                                       .ConfigureAwait(false);
+                                                                 },
+                                                                 CancellationToken.None);
+                                           return Task.CompletedTask;
+                                         })
+                        .ConfigureAwait(false);
+      await resultTable_.DeleteResults(outputs,
+                                       CancellationToken.None)
+                        .ConfigureAwait(false);
+      throw;
     }
+  }
+
+
+  /// <inheritdoc />
+  [RequiresPermission(typeof(GrpcSubmitterService),
+                      nameof(CreateLargeTasks))]
+  [Obsolete]
+  public override async Task<CreateTaskReply> CreateLargeTasks(IAsyncStreamReader<CreateLargeTaskRequest> requestStream,
+                                                               ServerCallContext                          context)
+  {
+    await using var enumerator = requestStream.ReadAllAsync(context.CancellationToken)
+                                              .GetAsyncEnumerator(context.CancellationToken);
+
+    if (!await enumerator.MoveNextAsync()
+                         .ConfigureAwait(false))
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "stream contained no message"));
+    }
+
+    var first = enumerator.Current;
+
+    if (first.TypeCase != CreateLargeTaskRequest.TypeOneofCase.InitRequest)
+    {
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        "First message in stream must be of type InitRequest"),
+                             "First message in stream must be of type InitRequest");
+    }
+
+    var sessionTask = sessionTable_.GetSessionAsync(first.InitRequest.SessionId);
+    var requests = await submitter_.CreateTasks(first.InitRequest.SessionId,
+                                                first.InitRequest.SessionId,
+                                                first.InitRequest.TaskOptions.ToNullableTaskOptions(),
+                                                enumerator.BuildRequests(context.CancellationToken),
+                                                context.CancellationToken)
+                                   .ConfigureAwait(false);
+
+    var sessionData = await sessionTask.ConfigureAwait(false);
+    await submitter_.FinalizeTaskCreation(requests,
+                                          sessionData,
+                                          first.InitRequest.SessionId,
+                                          context.CancellationToken)
+                    .ConfigureAwait(false);
+
+    return new CreateTaskReply
+           {
+             CreationStatusList = new CreateTaskReply.Types.CreationStatusList
+                                  {
+                                    CreationStatuses =
+                                    {
+                                      requests.Select(taskRequest => new CreateTaskReply.Types.CreationStatus
+                                                                     {
+                                                                       TaskInfo = new CreateTaskReply.Types.TaskInfo
+                                                                                  {
+                                                                                    TaskId = taskRequest.TaskId,
+                                                                                    DataDependencies =
+                                                                                    {
+                                                                                      taskRequest.DataDependencies,
+                                                                                    },
+                                                                                    ExpectedOutputKeys =
+                                                                                    {
+                                                                                      taskRequest.ExpectedOutputKeys,
+                                                                                    },
+                                                                                    PayloadId = taskRequest.PayloadId,
+                                                                                  },
+                                                                     }),
+                                    },
+                                  },
+           };
   }
 
   /// <inheritdoc />
@@ -457,34 +287,15 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<Count> CountTasks(TaskFilter        request,
                                                ServerCallContext context)
-  {
-    try
-    {
-      return new Count
-             {
-               Values =
-               {
-                 (await taskTable_.Secondary.CountTasksAsync(request,
-                                                             context.CancellationToken)
-                                  .ConfigureAwait(false)).Select(count => count.ToGrpcStatusCount()),
-               },
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while counting tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => new()
+       {
+         Values =
+         {
+           (await taskTable_.Secondary.CountTasksAsync(request,
+                                                       context.CancellationToken)
+                            .ConfigureAwait(false)).Select(count => count.ToGrpcStatusCount()),
+         },
+       };
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -493,50 +304,10 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   public override async Task TryGetResultStream(ResultRequest                    request,
                                                 IServerStreamWriter<ResultReply> responseStream,
                                                 ServerCallContext                context)
-  {
-    try
-    {
-      await submitter_.TryGetResult(request,
-                                    responseStream,
-                                    context.CancellationToken)
-                      .ConfigureAwait(false);
-    }
-    catch (TaskNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting results");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Task not found"));
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting results");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Result not found"));
-    }
-    catch (ObjectDataNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting results");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Result data not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting results");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting results");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => await submitter_.TryGetResult(request,
+                                     responseStream,
+                                     context.CancellationToken)
+                       .ConfigureAwait(false);
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -544,35 +315,9 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<Count> WaitForCompletion(WaitRequest       request,
                                                       ServerCallContext context)
-  {
-    try
-    {
-      return await submitter_.WaitForCompletion(request,
-                                                context.CancellationToken)
-                             .ConfigureAwait(false);
-    }
-    catch (TaskNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while waiting for completion");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Task not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while waiting for completion");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while waiting for completion");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => await submitter_.WaitForCompletion(request,
+                                          context.CancellationToken)
+                       .ConfigureAwait(false);
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -580,42 +325,9 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<Output> TryGetTaskOutput(TaskOutputRequest request,
                                                       ServerCallContext context)
-  {
-    try
-    {
-      return (await taskTable_.GetTaskOutput(request.TaskId,
-                                             context.CancellationToken)
-                              .ConfigureAwait(false)).ToGrpcOutput();
-    }
-    catch (TaskNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting output");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Task not found"));
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting output");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Result not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting output");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting output");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => (await taskTable_.GetTaskOutput(request.TaskId,
+                                       context.CancellationToken)
+                        .ConfigureAwait(false)).ToGrpcOutput();
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -623,42 +335,9 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete($"{nameof(ISubmitter.WaitForAvailabilityAsync)} is obsolete")]
   public override async Task<AvailabilityReply> WaitForAvailability(ResultRequest     request,
                                                                     ServerCallContext context)
-  {
-    try
-    {
-      return await submitter_.WaitForAvailabilityAsync(request,
-                                                       context.CancellationToken)
-                             .ConfigureAwait(false);
-    }
-    catch (TaskNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while waiting for availability");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Task not found"));
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while waiting for availability");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Result not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while waiting for availability");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while waiting for availability");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => await submitter_.WaitForAvailabilityAsync(request,
+                                                 context.CancellationToken)
+                       .ConfigureAwait(false);
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -666,46 +345,20 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override Task<GetTaskStatusReply> GetTaskStatus(GetTaskStatusRequest request,
                                                          ServerCallContext    context)
-  {
-    try
-    {
-      return Task.FromResult(new GetTaskStatusReply
-                             {
-                               IdStatuses =
-                               {
-                                 taskTable_.GetTaskStatus(request.TaskIds,
-                                                          context.CancellationToken)
-                                           .Select(status => new GetTaskStatusReply.Types.IdStatus
-                                                             {
-                                                               Status = status.Status.ToGrpcStatus(),
-                                                               TaskId = status.TaskId,
-                                                             })
-                                           .ToBlockingEnumerable(),
-                               },
-                             });
-    }
-    catch (TaskNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting status");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Task not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting status");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting status");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => Task.FromResult(new GetTaskStatusReply
+                       {
+                         IdStatuses =
+                         {
+                           taskTable_.GetTaskStatus(request.TaskIds,
+                                                    context.CancellationToken)
+                                     .Select(status => new GetTaskStatusReply.Types.IdStatus
+                                                       {
+                                                         Status = status.Status.ToGrpcStatus(),
+                                                         TaskId = status.TaskId,
+                                                       })
+                                     .ToBlockingEnumerable(),
+                         },
+                       });
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -713,46 +366,20 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete($"{nameof(Api.gRPC.V1.Submitter.Submitter.SubmitterBase.GetResultStatus)} is obsolete")]
   public override async Task<GetResultStatusReply> GetResultStatus(GetResultStatusRequest request,
                                                                    ServerCallContext      context)
-  {
-    try
-    {
-      return new GetResultStatusReply
-             {
-               IdStatuses =
-               {
-                 (await resultTable_.GetResultStatus(request.ResultIds,
-                                                     request.SessionId,
-                                                     context.CancellationToken)
-                                    .ConfigureAwait(false)).Select(status => new GetResultStatusReply.Types.IdStatus
-                                                                             {
-                                                                               ResultId = status.ResultId,
-                                                                               Status   = status.Status.ToGrpcStatus(),
-                                                                             }),
-               },
-             };
-    }
-    catch (ResultNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting status");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Result not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting status");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting status");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => new()
+       {
+         IdStatuses =
+         {
+           (await resultTable_.GetResultStatus(request.ResultIds,
+                                               request.SessionId,
+                                               context.CancellationToken)
+                              .ConfigureAwait(false)).Select(status => new GetResultStatusReply.Types.IdStatus
+                                                                       {
+                                                                         ResultId = status.ResultId,
+                                                                         Status   = status.Status.ToGrpcStatus(),
+                                                                       }),
+         },
+       };
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -760,42 +387,16 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<TaskIdList> ListTasks(TaskFilter        request,
                                                    ServerCallContext context)
-  {
-    try
-    {
-      return new TaskIdList
-             {
-               TaskIds =
-               {
-                 await taskTable_.ListTasksAsync(request,
-                                                 context.CancellationToken)
-                                 .ToListAsync()
-                                 .ConfigureAwait(false),
-               },
-             };
-    }
-    catch (TaskNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing tasks");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Task not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing tasks");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing tasks");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => new()
+       {
+         TaskIds =
+         {
+           await taskTable_.ListTasksAsync(request,
+                                           context.CancellationToken)
+                           .ToListAsync()
+                           .ConfigureAwait(false),
+         },
+       };
 
   /// <inheritdoc />
   [RequiresPermission(typeof(GrpcSubmitterService),
@@ -803,40 +404,14 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<SessionIdList> ListSessions(SessionFilter     request,
                                                          ServerCallContext context)
-  {
-    try
-    {
-      return new SessionIdList
-             {
-               SessionIds =
-               {
-                 await sessionTable_.ListSessionsAsync(request,
-                                                       context.CancellationToken)
-                                    .ToListAsync()
-                                    .ConfigureAwait(false),
-               },
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing sessions");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing sessions");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing sessions");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
-  }
+    => new()
+       {
+         SessionIds =
+         {
+           await sessionTable_.ListSessionsAsync(request,
+                                                 context.CancellationToken)
+                              .ToListAsync()
+                              .ConfigureAwait(false),
+         },
+       };
 }

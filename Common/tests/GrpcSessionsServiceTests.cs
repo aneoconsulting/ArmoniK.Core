@@ -28,6 +28,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
@@ -67,7 +68,7 @@ public class GrpcSessionsServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder => builder.MapGrpcService<GrpcSessionsService>(),
@@ -126,7 +127,7 @@ public class GrpcSessionsServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddSingleton(httpClient)
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>
@@ -307,7 +308,7 @@ public class GrpcSessionsServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddSingleton(httpClient)
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>
@@ -419,7 +420,7 @@ public class GrpcSessionsServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
-                                                                  .AddGrpc(),
+                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
                                           builder =>

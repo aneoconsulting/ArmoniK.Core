@@ -25,10 +25,8 @@ using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -101,84 +99,54 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                   ServerCallContext    context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      var session = await sessionTable_.CancelSessionAsync(request.SessionId,
-                                                           context.CancellationToken)
-                                       .ConfigureAwait(false);
 
-      // Notify agents to stop running tasks for this session
-      await taskTable_.FindTasksAsync(data => data.SessionId == request.SessionId && (data.Status == TaskStatus.Dispatched || data.Status == TaskStatus.Processing),
-                                      data => data.OwnerPodId,
-                                      context.CancellationToken)
-                      .Distinct()
-                      .ParallelForEach(new ParallelTaskOptions(submitterOptions_.DegreeOfParallelism),
-                                       async podId =>
+    var session = await sessionTable_.CancelSessionAsync(request.SessionId,
+                                                         context.CancellationToken)
+                                     .ConfigureAwait(false);
+
+    // Notify agents to stop running tasks for this session
+    await taskTable_.FindTasksAsync(data => data.SessionId == request.SessionId && (data.Status == TaskStatus.Dispatched || data.Status == TaskStatus.Processing),
+                                    data => data.OwnerPodId,
+                                    context.CancellationToken)
+                    .Distinct()
+                    .ParallelForEach(new ParallelTaskOptions(submitterOptions_.DegreeOfParallelism),
+                                     async podId =>
+                                     {
+                                       try
                                        {
-                                         try
-                                         {
-                                           logger_.LogInformation("Notifying agent {OwnerPodId} to stop tasks for session {SessionId}",
-                                                                  podId,
-                                                                  request.SessionId);
-                                           await httpClient_.GetAsync("http://" + podId + ":1080/stopcancelledtask")
-                                                            .ConfigureAwait(false);
-                                         }
-                                         catch (HttpRequestException e) when (e is
-                                                                              {
-                                                                                InnerException: SocketException
-                                                                                                {
-                                                                                                  SocketErrorCode: SocketError.ConnectionRefused,
-                                                                                                },
-                                                                              })
-                                         {
-                                           logger_.LogError(e,
-                                                            "The agent with {OwnerPodId} was not reached successfully",
-                                                            podId);
-                                         }
-                                       })
-                      .ConfigureAwait(false);
+                                         logger_.LogInformation("Notifying agent {OwnerPodId} to stop tasks for session {SessionId}",
+                                                                podId,
+                                                                request.SessionId);
+                                         await httpClient_.GetAsync("http://" + podId + ":1080/stopcancelledtask")
+                                                          .ConfigureAwait(false);
+                                       }
+                                       catch (HttpRequestException e) when (e is
+                                                                            {
+                                                                              InnerException: SocketException
+                                                                                              {
+                                                                                                SocketErrorCode: SocketError.ConnectionRefused,
+                                                                                              },
+                                                                            })
+                                       {
+                                         logger_.LogError(e,
+                                                          "The agent with {OwnerPodId} was not reached successfully",
+                                                          podId);
+                                       }
+                                     })
+                    .ConfigureAwait(false);
 
-      var results = resultTable_.AbortSessionResults(request.SessionId,
-                                                     context.CancellationToken);
-      await taskTable_.CancelSessionAsync(request.SessionId,
-                                          context.CancellationToken)
-                      .ConfigureAwait(false);
+    var results = resultTable_.AbortSessionResults(request.SessionId,
+                                                   context.CancellationToken);
+    await taskTable_.CancelSessionAsync(request.SessionId,
+                                        context.CancellationToken)
+                    .ConfigureAwait(false);
 
-      await results.ConfigureAwait(false);
+    await results.ConfigureAwait(false);
 
-      return new CancelSessionResponse
-             {
-               Session = session.ToGrpcSessionRaw(),
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while cancelling session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (InvalidSessionTransitionException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while cancelling session");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session is in a state that cannot be cancelled"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while cancelling session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while cancelling session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+    return new CancelSessionResponse
+           {
+             Session = session.ToGrpcSessionRaw(),
+           };
   }
 
   /// <inheritdoc />
@@ -188,36 +156,13 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                             ServerCallContext context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      return new GetSessionResponse
-             {
-               Session = (await sessionTable_.GetSessionAsync(request.SessionId,
-                                                              context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+
+    return new GetSessionResponse
+           {
+             Session = (await sessionTable_.GetSessionAsync(request.SessionId,
+                                                            context.CancellationToken)
+                                           .ConfigureAwait(false)).ToGrpcSessionRaw(),
+           };
   }
 
   /// <inheritdoc />
@@ -232,45 +177,28 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          ? sessionTable_.Secondary
                          : sessionTable_;
 
-    try
-    {
-      var (sessions, totalCount) = await sessionTable.ListSessionsAsync(request.Filters is null
-                                                                          ? data => true
-                                                                          : request.Filters.ToSessionDataFilter(),
-                                                                        request.Sort is null
-                                                                          ? data => data.SessionId
-                                                                          : request.Sort.ToField(),
-                                                                        request.Sort is null || request.Sort.Direction == SortDirection.Asc,
-                                                                        request.Page,
-                                                                        request.PageSize,
-                                                                        context.CancellationToken)
-                                                     .ConfigureAwait(false);
+    var (sessions, totalCount) = await sessionTable.ListSessionsAsync(request.Filters is null
+                                                                        ? data => true
+                                                                        : request.Filters.ToSessionDataFilter(),
+                                                                      request.Sort is null
+                                                                        ? data => data.SessionId
+                                                                        : request.Sort.ToField(),
+                                                                      request.Sort is null || request.Sort.Direction == SortDirection.Asc,
+                                                                      request.Page,
+                                                                      request.PageSize,
+                                                                      context.CancellationToken)
+                                                   .ConfigureAwait(false);
 
-      return new ListSessionsResponse
+    return new ListSessionsResponse
+           {
+             Page     = request.Page,
+             PageSize = request.PageSize,
+             Sessions =
              {
-               Page     = request.Page,
-               PageSize = request.PageSize,
-               Sessions =
-               {
-                 sessions.Select(data => data.ToGrpcSessionRaw()),
-               },
-               Total = (int)totalCount,
-             };
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing sessions");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while listing sessions");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+               sessions.Select(data => data.ToGrpcSessionRaw()),
+             },
+             Total = (int)totalCount,
+           };
   }
 
   /// <inheritdoc />
@@ -280,40 +208,17 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                ServerCallContext    context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      return new CreateSessionReply
-             {
-               SessionId = await SessionLifeCycleHelper.CreateSession(sessionTable_,
-                                                                      partitionTable_,
-                                                                      request.PartitionIds,
-                                                                      request.DefaultTaskOption.ToTaskOptions(),
-                                                                      submitterOptions_.DefaultPartition,
-                                                                      context.CancellationToken)
-                                                       .ConfigureAwait(false),
-             };
-    }
-    catch (PartitionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Partition not found while creating session");
-      throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                        "Partition not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal ArmoniK Exception, see Submitter logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while creating session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see Submitter logs"));
-    }
+
+    return new CreateSessionReply
+           {
+             SessionId = await SessionLifeCycleHelper.CreateSession(sessionTable_,
+                                                                    partitionTable_,
+                                                                    request.PartitionIds,
+                                                                    request.DefaultTaskOption.ToTaskOptions(),
+                                                                    submitterOptions_.DefaultPartition,
+                                                                    context.CancellationToken)
+                                                     .ConfigureAwait(false),
+           };
   }
 
   /// <inheritdoc />
@@ -323,47 +228,17 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                 ServerCallContext   context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      var session = await TaskLifeCycleHelper.PauseAsync(taskTable_,
-                                                         sessionTable_,
-                                                         request.SessionId,
-                                                         context.CancellationToken)
-                                             .ConfigureAwait(false);
 
-      return new PauseSessionResponse
-             {
-               Session = session.ToGrpcSessionRaw(),
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while pausing session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (InvalidSessionTransitionException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while pausing session");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session is in a state that cannot be paused"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while pausing session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while pausing session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+    var session = await TaskLifeCycleHelper.PauseAsync(taskTable_,
+                                                       sessionTable_,
+                                                       request.SessionId,
+                                                       context.CancellationToken)
+                                           .ConfigureAwait(false);
+
+    return new PauseSessionResponse
+           {
+             Session = session.ToGrpcSessionRaw(),
+           };
   }
 
 
@@ -374,53 +249,23 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                 ServerCallContext   context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      var session = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                        context.CancellationToken)
-                                       .ConfigureAwait(false);
 
-      session = await sessionTable_.CloseSessionAsync(request.SessionId,
-                                                      session.CreationDate,
+    var session = await sessionTable_.GetSessionAsync(request.SessionId,
                                                       context.CancellationToken)
-                                   .ConfigureAwait(false);
+                                     .ConfigureAwait(false);
 
-      logger_.LogInformation("Closed {sessionId}",
-                             session);
+    session = await sessionTable_.CloseSessionAsync(request.SessionId,
+                                                    session.CreationDate,
+                                                    context.CancellationToken)
+                                 .ConfigureAwait(false);
 
-      return new CloseSessionResponse
-             {
-               Session = session.ToGrpcSessionRaw(),
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while closing session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (InvalidSessionTransitionException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while closing session");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session is in a state that cannot be closed"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while closing session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while closing session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+    logger_.LogInformation("Closed {sessionId}",
+                           session);
+
+    return new CloseSessionResponse
+           {
+             Session = session.ToGrpcSessionRaw(),
+           };
   }
 
   /// <inheritdoc />
@@ -430,57 +275,27 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                 ServerCallContext   context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      var session = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                        context.CancellationToken)
-                                       .ConfigureAwait(false);
 
-      await ResultLifeCycleHelper.PurgeResultsAsync(resultTable_,
-                                                    objectStorage_,
-                                                    request.SessionId,
-                                                    context.CancellationToken)
-                                 .ConfigureAwait(false);
+    var session = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                      context.CancellationToken)
+                                     .ConfigureAwait(false);
 
-      logger_.LogInformation("Purged data for {sessionId}",
-                             session);
+    await ResultLifeCycleHelper.PurgeResultsAsync(resultTable_,
+                                                  objectStorage_,
+                                                  request.SessionId,
+                                                  context.CancellationToken)
+                               .ConfigureAwait(false);
 
-      return new PurgeSessionResponse
-             {
-               Session = (await sessionTable_.PurgeSessionAsync(request.SessionId,
-                                                                session.CreationDate,
-                                                                context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while purging session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (InvalidSessionTransitionException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while purging session");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session is in a state that cannot be purged"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while purging session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while purging session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+    logger_.LogInformation("Purged data for {sessionId}",
+                           session);
+
+    return new PurgeSessionResponse
+           {
+             Session = (await sessionTable_.PurgeSessionAsync(request.SessionId,
+                                                              session.CreationDate,
+                                                              context.CancellationToken)
+                                           .ConfigureAwait(false)).ToGrpcSessionRaw(),
+           };
   }
 
   /// <inheritdoc />
@@ -490,75 +305,45 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                   ServerCallContext    context)
   {
     using var measure = meter_.CountAndTime();
+
+    var session = new SessionData(request.SessionId,
+                                  SessionStatus.Deleted,
+                                  Array.Empty<string>(),
+                                  new TaskOptions());
+
     try
     {
-      var session = new SessionData(request.SessionId,
-                                    SessionStatus.Deleted,
-                                    Array.Empty<string>(),
-                                    new TaskOptions());
-
-      try
-      {
-        session = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                      context.CancellationToken)
-                                     .ConfigureAwait(false);
-      }
-      catch (Exception)
-      {
-        // Session may not exist or be already deleted
-        logger_.LogDebug("Session {sessionId} not found; returning an empty one",
-                         request.SessionId);
-      }
-
-      await Task.WhenAll(taskTable_.DeleteTasksAsync(request.SessionId,
-                                                     context.CancellationToken),
-                         resultTable_.DeleteResults(request.SessionId,
-                                                    context.CancellationToken))
-                .ConfigureAwait(false);
-
-      await sessionTable_.DeleteSessionAsync(request.SessionId,
-                                             context.CancellationToken)
-                         .ConfigureAwait(false);
-
-      session = session with
-                {
-                  Status = SessionStatus.Deleted,
-                  DeletionDate = DateTime.UtcNow,
-                };
-
-      return new DeleteSessionResponse
-             {
-               Session = session.ToGrpcSessionRaw(),
-             };
+      session = await sessionTable_.GetSessionAsync(request.SessionId,
+                                                    context.CancellationToken)
+                                   .ConfigureAwait(false);
     }
-    catch (SessionNotFoundException e)
+    catch (Exception)
     {
-      logger_.LogWarning(e,
-                         "Error while deleting session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
+      // Session may not exist or be already deleted
+      logger_.LogDebug("Session {sessionId} not found; returning an empty one",
+                       request.SessionId);
     }
-    catch (InvalidSessionTransitionException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while deleting session");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session is in a state that cannot be deleted"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while deleting session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while deleting session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+
+    await Task.WhenAll(taskTable_.DeleteTasksAsync(request.SessionId,
+                                                   context.CancellationToken),
+                       resultTable_.DeleteResults(request.SessionId,
+                                                  context.CancellationToken))
+              .ConfigureAwait(false);
+
+    await sessionTable_.DeleteSessionAsync(request.SessionId,
+                                           context.CancellationToken)
+                       .ConfigureAwait(false);
+
+    session = session with
+              {
+                Status = SessionStatus.Deleted,
+                DeletionDate = DateTime.UtcNow,
+              };
+
+    return new DeleteSessionResponse
+           {
+             Session = session.ToGrpcSessionRaw(),
+           };
   }
 
   /// <inheritdoc />
@@ -568,48 +353,18 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                   ServerCallContext    context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      var session = await TaskLifeCycleHelper.ResumeAsync(taskTable_,
-                                                          sessionTable_,
-                                                          pushQueueStorage_,
-                                                          request.SessionId,
-                                                          context.CancellationToken)
-                                             .ConfigureAwait(false);
 
-      return new ResumeSessionResponse
-             {
-               Session = session.ToGrpcSessionRaw(),
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while resuming session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (InvalidSessionTransitionException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while resuming session");
-      throw new RpcException(new Status(StatusCode.FailedPrecondition,
-                                        "Session is in a state that cannot be cancelled"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while resuming session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while resuming session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+    var session = await TaskLifeCycleHelper.ResumeAsync(taskTable_,
+                                                        sessionTable_,
+                                                        pushQueueStorage_,
+                                                        request.SessionId,
+                                                        context.CancellationToken)
+                                           .ConfigureAwait(false);
+
+    return new ResumeSessionResponse
+           {
+             Session = session.ToGrpcSessionRaw(),
+           };
   }
 
   /// <inheritdoc />
@@ -619,37 +374,14 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                     ServerCallContext     context)
   {
     using var measure = meter_.CountAndTime();
-    try
-    {
-      return new StopSubmissionResponse
-             {
-               Session = (await sessionTable_.StopSubmissionAsync(request.SessionId,
-                                                                  request.Client,
-                                                                  request.Worker,
-                                                                  context.CancellationToken)
-                                             .ConfigureAwait(false)).ToGrpcSessionRaw(),
-             };
-    }
-    catch (SessionNotFoundException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting session");
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Session not found"));
-    }
-    catch (ArmoniKException e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting session");
-      throw new RpcException(new Status(StatusCode.Internal,
-                                        "Internal Armonik Exception, see application logs"));
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Error while getting session");
-      throw new RpcException(new Status(StatusCode.Unknown,
-                                        "Unknown Exception, see application logs"));
-    }
+
+    return new StopSubmissionResponse
+           {
+             Session = (await sessionTable_.StopSubmissionAsync(request.SessionId,
+                                                                request.Client,
+                                                                request.Worker,
+                                                                context.CancellationToken)
+                                           .ConfigureAwait(false)).ToGrpcSessionRaw(),
+           };
   }
 }

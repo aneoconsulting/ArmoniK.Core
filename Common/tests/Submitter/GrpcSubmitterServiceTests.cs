@@ -28,9 +28,11 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Google.Protobuf;
@@ -38,7 +40,10 @@ using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 using Moq;
 
@@ -66,11 +71,22 @@ public class GrpcSubmitterServiceTests
                      .Returns(mockSessionTable_.Object);
     mockTaskTable_.Setup(taskTable => taskTable.Secondary)
                   .Returns(mockTaskTable_.Object);
+    lifetime_ = new ApplicationLifetime(NullLogger<ApplicationLifetime>.Instance);
+    exceptionManager_ = new ExceptionManager(lifetime_,
+                                             new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                             new HostingEnvironment(),
+                                             new OptionsWrapper<HostOptions>(new HostOptions()),
+                                             NullLogger<ExceptionManager>.Instance,
+                                             new ExceptionManager.Options());
+    interceptor_ = new ExceptionInterceptor(exceptionManager_,
+                                            NullLogger<ExceptionInterceptor>.Instance);
   }
 
   [TearDown]
   public virtual void TearDown()
   {
+    exceptionManager_.Dispose();
+    lifetime_.StopApplication();
   }
 
   private readonly Mock<IResultTable>   mockResultTable_   = new();
@@ -78,6 +94,10 @@ public class GrpcSubmitterServiceTests
   private readonly Mock<ITaskTable>     mockTaskTable_     = new();
   private readonly Mock<ISubmitter>     mockSubmitter_     = new();
   private readonly Mock<IObjectStorage> mockObjectStorage_ = new();
+
+  private ApplicationLifetime  lifetime_         = null!;
+  private ExceptionManager     exceptionManager_ = null!;
+  private ExceptionInterceptor interceptor_      = null!;
 
   private readonly TaskOptions taskOptions_ = new()
                                               {
@@ -148,14 +168,15 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetResultStream(new ResultRequest
-                                       {
-                                         ResultId = "Key",
-                                         Session  = "Session",
-                                       },
-                                       helperServerStreamWriter,
-                                       TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ServerStreamingServerHandler(new ResultRequest
+                                                      {
+                                                        ResultId = "Key",
+                                                        Session  = "Session",
+                                                      },
+                                                      helperServerStreamWriter,
+                                                      TestServerCallContext.Create(),
+                                                      service.TryGetResultStream)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -188,14 +209,15 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetResultStream(new ResultRequest
-                                       {
-                                         ResultId = "Key",
-                                         Session  = "Session",
-                                       },
-                                       helperServerStreamWriter,
-                                       TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ServerStreamingServerHandler(new ResultRequest
+                                                      {
+                                                        ResultId = "Key",
+                                                        Session  = "Session",
+                                                      },
+                                                      helperServerStreamWriter,
+                                                      TestServerCallContext.Create(),
+                                                      service.TryGetResultStream)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -228,14 +250,15 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetResultStream(new ResultRequest
-                                       {
-                                         ResultId = "Key",
-                                         Session  = "Session",
-                                       },
-                                       helperServerStreamWriter,
-                                       TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ServerStreamingServerHandler(new ResultRequest
+                                                      {
+                                                        ResultId = "Key",
+                                                        Session  = "Session",
+                                                      },
+                                                      helperServerStreamWriter,
+                                                      TestServerCallContext.Create(),
+                                                      service.TryGetResultStream)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -268,14 +291,15 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetResultStream(new ResultRequest
-                                       {
-                                         ResultId = "Key",
-                                         Session  = "Session",
-                                       },
-                                       helperServerStreamWriter,
-                                       TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ServerStreamingServerHandler(new ResultRequest
+                                                      {
+                                                        ResultId = "Key",
+                                                        Session  = "Session",
+                                                      },
+                                                      helperServerStreamWriter,
+                                                      TestServerCallContext.Create(),
+                                                      service.TryGetResultStream)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -308,14 +332,15 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetResultStream(new ResultRequest
-                                       {
-                                         ResultId = "Key",
-                                         Session  = "Session",
-                                       },
-                                       helperServerStreamWriter,
-                                       TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ServerStreamingServerHandler(new ResultRequest
+                                                      {
+                                                        ResultId = "Key",
+                                                        Session  = "Session",
+                                                      },
+                                                      helperServerStreamWriter,
+                                                      TestServerCallContext.Create(),
+                                                      service.TryGetResultStream)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -348,14 +373,15 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetResultStream(new ResultRequest
-                                       {
-                                         ResultId = "Key",
-                                         Session  = "Session",
-                                       },
-                                       helperServerStreamWriter,
-                                       TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ServerStreamingServerHandler(new ResultRequest
+                                                      {
+                                                        ResultId = "Key",
+                                                        Session  = "Session",
+                                                      },
+                                                      helperServerStreamWriter,
+                                                      TestServerCallContext.Create(),
+                                                      service.TryGetResultStream)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -384,13 +410,14 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetTaskOutput(new TaskOutputRequest
-                                     {
-                                       TaskId  = "Key",
-                                       Session = "Session",
-                                     },
-                                     TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new TaskOutputRequest
+                                            {
+                                              TaskId  = "Key",
+                                              Session = "Session",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.TryGetTaskOutput)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -421,13 +448,14 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.TryGetTaskOutput(new TaskOutputRequest
-                                     {
-                                       TaskId  = "Key",
-                                       Session = "Session",
-                                     },
-                                     TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new TaskOutputRequest
+                                            {
+                                              TaskId  = "Key",
+                                              Session = "Session",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.TryGetTaskOutput)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -519,9 +547,10 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.GetServiceConfiguration(new Empty(),
-                                            TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new Empty(),
+                                            TestServerCallContext.Create(),
+                                            service.GetServiceConfiguration)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -607,12 +636,13 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CancelSession(new Session
-                                  {
-                                    Id = "Session",
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new Session
+                                            {
+                                              Id = "Session",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.CancelSession)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -642,12 +672,13 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CancelSession(new Session
-                                  {
-                                    Id = "Session",
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new Session
+                                            {
+                                              Id = "Session",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.CancelSession)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -677,12 +708,13 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CancelSession(new Session
-                                  {
-                                    Id = "Session",
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new Session
+                                            {
+                                              Id = "Session",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.CancelSession)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -745,18 +777,19 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CancelTasks(new TaskFilter
-                                {
-                                  Session = new TaskFilter.Types.IdsRequest
+      await interceptor_.UnaryServerHandler(new TaskFilter
                                             {
-                                              Ids =
-                                              {
-                                                "Session",
-                                              },
+                                              Session = new TaskFilter.Types.IdsRequest
+                                                        {
+                                                          Ids =
+                                                          {
+                                                            "Session",
+                                                          },
+                                                        },
                                             },
-                                },
-                                TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+                                            TestServerCallContext.Create(),
+                                            service.CancelTasks)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -785,18 +818,19 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CancelTasks(new TaskFilter
-                                {
-                                  Session = new TaskFilter.Types.IdsRequest
+      await interceptor_.UnaryServerHandler(new TaskFilter
                                             {
-                                              Ids =
-                                              {
-                                                "Session",
-                                              },
+                                              Session = new TaskFilter.Types.IdsRequest
+                                                        {
+                                                          Ids =
+                                                          {
+                                                            "Session",
+                                                          },
+                                                        },
                                             },
-                                },
-                                TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+                                            TestServerCallContext.Create(),
+                                            service.CancelTasks)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -862,15 +896,16 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CreateSession(new CreateSessionRequest
-                                  {
-                                    DefaultTaskOption = new TaskOptions
-                                                        {
-                                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
-                                                        },
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new CreateSessionRequest
+                                            {
+                                              DefaultTaskOption = new TaskOptions
+                                                                  {
+                                                                    MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
+                                                                  },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.CreateSession)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -901,21 +936,22 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CreateSession(new CreateSessionRequest
-                                  {
-                                    PartitionIds =
-                                    {
-                                      "part1",
-                                      "part2",
-                                    },
-                                    DefaultTaskOption = new TaskOptions
-                                                        {
-                                                          PartitionId = "part1",
-                                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
-                                                        },
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new CreateSessionRequest
+                                            {
+                                              PartitionIds =
+                                              {
+                                                "part1",
+                                                "part2",
+                                              },
+                                              DefaultTaskOption = new TaskOptions
+                                                                  {
+                                                                    PartitionId = "part1",
+                                                                    MaxDuration = Duration.FromTimeSpan(TimeSpan.FromSeconds(1)),
+                                                                  },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.CreateSession)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1008,28 +1044,29 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CreateSmallTasks(new CreateSmallTaskRequest
-                                     {
-                                       SessionId   = "SessionId",
-                                       TaskOptions = taskOptions_,
-                                       TaskRequests =
-                                       {
-                                         new Api.gRPC.V1.TaskRequest
-                                         {
-                                           Payload = ByteString.Empty,
-                                           DataDependencies =
-                                           {
-                                             "dep",
-                                           },
-                                           ExpectedOutputKeys =
-                                           {
-                                             "out",
-                                           },
-                                         },
-                                       },
-                                     },
-                                     TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new CreateSmallTaskRequest
+                                            {
+                                              SessionId   = "SessionId",
+                                              TaskOptions = taskOptions_,
+                                              TaskRequests =
+                                              {
+                                                new Api.gRPC.V1.TaskRequest
+                                                {
+                                                  Payload = ByteString.Empty,
+                                                  DataDependencies =
+                                                  {
+                                                    "dep",
+                                                  },
+                                                  ExpectedOutputKeys =
+                                                  {
+                                                    "out",
+                                                  },
+                                                },
+                                              },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.CreateSmallTasks)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1062,28 +1099,29 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CreateSmallTasks(new CreateSmallTaskRequest
-                                     {
-                                       SessionId   = "SessionId",
-                                       TaskOptions = taskOptions_,
-                                       TaskRequests =
-                                       {
-                                         new Api.gRPC.V1.TaskRequest
-                                         {
-                                           Payload = ByteString.Empty,
-                                           DataDependencies =
-                                           {
-                                             "dep",
-                                           },
-                                           ExpectedOutputKeys =
-                                           {
-                                             "out",
-                                           },
-                                         },
-                                       },
-                                     },
-                                     TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new CreateSmallTaskRequest
+                                            {
+                                              SessionId   = "SessionId",
+                                              TaskOptions = taskOptions_,
+                                              TaskRequests =
+                                              {
+                                                new Api.gRPC.V1.TaskRequest
+                                                {
+                                                  Payload = ByteString.Empty,
+                                                  DataDependencies =
+                                                  {
+                                                    "dep",
+                                                  },
+                                                  ExpectedOutputKeys =
+                                                  {
+                                                    "out",
+                                                  },
+                                                },
+                                              },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.CreateSmallTasks)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1173,9 +1211,10 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CreateLargeTasks(helper,
-                                     TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ClientStreamingServerHandler(helper,
+                                                      TestServerCallContext.Create(),
+                                                      service.CreateLargeTasks)
+                        .ConfigureAwait(false);
 
       Assert.Fail();
     }
@@ -1222,9 +1261,10 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CreateLargeTasks(helper,
-                                     TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ClientStreamingServerHandler(helper,
+                                                      TestServerCallContext.Create(),
+                                                      service.CreateLargeTasks)
+                        .ConfigureAwait(false);
 
       Assert.Fail();
     }
@@ -1271,9 +1311,10 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.CreateLargeTasks(helper,
-                                     TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.ClientStreamingServerHandler(helper,
+                                                      TestServerCallContext.Create(),
+                                                      service.CreateLargeTasks)
+                        .ConfigureAwait(false);
 
       Assert.Fail();
     }
@@ -1355,21 +1396,22 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.WaitForCompletion(new WaitRequest
-                                      {
-                                        Filter = new TaskFilter
-                                                 {
-                                                   Task = new TaskFilter.Types.IdsRequest
-                                                          {
-                                                            Ids =
-                                                            {
-                                                              "TaskId",
-                                                            },
-                                                          },
-                                                 },
-                                      },
-                                      TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new WaitRequest
+                                            {
+                                              Filter = new TaskFilter
+                                                       {
+                                                         Task = new TaskFilter.Types.IdsRequest
+                                                                {
+                                                                  Ids =
+                                                                  {
+                                                                    "TaskId",
+                                                                  },
+                                                                },
+                                                       },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.WaitForCompletion)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1399,21 +1441,22 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.WaitForCompletion(new WaitRequest
-                                      {
-                                        Filter = new TaskFilter
-                                                 {
-                                                   Task = new TaskFilter.Types.IdsRequest
-                                                          {
-                                                            Ids =
-                                                            {
-                                                              "TaskId",
-                                                            },
-                                                          },
-                                                 },
-                                      },
-                                      TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new WaitRequest
+                                            {
+                                              Filter = new TaskFilter
+                                                       {
+                                                         Task = new TaskFilter.Types.IdsRequest
+                                                                {
+                                                                  Ids =
+                                                                  {
+                                                                    "TaskId",
+                                                                  },
+                                                                },
+                                                       },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.WaitForCompletion)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1476,12 +1519,13 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.WaitForAvailability(new ResultRequest
-                                        {
-                                          ResultId = "Key",
-                                        },
-                                        TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new ResultRequest
+                                            {
+                                              ResultId = "Key",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.WaitForAvailability)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1512,12 +1556,13 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.WaitForAvailability(new ResultRequest
-                                        {
-                                          ResultId = "Key",
-                                        },
-                                        TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new ResultRequest
+                                            {
+                                              ResultId = "Key",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.WaitForAvailability)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1548,12 +1593,13 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.WaitForAvailability(new ResultRequest
-                                        {
-                                          ResultId = "Key",
-                                        },
-                                        TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new ResultRequest
+                                            {
+                                              ResultId = "Key",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.WaitForAvailability)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1584,12 +1630,13 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.WaitForAvailability(new ResultRequest
-                                        {
-                                          ResultId = "Key",
-                                        },
-                                        TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new ResultRequest
+                                            {
+                                              ResultId = "Key",
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.WaitForAvailability)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1657,15 +1704,16 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.GetTaskStatus(new GetTaskStatusRequest
-                                  {
-                                    TaskIds =
-                                    {
-                                      "TaskId",
-                                    },
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new GetTaskStatusRequest
+                                            {
+                                              TaskIds =
+                                              {
+                                                "TaskId",
+                                              },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.GetTaskStatus)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1696,15 +1744,16 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.GetTaskStatus(new GetTaskStatusRequest
-                                  {
-                                    TaskIds =
-                                    {
-                                      "TaskId",
-                                    },
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new GetTaskStatusRequest
+                                            {
+                                              TaskIds =
+                                              {
+                                                "TaskId",
+                                              },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.GetTaskStatus)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1733,15 +1782,16 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.GetTaskStatus(new GetTaskStatusRequest
-                                  {
-                                    TaskIds =
-                                    {
-                                      "TaskId",
-                                    },
-                                  },
-                                  TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new GetTaskStatusRequest
+                                            {
+                                              TaskIds =
+                                              {
+                                                "TaskId",
+                                              },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.GetTaskStatus)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1811,18 +1861,19 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.ListTasks(new TaskFilter
-                              {
-                                Task = new TaskFilter.Types.IdsRequest
-                                       {
-                                         Ids =
-                                         {
-                                           "TaskId",
-                                         },
-                                       },
-                              },
-                              TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new TaskFilter
+                                            {
+                                              Task = new TaskFilter.Types.IdsRequest
+                                                     {
+                                                       Ids =
+                                                       {
+                                                         "TaskId",
+                                                       },
+                                                     },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.ListTasks)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1853,18 +1904,19 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.ListTasks(new TaskFilter
-                              {
-                                Task = new TaskFilter.Types.IdsRequest
-                                       {
-                                         Ids =
-                                         {
-                                           "TaskId",
-                                         },
-                                       },
-                              },
-                              TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new TaskFilter
+                                            {
+                                              Task = new TaskFilter.Types.IdsRequest
+                                                     {
+                                                       Ids =
+                                                       {
+                                                         "TaskId",
+                                                       },
+                                                     },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.ListTasks)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
@@ -1896,23 +1948,24 @@ public class GrpcSubmitterServiceTests
 
     try
     {
-      await service.GetResultStatus(new GetResultStatusRequest
-                                    {
-                                      SessionId = "sessionId",
-                                      ResultIds =
-                                      {
-                                        "Result",
-                                      },
-                                    },
-                                    TestServerCallContext.Create())
-                   .ConfigureAwait(false);
+      await interceptor_.UnaryServerHandler(new GetResultStatusRequest
+                                            {
+                                              SessionId = "sessionId",
+                                              ResultIds =
+                                              {
+                                                "Result",
+                                              },
+                                            },
+                                            TestServerCallContext.Create(),
+                                            service.GetResultStatus)
+                        .ConfigureAwait(false);
       Assert.Fail();
     }
     catch (RpcException e)
     {
       Console.WriteLine(e);
       Assert.That(e.StatusCode,
-                  Is.EqualTo(StatusCode.Internal));
+                  Is.EqualTo(StatusCode.NotFound));
     }
   }
 

@@ -97,8 +97,8 @@ public class GrpcEventsService : Events.EventsBase
     }
     catch (OperationCanceledException e)
     {
-      logger_.LogWarning(e,
-                         "Subscription cancelled, no more messages will be sent.");
+      logger_.LogDebug(e,
+                       "Subscription cancelled, no more messages will be sent.");
     }
   }
 }
