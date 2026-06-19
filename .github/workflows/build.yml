@@ -893,6 +893,36 @@ jobs:
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 `
             dockerhubaneo/armonik_core_htcmock_test_client:$env:VERSION
 
+      - name: Build HtcMock win-x64 binary
+        shell: bash
+        run: just tag=$VERSION publishHtcmockClient win-x64
+
+      - name: Run HtcMock binary test 100 tasks 1 level
+        timeout-minutes: 3
+        shell: powershell
+        run: |
+          $env:HtcMock__NTasks = "100"
+          $env:HtcMock__TotalCalculationTime = "00:00:00.100"
+          $env:HtcMock__DataSize = "1"
+          $env:HtcMock__MemorySize = "1"
+          $env:HtcMock__SubTasksLevels = "1"
+          $env:HtcMock__Partition = "TestPartition0"
+          $env:GrpcClient__Endpoint = "http://localhost:5001"
+          .\publish\htcmock-client-win-x64\ArmoniK.Samples.HtcMock.Client.exe
+
+      - name: Run HtcMock binary test 100 tasks 4 levels
+        timeout-minutes: 3
+        shell: powershell
+        run: |
+          $env:HtcMock__NTasks = "100"
+          $env:HtcMock__TotalCalculationTime = "00:00:00.100"
+          $env:HtcMock__DataSize = "1"
+          $env:HtcMock__MemorySize = "1"
+          $env:HtcMock__SubTasksLevels = "4"
+          $env:HtcMock__Partition = "TestPartition0"
+          $env:GrpcClient__Endpoint = "http://localhost:5001"
+          .\publish\htcmock-client-win-x64\ArmoniK.Samples.HtcMock.Client.exe
+
       - name: Collect docker container logs
         if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -923,8 +953,16 @@ jobs:
       - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    name: HtcMock self-contained binary
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: linux-x64
+            runner: ubuntu-latest
+          - arch: linux-arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    name: HtcMock self-contained binary (${{ matrix.arch }})
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -956,13 +994,13 @@ jobs:
         run: |
           tools/retry.sh -w 60 -r 2 -- just tag=${VERSION} worker=htcmock build-all
 
-      - name: Build self-contained client binaries
-        run: just tag=${VERSION} publishHtcmockClientAll
+      - name: Build self-contained client binary
+        run: just tag=${VERSION} publishHtcmockClient ${{ matrix.arch }}
 
-      - name: Upload self-contained binaries
+      - name: Upload self-contained binary
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
         with:
-          name: htcmock-client-${{ needs.versionning.outputs.version }}
+          name: htcmock-client-${{ needs.versionning.outputs.version }}-${{ matrix.arch }}
           path: ./publish/
           retention-days: 5
 
@@ -987,7 +1025,7 @@ jobs:
           export HtcMock__SubTasksLevels=1
           export HtcMock__Partition=TestPartition0
           export GrpcClient__Endpoint=http://localhost:5001
-          ./publish/htcmock-client-linux-x64/ArmoniK.Samples.HtcMock.Client
+          ./publish/htcmock-client-${{ matrix.arch }}/ArmoniK.Samples.HtcMock.Client
 
       - name: Run HtcMock test 100 tasks 4 levels
         timeout-minutes: 3
@@ -999,7 +1037,7 @@ jobs:
           export HtcMock__SubTasksLevels=4
           export HtcMock__Partition=TestPartition0
           export GrpcClient__Endpoint=http://localhost:5001
-          ./publish/htcmock-client-linux-x64/ArmoniK.Samples.HtcMock.Client
+          ./publish/htcmock-client-${{ matrix.arch }}/ArmoniK.Samples.HtcMock.Client
 
       - name: Show logs
         if: ${{ always() && env.REPOSITORY != github.repository }}
@@ -1011,8 +1049,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary.json.gz"
-          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-monitor.tar.gz"
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-${{ matrix.arch }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-${{ matrix.arch }}-monitor.tar.gz"
 
       - name: Collect docker container logs
         if: ${{ always() }}
@@ -1029,7 +1067,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-container-logs.tar.gz"
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-${{ matrix.arch }}-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1038,7 +1076,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-database.tar.gz"
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-binary-${{ matrix.arch }}-database.tar.gz"
 
   testBenchBinary:
     needs:
@@ -1046,8 +1084,16 @@ jobs:
       - images
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
-    runs-on: ubuntu-latest
-    name: Bench self-contained binary
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: linux-x64
+            runner: ubuntu-latest
+          - arch: linux-arm64
+            runner: ubuntu-24.04-arm
+    runs-on: ${{ matrix.runner }}
+    name: Bench self-contained binary (${{ matrix.arch }})
     steps:
       - name: Checkout
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
@@ -1079,13 +1125,13 @@ jobs:
         run: |
           tools/retry.sh -w 60 -r 2 -- just tag=${VERSION} worker=bench build-all
 
-      - name: Build self-contained client binaries
-        run: just tag=${VERSION} publishBenchClientAll
+      - name: Build self-contained client binary
+        run: just tag=${VERSION} publishBenchClient ${{ matrix.arch }}
 
-      - name: Upload self-contained binaries
+      - name: Upload self-contained binary
         uses: actions/upload-artifact@4cec3d8aa04e39d1a68397de0c4cd6fb9dce8ec1 # v4
         with:
-          name: bench-client-${{ needs.versionning.outputs.version }}
+          name: bench-client-${{ needs.versionning.outputs.version }}-${{ matrix.arch }}
           path: ./publish/
           retention-days: 5
 
@@ -1110,7 +1156,7 @@ jobs:
           export BenchOptions__BatchSize=100
           export BenchOptions__Partition=TestPartition0
           export GrpcClient__Endpoint=http://localhost:5001
-          ./publish/bench-client-linux-x64/ArmoniK.Samples.Bench.Client
+          ./publish/bench-client-${{ matrix.arch }}/ArmoniK.Samples.Bench.Client
 
       - name: Show logs
         if: ${{ always() && env.REPOSITORY != github.repository }}
@@ -1122,8 +1168,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary.json.gz"
-          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary-monitor.tar.gz"
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary-${{ matrix.arch }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary-${{ matrix.arch }}-monitor.tar.gz"
 
       - name: Collect docker container logs
         if: ${{ always() }}
@@ -1140,7 +1186,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary-container-logs.tar.gz"
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary-${{ matrix.arch }}-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1149,7 +1195,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary-database.tar.gz"
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/bench-binary-${{ matrix.arch }}-database.tar.gz"
 
   testConnectivity:
     needs:

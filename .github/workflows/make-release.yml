@@ -127,7 +127,6 @@ jobs:
         cp ./publish/htcmock-client-linux-x64/ArmoniK.Samples.HtcMock.Client   ArmoniK.Samples.HtcMock.Client-linux-x64
         cp ./publish/htcmock-client-linux-arm64/ArmoniK.Samples.HtcMock.Client  ArmoniK.Samples.HtcMock.Client-linux-arm64
         cp ./publish/htcmock-client-win-x64/ArmoniK.Samples.HtcMock.Client.exe  ArmoniK.Samples.HtcMock.Client-win-x64.exe
-        gh release create ${{ github.ref_name }} --generate-notes || true
         gh release upload ${{ github.ref_name }} \
           ArmoniK.Samples.HtcMock.Client-linux-x64 \
           ArmoniK.Samples.HtcMock.Client-linux-arm64 \
@@ -161,7 +160,6 @@ jobs:
         cp ./publish/bench-client-linux-x64/ArmoniK.Samples.Bench.Client   ArmoniK.Samples.Bench.Client-linux-x64
         cp ./publish/bench-client-linux-arm64/ArmoniK.Samples.Bench.Client  ArmoniK.Samples.Bench.Client-linux-arm64
         cp ./publish/bench-client-win-x64/ArmoniK.Samples.Bench.Client.exe  ArmoniK.Samples.Bench.Client-win-x64.exe
-        gh release create ${{ github.ref_name }} --generate-notes || true
         gh release upload ${{ github.ref_name }} \
           ArmoniK.Samples.Bench.Client-linux-x64 \
           ArmoniK.Samples.Bench.Client-linux-arm64 \
