@@ -86,6 +86,9 @@ public static class Program
     {
       AppDomain.CurrentDomain.AssemblyResolve += new CollocatedAssemblyResolver(logger.GetLogger()).AssemblyResolve;
 
+      var submitterOptions = builder.Configuration.GetSection(Common.Injection.Options.Submitter.SettingSection)
+                                    .Get<Common.Injection.Options.Submitter>() ?? new Common.Injection.Options.Submitter();
+
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
@@ -105,7 +108,7 @@ public static class Program
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
-             .AddExceptionManager(sp => new ExceptionManager.Options(TimeSpan.Zero,
+             .AddExceptionManager(sp => new ExceptionManager.Options(submitterOptions.GraceDelay,
                                                                      sp.GetRequiredService<Common.Injection.Options.Submitter>()
                                                                        .MaxErrorAllowed))
              .AddGrpcReflection()

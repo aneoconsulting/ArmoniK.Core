@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Utils.DocAttribute;
 
 namespace ArmoniK.Core.Common.Injection.Options;
@@ -61,4 +63,9 @@ public class Submitter
   ///   The value must be less than the limit of gRPC messages accepted by the server.
   /// </remarks>
   public int PreferredMessageSize { get; set; } = 2 * 1024 * 1024;
+
+  /// <summary>
+  ///   Delay between the early and late cancellation tokens in the ExceptionManager
+  /// </summary>
+  public TimeSpan GraceDelay { get; set; } = TimeSpan.FromSeconds(30);
 }
