@@ -21,6 +21,8 @@
 
   <PropertyGroup Condition="'$(Configuration)'=='Release'">
     <Optimize>true</Optimize>
+    <PublishTrimmed Condition="'$(SelfContained)'=='true'">true</PublishTrimmed>
+    <DebugType>none</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
