@@ -50,7 +50,6 @@ using NUnit.Framework;
 
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
-using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 using Type = System.Type;
 
 // ReSharper disable AccessToModifiedClosure
@@ -121,7 +120,6 @@ internal class ExceptionInterceptorTests
                                                                       typeof(TaskAlreadyExistsException),
                                                                       typeof(WorkerDownException),
                                                                       typeof(QueueInsertionFailedException),
-                                                                      typeof(TimeoutException),
                                                                     };
 
   [Test]
