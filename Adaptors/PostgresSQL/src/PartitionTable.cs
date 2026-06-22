@@ -57,24 +57,26 @@ public class PartitionTable : IPartitionTable
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
+    await using var batch = new NpgsqlBatch(connection,
+                                            transaction);
+
     foreach (var partition in partitions)
     {
-      await using var cmd = connection.CreateCommand();
-      cmd.Transaction = transaction;
-      cmd.CommandText = @"
+      var cmd = new NpgsqlBatchCommand(@"
 INSERT INTO partitions (
   partition_id, parent_partition_ids, pod_reserved, pod_max,
   preemption_pct, priority, pod_configuration
 ) VALUES (
   @partition_id, @parent_partition_ids, @pod_reserved, @pod_max,
   @preemption_pct, @priority, @pod_configuration
-)";
-      AddPartitionInsertParameters(cmd,
+)");
+      AddPartitionInsertParameters(cmd.Parameters,
                                    partition);
-
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
+      batch.BatchCommands.Add(cmd);
     }
+
+    await batch.ExecuteNonQueryAsync(cancellationToken)
+               .ConfigureAwait(false);
 
     await transaction.CommitAsync(cancellationToken)
                      .ConfigureAwait(false);
@@ -250,34 +252,34 @@ INSERT INTO partitions (
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => connectionProvider_.Check(tag);
 
-  private static void AddPartitionInsertParameters(NpgsqlCommand cmd,
-                                                   PartitionData partition)
+  private static void AddPartitionInsertParameters(NpgsqlParameterCollection parameters,
+                                                   PartitionData             partition)
   {
-    cmd.Parameters.AddWithValue("partition_id",
-                                partition.PartitionId);
-    cmd.Parameters.AddWithValue("parent_partition_ids",
-                                NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                partition.ParentPartitionIds.ToArray());
-    cmd.Parameters.AddWithValue("pod_reserved",
-                                partition.PodReserved);
-    cmd.Parameters.AddWithValue("pod_max",
-                                partition.PodMax);
-    cmd.Parameters.AddWithValue("preemption_pct",
-                                partition.PreemptionPercentage);
-    cmd.Parameters.AddWithValue("priority",
-                                partition.Priority);
+    parameters.AddWithValue("partition_id",
+                            partition.PartitionId);
+    parameters.AddWithValue("parent_partition_ids",
+                            NpgsqlDbType.Array | NpgsqlDbType.Text,
+                            partition.ParentPartitionIds.ToArray());
+    parameters.AddWithValue("pod_reserved",
+                            partition.PodReserved);
+    parameters.AddWithValue("pod_max",
+                            partition.PodMax);
+    parameters.AddWithValue("preemption_pct",
+                            partition.PreemptionPercentage);
+    parameters.AddWithValue("priority",
+                            partition.Priority);
 
     if (partition.PodConfiguration is not null)
     {
-      cmd.Parameters.AddWithValue("pod_configuration",
-                                  NpgsqlDbType.Jsonb,
-                                  JsonSerializer.Serialize(partition.PodConfiguration.Configuration));
+      parameters.AddWithValue("pod_configuration",
+                              NpgsqlDbType.Jsonb,
+                              JsonSerializer.Serialize(partition.PodConfiguration.Configuration));
     }
     else
     {
-      cmd.Parameters.AddWithValue("pod_configuration",
-                                  NpgsqlDbType.Jsonb,
-                                  DBNull.Value);
+      parameters.AddWithValue("pod_configuration",
+                              NpgsqlDbType.Jsonb,
+                              DBNull.Value);
     }
   }
 }

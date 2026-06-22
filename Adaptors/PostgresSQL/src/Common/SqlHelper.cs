@@ -228,90 +228,90 @@ public static class SqlHelper
   }
 
   /// <summary>
-  ///   Add task INSERT parameters to a command
+  ///   Add task INSERT parameters to a parameter collection
   /// </summary>
-  public static void AddTaskInsertParameters(NpgsqlCommand cmd,
-                                             TaskData      task,
-                                             string        prefix = "")
+  public static void AddTaskInsertParameters(NpgsqlParameterCollection parameters,
+                                             TaskData                  task,
+                                             string                    prefix = "")
   {
-    cmd.Parameters.AddWithValue($"{prefix}session_id",
-                                task.SessionId);
-    cmd.Parameters.AddWithValue($"{prefix}task_id",
-                                task.TaskId);
-    cmd.Parameters.AddWithValue($"{prefix}owner_pod_id",
-                                task.OwnerPodId);
-    cmd.Parameters.AddWithValue($"{prefix}owner_pod_name",
-                                task.OwnerPodName);
-    cmd.Parameters.AddWithValue($"{prefix}payload_id",
-                                task.PayloadId);
-    cmd.Parameters.AddWithValue($"{prefix}parent_task_ids",
-                                NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                task.ParentTaskIds.ToArray());
-    cmd.Parameters.AddWithValue($"{prefix}data_dependencies",
-                                NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                task.DataDependencies.ToArray());
-    cmd.Parameters.AddWithValue($"{prefix}expected_output_ids",
-                                NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                task.ExpectedOutputIds.ToArray());
-    cmd.Parameters.AddWithValue($"{prefix}initial_task_id",
-                                task.InitialTaskId);
-    cmd.Parameters.AddWithValue($"{prefix}created_by",
-                                task.CreatedBy);
-    cmd.Parameters.AddWithValue($"{prefix}retry_of_ids",
-                                NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                task.RetryOfIds.ToArray());
-    cmd.Parameters.AddWithValue($"{prefix}status",
-                                (int)task.Status);
-    cmd.Parameters.AddWithValue($"{prefix}status_message",
-                                task.StatusMessage);
-    cmd.Parameters.AddWithValue($"{prefix}options_options",
-                                NpgsqlDbType.Jsonb,
-                                JsonSerializer.Serialize(task.Options.Options));
-    cmd.Parameters.AddWithValue($"{prefix}options_max_duration",
-                                task.Options.MaxDuration.Ticks);
-    cmd.Parameters.AddWithValue($"{prefix}options_max_retries",
-                                task.Options.MaxRetries);
-    cmd.Parameters.AddWithValue($"{prefix}options_priority",
-                                task.Options.Priority);
-    cmd.Parameters.AddWithValue($"{prefix}options_partition_id",
-                                task.Options.PartitionId);
-    cmd.Parameters.AddWithValue($"{prefix}options_app_name",
-                                task.Options.ApplicationName);
-    cmd.Parameters.AddWithValue($"{prefix}options_app_version",
-                                task.Options.ApplicationVersion);
-    cmd.Parameters.AddWithValue($"{prefix}options_app_namespace",
-                                task.Options.ApplicationNamespace);
-    cmd.Parameters.AddWithValue($"{prefix}options_app_service",
-                                task.Options.ApplicationService);
-    cmd.Parameters.AddWithValue($"{prefix}options_engine_type",
-                                task.Options.EngineType);
-    cmd.Parameters.AddWithValue($"{prefix}creation_date",
-                                task.CreationDate);
-    cmd.Parameters.AddWithValue($"{prefix}submitted_date",
-                                (object?)task.SubmittedDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}start_date",
-                                (object?)task.StartDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}end_date",
-                                (object?)task.EndDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}reception_date",
-                                (object?)task.ReceptionDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}acquisition_date",
-                                (object?)task.AcquisitionDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}processed_date",
-                                (object?)task.ProcessedDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}fetched_date",
-                                (object?)task.FetchedDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}pod_ttl",
-                                (object?)task.PodTtl ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}processing_to_end_duration",
-                                (object?)task.ProcessingToEndDuration?.Ticks ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}creation_to_end_duration",
-                                (object?)task.CreationToEndDuration?.Ticks ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}received_to_end_duration",
-                                (object?)task.ReceivedToEndDuration?.Ticks ?? DBNull.Value);
-    cmd.Parameters.AddWithValue($"{prefix}output_status",
-                                (int)task.Output.Status);
-    cmd.Parameters.AddWithValue($"{prefix}output_error",
-                                task.Output.Error);
+    parameters.AddWithValue($"{prefix}session_id",
+                            task.SessionId);
+    parameters.AddWithValue($"{prefix}task_id",
+                            task.TaskId);
+    parameters.AddWithValue($"{prefix}owner_pod_id",
+                            task.OwnerPodId);
+    parameters.AddWithValue($"{prefix}owner_pod_name",
+                            task.OwnerPodName);
+    parameters.AddWithValue($"{prefix}payload_id",
+                            task.PayloadId);
+    parameters.AddWithValue($"{prefix}parent_task_ids",
+                            NpgsqlDbType.Array | NpgsqlDbType.Text,
+                            task.ParentTaskIds.ToArray());
+    parameters.AddWithValue($"{prefix}data_dependencies",
+                            NpgsqlDbType.Array | NpgsqlDbType.Text,
+                            task.DataDependencies.ToArray());
+    parameters.AddWithValue($"{prefix}expected_output_ids",
+                            NpgsqlDbType.Array | NpgsqlDbType.Text,
+                            task.ExpectedOutputIds.ToArray());
+    parameters.AddWithValue($"{prefix}initial_task_id",
+                            task.InitialTaskId);
+    parameters.AddWithValue($"{prefix}created_by",
+                            task.CreatedBy);
+    parameters.AddWithValue($"{prefix}retry_of_ids",
+                            NpgsqlDbType.Array | NpgsqlDbType.Text,
+                            task.RetryOfIds.ToArray());
+    parameters.AddWithValue($"{prefix}status",
+                            (int)task.Status);
+    parameters.AddWithValue($"{prefix}status_message",
+                            task.StatusMessage);
+    parameters.AddWithValue($"{prefix}options_options",
+                            NpgsqlDbType.Jsonb,
+                            JsonSerializer.Serialize(task.Options.Options));
+    parameters.AddWithValue($"{prefix}options_max_duration",
+                            task.Options.MaxDuration.Ticks);
+    parameters.AddWithValue($"{prefix}options_max_retries",
+                            task.Options.MaxRetries);
+    parameters.AddWithValue($"{prefix}options_priority",
+                            task.Options.Priority);
+    parameters.AddWithValue($"{prefix}options_partition_id",
+                            task.Options.PartitionId);
+    parameters.AddWithValue($"{prefix}options_app_name",
+                            task.Options.ApplicationName);
+    parameters.AddWithValue($"{prefix}options_app_version",
+                            task.Options.ApplicationVersion);
+    parameters.AddWithValue($"{prefix}options_app_namespace",
+                            task.Options.ApplicationNamespace);
+    parameters.AddWithValue($"{prefix}options_app_service",
+                            task.Options.ApplicationService);
+    parameters.AddWithValue($"{prefix}options_engine_type",
+                            task.Options.EngineType);
+    parameters.AddWithValue($"{prefix}creation_date",
+                            task.CreationDate);
+    parameters.AddWithValue($"{prefix}submitted_date",
+                            (object?)task.SubmittedDate ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}start_date",
+                            (object?)task.StartDate ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}end_date",
+                            (object?)task.EndDate ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}reception_date",
+                            (object?)task.ReceptionDate ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}acquisition_date",
+                            (object?)task.AcquisitionDate ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}processed_date",
+                            (object?)task.ProcessedDate ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}fetched_date",
+                            (object?)task.FetchedDate ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}pod_ttl",
+                            (object?)task.PodTtl ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}processing_to_end_duration",
+                            (object?)task.ProcessingToEndDuration?.Ticks ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}creation_to_end_duration",
+                            (object?)task.CreationToEndDuration?.Ticks ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}received_to_end_duration",
+                            (object?)task.ReceivedToEndDuration?.Ticks ?? DBNull.Value);
+    parameters.AddWithValue($"{prefix}output_status",
+                            (int)task.Output.Status);
+    parameters.AddWithValue($"{prefix}output_error",
+                            task.Output.Error);
   }
 }

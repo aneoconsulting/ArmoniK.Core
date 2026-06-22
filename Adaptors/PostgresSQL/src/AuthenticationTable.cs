@@ -146,13 +146,14 @@ LIMIT 1";
                                               .GetAwaiter()
                                               .GetResult();
 
+    using var batch = new NpgsqlBatch(connection);
+
     foreach (var role in roles)
     {
-      using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
+      var cmd = new NpgsqlBatchCommand(@"
 INSERT INTO role_data (role_id, role_name, permissions)
 VALUES (@role_id, @role_name, @permissions)
-ON CONFLICT (role_id) DO NOTHING";
+ON CONFLICT (role_id) DO NOTHING");
       cmd.Parameters.AddWithValue("role_id",
                                   role.RoleId);
       cmd.Parameters.AddWithValue("role_name",
@@ -160,8 +161,10 @@ ON CONFLICT (role_id) DO NOTHING";
       cmd.Parameters.AddWithValue("permissions",
                                   NpgsqlDbType.Array | NpgsqlDbType.Text,
                                   role.Permissions);
-      cmd.ExecuteNonQuery();
+      batch.BatchCommands.Add(cmd);
     }
+
+    batch.ExecuteNonQuery();
   }
 
   /// <inheritdoc />
@@ -172,13 +175,14 @@ ON CONFLICT (role_id) DO NOTHING";
                                               .GetAwaiter()
                                               .GetResult();
 
+    using var batch = new NpgsqlBatch(connection);
+
     foreach (var user in users)
     {
-      using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
+      var cmd = new NpgsqlBatchCommand(@"
 INSERT INTO user_data (user_id, username, roles)
 VALUES (@user_id, @username, @roles)
-ON CONFLICT (user_id) DO NOTHING";
+ON CONFLICT (user_id) DO NOTHING");
       cmd.Parameters.AddWithValue("user_id",
                                   user.UserId);
       cmd.Parameters.AddWithValue("username",
@@ -186,8 +190,10 @@ ON CONFLICT (user_id) DO NOTHING";
       cmd.Parameters.AddWithValue("roles",
                                   NpgsqlDbType.Array | NpgsqlDbType.Integer,
                                   user.Roles);
-      cmd.ExecuteNonQuery();
+      batch.BatchCommands.Add(cmd);
     }
+
+    batch.ExecuteNonQuery();
   }
 
   /// <inheritdoc />
@@ -198,13 +204,14 @@ ON CONFLICT (user_id) DO NOTHING";
                                               .GetAwaiter()
                                               .GetResult();
 
+    using var batch = new NpgsqlBatch(connection);
+
     foreach (var cert in certificates)
     {
-      using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
+      var cmd = new NpgsqlBatchCommand(@"
 INSERT INTO auth_data (auth_id, user_id, cn, fingerprint)
 VALUES (@auth_id, @user_id, @cn, @fingerprint)
-ON CONFLICT (auth_id) DO NOTHING";
+ON CONFLICT (auth_id) DO NOTHING");
       cmd.Parameters.AddWithValue("auth_id",
                                   cert.AuthId);
       cmd.Parameters.AddWithValue("user_id",
@@ -213,8 +220,10 @@ ON CONFLICT (auth_id) DO NOTHING";
                                   cert.Cn);
       cmd.Parameters.AddWithValue("fingerprint",
                                   (object?)cert.Fingerprint ?? DBNull.Value);
-      cmd.ExecuteNonQuery();
+      batch.BatchCommands.Add(cmd);
     }
+
+    batch.ExecuteNonQuery();
   }
 
   /// <inheritdoc />

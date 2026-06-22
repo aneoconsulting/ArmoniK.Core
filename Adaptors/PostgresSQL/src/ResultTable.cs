@@ -71,31 +71,33 @@ public class ResultTable : IResultTable
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
-    foreach (var result in results)
+    try
     {
-      try
+      await using var batch = new NpgsqlBatch(connection,
+                                              transaction);
+
+      foreach (var result in results)
       {
-        await using var cmd = connection.CreateCommand();
-        cmd.Transaction = transaction;
-        cmd.CommandText = @"
+        var cmd = new NpgsqlBatchCommand(@"
 INSERT INTO results (
   session_id, result_id, name, created_by, completed_by, owner_task_id,
   status, dependent_tasks, creation_date, completion_date, size, opaque_id, manual_deletion
 ) VALUES (
   @session_id, @result_id, @name, @created_by, @completed_by, @owner_task_id,
   @status, @dependent_tasks, @creation_date, @completion_date, @size, @opaque_id, @manual_deletion
-)";
-        AddResultInsertParameters(cmd,
+)");
+        AddResultInsertParameters(cmd.Parameters,
                                   result);
+        batch.BatchCommands.Add(cmd);
+      }
 
-        await cmd.ExecuteNonQueryAsync(cancellationToken)
+      await batch.ExecuteNonQueryAsync(cancellationToken)
                  .ConfigureAwait(false);
-      }
-      catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
-      {
-        throw new ArmoniKException("Key already exists",
-                                   e);
-      }
+    }
+    catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
+    {
+      throw new ArmoniKException("Key already exists",
+                                 e);
     }
 
     await transaction.CommitAsync(cancellationToken)
@@ -497,36 +499,36 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => connectionProvider_.Check(tag);
 
-  private static void AddResultInsertParameters(NpgsqlCommand cmd,
-                                                Result        result)
+  private static void AddResultInsertParameters(NpgsqlParameterCollection parameters,
+                                                Result                    result)
   {
-    cmd.Parameters.AddWithValue("session_id",
-                                result.SessionId);
-    cmd.Parameters.AddWithValue("result_id",
-                                result.ResultId);
-    cmd.Parameters.AddWithValue("name",
-                                result.Name);
-    cmd.Parameters.AddWithValue("created_by",
-                                result.CreatedBy);
-    cmd.Parameters.AddWithValue("completed_by",
-                                result.CompletedBy);
-    cmd.Parameters.AddWithValue("owner_task_id",
-                                result.OwnerTaskId);
-    cmd.Parameters.AddWithValue("status",
-                                (int)result.Status);
-    cmd.Parameters.AddWithValue("dependent_tasks",
-                                NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                result.DependentTasks.ToArray());
-    cmd.Parameters.AddWithValue("creation_date",
-                                result.CreationDate);
-    cmd.Parameters.AddWithValue("completion_date",
-                                (object?)result.CompletionDate ?? DBNull.Value);
-    cmd.Parameters.AddWithValue("size",
-                                result.Size);
-    cmd.Parameters.AddWithValue("opaque_id",
-                                NpgsqlDbType.Bytea,
-                                result.OpaqueId);
-    cmd.Parameters.AddWithValue("manual_deletion",
-                                result.ManualDeletion);
+    parameters.AddWithValue("session_id",
+                            result.SessionId);
+    parameters.AddWithValue("result_id",
+                            result.ResultId);
+    parameters.AddWithValue("name",
+                            result.Name);
+    parameters.AddWithValue("created_by",
+                            result.CreatedBy);
+    parameters.AddWithValue("completed_by",
+                            result.CompletedBy);
+    parameters.AddWithValue("owner_task_id",
+                            result.OwnerTaskId);
+    parameters.AddWithValue("status",
+                            (int)result.Status);
+    parameters.AddWithValue("dependent_tasks",
+                            NpgsqlDbType.Array | NpgsqlDbType.Text,
+                            result.DependentTasks.ToArray());
+    parameters.AddWithValue("creation_date",
+                            result.CreationDate);
+    parameters.AddWithValue("completion_date",
+                            (object?)result.CompletionDate ?? DBNull.Value);
+    parameters.AddWithValue("size",
+                            result.Size);
+    parameters.AddWithValue("opaque_id",
+                            NpgsqlDbType.Bytea,
+                            result.OpaqueId);
+    parameters.AddWithValue("manual_deletion",
+                            result.ManualDeletion);
   }
 }

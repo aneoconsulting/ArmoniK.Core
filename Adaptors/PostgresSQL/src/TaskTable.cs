@@ -78,13 +78,14 @@ public class TaskTable : ITaskTable
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
-    foreach (var task in tasks)
+    try
     {
-      try
+      await using var batch = new NpgsqlBatch(connection,
+                                              transaction);
+
+      foreach (var task in tasks)
       {
-        await using var cmd = connection.CreateCommand();
-        cmd.Transaction = transaction;
-        cmd.CommandText = @"
+        var insertCmd = new NpgsqlBatchCommand(@"
 INSERT INTO tasks (
   session_id, task_id, owner_pod_id, owner_pod_name, payload_id,
   parent_task_ids, data_dependencies, expected_output_ids,
@@ -107,35 +108,32 @@ INSERT INTO tasks (
   @acquisition_date, @processed_date, @fetched_date, @pod_ttl,
   @processing_to_end_duration, @creation_to_end_duration, @received_to_end_duration,
   @output_status, @output_error
-)";
-        SqlHelper.AddTaskInsertParameters(cmd,
+)");
+        SqlHelper.AddTaskInsertParameters(insertCmd.Parameters,
                                           task);
+        batch.BatchCommands.Add(insertCmd);
 
-        await cmd.ExecuteNonQueryAsync(cancellationToken)
-                 .ConfigureAwait(false);
-
-        // Insert remaining data dependencies into association table
         if (task.RemainingDataDependencies.Count > 0)
         {
-          await using var depCmd = connection.CreateCommand();
-          depCmd.Transaction = transaction;
-          depCmd.CommandText = @"
+          var depCmd = new NpgsqlBatchCommand(@"
 INSERT INTO task_remaining_dependencies (task_id, dependency_id)
-SELECT @dep_task_id, unnest(@dep_ids)";
+SELECT @dep_task_id, unnest(@dep_ids)");
           depCmd.Parameters.AddWithValue("dep_task_id",
                                          task.TaskId);
           depCmd.Parameters.AddWithValue("dep_ids",
                                          NpgsqlDbType.Array | NpgsqlDbType.Text,
                                          task.RemainingDataDependencies.Keys.ToArray());
-          await depCmd.ExecuteNonQueryAsync(cancellationToken)
-                      .ConfigureAwait(false);
+          batch.BatchCommands.Add(depCmd);
         }
       }
-      catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
-      {
-        throw new TaskAlreadyExistsException($"Task '{task.TaskId}' already exists",
-                                             e);
-      }
+
+      await batch.ExecuteNonQueryAsync(cancellationToken)
+                 .ConfigureAwait(false);
+    }
+    catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
+    {
+      throw new TaskAlreadyExistsException("A task already exists",
+                                           e);
     }
 
     await transaction.CommitAsync(cancellationToken)
