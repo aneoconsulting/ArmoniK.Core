@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
@@ -23,6 +24,7 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using Grpc.Core;
 using Grpc.Core.Interceptors;
@@ -35,13 +37,17 @@ using TaskCanceledException = ArmoniK.Core.Common.Exceptions.TaskCanceledExcepti
 namespace ArmoniK.Core.Common.gRPC;
 
 /// <summary>
-///   Interceptor that counts all the exceptions thrown by the gRPC services
-///   It is then marked Unhealthy if number of errors is higher than a threshold
+///   Interceptor that maps exceptions thrown by the gRPC services to <see cref="RpcException" /> and records them on the
+///   <see cref="ExceptionManager" />. It is marked Unhealthy (readiness) once the number of errors exceeds the threshold.
+///   It also participates in graceful shutdown: it tracks in-flight requests, rejects new ones with
+///   <see cref="StatusCode.Unavailable" /> while the control plane is shutting down, and signals the
+///   <see cref="ExceptionManager" /> to stop the application once all in-flight requests have drained.
 /// </summary>
 public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
 {
   private readonly ExceptionManager exceptionManager_;
   private readonly ILogger          logger_;
+  private          int              requestCounter_;
 
   /// <summary>
   ///   Construct the interceptor
@@ -53,6 +59,10 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
   {
     exceptionManager_ = exceptionManager;
     logger_           = logger;
+    requestCounter_   = 0;
+
+    exceptionManager.Register();
+    exceptionManager.EarlyCancellationToken.Register(StopRequest);
   }
 
   /// <inheritdoc />
@@ -70,6 +80,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                                                 ServerCallContext                      context,
                                                                                 UnaryServerMethod<TRequest, TResponse> continuation)
   {
+    StartRequest();
+    await using var stop = new Deferrer(StopRequest);
+
     TResponse response;
     try
     {
@@ -93,6 +106,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                                                           ServerCallContext                                context,
                                                                                           ClientStreamingServerMethod<TRequest, TResponse> continuation)
   {
+    StartRequest();
+    await using var stop = new Deferrer(StopRequest);
+
     TResponse response;
     try
     {
@@ -118,6 +134,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                                                ServerCallContext                                context,
                                                                                ServerStreamingServerMethod<TRequest, TResponse> continuation)
   {
+    StartRequest();
+    await using var stop = new Deferrer(StopRequest);
+
     try
     {
       await base.ServerStreamingServerHandler(request,
@@ -141,6 +160,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                                                ServerCallContext                                context,
                                                                                DuplexStreamingServerMethod<TRequest, TResponse> continuation)
   {
+    StartRequest();
+    await using var stop = new Deferrer(StopRequest);
+
     try
     {
       await base.DuplexStreamingServerHandler(requestStream,
@@ -332,6 +354,56 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
     return new RpcException(new Status(statusCode,
                                        details),
                             e.Message);
+  }
+
+  /// <summary>
+  ///   Check if the application is shutting down and increment the request counter.
+  /// </summary>
+  /// <exception cref="RpcException">If application is shutting down, throw a RPC unavailable</exception>
+  private void StartRequest()
+  {
+    var previousCounter = requestCounter_;
+    int counter;
+
+    // CAS loop: atomically check the shutdown state and increment the in-flight counter.
+    // Keeping the check and the increment in a single attempt is what makes the gate race-free:
+    // a request can never slip past a shutdown that started between the check and the increment.
+    do
+    {
+      counter = previousCounter;
+
+      // A negative counter means StopRequest has already driven the counter below zero (shutdown
+      // is in progress); the token check covers the window before that has happened yet. Either way,
+      // refuse the request without incrementing so we do not revive a draining/stopped control plane.
+      if (counter < 0 || exceptionManager_.EarlyCancellationToken.IsCancellationRequested)
+      {
+        throw new RpcException(new Status(StatusCode.Unavailable,
+                                          "Control plane is shutting down"));
+      }
+
+      // CompareExchange returns the value that was in the field before the call:
+      //   - equal to counter  => our swap won, the counter was incremented, exit the loop.
+      //   - different         => another thread moved the counter; retry against the fresh value
+      //                          so the shutdown check above is re-evaluated before we increment.
+      previousCounter = Interlocked.CompareExchange(ref requestCounter_,
+                                                    counter + 1,
+                                                    counter);
+    } while (counter != previousCounter);
+  }
+
+  /// <summary>
+  ///   Decrement the counter and notifies the application that all requests have been processed if it is shutting down and
+  ///   there are no remaining RPC
+  /// </summary>
+  private void StopRequest()
+  {
+    var counter = Interlocked.Decrement(ref requestCounter_);
+
+    if (counter < 0)
+    {
+      exceptionManager_.UnregisterAndStop(logger_,
+                                          "Cancellation is requested and all requests have been fully processed");
+    }
   }
 
   /// <summary>
