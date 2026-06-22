@@ -73,7 +73,7 @@ public class TaskWatcher : ITaskWatcher
   {
     var compiled = filter.Compile();
     var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
     await using var replConn = connectionProvider_.CreateReplicationConnection();
     await replConn.Open(cancellationToken)
@@ -99,8 +99,7 @@ public class TaskWatcher : ITaskWatcher
         continue;
       }
 
-      var cols     = await WalHelpers.ReadAllTextColumns(insert.NewRow, cancellationToken).ConfigureAwait(false);
-      var taskData = RowMapper.MapToTaskDataFromWal(cols);
+      var taskData = await WalHelpers.ReadTaskData(insert.NewRow, cancellationToken).ConfigureAwait(false);
 
       if (!compiled(taskData))
       {
@@ -124,7 +123,7 @@ public class TaskWatcher : ITaskWatcher
   {
     var compiled = filter.Compile();
     var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
     await using var replConn = connectionProvider_.CreateReplicationConnection();
     await replConn.Open(cancellationToken)
@@ -161,8 +160,7 @@ public class TaskWatcher : ITaskWatcher
                                        cancellationToken)
                       .ConfigureAwait(false);
 
-      var cols     = await WalHelpers.ReadAllTextColumns(update.NewRow, cancellationToken).ConfigureAwait(false);
-      var taskData = RowMapper.MapToTaskDataFromWal(cols);
+      var taskData = await WalHelpers.ReadTaskData(update.NewRow, cancellationToken).ConfigureAwait(false);
 
       if (!compiled(taskData))
       {

@@ -77,7 +77,7 @@ public class ResultWatcher : IResultWatcher
   {
     var compiled = filter.Compile();
     var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
     await using var replConn = connectionProvider_.CreateReplicationConnection();
     await replConn.Open(cancellationToken)
@@ -103,8 +103,7 @@ public class ResultWatcher : IResultWatcher
         continue;
       }
 
-      var cols   = await WalHelpers.ReadAllTextColumns(insert.NewRow, cancellationToken).ConfigureAwait(false);
-      var result = RowMapper.MapToResultFromWal(cols);
+      var result = await WalHelpers.ReadResult(insert.NewRow, cancellationToken).ConfigureAwait(false);
 
       if (!compiled(result))
       {
@@ -123,7 +122,7 @@ public class ResultWatcher : IResultWatcher
   {
     var compiled = filter.Compile();
     var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
     await using var replConn = connectionProvider_.CreateReplicationConnection();
     await replConn.Open(cancellationToken)
@@ -158,8 +157,7 @@ public class ResultWatcher : IResultWatcher
                                        cancellationToken)
                       .ConfigureAwait(false);
 
-      var cols   = await WalHelpers.ReadAllTextColumns(update.NewRow, cancellationToken).ConfigureAwait(false);
-      var result = RowMapper.MapToResultFromWal(cols);
+      var result = await WalHelpers.ReadResult(update.NewRow, cancellationToken).ConfigureAwait(false);
 
       if (!compiled(result))
       {
@@ -178,7 +176,7 @@ public class ResultWatcher : IResultWatcher
   {
     var compiled = filter.Compile();
     var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
     await using var replConn = connectionProvider_.CreateReplicationConnection();
     await replConn.Open(cancellationToken)
@@ -212,8 +210,7 @@ public class ResultWatcher : IResultWatcher
                                        cancellationToken)
                       .ConfigureAwait(false);
 
-      var cols   = await WalHelpers.ReadAllTextColumns(update.NewRow, cancellationToken).ConfigureAwait(false);
-      var result = RowMapper.MapToResultFromWal(cols);
+      var result = await WalHelpers.ReadResult(update.NewRow, cancellationToken).ConfigureAwait(false);
 
       if (!compiled(result))
       {
