@@ -28,6 +28,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using Npgsql;
+using Npgsql.Replication;
 
 using NpgsqlTypes;
 
@@ -71,6 +72,14 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable
     var builder          = new NpgsqlDataSourceBuilder(connectionString);
     DataSource = builder.Build();
   }
+
+  /// <summary>
+  ///   Creates a new logical replication connection using the same credentials as the regular connection pool.
+  ///   The caller is responsible for opening and disposing the connection.
+  ///   Requires <c>wal_level = logical</c> on the PostgreSQL server (or <c>rds.logical_replication = 1</c> on AWS RDS/Aurora).
+  /// </summary>
+  public LogicalReplicationConnection CreateReplicationConnection()
+    => new LogicalReplicationConnection(BuildConnectionString(options_));
 
   /// <summary>
   ///   Get a new connection from the pool
@@ -422,40 +431,18 @@ CREATE TABLE IF NOT EXISTS role_data (
     permissions TEXT[] NOT NULL DEFAULT '{}'
 );
 
--- LISTEN/NOTIFY triggers
-CREATE OR REPLACE FUNCTION notify_task_change() RETURNS trigger AS $$
+-- Logical replication via pgoutput (requires wal_level = logical).
+-- On AWS RDS / Aurora PostgreSQL: set rds.logical_replication = 1 in the DB parameter group and reboot.
+-- The database user must have the REPLICATION attribute (or rds_replication role on RDS).
+-- REPLICA IDENTITY is left at DEFAULT (primary key only): the old row values are not included
+-- in WAL UPDATE messages, so watchers cannot suppress spurious events or recover previous
+-- field values. This matches the behaviour of the MongoDB adaptor.
+DO $$
 BEGIN
-  IF TG_OP = 'INSERT' THEN
-    PERFORM pg_notify('task_insert', NEW.task_id || '|' || NEW.session_id);
-  ELSIF TG_OP = 'UPDATE' AND OLD.status IS DISTINCT FROM NEW.status THEN
-    PERFORM pg_notify('task_status', NEW.task_id || '|' || NEW.session_id || '|' || NEW.status);
+  IF NOT EXISTS (SELECT 1 FROM pg_publication WHERE pubname = 'armonik_pub') THEN
+    CREATE PUBLICATION armonik_pub FOR TABLE tasks, results;
   END IF;
-  RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_task_change ON tasks;
-CREATE TRIGGER trg_task_change AFTER INSERT OR UPDATE ON tasks
-FOR EACH ROW EXECUTE FUNCTION notify_task_change();
-
-CREATE OR REPLACE FUNCTION notify_result_change() RETURNS trigger AS $$
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    PERFORM pg_notify('result_insert', NEW.result_id || '|' || NEW.session_id);
-  ELSIF TG_OP = 'UPDATE' THEN
-    IF OLD.owner_task_id IS DISTINCT FROM NEW.owner_task_id THEN
-      PERFORM pg_notify('result_owner', NEW.result_id || '|' || NEW.session_id || '|' || OLD.owner_task_id || '|' || NEW.owner_task_id);
-    END IF;
-    IF OLD.status IS DISTINCT FROM NEW.status THEN
-      PERFORM pg_notify('result_status', NEW.result_id || '|' || NEW.session_id || '|' || NEW.status);
-    END IF;
-  END IF;
-  RETURN NEW;
-END;
-$$ LANGUAGE plpgsql;
-
-DROP TRIGGER IF EXISTS trg_result_change ON results;
-CREATE TRIGGER trg_result_change AFTER INSERT OR UPDATE ON results
-FOR EACH ROW EXECUTE FUNCTION notify_result_change();
+$$;
 ";
 }

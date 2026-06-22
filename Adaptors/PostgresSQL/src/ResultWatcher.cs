@@ -8,7 +8,7 @@
 // (at your option) any later version.
 //
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
 //
@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgresSQL.Common;
@@ -31,7 +30,9 @@ using ArmoniK.Core.Common.Storage.Events;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using Npgsql;
+using Npgsql.Replication;
+using Npgsql.Replication.PgOutput;
+using Npgsql.Replication.PgOutput.Messages;
 
 namespace ArmoniK.Core.Adapters.PostgresSQL;
 
@@ -81,61 +82,49 @@ public class ResultWatcher : IResultWatcher
                                                             [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var compiled = filter.Compile();
-    var channel  = Channel.CreateUnbounded<string>();
+    var slotName = $"armonik_{Guid.NewGuid():N}";
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
 
-    await using var listenConn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+    await using var replConn = connectionProvider_.CreateReplicationConnection();
+    await replConn.Open(cancellationToken)
+                  .ConfigureAwait(false);
 
-    listenConn.Notification += (_, args) => channel.Writer.TryWrite(args.Payload);
+    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
+                                                            temporarySlot: true,
+                                                            cancellationToken: cancellationToken)
+                             .ConfigureAwait(false);
 
-    await using var listenCmd = listenConn.CreateCommand();
-    listenCmd.CommandText = "LISTEN result_insert";
-    await listenCmd.ExecuteNonQueryAsync(cancellationToken)
-                   .ConfigureAwait(false);
-
-    _ = WaitForNotifications(listenConn,
-                             cancellationToken);
-
-    await foreach (var payload in channel.Reader.ReadAllAsync(cancellationToken)
-                                         .ConfigureAwait(false))
+    await foreach (var message in replConn.StartReplication(slot,
+                                                            options,
+                                                            cancellationToken)
+                                          .ConfigureAwait(false))
     {
-      // Payload format: result_id|session_id
-      var parts = payload.Split('|');
-      if (parts.Length < 2)
+      replConn.SetReplicationStatus(message.WalEnd);
+
+      if (message is not InsertMessage insert || insert.Relation.RelationName != "results")
+      {
+        await WalHelpers.ConsumeMessage(message,
+                                        cancellationToken)
+                        .ConfigureAwait(false);
+        continue;
+      }
+
+      var cols = await WalHelpers.ReadTextColumns(insert.NewRow,
+                                                  cancellationToken,
+                                                  "result_id")
+                                 .ConfigureAwait(false);
+
+      if (!cols.TryGetValue("result_id",
+                            out var resultId) || resultId is null)
       {
         continue;
       }
 
-      var resultId = parts[0];
+      var result = await FetchResult(resultId,
+                                     cancellationToken)
+                    .ConfigureAwait(false);
 
-      Result? result;
-      try
-      {
-        await using var fetchConn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                              .ConfigureAwait(false);
-        await using var fetchCmd = fetchConn.CreateCommand();
-        fetchCmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id";
-        fetchCmd.Parameters.AddWithValue("result_id",
-                                         resultId);
-        await using var reader = await fetchCmd.ExecuteReaderAsync(cancellationToken)
-                                               .ConfigureAwait(false);
-        if (!await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false))
-        {
-          continue;
-        }
-
-        result = RowMapper.MapToResult(reader);
-      }
-      catch (Exception e)
-      {
-        logger_.LogWarning(e,
-                           "Failed to fetch result {resultId} for watcher",
-                           resultId);
-        continue;
-      }
-
-      if (!compiled.Invoke(result))
+      if (result is null || !compiled(result))
       {
         continue;
       }
@@ -151,64 +140,65 @@ public class ResultWatcher : IResultWatcher
                                                                             [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var compiled = filter.Compile();
-    var channel  = Channel.CreateUnbounded<string>();
+    var slotName = $"armonik_{Guid.NewGuid():N}";
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
 
-    await using var listenConn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+    await using var replConn = connectionProvider_.CreateReplicationConnection();
+    await replConn.Open(cancellationToken)
+                  .ConfigureAwait(false);
 
-    listenConn.Notification += (_, args) => channel.Writer.TryWrite(args.Payload);
+    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
+                                                            temporarySlot: true,
+                                                            cancellationToken: cancellationToken)
+                             .ConfigureAwait(false);
 
-    await using var listenCmd = listenConn.CreateCommand();
-    listenCmd.CommandText = "LISTEN result_owner";
-    await listenCmd.ExecuteNonQueryAsync(cancellationToken)
-                   .ConfigureAwait(false);
-
-    _ = WaitForNotifications(listenConn,
-                             cancellationToken);
-
-    await foreach (var payload in channel.Reader.ReadAllAsync(cancellationToken)
-                                         .ConfigureAwait(false))
+    await foreach (var message in replConn.StartReplication(slot,
+                                                            options,
+                                                            cancellationToken)
+                                          .ConfigureAwait(false))
     {
-      // Payload format: result_id|session_id|old_owner_task_id|new_owner_task_id
-      var parts = payload.Split('|');
-      if (parts.Length < 4)
+      replConn.SetReplicationStatus(message.WalEnd);
+
+      // DEFAULT replica identity: the old owner_task_id is not present in the WAL.
+      // previousOwner is always "" — the same limitation the MongoDB adaptor has
+      // (its change stream also does not surface the pre-update field value).
+      // Every result UPDATE reaches this watcher; consumers must be idempotent.
+      if (message is not UpdateMessage update || update.Relation.RelationName != "results")
+      {
+        await WalHelpers.ConsumeMessage(message,
+                                        cancellationToken)
+                        .ConfigureAwait(false);
+        continue;
+      }
+
+      // Consume the old-key tuple before reading NewRow.
+      await WalHelpers.ConsumeOldTuple(update,
+                                       cancellationToken)
+                      .ConfigureAwait(false);
+
+      var newCols = await WalHelpers.ReadTextColumns(update.NewRow,
+                                                     cancellationToken,
+                                                     "result_id",
+                                                     "session_id",
+                                                     "owner_task_id")
+                                    .ConfigureAwait(false);
+
+      var previousOwner = "";
+      var newOwner      = newCols.GetValueOrDefault("owner_task_id") ?? "";
+
+      var resultId  = newCols.GetValueOrDefault("result_id");
+      var sessionId = newCols.GetValueOrDefault("session_id");
+
+      if (resultId is null || sessionId is null)
       {
         continue;
       }
 
-      var resultId      = parts[0];
-      var sessionId     = parts[1];
-      var previousOwner = parts[2];
-      var newOwner      = parts[3];
+      var result = await FetchResult(resultId,
+                                     cancellationToken)
+                    .ConfigureAwait(false);
 
-      Result? result;
-      try
-      {
-        await using var fetchConn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                              .ConfigureAwait(false);
-        await using var fetchCmd = fetchConn.CreateCommand();
-        fetchCmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id";
-        fetchCmd.Parameters.AddWithValue("result_id",
-                                         resultId);
-        await using var reader = await fetchCmd.ExecuteReaderAsync(cancellationToken)
-                                               .ConfigureAwait(false);
-        if (!await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false))
-        {
-          continue;
-        }
-
-        result = RowMapper.MapToResult(reader);
-      }
-      catch (Exception e)
-      {
-        logger_.LogWarning(e,
-                           "Failed to fetch result {resultId} for watcher",
-                           resultId);
-        continue;
-      }
-
-      if (!compiled.Invoke(result))
+      if (result is null || !compiled(result))
       {
         continue;
       }
@@ -224,93 +214,92 @@ public class ResultWatcher : IResultWatcher
                                                                               [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var compiled = filter.Compile();
-    var channel  = Channel.CreateUnbounded<string>();
+    var slotName = $"armonik_{Guid.NewGuid():N}";
+    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, null, null, null, null);
 
-    await using var listenConn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+    await using var replConn = connectionProvider_.CreateReplicationConnection();
+    await replConn.Open(cancellationToken)
+                  .ConfigureAwait(false);
 
-    listenConn.Notification += (_, args) => channel.Writer.TryWrite(args.Payload);
+    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
+                                                            temporarySlot: true,
+                                                            cancellationToken: cancellationToken)
+                             .ConfigureAwait(false);
 
-    await using var listenCmd = listenConn.CreateCommand();
-    listenCmd.CommandText = "LISTEN result_status";
-    await listenCmd.ExecuteNonQueryAsync(cancellationToken)
-                   .ConfigureAwait(false);
-
-    _ = WaitForNotifications(listenConn,
-                             cancellationToken);
-
-    await foreach (var payload in channel.Reader.ReadAllAsync(cancellationToken)
-                                         .ConfigureAwait(false))
+    await foreach (var message in replConn.StartReplication(slot,
+                                                            options,
+                                                            cancellationToken)
+                                          .ConfigureAwait(false))
     {
-      // Payload format: result_id|session_id|status
-      var parts = payload.Split('|');
-      if (parts.Length < 3)
+      replConn.SetReplicationStatus(message.WalEnd);
+
+      // DEFAULT replica identity: same caveat as WatchResultOwnerUpdates — no old row values
+      // in the WAL, so status comparisons are impossible. Every result UPDATE fires here.
+      // Consumers must tolerate duplicate status notifications.
+      if (message is not UpdateMessage update || update.Relation.RelationName != "results")
+      {
+        await WalHelpers.ConsumeMessage(message,
+                                        cancellationToken)
+                        .ConfigureAwait(false);
+        continue;
+      }
+
+      // Consume the old-key tuple before reading NewRow.
+      await WalHelpers.ConsumeOldTuple(update,
+                                       cancellationToken)
+                      .ConfigureAwait(false);
+
+      var newCols = await WalHelpers.ReadTextColumns(update.NewRow,
+                                                     cancellationToken,
+                                                     "result_id")
+                                    .ConfigureAwait(false);
+
+      var resultId = newCols.GetValueOrDefault("result_id");
+
+      if (resultId is null)
       {
         continue;
       }
 
-      var resultId  = parts[0];
-      var sessionId = parts[1];
+      var result = await FetchResult(resultId,
+                                     cancellationToken)
+                    .ConfigureAwait(false);
 
-      if (!int.TryParse(parts[2],
-                        out var statusInt))
+      if (result is null || !compiled(result))
       {
         continue;
       }
 
-      var status = (ResultStatus)statusInt;
-
-      Result? result;
-      try
-      {
-        await using var fetchConn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                              .ConfigureAwait(false);
-        await using var fetchCmd = fetchConn.CreateCommand();
-        fetchCmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id";
-        fetchCmd.Parameters.AddWithValue("result_id",
-                                         resultId);
-        await using var reader = await fetchCmd.ExecuteReaderAsync(cancellationToken)
-                                               .ConfigureAwait(false);
-        if (!await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false))
-        {
-          continue;
-        }
-
-        result = RowMapper.MapToResult(reader);
-      }
-      catch (Exception e)
-      {
-        logger_.LogWarning(e,
-                           "Failed to fetch result {resultId} for watcher",
-                           resultId);
-        continue;
-      }
-
-      if (!compiled.Invoke(result))
-      {
-        continue;
-      }
-
-      yield return new ResultStatusUpdate(sessionId,
+      yield return new ResultStatusUpdate(result.SessionId,
                                           resultId,
-                                          status);
+                                          result.Status);
     }
   }
 
-  private static async Task WaitForNotifications(NpgsqlConnection  connection,
-                                                  CancellationToken cancellationToken)
+  private async Task<Result?> FetchResult(string            resultId,
+                                          CancellationToken cancellationToken)
   {
     try
     {
-      while (!cancellationToken.IsCancellationRequested)
-      {
-        await connection.WaitAsync(cancellationToken)
-                        .ConfigureAwait(false);
-      }
+      await using var conn = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                      .ConfigureAwait(false);
+      await using var cmd = conn.CreateCommand();
+      cmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id";
+      cmd.Parameters.AddWithValue("result_id",
+                                  resultId);
+      await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                        .ConfigureAwait(false);
+      return await reader.ReadAsync(cancellationToken)
+                         .ConfigureAwait(false)
+               ? RowMapper.MapToResult(reader)
+               : null;
     }
-    catch (OperationCanceledException)
+    catch (Exception e)
     {
+      logger_.LogWarning(e,
+                         "Failed to fetch result {ResultId} for watcher",
+                         resultId);
+      return null;
     }
   }
 }
