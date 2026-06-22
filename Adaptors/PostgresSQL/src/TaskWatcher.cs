@@ -28,7 +28,6 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
 
 using Npgsql.Replication;
 using Npgsql.Replication.PgOutput;
@@ -42,17 +41,12 @@ namespace ArmoniK.Core.Adapters.PostgresSQL;
 public class TaskWatcher : ITaskWatcher
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
-  private readonly ILogger<TaskWatcher>     logger_;
 
   /// <summary>
   ///   Creates a new TaskWatcher
   /// </summary>
-  public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
-                     ILogger<TaskWatcher>     logger)
-  {
-    connectionProvider_ = connectionProvider;
-    logger_             = logger;
-  }
+  public TaskWatcher(NpgsqlConnectionProvider connectionProvider)
+    => connectionProvider_ = connectionProvider;
 
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(Expression<Func<TaskData, bool>> filter,
@@ -105,22 +99,10 @@ public class TaskWatcher : ITaskWatcher
         continue;
       }
 
-      var cols = await WalHelpers.ReadTextColumns(insert.NewRow,
-                                                  cancellationToken,
-                                                  "task_id")
-                                 .ConfigureAwait(false);
+      var cols     = await WalHelpers.ReadAllTextColumns(insert.NewRow, cancellationToken).ConfigureAwait(false);
+      var taskData = RowMapper.MapToTaskDataFromWal(cols);
 
-      if (!cols.TryGetValue("task_id",
-                            out var taskId) || taskId is null)
-      {
-        continue;
-      }
-
-      var taskData = await FetchTaskData(taskId,
-                                         cancellationToken)
-                      .ConfigureAwait(false);
-
-      if (taskData is null || !compiled(taskData))
+      if (!compiled(taskData))
       {
         continue;
       }
@@ -179,57 +161,18 @@ public class TaskWatcher : ITaskWatcher
                                        cancellationToken)
                       .ConfigureAwait(false);
 
-      var newCols = await WalHelpers.ReadTextColumns(update.NewRow,
-                                                     cancellationToken,
-                                                     "task_id")
-                                    .ConfigureAwait(false);
+      var cols     = await WalHelpers.ReadAllTextColumns(update.NewRow, cancellationToken).ConfigureAwait(false);
+      var taskData = RowMapper.MapToTaskDataFromWal(cols);
 
-      var taskId = newCols.GetValueOrDefault("task_id");
-
-      if (taskId is null)
-      {
-        continue;
-      }
-
-      var taskData = await FetchTaskData(taskId,
-                                         cancellationToken)
-                      .ConfigureAwait(false);
-
-      if (taskData is null || !compiled(taskData))
+      if (!compiled(taskData))
       {
         continue;
       }
 
       yield return new TaskStatusUpdate(taskData.SessionId,
-                                        taskId,
+                                        taskData.TaskId,
                                         taskData.Status);
     }
   }
 
-  private async Task<TaskData?> FetchTaskData(string            taskId,
-                                              CancellationToken cancellationToken)
-  {
-    try
-    {
-      await using var conn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                      .ConfigureAwait(false);
-      await using var cmd = conn.CreateCommand();
-      cmd.CommandText = "SELECT * FROM tasks WHERE task_id = @task_id";
-      cmd.Parameters.AddWithValue("task_id",
-                                  taskId);
-      await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
-                                        .ConfigureAwait(false);
-      return await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false)
-               ? RowMapper.MapToTaskData(reader)
-               : null;
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Failed to fetch task {TaskId} for watcher",
-                         taskId);
-      return null;
-    }
-  }
 }

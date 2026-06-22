@@ -18,7 +18,9 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Text.Json;
 
 using ArmoniK.Core.Base.DataStructures;
@@ -190,6 +192,259 @@ public static class RowMapper
                              reader.GetInt32(reader.GetOrdinal("preemption_pct")),
                              reader.GetInt32(reader.GetOrdinal("priority")),
                              podConfig);
+  }
+
+  /// <summary>
+  ///   Map a WAL column dictionary (from <c>WalHelpers.ReadAllTextColumns</c>) to a TaskData record.
+  ///   RemainingDataDependencies is always empty — it lives in a separate table not present in WAL.
+  /// </summary>
+  public static TaskData MapToTaskDataFromWal(IReadOnlyDictionary<string, string?> cols)
+  {
+    var options = new TaskOptions(WalJsonDict(cols,
+                                              "options_options"),
+                                  TimeSpan.FromTicks(WalInt64(cols,
+                                                              "options_max_duration")),
+                                  WalInt32(cols,
+                                           "options_max_retries"),
+                                  WalInt32(cols,
+                                           "options_priority"),
+                                  WalString(cols,
+                                            "options_partition_id"),
+                                  WalString(cols,
+                                            "options_app_name"),
+                                  WalString(cols,
+                                            "options_app_version"),
+                                  WalString(cols,
+                                            "options_app_namespace"),
+                                  WalString(cols,
+                                            "options_app_service"),
+                                  WalString(cols,
+                                            "options_engine_type"));
+
+    var output = new Output((OutputStatus)WalInt32(cols,
+                                                   "output_status"),
+                            WalString(cols,
+                                      "output_error"));
+
+    return new TaskData(WalString(cols,
+                                  "session_id"),
+                        WalString(cols,
+                                  "task_id"),
+                        WalString(cols,
+                                  "owner_pod_id"),
+                        WalString(cols,
+                                  "owner_pod_name"),
+                        WalString(cols,
+                                  "payload_id"),
+                        WalStringArray(cols,
+                                       "parent_task_ids"),
+                        WalStringArray(cols,
+                                       "data_dependencies"),
+                        new Dictionary<string, bool>(),
+                        WalStringArray(cols,
+                                       "expected_output_ids"),
+                        WalString(cols,
+                                  "initial_task_id"),
+                        WalString(cols,
+                                  "created_by"),
+                        WalStringArray(cols,
+                                       "retry_of_ids"),
+                        (TaskStatus)WalInt32(cols,
+                                             "status"),
+                        WalString(cols,
+                                  "status_message"),
+                        options,
+                        WalDateTime(cols,
+                                    "creation_date"),
+                        WalNullableDateTime(cols,
+                                            "submitted_date"),
+                        WalNullableDateTime(cols,
+                                            "start_date"),
+                        WalNullableDateTime(cols,
+                                            "end_date"),
+                        WalNullableDateTime(cols,
+                                            "reception_date"),
+                        WalNullableDateTime(cols,
+                                            "acquisition_date"),
+                        WalNullableDateTime(cols,
+                                            "processed_date"),
+                        WalNullableDateTime(cols,
+                                            "fetched_date"),
+                        WalNullableDateTime(cols,
+                                            "pod_ttl"),
+                        WalNullableTimeSpan(cols,
+                                            "processing_to_end_duration"),
+                        WalNullableTimeSpan(cols,
+                                            "creation_to_end_duration"),
+                        WalNullableTimeSpan(cols,
+                                            "received_to_end_duration"),
+                        output);
+  }
+
+  /// <summary>
+  ///   Map a WAL column dictionary (from <c>WalHelpers.ReadAllTextColumns</c>) to a Result record.
+  /// </summary>
+  public static Result MapToResultFromWal(IReadOnlyDictionary<string, string?> cols)
+    => new(WalString(cols,
+                     "session_id"),
+           WalString(cols,
+                     "result_id"),
+           WalString(cols,
+                     "name"),
+           WalString(cols,
+                     "created_by"),
+           WalString(cols,
+                     "completed_by"),
+           WalString(cols,
+                     "owner_task_id"),
+           (ResultStatus)WalInt32(cols,
+                                  "status"),
+           WalStringArray(cols,
+                          "dependent_tasks").ToList(),
+           WalDateTime(cols,
+                       "creation_date"),
+           WalNullableDateTime(cols,
+                               "completion_date"),
+           WalInt64(cols,
+                    "size"),
+           WalByteArray(cols,
+                        "opaque_id"),
+           WalBool(cols,
+                   "manual_deletion"));
+
+  private static string WalString(IReadOnlyDictionary<string, string?> cols,
+                                  string                                name)
+    => cols.GetValueOrDefault(name) ?? "";
+
+  private static int WalInt32(IReadOnlyDictionary<string, string?> cols,
+                               string                               name)
+    => int.Parse(cols.GetValueOrDefault(name) ?? "0",
+                 CultureInfo.InvariantCulture);
+
+  private static long WalInt64(IReadOnlyDictionary<string, string?> cols,
+                                string                               name)
+    => long.Parse(cols.GetValueOrDefault(name) ?? "0",
+                  CultureInfo.InvariantCulture);
+
+  private static bool WalBool(IReadOnlyDictionary<string, string?> cols,
+                               string                               name)
+    => (cols.GetValueOrDefault(name) ?? "") == "t";
+
+  private static DateTime WalDateTime(IReadOnlyDictionary<string, string?> cols,
+                                       string                               name)
+    => DateTime.SpecifyKind(DateTime.Parse(cols[name]!,
+                                           CultureInfo.InvariantCulture),
+                            DateTimeKind.Utc);
+
+  private static DateTime? WalNullableDateTime(IReadOnlyDictionary<string, string?> cols,
+                                                string                               name)
+  {
+    var s = cols.GetValueOrDefault(name);
+    return s is null
+             ? null
+             : DateTime.SpecifyKind(DateTime.Parse(s,
+                                                    CultureInfo.InvariantCulture),
+                                    DateTimeKind.Utc);
+  }
+
+  private static TimeSpan? WalNullableTimeSpan(IReadOnlyDictionary<string, string?> cols,
+                                                string                               name)
+  {
+    var s = cols.GetValueOrDefault(name);
+    return s is null
+             ? null
+             : TimeSpan.FromTicks(long.Parse(s,
+                                             CultureInfo.InvariantCulture));
+  }
+
+  private static IDictionary<string, string> WalJsonDict(IReadOnlyDictionary<string, string?> cols,
+                                                          string                               name)
+    => DeserializeJsonDict(cols.GetValueOrDefault(name) ?? "{}");
+
+  private static string[] WalStringArray(IReadOnlyDictionary<string, string?> cols,
+                                          string                               name)
+    => ParsePgTextArray(cols.GetValueOrDefault(name));
+
+  private static byte[] WalByteArray(IReadOnlyDictionary<string, string?> cols,
+                                      string                               name)
+    => ParsePgByteA(cols.GetValueOrDefault(name));
+
+  // PostgreSQL TEXT[] text format: {elem1,"elem,2",...}  Handles quoting and backslash escapes.
+  private static string[] ParsePgTextArray(string? s)
+  {
+    if (s is null || s == "{}")
+    {
+      return Array.Empty<string>();
+    }
+
+    var inner   = s.AsSpan(1, s.Length - 2); // strip { and }
+    var results = new List<string>();
+    var buf     = new StringBuilder();
+    var i       = 0;
+
+    while (i <= inner.Length)
+    {
+      if (i == inner.Length || inner[i] == ',')
+      {
+        var element = buf.ToString();
+        if (!element.Equals("NULL",
+                            StringComparison.OrdinalIgnoreCase))
+        {
+          results.Add(element);
+        }
+
+        buf.Clear();
+        i++;
+      }
+      else if (inner[i] == '"')
+      {
+        i++;
+        while (i < inner.Length && inner[i] != '"')
+        {
+          if (inner[i] == '\\' && i + 1 < inner.Length)
+          {
+            buf.Append(inner[++i]);
+          }
+          else
+          {
+            buf.Append(inner[i]);
+          }
+
+          i++;
+        }
+
+        i++; // skip closing quote
+      }
+      else
+      {
+        buf.Append(inner[i]);
+        i++;
+      }
+    }
+
+    return results.ToArray();
+  }
+
+  // PostgreSQL bytea text format: \x followed by hex pairs, e.g. \x0102ff
+  private static byte[] ParsePgByteA(string? s)
+  {
+    if (s is null || s.Length < 2 || !s.StartsWith("\\x",
+                                                    StringComparison.Ordinal))
+    {
+      return Array.Empty<byte>();
+    }
+
+    var hex   = s.AsSpan(2);
+    var bytes = new byte[hex.Length / 2];
+    for (var i = 0; i < bytes.Length; i++)
+    {
+      bytes[i] = byte.Parse(hex.Slice(i * 2,
+                                      2),
+                            NumberStyles.HexNumber,
+                            CultureInfo.InvariantCulture);
+    }
+
+    return bytes;
   }
 
   private static IList<string> GetStringArray(NpgsqlDataReader reader,

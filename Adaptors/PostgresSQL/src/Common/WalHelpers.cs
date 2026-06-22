@@ -28,6 +28,26 @@ namespace ArmoniK.Core.Adapters.PostgresSQL.Common;
 internal static class WalHelpers
 {
   /// <summary>
+  ///   Iterates a WAL replication tuple and returns every column value as a string.
+  ///   Every column is consumed (mandatory to advance the replication stream).
+  ///   NULL and unchanged-TOAST columns are stored as <c>null</c>.
+  /// </summary>
+  internal static async Task<Dictionary<string, string?>> ReadAllTextColumns(ReplicationTuple  tuple,
+                                                                              CancellationToken cancellationToken)
+  {
+    var result = new Dictionary<string, string?>(StringComparer.Ordinal);
+    await foreach (var val in tuple)
+    {
+      result[val.GetFieldName()] = (val.IsDBNull || val.IsUnchangedToastedValue)
+                                     ? null
+                                     : await val.Get<string>(cancellationToken)
+                                                .ConfigureAwait(false);
+    }
+
+    return result;
+  }
+
+  /// <summary>
   ///   Iterates a WAL replication tuple, returning the values of <paramref name="needed" /> columns as strings.
   ///   Every column is consumed (mandatory to advance the replication stream), whether or not it is needed.
   /// </summary>

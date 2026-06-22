@@ -28,7 +28,6 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
-using Microsoft.Extensions.Logging;
 
 using Npgsql.Replication;
 using Npgsql.Replication.PgOutput;
@@ -40,17 +39,12 @@ namespace ArmoniK.Core.Adapters.PostgresSQL;
 public class ResultWatcher : IResultWatcher
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
-  private readonly ILogger<ResultWatcher>   logger_;
 
   /// <summary>
   ///   Creates a new ResultWatcher
   /// </summary>
-  public ResultWatcher(NpgsqlConnectionProvider connectionProvider,
-                       ILogger<ResultWatcher>   logger)
-  {
-    connectionProvider_ = connectionProvider;
-    logger_             = logger;
-  }
+  public ResultWatcher(NpgsqlConnectionProvider connectionProvider)
+    => connectionProvider_ = connectionProvider;
 
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
@@ -109,22 +103,10 @@ public class ResultWatcher : IResultWatcher
         continue;
       }
 
-      var cols = await WalHelpers.ReadTextColumns(insert.NewRow,
-                                                  cancellationToken,
-                                                  "result_id")
-                                 .ConfigureAwait(false);
+      var cols   = await WalHelpers.ReadAllTextColumns(insert.NewRow, cancellationToken).ConfigureAwait(false);
+      var result = RowMapper.MapToResultFromWal(cols);
 
-      if (!cols.TryGetValue("result_id",
-                            out var resultId) || resultId is null)
-      {
-        continue;
-      }
-
-      var result = await FetchResult(resultId,
-                                     cancellationToken)
-                    .ConfigureAwait(false);
-
-      if (result is null || !compiled(result))
+      if (!compiled(result))
       {
         continue;
       }
@@ -176,37 +158,18 @@ public class ResultWatcher : IResultWatcher
                                        cancellationToken)
                       .ConfigureAwait(false);
 
-      var newCols = await WalHelpers.ReadTextColumns(update.NewRow,
-                                                     cancellationToken,
-                                                     "result_id",
-                                                     "session_id",
-                                                     "owner_task_id")
-                                    .ConfigureAwait(false);
+      var cols   = await WalHelpers.ReadAllTextColumns(update.NewRow, cancellationToken).ConfigureAwait(false);
+      var result = RowMapper.MapToResultFromWal(cols);
 
-      var previousOwner = "";
-      var newOwner      = newCols.GetValueOrDefault("owner_task_id") ?? "";
-
-      var resultId  = newCols.GetValueOrDefault("result_id");
-      var sessionId = newCols.GetValueOrDefault("session_id");
-
-      if (resultId is null || sessionId is null)
+      if (!compiled(result))
       {
         continue;
       }
 
-      var result = await FetchResult(resultId,
-                                     cancellationToken)
-                    .ConfigureAwait(false);
-
-      if (result is null || !compiled(result))
-      {
-        continue;
-      }
-
-      yield return new ResultOwnerUpdate(sessionId,
-                                         resultId,
-                                         previousOwner,
-                                         newOwner);
+      yield return new ResultOwnerUpdate(result.SessionId,
+                                         result.ResultId,
+                                         PreviousOwnerId: "",
+                                         result.OwnerTaskId);
     }
   }
 
@@ -249,57 +212,18 @@ public class ResultWatcher : IResultWatcher
                                        cancellationToken)
                       .ConfigureAwait(false);
 
-      var newCols = await WalHelpers.ReadTextColumns(update.NewRow,
-                                                     cancellationToken,
-                                                     "result_id")
-                                    .ConfigureAwait(false);
+      var cols   = await WalHelpers.ReadAllTextColumns(update.NewRow, cancellationToken).ConfigureAwait(false);
+      var result = RowMapper.MapToResultFromWal(cols);
 
-      var resultId = newCols.GetValueOrDefault("result_id");
-
-      if (resultId is null)
-      {
-        continue;
-      }
-
-      var result = await FetchResult(resultId,
-                                     cancellationToken)
-                    .ConfigureAwait(false);
-
-      if (result is null || !compiled(result))
+      if (!compiled(result))
       {
         continue;
       }
 
       yield return new ResultStatusUpdate(result.SessionId,
-                                          resultId,
+                                          result.ResultId,
                                           result.Status);
     }
   }
 
-  private async Task<Result?> FetchResult(string            resultId,
-                                          CancellationToken cancellationToken)
-  {
-    try
-    {
-      await using var conn = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                      .ConfigureAwait(false);
-      await using var cmd = conn.CreateCommand();
-      cmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id";
-      cmd.Parameters.AddWithValue("result_id",
-                                  resultId);
-      await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
-                                        .ConfigureAwait(false);
-      return await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false)
-               ? RowMapper.MapToResult(reader)
-               : null;
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Failed to fetch result {ResultId} for watcher",
-                         resultId);
-      return null;
-    }
-  }
 }
