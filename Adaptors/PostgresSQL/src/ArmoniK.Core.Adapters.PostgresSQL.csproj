@@ -33,7 +33,6 @@
     </PackageReference>
     <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.3" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
-    <PackageReference Include="Dapper" Version="2.1.35" />
   </ItemGroup>
 
   <ItemGroup>
