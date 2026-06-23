@@ -20,6 +20,7 @@ variable "postgresql_params" {
     database_name    = string
     ssl              = bool
     max_pool_size    = number
+    max_connections  = number
     exposed_port     = number
     min_polling_delay = string
     max_polling_delay = string

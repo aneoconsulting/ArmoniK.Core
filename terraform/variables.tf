@@ -223,6 +223,7 @@ variable "postgresql_params" {
     database_name     = optional(string, "database")
     ssl               = optional(bool, false)
     max_pool_size     = optional(number, 100)
+    max_connections   = optional(number, 1000)
     exposed_port      = optional(number, 5432)
     min_polling_delay = optional(string, "00:00:01")
     max_polling_delay = optional(string, "00:00:10")

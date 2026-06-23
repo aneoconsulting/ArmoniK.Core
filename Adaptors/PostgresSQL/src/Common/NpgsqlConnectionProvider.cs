@@ -263,20 +263,27 @@ ON CONFLICT (auth_id) DO NOTHING";
 
   private static string BuildConnectionString(Options.PostgreSQL options)
   {
+    NpgsqlConnectionStringBuilder builder;
+
     if (!string.IsNullOrEmpty(options.ConnectionString))
     {
-      return options.ConnectionString;
+      builder = new NpgsqlConnectionStringBuilder(options.ConnectionString)
+                {
+                  MaxPoolSize        = options.MaxPoolSize,
+                  IncludeErrorDetail = true,
+                };
+      return builder.ConnectionString;
     }
 
-    var builder = new NpgsqlConnectionStringBuilder
-                  {
-                    Host            = options.Host,
-                    Port            = options.Port,
-                    Database        = options.DatabaseName,
-                    MaxPoolSize     = options.MaxPoolSize,
-                    SslMode         = options.Ssl ? SslMode.Require : SslMode.Prefer,
-                    IncludeErrorDetail = true,
-                  };
+    builder = new NpgsqlConnectionStringBuilder
+              {
+                Host               = options.Host,
+                Port               = options.Port,
+                Database           = options.DatabaseName,
+                MaxPoolSize        = options.MaxPoolSize,
+                SslMode            = options.Ssl ? SslMode.Require : SslMode.Prefer,
+                IncludeErrorDetail = true,
+              };
 
     if (!string.IsNullOrEmpty(options.User))
     {
