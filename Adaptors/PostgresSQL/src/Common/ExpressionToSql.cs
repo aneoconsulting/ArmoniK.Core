@@ -186,8 +186,8 @@ public class ExpressionToSql<T>
         {
           var member    = Visit(expression.Object);
           var value     = EvaluateExpression(expression.Arguments[0]);
-          var paramName = AddParameter($"%{value}%");
-          return $"({member} LIKE {paramName})";
+          var paramName = AddParameter($"%{EscapeLike(value)}%");
+          return $"({member} LIKE {paramName} ESCAPE '\\')";
         }
 
         // Case 3: list.Contains(value) => value = ANY(@p)
@@ -231,8 +231,8 @@ public class ExpressionToSql<T>
         {
           var member    = Visit(expression.Object);
           var value     = EvaluateExpression(expression.Arguments[0]);
-          var paramName = AddParameter($"{value}%");
-          return $"({member} LIKE {paramName})";
+          var paramName = AddParameter($"{EscapeLike(value)}%");
+          return $"({member} LIKE {paramName} ESCAPE '\\')";
         }
 
         break;
@@ -244,8 +244,8 @@ public class ExpressionToSql<T>
         {
           var member    = Visit(expression.Object);
           var value     = EvaluateExpression(expression.Arguments[0]);
-          var paramName = AddParameter($"%{value}");
-          return $"({member} LIKE {paramName})";
+          var paramName = AddParameter($"%{EscapeLike(value)}");
+          return $"({member} LIKE {paramName} ESCAPE '\\')";
         }
 
         break;
@@ -256,8 +256,9 @@ public class ExpressionToSql<T>
         // Dictionary indexer: x.Options.Options["key"] => options_options->>'key'
         if (expression.Object is not null && IsMemberOfParameter(expression.Object))
         {
-          var member    = Visit(expression.Object);
-          var key       = EvaluateExpression(expression.Arguments[0]);
+          var member = Visit(expression.Object);
+          var key    = EvaluateExpression(expression.Arguments[0])
+                    ?? throw new ArgumentNullException(nameof(expression), "Dictionary key in filter expression must not be null");
           var paramName = AddParameter(key);
           return $"({member}->>{paramName})";
         }
@@ -339,6 +340,11 @@ public class ExpressionToSql<T>
     parameters_[name] = value;
     return name;
   }
+
+  private static string EscapeLike(object? value)
+    => (value?.ToString() ?? string.Empty).Replace("\\", "\\\\")
+                                          .Replace("%",  "\\%")
+                                          .Replace("_",  "\\_");
 
   private static bool IsNullConstant(Expression expression)
   {

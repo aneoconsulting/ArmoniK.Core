@@ -252,7 +252,7 @@ INSERT INTO sessions (
       }
     }
 
-    // Read before if requested
+    // Read before if requested (FOR UPDATE locks the row to prevent TOCTOU between read and update)
     SessionData? result = null;
     if (before)
     {
@@ -260,7 +260,8 @@ INSERT INTO sessions (
                                         transaction,
                                         whereClause,
                                         filterParams,
-                                        cancellationToken)
+                                        cancellationToken,
+                                        forUpdate: true)
                  .ConfigureAwait(false);
     }
 
@@ -314,11 +315,12 @@ INSERT INTO sessions (
                                                              NpgsqlTransaction            transaction,
                                                              string                       whereClause,
                                                              Dictionary<string, object?> parameters,
-                                                             CancellationToken            cancellationToken)
+                                                             CancellationToken            cancellationToken,
+                                                             bool                         forUpdate = false)
   {
     await using var cmd = connection.CreateCommand();
     cmd.Transaction = transaction;
-    cmd.CommandText = $"SELECT * FROM sessions WHERE {whereClause}";
+    cmd.CommandText = $"SELECT * FROM sessions WHERE {whereClause}{(forUpdate ? " FOR UPDATE" : string.Empty)}";
     SqlHelper.AddExpressionParameters(cmd,
                                       parameters);
 
