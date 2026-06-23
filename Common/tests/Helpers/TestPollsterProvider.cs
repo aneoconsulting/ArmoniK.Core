@@ -209,10 +209,7 @@ public class TestPollsterProvider : IDisposable
            .AddInitializedOption<InitServices>(builder.Configuration,
                                                InitServices.SettingSection)
            .AddSingleton<InitDatabase>()
-           .AddExceptionManager(sp => new ExceptionManager.Options(sp.GetRequiredService<Injection.Options.Pollster>()
-                                                                     .GraceDelay,
-                                                                   sp.GetRequiredService<Injection.Options.Pollster>()
-                                                                     .MaxErrorAllowed))
+           .AddExceptionManager(sp => ExceptionManager.Options.FromPollsterOptions(sp.GetRequiredService<Injection.Options.Pollster>()))
            .AddSingleton<MeterHolder>()
            .AddSingleton<AgentIdentifier>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))

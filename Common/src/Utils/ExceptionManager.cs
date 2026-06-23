@@ -21,6 +21,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Common.Injection.Options;
+
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Hosting;
@@ -52,6 +54,7 @@ public class ExceptionManager : IDisposable, IHostApplicationLifetime, IHostLife
 
   private readonly ILogger? logger_;
   private readonly int      maxError_;
+  private readonly TimeSpan selfTerminationDelay_;
   private          int      nbError_;
   private          int      registeredApplications_;
 
@@ -71,11 +74,12 @@ public class ExceptionManager : IDisposable, IHostApplicationLifetime, IHostLife
                           ILogger<ExceptionManager>?       logger  = null,
                           Options?                         options = null)
   {
-    options              ??= new Options();
-    applicationLifetime_ =   applicationLifetime;
-    disposables_         =   new List<IDisposable>();
-    earlyCts_            =   new CancellationTokenSource();
-    lateCts_             =   earlyCts_;
+    options               ??= new Options();
+    applicationLifetime_  =   applicationLifetime;
+    disposables_          =   new List<IDisposable>();
+    earlyCts_             =   new CancellationTokenSource();
+    lateCts_              =   earlyCts_;
+    selfTerminationDelay_ =   options.SelfTerminationDelay;
 
     disposables_.Add(applicationLifetime.ApplicationStopping.Register(() =>
                                                                       {
@@ -233,8 +237,17 @@ public class ExceptionManager : IDisposable, IHostApplicationLifetime, IHostLife
 
     if (nbError == maxError_ + 1)
     {
-      logger_?.LogCritical("Stop Application after too many errors");
-      earlyCts_.Cancel();
+      if (selfTerminationDelay_ > TimeSpan.Zero)
+      {
+        logger_?.LogCritical("Wait {SelfTerminationDelay} seconds, and stop Application after too many errors",
+                             selfTerminationDelay_.TotalSeconds);
+        earlyCts_.CancelAfter(selfTerminationDelay_);
+      }
+      else
+      {
+        logger_?.LogCritical("Stop Application after too many errors");
+        earlyCts_.Cancel();
+      }
     }
 
     if (nbError >= maxError_ + 1)
@@ -390,7 +403,31 @@ public class ExceptionManager : IDisposable, IHostApplicationLifetime, IHostLife
   ///   Delay between the <see cref="ExceptionManager.EarlyCancellationToken" /> and the
   ///   <see cref="ExceptionManager.LateCancellationToken" />
   /// </param>
+  /// <param name="SelfTerminationDelay">
+  ///   Delay between the maximum errors recording and the
+  ///   <see cref="ExceptionManager.EarlyCancellationToken" /> trigger.
+  /// </param>
   /// <param name="MaxError">Maximum number of allowed errors</param>
-  public record Options(TimeSpan GraceDelay = default,
-                        int?     MaxError   = null);
+  public record Options(TimeSpan GraceDelay           = default,
+                        TimeSpan SelfTerminationDelay = default,
+                        int?     MaxError             = null)
+  {
+    /// <summary>
+    ///   Convert <see cref="Injection.Options.Submitter" /> to <see cref="ExceptionManager.Options" />
+    /// </summary>
+    /// <param name="submitterOptions">Options to convert</param>
+    public static Options FromSubmitterOptions(Submitter submitterOptions)
+      => new(submitterOptions.GraceDelay,
+             submitterOptions.SelfTerminationDelay,
+             submitterOptions.MaxErrorAllowed);
+
+    /// <summary>
+    ///   Convert <see cref="Injection.Options.Pollster" /> to <see cref="ExceptionManager.Options" />
+    /// </summary>
+    /// <param name="pollsterOptions">Options to convert</param>
+    public static Options FromPollsterOptions(Injection.Options.Pollster pollsterOptions)
+      => new(pollsterOptions.GraceDelay,
+             TimeSpan.Zero,
+             pollsterOptions.MaxErrorAllowed);
+  }
 }

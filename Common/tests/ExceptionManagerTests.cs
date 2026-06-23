@@ -66,6 +66,7 @@ public class ExceptionManagerTests
                                         new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.Zero,
+                                                                     TimeSpan.Zero,
                                                                      0));
 
     Assert.That(em.EarlyCancellationToken,
@@ -90,6 +91,7 @@ public class ExceptionManagerTests
                                         new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(5),
+                                                                     TimeSpan.Zero,
                                                                      maxError));
 
     Assert.That(em.EarlyCancellationToken,
@@ -165,6 +167,7 @@ public class ExceptionManagerTests
                                         new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(1),
+                                                                     TimeSpan.Zero,
                                                                      maxError));
 
     Assert.That(em.EarlyCancellationToken,
@@ -236,6 +239,7 @@ public class ExceptionManagerTests
                                         new OptionsWrapper<HostOptions>(new HostOptions()),
                                         loggerFactory_.CreateLogger<ExceptionManager>(),
                                         new ExceptionManager.Options(TimeSpan.FromSeconds(1),
+                                                                     TimeSpan.Zero,
                                                                      maxError));
 
     Assert.That(em.EarlyCancellationToken,

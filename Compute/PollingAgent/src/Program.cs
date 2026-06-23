@@ -117,8 +117,7 @@ public static class Program
              .AddSingleton<InitDatabase>()
              .AddSingleton(pollsterOptions)
              .AddSingleton<HealthCheckRecord>()
-             .AddExceptionManager(_ => new ExceptionManager.Options(pollsterOptions.GraceDelay,
-                                                                    pollsterOptions.MaxErrorAllowed))
+             .AddExceptionManager(sp => ExceptionManager.Options.FromPollsterOptions(sp.GetRequiredService<Pollster>()))
              .AddSingleton<IHealthCheckPublisher, HealthCheckRecord.Publisher>()
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
@@ -141,7 +140,7 @@ public static class Program
         ActivitySource.AddActivityListener(new ActivityListener
                                            {
                                              ShouldListenTo = _ => true,
-                                             //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+                                             // Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
                                              ActivityStopped = activity =>
                                                                {
                                                                  foreach (var (key, value) in activity.Baggage)

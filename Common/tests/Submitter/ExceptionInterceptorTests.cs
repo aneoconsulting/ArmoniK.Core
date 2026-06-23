@@ -100,6 +100,7 @@ internal class ExceptionInterceptorTests
            new OptionsWrapper<HostOptions>(new HostOptions()),
            NullLogger<ExceptionManager>.Instance,
            new ExceptionManager.Options(graceDelay,
+                                        default,
                                         maxError));
 
   /// <summary>
@@ -108,12 +109,12 @@ internal class ExceptionInterceptorTests
   /// </summary>
   private static IEnumerable<Type> ArmoniKExceptionTypes
     => new[]
-      {
-        typeof(ArmoniKException).Assembly,     // ArmoniK.Core.Base
-        typeof(ExceptionInterceptor).Assembly, // ArmoniK.Core.Common
-      }.SelectMany(assembly => assembly.GetTypes())
-       .Where(type => typeof(ArmoniKException).IsAssignableFrom(type) && !type.IsAbstract)
-       .Distinct();
+       {
+         typeof(ArmoniKException).Assembly,     // ArmoniK.Core.Base
+         typeof(ExceptionInterceptor).Assembly, // ArmoniK.Core.Common
+       }.SelectMany(assembly => assembly.GetTypes())
+        .Where(type => typeof(ArmoniKException).IsAssignableFrom(type) && !type.IsAbstract)
+        .Distinct();
 
   /// <summary>
   ///   Exception types that are intentionally allowed to resolve to the generic <see cref="ArmoniKException" /> ->
