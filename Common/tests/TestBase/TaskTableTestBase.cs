@@ -2261,4 +2261,151 @@ public class TaskTableTestBase
                       });
     }
   }
+
+  [Test]
+  public async Task UpdateOneTaskShouldReturnDataBeforeUpdateWhenBeforeIsTrue()
+  {
+    if (RunTests)
+    {
+      var before = await TaskTable!.UpdateOneTask("TaskProcessingId",
+                                                  null,
+                                                  new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                       TaskStatus.Completed),
+                                                  true,
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.That(before,
+                  Is.Not.Null);
+      Assert.That(before!.Status,
+                  Is.EqualTo(TaskStatus.Processing));
+
+      var after = await TaskTable!.ReadTaskAsync("TaskProcessingId",
+                                                  CancellationToken.None)
+                                  .ConfigureAwait(false);
+      Assert.That(after.Status,
+                  Is.EqualTo(TaskStatus.Completed));
+    }
+  }
+
+  [Test]
+  public async Task ListTasksAsyncStartsWithSpecialCharsShouldMatchLiterally()
+  {
+    if (RunTests)
+    {
+      // task_1 has a literal underscore; taskA1 has 'A' in the same position.
+      // StartsWith("task_") must match only task_1.
+      // Without LIKE-escaping the underscore becomes a wildcard and taskA1 would match too.
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionIdLikeTest",
+                                                  "task_1",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                     new TaskData("SessionIdLikeTest",
+                                                  "taskA1",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      var (tasks, count) = await TaskTable!.ListTasksAsync(data => data.TaskId.StartsWith("task_"),
+                                                           data => data.TaskId,
+                                                           data => data,
+                                                           false,
+                                                           0,
+                                                           10,
+                                                           CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+      Assert.That(tasks.Single()
+                       .TaskId,
+                  Is.EqualTo("task_1"));
+    }
+  }
+
+  [Test]
+  public async Task ListTasksAsyncSortByOptionsKeyWithSingleQuoteShouldSucceed()
+  {
+    if (RunTests)
+    {
+      // Sorting by a JSONB key that contains a single quote requires escaping the key in the
+      // ORDER BY SQL fragment. Without escaping the single quote terminates the string literal
+      // early and causes a SQL syntax error.
+      var optionsWithQuotedKey = Options with
+                                 {
+                                   Options = new Dictionary<string, string>
+                                             {
+                                               {
+                                                 "key'1", "val1"
+                                               },
+                                             },
+                                 };
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionIdQuoteTest",
+                                                  "TaskWithQuotedKey",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  optionsWithQuotedKey,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      var (tasks, count) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionIdQuoteTest",
+                                                           data => data.Options.Options["key'1"],
+                                                           data => data,
+                                                           true,
+                                                           0,
+                                                           10,
+                                                           CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+      Assert.That(tasks.Single()
+                       .TaskId,
+                  Is.EqualTo("TaskWithQuotedKey"));
+    }
+  }
 }

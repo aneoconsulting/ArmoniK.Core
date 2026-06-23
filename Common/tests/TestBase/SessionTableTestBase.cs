@@ -768,4 +768,81 @@ public class SessionTableTestBase
                                                    });
     }
   }
+
+  [Test]
+  public async Task UpdateOneSessionAsyncShouldReturnDataBeforeUpdateWhenBeforeIsTrue()
+  {
+    if (RunTests)
+    {
+      var sessionId = await SessionTable!.SetSessionDataAsync(new[]
+                                                              {
+                                                                "partition",
+                                                              },
+                                                              Options)
+                                         .ConfigureAwait(false);
+
+      var before = await SessionTable!.UpdateOneSessionAsync(sessionId,
+                                                             null,
+                                                             new UpdateDefinition<SessionData>().Set(s => s.ClientSubmission,
+                                                                                                     false),
+                                                             true,
+                                                             CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      Assert.That(before,
+                  Is.Not.Null);
+      Assert.That(before!.ClientSubmission,
+                  Is.True);
+
+      var after = await SessionTable!.GetSessionAsync(sessionId,
+                                                      CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.That(after.ClientSubmission,
+                  Is.False);
+    }
+  }
+
+  [Test]
+  public async Task ListSessionsAsyncContainsShouldNotMatchLikeWildcard()
+  {
+    if (RunTests)
+    {
+      // "Filter_test" has a literal underscore; "FilterXtest" has 'X' in the same position.
+      // Contains("Filter_") must match only the session with the literal underscore.
+      // Without LIKE-escaping the underscore becomes a single-character wildcard and both sessions would match.
+      await SessionTable!.SetSessionDataAsync(new[]
+                                              {
+                                                "partition",
+                                              },
+                                              Options with
+                                              {
+                                                ApplicationName = "Filter_test",
+                                              })
+                         .ConfigureAwait(false);
+
+      await SessionTable!.SetSessionDataAsync(new[]
+                                              {
+                                                "partition",
+                                              },
+                                              Options with
+                                              {
+                                                ApplicationName = "FilterXtest",
+                                              })
+                         .ConfigureAwait(false);
+
+      var (sessions, count) = await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName.Contains("Filter_"),
+                                                                    data => data.SessionId,
+                                                                    false,
+                                                                    0,
+                                                                    10,
+                                                                    CancellationToken.None)
+                                                 .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+      Assert.That(sessions.Single()
+                          .Options.ApplicationName,
+                  Is.EqualTo("Filter_test"));
+    }
+  }
 }
