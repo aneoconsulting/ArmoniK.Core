@@ -31,6 +31,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Utils;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -88,12 +89,17 @@ internal class ExceptionInterceptorTests
   private ApplicationLifetime         lifetime_ = null!;
 
   private ExceptionManager BuildExceptionManager(int maxError)
+    => BuildExceptionManager(maxError,
+                             TimeSpan.Zero);
+
+  private ExceptionManager BuildExceptionManager(int      maxError,
+                                                 TimeSpan graceDelay)
     => new(lifetime_,
            new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
            new HostingEnvironment(),
            new OptionsWrapper<HostOptions>(new HostOptions()),
            NullLogger<ExceptionManager>.Instance,
-           new ExceptionManager.Options(TimeSpan.Zero,
+           new ExceptionManager.Options(graceDelay,
                                         maxError));
 
   /// <summary>
@@ -230,10 +236,13 @@ internal class ExceptionInterceptorTests
     Assert.That((await interceptor.Check(HealthCheckTag.Readiness)
                                   .ConfigureAwait(false)).Status,
                 Is.Not.EqualTo(HealthStatus.Healthy));
-    // Call #11 without error
+    // Call #11 without error: the error threshold has been exceeded, so the control plane is shutting
+    // down and the interceptor rejects any new request with Unavailable before it reaches the service.
     ex = null;
-    Assert.That(client.CreateSession(request),
-                Is.EqualTo(noErrorReply));
+    Assert.That(() => client.CreateSession(request),
+                Throws.InstanceOf<RpcException>()
+                      .With.Property(nameof(RpcException.StatusCode))
+                      .EqualTo(StatusCode.Unavailable));
     Assert.That((await interceptor.Check(HealthCheckTag.Readiness)
                                   .ConfigureAwait(false)).Status,
                 Is.Not.EqualTo(HealthStatus.Healthy));
@@ -451,6 +460,16 @@ internal class ExceptionInterceptorTests
     Assert.That((await interceptor.Check(HealthCheckTag.Readiness)
                                   .ConfigureAwait(false)).Status,
                 Is.Not.EqualTo(HealthStatus.Healthy));
+    // Call #11 without error: the threshold has been exceeded, so the interceptor rejects new requests
+    // with Unavailable before they reach the service.
+    ex = null;
+    Assert.That(() => CreateLargeTasks(10),
+                Throws.InstanceOf<RpcException>()
+                      .With.Property(nameof(RpcException.StatusCode))
+                      .EqualTo(StatusCode.Unavailable));
+    Assert.That((await interceptor.Check(HealthCheckTag.Readiness)
+                                  .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
   }
 
   [Test]
@@ -591,5 +610,158 @@ internal class ExceptionInterceptorTests
     Assert.That((await interceptor.Check(HealthCheckTag.Readiness)
                                   .ConfigureAwait(false)).Status,
                 Is.Not.EqualTo(HealthStatus.Healthy));
+    // Call #13 without error: the threshold has been exceeded, so the interceptor rejects new requests
+    // with Unavailable before they reach the service.
+    ex = null;
+    Assert.That(TryGetResult,
+                Throws.InstanceOf<RpcException>()
+                      .With.Property(nameof(RpcException.StatusCode))
+                      .EqualTo(StatusCode.Unavailable));
+    Assert.That((await interceptor.Check(HealthCheckTag.Readiness)
+                                  .ConfigureAwait(false)).Status,
+                Is.Not.EqualTo(HealthStatus.Healthy));
   }
+
+  [Test]
+  [Timeout(10000)]
+  public void RequestDuringShutdownIsRejected()
+  {
+    // A large grace delay guarantees that the late cancellation token can only be triggered by the
+    // request-draining path, never by the grace timer, during the lifetime of the test.
+    using var exceptionManager = BuildExceptionManager(int.MaxValue / 2,
+                                                       TimeSpan.FromMinutes(10));
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    // Model an external shutdown (SIGTERM): cancels the EarlyCancellationToken.
+    lifetime_.StopApplication();
+
+    var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                               TestServerCallContext.Create(),
+                                                                                                               (_,
+                                                                                                                _) => Task.FromResult(new object()))
+                                                                           .ConfigureAwait(false));
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(rpc!.StatusCode,
+                                  Is.EqualTo(StatusCode.Unavailable));
+                      Assert.That(rpc.Status.Detail,
+                                  Does.Contain("Control plane is shutting down"));
+                    });
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task DrainingLastInFlightRequestStopsApplication()
+  {
+    using var exceptionManager = BuildExceptionManager(int.MaxValue / 2,
+                                                       TimeSpan.FromMinutes(10));
+    // The interceptor registers itself with the ExceptionManager in its constructor, so it is the
+    // only registered component: draining its last in-flight request must stop the application.
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    // Hold one request in-flight until we release it. StartRequest runs synchronously at the top of
+    // the handler, so the in-flight counter is already incremented to 1 once the call is launched.
+    var release = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    var inFlight = interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                  TestServerCallContext.Create(),
+                                                                  async (_,
+                                                                         _) =>
+                                                                  {
+                                                                    await release.Task.ConfigureAwait(false);
+                                                                    return new object();
+                                                                  });
+
+    // External shutdown cancels the EarlyCancellationToken; the interceptor's registered StopRequest
+    // brings the counter from 1 back to 0, so the application must NOT stop while a request is still
+    // in-flight.
+    lifetime_.StopApplication();
+
+    Assert.That(exceptionManager.LateCancellationToken.IsCancellationRequested,
+                Is.False,
+                "Application stopped while a request was still in-flight");
+
+    // Draining the last request takes the counter from 0 to -1, triggering UnregisterAndStop, which
+    // stops the application and fires the late cancellation token.
+    release.SetResult();
+    await inFlight.ConfigureAwait(false);
+
+    try
+    {
+      await exceptionManager.LateCancellationToken.AsTask()
+                            .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // Expected: AsTask completes as cancelled once the late token fires.
+    }
+
+    Assert.That(exceptionManager.LateCancellationToken.IsCancellationRequested,
+                Is.True);
+  }
+
+  [Test]
+  [Timeout(60000)]
+  public async Task ConcurrentRequestsKeepCounterBalanced()
+  {
+    using var exceptionManager = BuildExceptionManager(int.MaxValue / 2,
+                                                       TimeSpan.FromMinutes(10));
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    // Probabilistic regression guard for the StartRequest CAS loop. Each request increments then
+    // decrements the in-flight counter, so it must return to exactly 0 after every round. A lost
+    // increment under contention (the pre-fix `while (counter == previousCounter)` bug) desyncs the
+    // counter, drives it negative, and trips a spurious shutdown that this test detects.
+    const int rounds      = 100;
+    const int concurrency = 128;
+
+    for (var round = 0; round < rounds; round++)
+    {
+      // Task.Run pushes the calls onto the thread pool so StartRequest is invoked concurrently.
+      var calls = Enumerable.Range(0,
+                                   concurrency)
+                            .Select(_ => Task.Run(() => interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                       TestServerCallContext.Create(),
+                                                                                                       (_,
+                                                                                                        _) => Task.FromResult(new object()))));
+      await Task.WhenAll(calls)
+                .ConfigureAwait(false);
+    }
+
+    // No spurious shutdown happened: the control plane is still up and still accepts requests.
+    Assert.That(exceptionManager.EarlyCancellationToken.IsCancellationRequested,
+                Is.False,
+                "Concurrent requests triggered a spurious shutdown (the in-flight counter desynced)");
+
+    Assert.DoesNotThrowAsync(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                              TestServerCallContext.Create(),
+                                                                                              (_,
+                                                                                               _) => Task.FromResult(new object()))
+                                                          .ConfigureAwait(false));
+
+    // The counter is balanced at 0, so the single sentinel decrement at shutdown reaches -1 at once
+    // and stops the application immediately, without waiting out the 10-minute grace delay.
+    lifetime_.StopApplication();
+
+    try
+    {
+      await exceptionManager.LateCancellationToken.AsTask()
+                            .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // Expected: AsTask completes as cancelled once the late token fires.
+    }
+
+    Assert.That(exceptionManager.LateCancellationToken.IsCancellationRequested,
+                Is.True);
+  }
+
+  [Test]
+  public void GraceDelayDefaultsToFifteenSeconds()
+    => Assert.That(new Injection.Options.Submitter().GraceDelay,
+                   Is.EqualTo(TimeSpan.FromSeconds(15)));
 }

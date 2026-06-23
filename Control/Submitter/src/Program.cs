@@ -105,9 +105,12 @@ public static class Program
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
-             .AddExceptionManager(sp => new ExceptionManager.Options(TimeSpan.Zero,
-                                                                     sp.GetRequiredService<Common.Injection.Options.Submitter>()
-                                                                       .MaxErrorAllowed))
+             .AddExceptionManager(sp =>
+                                  {
+                                    var options = sp.GetRequiredService<Common.Injection.Options.Submitter>();
+                                    return new ExceptionManager.Options(options.GraceDelay,
+                                                                        options.MaxErrorAllowed);
+                                  })
              .AddGrpcReflection()
              .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()
@@ -130,7 +133,7 @@ public static class Program
         ActivitySource.AddActivityListener(new ActivityListener
                                            {
                                              ShouldListenTo = _ => true,
-                                             //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+                                             // Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
                                              ActivityStopped = activity =>
                                                                {
                                                                  foreach (var (key, value) in activity.Baggage)
