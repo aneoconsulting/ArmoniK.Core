@@ -44,6 +44,12 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable
   private readonly Options.PostgreSQL                options_;
   private          bool                              isInitialized_;
 
+#pragma warning disable CS0618 // Type or member is obsolete
+  static NpgsqlConnectionProvider()
+    => AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",
+                            true);
+#pragma warning restore CS0618
+
   /// <summary>
   ///   The Npgsql data source (connection pool)
   /// </summary>
@@ -62,11 +68,6 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable
     options_      = options;
     initDatabase_ = initDatabase;
     logger_       = logger;
-
-#pragma warning disable CS0618 // Type or member is obsolete
-    AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior",
-                         true);
-#pragma warning restore CS0618
 
     var connectionString = BuildConnectionString(options);
     var builder          = new NpgsqlDataSourceBuilder(connectionString);

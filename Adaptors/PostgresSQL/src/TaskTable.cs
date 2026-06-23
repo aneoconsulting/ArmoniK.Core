@@ -415,7 +415,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       }
     }
 
-    // Read before if requested
+    // Read before if requested (FOR UPDATE locks the row to prevent TOCTOU between read and update)
     TaskData? result = null;
     if (before)
     {
@@ -423,7 +423,8 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                            transaction,
                                            whereClause,
                                            filterParams,
-                                           cancellationToken)
+                                           cancellationToken,
+                                           forUpdate: true)
                  .ConfigureAwait(false);
     }
 
@@ -617,11 +618,12 @@ WHERE t.task_id = ANY(@ready_task_ids)
                                                       NpgsqlTransaction            transaction,
                                                       string                       whereClause,
                                                       Dictionary<string, object?> parameters,
-                                                      CancellationToken            cancellationToken)
+                                                      CancellationToken            cancellationToken,
+                                                      bool                         forUpdate = false)
   {
     await using var cmd = connection.CreateCommand();
     cmd.Transaction = transaction;
-    cmd.CommandText = $"SELECT * FROM tasks WHERE {whereClause}";
+    cmd.CommandText = $"SELECT * FROM tasks WHERE {whereClause}{(forUpdate ? " FOR UPDATE" : string.Empty)}";
     SqlHelper.AddExpressionParameters(cmd,
                                       parameters);
 

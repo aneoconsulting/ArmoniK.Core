@@ -65,7 +65,8 @@ public class ExpressionToSql<T>
       var member = GetMemberPath(methodCall.Object);
       var column = PropertyMapping.GetColumnName(typeof(T),
                                                   member);
-      var key = EvaluateExpression(methodCall.Arguments[0]);
+      var key = (EvaluateExpression(methodCall.Arguments[0])?.ToString() ?? string.Empty).Replace("'",
+                                                                                                   "''");
       return $"{column}->>'{key}'";
     }
 
@@ -82,7 +83,7 @@ public class ExpressionToSql<T>
          MethodCallExpression method => VisitMethodCall(method),
          MemberExpression member     => VisitMember(member),
          ConstantExpression constant => VisitConstant(constant),
-         _                           => throw new NotSupportedException($"Expression type {expression.NodeType} is not supported"),
+         _                           => throw new NotSupportedException($"Expression type {expression.NodeType} is not supported in SQL translation: {expression}"),
        };
 
   private string VisitBinary(BinaryExpression expression)
