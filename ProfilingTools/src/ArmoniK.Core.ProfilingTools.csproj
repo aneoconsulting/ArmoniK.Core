@@ -32,7 +32,7 @@
     </PackageReference>
     <PackageReference Include="AspNetCore.HealthChecks.MongoDb" Version="8.1.0" />
     <PackageReference Include="MongoDB.Driver.Core.Extensions.DiagnosticSources" Version="3.0.0" />
-    <PackageReference Include="OpenTelemetry" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry" Version="1.16.0" />
   </ItemGroup>
 
   <ItemGroup>
