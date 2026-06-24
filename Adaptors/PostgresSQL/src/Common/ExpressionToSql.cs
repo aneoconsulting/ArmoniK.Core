@@ -265,6 +265,19 @@ public class ExpressionToSql<T>
 
         break;
       }
+
+      case "IsNullOrEmpty":
+      {
+        // string.IsNullOrEmpty(x) => (x IS NULL OR x = '')
+        if (expression.Object is null && expression.Method.DeclaringType == typeof(string) && expression.Arguments.Count == 1 &&
+            IsMemberOfParameter(expression.Arguments[0]))
+        {
+          var member = Visit(expression.Arguments[0]);
+          return $"({member} IS NULL OR {member} = '')";
+        }
+
+        break;
+      }
     }
 
     throw new NotSupportedException($"Method {methodName} is not supported");
