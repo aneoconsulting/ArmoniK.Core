@@ -288,6 +288,123 @@ public class ExceptionManagerTests
 
   [Test]
   [Timeout(10000)]
+  [Retry(2)] // Sometimes on Windows, the delay is not respected
+  public async Task SelfTerminationDelayStop([Values(0,
+                                                     5)]
+                                             int maxError)
+  {
+    var logger = loggerFactory_.CreateLogger(nameof(SelfTerminationDelayStop));
+    var events = new ConcurrentQueue<int>();
+    using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
+                                        loggerFactory_.CreateLogger<ExceptionManager>(),
+                                        new ExceptionManager.Options(TimeSpan.FromSeconds(1),
+                                                                     TimeSpan.FromSeconds(1),
+                                                                     maxError));
+
+    Assert.That(em.EarlyCancellationToken,
+                Is.Not.EqualTo(em.LateCancellationToken));
+
+    await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
+    await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
+    await using var d2 = em.LateCancellationToken.Register(() => events.Enqueue(2));
+    await using var d3 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(3));
+    await using var d4 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(4));
+
+    lifetime_.NotifyStarted();
+
+    await Task.Delay(10)
+              .ConfigureAwait(false);
+
+    for (var i = 0; i < maxError + 1; i++)
+    {
+      em.RecordError(logger,
+                     new ApplicationException($"Error {i}"),
+                     nameof(SelfTerminationDelayStop));
+    }
+
+    // Failed is set as soon as the threshold is crossed, but the EarlyCancellationToken is only
+    // triggered after the SelfTerminationDelay has elapsed.
+    Assert.That(em.Failed,
+                Is.True);
+    Assert.That(em.EarlyCancellationToken.IsCancellationRequested,
+                Is.False);
+
+    var sw = Stopwatch.StartNew();
+
+    try
+    {
+      await em.EarlyCancellationToken.AsTask()
+              .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // ignore
+    }
+
+    var elapsed = sw.Elapsed.TotalSeconds;
+    Assert.That(elapsed,
+                Is.GreaterThanOrEqualTo(0.5));
+
+    // Once the early token fired, the existing grace delay chain still drives the application all the
+    // way down to ApplicationStopping.
+    try
+    {
+      await lifetime_.ApplicationStopping.AsTask()
+                     .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      // ignore
+    }
+
+    Assert.That(em.Failed,
+                Is.True);
+
+    lifetime_.NotifyStopped();
+
+    Assert.That(events,
+                Is.EqualTo(Enumerable.Range(0,
+                                            5)));
+  }
+
+  [Test]
+  [Timeout(1000)]
+  public void SelfTerminationDelayDefersCancellation([Values(0,
+                                                             5)]
+                                                     int maxError)
+  {
+    var logger = loggerFactory_.CreateLogger(nameof(SelfTerminationDelayDefersCancellation));
+    using var em = new ExceptionManager(lifetime_,
+                                        new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                        new HostingEnvironment(),
+                                        new OptionsWrapper<HostOptions>(new HostOptions()),
+                                        loggerFactory_.CreateLogger<ExceptionManager>(),
+                                        new ExceptionManager.Options(TimeSpan.Zero,
+                                                                     TimeSpan.FromMinutes(10),
+                                                                     maxError));
+
+    lifetime_.NotifyStarted();
+
+    for (var i = 0; i < maxError + 1; i++)
+    {
+      em.RecordError(logger,
+                     new ApplicationException($"Error {i}"),
+                     nameof(SelfTerminationDelayDefersCancellation));
+    }
+
+    // The threshold is crossed: Failed is set immediately, but the long SelfTerminationDelay keeps the
+    // EarlyCancellationToken uncancelled for the duration of the test.
+    Assert.That(em.Failed,
+                Is.True);
+    Assert.That(em.EarlyCancellationToken.IsCancellationRequested,
+                Is.False);
+  }
+
+  [Test]
+  [Timeout(10000)]
   public async Task FatalStop([Values(1,
                                       2)]
                               int nbFatal)
