@@ -239,13 +239,13 @@ public class ExceptionManager : IDisposable, IHostApplicationLifetime, IHostLife
     {
       if (selfTerminationDelay_ > TimeSpan.Zero)
       {
-        logger_?.LogCritical("Wait {SelfTerminationDelay} seconds, and stop Application after too many errors",
-                             selfTerminationDelay_.TotalSeconds);
+        logger?.LogCritical("Wait {SelfTerminationDelay} seconds, and stop Application after too many errors",
+                            selfTerminationDelay_.TotalSeconds);
         earlyCts_.CancelAfter(selfTerminationDelay_);
       }
       else
       {
-        logger_?.LogCritical("Stop Application after too many errors");
+        logger?.LogCritical("Stop Application after too many errors");
         earlyCts_.Cancel();
       }
     }
