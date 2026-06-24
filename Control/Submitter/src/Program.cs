@@ -234,6 +234,13 @@ public static class Program
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
                           });
 
+      app.UseHealthChecks("/readiness",
+                          1081,
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
+                          });
+
       if (app.Environment.IsDevelopment())
       {
         app.MapGrpcReflectionService();
