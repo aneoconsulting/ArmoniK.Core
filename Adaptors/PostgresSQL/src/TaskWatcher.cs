@@ -93,14 +93,31 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(Expression<Func<TaskData, bool>> filter,
                                                            CancellationToken                cancellationToken = default)
-    => WatchNewTasks(filter,
-                     cancellationToken);
+  {
+    var compiled  = filter.Compile();
+    var rawStream = await insertBroadcaster_.SubscribeAsync(cancellationToken)
+                                            .ConfigureAwait(false);
+    return FilterNewTasks(rawStream,
+                          compiled,
+                          cancellationToken);
+  }
 
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(Expression<Func<TaskData, bool>> filter,
                                                                              CancellationToken                cancellationToken = default)
-    => WatchTaskStatusUpdates(filter,
-                              cancellationToken);
+  {
+    // DEFAULT replica identity: the WAL does not carry old row values, so we cannot
+    // compare old vs new status to suppress no-op events. Every task UPDATE reaches
+    // this watcher — including timestamp-only changes (e.g. acquisition_date).
+    // Trade-off: consumers must tolerate receiving the same status twice. This matches
+    // the MongoDB adaptor behaviour, which also cannot filter on updated fields server-side.
+    var compiled  = filter.Compile();
+    var rawStream = await updateBroadcaster_.SubscribeAsync(cancellationToken)
+                                            .ConfigureAwait(false);
+    return FilterTaskStatusUpdates(rawStream,
+                                   compiled,
+                                   cancellationToken);
+  }
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
@@ -110,13 +127,12 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => connectionProvider_.Check(tag);
 
-  private async IAsyncEnumerable<NewTask> WatchNewTasks(Expression<Func<TaskData, bool>>              filter,
-                                                        [EnumeratorCancellation] CancellationToken cancellationToken)
+  private static async IAsyncEnumerable<NewTask> FilterNewTasks(IAsyncEnumerable<TaskData>                    source,
+                                                                  Func<TaskData, bool>                          compiled,
+                                                                  [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    var compiled = filter.Compile();
-
-    await foreach (var taskData in insertBroadcaster_.Subscribe(cancellationToken)
-                                                     .ConfigureAwait(false))
+    await foreach (var taskData in source.WithCancellation(cancellationToken)
+                                         .ConfigureAwait(false))
     {
       if (!compiled(taskData))
         continue;
@@ -133,18 +149,12 @@ public class TaskWatcher : ITaskWatcher, IDisposable
     }
   }
 
-  private async IAsyncEnumerable<TaskStatusUpdate> WatchTaskStatusUpdates(Expression<Func<TaskData, bool>>              filter,
-                                                                          [EnumeratorCancellation] CancellationToken cancellationToken)
+  private static async IAsyncEnumerable<TaskStatusUpdate> FilterTaskStatusUpdates(IAsyncEnumerable<TaskData>                    source,
+                                                                                    Func<TaskData, bool>                          compiled,
+                                                                                    [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    // DEFAULT replica identity: the WAL does not carry old row values, so we cannot
-    // compare old vs new status to suppress no-op events. Every task UPDATE reaches
-    // this watcher — including timestamp-only changes (e.g. acquisition_date).
-    // Trade-off: consumers must tolerate receiving the same status twice. This matches
-    // the MongoDB adaptor behaviour, which also cannot filter on updated fields server-side.
-    var compiled = filter.Compile();
-
-    await foreach (var taskData in updateBroadcaster_.Subscribe(cancellationToken)
-                                                     .ConfigureAwait(false))
+    await foreach (var taskData in source.WithCancellation(cancellationToken)
+                                         .ConfigureAwait(false))
     {
       if (!compiled(taskData))
         continue;

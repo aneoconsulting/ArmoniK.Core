@@ -31,22 +31,32 @@ namespace ArmoniK.Core.Adapters.PostgresSQL.Common;
 
 /// <summary>
 ///   Holds a single shared WAL replication connection for one event type and fans out decoded
-///   events to all active subscribers via in-memory channels. The replication connection is
-///   opened on the first subscriber and closed when the last subscriber disconnects.
+///   events to all active subscribers via in-memory channels.
+///   <para>
+///     The replication connection and slot are opened when the first subscriber registers.
+///     The slot creation is signalled via an internal <see cref="TaskCompletionSource" /> so
+///     that callers can wait until the slot exists before performing an initial DB snapshot —
+///     this eliminates the race window where events between snapshot and slot creation would
+///     otherwise be lost.
+///   </para>
+///   <para>
+///     The connection is closed when the last subscriber disconnects.
+///   </para>
 /// </summary>
 /// <typeparam name="T">The decoded event payload type (e.g. TaskData, Result).</typeparam>
 internal sealed class WalBroadcaster<T> : IDisposable
   where T : class
 {
-  private readonly NpgsqlConnectionProvider                                              provider_;
+  private readonly NpgsqlConnectionProvider                                       provider_;
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
 
-  private readonly SemaphoreSlim                         lock_        = new(1, 1);
+  private readonly SemaphoreSlim                          lock_        = new(1, 1);
   private readonly ConcurrentDictionary<Guid, Channel<T>> subscribers_ = new();
-  private          CancellationTokenSource?              loopCts_;
-  private          Task?                                 broadcastLoop_;
+  private          CancellationTokenSource?               loopCts_;
+  private          Task?                                  broadcastLoop_;
+  private          TaskCompletionSource?                  slotReady_;
 
-  internal WalBroadcaster(NpgsqlConnectionProvider                                              provider,
+  internal WalBroadcaster(NpgsqlConnectionProvider                                       provider,
                            Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse)
   {
     provider_ = provider;
@@ -54,18 +64,69 @@ internal sealed class WalBroadcaster<T> : IDisposable
   }
 
   /// <summary>
-  ///   Subscribes to the broadcast stream. Starts the shared WAL loop if it is not running.
-  ///   The loop is stopped when the last subscriber unsubscribes.
+  ///   Subscribes to the broadcast stream.
+  ///   <para>
+  ///     Registers the subscriber channel, starts the shared WAL loop if it is not already
+  ///     running, and waits until the replication slot has been created before returning.
+  ///     This guarantees that any DB snapshot the caller performs afterwards will overlap
+  ///     with the WAL capture window — no events are lost between snapshot and subscription.
+  ///   </para>
+  ///   <para>
+  ///     The returned <see cref="IAsyncEnumerable{T}" /> streams events from slot creation
+  ///     onwards. The loop is stopped when the last subscriber unsubscribes.
+  ///   </para>
   /// </summary>
-  public async IAsyncEnumerable<T> Subscribe([EnumeratorCancellation] CancellationToken cancellationToken)
+  public async Task<IAsyncEnumerable<T>> SubscribeAsync(CancellationToken cancellationToken)
   {
     var id      = Guid.NewGuid();
     var channel = Channel.CreateUnbounded<T>();
+
+    // Register the channel BEFORE starting/ensuring the loop so that events written
+    // from the moment the slot is created are buffered for this subscriber.
     subscribers_[id] = channel;
 
-    await EnsureStarted(cancellationToken)
-      .ConfigureAwait(false);
+    TaskCompletionSource tcs;
+    try
+    {
+      tcs = await EnsureStarted(cancellationToken)
+              .ConfigureAwait(false);
+    }
+    catch
+    {
+      subscribers_.TryRemove(id,
+                             out _);
+      channel.Writer.TryComplete();
+      await StopIfIdle()
+        .ConfigureAwait(false);
+      throw;
+    }
 
+    try
+    {
+      // Block until the replication slot exists. After this returns, the caller
+      // can safely query existing DB state knowing the WAL is capturing events.
+      await tcs.Task.WaitAsync(cancellationToken)
+               .ConfigureAwait(false);
+    }
+    catch
+    {
+      subscribers_.TryRemove(id,
+                             out _);
+      channel.Writer.TryComplete();
+      await StopIfIdle()
+        .ConfigureAwait(false);
+      throw;
+    }
+
+    return ReadChannel(id,
+                       channel,
+                       cancellationToken);
+  }
+
+  private async IAsyncEnumerable<T> ReadChannel(Guid                                          id,
+                                                 Channel<T>                                    channel,
+                                                 [EnumeratorCancellation] CancellationToken cancellationToken)
+  {
     try
     {
       await foreach (var item in channel.Reader.ReadAllAsync(cancellationToken)
@@ -82,7 +143,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
   }
 
-  private async Task EnsureStarted(CancellationToken cancellationToken)
+  // Returns the TaskCompletionSource for the current or newly started loop.
+  // The TCS is set when the replication slot has been created.
+  private async Task<TaskCompletionSource> EnsureStarted(CancellationToken cancellationToken)
   {
     await lock_.WaitAsync(cancellationToken)
                .ConfigureAwait(false);
@@ -90,9 +153,12 @@ internal sealed class WalBroadcaster<T> : IDisposable
     {
       if (broadcastLoop_ is null || broadcastLoop_.IsCompleted)
       {
+        slotReady_     = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         loopCts_       = new CancellationTokenSource();
         broadcastLoop_ = RunLoop(loopCts_.Token);
       }
+
+      return slotReady_!;
     }
     finally
     {
@@ -132,6 +198,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
                                                               cancellationToken: cancellationToken)
                                .ConfigureAwait(false);
 
+      // Slot exists — subscribers can now safely snapshot the DB.
+      slotReady_?.TrySetResult();
+
       await foreach (var message in replConn.StartReplication(slot,
                                                               options,
                                                               cancellationToken)
@@ -155,6 +224,8 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
     catch (Exception ex)
     {
+      // Slot creation or streaming failed — unblock any waiting SubscribeAsync callers.
+      slotReady_?.TrySetException(ex);
       loopException = ex;
     }
     finally

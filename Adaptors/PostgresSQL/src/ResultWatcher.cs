@@ -39,7 +39,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
   private readonly NpgsqlConnectionProvider     connectionProvider_;
   private readonly WalBroadcaster<Result> insertBroadcaster_;
 
-  // Shared between WatchResultStatusUpdates and WatchResultOwnerUpdates — both consume
+  // Shared between GetResultStatusUpdates and GetResultOwnerUpdates — both consume
   // UpdateMessage on the results table with identical WAL handling, so one connection suffices.
   private readonly WalBroadcaster<Result> updateBroadcaster_;
 
@@ -98,20 +98,41 @@ public class ResultWatcher : IResultWatcher, IDisposable
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
                                                                CancellationToken              cancellationToken = default)
-    => WatchNewResults(filter,
-                       cancellationToken);
+  {
+    var compiled  = filter.Compile();
+    var rawStream = await insertBroadcaster_.SubscribeAsync(cancellationToken)
+                                            .ConfigureAwait(false);
+    return FilterNewResults(rawStream,
+                            compiled,
+                            cancellationToken);
+  }
 
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(Expression<Func<Result, bool>> filter,
                                                                                CancellationToken              cancellationToken = default)
-    => WatchResultOwnerUpdates(filter,
-                               cancellationToken);
+  {
+    var compiled  = filter.Compile();
+    var rawStream = await updateBroadcaster_.SubscribeAsync(cancellationToken)
+                                            .ConfigureAwait(false);
+    return FilterResultOwnerUpdates(rawStream,
+                                    compiled,
+                                    cancellationToken);
+  }
 
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(Expression<Func<Result, bool>> filter,
                                                                                  CancellationToken              cancellationToken = default)
-    => WatchResultStatusUpdates(filter,
-                                cancellationToken);
+  {
+    // DEFAULT replica identity: same caveat as GetResultOwnerUpdates — no old row values
+    // in the WAL, so status comparisons are impossible. Every result UPDATE fires here.
+    // Consumers must tolerate duplicate status notifications.
+    var compiled  = filter.Compile();
+    var rawStream = await updateBroadcaster_.SubscribeAsync(cancellationToken)
+                                            .ConfigureAwait(false);
+    return FilterResultStatusUpdates(rawStream,
+                                     compiled,
+                                     cancellationToken);
+  }
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
@@ -121,13 +142,12 @@ public class ResultWatcher : IResultWatcher, IDisposable
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => connectionProvider_.Check(tag);
 
-  private async IAsyncEnumerable<NewResult> WatchNewResults(Expression<Func<Result, bool>>                filter,
-                                                            [EnumeratorCancellation] CancellationToken cancellationToken)
+  private static async IAsyncEnumerable<NewResult> FilterNewResults(IAsyncEnumerable<Result>                      source,
+                                                                      Func<Result, bool>                            compiled,
+                                                                      [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    var compiled = filter.Compile();
-
-    await foreach (var result in insertBroadcaster_.Subscribe(cancellationToken)
-                                                   .ConfigureAwait(false))
+    await foreach (var result in source.WithCancellation(cancellationToken)
+                                       .ConfigureAwait(false))
     {
       if (!compiled(result))
         continue;
@@ -139,13 +159,12 @@ public class ResultWatcher : IResultWatcher, IDisposable
     }
   }
 
-  private async IAsyncEnumerable<ResultOwnerUpdate> WatchResultOwnerUpdates(Expression<Func<Result, bool>>                filter,
-                                                                            [EnumeratorCancellation] CancellationToken cancellationToken)
+  private static async IAsyncEnumerable<ResultOwnerUpdate> FilterResultOwnerUpdates(IAsyncEnumerable<Result>                      source,
+                                                                                      Func<Result, bool>                            compiled,
+                                                                                      [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    var compiled = filter.Compile();
-
-    await foreach (var result in updateBroadcaster_.Subscribe(cancellationToken)
-                                                   .ConfigureAwait(false))
+    await foreach (var result in source.WithCancellation(cancellationToken)
+                                       .ConfigureAwait(false))
     {
       if (!compiled(result))
         continue;
@@ -157,16 +176,12 @@ public class ResultWatcher : IResultWatcher, IDisposable
     }
   }
 
-  private async IAsyncEnumerable<ResultStatusUpdate> WatchResultStatusUpdates(Expression<Func<Result, bool>>                filter,
-                                                                              [EnumeratorCancellation] CancellationToken cancellationToken)
+  private static async IAsyncEnumerable<ResultStatusUpdate> FilterResultStatusUpdates(IAsyncEnumerable<Result>                      source,
+                                                                                        Func<Result, bool>                            compiled,
+                                                                                        [EnumeratorCancellation] CancellationToken cancellationToken)
   {
-    // DEFAULT replica identity: same caveat as WatchResultOwnerUpdates — no old row values
-    // in the WAL, so status comparisons are impossible. Every result UPDATE fires here.
-    // Consumers must tolerate duplicate status notifications.
-    var compiled = filter.Compile();
-
-    await foreach (var result in updateBroadcaster_.Subscribe(cancellationToken)
-                                                   .ConfigureAwait(false))
+    await foreach (var result in source.WithCancellation(cancellationToken)
+                                       .ConfigureAwait(false))
     {
       if (!compiled(result))
         continue;
