@@ -29,8 +29,6 @@ using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-using Npgsql.Replication;
-using Npgsql.Replication.PgOutput;
 using Npgsql.Replication.PgOutput.Messages;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
@@ -38,15 +36,59 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 namespace ArmoniK.Core.Adapters.PostgresSQL;
 
 /// <inheritdoc cref="ITaskWatcher" />
-public class TaskWatcher : ITaskWatcher
+public class TaskWatcher : ITaskWatcher, IDisposable
 {
-  private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly NpgsqlConnectionProvider      connectionProvider_;
+  private readonly WalBroadcaster<TaskData> insertBroadcaster_;
+  private readonly WalBroadcaster<TaskData> updateBroadcaster_;
 
   /// <summary>
   ///   Creates a new TaskWatcher
   /// </summary>
   public TaskWatcher(NpgsqlConnectionProvider connectionProvider)
-    => connectionProvider_ = connectionProvider;
+  {
+    connectionProvider_ = connectionProvider;
+
+    insertBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
+                                                       async (message, ct) =>
+                                                       {
+                                                         if (message is InsertMessage insert && insert.Relation.RelationName == "tasks")
+                                                           return await WalHelpers.ReadTaskData(insert.NewRow,
+                                                                                                ct)
+                                                                                  .ConfigureAwait(false);
+                                                         await WalHelpers.ConsumeMessage(message,
+                                                                                         ct)
+                                                                         .ConfigureAwait(false);
+                                                         return null;
+                                                       });
+
+    updateBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
+                                                       async (message, ct) =>
+                                                       {
+                                                         if (message is UpdateMessage update && update.Relation.RelationName == "tasks")
+                                                         {
+                                                           await WalHelpers.ConsumeOldTuple(update,
+                                                                                            ct)
+                                                                           .ConfigureAwait(false);
+                                                           return await WalHelpers.ReadTaskData(update.NewRow,
+                                                                                                ct)
+                                                                                  .ConfigureAwait(false);
+                                                         }
+
+                                                         await WalHelpers.ConsumeMessage(message,
+                                                                                         ct)
+                                                                         .ConfigureAwait(false);
+                                                         return null;
+                                                       });
+  }
+
+  /// <inheritdoc />
+  public void Dispose()
+  {
+    insertBroadcaster_.Dispose();
+    updateBroadcaster_.Dispose();
+    GC.SuppressFinalize(this);
+  }
 
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(Expression<Func<TaskData, bool>> filter,
@@ -72,39 +114,12 @@ public class TaskWatcher : ITaskWatcher
                                                         [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var compiled = filter.Compile();
-    var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
-    await using var replConn = connectionProvider_.CreateReplicationConnection();
-    await replConn.Open(cancellationToken)
-                  .ConfigureAwait(false);
-
-    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
-                                                            temporarySlot: true,
-                                                            cancellationToken: cancellationToken)
-                             .ConfigureAwait(false);
-
-    await foreach (var message in replConn.StartReplication(slot,
-                                                            options,
-                                                            cancellationToken)
-                                          .ConfigureAwait(false))
+    await foreach (var taskData in insertBroadcaster_.Subscribe(cancellationToken)
+                                                     .ConfigureAwait(false))
     {
-      replConn.SetReplicationStatus(message.WalEnd);
-
-      if (message is not InsertMessage insert || insert.Relation.RelationName != "tasks")
-      {
-        await WalHelpers.ConsumeMessage(message,
-                                        cancellationToken)
-                        .ConfigureAwait(false);
-        continue;
-      }
-
-      var taskData = await WalHelpers.ReadTaskData(insert.NewRow, cancellationToken).ConfigureAwait(false);
-
       if (!compiled(taskData))
-      {
         continue;
-      }
 
       yield return new NewTask(taskData.SessionId,
                                taskData.TaskId,
@@ -121,56 +136,22 @@ public class TaskWatcher : ITaskWatcher
   private async IAsyncEnumerable<TaskStatusUpdate> WatchTaskStatusUpdates(Expression<Func<TaskData, bool>>              filter,
                                                                           [EnumeratorCancellation] CancellationToken cancellationToken)
   {
+    // DEFAULT replica identity: the WAL does not carry old row values, so we cannot
+    // compare old vs new status to suppress no-op events. Every task UPDATE reaches
+    // this watcher — including timestamp-only changes (e.g. acquisition_date).
+    // Trade-off: consumers must tolerate receiving the same status twice. This matches
+    // the MongoDB adaptor behaviour, which also cannot filter on updated fields server-side.
     var compiled = filter.Compile();
-    var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
-    await using var replConn = connectionProvider_.CreateReplicationConnection();
-    await replConn.Open(cancellationToken)
-                  .ConfigureAwait(false);
-
-    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
-                                                            temporarySlot: true,
-                                                            cancellationToken: cancellationToken)
-                             .ConfigureAwait(false);
-
-    await foreach (var message in replConn.StartReplication(slot,
-                                                            options,
-                                                            cancellationToken)
-                                          .ConfigureAwait(false))
+    await foreach (var taskData in updateBroadcaster_.Subscribe(cancellationToken)
+                                                     .ConfigureAwait(false))
     {
-      replConn.SetReplicationStatus(message.WalEnd);
-
-      // DEFAULT replica identity: the WAL does not carry old row values, so we cannot
-      // compare old vs new status to suppress no-op events. Every task UPDATE reaches
-      // this watcher — including timestamp-only changes (e.g. acquisition_date).
-      // Trade-off: consumers must tolerate receiving the same status twice. This matches
-      // the MongoDB adaptor behaviour, which also cannot filter on updated fields server-side.
-      if (message is not UpdateMessage update || update.Relation.RelationName != "tasks")
-      {
-        await WalHelpers.ConsumeMessage(message,
-                                        cancellationToken)
-                        .ConfigureAwait(false);
-        continue;
-      }
-
-      // With DEFAULT replica identity, Npgsql surfaces the old PK as an IndexUpdateMessage.Key
-      // tuple that must be consumed before NewRow can be read.
-      await WalHelpers.ConsumeOldTuple(update,
-                                       cancellationToken)
-                      .ConfigureAwait(false);
-
-      var taskData = await WalHelpers.ReadTaskData(update.NewRow, cancellationToken).ConfigureAwait(false);
-
       if (!compiled(taskData))
-      {
         continue;
-      }
 
       yield return new TaskStatusUpdate(taskData.SessionId,
                                         taskData.TaskId,
                                         taskData.Status);
     }
   }
-
 }

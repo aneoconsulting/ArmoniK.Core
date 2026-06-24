@@ -29,22 +29,71 @@ using ArmoniK.Core.Common.Storage.Events;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-using Npgsql.Replication;
-using Npgsql.Replication.PgOutput;
 using Npgsql.Replication.PgOutput.Messages;
 
 namespace ArmoniK.Core.Adapters.PostgresSQL;
 
 /// <inheritdoc cref="IResultWatcher" />
-public class ResultWatcher : IResultWatcher
+public class ResultWatcher : IResultWatcher, IDisposable
 {
-  private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly NpgsqlConnectionProvider     connectionProvider_;
+  private readonly WalBroadcaster<Result> insertBroadcaster_;
+
+  // Shared between WatchResultStatusUpdates and WatchResultOwnerUpdates — both consume
+  // UpdateMessage on the results table with identical WAL handling, so one connection suffices.
+  private readonly WalBroadcaster<Result> updateBroadcaster_;
 
   /// <summary>
   ///   Creates a new ResultWatcher
   /// </summary>
   public ResultWatcher(NpgsqlConnectionProvider connectionProvider)
-    => connectionProvider_ = connectionProvider;
+  {
+    connectionProvider_ = connectionProvider;
+
+    insertBroadcaster_ = new WalBroadcaster<Result>(connectionProvider,
+                                                     async (message, ct) =>
+                                                     {
+                                                       if (message is InsertMessage insert && insert.Relation.RelationName == "results")
+                                                         return await WalHelpers.ReadResult(insert.NewRow,
+                                                                                            ct)
+                                                                                .ConfigureAwait(false);
+                                                       await WalHelpers.ConsumeMessage(message,
+                                                                                       ct)
+                                                                       .ConfigureAwait(false);
+                                                       return null;
+                                                     });
+
+    updateBroadcaster_ = new WalBroadcaster<Result>(connectionProvider,
+                                                     async (message, ct) =>
+                                                     {
+                                                       if (message is UpdateMessage update && update.Relation.RelationName == "results")
+                                                       {
+                                                         // DEFAULT replica identity: the old owner_task_id is not present in the WAL.
+                                                         // previousOwner is always "" — the same limitation the MongoDB adaptor has
+                                                         // (its change stream also does not surface the pre-update field value).
+                                                         // Every result UPDATE reaches this watcher; consumers must be idempotent.
+                                                         await WalHelpers.ConsumeOldTuple(update,
+                                                                                          ct)
+                                                                         .ConfigureAwait(false);
+                                                         return await WalHelpers.ReadResult(update.NewRow,
+                                                                                            ct)
+                                                                                .ConfigureAwait(false);
+                                                       }
+
+                                                       await WalHelpers.ConsumeMessage(message,
+                                                                                       ct)
+                                                                       .ConfigureAwait(false);
+                                                       return null;
+                                                     });
+  }
+
+  /// <inheritdoc />
+  public void Dispose()
+  {
+    insertBroadcaster_.Dispose();
+    updateBroadcaster_.Dispose();
+    GC.SuppressFinalize(this);
+  }
 
   /// <inheritdoc />
   public async Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
@@ -76,39 +125,12 @@ public class ResultWatcher : IResultWatcher
                                                             [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var compiled = filter.Compile();
-    var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
-    await using var replConn = connectionProvider_.CreateReplicationConnection();
-    await replConn.Open(cancellationToken)
-                  .ConfigureAwait(false);
-
-    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
-                                                            temporarySlot: true,
-                                                            cancellationToken: cancellationToken)
-                             .ConfigureAwait(false);
-
-    await foreach (var message in replConn.StartReplication(slot,
-                                                            options,
-                                                            cancellationToken)
-                                          .ConfigureAwait(false))
+    await foreach (var result in insertBroadcaster_.Subscribe(cancellationToken)
+                                                   .ConfigureAwait(false))
     {
-      replConn.SetReplicationStatus(message.WalEnd);
-
-      if (message is not InsertMessage insert || insert.Relation.RelationName != "results")
-      {
-        await WalHelpers.ConsumeMessage(message,
-                                        cancellationToken)
-                        .ConfigureAwait(false);
-        continue;
-      }
-
-      var result = await WalHelpers.ReadResult(insert.NewRow, cancellationToken).ConfigureAwait(false);
-
       if (!compiled(result))
-      {
         continue;
-      }
 
       yield return new NewResult(result.SessionId,
                                  result.ResultId,
@@ -121,48 +143,12 @@ public class ResultWatcher : IResultWatcher
                                                                             [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     var compiled = filter.Compile();
-    var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
-    await using var replConn = connectionProvider_.CreateReplicationConnection();
-    await replConn.Open(cancellationToken)
-                  .ConfigureAwait(false);
-
-    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
-                                                            temporarySlot: true,
-                                                            cancellationToken: cancellationToken)
-                             .ConfigureAwait(false);
-
-    await foreach (var message in replConn.StartReplication(slot,
-                                                            options,
-                                                            cancellationToken)
-                                          .ConfigureAwait(false))
+    await foreach (var result in updateBroadcaster_.Subscribe(cancellationToken)
+                                                   .ConfigureAwait(false))
     {
-      replConn.SetReplicationStatus(message.WalEnd);
-
-      // DEFAULT replica identity: the old owner_task_id is not present in the WAL.
-      // previousOwner is always "" — the same limitation the MongoDB adaptor has
-      // (its change stream also does not surface the pre-update field value).
-      // Every result UPDATE reaches this watcher; consumers must be idempotent.
-      if (message is not UpdateMessage update || update.Relation.RelationName != "results")
-      {
-        await WalHelpers.ConsumeMessage(message,
-                                        cancellationToken)
-                        .ConfigureAwait(false);
-        continue;
-      }
-
-      // Consume the old-key tuple before reading NewRow.
-      await WalHelpers.ConsumeOldTuple(update,
-                                       cancellationToken)
-                      .ConfigureAwait(false);
-
-      var result = await WalHelpers.ReadResult(update.NewRow, cancellationToken).ConfigureAwait(false);
-
       if (!compiled(result))
-      {
         continue;
-      }
 
       yield return new ResultOwnerUpdate(result.SessionId,
                                          result.ResultId,
@@ -174,53 +160,20 @@ public class ResultWatcher : IResultWatcher
   private async IAsyncEnumerable<ResultStatusUpdate> WatchResultStatusUpdates(Expression<Func<Result, bool>>                filter,
                                                                               [EnumeratorCancellation] CancellationToken cancellationToken)
   {
+    // DEFAULT replica identity: same caveat as WatchResultOwnerUpdates — no old row values
+    // in the WAL, so status comparisons are impossible. Every result UPDATE fires here.
+    // Consumers must tolerate duplicate status notifications.
     var compiled = filter.Compile();
-    var slotName = $"armonik_{Guid.NewGuid():N}";
-    var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
 
-    await using var replConn = connectionProvider_.CreateReplicationConnection();
-    await replConn.Open(cancellationToken)
-                  .ConfigureAwait(false);
-
-    var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
-                                                            temporarySlot: true,
-                                                            cancellationToken: cancellationToken)
-                             .ConfigureAwait(false);
-
-    await foreach (var message in replConn.StartReplication(slot,
-                                                            options,
-                                                            cancellationToken)
-                                          .ConfigureAwait(false))
+    await foreach (var result in updateBroadcaster_.Subscribe(cancellationToken)
+                                                   .ConfigureAwait(false))
     {
-      replConn.SetReplicationStatus(message.WalEnd);
-
-      // DEFAULT replica identity: same caveat as WatchResultOwnerUpdates — no old row values
-      // in the WAL, so status comparisons are impossible. Every result UPDATE fires here.
-      // Consumers must tolerate duplicate status notifications.
-      if (message is not UpdateMessage update || update.Relation.RelationName != "results")
-      {
-        await WalHelpers.ConsumeMessage(message,
-                                        cancellationToken)
-                        .ConfigureAwait(false);
-        continue;
-      }
-
-      // Consume the old-key tuple before reading NewRow.
-      await WalHelpers.ConsumeOldTuple(update,
-                                       cancellationToken)
-                      .ConfigureAwait(false);
-
-      var result = await WalHelpers.ReadResult(update.NewRow, cancellationToken).ConfigureAwait(false);
-
       if (!compiled(result))
-      {
         continue;
-      }
 
       yield return new ResultStatusUpdate(result.SessionId,
                                           result.ResultId,
                                           result.Status);
     }
   }
-
 }
