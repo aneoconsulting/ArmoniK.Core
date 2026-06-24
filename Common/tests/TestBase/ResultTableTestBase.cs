@@ -859,6 +859,68 @@ public class ResultTableTestBase
   }
 
   [Test]
+  public async Task UpdateManyResultsWithIsNullOrEmptyFilterShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var sessionId = Guid.NewGuid()
+                         .ToString();
+
+      await ResultTable!.Create(new[]
+                                {
+                                  new Result(sessionId,
+                                             "ResultEmptyOwner",
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.Today,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                  new Result(sessionId,
+                                             "ResultWithOwner",
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "SomeTask",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.Today,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                })
+                        .ConfigureAwait(false);
+
+      var count = await ResultTable!.UpdateManyResults(r => r.SessionId == sessionId && string.IsNullOrEmpty(r.OwnerTaskId),
+                                                       new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                          ResultStatus.Aborted),
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+
+      var updated = await ResultTable!.GetResult("ResultEmptyOwner",
+                                                 CancellationToken.None)
+                                      .ConfigureAwait(false);
+      Assert.That(updated.Status,
+                  Is.EqualTo(ResultStatus.Aborted));
+
+      var untouched = await ResultTable!.GetResult("ResultWithOwner",
+                                                   CancellationToken.None)
+                                        .ConfigureAwait(false);
+      Assert.That(untouched.Status,
+                  Is.EqualTo(ResultStatus.Created));
+    }
+  }
+
+  [Test]
   public async Task ListResultsAsyncStartsWithSpecialCharsShouldMatchLiterally()
   {
     if (RunTests)
