@@ -143,7 +143,7 @@ internal class PostgresDatabaseProvider : IDisposable
                                 dbDir: null,
                                 addLocalUserAccessPermission: true,
                                 clearWorkingDirOnStart: true,
-                                locale: "C.UTF-8");
+                                locale: "C");
       server.Start();
 
       var port             = server.PgPort;
