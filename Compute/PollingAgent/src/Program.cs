@@ -96,14 +96,14 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddArmoniKWorkerConnection(builder.Configuration);
 
-        builder.Services.AddPostgresComponents(builder.Configuration,
-                                               logger.GetLogger());
-        builder.Services.AddMongoComponents(builder.Configuration,
-                                            logger.GetLogger());
+      builder.Services.AddPostgresComponents(builder.Configuration,
+                                             logger.GetLogger());
+      builder.Services.AddMongoComponents(builder.Configuration,
+                                          logger.GetLogger());
 
       builder.Services.AddAdapter(builder.Configuration,
-                         nameof(Components.QueueAdaptorSettings),
-                         logger.GetLogger())
+                                  nameof(Components.QueueAdaptorSettings),
+                                  logger.GetLogger())
              .AddAdapter(builder.Configuration,
                          nameof(Components.ObjectStorageAdaptorSettings),
                          logger.GetLogger())

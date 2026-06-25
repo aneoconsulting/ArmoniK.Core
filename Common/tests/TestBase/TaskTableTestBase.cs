@@ -2281,7 +2281,7 @@ public class TaskTableTestBase
                   Is.EqualTo(TaskStatus.Processing));
 
       var after = await TaskTable!.ReadTaskAsync("TaskProcessingId",
-                                                  CancellationToken.None)
+                                                 CancellationToken.None)
                                   .ConfigureAwait(false);
       Assert.That(after.Status,
                   Is.EqualTo(TaskStatus.Completed));

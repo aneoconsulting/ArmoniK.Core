@@ -960,11 +960,11 @@ public class ResultTableTestBase
                         .ConfigureAwait(false);
 
       var (results, count) = await ResultTable!.ListResultsAsync(r => r.ResultId.StartsWith("result_"),
-                                                                  r => r.ResultId,
-                                                                  true,
-                                                                  0,
-                                                                  10,
-                                                                  CancellationToken.None)
+                                                                 r => r.ResultId,
+                                                                 true,
+                                                                 0,
+                                                                 10,
+                                                                 CancellationToken.None)
                                                .ConfigureAwait(false);
 
       Assert.That(count,

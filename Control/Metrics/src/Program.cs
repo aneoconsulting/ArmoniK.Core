@@ -65,13 +65,12 @@ public static class Program
 
       builder.Services.AddLogging(logger.Configure);
 
-        builder.Services.AddPostgresComponents(builder.Configuration,
-                                               logger.GetLogger());
-        builder.Services.AddMongoComponents(builder.Configuration,
-                                            logger.GetLogger());
+      builder.Services.AddPostgresComponents(builder.Configuration,
+                                             logger.GetLogger());
+      builder.Services.AddMongoComponents(builder.Configuration,
+                                          logger.GetLogger());
 
-      builder.Services
-             .AddSingleton(builder.Configuration.GetInitializedValue<MetricsExporter>(MetricsExporter.SettingSection))
+      builder.Services.AddSingleton(builder.Configuration.GetInitializedValue<MetricsExporter>(MetricsExporter.SettingSection))
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()

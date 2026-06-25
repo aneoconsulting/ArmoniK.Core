@@ -55,6 +55,8 @@ using OpenTelemetry.Trace;
 
 using Serilog;
 
+using ServiceCollectionExt = ArmoniK.Core.Adapters.PostgresSQL.ServiceCollectionExt;
+
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
 namespace ArmoniK.Core.Control.Submitter;
@@ -92,14 +94,14 @@ public static class Program
       builder.Services.AddLogging(logger.Configure)
              .AddHttpClient();
 
-        builder.Services.AddPostgresComponents(builder.Configuration,
-                                               logger.GetLogger());
-        builder.Services.AddMongoComponents(builder.Configuration,
-                                            logger.GetLogger());
+      builder.Services.AddPostgresComponents(builder.Configuration,
+                                             logger.GetLogger());
+      builder.Services.AddMongoComponents(builder.Configuration,
+                                          logger.GetLogger());
 
       builder.Services.AddAdapter(builder.Configuration,
-                         nameof(Components.QueueAdaptorSettings),
-                         logger.GetLogger())
+                                  nameof(Components.QueueAdaptorSettings),
+                                  logger.GetLogger())
              .AddAdapter(builder.Configuration,
                          nameof(Components.ObjectStorageAdaptorSettings),
                          logger.GetLogger())
@@ -168,10 +170,10 @@ public static class Program
                          });
       }
 
-        ArmoniK.Core.Adapters.PostgresSQL.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
-                                                                                                       builder.Configuration);
-        ArmoniK.Core.Adapters.MongoDB.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
-                                                                                                   builder.Configuration);
+      ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
+                                                                   builder.Configuration);
+      Adapters.MongoDB.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
+                                                                                    builder.Configuration);
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
                                                       out var authCache);
 
