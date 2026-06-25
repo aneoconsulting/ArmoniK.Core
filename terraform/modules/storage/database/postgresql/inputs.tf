@@ -15,13 +15,13 @@ variable "windows" {
 
 variable "postgresql_params" {
   type = object({
-    user             = string
-    password         = string
-    database_name    = string
-    ssl              = bool
-    max_pool_size    = number
-    max_connections  = number
-    exposed_port     = number
+    user              = string
+    password          = string
+    database_name     = string
+    ssl               = bool
+    max_pool_size     = number
+    max_connections   = number
+    exposed_port      = number
     min_polling_delay = string
     max_polling_delay = string
   })

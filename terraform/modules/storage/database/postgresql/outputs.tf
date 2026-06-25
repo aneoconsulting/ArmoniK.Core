@@ -1,7 +1,7 @@
 output "generated_env_vars" {
   value = {
     "Components__TableStorage"                  = "ArmoniK.Adapters.PostgresSQL.TableStorage"
-    "Components__AuthenticationStorage"                  = "ArmoniK.Adapters.PostgresSQL.AuthenticationTable"
+    "Components__AuthenticationStorage"         = "ArmoniK.Adapters.PostgresSQL.AuthenticationTable"
     "PostgreSQL__Host"                          = docker_container.database.name
     "PostgreSQL__Port"                          = "5432"
     "PostgreSQL__User"                          = var.postgresql_params.user
