@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -2403,6 +2404,168 @@ public class TaskTableTestBase
       Assert.That(tasks.Single()
                        .TaskId,
                   Is.EqualTo("TaskWithQuotedKey"));
+    }
+  }
+
+  // --- Tests for fixes applied to the PostgreSQL adaptor ---
+
+  [Test]
+  public async Task FindTasksAsyncShouldReturnRemainingDataDependencies()
+  {
+    if (RunTests)
+    {
+      // Fix #1: FindTasksAsync was returning TaskData with RemainingDataDependencies always empty.
+      // taskSubmittedData_ has DataDependencies=["dependency1"] and PayloadId="PayloadId",
+      // so RemainingDataDependencies should contain both keys.
+      var tasks = await TaskTable!.FindTasksAsync(data => data.TaskId == "TaskSubmittedId",
+                                                  data => data,
+                                                  CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.That(tasks.Single()
+                       .RemainingDataDependencies,
+                  Does.ContainKey("dependency1"));
+    }
+  }
+
+  [Test]
+  public async Task ListTasksAsyncShouldReturnRemainingDataDependencies()
+  {
+    if (RunTests)
+    {
+      // Fix #1: ListTasksAsync was returning TaskData with RemainingDataDependencies always empty.
+      var (tasks, _) = await TaskTable!.ListTasksAsync(data => data.TaskId == "TaskSubmittedId",
+                                                       data => data.TaskId,
+                                                       data => data,
+                                                       false,
+                                                       0,
+                                                       10,
+                                                       CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+      Assert.That(tasks.Single()
+                       .RemainingDataDependencies,
+                  Does.ContainKey("dependency1"));
+    }
+  }
+
+  [Test]
+  public async Task RemoveRemainingDataDependenciesPartialShouldNotBeReady()
+  {
+    if (RunTests)
+    {
+      // Fix #2: verify that a task with 2 remaining dependencies is not "ready" after removing
+      // only one, and becomes ready only after both are removed.
+      var taskId    = Guid.NewGuid().ToString();
+      const string dep1      = "depA";
+      const string dep2      = "depB";
+      const string payloadId = "payloadForPartialTest";
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionId",
+                                                  taskId,
+                                                  "",
+                                                  "",
+                                                  payloadId,
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    dep1,
+                                                    dep2,
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Creating,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      // Remove only dep1 — dep2 and payloadId are still remaining.
+      var notReady = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                          {
+                                                                            taskId,
+                                                                          },
+                                                                          new[]
+                                                                          {
+                                                                            dep1,
+                                                                          },
+                                                                          td => td.TaskId,
+                                                                          CancellationToken.None)
+                                    .ToListAsync(CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(notReady,
+                  Is.Empty,
+                  "Task should not be ready when only one of its dependencies has been removed");
+
+      // Remove the remaining dep2 and payloadId — task is now ready.
+      var ready = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                       {
+                                                                         taskId,
+                                                                       },
+                                                                       new[]
+                                                                       {
+                                                                         dep2,
+                                                                         payloadId,
+                                                                       },
+                                                                       td => td.TaskId,
+                                                                       CancellationToken.None)
+                                 .ToListAsync(CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+      Assert.That(ready,
+                  Is.EqualTo(new[]
+                             {
+                               taskId,
+                             }));
+    }
+  }
+
+  [Test]
+  public async Task ListApplicationFromTasksNoSortShouldSucceed()
+  {
+    if (RunTests)
+    {
+      // Fix #8: ListApplicationsAsync with an empty sort field list was emitting "ORDER BY "
+      // (trailing keyword with no columns), which is invalid SQL and throws on PostgreSQL.
+      var (applications, _) = await TaskTable!.ListApplicationsAsync(_ => true,
+                                                                     Array.Empty<Expression<Func<Application, object?>>>(),
+                                                                     false,
+                                                                     0,
+                                                                     10,
+                                                                     CancellationToken.None)
+                                              .ConfigureAwait(false);
+
+      Assert.That(applications,
+                  Is.Not.Empty);
+    }
+  }
+
+  [Test]
+  public async Task FindTasksAsyncEqualsNullShouldUseIsNullInSql()
+  {
+    if (RunTests)
+    {
+      // Fix #10: .Equals(null) on a nullable field was previously translated to (col = NULL)
+      // which is never true in SQL. After the fix it translates to (col IS NULL).
+      // All fixture tasks are created via the short constructor that sets StartDate = null,
+      // so filtering on StartDate.Equals(null) must return at least the fixture tasks.
+      var tasks = await TaskTable!.FindTasksAsync(data => data.StartDate.Equals(null),
+                                                  data => data.TaskId,
+                                                  CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.That(tasks,
+                  Is.Not.Empty);
     }
   }
 
