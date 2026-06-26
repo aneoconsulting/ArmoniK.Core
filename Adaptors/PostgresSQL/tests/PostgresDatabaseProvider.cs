@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading;
 
 using ArmoniK.Core.Common.Injection.Options;
@@ -80,22 +81,24 @@ internal class PostgresDatabaseProvider : IDisposable
                                                     "ArmoniK.Adapters.PostgresSQL.AuthenticationTable"
                                                   },
                                                   {
-                                                    $"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.Host)}", "localhost"
-                                                  },
-                                                  {
-                                                    $"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.Port)}", sharedPort_.ToString()
-                                                  },
-                                                  {
-                                                    $"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.User)}", PgUser
-                                                  },
-                                                  {
-                                                    $"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.DatabaseName)}", DatabaseName
-                                                  },
-                                                  {
                                                     $"{Options.TableStorage.SettingSection}:{nameof(Options.TableStorage.PollingDelayMax)}",
                                                     "00:00:10"
                                                   },
                                                 };
+
+    // When using an external PostgreSQL (POSTGRES_TEST_CONNECTION_STRING set), sharedPort_ is 0.
+    // Use the ConnectionString option directly; otherwise configure individual fields from pg_embed.
+    if (sharedPort_ == 0)
+    {
+      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.ConnectionString)}"] = sharedConnectionString_;
+    }
+    else
+    {
+      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.Host)}"]         = "localhost";
+      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.Port)}"]         = sharedPort_.ToString();
+      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.User)}"]         = PgUser;
+      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.DatabaseName)}"] = DatabaseName;
+    }
 
     var configuration = new ConfigurationManager();
     configuration.AddInMemoryCollection(minimalConfig)
@@ -126,23 +129,38 @@ internal class PostgresDatabaseProvider : IDisposable
 
   private static void EnsureServerStarted()
   {
-    if (sharedServer_ is not null)
+    if (sharedConnectionString_ is not null)
     {
       return;
     }
 
     lock (Lock)
     {
-      if (sharedServer_ is not null)
+      if (sharedConnectionString_ is not null)
       {
         return;
       }
 
+      var externalConnStr = Environment.GetEnvironmentVariable("POSTGRES_TEST_CONNECTION_STRING");
+      if (externalConnStr is not null)
+      {
+        // Use an externally managed PostgreSQL (e.g. `docker run -d -p 5432:5432 -e POSTGRES_HOST_AUTH_METHOD=trust postgres:17`).
+        // The database must already exist.
+        sharedConnectionString_ = externalConnStr;
+        return;
+      }
+
+      // Persist binaries and data outside the build output so they survive
+      // `dotnet clean` and are reused across runs (much faster startup).
+      var pgDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+                               "armonik-pg-embed");
+
       var server = new PgServer("17.4.0",
                                 pgUser: PgUser,
-                                dbDir: null,
+                                dbDir: pgDir,
                                 addLocalUserAccessPermission: true,
-                                clearWorkingDirOnStart: true,
+                                // Keep the data directory between runs; TruncateAllTables handles cleanup.
+                                clearWorkingDirOnStart: false,
                                 locale: "C");
       server.Start();
 
@@ -178,6 +196,11 @@ internal class PostgresDatabaseProvider : IDisposable
         cmd.ExecuteNonQuery();
         return;
       }
+      catch (Npgsql.PostgresException ex) when (ex.SqlState == "42P04") // duplicate_database
+      {
+        // Database already exists (clearWorkingDirOnStart=false reuses existing data dir).
+        return;
+      }
       catch (NpgsqlException)
       {
         Thread.Sleep(500);
@@ -192,10 +215,11 @@ internal class PostgresDatabaseProvider : IDisposable
     using var conn = new NpgsqlConnection(sharedConnectionString_);
     conn.Open();
     using var cmd = conn.CreateCommand();
-    cmd.CommandText = "DO $$ DECLARE r RECORD; BEGIN " +
-                      "FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP " +
-                      "EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE'; " +
-                      "END LOOP; END $$;";
+    cmd.CommandTimeout = 30;
+    cmd.CommandText    = "DO $$ DECLARE r RECORD; BEGIN " +
+                         "FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP " +
+                         "EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE'; " +
+                         "END LOOP; END $$;";
     cmd.ExecuteNonQuery();
   }
 }
