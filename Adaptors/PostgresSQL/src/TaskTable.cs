@@ -344,16 +344,30 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     dataCmd.Parameters.AddWithValue("offset",
                                     page * pageSize);
 
-    await using var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
-                                          .ConfigureAwait(false);
+    var rawTasks = new List<TaskData>();
+    await using (var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
+                                           .ConfigureAwait(false))
+    {
+      while (await reader.ReadAsync(cancellationToken)
+                         .ConfigureAwait(false))
+      {
+        rawTasks.Add(RowMapper.MapToTaskData(reader));
+      }
+    }
+
+    var depsByTaskId = await LoadRemainingDependenciesBatch(connection,
+                                                            rawTasks,
+                                                            cancellationToken)
+                         .ConfigureAwait(false);
 
     var compiled = selector.Compile();
     var results  = new List<T>();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
+    foreach (var taskData in rawTasks)
     {
-      var taskData = RowMapper.MapToTaskData(reader);
-      results.Add(compiled.Invoke(taskData));
+      results.Add(compiled.Invoke(taskData with
+                                  {
+                                    RemainingDataDependencies = depsByTaskId[taskData.TaskId],
+                                  }));
     }
 
     return (results, totalCount);
@@ -374,15 +388,29 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     SqlHelper.AddExpressionParameters(cmd,
                                       whereParams);
 
-    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
-                                      .ConfigureAwait(false);
+    var rawTasks = new List<TaskData>();
+    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                       .ConfigureAwait(false))
+    {
+      while (await reader.ReadAsync(cancellationToken)
+                         .ConfigureAwait(false))
+      {
+        rawTasks.Add(RowMapper.MapToTaskData(reader));
+      }
+    }
+
+    var depsByTaskId = await LoadRemainingDependenciesBatch(connection,
+                                                            rawTasks,
+                                                            cancellationToken)
+                         .ConfigureAwait(false);
 
     var compiled = selector.Compile();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
+    foreach (var taskData in rawTasks)
     {
-      var taskData = RowMapper.MapToTaskData(reader);
-      yield return compiled.Invoke(taskData);
+      yield return compiled.Invoke(taskData with
+                                   {
+                                     RemainingDataDependencies = depsByTaskId[taskData.TaskId],
+                                   });
     }
   }
 
@@ -561,11 +589,29 @@ LIMIT @limit OFFSET @offset";
       yield break;
     }
 
-    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+    var readyTasks = await FetchReadyTasksAfterDependencyRemoval(taskIds,
+                                                                  dependenciesToRemove,
+                                                                  cancellationToken)
+                      .ConfigureAwait(false);
 
-    // Remove dependencies
+    var compiled = selector.Compile();
+    foreach (var taskData in readyTasks)
+    {
+      yield return compiled.Invoke(taskData);
+    }
+  }
+
+  private async Task<List<TaskData>> FetchReadyTasksAfterDependencyRemoval(ICollection<string> taskIds,
+                                                                           ICollection<string> dependenciesToRemove,
+                                                                           CancellationToken   cancellationToken)
+  {
+    await using var connection  = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                           .ConfigureAwait(false);
+    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
+                                                  .ConfigureAwait(false);
+
     await using var deleteCmd = connection.CreateCommand();
+    deleteCmd.Transaction = transaction;
     deleteCmd.CommandText = "DELETE FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids) AND dependency_id = ANY(@dep_ids)";
     deleteCmd.Parameters.AddWithValue("task_ids",
                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
@@ -577,8 +623,8 @@ LIMIT @limit OFFSET @offset";
     await deleteCmd.ExecuteNonQueryAsync(cancellationToken)
                    .ConfigureAwait(false);
 
-    // Find tasks that are now ready (no remaining dependencies)
     await using var readyCmd = connection.CreateCommand();
+    readyCmd.Transaction = transaction;
     readyCmd.CommandText = @"
 SELECT t.* FROM tasks t
 WHERE t.task_id = ANY(@ready_task_ids)
@@ -594,16 +640,21 @@ WHERE t.task_id = ANY(@ready_task_ids)
     readyCmd.Parameters.AddWithValue("status_pending",
                                      (int)TaskStatus.Pending);
 
-    await using var reader = await readyCmd.ExecuteReaderAsync(cancellationToken)
-                                           .ConfigureAwait(false);
-
-    var compiled = selector.Compile();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
+    var result = new List<TaskData>();
+    await using (var reader = await readyCmd.ExecuteReaderAsync(cancellationToken)
+                                            .ConfigureAwait(false))
     {
-      var taskData = RowMapper.MapToTaskData(reader);
-      yield return compiled.Invoke(taskData);
+      while (await reader.ReadAsync(cancellationToken)
+                         .ConfigureAwait(false))
+      {
+        result.Add(RowMapper.MapToTaskData(reader));
+      }
     }
+
+    await transaction.CommitAsync(cancellationToken)
+                     .ConfigureAwait(false);
+
+    return result;
   }
 
   /// <inheritdoc />
@@ -645,6 +696,48 @@ WHERE t.task_id = ANY(@ready_task_ids)
                                            cancellationToken,
                                            transaction)
              .ConfigureAwait(false);
+  }
+
+  private static async Task<Dictionary<string, Dictionary<string, bool>>> LoadRemainingDependenciesBatch(NpgsqlConnection   connection,
+                                                                                                          List<TaskData>     tasks,
+                                                                                                          CancellationToken  cancellationToken,
+                                                                                                          NpgsqlTransaction? transaction = null)
+  {
+    var result = tasks.ToDictionary(t => t.TaskId,
+                                    _ => new Dictionary<string, bool>());
+
+    if (result.Count == 0)
+    {
+      return result;
+    }
+
+    await using var cmd = connection.CreateCommand();
+    if (transaction is not null)
+    {
+      cmd.Transaction = transaction;
+    }
+
+    cmd.CommandText = "SELECT task_id, dependency_id FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids)";
+    cmd.Parameters.AddWithValue("task_ids",
+                                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                result.Keys.ToArray());
+
+    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                      .ConfigureAwait(false);
+
+    while (await reader.ReadAsync(cancellationToken)
+                       .ConfigureAwait(false))
+    {
+      var taskId = reader.GetString(0);
+      var depId  = reader.GetString(1);
+      if (result.TryGetValue(taskId,
+                             out var deps))
+      {
+        deps[depId] = true;
+      }
+    }
+
+    return result;
   }
 
   private static async Task<TaskData> LoadRemainingDependencies(NpgsqlConnection   connection,
