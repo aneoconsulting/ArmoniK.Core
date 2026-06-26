@@ -105,12 +105,7 @@ public static class Program
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
-             .AddExceptionManager(sp =>
-                                  {
-                                    var options = sp.GetRequiredService<Common.Injection.Options.Submitter>();
-                                    return new ExceptionManager.Options(options.GraceDelay,
-                                                                        options.MaxErrorAllowed);
-                                  })
+             .AddExceptionManager(sp => ExceptionManager.Options.FromSubmitterOptions(sp.GetRequiredService<Common.Injection.Options.Submitter>()))
              .AddGrpcReflection()
              .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()
@@ -237,6 +232,13 @@ public static class Program
                           new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                          });
+
+      app.UseHealthChecks("/readiness",
+                          1081,
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                           });
 
       if (app.Environment.IsDevelopment())

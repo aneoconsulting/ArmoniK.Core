@@ -65,7 +65,13 @@ public class Submitter
   public int PreferredMessageSize { get; set; } = 2 * 1024 * 1024;
 
   /// <summary>
-  ///   Grace delay before the control plane aborts all on-going RPCs when shutting down
+  ///   Grace delay before the control plane aborts all on-going RPCs when shutting down.
   /// </summary>
   public TimeSpan GraceDelay { get; set; } = TimeSpan.FromSeconds(15);
+
+  /// <summary>
+  ///   Time to wait, after the maximum number of errors has been recorded, before the control plane triggers its own
+  ///   shutdown. Acts as a backstop in case the orchestrator does not initiate the shutdown first.
+  /// </summary>
+  public TimeSpan SelfTerminationDelay { get; set; } = TimeSpan.FromSeconds(10);
 }

@@ -67,13 +67,9 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => Task.FromResult((tag, exceptionManager_.Failed) switch
-                       {
-                         // If there is too many errors, the pod is marked as not ready to avoid Kubernetes sending new requests to the controller.
-                         // Liveness Unhealthy is not needed as the pod is killing itself, without the intervention of Kubernetes.
-                         (HealthCheckTag.Readiness, true) => HealthCheckResult.Unhealthy("Too many errors recorded, application is shutting down"),
-                         _                                => HealthCheckResult.Healthy(),
-                       });
+    => Task.FromResult(exceptionManager_.Failed
+                         ? HealthCheckResult.Unhealthy("Too many errors recorded, application is shutting down")
+                         : HealthCheckResult.Healthy());
 
   /// <inheritdoc />
   public override async Task<TResponse> UnaryServerHandler<TRequest, TResponse>(TRequest                               request,

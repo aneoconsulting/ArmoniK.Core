@@ -94,12 +94,20 @@ internal class ExceptionInterceptorTests
 
   private ExceptionManager BuildExceptionManager(int      maxError,
                                                  TimeSpan graceDelay)
+    => BuildExceptionManager(maxError,
+                             graceDelay,
+                             TimeSpan.Zero);
+
+  private ExceptionManager BuildExceptionManager(int      maxError,
+                                                 TimeSpan graceDelay,
+                                                 TimeSpan selfTerminationDelay)
     => new(lifetime_,
            new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
            new HostingEnvironment(),
            new OptionsWrapper<HostOptions>(new HostOptions()),
            NullLogger<ExceptionManager>.Instance,
            new ExceptionManager.Options(graceDelay,
+                                        selfTerminationDelay,
                                         maxError));
 
   /// <summary>
@@ -653,6 +661,52 @@ internal class ExceptionInterceptorTests
 
   [Test]
   [Timeout(10000)]
+  public async Task RequestDuringSelfTerminationDelayIsAccepted()
+  {
+    // Large delays: neither the grace timer nor the self-termination timer can fire during the test,
+    // so the EarlyCancellationToken stays uncancelled while the manager is already in the Failed state.
+    using var exceptionManager = BuildExceptionManager(0,
+                                                       TimeSpan.FromMinutes(10),
+                                                       TimeSpan.FromMinutes(10));
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    // A single server error crosses the threshold (maxError == 0): this sets Failed and schedules the
+    // deferred self-termination, without cancelling the EarlyCancellationToken yet.
+    Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                     TestServerCallContext.Create(),
+                                                                                                     (_,
+                                                                                                      _) => throw new ApplicationException("server error"))
+                                                                 .ConfigureAwait(false));
+
+    var readiness = await interceptor.Check(HealthCheckTag.Readiness)
+                                     .ConfigureAwait(false);
+    var liveness = await interceptor.Check(HealthCheckTag.Liveness)
+                                    .ConfigureAwait(false);
+
+    // The control plane advertises Unhealthy on every probe tag as soon as it has Failed, while the
+    // EarlyCancellationToken is still pending the self-termination delay.
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(exceptionManager.EarlyCancellationToken.IsCancellationRequested,
+                                  Is.False);
+                      Assert.That(readiness.Status,
+                                  Is.EqualTo(HealthStatus.Unhealthy));
+                      Assert.That(liveness.Status,
+                                  Is.EqualTo(HealthStatus.Unhealthy));
+                    });
+
+    // During the self-termination window the interceptor still admits new requests: the gate only
+    // rejects once the EarlyCancellationToken is cancelled.
+    Assert.DoesNotThrowAsync(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                              TestServerCallContext.Create(),
+                                                                                              (_,
+                                                                                               _) => Task.FromResult(new object()))
+                                                          .ConfigureAwait(false));
+  }
+
+  [Test]
+  [Timeout(10000)]
   public async Task DrainingLastInFlightRequestStopsApplication()
   {
     using var exceptionManager = BuildExceptionManager(int.MaxValue / 2,
@@ -764,4 +818,9 @@ internal class ExceptionInterceptorTests
   public void GraceDelayDefaultsToFifteenSeconds()
     => Assert.That(new Injection.Options.Submitter().GraceDelay,
                    Is.EqualTo(TimeSpan.FromSeconds(15)));
+
+  [Test]
+  public void SelfTerminationDelayDefaultsToTenSeconds()
+    => Assert.That(new Injection.Options.Submitter().SelfTerminationDelay,
+                   Is.EqualTo(TimeSpan.FromSeconds(10)));
 }
