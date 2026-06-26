@@ -50,9 +50,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
   private readonly NpgsqlConnectionProvider                                       provider_;
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
 
-  private readonly SemaphoreSlim                          lock_        = new(1, 1);
+  private readonly SemaphoreSlim                           lock_        = new(1, 1);
+  private          CancellationTokenSource?                loopCts_;
   private readonly ConcurrentDictionary<Guid, Channel<T>> subscribers_ = new();
-  private          CancellationTokenSource?               loopCts_;
   private          Task?                                  broadcastLoop_;
   private          TaskCompletionSource?                  slotReady_;
 
@@ -81,23 +81,20 @@ internal sealed class WalBroadcaster<T> : IDisposable
     var id      = Guid.NewGuid();
     var channel = Channel.CreateUnbounded<T>();
 
-    // Register the channel BEFORE starting/ensuring the loop so that events written
-    // from the moment the slot is created are buffered for this subscriber.
-    subscribers_[id] = channel;
-
+    // Register the channel inside EnsureStartedAndRegister (while holding the lock),
+    // after confirming the loop is running. This prevents a cancelling loop's finally
+    // block from completing a channel that belongs to the next generation of the loop.
     TaskCompletionSource tcs;
     try
     {
-      tcs = await EnsureStarted(cancellationToken)
+      tcs = await EnsureStartedAndRegister(id,
+                                           channel,
+                                           cancellationToken)
               .ConfigureAwait(false);
     }
     catch
     {
-      subscribers_.TryRemove(id,
-                             out _);
       channel.Writer.TryComplete();
-      await StopIfIdle()
-        .ConfigureAwait(false);
       throw;
     }
 
@@ -143,42 +140,93 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
   }
 
-  // Returns the TaskCompletionSource for the current or newly started loop.
-  // The TCS is set when the replication slot has been created.
-  private async Task<TaskCompletionSource> EnsureStarted(CancellationToken cancellationToken)
+  // Ensures the broadcast loop is running (starting a new one if needed), registers the
+  // subscriber channel while holding the lock, and returns the slot-ready TCS.
+  //
+  // Registering inside the lock (after verifying the loop is not cancelling) prevents a
+  // race where StopIfIdle cancels the loop after the channel is added to subscribers_ but
+  // before EnsureStarted runs — in that scenario the old loop's finally would complete the
+  // new channel with immediate EOF.
+  private async Task<TaskCompletionSource> EnsureStartedAndRegister(Guid              id,
+                                                                      Channel<T>        channel,
+                                                                      CancellationToken cancellationToken)
   {
     await lock_.WaitAsync(cancellationToken)
                .ConfigureAwait(false);
     try
     {
-      if (broadcastLoop_ is null || broadcastLoop_.IsCompleted)
+      if (broadcastLoop_ is null || broadcastLoop_.IsCompleted || loopCts_?.IsCancellationRequested == true)
       {
+        // The previous loop may still be winding down (cancellation in progress).
+        // Wait for it to finish so its finally block does not see the new channel.
+        if (broadcastLoop_ is not null && !broadcastLoop_.IsCompleted)
+        {
+          await broadcastLoop_.ConfigureAwait(false);
+        }
+
         slotReady_     = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         loopCts_       = new CancellationTokenSource();
         broadcastLoop_ = RunLoop(loopCts_.Token);
       }
 
+      // Register after the loop is confirmed running so the loop's finally can only
+      // complete channels that were active during its own lifetime.
+      subscribers_[id] = channel;
+
       return slotReady_!;
     }
     finally
     {
-      lock_.Release();
+      ReleaseLockSafe();
     }
   }
 
   private async Task StopIfIdle()
   {
-    await lock_.WaitAsync()
-               .ConfigureAwait(false);
+    // lock_.WaitAsync() with no cancellation token throws ObjectDisposedException if the
+    // broadcaster has been disposed. Catch it so ReadChannel.finally exits cleanly.
+    bool acquired;
+    try
+    {
+      await lock_.WaitAsync()
+                 .ConfigureAwait(false);
+      acquired = true;
+    }
+    catch (ObjectDisposedException)
+    {
+      return;
+    }
+
+    if (!acquired)
+      return;
+
     try
     {
       if (subscribers_.IsEmpty)
-        loopCts_?.Cancel();
+      {
+        try
+        {
+          loopCts_?.Cancel();
+        }
+        catch (ObjectDisposedException) { }
+      }
     }
     finally
     {
+      ReleaseLockSafe();
+    }
+  }
+
+  // SemaphoreSlim.Release() throws ObjectDisposedException when Dispose() has already
+  // run and another thread is simultaneously in the Release path. Swallow it here: the
+  // semaphore is being torn down and the lock invariant no longer needs to hold.
+  private void ReleaseLockSafe()
+  {
+    try
+    {
       lock_.Release();
     }
+    catch (ObjectDisposedException) { }
   }
 
   private async Task RunLoop(CancellationToken cancellationToken)
@@ -218,9 +266,11 @@ internal sealed class WalBroadcaster<T> : IDisposable
         }
       }
     }
-    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+    catch (OperationCanceledException)
     {
-      // Normal shutdown — channels are completed cleanly in the finally block
+      // Normal shutdown (loopCts_ cancelled) or server-side connection reset
+      // (e.g. wal_sender_timeout) — Npgsql raises OperationCanceledException in
+      // both cases. Complete channels cleanly so consumers can reconnect.
     }
     catch (Exception ex)
     {
@@ -240,5 +290,8 @@ internal sealed class WalBroadcaster<T> : IDisposable
     loopCts_?.Cancel();
     loopCts_?.Dispose();
     lock_.Dispose();
+    // Concurrent StopIfIdle / EnsureStartedAndRegister callers handle ObjectDisposedException
+    // from lock_.WaitAsync() and loopCts_.Cancel() gracefully — see ReleaseLockSafe and
+    // the try/catch in StopIfIdle.
   }
 }
