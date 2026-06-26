@@ -394,10 +394,11 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
-    // Read before update
+    // Read before update; FOR UPDATE acquires a row-level lock so concurrent
+    // UpdateOneResult calls on the same result are serialized within the transaction.
     await using var readCmd = connection.CreateCommand();
     readCmd.Transaction = transaction;
-    readCmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id";
+    readCmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id FOR UPDATE";
     readCmd.Parameters.AddWithValue("result_id",
                                     resultId);
 

@@ -545,15 +545,15 @@ SELECT COUNT(*) FROM (
                                                    .ConfigureAwait(false));
 
     // Get paginated applications
-    var orderClauses = orderFields.Select(f => $"{ExpressionToSql<Application>.TranslateOrderBy(f)} {orderDir}");
-    var orderBySql   = string.Join(", ",
-                                   orderClauses);
+    var orderClauses  = orderFields.Select(f => $"{ExpressionToSql<Application>.TranslateOrderBy(f)} {orderDir}");
+    var orderBySql    = string.Join(", ", orderClauses);
+    var orderByClause = orderBySql.Length > 0 ? $"ORDER BY {orderBySql}" : "";
 
     await using var dataCmd = connection.CreateCommand();
     dataCmd.CommandText = $@"
 SELECT DISTINCT options_app_name, options_app_namespace, options_app_version, options_app_service
 FROM tasks WHERE {whereSql}
-ORDER BY {orderBySql}
+{orderByClause}
 LIMIT @limit OFFSET @offset";
     SqlHelper.AddExpressionParameters(dataCmd,
                                       whereParams);
