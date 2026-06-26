@@ -254,8 +254,6 @@ internal sealed class WalBroadcaster<T> : IDisposable
                                                               cancellationToken)
                                             .ConfigureAwait(false))
       {
-        replConn.SetReplicationStatus(message.WalEnd);
-
         var item = await tryParse_(message,
                                    cancellationToken)
                      .ConfigureAwait(false);
@@ -264,6 +262,10 @@ internal sealed class WalBroadcaster<T> : IDisposable
           foreach (var (_, ch) in subscribers_)
             ch.Writer.TryWrite(item);
         }
+
+        // Acknowledge after writing so a subscriber that disconnects between these
+        // two points does not cause the event to be both acknowledged and undelivered.
+        replConn.SetReplicationStatus(message.WalEnd);
       }
     }
     catch (OperationCanceledException)

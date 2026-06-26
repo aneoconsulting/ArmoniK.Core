@@ -66,13 +66,16 @@ public class ExpressionToSql<T>
       var column = PropertyMapping.GetColumnName(typeof(T),
                                                   member);
       var key = EvaluateExpression(methodCall.Arguments[0])?.ToString() ?? string.Empty;
-      if (!System.Text.RegularExpressions.Regex.IsMatch(key,
-                                                        @"^[\w\-]+$"))
+      if (key.Length == 0)
       {
-        throw new ArgumentException($"Sort key must contain only alphanumeric, underscore, or hyphen characters: '{key}'");
+        throw new ArgumentException("Sort key must not be empty");
       }
 
-      return $"{column}->>'{key}'";
+      // Escape single quotes by doubling them. Npgsql always connects with
+      // standard_conforming_strings=on, so ' is the only character that can
+      // break out of a PostgreSQL string literal — no other escaping is needed.
+      return $"{column}->>'{key.Replace("'", "''")}'";
+
     }
 
     var path = GetMemberPath(body);
@@ -221,8 +224,13 @@ public class ExpressionToSql<T>
       {
         if (expression.Object is not null)
         {
-          var left      = Visit(expression.Object);
-          var right     = EvaluateExpression(expression.Arguments[0]);
+          var left  = Visit(expression.Object);
+          var right = EvaluateExpression(expression.Arguments[0]);
+          if (right is null)
+          {
+            return $"({left} IS NULL)";
+          }
+
           var paramName = AddParameter(right);
           return $"({left} = {paramName})";
         }

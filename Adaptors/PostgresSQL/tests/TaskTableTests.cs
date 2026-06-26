@@ -15,9 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-using System.Threading;
-
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
 
@@ -46,24 +43,4 @@ public class TaskTableTests : TaskTableTestBase
     TaskTable = provider.GetRequiredService<ITaskTable>();
     RunTests  = true;
   }
-
-  [Test]
-  public void ListTaskWithInjectionSortKeyShouldThrow()
-    => Assert.ThrowsAsync<ArgumentException>(() => TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
-                                                                              data => data.Options.Options["key' || (SELECT pg_sleep(5))::text || 'x"],
-                                                                              data => data,
-                                                                              false,
-                                                                              0,
-                                                                              20,
-                                                                              CancellationToken.None));
-
-  [Test]
-  public void ListTaskWithSingleQuoteSortKeyShouldThrow()
-    => Assert.ThrowsAsync<ArgumentException>(() => TaskTable!.ListTasksAsync(data => data.SessionId == "SessionId",
-                                                                              data => data.Options.Options["key'value"],
-                                                                              data => data,
-                                                                              false,
-                                                                              0,
-                                                                              20,
-                                                                              CancellationToken.None));
 }

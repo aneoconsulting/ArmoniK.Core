@@ -2352,4 +2352,58 @@ public class TaskTableTestBase
     }
   }
 
+  [Test]
+  public async Task ListTasksAsyncSortByOptionsKeyWithSingleQuoteShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var optionsWithQuotedKey = Options with
+                                 {
+                                   Options = new Dictionary<string, string>
+                                             {
+                                               {
+                                                 "key'1", "val1"
+                                               },
+                                             },
+                                 };
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionIdQuoteTest",
+                                                  "TaskWithQuotedKey",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  optionsWithQuotedKey,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      var (tasks, count) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionIdQuoteTest",
+                                                           data => data.Options.Options["key'1"],
+                                                           data => data,
+                                                           true,
+                                                           0,
+                                                           10,
+                                                           CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+      Assert.That(tasks.Single()
+                       .TaskId,
+                  Is.EqualTo("TaskWithQuotedKey"));
+    }
+  }
+
 }
