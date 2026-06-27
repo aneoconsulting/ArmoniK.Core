@@ -147,37 +147,57 @@ internal sealed class WalBroadcaster<T> : IDisposable
   // race where StopIfIdle cancels the loop after the channel is added to subscribers_ but
   // before EnsureStarted runs — in that scenario the old loop's finally would complete the
   // new channel with immediate EOF.
+  //
+  // When the previous loop is still winding down we wait for it OUTSIDE the lock so we do
+  // not block other concurrent SubscribeAsync callers (which would hang if the replication
+  // connection takes time to respond to cancellation).
   private async Task<TaskCompletionSource> EnsureStartedAndRegister(Guid              id,
                                                                       Channel<T>        channel,
                                                                       CancellationToken cancellationToken)
   {
-    await lock_.WaitAsync(cancellationToken)
-               .ConfigureAwait(false);
-    try
+    while (true)
     {
-      if (broadcastLoop_ is null || broadcastLoop_.IsCompleted || loopCts_?.IsCancellationRequested == true)
+      Task? oldLoop = null;
+
+      await lock_.WaitAsync(cancellationToken)
+                 .ConfigureAwait(false);
+      try
       {
-        // The previous loop may still be winding down (cancellation in progress).
-        // Wait for it to finish so its finally block does not see the new channel.
-        if (broadcastLoop_ is not null && !broadcastLoop_.IsCompleted)
+        var loopHealthy = broadcastLoop_ is not null
+                       && !broadcastLoop_.IsCompleted
+                       && loopCts_?.IsCancellationRequested != true;
+
+        if (loopHealthy)
         {
-          await broadcastLoop_.ConfigureAwait(false);
+          // Loop is running and healthy — register and return immediately.
+          subscribers_[id] = channel;
+          return slotReady_!;
         }
 
-        slotReady_     = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-        loopCts_       = new CancellationTokenSource();
-        broadcastLoop_ = RunLoop(loopCts_.Token);
+        if (broadcastLoop_ is not null && !broadcastLoop_.IsCompleted)
+        {
+          // Cancellation was requested but the loop isn't done yet. Capture it to await
+          // OUTSIDE the lock so we don't block other subscribers from making progress.
+          oldLoop = broadcastLoop_;
+        }
+        else
+        {
+          // Loop has finished (or was never started) — safe to start the new one.
+          slotReady_       = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+          loopCts_         = new CancellationTokenSource();
+          broadcastLoop_   = RunLoop(loopCts_.Token);
+          subscribers_[id] = channel;
+          return slotReady_!;
+        }
+      }
+      finally
+      {
+        ReleaseLockSafe();
       }
 
-      // Register after the loop is confirmed running so the loop's finally can only
-      // complete channels that were active during its own lifetime.
-      subscribers_[id] = channel;
-
-      return slotReady_!;
-    }
-    finally
-    {
-      ReleaseLockSafe();
+      // Old loop is still shutting down — wait for it without holding the lock, then retry.
+      await oldLoop!.WaitAsync(cancellationToken)
+                    .ConfigureAwait(false);
     }
   }
 
