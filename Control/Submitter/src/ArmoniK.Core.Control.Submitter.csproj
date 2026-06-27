@@ -39,6 +39,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
+    <ProjectReference Include="..\..\..\Adaptors\PostgresSQL\src\ArmoniK.Core.Adapters.PostgresSQL.csproj" />
     <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>
 

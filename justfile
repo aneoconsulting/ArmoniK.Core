@@ -9,6 +9,7 @@ tag          := "0.0.0.0-local"  # Docker image tag; use "0.0.0.0-local" for loc
 local_images := "false"          # If true, Terraform builds images locally instead of pulling from registry
 log_level    := "Information"    # Serilog log level: Verbose, Debug, Information, Warning, Error, Fatal
 queue        := "activemq"       # Queue backend: activemq, rabbitmq, nats, sqs, pubsub, none
+database     := "mongo"          # Database backend: mongo, postgresql
 worker       := "htcmock"        # Test worker: htcmock, stream, bench, crashingworker
 object       := "redis"          # Object storage: redis, minio, gcs, local, embed, null
 replicas     := "3"              # Number of PollingAgent+Worker pairs to deploy
@@ -95,6 +96,15 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   '{ name = "sqs", image = "softwaremill/elasticmq:latest" }'
 } else {
   '{ name = "none" }'
+}
+
+# Sets the database storage
+export TF_VAR_database_storage := if database == "postgresql" {
+  '{ name = "postgresql", image = "postgres" }'
+} else if database == "mongo" {
+  '{ name = "mongo", image = "mongo" }'
+} else {
+  error("Unknown database: " + database + ". Must be mongo or postgresql")
 }
 
 # Sets the object storage
@@ -207,6 +217,10 @@ _usage:
         pubsub      :  for Google PubSub
         nats        :  for Nats with JetStream
         none        :  for external queue configurations
+
+      database: allowed values below
+        mongo      : for MongoDB (default)
+        postgresql : for PostgreSQL
 
       worker: allowed values below
         htcmock: for HtcMock V3 (default)

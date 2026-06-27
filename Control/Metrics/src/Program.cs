@@ -21,6 +21,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.PostgresSQL;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
@@ -62,10 +63,14 @@ public static class Program
     {
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
-      builder.Services.AddLogging(logger.Configure)
-             .AddMongoComponents(builder.Configuration,
-                                 logger.GetLogger())
-             .AddSingleton(builder.Configuration.GetInitializedValue<MetricsExporter>(MetricsExporter.SettingSection))
+      builder.Services.AddLogging(logger.Configure);
+
+      builder.Services.AddPostgresComponents(builder.Configuration,
+                                             logger.GetLogger());
+      builder.Services.AddMongoComponents(builder.Configuration,
+                                          logger.GetLogger());
+
+      builder.Services.AddSingleton(builder.Configuration.GetInitializedValue<MetricsExporter>(MetricsExporter.SettingSection))
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
