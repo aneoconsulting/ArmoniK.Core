@@ -360,15 +360,17 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                                                    data.Options.ApplicationService))
                                   .Select(group => group.Key);
 
-    var ordered = queryable.OrderByList(orderFields,
-                                        ascOrder);
+    IQueryable<Application> paged = orderFields.Count > 0
+                                       ? queryable.OrderByList(orderFields,
+                                                               ascOrder)
+                                       : queryable;
 
-    var taskResult = ordered.Skip(page * pageSize)
-                            .Take(pageSize)
-                            .ToListAsync(cancellationToken);
+    var taskResult = paged.Skip(page * pageSize)
+                          .Take(pageSize)
+                          .ToListAsync(cancellationToken);
 
-    return (await taskResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                                 .ConfigureAwait(false));
+    return (await taskResult.ConfigureAwait(false), await paged.CountAsync(cancellationToken)
+                                                               .ConfigureAwait(false));
   }
 
   /// <inheritdoc />
