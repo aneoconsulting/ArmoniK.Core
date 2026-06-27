@@ -262,11 +262,13 @@ public class TaskTable : ITaskTable
                                                                      data.Options.ApplicationService))
                                     .Select(group => group.Key);
 
-    var ordered = queryable.OrderByList(orderFields,
-                                        ascOrder);
+    IQueryable<Application> paged = orderFields.Count > 0
+                                       ? queryable.OrderByList(orderFields,
+                                                               ascOrder)
+                                       : queryable;
 
-    return Task.FromResult<(IEnumerable<Application> tasks, int totalCount)>((ordered.Skip(page * pageSize)
-                                                                                     .Take(pageSize), ordered.Count()));
+    return Task.FromResult<(IEnumerable<Application> tasks, int totalCount)>((paged.Skip(page * pageSize)
+                                                                                   .Take(pageSize), paged.Count()));
   }
 
   public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
