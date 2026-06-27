@@ -302,6 +302,11 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
     finally
     {
+      // If the loop exited before CreatePgOutputReplicationSlot succeeded (e.g. an
+      // OperationCanceledException that was caught silently above), slotReady_ may still
+      // be unresolved.  Unblock any SubscribeAsync caller waiting on tcs.Task so it can
+      // clean up and retry rather than hanging until its cancellation token fires.
+      slotReady_?.TrySetCanceled(CancellationToken.None);
       foreach (var (_, ch) in subscribers_)
         ch.Writer.TryComplete(loopException);
     }
