@@ -610,6 +610,36 @@ LIMIT @limit OFFSET @offset";
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
+    // Acquire row-level locks on the affected tasks in a deterministic order (ORDER BY task_id)
+    // BEFORE deleting their remaining dependencies. Without this lock, two concurrent transactions
+    // that each delete a different dep for the same aggregation task can both run their
+    // NOT EXISTS check while the other's deletion is uncommitted (READ COMMITTED sees only
+    // committed data per statement). Both then report the task as NOT ready even though after
+    // both commits the task has no remaining deps — permanently stranding it in Pending status.
+    // Locking first serialises the two transactions: the second waits until the first commits,
+    // then sees all previously deleted rows as gone and correctly identifies the task as ready.
+    await using var lockCmd = connection.CreateCommand();
+    lockCmd.Transaction = transaction;
+    lockCmd.CommandText = @"
+SELECT task_id FROM tasks
+WHERE task_id = ANY(@task_ids)
+  AND status IN (@status_creating, @status_pending)
+ORDER BY task_id
+FOR UPDATE";
+    lockCmd.Parameters.AddWithValue("task_ids",
+                                    NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                    taskIds.ToArray());
+    lockCmd.Parameters.AddWithValue("status_creating",
+                                    (int)TaskStatus.Creating);
+    lockCmd.Parameters.AddWithValue("status_pending",
+                                    (int)TaskStatus.Pending);
+    await using (var lockReader = await lockCmd.ExecuteReaderAsync(cancellationToken)
+                                               .ConfigureAwait(false))
+    {
+      while (await lockReader.ReadAsync(cancellationToken)
+                             .ConfigureAwait(false)) { }
+    }
+
     await using var deleteCmd = connection.CreateCommand();
     deleteCmd.Transaction = transaction;
     deleteCmd.CommandText = "DELETE FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids) AND dependency_id = ANY(@dep_ids)";
