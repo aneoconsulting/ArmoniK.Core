@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -372,10 +371,10 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>                        taskIds,
-                                                                           ICollection<string>                        dependenciesToRemove,
-                                                                           Expression<Func<TaskData, T>>              selector,
-                                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
+                                                                     ICollection<string>           dependenciesToRemove,
+                                                                     Expression<Func<TaskData, T>> selector,
+                                                                     CancellationToken              cancellationToken = default)
   {
     using var activity       = StartActivity();
     var       sessionHandle  = GetSession();
@@ -387,7 +386,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     using var deps = dependenciesToRemove.GetEnumerator();
     if (!deps.MoveNext())
     {
-      yield break;
+      return AsyncEnumerable.Empty<T>();
     }
 
 
@@ -403,22 +402,27 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                     dependenciesToRemove,
                     taskIds);
 
-    await taskCollection.UpdateManyAsync(sessionHandle,
-                                         data => taskIds.Contains(data.TaskId),
-                                         update,
-                                         cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
+    var compiledSelector = selector.Compile();
 
-    var readyTasks = taskCollection.Find(sessionHandle,
-                                         data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                                 data.RemainingDataDependencies == new Dictionary<string, bool>())
-                                   .Project(selector)
-                                   .ToAsyncEnumerable(cancellationToken);
-
-    await foreach (var task in readyTasks.ConfigureAwait(false))
-    {
-      yield return task;
-    }
+    // Removing the dependency and reading the resulting state must be a single atomic operation per
+    // task: doing them as a separate UpdateManyAsync followed by a Find let two concurrent removals
+    // (each clearing a different dependency of the same task) both read after the other's write had
+    // landed, so both would see an empty RemainingDataDependencies and both would enqueue the task.
+    // FindOneAndUpdateAsync ties the readiness check to this call's own position in MongoDB's
+    // per-document write order, so only the removal that happens to run last observes the fully
+    // cleared state.
+    return taskIds.ParallelSelect(async taskId => await taskCollection.FindOneAndUpdateAsync<TaskData>(sessionHandle,
+                                                                                                        data => data.TaskId == taskId,
+                                                                                                        update,
+                                                                                                        new FindOneAndUpdateOptions<TaskData, TaskData>
+                                                                                                        {
+                                                                                                          ReturnDocument = ReturnDocument.After,
+                                                                                                        },
+                                                                                                        cancellationToken)
+                                                                       .ConfigureAwait(false))
+                  .Where(task => task is not null && (task.Status == TaskStatus.Creating || task.Status == TaskStatus.Pending) &&
+                                 task.RemainingDataDependencies.Count == 0)
+                  .Select(compiledSelector);
   }
 
   /// <inheritdoc />
