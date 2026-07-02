@@ -403,19 +403,28 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                     dependenciesToRemove,
                     taskIds);
 
-    await taskCollection.UpdateManyAsync(sessionHandle,
-                                         data => taskIds.Contains(data.TaskId),
-                                         update,
-                                         cancellationToken: cancellationToken)
-                        .ConfigureAwait(false);
+    var readyTasks = await sessionHandle.WithTransactionAsync(async (session,
+                                                                     ct) =>
+                                                              {
+                                                                await taskCollection.UpdateManyAsync(session,
+                                                                                                     data => taskIds.Contains(data.TaskId),
+                                                                                                     update,
+                                                                                                     cancellationToken: ct)
+                                                                                    .ConfigureAwait(false);
 
-    var readyTasks = taskCollection.Find(sessionHandle,
-                                         data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                                 data.RemainingDataDependencies == new Dictionary<string, bool>())
-                                   .Project(selector)
-                                   .ToAsyncEnumerable(cancellationToken);
+                                                                return taskCollection.Find(session,
+                                                                                           data => taskIds.Contains(data.TaskId) &&
+                                                                                                   (data.Status == TaskStatus.Creating ||
+                                                                                                    data.Status == TaskStatus.Pending) &&
+                                                                                                   data.RemainingDataDependencies == new Dictionary<string, bool>())
+                                                                                     .Project(selector)
+                                                                                     .ToAsyncEnumerable(ct);
+                                                              },
+                                                              cancellationToken: cancellationToken)
+                                        .ConfigureAwait(false);
 
-    await foreach (var task in readyTasks.ConfigureAwait(false))
+    await foreach (var task in readyTasks.WithCancellation(cancellationToken)
+                                         .ConfigureAwait(false))
     {
       yield return task;
     }
