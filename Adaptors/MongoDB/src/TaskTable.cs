@@ -412,19 +412,19 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                                                                                      cancellationToken: ct)
                                                                                     .ConfigureAwait(false);
 
-                                                                return taskCollection.Find(session,
-                                                                                           data => taskIds.Contains(data.TaskId) &&
-                                                                                                   (data.Status == TaskStatus.Creating ||
-                                                                                                    data.Status == TaskStatus.Pending) &&
-                                                                                                   data.RemainingDataDependencies == new Dictionary<string, bool>())
-                                                                                     .Project(selector)
-                                                                                     .ToAsyncEnumerable(ct);
+                                                                return await taskCollection.Find(session,
+                                                                                                 data => taskIds.Contains(data.TaskId) &&
+                                                                                                         (data.Status == TaskStatus.Creating ||
+                                                                                                          data.Status == TaskStatus.Pending) &&
+                                                                                                         data.RemainingDataDependencies == new Dictionary<string, bool>())
+                                                                                           .Project(selector)
+                                                                                           .ToListAsync(ct)
+                                                                                           .ConfigureAwait(false);
                                                               },
                                                               cancellationToken: cancellationToken)
                                         .ConfigureAwait(false);
 
-    await foreach (var task in readyTasks.WithCancellation(cancellationToken)
-                                         .ConfigureAwait(false))
+    foreach (var task in readyTasks)
     {
       yield return task;
     }
