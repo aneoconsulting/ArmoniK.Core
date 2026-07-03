@@ -377,7 +377,6 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                                                      CancellationToken              cancellationToken = default)
   {
     using var activity       = StartActivity();
-    var       sessionHandle  = GetSession();
     var       taskCollection = GetCollection();
 
     // MongoDB driver does not support to unset a list, so Unset should be called multiple times.
@@ -411,14 +410,18 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     // FindOneAndUpdateAsync ties the readiness check to this call's own position in MongoDB's
     // per-document write order, so only the removal that happens to run last observes the fully
     // cleared state.
-    return taskIds.ParallelSelect(async taskId => await taskCollection.FindOneAndUpdateAsync<TaskData>(sessionHandle,
-                                                                                                        data => data.TaskId == taskId,
-                                                                                                        update,
-                                                                                                        new FindOneAndUpdateOptions<TaskData, TaskData>
-                                                                                                        {
-                                                                                                          ReturnDocument = ReturnDocument.After,
-                                                                                                        },
-                                                                                                        cancellationToken)
+    // The shared session from GetSession() must not be used here: it is a single IClientSessionHandle
+    // reused by every concurrent operation in the process, and it cannot support more than one
+    // in-flight retryable write at a time ("a newer retryable write ... has already started on this
+    // session"). Each of these fanned-out FindOneAndUpdateAsync calls instead gets its own implicit,
+    // independent session, matching UpdateOneTask above.
+    return taskIds.ParallelSelect(async taskId => await taskCollection.FindOneAndUpdateAsync(data => data.TaskId == taskId,
+                                                                                              update,
+                                                                                              new FindOneAndUpdateOptions<TaskData>
+                                                                                              {
+                                                                                                ReturnDocument = ReturnDocument.After,
+                                                                                              },
+                                                                                              cancellationToken)
                                                                        .ConfigureAwait(false))
                   .Where(task => task is not null && (task.Status == TaskStatus.Creating || task.Status == TaskStatus.Pending) &&
                                  task.RemainingDataDependencies.Count == 0)
