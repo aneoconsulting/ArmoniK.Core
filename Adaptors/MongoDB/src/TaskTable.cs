@@ -361,9 +361,9 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                   .Select(group => group.Key);
 
     IQueryable<Application> paged = orderFields.Count > 0
-                                       ? queryable.OrderByList(orderFields,
-                                                               ascOrder)
-                                       : queryable;
+                                      ? queryable.OrderByList(orderFields,
+                                                              ascOrder)
+                                      : queryable;
 
     var taskResult = paged.Skip(page * pageSize)
                           .Take(pageSize)
