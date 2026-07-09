@@ -32,11 +32,16 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.3" />
+    <PackageReference Include="dbup-postgresql" Version="6.1.2" />
     <PackageReference Include="Npgsql" Version="9.0.3" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Common\Migrations\Scripts\*.sql" />
   </ItemGroup>
 
 </Project>
