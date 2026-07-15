@@ -17,10 +17,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 
 using ArmoniK.Core.Adapters.PostgresSQL.Common;
 using ArmoniK.Core.Common.Storage;
@@ -52,7 +49,7 @@ public class PropertyMappingTests
 
   [OneTimeSetUp]
   public void LoadSchema()
-    => schemaColumns_ = ParseSchema(ReadMigrationScript());
+    => schemaColumns_ = MigrationSchemaReader.ParseSchema(MigrationSchemaReader.ReadMigrationScript());
 
   public static IEnumerable<TestCaseData> PropertyPathCases()
   {
@@ -84,89 +81,5 @@ public class PropertyMappingTests
     Assert.That(schemaColumns_[table],
                Does.Contain(column),
                $"'{path}' maps to column '{column}', which does not exist in table '{table}'");
-  }
-
-  private static string ReadMigrationScript()
-  {
-    var assembly     = typeof(NpgsqlConnectionProvider).Assembly;
-    var resourceName = assembly.GetManifestResourceNames()
-                               .Single(name => name.EndsWith("0001_InitialSchema.sql",
-                                                             StringComparison.Ordinal));
-
-    using var stream = assembly.GetManifestResourceStream(resourceName)!;
-    using var reader = new StreamReader(stream);
-    return reader.ReadToEnd();
-  }
-
-  private static Dictionary<string, HashSet<string>> ParseSchema(string sql)
-  {
-    var tables = new Dictionary<string, HashSet<string>>(StringComparer.OrdinalIgnoreCase);
-
-    foreach (Match tableMatch in Regex.Matches(sql,
-                                               @"CREATE TABLE IF NOT EXISTS\s+(\w+)\s*\((.*?)\n\);",
-                                               RegexOptions.Singleline))
-    {
-      var columns = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-      var depth   = 0;
-      var current = new StringBuilder();
-
-      foreach (var c in tableMatch.Groups[2].Value)
-      {
-        switch (c)
-        {
-          case '(':
-            depth++;
-            break;
-          case ')':
-            depth--;
-            break;
-        }
-
-        if (c == ',' && depth == 0)
-        {
-          AddColumnName(columns,
-                        current.ToString());
-          current.Clear();
-        }
-        else
-        {
-          current.Append(c);
-        }
-      }
-
-      AddColumnName(columns,
-                    current.ToString());
-      tables[tableMatch.Groups[1].Value] = columns;
-    }
-
-    return tables;
-  }
-
-  private static readonly HashSet<string> TableConstraintKeywords = new(StringComparer.OrdinalIgnoreCase)
-                                                                    {
-                                                                      "PRIMARY",
-                                                                      "FOREIGN",
-                                                                      "UNIQUE",
-                                                                      "CONSTRAINT",
-                                                                      "CHECK",
-                                                                    };
-
-  private static void AddColumnName(HashSet<string> columns,
-                                    string           columnDefinition)
-  {
-    var trimmed = columnDefinition.Trim();
-    if (trimmed.Length == 0)
-    {
-      return;
-    }
-
-    var firstWord = trimmed.Split((char[]?)null,
-                                  StringSplitOptions.RemoveEmptyEntries)[0];
-    if (TableConstraintKeywords.Contains(firstWord))
-    {
-      return;
-    }
-
-    columns.Add(firstWord);
   }
 }
