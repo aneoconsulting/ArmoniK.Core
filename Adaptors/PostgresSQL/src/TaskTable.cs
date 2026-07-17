@@ -349,7 +349,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     dataCmd.Parameters.AddWithValue("limit",
                                     pageSize);
     dataCmd.Parameters.AddWithValue("offset",
-                                    page * pageSize);
+                                    (long)page * pageSize);
 
     var rawTasks = new List<TaskData>();
     await using (var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
@@ -589,7 +589,7 @@ LIMIT @limit OFFSET @offset";
     dataCmd.Parameters.AddWithValue("limit",
                                     pageSize);
     dataCmd.Parameters.AddWithValue("offset",
-                                    page * pageSize);
+                                    (long)page * pageSize);
 
     await using var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
                                           .ConfigureAwait(false);

@@ -318,7 +318,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     dataCmd.Parameters.AddWithValue("limit",
                                     pageSize);
     dataCmd.Parameters.AddWithValue("offset",
-                                    page * pageSize);
+                                    (long)page * pageSize);
 
     await using var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
                                           .ConfigureAwait(false);
