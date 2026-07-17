@@ -37,6 +37,29 @@ namespace ArmoniK.Core.Adapters.PostgresSQL;
 /// </summary>
 public static class ServiceCollectionExt
 {
+  private static PostgreSQL GetPostgresOptions(this ConfigurationManager configuration,
+                                               ILogger                   logger)
+  {
+    var options = configuration.GetRequiredValue<PostgreSQL>(PostgreSQL.SettingSection);
+
+    if (!string.IsNullOrEmpty(options.CredentialsPath))
+    {
+      configuration.AddJsonFile(options.CredentialsPath,
+                                false,
+                                false);
+      options = configuration.GetRequiredValue<PostgreSQL>(PostgreSQL.SettingSection);
+
+      logger.LogTrace("Loaded postgresql credentials from file {path}",
+                      options.CredentialsPath);
+    }
+    else
+    {
+      logger.LogTrace("No credentials provided");
+    }
+
+    return options;
+  }
+
   /// <summary>
   ///   Adds PostgreSQL components to the specified service collection.
   ///   This method configures the PostgreSQL connection and storage services based on the provided configuration.
@@ -93,7 +116,7 @@ public static class ServiceCollectionExt
       return services;
     }
 
-    services.TryAddSingleton(_ => configuration.GetRequiredValue<PostgreSQL>(PostgreSQL.SettingSection));
+    services.TryAddSingleton(_ => configuration.GetPostgresOptions(logger));
     services.AddSingletonWithHealthCheck<NpgsqlConnectionProvider>("PostgreSQL.ConnectionProvider");
 
     return services;
@@ -111,7 +134,7 @@ public static class ServiceCollectionExt
                                                      ConfigurationManager    configuration,
                                                      ILogger                 logger)
   {
-    services.TryAddSingleton(_ => configuration.GetRequiredValue<PostgreSQL>(PostgreSQL.SettingSection));
+    services.TryAddSingleton(_ => configuration.GetPostgresOptions(logger));
     return services;
   }
 
