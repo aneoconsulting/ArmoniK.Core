@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,6 +33,10 @@ namespace ArmoniK.Core.Adapters.PostgresSQL.Tests;
 [TestFixture]
 public class RowMapperTests
 {
+  [OneTimeSetUp]
+  public void LoadSchema()
+    => schemaColumns_ = MigrationSchemaReader.ParseSchema(MigrationSchemaReader.ReadMigrationScript());
+
   // Each mapping method reads columns from exactly one table; the source is sliced at each
   // method's start (and at the point where the private per-value helpers begin) to attribute
   // every column literal found in between to the right table.
@@ -48,17 +52,12 @@ public class RowMapperTests
 
   private static Dictionary<string, HashSet<string>> schemaColumns_ = null!;
 
-  [OneTimeSetUp]
-  public void LoadSchema()
-    => schemaColumns_ = MigrationSchemaReader.ParseSchema(MigrationSchemaReader.ReadMigrationScript());
-
   public static IEnumerable<TestCaseData> ColumnCases()
   {
     var source = StripCommentLines(ReadRowMapperSource());
 
-    var starts = Sections.Select(section => (section.Table,
-                                             Index: RequireIndex(source,
-                                                                 $" {section.Method}(NpgsqlDataReader reader)")))
+    var starts = Sections.Select(section => (section.Table, Index: RequireIndex(source,
+                                                                                $" {section.Method}(NpgsqlDataReader reader)")))
                          .ToList();
     var helpersIndex = RequireIndex(source,
                                     HelpersBoundary);
@@ -66,9 +65,9 @@ public class RowMapperTests
     for (var i = 0; i < starts.Count; i++)
     {
       var start = starts[i].Index;
-      var stop  = i + 1 < starts.Count
-                    ? starts[i + 1].Index
-                    : helpersIndex;
+      var stop = i + 1 < starts.Count
+                   ? starts[i + 1].Index
+                   : helpersIndex;
       var body = source[start..stop];
 
       foreach (Match match in Regex.Matches(body,
@@ -85,19 +84,19 @@ public class RowMapperTests
                                                string column)
   {
     Assert.That(schemaColumns_,
-               Does.ContainKey(table),
-               $"Table '{table}' is not defined in the migration script");
+                Does.ContainKey(table),
+                $"Table '{table}' is not defined in the migration script");
     Assert.That(schemaColumns_[table],
-               Does.Contain(column),
-               $"RowMapper reads column '{column}' from table '{table}', which does not exist in the migration script");
+                Does.Contain(column),
+                $"RowMapper reads column '{column}' from table '{table}', which does not exist in the migration script");
   }
 
   private static string StripCommentLines(string source)
     => string.Join('\n',
-                  source.Split('\n')
-                        .Where(line => !line.TrimStart()
-                                            .StartsWith("///",
-                                                       StringComparison.Ordinal)));
+                   source.Split('\n')
+                         .Where(line => !line.TrimStart()
+                                             .StartsWith("///",
+                                                         StringComparison.Ordinal)));
 
   private static int RequireIndex(string source,
                                   string marker)
@@ -115,11 +114,11 @@ public class RowMapperTests
   private static string ReadRowMapperSource([CallerFilePath] string testFilePath = "")
   {
     var testDir = Path.GetDirectoryName(testFilePath)!;
-    var path    = Path.Combine(testDir,
-                              "..",
-                              "src",
-                              "Common",
-                              "RowMapper.cs");
+    var path = Path.Combine(testDir,
+                            "..",
+                            "src",
+                            "Common",
+                            "RowMapper.cs");
     return File.ReadAllText(path);
   }
 }

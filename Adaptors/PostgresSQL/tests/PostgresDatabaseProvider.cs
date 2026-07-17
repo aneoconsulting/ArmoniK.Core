@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -21,6 +21,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Threading;
 
+using ArmoniK.Core.Adapters.PostgresSQL.Options;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Utils;
@@ -43,10 +44,12 @@ internal class PostgresDatabaseProvider : IDisposable
   private const           string         PgUser         = "postgres";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.PostgresSQL.Tests");
 
-  private static readonly object   Lock = new();
+  private static readonly object    Lock = new();
   private static          PgServer? sharedServer_;
-  private static          int      sharedPort_;
-  private static          string?  sharedConnectionString_;
+  private static          int       sharedPort_;
+  private static          string?   sharedConnectionString_;
+
+  private readonly ServiceProvider provider_;
 
   static PostgresDatabaseProvider()
   {
@@ -55,8 +58,6 @@ internal class PostgresDatabaseProvider : IDisposable
                          true);
 #pragma warning restore CS0618
   }
-
-  private readonly ServiceProvider provider_;
 
   public PostgresDatabaseProvider()
   {
@@ -73,16 +74,14 @@ internal class PostgresDatabaseProvider : IDisposable
     Dictionary<string, string?> minimalConfig = new()
                                                 {
                                                   {
-                                                    $"{Components.SettingSection}:{nameof(Components.TableStorage)}",
-                                                    "ArmoniK.Adapters.PostgresSQL.TableStorage"
+                                                    $"{Components.SettingSection}:{nameof(Components.TableStorage)}", "ArmoniK.Adapters.PostgresSQL.TableStorage"
                                                   },
                                                   {
                                                     $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
                                                     "ArmoniK.Adapters.PostgresSQL.AuthenticationTable"
                                                   },
                                                   {
-                                                    $"{Options.TableStorage.SettingSection}:{nameof(Options.TableStorage.PollingDelayMax)}",
-                                                    "00:00:10"
+                                                    $"{TableStorage.SettingSection}:{nameof(TableStorage.PollingDelayMax)}", "00:00:10"
                                                   },
                                                 };
 
@@ -90,14 +89,14 @@ internal class PostgresDatabaseProvider : IDisposable
     // Use the ConnectionString option directly; otherwise configure individual fields from pg_embed.
     if (sharedPort_ == 0)
     {
-      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.ConnectionString)}"] = sharedConnectionString_;
+      minimalConfig[$"{PostgreSQL.SettingSection}:{nameof(PostgreSQL.ConnectionString)}"] = sharedConnectionString_;
     }
     else
     {
-      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.Host)}"]         = "localhost";
-      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.Port)}"]         = sharedPort_.ToString();
-      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.User)}"]         = PgUser;
-      minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.DatabaseName)}"] = DatabaseName;
+      minimalConfig[$"{PostgreSQL.SettingSection}:{nameof(PostgreSQL.Host)}"]         = "localhost";
+      minimalConfig[$"{PostgreSQL.SettingSection}:{nameof(PostgreSQL.Port)}"]         = sharedPort_.ToString();
+      minimalConfig[$"{PostgreSQL.SettingSection}:{nameof(PostgreSQL.User)}"]         = PgUser;
+      minimalConfig[$"{PostgreSQL.SettingSection}:{nameof(PostgreSQL.DatabaseName)}"] = DatabaseName;
     }
 
     var configuration = new ConfigurationManager();
@@ -156,8 +155,8 @@ internal class PostgresDatabaseProvider : IDisposable
                                "armonik-pg-embed");
 
       var server = new PgServer("17.4.0",
-                                pgUser: PgUser,
-                                dbDir: pgDir,
+                                PgUser,
+                                pgDir,
                                 addLocalUserAccessPermission: true,
                                 // Keep the data directory between runs; TruncateAllTables handles cleanup.
                                 clearWorkingDirOnStart: false,
@@ -196,7 +195,7 @@ internal class PostgresDatabaseProvider : IDisposable
         cmd.ExecuteNonQuery();
         return;
       }
-      catch (Npgsql.PostgresException ex) when (ex.SqlState == "42P04") // duplicate_database
+      catch (PostgresException ex) when (ex.SqlState == "42P04") // duplicate_database
       {
         // Database already exists (clearWorkingDirOnStart=false reuses existing data dir).
         return;
@@ -216,10 +215,8 @@ internal class PostgresDatabaseProvider : IDisposable
     conn.Open();
     using var cmd = conn.CreateCommand();
     cmd.CommandTimeout = 30;
-    cmd.CommandText    = "DO $$ DECLARE r RECORD; BEGIN " +
-                         "FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP " +
-                         "EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE'; " +
-                         "END LOOP; END $$;";
+    cmd.CommandText = "DO $$ DECLARE r RECORD; BEGIN " + "FOR r IN (SELECT tablename FROM pg_tables WHERE schemaname = 'public') LOOP " +
+                      "EXECUTE 'TRUNCATE TABLE ' || quote_ident(r.tablename) || ' CASCADE'; " + "END LOOP; END $$;";
     cmd.ExecuteNonQuery();
   }
 }

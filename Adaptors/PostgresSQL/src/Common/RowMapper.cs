@@ -1,23 +1,22 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Generic;
-using System.Data;
 using System.Linq;
 using System.Text.Json;
 
@@ -41,15 +40,15 @@ public static class RowMapper
   public static TaskData MapToTaskData(NpgsqlDataReader reader)
   {
     var options = new TaskOptions(DeserializeJsonDict(reader.GetString(reader.GetOrdinal("options_options"))),
-                                 TimeSpan.FromTicks(reader.GetInt64(reader.GetOrdinal("options_max_duration"))),
-                                 reader.GetInt32(reader.GetOrdinal("options_max_retries")),
-                                 reader.GetInt32(reader.GetOrdinal("options_priority")),
-                                 reader.GetString(reader.GetOrdinal("options_partition_id")),
-                                 reader.GetString(reader.GetOrdinal("options_app_name")),
-                                 reader.GetString(reader.GetOrdinal("options_app_version")),
-                                 reader.GetString(reader.GetOrdinal("options_app_namespace")),
-                                 reader.GetString(reader.GetOrdinal("options_app_service")),
-                                 reader.GetString(reader.GetOrdinal("options_engine_type")));
+                                  TimeSpan.FromTicks(reader.GetInt64(reader.GetOrdinal("options_max_duration"))),
+                                  reader.GetInt32(reader.GetOrdinal("options_max_retries")),
+                                  reader.GetInt32(reader.GetOrdinal("options_priority")),
+                                  reader.GetString(reader.GetOrdinal("options_partition_id")),
+                                  reader.GetString(reader.GetOrdinal("options_app_name")),
+                                  reader.GetString(reader.GetOrdinal("options_app_version")),
+                                  reader.GetString(reader.GetOrdinal("options_app_namespace")),
+                                  reader.GetString(reader.GetOrdinal("options_app_service")),
+                                  reader.GetString(reader.GetOrdinal("options_engine_type")));
 
     var output = new Output((OutputStatus)reader.GetInt32(reader.GetOrdinal("output_status")),
                             reader.GetString(reader.GetOrdinal("output_error")));
@@ -108,15 +107,15 @@ public static class RowMapper
   public static SessionData MapToSessionData(NpgsqlDataReader reader)
   {
     var options = new TaskOptions(DeserializeJsonDict(reader.GetString(reader.GetOrdinal("options_options"))),
-                                 TimeSpan.FromTicks(reader.GetInt64(reader.GetOrdinal("options_max_duration"))),
-                                 reader.GetInt32(reader.GetOrdinal("options_max_retries")),
-                                 reader.GetInt32(reader.GetOrdinal("options_priority")),
-                                 reader.GetString(reader.GetOrdinal("options_partition_id")),
-                                 reader.GetString(reader.GetOrdinal("options_app_name")),
-                                 reader.GetString(reader.GetOrdinal("options_app_version")),
-                                 reader.GetString(reader.GetOrdinal("options_app_namespace")),
-                                 reader.GetString(reader.GetOrdinal("options_app_service")),
-                                 reader.GetString(reader.GetOrdinal("options_engine_type")));
+                                  TimeSpan.FromTicks(reader.GetInt64(reader.GetOrdinal("options_max_duration"))),
+                                  reader.GetInt32(reader.GetOrdinal("options_max_retries")),
+                                  reader.GetInt32(reader.GetOrdinal("options_priority")),
+                                  reader.GetString(reader.GetOrdinal("options_partition_id")),
+                                  reader.GetString(reader.GetOrdinal("options_app_name")),
+                                  reader.GetString(reader.GetOrdinal("options_app_version")),
+                                  reader.GetString(reader.GetOrdinal("options_app_namespace")),
+                                  reader.GetString(reader.GetOrdinal("options_app_service")),
+                                  reader.GetString(reader.GetOrdinal("options_engine_type")));
 
     return new SessionData(reader.GetString(reader.GetOrdinal("session_id")),
                            (SessionStatus)reader.GetInt32(reader.GetOrdinal("status")),
@@ -173,8 +172,8 @@ public static class RowMapper
   /// <returns>The PartitionData record</returns>
   public static PartitionData MapToPartitionData(NpgsqlDataReader reader)
   {
-    var podConfigOrdinal = reader.GetOrdinal("pod_configuration");
-    PodConfiguration? podConfig = null;
+    var               podConfigOrdinal = reader.GetOrdinal("pod_configuration");
+    PodConfiguration? podConfig        = null;
     if (!reader.IsDBNull(podConfigOrdinal))
     {
       var json = reader.GetString(podConfigOrdinal);

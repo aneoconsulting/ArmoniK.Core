@@ -2457,7 +2457,8 @@ public class TaskTableTestBase
     {
       // Fix #2: verify that a task with 2 remaining dependencies is not "ready" after removing
       // only one, and becomes ready only after both are removed.
-      var taskId    = Guid.NewGuid().ToString();
+      var taskId = Guid.NewGuid()
+                       .ToString();
       const string dep1      = "depA";
       const string dep2      = "depB";
       const string payloadId = "payloadForPartialTest";
@@ -2569,5 +2570,4 @@ public class TaskTableTestBase
                   Is.Not.Empty);
     }
   }
-
 }

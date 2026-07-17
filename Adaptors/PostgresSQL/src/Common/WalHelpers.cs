@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,10 +24,10 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
-using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
-
 using Npgsql.Replication.PgOutput;
 using Npgsql.Replication.PgOutput.Messages;
+
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.PostgresSQL.Common;
 
@@ -65,21 +65,21 @@ internal static class WalHelpers
     var expectedOutputIds = Array.Empty<string>();
     var retryOfIds        = Array.Empty<string>();
 
-    var status        = 0;
-    var outputStatus  = 0;
-    var optMaxRetries = 0;
-    var optPriority   = 0;
+    var status         = 0;
+    var outputStatus   = 0;
+    var optMaxRetries  = 0;
+    var optPriority    = 0;
     var optMaxDuration = 0L;
 
-    var      creationDate    = default(DateTime);
-    DateTime? submittedDate  = null,
-              startDate      = null,
-              endDate        = null,
-              receptionDate  = null,
+    var creationDate = default(DateTime);
+    DateTime? submittedDate   = null,
+              startDate       = null,
+              endDate         = null,
+              receptionDate   = null,
               acquisitionDate = null,
-              processedDate  = null,
-              fetchedDate    = null,
-              podTtl         = null;
+              processedDate   = null,
+              fetchedDate     = null,
+              podTtl          = null;
 
     TimeSpan? processingToEnd = null,
               creationToEnd   = null,
@@ -95,118 +95,156 @@ internal static class WalHelpers
       switch (col.GetFieldName())
       {
         case "session_id":
-          sessionId = await col.Get<string>(ct).ConfigureAwait(false);
+          sessionId = await col.Get<string>(ct)
+                               .ConfigureAwait(false);
           break;
         case "task_id":
-          taskId = await col.Get<string>(ct).ConfigureAwait(false);
+          taskId = await col.Get<string>(ct)
+                            .ConfigureAwait(false);
           break;
         case "owner_pod_id":
-          ownerPodId = await col.Get<string>(ct).ConfigureAwait(false);
+          ownerPodId = await col.Get<string>(ct)
+                                .ConfigureAwait(false);
           break;
         case "owner_pod_name":
-          ownerPodName = await col.Get<string>(ct).ConfigureAwait(false);
+          ownerPodName = await col.Get<string>(ct)
+                                  .ConfigureAwait(false);
           break;
         case "payload_id":
-          payloadId = await col.Get<string>(ct).ConfigureAwait(false);
+          payloadId = await col.Get<string>(ct)
+                               .ConfigureAwait(false);
           break;
         case "initial_task_id":
-          initialTaskId = await col.Get<string>(ct).ConfigureAwait(false);
+          initialTaskId = await col.Get<string>(ct)
+                                   .ConfigureAwait(false);
           break;
         case "created_by":
-          createdBy = await col.Get<string>(ct).ConfigureAwait(false);
+          createdBy = await col.Get<string>(ct)
+                               .ConfigureAwait(false);
           break;
         case "status_message":
-          statusMessage = await col.Get<string>(ct).ConfigureAwait(false);
+          statusMessage = await col.Get<string>(ct)
+                                   .ConfigureAwait(false);
           break;
         case "output_error":
-          outputError = await col.Get<string>(ct).ConfigureAwait(false);
+          outputError = await col.Get<string>(ct)
+                                 .ConfigureAwait(false);
           break;
         case "options_options":
-          optOptions = await col.Get<string>(ct).ConfigureAwait(false);
+          optOptions = await col.Get<string>(ct)
+                                .ConfigureAwait(false);
           break;
         case "options_partition_id":
-          optPartitionId = await col.Get<string>(ct).ConfigureAwait(false);
+          optPartitionId = await col.Get<string>(ct)
+                                    .ConfigureAwait(false);
           break;
         case "options_app_name":
-          optAppName = await col.Get<string>(ct).ConfigureAwait(false);
+          optAppName = await col.Get<string>(ct)
+                                .ConfigureAwait(false);
           break;
         case "options_app_version":
-          optAppVersion = await col.Get<string>(ct).ConfigureAwait(false);
+          optAppVersion = await col.Get<string>(ct)
+                                   .ConfigureAwait(false);
           break;
         case "options_app_namespace":
-          optAppNamespace = await col.Get<string>(ct).ConfigureAwait(false);
+          optAppNamespace = await col.Get<string>(ct)
+                                     .ConfigureAwait(false);
           break;
         case "options_app_service":
-          optAppService = await col.Get<string>(ct).ConfigureAwait(false);
+          optAppService = await col.Get<string>(ct)
+                                   .ConfigureAwait(false);
           break;
         case "options_engine_type":
-          optEngineType = await col.Get<string>(ct).ConfigureAwait(false);
+          optEngineType = await col.Get<string>(ct)
+                                   .ConfigureAwait(false);
           break;
         case "parent_task_ids":
-          parentTaskIds = await col.Get<string[]>(ct).ConfigureAwait(false);
+          parentTaskIds = await col.Get<string[]>(ct)
+                                   .ConfigureAwait(false);
           break;
         case "data_dependencies":
-          dataDeps = await col.Get<string[]>(ct).ConfigureAwait(false);
+          dataDeps = await col.Get<string[]>(ct)
+                              .ConfigureAwait(false);
           break;
         case "expected_output_ids":
-          expectedOutputIds = await col.Get<string[]>(ct).ConfigureAwait(false);
+          expectedOutputIds = await col.Get<string[]>(ct)
+                                       .ConfigureAwait(false);
           break;
         case "retry_of_ids":
-          retryOfIds = await col.Get<string[]>(ct).ConfigureAwait(false);
+          retryOfIds = await col.Get<string[]>(ct)
+                                .ConfigureAwait(false);
           break;
         case "status":
-          status = await col.Get<int>(ct).ConfigureAwait(false);
+          status = await col.Get<int>(ct)
+                            .ConfigureAwait(false);
           break;
         case "output_status":
-          outputStatus = await col.Get<int>(ct).ConfigureAwait(false);
+          outputStatus = await col.Get<int>(ct)
+                                  .ConfigureAwait(false);
           break;
         case "options_max_retries":
-          optMaxRetries = await col.Get<int>(ct).ConfigureAwait(false);
+          optMaxRetries = await col.Get<int>(ct)
+                                   .ConfigureAwait(false);
           break;
         case "options_priority":
-          optPriority = await col.Get<int>(ct).ConfigureAwait(false);
+          optPriority = await col.Get<int>(ct)
+                                 .ConfigureAwait(false);
           break;
         case "options_max_duration":
-          optMaxDuration = await col.Get<long>(ct).ConfigureAwait(false);
+          optMaxDuration = await col.Get<long>(ct)
+                                    .ConfigureAwait(false);
           break;
         case "creation_date":
-          creationDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          creationDate = UtcKind(await col.Get<DateTime>(ct)
+                                          .ConfigureAwait(false));
           break;
         case "submitted_date":
-          submittedDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          submittedDate = UtcKind(await col.Get<DateTime>(ct)
+                                           .ConfigureAwait(false));
           break;
         case "start_date":
-          startDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          startDate = UtcKind(await col.Get<DateTime>(ct)
+                                       .ConfigureAwait(false));
           break;
         case "end_date":
-          endDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          endDate = UtcKind(await col.Get<DateTime>(ct)
+                                     .ConfigureAwait(false));
           break;
         case "reception_date":
-          receptionDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          receptionDate = UtcKind(await col.Get<DateTime>(ct)
+                                           .ConfigureAwait(false));
           break;
         case "acquisition_date":
-          acquisitionDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          acquisitionDate = UtcKind(await col.Get<DateTime>(ct)
+                                             .ConfigureAwait(false));
           break;
         case "processed_date":
-          processedDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          processedDate = UtcKind(await col.Get<DateTime>(ct)
+                                           .ConfigureAwait(false));
           break;
         case "fetched_date":
-          fetchedDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          fetchedDate = UtcKind(await col.Get<DateTime>(ct)
+                                         .ConfigureAwait(false));
           break;
         case "pod_ttl":
-          podTtl = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          podTtl = UtcKind(await col.Get<DateTime>(ct)
+                                    .ConfigureAwait(false));
           break;
         case "processing_to_end_duration":
-          processingToEnd = TimeSpan.FromTicks(await col.Get<long>(ct).ConfigureAwait(false));
+          processingToEnd = TimeSpan.FromTicks(await col.Get<long>(ct)
+                                                        .ConfigureAwait(false));
           break;
         case "creation_to_end_duration":
-          creationToEnd = TimeSpan.FromTicks(await col.Get<long>(ct).ConfigureAwait(false));
+          creationToEnd = TimeSpan.FromTicks(await col.Get<long>(ct)
+                                                      .ConfigureAwait(false));
           break;
         case "received_to_end_duration":
-          receivedToEnd = TimeSpan.FromTicks(await col.Get<long>(ct).ConfigureAwait(false));
+          receivedToEnd = TimeSpan.FromTicks(await col.Get<long>(ct)
+                                                      .ConfigureAwait(false));
           break;
         default:
-          await col.Get(ct).ConfigureAwait(false);
+          await col.Get(ct)
+                   .ConfigureAwait(false);
           break;
       }
     }
@@ -262,12 +300,12 @@ internal static class WalHelpers
   internal static async Task<Result> ReadResult(ReplicationTuple  tuple,
                                                 CancellationToken ct)
   {
-    string sessionId    = "",
-           resultId     = "",
-           name         = "",
-           createdBy    = "",
-           completedBy  = "",
-           ownerTaskId  = "";
+    string sessionId   = "",
+           resultId    = "",
+           name        = "",
+           createdBy   = "",
+           completedBy = "",
+           ownerTaskId = "";
 
     var dependentTasks = Array.Empty<string>();
     var status         = 0;
@@ -275,7 +313,7 @@ internal static class WalHelpers
     var manualDeletion = false;
     var opaqueId       = Array.Empty<byte>();
 
-    var      creationDate   = default(DateTime);
+    var       creationDate   = default(DateTime);
     DateTime? completionDate = null;
 
     await foreach (var col in tuple)
@@ -288,46 +326,60 @@ internal static class WalHelpers
       switch (col.GetFieldName())
       {
         case "session_id":
-          sessionId = await col.Get<string>(ct).ConfigureAwait(false);
+          sessionId = await col.Get<string>(ct)
+                               .ConfigureAwait(false);
           break;
         case "result_id":
-          resultId = await col.Get<string>(ct).ConfigureAwait(false);
+          resultId = await col.Get<string>(ct)
+                              .ConfigureAwait(false);
           break;
         case "name":
-          name = await col.Get<string>(ct).ConfigureAwait(false);
+          name = await col.Get<string>(ct)
+                          .ConfigureAwait(false);
           break;
         case "created_by":
-          createdBy = await col.Get<string>(ct).ConfigureAwait(false);
+          createdBy = await col.Get<string>(ct)
+                               .ConfigureAwait(false);
           break;
         case "completed_by":
-          completedBy = await col.Get<string>(ct).ConfigureAwait(false);
+          completedBy = await col.Get<string>(ct)
+                                 .ConfigureAwait(false);
           break;
         case "owner_task_id":
-          ownerTaskId = await col.Get<string>(ct).ConfigureAwait(false);
+          ownerTaskId = await col.Get<string>(ct)
+                                 .ConfigureAwait(false);
           break;
         case "dependent_tasks":
-          dependentTasks = await col.Get<string[]>(ct).ConfigureAwait(false);
+          dependentTasks = await col.Get<string[]>(ct)
+                                    .ConfigureAwait(false);
           break;
         case "status":
-          status = await col.Get<int>(ct).ConfigureAwait(false);
+          status = await col.Get<int>(ct)
+                            .ConfigureAwait(false);
           break;
         case "size":
-          size = await col.Get<long>(ct).ConfigureAwait(false);
+          size = await col.Get<long>(ct)
+                          .ConfigureAwait(false);
           break;
         case "manual_deletion":
-          manualDeletion = await col.Get<bool>(ct).ConfigureAwait(false);
+          manualDeletion = await col.Get<bool>(ct)
+                                    .ConfigureAwait(false);
           break;
         case "opaque_id":
-          opaqueId = await col.Get<byte[]>(ct).ConfigureAwait(false);
+          opaqueId = await col.Get<byte[]>(ct)
+                              .ConfigureAwait(false);
           break;
         case "creation_date":
-          creationDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          creationDate = UtcKind(await col.Get<DateTime>(ct)
+                                          .ConfigureAwait(false));
           break;
         case "completion_date":
-          completionDate = UtcKind(await col.Get<DateTime>(ct).ConfigureAwait(false));
+          completionDate = UtcKind(await col.Get<DateTime>(ct)
+                                            .ConfigureAwait(false));
           break;
         default:
-          await col.Get(ct).ConfigureAwait(false);
+          await col.Get(ct)
+                   .ConfigureAwait(false);
           break;
       }
     }
@@ -434,7 +486,8 @@ internal static class WalHelpers
     {
       if (!col.IsDBNull && !col.IsUnchangedToastedValue)
       {
-        await col.Get(ct).ConfigureAwait(false);
+        await col.Get(ct)
+                 .ConfigureAwait(false);
       }
     }
   }

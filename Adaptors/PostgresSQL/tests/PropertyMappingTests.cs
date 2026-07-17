@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -33,6 +33,10 @@ namespace ArmoniK.Core.Adapters.PostgresSQL.Tests;
 [TestFixture]
 public class PropertyMappingTests
 {
+  [OneTimeSetUp]
+  public void LoadSchema()
+    => schemaColumns_ = MigrationSchemaReader.ParseSchema(MigrationSchemaReader.ReadMigrationScript());
+
   // Entries whose key is a strict prefix of another key in the same map (e.g. "Options" before
   // "Options.PartitionId") are container nodes used only to build nested paths and are not expected
   // to resolve to a real column on their own, so they are excluded from the case list below.
@@ -47,10 +51,6 @@ public class PropertyMappingTests
 
   private static Dictionary<string, HashSet<string>> schemaColumns_ = null!;
 
-  [OneTimeSetUp]
-  public void LoadSchema()
-    => schemaColumns_ = MigrationSchemaReader.ParseSchema(MigrationSchemaReader.ReadMigrationScript());
-
   public static IEnumerable<TestCaseData> PropertyPathCases()
   {
     foreach (var (type, table, mappings) in EntityMappings)
@@ -58,7 +58,7 @@ public class PropertyMappingTests
       foreach (var (path, column) in mappings)
       {
         if (mappings.Keys.Any(other => other.StartsWith(path + ".",
-                                                         StringComparison.OrdinalIgnoreCase)))
+                                                        StringComparison.OrdinalIgnoreCase)))
         {
           continue;
         }
@@ -76,10 +76,10 @@ public class PropertyMappingTests
                                                string column)
   {
     Assert.That(schemaColumns_,
-               Does.ContainKey(table),
-               $"Table '{table}' is not defined in the migration script");
+                Does.ContainKey(table),
+                $"Table '{table}' is not defined in the migration script");
     Assert.That(schemaColumns_[table],
-               Does.Contain(column),
-               $"'{path}' maps to column '{column}', which does not exist in table '{table}'");
+                Does.Contain(column),
+                $"'{path}' maps to column '{column}', which does not exist in table '{table}'");
   }
 }

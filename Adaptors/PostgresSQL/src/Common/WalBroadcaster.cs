@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -47,20 +47,31 @@ namespace ArmoniK.Core.Adapters.PostgresSQL.Common;
 internal sealed class WalBroadcaster<T> : IDisposable
   where T : class
 {
-  private readonly NpgsqlConnectionProvider                                       provider_;
+  private readonly SemaphoreSlim lock_ = new(1,
+                                             1);
+
+  private readonly NpgsqlConnectionProvider                                      provider_;
+  private readonly ConcurrentDictionary<Guid, Channel<T>>                        subscribers_ = new();
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
+  private          Task?                                                         broadcastLoop_;
+  private          CancellationTokenSource?                                      loopCts_;
+  private          TaskCompletionSource?                                         slotReady_;
 
-  private readonly SemaphoreSlim                           lock_        = new(1, 1);
-  private          CancellationTokenSource?                loopCts_;
-  private readonly ConcurrentDictionary<Guid, Channel<T>> subscribers_ = new();
-  private          Task?                                  broadcastLoop_;
-  private          TaskCompletionSource?                  slotReady_;
-
-  internal WalBroadcaster(NpgsqlConnectionProvider                                       provider,
-                           Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse)
+  internal WalBroadcaster(NpgsqlConnectionProvider                                      provider,
+                          Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse)
   {
     provider_ = provider;
     tryParse_ = tryParse;
+  }
+
+  public void Dispose()
+  {
+    loopCts_?.Cancel();
+    loopCts_?.Dispose();
+    lock_.Dispose();
+    // Concurrent StopIfIdle / EnsureStartedAndRegister callers handle ObjectDisposedException
+    // from lock_.WaitAsync() and loopCts_.Cancel() gracefully — see ReleaseLockSafe and
+    // the try/catch in StopIfIdle.
   }
 
   /// <summary>
@@ -120,15 +131,17 @@ internal sealed class WalBroadcaster<T> : IDisposable
                        cancellationToken);
   }
 
-  private async IAsyncEnumerable<T> ReadChannel(Guid                                          id,
-                                                 Channel<T>                                    channel,
-                                                 [EnumeratorCancellation] CancellationToken cancellationToken)
+  private async IAsyncEnumerable<T> ReadChannel(Guid                                       id,
+                                                Channel<T>                                 channel,
+                                                [EnumeratorCancellation] CancellationToken cancellationToken)
   {
     try
     {
       await foreach (var item in channel.Reader.ReadAllAsync(cancellationToken)
                                         .ConfigureAwait(false))
+      {
         yield return item;
+      }
     }
     finally
     {
@@ -152,8 +165,8 @@ internal sealed class WalBroadcaster<T> : IDisposable
   // not block other concurrent SubscribeAsync callers (which would hang if the replication
   // connection takes time to respond to cancellation).
   private async Task<TaskCompletionSource> EnsureStartedAndRegister(Guid              id,
-                                                                      Channel<T>        channel,
-                                                                      CancellationToken cancellationToken)
+                                                                    Channel<T>        channel,
+                                                                    CancellationToken cancellationToken)
   {
     while (true)
     {
@@ -163,9 +176,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
                  .ConfigureAwait(false);
       try
       {
-        var loopHealthy = broadcastLoop_ is not null
-                       && !broadcastLoop_.IsCompleted
-                       && loopCts_?.IsCancellationRequested != true;
+        var loopHealthy = broadcastLoop_ is not null && !broadcastLoop_.IsCompleted && loopCts_?.IsCancellationRequested != true;
 
         if (loopHealthy)
         {
@@ -218,7 +229,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
 
     if (!acquired)
+    {
       return;
+    }
 
     try
     {
@@ -228,7 +241,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
         {
           loopCts_?.Cancel();
         }
-        catch (ObjectDisposedException) { }
+        catch (ObjectDisposedException)
+        {
+        }
       }
     }
     finally
@@ -246,7 +261,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
     {
       lock_.Release();
     }
-    catch (ObjectDisposedException) { }
+    catch (ObjectDisposedException)
+    {
+    }
   }
 
   private async Task RunLoop(CancellationToken cancellationToken)
@@ -255,14 +272,16 @@ internal sealed class WalBroadcaster<T> : IDisposable
     try
     {
       var slotName = $"armonik_{Guid.NewGuid():N}";
-      var options  = new PgOutputReplicationOptions("armonik_pub", PgOutputProtocolVersion.V1, binary: true);
+      var options = new PgOutputReplicationOptions("armonik_pub",
+                                                   PgOutputProtocolVersion.V1,
+                                                   true);
 
       await using var replConn = provider_.CreateReplicationConnection();
       await replConn.Open(cancellationToken)
                     .ConfigureAwait(false);
 
       var slot = await replConn.CreatePgOutputReplicationSlot(slotName,
-                                                              temporarySlot: true,
+                                                              true,
                                                               cancellationToken: cancellationToken)
                                .ConfigureAwait(false);
 
@@ -280,7 +299,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
         if (item is not null)
         {
           foreach (var (_, ch) in subscribers_)
+          {
             ch.Writer.TryWrite(item);
+          }
         }
 
         // Acknowledge after writing so a subscriber that disconnects between these
@@ -308,17 +329,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
       // clean up and retry rather than hanging until its cancellation token fires.
       slotReady_?.TrySetCanceled(CancellationToken.None);
       foreach (var (_, ch) in subscribers_)
+      {
         ch.Writer.TryComplete(loopException);
+      }
     }
-  }
-
-  public void Dispose()
-  {
-    loopCts_?.Cancel();
-    loopCts_?.Dispose();
-    lock_.Dispose();
-    // Concurrent StopIfIdle / EnsureStartedAndRegister callers handle ObjectDisposedException
-    // from lock_.WaitAsync() and loopCts_.Cancel() gracefully — see ReleaseLockSafe and
-    // the try/catch in StopIfIdle.
   }
 }

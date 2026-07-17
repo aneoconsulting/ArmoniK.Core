@@ -864,7 +864,7 @@ public class ResultTableTestBase
     if (RunTests)
     {
       var sessionId = Guid.NewGuid()
-                         .ToString();
+                          .ToString();
 
       await ResultTable!.Create(new[]
                                 {
