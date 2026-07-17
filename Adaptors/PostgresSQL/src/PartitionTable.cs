@@ -150,7 +150,8 @@ INSERT INTO partitions (
   public async Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
                                                      CancellationToken   cancellationToken = default)
   {
-    var ids = partitionIds.ToArray();
+    var ids = partitionIds.Distinct()
+                          .ToArray();
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
