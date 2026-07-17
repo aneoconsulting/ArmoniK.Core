@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -121,8 +121,8 @@ INSERT INTO sessions (
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>>         filter,
-                                                        Expression<Func<SessionData, T>>             selector,
+  public async IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>>        filter,
+                                                        Expression<Func<SessionData, T>>           selector,
                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var (whereSql, whereParams) = ExpressionToSql<SessionData>.Translate(filter);
@@ -181,9 +181,16 @@ INSERT INTO sessions (
                                                                                             int                                    pageSize,
                                                                                             CancellationToken                      cancellationToken = default)
   {
-    var (whereSql, whereParams) = ExpressionToSql<SessionData>.Translate(filter);
-    var orderColumn             = ExpressionToSql<SessionData>.TranslateOrderBy(orderField);
-    var orderDir                = ascOrder ? "ASC" : "DESC";
+    var (whereSql, whereParams)    = ExpressionToSql<SessionData>.Translate(filter);
+    var (orderColumn, orderParams) = ExpressionToSql<SessionData>.TranslateOrderBy(orderField);
+    foreach (var (key, value) in orderParams)
+    {
+      whereParams[key] = value;
+    }
+
+    var orderDir = ascOrder
+                     ? "ASC"
+                     : "DESC";
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
@@ -239,7 +246,9 @@ INSERT INTO sessions (
     var whereClause = "session_id = @sessionId";
     var filterParams = new Dictionary<string, object?>
                        {
-                         { "@sessionId", sessionId },
+                         {
+                           "@sessionId", sessionId
+                         },
                        };
 
     if (filter is not null)
@@ -261,7 +270,7 @@ INSERT INTO sessions (
                                         whereClause,
                                         filterParams,
                                         cancellationToken,
-                                        forUpdate: true)
+                                        true)
                  .ConfigureAwait(false);
     }
 
@@ -269,7 +278,7 @@ INSERT INTO sessions (
     await using var updateCmd = connection.CreateCommand();
     updateCmd.Transaction = transaction;
     var setClauses = SqlHelper.BuildSetClauses(updates,
-                                              updateCmd);
+                                               updateCmd);
     updateCmd.CommandText = $"UPDATE sessions SET {setClauses} WHERE {whereClause}";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);
@@ -291,7 +300,9 @@ INSERT INTO sessions (
                                         "session_id = @sessionId",
                                         new Dictionary<string, object?>
                                         {
-                                          { "@sessionId", sessionId },
+                                          {
+                                            "@sessionId", sessionId
+                                          },
                                         },
                                         cancellationToken)
                  .ConfigureAwait(false);
@@ -311,12 +322,12 @@ INSERT INTO sessions (
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => connectionProvider_.Check(tag);
 
-  private static async Task<SessionData?> ReadSessionByWhere(NpgsqlConnection             connection,
-                                                             NpgsqlTransaction            transaction,
-                                                             string                       whereClause,
+  private static async Task<SessionData?> ReadSessionByWhere(NpgsqlConnection            connection,
+                                                             NpgsqlTransaction           transaction,
+                                                             string                      whereClause,
                                                              Dictionary<string, object?> parameters,
-                                                             CancellationToken            cancellationToken,
-                                                             bool                         forUpdate = false)
+                                                             CancellationToken           cancellationToken,
+                                                             bool                        forUpdate = false)
   {
     await using var cmd = connection.CreateCommand();
     cmd.Transaction = transaction;

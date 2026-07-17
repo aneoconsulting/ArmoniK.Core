@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -24,8 +24,8 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgresSQL.Common;
+using ArmoniK.Core.Adapters.PostgresSQL.Options;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
@@ -44,13 +44,13 @@ namespace ArmoniK.Core.Adapters.PostgresSQL;
 public class TaskTable : ITaskTable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
-  private readonly Options.TableStorage     tableStorageOptions_;
+  private readonly TableStorage             tableStorageOptions_;
 
   /// <summary>
   ///   Creates a new TaskTable
   /// </summary>
   public TaskTable(NpgsqlConnectionProvider connectionProvider,
-                   Options.TableStorage     tableStorageOptions,
+                   TableStorage             tableStorageOptions,
                    ILogger<TaskTable>       logger)
   {
     connectionProvider_  = connectionProvider;
@@ -314,9 +314,16 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                                                                int                                 pageSize,
                                                                                CancellationToken                   cancellationToken = default)
   {
-    var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
-    var orderColumn             = ExpressionToSql<TaskData>.TranslateOrderBy(orderField);
-    var orderDir                = ascOrder ? "ASC" : "DESC";
+    var (whereSql, whereParams)    = ExpressionToSql<TaskData>.Translate(filter);
+    var (orderColumn, orderParams) = ExpressionToSql<TaskData>.TranslateOrderBy(orderField);
+    foreach (var (key, value) in orderParams)
+    {
+      whereParams[key] = value;
+    }
+
+    var orderDir = ascOrder
+                     ? "ASC"
+                     : "DESC";
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
@@ -374,8 +381,8 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>>                filter,
-                                                     Expression<Func<TaskData, T>>                   selector,
+  public async IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>>           filter,
+                                                     Expression<Func<TaskData, T>>              selector,
                                                      [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
@@ -430,7 +437,9 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     var whereClause = "task_id = @taskId";
     var filterParams = new Dictionary<string, object?>
                        {
-                         { "@taskId", taskId },
+                         {
+                           "@taskId", taskId
+                         },
                        };
 
     if (filter is not null)
@@ -452,7 +461,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                            whereClause,
                                            filterParams,
                                            cancellationToken,
-                                           forUpdate: true)
+                                           true)
                  .ConfigureAwait(false);
     }
 
@@ -460,7 +469,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     await using var updateCmd = connection.CreateCommand();
     updateCmd.Transaction = transaction;
     var setClauses = SqlHelper.BuildSetClauses(updates,
-                                              updateCmd);
+                                               updateCmd);
     updateCmd.CommandText = $"UPDATE tasks SET {setClauses} WHERE {whereClause}";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);
@@ -483,7 +492,9 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                            "task_id = @taskId",
                                            new Dictionary<string, object?>
                                            {
-                                             { "@taskId", taskId },
+                                             {
+                                               "@taskId", taskId
+                                             },
                                            },
                                            cancellationToken)
                  .ConfigureAwait(false);
@@ -507,7 +518,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
 
     await using var cmd = connection.CreateCommand();
     var setClauses = SqlHelper.BuildSetClauses(updates,
-                                              cmd);
+                                               cmd);
     cmd.CommandText = $"UPDATE tasks SET {setClauses} WHERE {whereSql}";
     SqlHelper.AddExpressionParameters(cmd,
                                       whereParams);
@@ -519,15 +530,17 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   }
 
   /// <inheritdoc />
-  public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>>                    filter,
+  public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                    ICollection<Expression<Func<Application, object?>>> orderFields,
-                                                                                                   bool                                                ascOrder,
-                                                                                                   int                                                 page,
-                                                                                                   int                                                 pageSize,
-                                                                                                   CancellationToken                                   cancellationToken = default)
+                                                                                                   bool ascOrder,
+                                                                                                   int page,
+                                                                                                   int pageSize,
+                                                                                                   CancellationToken cancellationToken = default)
   {
     var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
-    var orderDir                = ascOrder ? "ASC" : "DESC";
+    var orderDir = ascOrder
+                     ? "ASC"
+                     : "DESC";
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
@@ -545,9 +558,25 @@ SELECT COUNT(*) FROM (
                                                    .ConfigureAwait(false));
 
     // Get paginated applications
-    var orderClauses  = orderFields.Select(f => $"{ExpressionToSql<Application>.TranslateOrderBy(f)} {orderDir}");
-    var orderBySql    = string.Join(", ", orderClauses);
-    var orderByClause = orderBySql.Length > 0 ? $"ORDER BY {orderBySql}" : "";
+    var orderClauses = new List<string>();
+    var orderIndex   = 0;
+    foreach (var f in orderFields)
+    {
+      var (orderColumn, orderParams) = ExpressionToSql<Application>.TranslateOrderBy(f,
+                                                                                     orderIndex++);
+      foreach (var (key, value) in orderParams)
+      {
+        whereParams[key] = value;
+      }
+
+      orderClauses.Add($"{orderColumn} {orderDir}");
+    }
+
+    var orderBySql = string.Join(", ",
+                                 orderClauses);
+    var orderByClause = orderBySql.Length > 0
+                          ? $"ORDER BY {orderBySql}"
+                          : "";
 
     await using var dataCmd = connection.CreateCommand();
     dataCmd.CommandText = $@"
@@ -590,9 +619,9 @@ LIMIT @limit OFFSET @offset";
     }
 
     var readyTasks = await FetchReadyTasksAfterDependencyRemoval(taskIds,
-                                                                  dependenciesToRemove,
-                                                                  cancellationToken)
-                      .ConfigureAwait(false);
+                                                                 dependenciesToRemove,
+                                                                 cancellationToken)
+                       .ConfigureAwait(false);
 
     var compiled = selector.Compile();
     foreach (var taskData in readyTasks)
@@ -601,12 +630,20 @@ LIMIT @limit OFFSET @offset";
     }
   }
 
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+    => connectionProvider_.Init(cancellationToken);
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => connectionProvider_.Check(tag);
+
   private async Task<List<TaskData>> FetchReadyTasksAfterDependencyRemoval(ICollection<string> taskIds,
                                                                            ICollection<string> dependenciesToRemove,
                                                                            CancellationToken   cancellationToken)
   {
-    await using var connection  = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                           .ConfigureAwait(false);
+    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                          .ConfigureAwait(false);
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
@@ -637,7 +674,9 @@ FOR UPDATE";
                                                .ConfigureAwait(false))
     {
       while (await lockReader.ReadAsync(cancellationToken)
-                             .ConfigureAwait(false)) { }
+                             .ConfigureAwait(false))
+      {
+      }
     }
 
     await using var deleteCmd = connection.CreateCommand();
@@ -687,20 +726,12 @@ WHERE t.task_id = ANY(@ready_task_ids)
     return result;
   }
 
-  /// <inheritdoc />
-  public Task Init(CancellationToken cancellationToken)
-    => connectionProvider_.Init(cancellationToken);
-
-  /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-    => connectionProvider_.Check(tag);
-
-  private async Task<TaskData?> ReadTaskByWhereClause(NpgsqlConnection             connection,
-                                                      NpgsqlTransaction            transaction,
-                                                      string                       whereClause,
+  private async Task<TaskData?> ReadTaskByWhereClause(NpgsqlConnection            connection,
+                                                      NpgsqlTransaction           transaction,
+                                                      string                      whereClause,
                                                       Dictionary<string, object?> parameters,
-                                                      CancellationToken            cancellationToken,
-                                                      bool                         forUpdate = false)
+                                                      CancellationToken           cancellationToken,
+                                                      bool                        forUpdate = false)
   {
     await using var cmd = connection.CreateCommand();
     cmd.Transaction = transaction;
@@ -729,9 +760,9 @@ WHERE t.task_id = ANY(@ready_task_ids)
   }
 
   private static async Task<Dictionary<string, Dictionary<string, bool>>> LoadRemainingDependenciesBatch(NpgsqlConnection   connection,
-                                                                                                          List<TaskData>     tasks,
-                                                                                                          CancellationToken  cancellationToken,
-                                                                                                          NpgsqlTransaction? transaction = null)
+                                                                                                         List<TaskData>     tasks,
+                                                                                                         CancellationToken  cancellationToken,
+                                                                                                         NpgsqlTransaction? transaction = null)
   {
     var result = tasks.ToDictionary(t => t.TaskId,
                                     _ => new Dictionary<string, bool>());

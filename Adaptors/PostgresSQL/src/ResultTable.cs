@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,7 +58,7 @@ public class ResultTable : IResultTable
 
   /// <inheritdoc />
   public async Task Create(ICollection<Result> results,
-                            CancellationToken   cancellationToken = default)
+                           CancellationToken   cancellationToken = default)
   {
     if (results.Count == 0)
     {
@@ -251,9 +250,9 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>>                filter,
-                                                  Expression<Func<Result, T>>                   convertor,
-                                                  [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>>             filter,
+                                                 Expression<Func<Result, T>>                convertor,
+                                                 [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var (whereSql, whereParams) = ExpressionToSql<Result>.Translate(filter);
 
@@ -278,15 +277,22 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
 
   /// <inheritdoc />
   public async Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
-                                                                                     Expression<Func<Result, object?>> orderField,
-                                                                                     bool                              ascOrder,
-                                                                                     int                               page,
-                                                                                     int                               pageSize,
-                                                                                     CancellationToken                 cancellationToken = default)
+                                                                                    Expression<Func<Result, object?>> orderField,
+                                                                                    bool                              ascOrder,
+                                                                                    int                               page,
+                                                                                    int                               pageSize,
+                                                                                    CancellationToken                 cancellationToken = default)
   {
-    var (whereSql, whereParams) = ExpressionToSql<Result>.Translate(filter);
-    var orderColumn             = ExpressionToSql<Result>.TranslateOrderBy(orderField);
-    var orderDir                = ascOrder ? "ASC" : "DESC";
+    var (whereSql, whereParams)    = ExpressionToSql<Result>.Translate(filter);
+    var (orderColumn, orderParams) = ExpressionToSql<Result>.TranslateOrderBy(orderField);
+    foreach (var (key, value) in orderParams)
+    {
+      whereParams[key] = value;
+    }
+
+    var orderDir = ascOrder
+                     ? "ASC"
+                     : "DESC";
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
@@ -423,7 +429,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     await using var updateCmd = connection.CreateCommand();
     updateCmd.Transaction = transaction;
     var setClauses = SqlHelper.BuildSetClauses(updates,
-                                              updateCmd);
+                                               updateCmd);
     updateCmd.CommandText = $"UPDATE results SET {setClauses} WHERE result_id = @result_id";
     updateCmd.Parameters.AddWithValue("result_id",
                                       resultId);
@@ -449,7 +455,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
 
     await using var cmd = connection.CreateCommand();
     var setClauses = SqlHelper.BuildSetClauses(updates,
-                                              cmd);
+                                               cmd);
     cmd.CommandText = $"UPDATE results SET {setClauses} WHERE {whereSql}";
     SqlHelper.AddExpressionParameters(cmd,
                                       whereParams);
@@ -477,7 +483,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
       await using var cmd = connection.CreateCommand();
       cmd.Transaction = transaction;
       var setClauses = SqlHelper.BuildSetClauses(updates,
-                                                cmd);
+                                                 cmd);
       cmd.CommandText = $"UPDATE results SET {setClauses} WHERE {whereSql}";
       SqlHelper.AddExpressionParameters(cmd,
                                         whereParams);

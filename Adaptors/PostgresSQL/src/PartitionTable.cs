@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -169,15 +169,22 @@ INSERT INTO partitions (
 
   /// <inheritdoc />
   public async Task<(IEnumerable<PartitionData> partitions, int totalCount)> ListPartitionsAsync(Expression<Func<PartitionData, bool>>    filter,
-                                                                                                  Expression<Func<PartitionData, object?>> orderField,
-                                                                                                  bool                                     ascOrder,
-                                                                                                  int                                      page,
-                                                                                                  int                                      pageSize,
-                                                                                                  CancellationToken                        cancellationToken = default)
+                                                                                                 Expression<Func<PartitionData, object?>> orderField,
+                                                                                                 bool                                     ascOrder,
+                                                                                                 int                                      page,
+                                                                                                 int                                      pageSize,
+                                                                                                 CancellationToken                        cancellationToken = default)
   {
-    var (whereSql, whereParams) = ExpressionToSql<PartitionData>.Translate(filter);
-    var orderColumn             = ExpressionToSql<PartitionData>.TranslateOrderBy(orderField);
-    var orderDir                = ascOrder ? "ASC" : "DESC";
+    var (whereSql, whereParams)    = ExpressionToSql<PartitionData>.Translate(filter);
+    var (orderColumn, orderParams) = ExpressionToSql<PartitionData>.TranslateOrderBy(orderField);
+    foreach (var (key, value) in orderParams)
+    {
+      whereParams[key] = value;
+    }
+
+    var orderDir = ascOrder
+                     ? "ASC"
+                     : "DESC";
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
@@ -219,9 +226,9 @@ INSERT INTO partitions (
   }
 
   /// <inheritdoc />
-  public async IAsyncEnumerable<T> FindPartitionsAsync<T>(Expression<Func<PartitionData, bool>>         filter,
-                                                           Expression<Func<PartitionData, T>>             selector,
-                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public async IAsyncEnumerable<T> FindPartitionsAsync<T>(Expression<Func<PartitionData, bool>>      filter,
+                                                          Expression<Func<PartitionData, T>>         selector,
+                                                          [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var (whereSql, whereParams) = ExpressionToSql<PartitionData>.Translate(filter);
 

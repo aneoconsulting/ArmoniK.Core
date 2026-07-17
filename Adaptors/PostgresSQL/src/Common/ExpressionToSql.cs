@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -48,39 +48,48 @@ public class ExpressionToSql<T>
   ///   Translate an order-by expression into a SQL column name
   /// </summary>
   /// <param name="expression">Order expression</param>
-  /// <returns>SQL column name</returns>
-  public static string TranslateOrderBy(Expression<Func<T, object?>> expression)
+  /// <param name="index">Index used to generate a unique parameter name when several order-by expressions are combined</param>
+  /// <returns>SQL column name and any parameters it references</returns>
+  public static (string sql, Dictionary<string, object?> parameters) TranslateOrderBy(Expression<Func<T, object?>> expression,
+                                                                                      int                          index = 0)
   {
     var body = expression.Body;
 
     // Unwrap Convert
-    while (body is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+    while (body is UnaryExpression
+                   {
+                     NodeType: ExpressionType.Convert,
+                   } unary)
     {
       body = unary.Operand;
     }
 
-    // Handle dictionary indexer: x.Options.Options["key"] => options_options->>'key'
-    if (body is MethodCallExpression { Method.Name: "get_Item" } methodCall && methodCall.Object is not null && IsParameterMember(methodCall.Object))
+    // Handle dictionary indexer: x.Options.Options["key"] => options_options->>@orderkey0
+    if (body is MethodCallExpression
+                {
+                  Method.Name: "get_Item",
+                } methodCall && methodCall.Object is not null && IsParameterMember(methodCall.Object))
     {
       var member = GetMemberPath(methodCall.Object);
       var column = PropertyMapping.GetColumnName(typeof(T),
-                                                  member);
-      var key = EvaluateExpression(methodCall.Arguments[0])?.ToString() ?? string.Empty;
+                                                 member);
+      var key = EvaluateExpression(methodCall.Arguments[0])
+                  ?.ToString() ?? string.Empty;
       if (key.Length == 0)
       {
         throw new ArgumentException("Sort key must not be empty");
       }
 
-      // Escape single quotes by doubling them. Npgsql always connects with
-      // standard_conforming_strings=on, so ' is the only character that can
-      // break out of a PostgreSQL string literal — no other escaping is needed.
-      return $"{column}->>'{key.Replace("'", "''")}'";
-
+      var paramName = $"@orderkey{index}";
+      return ($"{column}->>{paramName}", new Dictionary<string, object?>
+                                         {
+                                           [paramName] = key,
+                                         });
     }
 
     var path = GetMemberPath(body);
-    return PropertyMapping.GetColumnName(typeof(T),
-                                         path);
+    return (PropertyMapping.GetColumnName(typeof(T),
+                                          path), new Dictionary<string, object?>());
   }
 
   private string Visit(Expression expression)
@@ -270,8 +279,8 @@ public class ExpressionToSql<T>
         if (expression.Object is not null && IsMemberOfParameter(expression.Object))
         {
           var member = Visit(expression.Object);
-          var key    = EvaluateExpression(expression.Arguments[0])
-                    ?? throw new ArgumentNullException(nameof(expression), "Dictionary key in filter expression must not be null");
+          var key = EvaluateExpression(expression.Arguments[0]) ?? throw new ArgumentNullException(nameof(expression),
+                                                                                                   "Dictionary key in filter expression must not be null");
           var paramName = AddParameter(key);
           return $"({member}->>{paramName})";
         }
@@ -368,18 +377,27 @@ public class ExpressionToSql<T>
   }
 
   private static string EscapeLike(object? value)
-    => (value?.ToString() ?? string.Empty).Replace("\\", "\\\\")
-                                          .Replace("%",  "\\%")
-                                          .Replace("_",  "\\_");
+    => (value?.ToString() ?? string.Empty).Replace("\\",
+                                                   "\\\\")
+                                          .Replace("%",
+                                                   "\\%")
+                                          .Replace("_",
+                                                   "\\_");
 
   private static bool IsNullConstant(Expression expression)
   {
-    if (expression is ConstantExpression { Value: null })
+    if (expression is ConstantExpression
+                      {
+                        Value: null,
+                      })
     {
       return true;
     }
 
-    if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+    if (expression is UnaryExpression
+                      {
+                        NodeType: ExpressionType.Convert,
+                      } unary)
     {
       return IsNullConstant(unary.Operand);
     }
@@ -419,7 +437,10 @@ public class ExpressionToSql<T>
   private static object? EvaluateExpression(Expression expression)
   {
     // Unwrap Convert
-    if (expression is UnaryExpression { NodeType: ExpressionType.Convert } unary)
+    if (expression is UnaryExpression
+                      {
+                        NodeType: ExpressionType.Convert,
+                      } unary)
     {
       expression = unary.Operand;
     }
@@ -437,7 +458,7 @@ public class ExpressionToSql<T>
 
       return member.Member switch
              {
-               FieldInfo field    => field.GetValue(obj),
+               FieldInfo field   => field.GetValue(obj),
                PropertyInfo prop => prop.GetValue(obj),
                _                 => throw new NotSupportedException($"Member type {member.Member.GetType()} is not supported"),
              };
@@ -445,7 +466,9 @@ public class ExpressionToSql<T>
 
     if (expression is MethodCallExpression methodCall)
     {
-      var obj  = methodCall.Object is not null ? EvaluateExpression(methodCall.Object) : null;
+      var obj = methodCall.Object is not null
+                  ? EvaluateExpression(methodCall.Object)
+                  : null;
       var args = methodCall.Arguments.Select(EvaluateExpression)
                            .ToArray();
       return methodCall.Method.Invoke(obj,
@@ -457,7 +480,7 @@ public class ExpressionToSql<T>
       var values = newArray.Expressions.Select(EvaluateExpression)
                            .ToArray();
       var array = Array.CreateInstance(newArray.Type.GetElementType()!,
-                                      values.Length);
+                                       values.Length);
       for (var i = 0; i < values.Length; i++)
       {
         array.SetValue(values[i],
