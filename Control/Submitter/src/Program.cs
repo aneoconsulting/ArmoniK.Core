@@ -112,9 +112,7 @@ public static class Program
              .AddInitializedOption<InitServices>(builder.Configuration,
                                                  InitServices.SettingSection)
              .AddSingleton<InitDatabase>()
-             .AddExceptionManager(sp => new ExceptionManager.Options(TimeSpan.Zero,
-                                                                     sp.GetRequiredService<Common.Injection.Options.Submitter>()
-                                                                       .MaxErrorAllowed))
+             .AddExceptionManager(sp => ExceptionManager.Options.FromSubmitterOptions(sp.GetRequiredService<Common.Injection.Options.Submitter>()))
              .AddGrpcReflection()
              .AddSingleton<MeterHolder>()
              .AddSingleton<AgentIdentifier>()
@@ -137,7 +135,7 @@ public static class Program
         ActivitySource.AddActivityListener(new ActivityListener
                                            {
                                              ShouldListenTo = _ => true,
-                                             //Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
+                                             // Sample         = (ref ActivityCreationOptions<ActivityContext> options) => ActivitySamplingResult.AllDataAndRecorded,
                                              ActivityStopped = activity =>
                                                                {
                                                                  foreach (var (key, value) in activity.Baggage)
@@ -244,6 +242,13 @@ public static class Program
                           new HealthCheckOptions
                           {
                             Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Liveness)),
+                          });
+
+      app.UseHealthChecks("/readiness",
+                          1081,
+                          new HealthCheckOptions
+                          {
+                            Predicate = check => check.Tags.Contains(nameof(HealthCheckTag.Readiness)),
                           });
 
       if (app.Environment.IsDevelopment())

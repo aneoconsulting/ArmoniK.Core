@@ -8,6 +8,17 @@
 | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_metrics?color=fe5001&label=armonik_control_metrics&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control_metrics)                               | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control_metrics?color=fe5001&label=armonik_control_metrics&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control_metrics)                               |
 | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control?color=fe5001&label=armonik_control&sort=semver)](https://hub.docker.com/r/dockerhubaneo/armonik_control)                                                       | [![Docker image latest version](https://img.shields.io/docker/v/dockerhubaneo/armonik_control?color=fe5001&label=armonik_control&sort=date)](https://hub.docker.com/r/dockerhubaneo/armonik_control)                                                       |
 
+## Status
+
+The badges below reflect the latest run on the `main` branch: the GitHub Actions *Build and Test* workflow, plus the SonarCloud quality gate and code coverage.
+
+[![Build and Test](https://github.com/aneoconsulting/ArmoniK.Core/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/aneoconsulting/ArmoniK.Core/actions/workflows/build.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=aneoconsulting_ArmoniK.Core&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=aneoconsulting_ArmoniK.Core)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=aneoconsulting_ArmoniK.Core&metric=coverage)](https://sonarcloud.io/summary/new_code?id=aneoconsulting_ArmoniK.Core)
+[![Reliability Rating](https://sonarcloud.io/api/project_badges/measure?project=aneoconsulting_ArmoniK.Core&metric=reliability_rating)](https://sonarcloud.io/summary/new_code?id=aneoconsulting_ArmoniK.Core)
+[![Security Rating](https://sonarcloud.io/api/project_badges/measure?project=aneoconsulting_ArmoniK.Core&metric=security_rating)](https://sonarcloud.io/summary/new_code?id=aneoconsulting_ArmoniK.Core)
+[![Maintainability Rating](https://sonarcloud.io/api/project_badges/measure?project=aneoconsulting_ArmoniK.Core&metric=sqale_rating)](https://sonarcloud.io/summary/new_code?id=aneoconsulting_ArmoniK.Core)
+
 
  ## What is ArmoniK.Core?
 

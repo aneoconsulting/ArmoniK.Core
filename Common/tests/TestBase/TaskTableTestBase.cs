@@ -2534,8 +2534,9 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      // Fix #8: ListApplicationsAsync with an empty sort field list was emitting "ORDER BY "
-      // (trailing keyword with no columns), which is invalid SQL and throws on PostgreSQL.
+      // ListApplicationsAsync with an empty sort field list called OrderByList, which
+      // unconditionally called .First() on the field collection and threw
+      // InvalidOperationException instead of leaving results in natural order.
       var (applications, _) = await TaskTable!.ListApplicationsAsync(_ => true,
                                                                      Array.Empty<Expression<Func<Application, object?>>>(),
                                                                      false,
