@@ -557,6 +557,11 @@ SELECT COUNT(*) FROM (
     var totalCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync(cancellationToken)
                                                    .ConfigureAwait(false));
 
+    if (pageSize <= 0)
+    {
+      return (Enumerable.Empty<Application>(), totalCount);
+    }
+
     // Get paginated applications
     var orderClauses = new List<string>();
     var orderIndex   = 0;

@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -62,6 +65,24 @@ public class TaskTableTests : TaskTableTestBase
                                        .ConfigureAwait(false);
 
       Assert.That(tasks,
+                  Is.Empty);
+    }
+  }
+
+  [Test]
+  public async Task ListApplicationsAsyncShouldReturnEmptyForNegativePageSize()
+  {
+    if (RunTests)
+    {
+      var (applications, _) = await TaskTable!.ListApplicationsAsync(_ => true,
+                                                                     new List<Expression<Func<Application, object?>>>(),
+                                                                     false,
+                                                                     0,
+                                                                     -1,
+                                                                     CancellationToken.None)
+                                              .ConfigureAwait(false);
+
+      Assert.That(applications,
                   Is.Empty);
     }
   }
