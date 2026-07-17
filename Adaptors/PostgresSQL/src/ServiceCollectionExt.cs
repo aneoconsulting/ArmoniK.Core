@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -30,8 +30,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
-using ConfigurationExt = ArmoniK.Core.Utils.ConfigurationExt;
-
 namespace ArmoniK.Core.Adapters.PostgresSQL;
 
 /// <summary>
@@ -49,8 +47,8 @@ public static class ServiceCollectionExt
   /// <returns>The updated service collection with PostgreSQL components added.</returns>
   [PublicAPI]
   public static IServiceCollection AddPostgresComponents(this IServiceCollection services,
-                                                          ConfigurationManager    configuration,
-                                                          ILogger                 logger)
+                                                         ConfigurationManager    configuration,
+                                                         ILogger                 logger)
   {
     services.AddPostgresClient(configuration,
                                logger);
@@ -68,12 +66,15 @@ public static class ServiceCollectionExt
   /// <returns>The updated service collection with PostgreSQL storage services added.</returns>
   [PublicAPI]
   public static IServiceCollection AddPostgresStorages(this IServiceCollection services,
-                                                        ConfigurationManager    configuration,
-                                                        ILogger                 logger)
+                                                       ConfigurationManager    configuration,
+                                                       ILogger                 logger)
   {
     logger.LogInformation("Configure PostgreSQL Components");
 
     var components = configuration.GetSection(Components.SettingSection);
+
+    var usesPostgres = components["TableStorage"]                           == "ArmoniK.Adapters.PostgresSQL.TableStorage" ||
+                       components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.PostgresSQL.AuthenticationTable";
 
     if (components["TableStorage"] == "ArmoniK.Adapters.PostgresSQL.TableStorage")
     {
@@ -87,8 +88,12 @@ public static class ServiceCollectionExt
               .AddSingleton<IResultWatcher, ResultWatcher>();
     }
 
-    services.TryAddSingleton(_ => ConfigurationExt.GetRequiredValue<Options.PostgreSQL>(configuration,
-                                                                                         Options.PostgreSQL.SettingSection));
+    if (!usesPostgres)
+    {
+      return services;
+    }
+
+    services.TryAddSingleton(_ => configuration.GetRequiredValue<PostgreSQL>(PostgreSQL.SettingSection));
     services.AddSingletonWithHealthCheck<NpgsqlConnectionProvider>("PostgreSQL.ConnectionProvider");
 
     return services;
@@ -103,11 +108,10 @@ public static class ServiceCollectionExt
   /// <returns>The updated service collection with the PostgreSQL client added.</returns>
   [PublicAPI]
   public static IServiceCollection AddPostgresClient(this IServiceCollection services,
-                                                      ConfigurationManager    configuration,
-                                                      ILogger                 logger)
+                                                     ConfigurationManager    configuration,
+                                                     ILogger                 logger)
   {
-    services.TryAddSingleton(_ => ConfigurationExt.GetRequiredValue<Options.PostgreSQL>(configuration,
-                                                                                         Options.PostgreSQL.SettingSection));
+    services.TryAddSingleton(_ => configuration.GetRequiredValue<PostgreSQL>(PostgreSQL.SettingSection));
     return services;
   }
 
