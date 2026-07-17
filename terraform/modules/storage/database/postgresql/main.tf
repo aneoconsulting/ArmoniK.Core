@@ -11,6 +11,9 @@ resource "docker_container" "database" {
     "bash", "-c",
     "chmod 600 /postgresql-certificate/server.key && exec /usr/local/bin/docker-entrypoint.sh postgres -c ssl=on -c ssl_cert_file=/postgresql-certificate/server.crt -c ssl_key_file=/postgresql-certificate/server.key -c ssl_ca_file=/postgresql-certificate/ca.pem -c wal_level=logical -c max_connections=${var.postgresql_params.max_connections}"
   ] : ["docker-entrypoint.sh", "postgres", "-c", "wal_level=logical", "-c", "max_connections=${var.postgresql_params.max_connections}"]
+  # Without this, Docker appends the image's default CMD ("postgres") to the entrypoint above,
+  # which the postgres server then rejects as a stray positional argument and fails to start.
+  command = []
 
   env = [
     "POSTGRES_USER=${var.postgresql_params.user}",
