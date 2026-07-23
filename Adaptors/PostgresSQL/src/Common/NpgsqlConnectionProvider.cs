@@ -124,6 +124,17 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
     await using (var lockCmd = connection.CreateCommand())
     {
       lockCmd.Transaction = lockTransaction;
+
+      // pg_advisory_xact_lock takes an exclusive lock identified by an arbitrary bigint key:
+      // unlike a row/table lock, it isn't tied to any table and is automatically released when
+      // the enclosing transaction (lockTransaction above) commits or rolls back, so it can't be
+      // left dangling if the process crashes mid-migration. See
+      // https://www.postgresql.org/docs/current/explicit-locking.html#ADVISORY-LOCKS
+      // Concurrent instances (e.g. multiple replicas starting at once) block here until the
+      // first one finishes running DbUp, preventing two instances from applying the same
+      // migration scripts at once. The key (7243658712345678) is just an arbitrary constant
+      // scoped to this lock's purpose; it has no meaning beyond namespacing it away from other
+      // advisory locks on this database.
       lockCmd.CommandText = "SELECT pg_advisory_xact_lock(7243658712345678)";
       await lockCmd.ExecuteNonQueryAsync(cancellationToken)
                    .ConfigureAwait(false);
