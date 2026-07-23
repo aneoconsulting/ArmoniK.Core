@@ -126,6 +126,7 @@ INSERT INTO sessions (
                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var (whereSql, whereParams) = ExpressionToSql<SessionData>.Translate(filter);
+    var compiled = selector.Compile();
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
@@ -138,7 +139,6 @@ INSERT INTO sessions (
     await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
                                       .ConfigureAwait(false);
 
-    var compiled = selector.Compile();
     while (await reader.ReadAsync(cancellationToken)
                        .ConfigureAwait(false))
     {

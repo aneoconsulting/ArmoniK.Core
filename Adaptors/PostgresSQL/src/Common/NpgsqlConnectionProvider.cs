@@ -42,11 +42,12 @@ namespace ArmoniK.Core.Adapters.PostgresSQL.Common;
 /// <summary>
 ///   Provides NpgsqlDataSource management, schema initialization, and health check
 /// </summary>
-public class NpgsqlConnectionProvider : IInitializable, IDisposable
+public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDisposable
 {
   private readonly InitDatabase                      initDatabase_;
   private readonly ILogger<NpgsqlConnectionProvider> logger_;
   private readonly PostgreSQL                        options_;
+  private          bool                              disposed_;
   private          bool                              isInitialized_;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -80,8 +81,28 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable
   public NpgsqlDataSource DataSource { get; }
 
   /// <inheritdoc />
+  public async ValueTask DisposeAsync()
+  {
+    if (disposed_)
+    {
+      return;
+    }
+
+    disposed_ = true;
+    await DataSource.DisposeAsync()
+                    .ConfigureAwait(false);
+    GC.SuppressFinalize(this);
+  }
+
+  /// <inheritdoc />
   public void Dispose()
   {
+    if (disposed_)
+    {
+      return;
+    }
+
+    disposed_ = true;
     DataSource.Dispose();
     GC.SuppressFinalize(this);
   }
@@ -149,6 +170,21 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable
   }
 
   /// <summary>
+  ///   Safety net releasing the underlying <see cref="NpgsqlDataSource" /> (and its pooled connections)
+  ///   in case <see cref="Dispose" /> or <see cref="DisposeAsync" /> was never called.
+  /// </summary>
+  ~NpgsqlConnectionProvider()
+  {
+    if (disposed_)
+    {
+      return;
+    }
+
+    disposed_ = true;
+    DataSource.Dispose();
+  }
+
+  /// <summary>
   ///   Creates a new logical replication connection using the same credentials as the regular connection pool.
   ///   The caller is responsible for opening and disposing the connection.
   ///   Requires <c>wal_level = logical</c> on the PostgreSQL server (or <c>rds.logical_replication = 1</c> on AWS
@@ -162,12 +198,8 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable
   /// </summary>
   /// <param name="cancellationToken">Cancellation token</param>
   /// <returns>An open NpgsqlConnection</returns>
-  public async Task<NpgsqlConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
-  {
-    var connection = await DataSource.OpenConnectionAsync(cancellationToken)
-                                     .ConfigureAwait(false);
-    return connection;
-  }
+  public ValueTask<NpgsqlConnection> GetConnectionAsync(CancellationToken cancellationToken = default)
+    => DataSource.OpenConnectionAsync(cancellationToken);
 
   private async Task<HealthCheckResult> CheckLiveness()
   {
