@@ -15,8 +15,13 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -42,5 +47,71 @@ public class ResultTableTests : ResultTableTestBase
 
     ResultTable = provider.GetRequiredService<IResultTable>();
     RunTests    = true;
+  }
+
+  [Test]
+  public async Task AddTaskDependenciesTwiceShouldNotDuplicate()
+  {
+    if (RunTests)
+    {
+      const string resultId  = "ResultForDedupTest";
+      const string sessionId = "SessionId";
+
+      await ResultTable!.Create(new[]
+                                {
+                                  new Result(sessionId,
+                                             resultId,
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "OwnerId",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.UtcNow,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                })
+                        .ConfigureAwait(false);
+
+      await ResultTable.AddTaskDependencies(new Dictionary<string, ICollection<string>>
+                                            {
+                                              {
+                                                resultId, new[]
+                                                          {
+                                                            "Task1",
+                                                            "Task2",
+                                                          }
+                                              },
+                                            })
+                       .ConfigureAwait(false);
+
+      // Task2 overlaps with the first call; ON CONFLICT DO NOTHING should dedup it.
+      await ResultTable.AddTaskDependencies(new Dictionary<string, ICollection<string>>
+                                            {
+                                              {
+                                                resultId, new[]
+                                                          {
+                                                            "Task2",
+                                                            "Task3",
+                                                          }
+                                              },
+                                            })
+                       .ConfigureAwait(false);
+
+      var dependents = await ResultTable.GetDependents(sessionId,
+                                                       resultId)
+                                        .ToListAsync()
+                                        .ConfigureAwait(false);
+
+      Assert.That(dependents,
+                  Is.EquivalentTo(new List<string>
+                                  {
+                                    "Task1",
+                                    "Task2",
+                                    "Task3",
+                                  }));
+    }
   }
 }

@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text.Json;
 
 using ArmoniK.Core.Base.DataStructures;
@@ -153,9 +152,7 @@ public static class RowMapper
            reader.GetString(reader.GetOrdinal("completed_by")),
            reader.GetString(reader.GetOrdinal("owner_task_id")),
            (ResultStatus)reader.GetInt32(reader.GetOrdinal("status")),
-           GetStringArray(reader,
-                          "dependent_tasks")
-             .ToList(),
+           new List<string>(), // DependentTasks loaded separately
            GetUtcDateTime(reader,
                           reader.GetOrdinal("creation_date")),
            GetNullableDateTime(reader,

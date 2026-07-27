@@ -296,6 +296,7 @@ internal static class WalHelpers
   /// <summary>
   ///   Reads a WAL tuple directly into a <see cref="Result" /> in a single pass.
   ///   See <see cref="ReadTaskData" /> for the general approach.
+  ///   DependentTasks is always empty: it lives in a separate table not present in WAL.
   /// </summary>
   internal static async Task<Result> ReadResult(ReplicationTuple  tuple,
                                                 CancellationToken ct)
@@ -307,7 +308,6 @@ internal static class WalHelpers
            completedBy = "",
            ownerTaskId = "";
 
-    var dependentTasks = Array.Empty<string>();
     var status         = 0;
     var size           = 0L;
     var manualDeletion = false;
@@ -349,10 +349,6 @@ internal static class WalHelpers
           ownerTaskId = await col.Get<string>(ct)
                                  .ConfigureAwait(false);
           break;
-        case "dependent_tasks":
-          dependentTasks = await col.Get<string[]>(ct)
-                                    .ConfigureAwait(false);
-          break;
         case "status":
           status = await col.Get<int>(ct)
                             .ConfigureAwait(false);
@@ -391,7 +387,7 @@ internal static class WalHelpers
                       completedBy,
                       ownerTaskId,
                       (ResultStatus)status,
-                      new List<string>(dependentTasks),
+                      new List<string>(),
                       creationDate,
                       completionDate,
                       size,

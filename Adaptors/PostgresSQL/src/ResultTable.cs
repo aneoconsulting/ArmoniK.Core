@@ -80,10 +80,10 @@ public class ResultTable : IResultTable
         var cmd = new NpgsqlBatchCommand(@"
 INSERT INTO results (
   session_id, result_id, name, created_by, completed_by, owner_task_id,
-  status, dependent_tasks, creation_date, completion_date, size, opaque_id, manual_deletion
+  status, creation_date, completion_date, size, opaque_id, manual_deletion
 ) VALUES (
   @session_id, @result_id, @name, @created_by, @completed_by, @owner_task_id,
-  @status, @dependent_tasks, @creation_date, @completion_date, @size, @opaque_id, @manual_deletion
+  @status, @creation_date, @completion_date, @size, @opaque_id, @manual_deletion
 )");
         AddResultInsertParameters(cmd.Parameters,
                                   result);
@@ -92,6 +92,32 @@ INSERT INTO results (
 
       await batch.ExecuteNonQueryAsync(cancellationToken)
                  .ConfigureAwait(false);
+
+      await using var dependentTasksBatch = new NpgsqlBatch(connection,
+                                                            transaction);
+      foreach (var result in results)
+      {
+        if (result.DependentTasks.Count == 0)
+        {
+          continue;
+        }
+
+        var depCmd = new NpgsqlBatchCommand(@"
+INSERT INTO result_dependent_tasks (result_id, task_id)
+SELECT @result_id, unnest(@task_ids)");
+        depCmd.Parameters.AddWithValue("result_id",
+                                       result.ResultId);
+        depCmd.Parameters.AddWithValue("task_ids",
+                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                       result.DependentTasks.ToArray());
+        dependentTasksBatch.BatchCommands.Add(depCmd);
+      }
+
+      if (dependentTasksBatch.BatchCommands.Count > 0)
+      {
+        await dependentTasksBatch.ExecuteNonQueryAsync(cancellationToken)
+                                 .ConfigureAwait(false);
+      }
     }
     catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.UniqueViolation)
     {
@@ -120,32 +146,34 @@ INSERT INTO results (
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
-    long totalMatched = 0;
-    foreach (var (resultId, taskIds) in dependencies)
+    try
     {
-      await using var cmd = connection.CreateCommand();
-      cmd.Transaction = transaction;
-      cmd.CommandText = @"
-UPDATE results
-SET dependent_tasks = (
-  SELECT ARRAY(SELECT DISTINCT unnest(dependent_tasks || @new_tasks))
-)
-WHERE result_id = @result_id";
-      cmd.Parameters.AddWithValue("result_id",
-                                  resultId);
-      cmd.Parameters.AddWithValue("new_tasks",
-                                  NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                  taskIds.ToArray());
+      await using var batch = new NpgsqlBatch(connection,
+                                              transaction);
 
-      totalMatched += await cmd.ExecuteNonQueryAsync(cancellationToken)
-                               .ConfigureAwait(false);
+      foreach (var (resultId, taskIds) in dependencies)
+      {
+        var cmd = new NpgsqlBatchCommand(@"
+INSERT INTO result_dependent_tasks (result_id, task_id)
+SELECT @result_id, unnest(@task_ids)
+ON CONFLICT DO NOTHING");
+        cmd.Parameters.AddWithValue("result_id",
+                                    resultId);
+        cmd.Parameters.AddWithValue("task_ids",
+                                    NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                    taskIds.ToArray());
+        batch.BatchCommands.Add(cmd);
+      }
+
+      await batch.ExecuteNonQueryAsync(cancellationToken)
+                 .ConfigureAwait(false);
     }
-
-    if (totalMatched != dependencies.Count)
+    catch (PostgresException e) when (e.SqlState == PostgresErrorCodes.ForeignKeyViolation)
     {
       await transaction.RollbackAsync(cancellationToken)
                        .ConfigureAwait(false);
-      throw new ResultNotFoundException($"One of the input results was not found: expected: {dependencies.Count}, found: {totalMatched}");
+      throw new ResultNotFoundException("One of the input results was not found",
+                                        e);
     }
 
     await transaction.CommitAsync(cancellationToken)
@@ -246,7 +274,14 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
       throw new ResultNotFoundException($"Key '{key}' not found");
     }
 
-    return RowMapper.MapToResult(reader);
+    var result = RowMapper.MapToResult(reader);
+    await reader.CloseAsync()
+                .ConfigureAwait(false);
+
+    return await LoadDependentTasks(connection,
+                                    result,
+                                    cancellationToken)
+             .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
@@ -264,14 +299,29 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     SqlHelper.AddExpressionParameters(cmd,
                                       whereParams);
 
-    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
-                                      .ConfigureAwait(false);
+    var rawResults = new List<Result>();
+    await using (var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                       .ConfigureAwait(false))
+    {
+      while (await reader.ReadAsync(cancellationToken)
+                         .ConfigureAwait(false))
+      {
+        rawResults.Add(RowMapper.MapToResult(reader));
+      }
+    }
+
+    var dependentTasksByResultId = await LoadDependentTasksBatch(connection,
+                                                                 rawResults,
+                                                                 cancellationToken)
+                                     .ConfigureAwait(false);
 
     var compiled = convertor.Compile();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
+    foreach (var result in rawResults)
     {
-      yield return compiled.Invoke(RowMapper.MapToResult(reader));
+      yield return compiled.Invoke(result with
+                                   {
+                                     DependentTasks = dependentTasksByResultId[result.ResultId],
+                                   });
     }
   }
 
@@ -330,7 +380,18 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
       results.Add(RowMapper.MapToResult(reader));
     }
 
-    return (results, totalCount);
+    await reader.CloseAsync()
+                .ConfigureAwait(false);
+
+    var dependentTasksByResultId = await LoadDependentTasksBatch(connection,
+                                                                 results,
+                                                                 cancellationToken)
+                                     .ConfigureAwait(false);
+
+    return (results.Select(result => result with
+                                     {
+                                       DependentTasks = dependentTasksByResultId[result.ResultId],
+                                     }), totalCount);
   }
 
   /// <inheritdoc />
@@ -424,6 +485,12 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     var before = RowMapper.MapToResult(reader);
     await reader.CloseAsync()
                 .ConfigureAwait(false);
+
+    before = await LoadDependentTasks(connection,
+                                      before,
+                                      cancellationToken,
+                                      transaction)
+               .ConfigureAwait(false);
 
     // Update
     await using var updateCmd = connection.CreateCommand();
@@ -523,9 +590,6 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                             result.OwnerTaskId);
     parameters.AddWithValue("status",
                             (int)result.Status);
-    parameters.AddWithValue("dependent_tasks",
-                            NpgsqlDbType.Array | NpgsqlDbType.Text,
-                            result.DependentTasks.ToArray());
     parameters.AddWithValue("creation_date",
                             result.CreationDate);
     parameters.AddWithValue("completion_date",
@@ -537,5 +601,78 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                             result.OpaqueId);
     parameters.AddWithValue("manual_deletion",
                             result.ManualDeletion);
+  }
+
+  private static async Task<Result> LoadDependentTasks(NpgsqlConnection   connection,
+                                                       Result             result,
+                                                       CancellationToken  cancellationToken,
+                                                       NpgsqlTransaction? transaction = null)
+  {
+    await using var cmd = connection.CreateCommand();
+    if (transaction is not null)
+    {
+      cmd.Transaction = transaction;
+    }
+
+    cmd.CommandText = "SELECT task_id FROM result_dependent_tasks WHERE result_id = @result_id";
+    cmd.Parameters.AddWithValue("result_id",
+                                result.ResultId);
+
+    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                      .ConfigureAwait(false);
+
+    var dependentTasks = new List<string>();
+    while (await reader.ReadAsync(cancellationToken)
+                       .ConfigureAwait(false))
+    {
+      dependentTasks.Add(reader.GetString(0));
+    }
+
+    return result with
+           {
+             DependentTasks = dependentTasks,
+           };
+  }
+
+  private static async Task<Dictionary<string, List<string>>> LoadDependentTasksBatch(NpgsqlConnection   connection,
+                                                                                      List<Result>       results,
+                                                                                      CancellationToken  cancellationToken,
+                                                                                      NpgsqlTransaction? transaction = null)
+  {
+    var result = results.ToDictionary(r => r.ResultId,
+                                      _ => new List<string>());
+
+    if (result.Count == 0)
+    {
+      return result;
+    }
+
+    await using var cmd = connection.CreateCommand();
+    if (transaction is not null)
+    {
+      cmd.Transaction = transaction;
+    }
+
+    cmd.CommandText = "SELECT result_id, task_id FROM result_dependent_tasks WHERE result_id = ANY(@result_ids)";
+    cmd.Parameters.AddWithValue("result_ids",
+                                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                result.Keys.ToArray());
+
+    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                      .ConfigureAwait(false);
+
+    while (await reader.ReadAsync(cancellationToken)
+                       .ConfigureAwait(false))
+    {
+      var resultId = reader.GetString(0);
+      var taskId   = reader.GetString(1);
+      if (result.TryGetValue(resultId,
+                             out var dependentTasks))
+      {
+        dependentTasks.Add(taskId);
+      }
+    }
+
+    return result;
   }
 }

@@ -236,9 +236,6 @@ public static class PropertyMapping
                                                                      "Status", "status"
                                                                    },
                                                                    {
-                                                                     "DependentTasks", "dependent_tasks"
-                                                                   },
-                                                                   {
                                                                      "CreationDate", "creation_date"
                                                                    },
                                                                    {

@@ -94,7 +94,6 @@ CREATE TABLE IF NOT EXISTS results (
     completed_by    TEXT NOT NULL DEFAULT '',
     owner_task_id   TEXT NOT NULL DEFAULT '',
     status          INTEGER NOT NULL,
-    dependent_tasks TEXT[] NOT NULL DEFAULT '{}',
     creation_date   TIMESTAMP NOT NULL,
     completion_date TIMESTAMP,
     size            BIGINT NOT NULL DEFAULT 0,
@@ -106,6 +105,13 @@ CREATE INDEX IF NOT EXISTS idx_results_session_id ON results(session_id);
 CREATE INDEX IF NOT EXISTS idx_results_owner_task_id ON results(owner_task_id);
 CREATE INDEX IF NOT EXISTS idx_results_created_by ON results(created_by);
 CREATE INDEX IF NOT EXISTS idx_results_creation_date ON results(creation_date);
+
+-- Association table for Result.DependentTasks
+CREATE TABLE IF NOT EXISTS result_dependent_tasks (
+    result_id TEXT NOT NULL REFERENCES results(result_id) ON DELETE CASCADE,
+    task_id   TEXT NOT NULL,
+    PRIMARY KEY (result_id, task_id)
+);
 
 -- Partitions table
 CREATE TABLE IF NOT EXISTS partitions (
