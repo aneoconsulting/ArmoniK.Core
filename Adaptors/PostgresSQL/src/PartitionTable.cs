@@ -54,11 +54,8 @@ public class PartitionTable : IPartitionTable
   {
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
-    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
-                                                  .ConfigureAwait(false);
 
-    await using var batch = new NpgsqlBatch(connection,
-                                            transaction);
+    await using var batch = new NpgsqlBatch(connection);
 
     foreach (var partition in partitions)
     {
@@ -77,9 +74,6 @@ INSERT INTO partitions (
 
     await batch.ExecuteNonQueryAsync(cancellationToken)
                .ConfigureAwait(false);
-
-    await transaction.CommitAsync(cancellationToken)
-                     .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
