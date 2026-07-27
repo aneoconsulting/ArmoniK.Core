@@ -49,12 +49,10 @@ CREATE INDEX IF NOT EXISTS idx_tasks_creation_date ON tasks(creation_date);
 
 -- Association table for RemainingDataDependencies
 CREATE TABLE IF NOT EXISTS task_remaining_dependencies (
-    task_id       TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
-    dependency_id TEXT NOT NULL,
-    PRIMARY KEY (task_id, dependency_id)
+    task_id   TEXT NOT NULL REFERENCES tasks(task_id) ON DELETE CASCADE,
+    result_id TEXT NOT NULL,
+    PRIMARY KEY (task_id, result_id)
 );
-
-CREATE INDEX IF NOT EXISTS idx_trd_dependency ON task_remaining_dependencies(dependency_id);
 
 -- Sessions table
 CREATE TABLE IF NOT EXISTS sessions (

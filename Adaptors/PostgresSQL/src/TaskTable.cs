@@ -110,7 +110,7 @@ INSERT INTO tasks (
         if (task.RemainingDataDependencies.Count > 0)
         {
           var depCmd = new NpgsqlBatchCommand(@"
-INSERT INTO task_remaining_dependencies (task_id, dependency_id)
+INSERT INTO task_remaining_dependencies (task_id, result_id)
 SELECT @dep_task_id, unnest(@dep_ids)");
           depCmd.Parameters.AddWithValue("dep_task_id",
                                          task.TaskId);
@@ -658,7 +658,7 @@ FOR UPDATE";
 
     await using var deleteCmd = connection.CreateCommand();
     deleteCmd.Transaction = transaction;
-    deleteCmd.CommandText = "DELETE FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids) AND dependency_id = ANY(@dep_ids)";
+    deleteCmd.CommandText = "DELETE FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids) AND result_id = ANY(@dep_ids)";
     deleteCmd.Parameters.AddWithValue("task_ids",
                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
                                       taskIds.ToArray());
@@ -722,7 +722,7 @@ WHERE t.task_id = ANY(@ready_task_ids)
       cmd.Transaction = transaction;
     }
 
-    cmd.CommandText = "SELECT task_id, dependency_id FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids)";
+    cmd.CommandText = "SELECT task_id, result_id FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids)";
     cmd.Parameters.AddWithValue("task_ids",
                                 NpgsqlDbType.Array | NpgsqlDbType.Text,
                                 result.Keys.ToArray());
@@ -756,7 +756,7 @@ WHERE t.task_id = ANY(@ready_task_ids)
       depCmd.Transaction = transaction;
     }
 
-    depCmd.CommandText = "SELECT dependency_id FROM task_remaining_dependencies WHERE task_id = @task_id";
+    depCmd.CommandText = "SELECT result_id FROM task_remaining_dependencies WHERE task_id = @task_id";
     depCmd.Parameters.AddWithValue("task_id",
                                    taskData.TaskId);
 
