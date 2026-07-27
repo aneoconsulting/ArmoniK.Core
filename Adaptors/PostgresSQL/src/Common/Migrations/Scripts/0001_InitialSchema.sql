@@ -53,6 +53,8 @@ CREATE TABLE IF NOT EXISTS task_remaining_dependencies (
     result_id TEXT NOT NULL,
     PRIMARY KEY (task_id, result_id)
 );
+-- No index on task_id: it's the leading column of the primary key above,
+-- so Postgres already uses that index for task_id-only lookups.
 
 -- Sessions table
 CREATE TABLE IF NOT EXISTS sessions (
