@@ -461,16 +461,22 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
-    // Read before update; FOR UPDATE acquires a row-level lock so concurrent
-    // UpdateOneResult calls on the same result are serialized within the transaction.
-    await using var readCmd = connection.CreateCommand();
-    readCmd.Transaction = transaction;
-    readCmd.CommandText = "SELECT * FROM results WHERE result_id = @result_id FOR UPDATE";
-    readCmd.Parameters.AddWithValue("result_id",
-                                    resultId);
+    // Update and return the pre-update row in a single round trip: a data-modifying
+    // CTE selects it with FOR UPDATE (locking the row so concurrent UpdateOneResult
+    // calls on the same result are serialized), then the UPDATE runs against it.
+    await using var updateCmd = connection.CreateCommand();
+    updateCmd.Transaction = transaction;
+    var setClauses = SqlHelper.BuildSetClauses(updates,
+                                               updateCmd);
+    updateCmd.CommandText =
+      "WITH old AS (SELECT * FROM results WHERE result_id = @result_id FOR UPDATE) " +
+      $"UPDATE results SET {setClauses} FROM old WHERE results.result_id = old.result_id " +
+      "RETURNING old.*";
+    updateCmd.Parameters.AddWithValue("result_id",
+                                      resultId);
 
-    await using var reader = await readCmd.ExecuteReaderAsync(cancellationToken)
-                                          .ConfigureAwait(false);
+    await using var reader = await updateCmd.ExecuteReaderAsync(cancellationToken)
+                                            .ConfigureAwait(false);
 
     if (!await reader.ReadAsync(cancellationToken)
                      .ConfigureAwait(false))
@@ -491,18 +497,6 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                                       cancellationToken,
                                       transaction)
                .ConfigureAwait(false);
-
-    // Update
-    await using var updateCmd = connection.CreateCommand();
-    updateCmd.Transaction = transaction;
-    var setClauses = SqlHelper.BuildSetClauses(updates,
-                                               updateCmd);
-    updateCmd.CommandText = $"UPDATE results SET {setClauses} WHERE result_id = @result_id";
-    updateCmd.Parameters.AddWithValue("result_id",
-                                      resultId);
-
-    await updateCmd.ExecuteNonQueryAsync(cancellationToken)
-                   .ConfigureAwait(false);
 
     await transaction.CommitAsync(cancellationToken)
                      .ConfigureAwait(false);

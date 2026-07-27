@@ -446,53 +446,43 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       }
     }
 
-    // Read before if requested (FOR UPDATE locks the row to prevent TOCTOU between read and update)
-    TaskData? result = null;
-    if (before)
-    {
-      result = await ReadTaskByWhereClause(connection,
-                                           transaction,
-                                           whereClause,
-                                           filterParams,
-                                           cancellationToken,
-                                           true)
-                 .ConfigureAwait(false);
-    }
-
-    // Build SET clause
+    // Update and return the row in a single round trip using RETURNING.
+    // When the pre-update row is requested, a data-modifying CTE captures it
+    // (FOR UPDATE locks the row to prevent TOCTOU between read and update).
     await using var updateCmd = connection.CreateCommand();
     updateCmd.Transaction = transaction;
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
-    updateCmd.CommandText = $"UPDATE tasks SET {setClauses} WHERE {whereClause}";
+    updateCmd.CommandText = before
+                              ? $"WITH old AS (SELECT * FROM tasks WHERE {whereClause} FOR UPDATE) " +
+                                $"UPDATE tasks SET {setClauses} FROM old WHERE tasks.task_id = old.task_id " +
+                                "RETURNING old.*"
+                              : $"UPDATE tasks SET {setClauses} WHERE {whereClause} RETURNING *";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);
 
-    var matched = await updateCmd.ExecuteNonQueryAsync(cancellationToken)
-                                 .ConfigureAwait(false);
+    await using var reader = await updateCmd.ExecuteReaderAsync(cancellationToken)
+                                            .ConfigureAwait(false);
 
-    if (matched == 0)
+    if (!await reader.ReadAsync(cancellationToken)
+                     .ConfigureAwait(false))
     {
+      await reader.CloseAsync()
+                  .ConfigureAwait(false);
       await transaction.RollbackAsync(cancellationToken)
                        .ConfigureAwait(false);
       return null;
     }
 
-    // Read after if not before
-    if (!before)
-    {
-      result = await ReadTaskByWhereClause(connection,
-                                           transaction,
-                                           "task_id = @taskId",
-                                           new Dictionary<string, object?>
-                                           {
-                                             {
-                                               "@taskId", taskId
-                                             },
-                                           },
-                                           cancellationToken)
-                 .ConfigureAwait(false);
-    }
+    var taskData = RowMapper.MapToTaskData(reader);
+    await reader.CloseAsync()
+                .ConfigureAwait(false);
+
+    var result = await LoadRemainingDependencies(connection,
+                                                 taskData,
+                                                 cancellationToken,
+                                                 transaction)
+                   .ConfigureAwait(false);
 
     await transaction.CommitAsync(cancellationToken)
                      .ConfigureAwait(false);
@@ -723,39 +713,6 @@ WHERE t.task_id = ANY(@ready_task_ids)
                      .ConfigureAwait(false);
 
     return result;
-  }
-
-  private async Task<TaskData?> ReadTaskByWhereClause(NpgsqlConnection            connection,
-                                                      NpgsqlTransaction           transaction,
-                                                      string                      whereClause,
-                                                      Dictionary<string, object?> parameters,
-                                                      CancellationToken           cancellationToken,
-                                                      bool                        forUpdate = false)
-  {
-    await using var cmd = connection.CreateCommand();
-    cmd.Transaction = transaction;
-    cmd.CommandText = $"SELECT * FROM tasks WHERE {whereClause}{(forUpdate ? " FOR UPDATE" : string.Empty)}";
-    SqlHelper.AddExpressionParameters(cmd,
-                                      parameters);
-
-    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
-                                      .ConfigureAwait(false);
-
-    if (!await reader.ReadAsync(cancellationToken)
-                     .ConfigureAwait(false))
-    {
-      return null;
-    }
-
-    var taskData = RowMapper.MapToTaskData(reader);
-    await reader.CloseAsync()
-                .ConfigureAwait(false);
-
-    return await LoadRemainingDependencies(connection,
-                                           taskData,
-                                           cancellationToken,
-                                           transaction)
-             .ConfigureAwait(false);
   }
 
   private static async Task<Dictionary<string, Dictionary<string, bool>>> LoadRemainingDependenciesBatch(NpgsqlConnection   connection,

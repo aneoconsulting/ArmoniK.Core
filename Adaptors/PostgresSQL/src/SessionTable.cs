@@ -31,8 +31,6 @@ using ArmoniK.Core.Common.Storage;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
-using Npgsql;
-
 using NpgsqlTypes;
 
 namespace ArmoniK.Core.Adapters.PostgresSQL;
@@ -240,8 +238,6 @@ INSERT INTO sessions (
   {
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
-    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
-                                                  .ConfigureAwait(false);
 
     var whereClause = "session_id = @sessionId";
     var filterParams = new Dictionary<string, object?>
@@ -261,55 +257,33 @@ INSERT INTO sessions (
       }
     }
 
-    // Read before if requested (FOR UPDATE locks the row to prevent TOCTOU between read and update)
-    SessionData? result = null;
-    if (before)
-    {
-      result = await ReadSessionByWhere(connection,
-                                        transaction,
-                                        whereClause,
-                                        filterParams,
-                                        cancellationToken,
-                                        true)
-                 .ConfigureAwait(false);
-    }
-
-    // Update
+    // Update and return the row in a single round trip using RETURNING.
+    // When the pre-update row is requested, a data-modifying CTE captures it
+    // (FOR UPDATE locks the row to prevent TOCTOU between read and update).
     await using var updateCmd = connection.CreateCommand();
-    updateCmd.Transaction = transaction;
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
-    updateCmd.CommandText = $"UPDATE sessions SET {setClauses} WHERE {whereClause}";
+    updateCmd.CommandText = before
+                              ? $"WITH old AS (SELECT * FROM sessions WHERE {whereClause} FOR UPDATE) "                  +
+                                $"UPDATE sessions SET {setClauses} FROM old WHERE sessions.session_id = old.session_id " + "RETURNING old.*"
+                              : $"UPDATE sessions SET {setClauses} WHERE {whereClause} RETURNING *";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);
 
-    var matched = await updateCmd.ExecuteNonQueryAsync(cancellationToken)
-                                 .ConfigureAwait(false);
+    await using var reader = await updateCmd.ExecuteReaderAsync(cancellationToken)
+                                            .ConfigureAwait(false);
 
-    if (matched == 0)
+    if (!await reader.ReadAsync(cancellationToken)
+                     .ConfigureAwait(false))
     {
-      await transaction.RollbackAsync(cancellationToken)
-                       .ConfigureAwait(false);
+      await reader.CloseAsync()
+                  .ConfigureAwait(false);
       return null;
     }
 
-    if (!before)
-    {
-      result = await ReadSessionByWhere(connection,
-                                        transaction,
-                                        "session_id = @sessionId",
-                                        new Dictionary<string, object?>
-                                        {
-                                          {
-                                            "@sessionId", sessionId
-                                          },
-                                        },
-                                        cancellationToken)
-                 .ConfigureAwait(false);
-    }
-
-    await transaction.CommitAsync(cancellationToken)
-                     .ConfigureAwait(false);
+    var result = RowMapper.MapToSessionData(reader);
+    await reader.CloseAsync()
+                .ConfigureAwait(false);
 
     return result;
   }
@@ -321,29 +295,4 @@ INSERT INTO sessions (
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => connectionProvider_.Check(tag);
-
-  private static async Task<SessionData?> ReadSessionByWhere(NpgsqlConnection            connection,
-                                                             NpgsqlTransaction           transaction,
-                                                             string                      whereClause,
-                                                             Dictionary<string, object?> parameters,
-                                                             CancellationToken           cancellationToken,
-                                                             bool                        forUpdate = false)
-  {
-    await using var cmd = connection.CreateCommand();
-    cmd.Transaction = transaction;
-    cmd.CommandText = $"SELECT * FROM sessions WHERE {whereClause}{(forUpdate ? " FOR UPDATE" : string.Empty)}";
-    SqlHelper.AddExpressionParameters(cmd,
-                                      parameters);
-
-    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
-                                      .ConfigureAwait(false);
-
-    if (!await reader.ReadAsync(cancellationToken)
-                     .ConfigureAwait(false))
-    {
-      return null;
-    }
-
-    return RowMapper.MapToSessionData(reader);
-  }
 }
