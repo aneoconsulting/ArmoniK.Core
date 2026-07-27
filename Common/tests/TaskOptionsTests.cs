@@ -61,4 +61,118 @@ public class TaskOptionsTests
     => Assert.That(completeOptions_.ToGrpcTaskOptions()
                                    .ToTaskOptions(),
                    Is.EqualTo(completeOptions_));
+
+  [Test]
+  public void MergeWithNullTaskOptionShouldReturnDefault()
+    => Assert.That(Base.DataStructures.TaskOptions.Merge(null,
+                                                         completeOptions_),
+                   Is.EqualTo(completeOptions_));
+
+  [Test]
+  public void MergeShouldKeepSetValuesFromTaskOption()
+  {
+    var defaultOptions = new Base.DataStructures.TaskOptions(new MapField<string, string>(),
+                                                             TimeSpan.FromSeconds(10),
+                                                             99,
+                                                             42,
+                                                             "DefaultPartition",
+                                                             "DefaultName",
+                                                             "DefaultVersion",
+                                                             "DefaultNamespace",
+                                                             "DefaultService",
+                                                             "DefaultEngine");
+
+    var merged = Base.DataStructures.TaskOptions.Merge(completeOptions_,
+                                                       defaultOptions);
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(merged.MaxDuration,
+                                  Is.EqualTo(completeOptions_.MaxDuration));
+                      Assert.That(merged.MaxRetries,
+                                  Is.EqualTo(completeOptions_.MaxRetries));
+                      Assert.That(merged.Priority,
+                                  Is.EqualTo(completeOptions_.Priority));
+                      Assert.That(merged.PartitionId,
+                                  Is.EqualTo(completeOptions_.PartitionId));
+                      Assert.That(merged.ApplicationName,
+                                  Is.EqualTo(completeOptions_.ApplicationName));
+                      Assert.That(merged.ApplicationVersion,
+                                  Is.EqualTo(completeOptions_.ApplicationVersion));
+                      Assert.That(merged.ApplicationNamespace,
+                                  Is.EqualTo(completeOptions_.ApplicationNamespace));
+                      Assert.That(merged.ApplicationService,
+                                  Is.EqualTo(completeOptions_.ApplicationService));
+                      Assert.That(merged.EngineType,
+                                  Is.EqualTo(completeOptions_.EngineType));
+                    });
+  }
+
+  [Test]
+  public void MergeShouldFallBackToDefaultForUnsetValues()
+  {
+    var emptyOptions = new Base.DataStructures.TaskOptions();
+
+    var merged = Base.DataStructures.TaskOptions.Merge(emptyOptions,
+                                                       completeOptions_);
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(merged.MaxDuration,
+                                  Is.EqualTo(completeOptions_.MaxDuration));
+                      Assert.That(merged.MaxRetries,
+                                  Is.EqualTo(completeOptions_.MaxRetries));
+                      Assert.That(merged.PartitionId,
+                                  Is.EqualTo(completeOptions_.PartitionId));
+                      Assert.That(merged.ApplicationName,
+                                  Is.EqualTo(completeOptions_.ApplicationName));
+                      Assert.That(merged.ApplicationVersion,
+                                  Is.EqualTo(completeOptions_.ApplicationVersion));
+                      Assert.That(merged.ApplicationNamespace,
+                                  Is.EqualTo(completeOptions_.ApplicationNamespace));
+                      Assert.That(merged.ApplicationService,
+                                  Is.EqualTo(completeOptions_.ApplicationService));
+                      Assert.That(merged.EngineType,
+                                  Is.EqualTo(completeOptions_.EngineType));
+                    });
+  }
+
+  [Test]
+  public void MergeShouldOverlayOptionsDictionary()
+  {
+    var defaultOptions = new Base.DataStructures.TaskOptions(new MapField<string, string>
+                                                             {
+                                                               {
+                                                                 "key1", "default1"
+                                                               },
+                                                               {
+                                                                 "key3", "default3"
+                                                               },
+                                                             },
+                                                             TimeSpan.Zero,
+                                                             0,
+                                                             0,
+                                                             "",
+                                                             "",
+                                                             "",
+                                                             "",
+                                                             "",
+                                                             "");
+
+    var merged = Base.DataStructures.TaskOptions.Merge(completeOptions_,
+                                                       defaultOptions);
+
+    Assert.Multiple(() =>
+                    {
+                      // Overridden by taskOption
+                      Assert.That(merged.Options["key1"],
+                                  Is.EqualTo("val1"));
+                      // Only in taskOption
+                      Assert.That(merged.Options["key2"],
+                                  Is.EqualTo("val2"));
+                      // Only in default, preserved
+                      Assert.That(merged.Options["key3"],
+                                  Is.EqualTo("default3"));
+                    });
+  }
 }

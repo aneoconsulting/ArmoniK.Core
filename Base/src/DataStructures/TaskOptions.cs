@@ -110,10 +110,10 @@ public record TaskOptions(IDictionary<string, string> Options,
     }
 
     return new TaskOptions(options,
-                           taskOption.MaxDuration == TimeSpan.Zero
+                           taskOption.MaxDuration != TimeSpan.Zero
                              ? taskOption.MaxDuration
                              : defaultOption.MaxDuration,
-                           taskOption.MaxRetries == 0
+                           taskOption.MaxRetries != 0
                              ? taskOption.MaxRetries
                              : defaultOption.MaxRetries,
                            taskOption.Priority,
