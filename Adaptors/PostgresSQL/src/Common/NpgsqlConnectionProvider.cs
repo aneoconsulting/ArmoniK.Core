@@ -47,7 +47,6 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
   private readonly InitDatabase                      initDatabase_;
   private readonly ILogger<NpgsqlConnectionProvider> logger_;
   private readonly PostgreSQL                        options_;
-  private          bool                              disposed_;
   private          bool                              isInitialized_;
 
 #pragma warning disable CS0618 // Type or member is obsolete
@@ -81,31 +80,12 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
   public NpgsqlDataSource DataSource { get; }
 
   /// <inheritdoc />
-  public async ValueTask DisposeAsync()
-  {
-    if (disposed_)
-    {
-      return;
-    }
-
-    disposed_ = true;
-    await DataSource.DisposeAsync()
-                    .ConfigureAwait(false);
-    GC.SuppressFinalize(this);
-  }
+  public ValueTask DisposeAsync()
+    => DataSource.DisposeAsync();
 
   /// <inheritdoc />
   public void Dispose()
-  {
-    if (disposed_)
-    {
-      return;
-    }
-
-    disposed_ = true;
-    DataSource.Dispose();
-    GC.SuppressFinalize(this);
-  }
+    => DataSource.Dispose();
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
@@ -178,21 +158,6 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
     }
 
     return Task.FromResult(HealthCheckResult.Healthy());
-  }
-
-  /// <summary>
-  ///   Safety net releasing the underlying <see cref="NpgsqlDataSource" /> (and its pooled connections)
-  ///   in case <see cref="Dispose" /> or <see cref="DisposeAsync" /> was never called.
-  /// </summary>
-  ~NpgsqlConnectionProvider()
-  {
-    if (disposed_)
-    {
-      return;
-    }
-
-    disposed_ = true;
-    DataSource.Dispose();
   }
 
   /// <summary>
