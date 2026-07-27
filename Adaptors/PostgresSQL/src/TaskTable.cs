@@ -424,8 +424,6 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   {
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
-    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
-                                                  .ConfigureAwait(false);
 
     // Build WHERE clause
     var whereClause = "task_id = @taskId";
@@ -449,8 +447,9 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     // Update and return the row in a single round trip using RETURNING.
     // When the pre-update row is requested, a data-modifying CTE captures it
     // (FOR UPDATE locks the row to prevent TOCTOU between read and update).
+    // RemainingDataDependencies is not loaded here (callers never read it off
+    // this method's result); it is left empty, as documented in RowMapper.
     await using var updateCmd = connection.CreateCommand();
-    updateCmd.Transaction = transaction;
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
     updateCmd.CommandText = before
@@ -469,23 +468,12 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     {
       await reader.CloseAsync()
                   .ConfigureAwait(false);
-      await transaction.RollbackAsync(cancellationToken)
-                       .ConfigureAwait(false);
       return null;
     }
 
-    var taskData = RowMapper.MapToTaskData(reader);
+    var result = RowMapper.MapToTaskData(reader);
     await reader.CloseAsync()
                 .ConfigureAwait(false);
-
-    var result = await LoadRemainingDependencies(connection,
-                                                 taskData,
-                                                 cancellationToken,
-                                                 transaction)
-                   .ConfigureAwait(false);
-
-    await transaction.CommitAsync(cancellationToken)
-                     .ConfigureAwait(false);
 
     return result;
   }

@@ -458,14 +458,13 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   {
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
-    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
-                                                  .ConfigureAwait(false);
 
     // Update and return the pre-update row in a single round trip: a data-modifying
     // CTE selects it with FOR UPDATE (locking the row so concurrent UpdateOneResult
     // calls on the same result are serialized), then the UPDATE runs against it.
+    // DependentTasks is not loaded here (callers never read it off this method's
+    // result); it is left empty, as documented in RowMapper.
     await using var updateCmd = connection.CreateCommand();
-    updateCmd.Transaction = transaction;
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
     updateCmd.CommandText =
@@ -483,23 +482,12 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     {
       await reader.CloseAsync()
                   .ConfigureAwait(false);
-      await transaction.RollbackAsync(cancellationToken)
-                       .ConfigureAwait(false);
       throw new ResultNotFoundException($"Result not found {resultId}");
     }
 
     var before = RowMapper.MapToResult(reader);
     await reader.CloseAsync()
                 .ConfigureAwait(false);
-
-    before = await LoadDependentTasks(connection,
-                                      before,
-                                      cancellationToken,
-                                      transaction)
-               .ConfigureAwait(false);
-
-    await transaction.CommitAsync(cancellationToken)
-                     .ConfigureAwait(false);
 
     return before;
   }
