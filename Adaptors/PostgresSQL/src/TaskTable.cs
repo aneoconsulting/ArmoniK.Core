@@ -24,7 +24,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgresSQL.Common;
-using ArmoniK.Core.Adapters.PostgresSQL.Options;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -44,27 +43,22 @@ namespace ArmoniK.Core.Adapters.PostgresSQL;
 public class TaskTable : ITaskTable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
-  private readonly TableStorage             tableStorageOptions_;
 
   /// <summary>
   ///   Creates a new TaskTable
   /// </summary>
   public TaskTable(NpgsqlConnectionProvider connectionProvider,
-                   TableStorage             tableStorageOptions,
                    ILogger<TaskTable>       logger)
   {
-    connectionProvider_  = connectionProvider;
-    tableStorageOptions_ = tableStorageOptions;
-    Logger               = logger;
+    connectionProvider_ = connectionProvider;
+    Logger              = logger;
   }
 
   /// <inheritdoc />
-  public TimeSpan PollingDelayMin
-    => tableStorageOptions_.PollingDelayMin;
+  public TimeSpan PollingDelayMin { get; } = TimeSpan.FromSeconds(1);
 
   /// <inheritdoc />
-  public TimeSpan PollingDelayMax
-    => tableStorageOptions_.PollingDelayMax;
+  public TimeSpan PollingDelayMax { get; } = TimeSpan.FromMinutes(5);
 
   /// <inheritdoc />
   public ILogger Logger { get; }

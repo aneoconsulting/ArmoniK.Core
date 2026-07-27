@@ -80,9 +80,6 @@ internal class PostgresDatabaseProvider : IDisposable
                                                     $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
                                                     "ArmoniK.Adapters.PostgresSQL.AuthenticationTable"
                                                   },
-                                                  {
-                                                    $"{TableStorage.SettingSection}:{nameof(TableStorage.PollingDelayMax)}", "00:00:10"
-                                                  },
                                                 };
 
     // When using an external PostgreSQL (POSTGRES_TEST_CONNECTION_STRING set), sharedPort_ is 0.

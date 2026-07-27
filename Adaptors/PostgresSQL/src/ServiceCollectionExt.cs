@@ -101,9 +101,7 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.PostgresSQL.TableStorage")
     {
-      services.AddInitializedOption<TableStorage>(configuration,
-                                                  TableStorage.SettingSection)
-              .AddSingleton<ITaskTable, TaskTable>()
+      services.AddSingleton<ITaskTable, TaskTable>()
               .AddSingleton<ISessionTable, SessionTable>()
               .AddSingleton<IResultTable, ResultTable>()
               .AddSingleton<IPartitionTable, PartitionTable>()
