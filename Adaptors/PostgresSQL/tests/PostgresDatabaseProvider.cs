@@ -151,7 +151,7 @@ internal class PostgresDatabaseProvider : IDisposable
       var pgDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
                                "armonik-pg-embed");
 
-      var server = new PgServer("17.4.0",
+      var server = new PgServer("18.4.0",
                                 PgUser,
                                 pgDir,
                                 addLocalUserAccessPermission: true,

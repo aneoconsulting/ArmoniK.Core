@@ -441,9 +441,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
     updateCmd.CommandText = before
-                              ? $"WITH old AS (SELECT * FROM tasks WHERE {whereClause} FOR UPDATE) " +
-                                $"UPDATE tasks SET {setClauses} FROM old WHERE tasks.task_id = old.task_id " +
-                                "RETURNING old.*"
+                              ? $"UPDATE tasks SET {setClauses} WHERE {whereClause} RETURNING old.*"
                               : $"UPDATE tasks SET {setClauses} WHERE {whereClause} RETURNING *";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);

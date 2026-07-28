@@ -459,10 +459,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     await using var updateCmd = connection.CreateCommand();
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
-    updateCmd.CommandText =
-      "WITH old AS (SELECT * FROM results WHERE result_id = @result_id FOR UPDATE) " +
-      $"UPDATE results SET {setClauses} FROM old WHERE results.result_id = old.result_id " +
-      "RETURNING old.*";
+    updateCmd.CommandText = $"UPDATE results SET {setClauses} WHERE results.result_id = @result_id RETURNING old.*";
     updateCmd.Parameters.AddWithValue("result_id",
                                       resultId);
 

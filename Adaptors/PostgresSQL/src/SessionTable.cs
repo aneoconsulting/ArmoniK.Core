@@ -264,8 +264,7 @@ INSERT INTO sessions (
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
     updateCmd.CommandText = before
-                              ? $"WITH old AS (SELECT * FROM sessions WHERE {whereClause} FOR UPDATE) "                  +
-                                $"UPDATE sessions SET {setClauses} FROM old WHERE sessions.session_id = old.session_id " + "RETURNING old.*"
+                              ? $"UPDATE sessions SET {setClauses} WHERE {whereClause} RETURNING old.*"
                               : $"UPDATE sessions SET {setClauses} WHERE {whereClause} RETURNING *";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);
