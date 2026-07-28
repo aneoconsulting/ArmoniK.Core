@@ -608,6 +608,35 @@ public class ResultTableTestBase
   }
 
   [Test]
+  public async Task ListResultsAsyncShouldNotReturnDependentTasks()
+  {
+    if (RunTests)
+    {
+      // Confirm the fixture genuinely has dependents stored, via a method known to load them.
+      var seeded = await ResultTable!.GetResult("ResultIsCompletedWithDependents",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.That(seeded.DependentTasks,
+                  Is.Not.Empty);
+
+      // DependentTasks is not read off ListResultsAsync results by any caller (they go
+      // through ToGrpcResultRaw, which never reads it), so it must come back empty here
+      // regardless of what's actually stored.
+      var res = (await ResultTable.ListResultsAsync(result => result.ResultId == "ResultIsCompletedWithDependents",
+                                                    result => result.ResultId,
+                                                    true,
+                                                    0,
+                                                    1,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false)).results;
+
+      Assert.That(res.Single()
+                     .DependentTasks,
+                  Is.Empty);
+    }
+  }
+
+  [Test]
   public async Task GetDependentsShouldSucceed()
   {
     if (RunTests)
@@ -856,6 +885,32 @@ public class ResultTableTestBase
                                     .ConfigureAwait(false);
       Assert.That(after.Status,
                   Is.EqualTo(ResultStatus.Completed));
+    }
+  }
+
+  [Test]
+  public async Task UpdateOneResultShouldNotReturnDependentTasks()
+  {
+    if (RunTests)
+    {
+      // Confirm the fixture genuinely has dependents stored, via a method known to load them.
+      var seeded = await ResultTable!.GetResult("ResultIsCompletedWithDependents",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.That(seeded.DependentTasks,
+                  Is.Not.Empty);
+
+      // DependentTasks is not read off UpdateOneResult's result by any caller (CompleteResult
+      // goes through ToGrpcResultRaw, which never reads it), so it must come back empty here
+      // regardless of what's actually stored.
+      var before = await ResultTable.UpdateOneResult("ResultIsCompletedWithDependents",
+                                                     new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                        ResultStatus.Aborted),
+                                                     CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(before.DependentTasks,
+                  Is.Empty);
     }
   }
 

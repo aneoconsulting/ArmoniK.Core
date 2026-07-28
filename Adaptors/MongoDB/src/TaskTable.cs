@@ -235,7 +235,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     var       sessionHandle  = GetSession();
     var       taskCollection = GetReadCollection();
 
-    var taskList = Task.FromResult(new List<T>());
+    var rawTaskList = Task.FromResult(new List<TaskData>());
     if (pageSize > 0)
     {
       var findFluent1 = taskCollection.Find(sessionHandle,
@@ -245,10 +245,9 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                       ? findFluent1.SortBy(orderField)
                       : findFluent1.SortByDescending(orderField);
 
-      taskList = ordered.Skip(page * pageSize)
-                        .Limit(pageSize)
-                        .Project(selector)
-                        .ToListAsync(cancellationToken);
+      rawTaskList = ordered.Skip(page * pageSize)
+                          .Limit(pageSize)
+                          .ToListAsync(cancellationToken);
     }
 
     // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
@@ -256,7 +255,13 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                                        filter,
                                                        cancellationToken: cancellationToken);
 
-    return (await taskList.ConfigureAwait(false), await taskCount.ConfigureAwait(false));
+    var compiledSelector = selector.Compile();
+    var tasks = (await rawTaskList.ConfigureAwait(false)).Select(taskData => compiledSelector(taskData with
+                                                                                               {
+                                                                                                 RemainingDataDependencies = new Dictionary<string, bool>(),
+                                                                                               }));
+
+    return (tasks, await taskCount.ConfigureAwait(false));
   }
 
   /// <inheritdoc />
@@ -466,7 +471,12 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                     updates,
                     task);
 
-    return task;
+    return task is null
+             ? null
+             : task with
+               {
+                 RemainingDataDependencies = new Dictionary<string, bool>(),
+               };
   }
 
   /// <inheritdoc />

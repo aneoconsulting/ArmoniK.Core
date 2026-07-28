@@ -180,9 +180,14 @@ public class TaskTable : ITaskTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
+    var compiledSelector = selector.Compile();
     return Task.FromResult<(IEnumerable<T> tasks, long totalCount)>((ordered.Skip(page * pageSize)
                                                                             .Take(pageSize)
-                                                                            .Select(selector), ordered.Count()));
+                                                                            .AsEnumerable()
+                                                                            .Select(taskData => compiledSelector(taskData with
+                                                                                                                  {
+                                                                                                                    RemainingDataDependencies = new Dictionary<string, bool>(),
+                                                                                                                  })), ordered.Count()));
   }
 
   /// <inheritdoc />
@@ -219,9 +224,13 @@ public class TaskTable : ITaskTable
 
     var newTaskData = taskId2TaskData_[taskId] = new TaskData(taskData,
                                                               updates);
-    return Task.FromResult<TaskData?>(before
-                                        ? taskData
-                                        : newTaskData);
+    var result = before
+                   ? taskData
+                   : newTaskData;
+    return Task.FromResult<TaskData?>(result with
+                                       {
+                                         RemainingDataDependencies = new Dictionary<string, bool>(),
+                                       });
   }
 
   /// <inheritdoc />

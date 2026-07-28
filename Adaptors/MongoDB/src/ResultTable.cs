@@ -182,7 +182,10 @@ public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTab
                                                            filter,
                                                            cancellationToken: cancellationToken);
 
-    return (await resultList.ConfigureAwait(false), (int)await resultCount.ConfigureAwait(false));
+    return ((await resultList.ConfigureAwait(false)).Select(r => r with
+                                                                 {
+                                                                   DependentTasks = [],
+                                                                 }), (int)await resultCount.ConfigureAwait(false));
   }
 
   /// <inheritdoc />
@@ -333,7 +336,15 @@ public class ResultTable : BaseTable<Result, ResultDataModelMapping>, IResultTab
                                                               cancellationToken)
                                        .ConfigureAwait(false);
 
-    return result ?? throw new ResultNotFoundException($"Result not found {resultId}");
+    if (result is null)
+    {
+      throw new ResultNotFoundException($"Result not found {resultId}");
+    }
+
+    return result with
+           {
+             DependentTasks = [],
+           };
   }
 
   /// <inheritdoc />
