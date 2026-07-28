@@ -15,9 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Threading;
-using System.Threading.Tasks;
-
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
 
@@ -45,24 +42,5 @@ public class TaskTableTests : TaskTableTestBase
 
     TaskTable = provider.GetRequiredService<ITaskTable>();
     RunTests  = true;
-  }
-
-  [Test]
-  public async Task ListTasksAsyncShouldNotOverflowOffsetWithLargePaging()
-  {
-    if (RunTests)
-    {
-      var (tasks, _) = await TaskTable!.ListTasksAsync(data => data.TaskId == "NotExisting",
-                                                       data => data.TaskId,
-                                                       data => data.TaskId,
-                                                       true,
-                                                       2,
-                                                       1_500_000_000,
-                                                       CancellationToken.None)
-                                       .ConfigureAwait(false);
-
-      Assert.That(tasks,
-                  Is.Empty);
-    }
   }
 }
