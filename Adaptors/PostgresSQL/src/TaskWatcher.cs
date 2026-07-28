@@ -90,7 +90,6 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   {
     insertBroadcaster_.Dispose();
     updateBroadcaster_.Dispose();
-    GC.SuppressFinalize(this);
   }
 
   /// <inheritdoc />

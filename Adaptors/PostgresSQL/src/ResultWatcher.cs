@@ -97,7 +97,6 @@ public class ResultWatcher : IResultWatcher, IDisposable
   {
     insertBroadcaster_.Dispose();
     updateBroadcaster_.Dispose();
-    GC.SuppressFinalize(this);
   }
 
   /// <inheritdoc />
