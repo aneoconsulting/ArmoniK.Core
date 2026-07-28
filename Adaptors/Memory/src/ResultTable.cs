@@ -113,9 +113,9 @@ public class ResultTable : IResultTable
                                                                                   .Take(pageSize)
                                                                                   .AsEnumerable()
                                                                                   .Select(result => result with
-                                                                                                     {
-                                                                                                       DependentTasks = [],
-                                                                                                     }), ordered.Count()));
+                                                                                                    {
+                                                                                                      DependentTasks = [],
+                                                                                                    }), ordered.Count()));
   }
 
   /// <inheritdoc />
@@ -192,9 +192,9 @@ public class ResultTable : IResultTable
     results_[resultId] = new Result(result,
                                     updates);
     return Task.FromResult(result with
-                            {
-                              DependentTasks = [],
-                            });
+                           {
+                             DependentTasks = [],
+                           });
   }
 
   /// <inheritdoc />

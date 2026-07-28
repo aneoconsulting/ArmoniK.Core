@@ -223,9 +223,9 @@ public class TaskTable : ITaskTable
                    ? taskData
                    : newTaskData;
     return Task.FromResult<TaskData?>(result with
-                                       {
-                                         RemainingDataDependencies = new Dictionary<string, bool>(),
-                                       });
+                                      {
+                                        RemainingDataDependencies = new Dictionary<string, bool>(),
+                                      });
   }
 
   /// <inheritdoc />
