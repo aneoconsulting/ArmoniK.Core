@@ -231,7 +231,8 @@ public class ResultTable : IResultTable
         throw new ResultNotFoundException($"Key '{resultId}' not found");
       }
 
-      result.DependentTasks.AddRange(taskIds);
+      var newTaskIds = taskIds.Except(result.DependentTasks);
+      result.DependentTasks.AddRange(newTaskIds);
     }
 
     return Task.CompletedTask;

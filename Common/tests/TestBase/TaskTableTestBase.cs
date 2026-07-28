@@ -2613,4 +2613,22 @@ public class TaskTableTestBase
                   Is.Not.Empty);
     }
   }
+
+  [Test]
+  public async Task ListApplicationsAsyncShouldReturnEmptyForNegativePageSize()
+  {
+    if (RunTests)
+    {
+      var (applications, _) = await TaskTable!.ListApplicationsAsync(_ => true,
+                                                                     new List<Expression<Func<Application, object?>>>(),
+                                                                     false,
+                                                                     0,
+                                                                     -1,
+                                                                     CancellationToken.None)
+                                              .ConfigureAwait(false);
+
+      Assert.That(applications,
+                  Is.Empty);
+    }
+  }
 }

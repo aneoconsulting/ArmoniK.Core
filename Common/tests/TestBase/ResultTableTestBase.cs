@@ -732,6 +732,72 @@ public class ResultTableTestBase
   }
 
   [Test]
+  public async Task AddTaskDependenciesTwiceShouldNotDuplicate()
+  {
+    if (RunTests)
+    {
+      const string resultId  = "ResultForDedupTest";
+      const string sessionId = "SessionId";
+
+      await ResultTable!.Create(new[]
+                                {
+                                  new Result(sessionId,
+                                             resultId,
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "OwnerId",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.UtcNow,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                })
+                        .ConfigureAwait(false);
+
+      await ResultTable.AddTaskDependencies(new Dictionary<string, ICollection<string>>
+                                            {
+                                              {
+                                                resultId, new[]
+                                                          {
+                                                            "Task1",
+                                                            "Task2",
+                                                          }
+                                              },
+                                            })
+                       .ConfigureAwait(false);
+
+      // Task2 overlaps with the first call; the second call should dedup it.
+      await ResultTable.AddTaskDependencies(new Dictionary<string, ICollection<string>>
+                                            {
+                                              {
+                                                resultId, new[]
+                                                          {
+                                                            "Task2",
+                                                            "Task3",
+                                                          }
+                                              },
+                                            })
+                       .ConfigureAwait(false);
+
+      var dependents = await ResultTable.GetDependents(sessionId,
+                                                       resultId)
+                                        .ToListAsync()
+                                        .ConfigureAwait(false);
+
+      Assert.That(dependents,
+                  Is.EquivalentTo(new List<string>
+                                  {
+                                    "Task1",
+                                    "Task2",
+                                    "Task3",
+                                  }));
+    }
+  }
+
+  [Test]
   public void AddDependentNotExistingResultShouldThrow()
   {
     if (RunTests)
