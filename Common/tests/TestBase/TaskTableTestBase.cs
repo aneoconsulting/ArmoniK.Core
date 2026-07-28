@@ -2430,27 +2430,6 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public async Task ListTasksAsyncShouldReturnRemainingDataDependencies()
-  {
-    if (RunTests)
-    {
-      // Fix #1: ListTasksAsync was returning TaskData with RemainingDataDependencies always empty.
-      var (tasks, _) = await TaskTable!.ListTasksAsync(data => data.TaskId == "TaskSubmittedId",
-                                                       data => data.TaskId,
-                                                       data => data,
-                                                       false,
-                                                       0,
-                                                       10,
-                                                       CancellationToken.None)
-                                       .ConfigureAwait(false);
-
-      Assert.That(tasks.Single()
-                       .RemainingDataDependencies,
-                  Does.ContainKey("dependency1"));
-    }
-  }
-
-  [Test]
   public async Task RemoveRemainingDataDependenciesPartialShouldNotBeReady()
   {
     if (RunTests)

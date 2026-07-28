@@ -356,20 +356,8 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       }
     }
 
-    var depsByTaskId = await LoadRemainingDependenciesBatch(connection,
-                                                            rawTasks,
-                                                            cancellationToken)
-                         .ConfigureAwait(false);
-
     var compiled = selector.Compile();
-    var results  = new List<T>();
-    foreach (var taskData in rawTasks)
-    {
-      results.Add(compiled.Invoke(taskData with
-                                  {
-                                    RemainingDataDependencies = depsByTaskId[taskData.TaskId],
-                                  }));
-    }
+    var results  = rawTasks.Select(taskData => compiled.Invoke(taskData));
 
     return (results, totalCount);
   }

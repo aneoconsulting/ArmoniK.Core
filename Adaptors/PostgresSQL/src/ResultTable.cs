@@ -383,15 +383,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     await reader.CloseAsync()
                 .ConfigureAwait(false);
 
-    var dependentTasksByResultId = await LoadDependentTasksBatch(connection,
-                                                                 results,
-                                                                 cancellationToken)
-                                     .ConfigureAwait(false);
-
-    return (results.Select(result => result with
-                                     {
-                                       DependentTasks = dependentTasksByResultId[result.ResultId],
-                                     }), totalCount);
+    return (results, totalCount);
   }
 
   /// <inheritdoc />
