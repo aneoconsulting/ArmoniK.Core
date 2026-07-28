@@ -47,6 +47,21 @@ public static class SqlHelper
   public static string BuildSetClauses<T>(UpdateDefinition<T> updates,
                                           NpgsqlCommand       cmd,
                                           string              prefix = "u")
+    => BuildSetClauses(updates,
+                       cmd.Parameters,
+                       prefix);
+
+  /// <summary>
+  ///   Build SQL SET clauses from an UpdateDefinition
+  /// </summary>
+  /// <typeparam name="T">Entity type</typeparam>
+  /// <param name="updates">Update definition</param>
+  /// <param name="parameters">Parameter collection to add parameters to</param>
+  /// <param name="prefix">Parameter name prefix</param>
+  /// <returns>SQL SET clause string</returns>
+  public static string BuildSetClauses<T>(UpdateDefinition<T>       updates,
+                                          NpgsqlParameterCollection parameters,
+                                          string                    prefix = "u")
   {
     var sets     = new List<string>();
     var paramIdx = 0;
@@ -60,7 +75,7 @@ public static class SqlHelper
       if (propName == "Options" && setter.Value is TaskOptions opts)
       {
         AddOptionsSetClauses(sets,
-                             cmd,
+                             parameters,
                              opts,
                              prefix,
                              ref paramIdx);
@@ -74,10 +89,10 @@ public static class SqlHelper
         var pError  = $"@{prefix}{paramIdx++}";
         sets.Add($"output_status = {pStatus}");
         sets.Add($"output_error = {pError}");
-        cmd.Parameters.AddWithValue(pStatus,
-                                    (int)output.Status);
-        cmd.Parameters.AddWithValue(pError,
-                                    output.Error);
+        parameters.AddWithValue(pStatus,
+                                (int)output.Status);
+        parameters.AddWithValue(pError,
+                                output.Error);
         continue;
       }
 
@@ -85,7 +100,7 @@ public static class SqlHelper
                                                      propName);
       var paramName = $"@{prefix}{paramIdx++}";
       sets.Add($"{columnName} = {paramName}");
-      AddParameterWithConversion(cmd,
+      AddParameterWithConversion(parameters,
                                  paramName,
                                  setter.Value);
     }
@@ -100,49 +115,59 @@ public static class SqlHelper
   public static void AddParameterWithConversion(NpgsqlCommand cmd,
                                                 string        paramName,
                                                 object?       value)
+    => AddParameterWithConversion(cmd.Parameters,
+                                  paramName,
+                                  value);
+
+  /// <summary>
+  ///   Add a parameter to a parameter collection with type conversion
+  /// </summary>
+  public static void AddParameterWithConversion(NpgsqlParameterCollection parameters,
+                                                string                    paramName,
+                                                object?                   value)
   {
     switch (value)
     {
       case null:
-        cmd.Parameters.AddWithValue(paramName,
-                                    DBNull.Value);
+        parameters.AddWithValue(paramName,
+                                DBNull.Value);
         break;
       case Enum e:
-        cmd.Parameters.AddWithValue(paramName,
-                                    Convert.ToInt32(e));
+        parameters.AddWithValue(paramName,
+                                Convert.ToInt32(e));
         break;
       case TimeSpan ts:
-        cmd.Parameters.AddWithValue(paramName,
-                                    ts.Ticks);
+        parameters.AddWithValue(paramName,
+                                ts.Ticks);
         break;
       case IList<string> list:
-        cmd.Parameters.AddWithValue(paramName,
-                                    NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                    list.ToArray());
+        parameters.AddWithValue(paramName,
+                                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                list.ToArray());
         break;
       case IDictionary<string, string> dict:
-        cmd.Parameters.AddWithValue(paramName,
-                                    NpgsqlDbType.Jsonb,
-                                    JsonSerializer.Serialize(dict));
+        parameters.AddWithValue(paramName,
+                                NpgsqlDbType.Jsonb,
+                                JsonSerializer.Serialize(dict));
         break;
       case IDictionary<string, bool> boolDict:
-        cmd.Parameters.AddWithValue(paramName,
-                                    NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                    boolDict.Keys.ToArray());
+        parameters.AddWithValue(paramName,
+                                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                boolDict.Keys.ToArray());
         break;
       case PodConfiguration podConfig:
-        cmd.Parameters.AddWithValue(paramName,
-                                    NpgsqlDbType.Jsonb,
-                                    JsonSerializer.Serialize(podConfig.Configuration));
+        parameters.AddWithValue(paramName,
+                                NpgsqlDbType.Jsonb,
+                                JsonSerializer.Serialize(podConfig.Configuration));
         break;
       case byte[] bytes:
-        cmd.Parameters.AddWithValue(paramName,
-                                    NpgsqlDbType.Bytea,
-                                    bytes);
+        parameters.AddWithValue(paramName,
+                                NpgsqlDbType.Bytea,
+                                bytes);
         break;
       default:
-        cmd.Parameters.AddWithValue(paramName,
-                                    value);
+        parameters.AddWithValue(paramName,
+                                value);
         break;
     }
   }
@@ -152,48 +177,56 @@ public static class SqlHelper
   /// </summary>
   public static void AddExpressionParameters(NpgsqlCommand               cmd,
                                              Dictionary<string, object?> parameters)
+    => AddExpressionParameters(cmd.Parameters,
+                               parameters);
+
+  /// <summary>
+  ///   Add parameters from ExpressionToSql translation to a parameter collection
+  /// </summary>
+  public static void AddExpressionParameters(NpgsqlParameterCollection   paramCollection,
+                                             Dictionary<string, object?> parameters)
   {
     foreach (var (name, value) in parameters)
     {
       switch (value)
       {
         case null:
-          cmd.Parameters.AddWithValue(name,
-                                      DBNull.Value);
+          paramCollection.AddWithValue(name,
+                                       DBNull.Value);
           break;
         case string[] arr:
-          cmd.Parameters.AddWithValue(name,
-                                      NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                      arr);
+          paramCollection.AddWithValue(name,
+                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                       arr);
           break;
         case IList<string> list:
-          cmd.Parameters.AddWithValue(name,
-                                      NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                      list.ToArray());
+          paramCollection.AddWithValue(name,
+                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                       list.ToArray());
           break;
         case ICollection<string> col:
-          cmd.Parameters.AddWithValue(name,
-                                      NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                      col.ToArray());
+          paramCollection.AddWithValue(name,
+                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                       col.ToArray());
           break;
         case IEnumerable<string> en:
-          cmd.Parameters.AddWithValue(name,
-                                      NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                      en.ToArray());
+          paramCollection.AddWithValue(name,
+                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                       en.ToArray());
           break;
         default:
-          cmd.Parameters.AddWithValue(name,
-                                      value);
+          paramCollection.AddWithValue(name,
+                                       value);
           break;
       }
     }
   }
 
-  private static void AddOptionsSetClauses(List<string>  sets,
-                                           NpgsqlCommand cmd,
-                                           TaskOptions   opts,
-                                           string        prefix,
-                                           ref int       paramIdx)
+  private static void AddOptionsSetClauses(List<string>              sets,
+                                           NpgsqlParameterCollection parameters,
+                                           TaskOptions               opts,
+                                           string                    prefix,
+                                           ref int                   paramIdx)
   {
     var fields = new (string column, object? value)[]
                  {
@@ -215,14 +248,14 @@ public static class SqlHelper
       sets.Add($"{column} = {pName}");
       if (column == "options_options")
       {
-        cmd.Parameters.AddWithValue(pName,
-                                    NpgsqlDbType.Jsonb,
-                                    value!);
+        parameters.AddWithValue(pName,
+                                NpgsqlDbType.Jsonb,
+                                value!);
       }
       else
       {
-        cmd.Parameters.AddWithValue(pName,
-                                    value!);
+        parameters.AddWithValue(pName,
+                                value!);
       }
     }
   }

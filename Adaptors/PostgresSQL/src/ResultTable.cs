@@ -513,21 +513,29 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
-    long totalMatched = 0;
+    await using var batch = new NpgsqlBatch(connection,
+                                            transaction);
     foreach (var (filter, updates) in bulkUpdates)
     {
       var (whereSql, whereParams) = ExpressionToSql<Result>.Translate(filter);
 
-      await using var cmd = connection.CreateCommand();
-      cmd.Transaction = transaction;
+      var batchCmd = new NpgsqlBatchCommand();
       var setClauses = SqlHelper.BuildSetClauses(updates,
-                                                 cmd);
-      cmd.CommandText = $"UPDATE results SET {setClauses} WHERE {whereSql}";
-      SqlHelper.AddExpressionParameters(cmd,
+                                                 batchCmd.Parameters);
+      batchCmd.CommandText = $"UPDATE results SET {setClauses} WHERE {whereSql}";
+      SqlHelper.AddExpressionParameters(batchCmd.Parameters,
                                         whereParams);
 
-      totalMatched += await cmd.ExecuteNonQueryAsync(cancellationToken)
-                               .ConfigureAwait(false);
+      batch.BatchCommands.Add(batchCmd);
+    }
+
+    await batch.ExecuteNonQueryAsync(cancellationToken)
+               .ConfigureAwait(false);
+
+    long totalMatched = 0;
+    foreach (var batchCmd in batch.BatchCommands)
+    {
+      totalMatched += batchCmd.RecordsAffected;
     }
 
     await transaction.CommitAsync(cancellationToken)

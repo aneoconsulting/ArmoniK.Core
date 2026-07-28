@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -855,6 +856,40 @@ public class ResultTableTestBase
                                     .ConfigureAwait(false);
       Assert.That(after.Status,
                   Is.EqualTo(ResultStatus.Completed));
+    }
+  }
+
+  [Test]
+  public async Task BulkUpdateResultsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var matched = await ResultTable!.BulkUpdateResults(new (Expression<Func<Result, bool>> filter, UpdateDefinition<Result> updates)[]
+                                                          {
+                                                            (r => r.ResultId == "ResultIsCreated",
+                                                             new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                                ResultStatus.Completed)),
+                                                            (r => r.ResultId == "ResultIsCreated2",
+                                                             new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                                ResultStatus.Aborted)),
+                                                          },
+                                                          CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+      Assert.That(matched,
+                  Is.EqualTo(2));
+
+      var first = await ResultTable!.GetResult("ResultIsCreated",
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
+      Assert.That(first.Status,
+                  Is.EqualTo(ResultStatus.Completed));
+
+      var second = await ResultTable!.GetResult("ResultIsCreated2",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.That(second.Status,
+                  Is.EqualTo(ResultStatus.Aborted));
     }
   }
 

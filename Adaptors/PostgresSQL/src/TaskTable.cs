@@ -488,6 +488,46 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   }
 
   /// <inheritdoc />
+  public async Task<long> BulkUpdateTasks(IEnumerable<(Expression<Func<TaskData, bool>> filter, UpdateDefinition<TaskData> updates)> bulkUpdates,
+                                          CancellationToken                                                                          cancellationToken)
+  {
+    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                          .ConfigureAwait(false);
+    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
+                                                  .ConfigureAwait(false);
+
+    await using var batch = new NpgsqlBatch(connection,
+                                            transaction);
+    foreach (var (filter, updates) in bulkUpdates)
+    {
+      var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
+
+      var batchCmd = new NpgsqlBatchCommand();
+      var setClauses = SqlHelper.BuildSetClauses(updates,
+                                                 batchCmd.Parameters);
+      batchCmd.CommandText = $"UPDATE tasks SET {setClauses} WHERE {whereSql}";
+      SqlHelper.AddExpressionParameters(batchCmd.Parameters,
+                                        whereParams);
+
+      batch.BatchCommands.Add(batchCmd);
+    }
+
+    await batch.ExecuteNonQueryAsync(cancellationToken)
+              .ConfigureAwait(false);
+
+    long totalMatched = 0;
+    foreach (var batchCmd in batch.BatchCommands)
+    {
+      totalMatched += batchCmd.RecordsAffected;
+    }
+
+    await transaction.CommitAsync(cancellationToken)
+                     .ConfigureAwait(false);
+
+    return totalMatched;
+  }
+
+  /// <inheritdoc />
   public async Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
                                                                                                    ICollection<Expression<Func<Application, object?>>> orderFields,
                                                                                                    bool ascOrder,

@@ -2290,6 +2290,40 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task BulkUpdateTasksShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var matched = await TaskTable!.BulkUpdateTasks(new (Expression<Func<TaskData, bool>> filter, UpdateDefinition<TaskData> updates)[]
+                                                      {
+                                                        (t => t.TaskId == "TaskCreatingId",
+                                                         new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                              TaskStatus.Completed)),
+                                                        (t => t.TaskId == "TaskPendingId",
+                                                         new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                              TaskStatus.Cancelled)),
+                                                      },
+                                                      CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(matched,
+                  Is.EqualTo(2));
+
+      var first = await TaskTable!.ReadTaskAsync("TaskCreatingId",
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+      Assert.That(first.Status,
+                  Is.EqualTo(TaskStatus.Completed));
+
+      var second = await TaskTable!.ReadTaskAsync("TaskPendingId",
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+      Assert.That(second.Status,
+                  Is.EqualTo(TaskStatus.Cancelled));
+    }
+  }
+
+  [Test]
   public async Task ListTasksAsyncStartsWithSpecialCharsShouldMatchLiterally()
   {
     if (RunTests)
