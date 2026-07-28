@@ -1392,7 +1392,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                            sessionData_,
                                            resubmit,
                                            new Output(OutputStatus.Error,
-                                                      $"Agent is stopping while unhealthy: {report.Entries}"),
+                                                      GetTaskErrorMessage(e)),
                                            CancellationToken.None)
                         .ConfigureAwait(false);
 
@@ -1410,14 +1410,11 @@ public sealed class TaskHandler : IAsyncDisposable
                          ? "retrying task"
                          : "cancelling task");
 
-      var isWorkerDown = e is RpcException re && IsStatusFatal(re.StatusCode);
       await submitter_.CompleteTaskAsync(taskData,
                                          sessionData_,
                                          resubmit,
                                          new Output(OutputStatus.Error,
-                                                    isWorkerDown
-                                                      ? $"Worker associated to scheduling agent {ownerPodName_} is down with error: \n{e.Message}"
-                                                      : e.Message),
+                                                    GetTaskErrorMessage(e)),
                                          CancellationToken.None)
                       .ConfigureAwait(false);
 
@@ -1428,6 +1425,26 @@ public sealed class TaskHandler : IAsyncDisposable
     }
 
     e.RethrowWithStacktrace();
+  }
+
+  private string GetTaskErrorMessage(Exception e)
+  {
+    var suffix = $"See cluster logs for MessageId = {messageHandler_.MessageId}";
+
+    return e switch
+           {
+             OperationCanceledException or RpcException
+                                           {
+                                             InnerException: OperationCanceledException,
+                                           } => $"Agent is stopping\n{suffix}",
+             RpcException
+               {
+                 InnerException: null,
+               } re => $"Worker returned error {re.StatusCode}:\n{re.Status.Detail}\n{suffix}",
+             RpcException re when IsStatusFatal(re.StatusCode) => $"Worker went down with error {re.StatusCode}\n{suffix}",
+             RpcException re                                   => $"Agent had connectivity error {re.StatusCode}\n{suffix}",
+             _                                                 => $"Agent got an internal error\n{suffix}",
+           };
   }
 
   internal static bool IsStatusFatal(StatusCode statusCode)
