@@ -865,16 +865,14 @@ public class ResultTableTestBase
     if (RunTests)
     {
       var matched = await ResultTable!.BulkUpdateResults(new (Expression<Func<Result, bool>> filter, UpdateDefinition<Result> updates)[]
-                                                          {
-                                                            (r => r.ResultId == "ResultIsCreated",
-                                                             new UpdateDefinition<Result>().Set(r => r.Status,
-                                                                                                ResultStatus.Completed)),
-                                                            (r => r.ResultId == "ResultIsCreated2",
-                                                             new UpdateDefinition<Result>().Set(r => r.Status,
-                                                                                                ResultStatus.Aborted)),
-                                                          },
-                                                          CancellationToken.None)
-                                       .ConfigureAwait(false);
+                                                         {
+                                                           (r => r.ResultId == "ResultIsCreated", new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                                                                     ResultStatus.Completed)),
+                                                           (r => r.ResultId == "ResultIsCreated2", new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                                                                      ResultStatus.Aborted)),
+                                                         },
+                                                         CancellationToken.None)
+                                      .ConfigureAwait(false);
 
       Assert.That(matched,
                   Is.EqualTo(2));

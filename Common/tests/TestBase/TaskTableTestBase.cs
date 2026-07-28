@@ -2295,15 +2295,13 @@ public class TaskTableTestBase
     if (RunTests)
     {
       var matched = await TaskTable!.BulkUpdateTasks(new (Expression<Func<TaskData, bool>> filter, UpdateDefinition<TaskData> updates)[]
-                                                      {
-                                                        (t => t.TaskId == "TaskCreatingId",
-                                                         new UpdateDefinition<TaskData>().Set(t => t.Status,
-                                                                                              TaskStatus.Completed)),
-                                                        (t => t.TaskId == "TaskPendingId",
-                                                         new UpdateDefinition<TaskData>().Set(t => t.Status,
-                                                                                              TaskStatus.Cancelled)),
-                                                      },
-                                                      CancellationToken.None)
+                                                     {
+                                                       (t => t.TaskId == "TaskCreatingId", new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                                                                TaskStatus.Completed)),
+                                                       (t => t.TaskId == "TaskPendingId", new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                                                               TaskStatus.Cancelled)),
+                                                     },
+                                                     CancellationToken.None)
                                     .ConfigureAwait(false);
 
       Assert.That(matched,

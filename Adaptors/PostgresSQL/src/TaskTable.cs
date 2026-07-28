@@ -513,7 +513,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     }
 
     await batch.ExecuteNonQueryAsync(cancellationToken)
-              .ConfigureAwait(false);
+               .ConfigureAwait(false);
 
     long totalMatched = 0;
     foreach (var batchCmd in batch.BatchCommands)
