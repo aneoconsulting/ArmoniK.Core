@@ -263,9 +263,10 @@ INSERT INTO sessions (
     await using var updateCmd = connection.CreateCommand();
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
-    updateCmd.CommandText = before
-                              ? $"UPDATE sessions SET {setClauses} WHERE {whereClause} RETURNING old.*"
-                              : $"UPDATE sessions SET {setClauses} WHERE {whereClause} RETURNING *";
+    var returning = before
+                      ? "OLD"
+                      : "NEW";
+    updateCmd.CommandText = $"UPDATE sessions SET {setClauses} WHERE {whereClause} RETURNING {returning}.*";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);
 

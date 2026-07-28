@@ -440,9 +440,10 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     await using var updateCmd = connection.CreateCommand();
     var setClauses = SqlHelper.BuildSetClauses(updates,
                                                updateCmd);
-    updateCmd.CommandText = before
-                              ? $"UPDATE tasks SET {setClauses} WHERE {whereClause} RETURNING old.*"
-                              : $"UPDATE tasks SET {setClauses} WHERE {whereClause} RETURNING *";
+    var returning = before
+                      ? "OLD"
+                      : "NEW";
+    updateCmd.CommandText = $"UPDATE tasks SET {setClauses} WHERE {whereClause} RETURNING {returning}.*";
     SqlHelper.AddExpressionParameters(updateCmd,
                                       filterParams);
 
