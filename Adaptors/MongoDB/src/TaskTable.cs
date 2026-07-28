@@ -235,7 +235,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     var       sessionHandle  = GetSession();
     var       taskCollection = GetReadCollection();
 
-    var rawTaskList = Task.FromResult(new List<TaskData>());
+    var taskList = Task.FromResult(new List<T>());
     if (pageSize > 0)
     {
       var findFluent1 = taskCollection.Find(sessionHandle,
@@ -245,9 +245,10 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                       ? findFluent1.SortBy(orderField)
                       : findFluent1.SortByDescending(orderField);
 
-      rawTaskList = ordered.Skip(page * pageSize)
-                          .Limit(pageSize)
-                          .ToListAsync(cancellationToken);
+      taskList = ordered.Skip(page * pageSize)
+                        .Limit(pageSize)
+                        .Project(selector)
+                        .ToListAsync(cancellationToken);
     }
 
     // Find needs to be duplicated, otherwise, the count is computed on a single page, and not the whole collection
@@ -255,13 +256,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                                        filter,
                                                        cancellationToken: cancellationToken);
 
-    var compiledSelector = selector.Compile();
-    var tasks = (await rawTaskList.ConfigureAwait(false)).Select(taskData => compiledSelector(taskData with
-                                                                                               {
-                                                                                                 RemainingDataDependencies = new Dictionary<string, bool>(),
-                                                                                               }));
-
-    return (tasks, await taskCount.ConfigureAwait(false));
+    return (await taskList.ConfigureAwait(false), await taskCount.ConfigureAwait(false));
   }
 
   /// <inheritdoc />

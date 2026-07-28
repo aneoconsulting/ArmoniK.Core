@@ -180,14 +180,9 @@ public class TaskTable : ITaskTable
                     ? queryable.OrderBy(orderField)
                     : queryable.OrderByDescending(orderField);
 
-    var compiledSelector = selector.Compile();
     return Task.FromResult<(IEnumerable<T> tasks, long totalCount)>((ordered.Skip(page * pageSize)
                                                                             .Take(pageSize)
-                                                                            .AsEnumerable()
-                                                                            .Select(taskData => compiledSelector(taskData with
-                                                                                                                  {
-                                                                                                                    RemainingDataDependencies = new Dictionary<string, bool>(),
-                                                                                                                  })), ordered.Count()));
+                                                                            .Select(selector), ordered.Count()));
   }
 
   /// <inheritdoc />

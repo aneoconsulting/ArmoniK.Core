@@ -2322,38 +2322,6 @@ public class TaskTableTestBase
   }
 
   [Test]
-  public async Task ListTasksAsyncShouldNotReturnRemainingDataDependencies()
-  {
-    if (RunTests)
-    {
-      // Confirm the fixture genuinely has remaining dependencies stored, via a method
-      // known to load them.
-      var seeded = await TaskTable!.ReadTaskAsync("TaskCreatingId",
-                                                  CancellationToken.None)
-                                   .ConfigureAwait(false);
-      Assert.That(seeded.RemainingDataDependencies,
-                  Is.Not.Empty);
-
-      // Mirrors UpdateOneTaskShouldNotReturnRemainingDataDependencies: no production
-      // caller projects RemainingDataDependencies through ListTasksAsync (they go through
-      // TaskDataMask, which has no field for it), so it must come back empty even with
-      // an identity selector, regardless of what's actually stored.
-      var (tasks, _) = await TaskTable.ListTasksAsync(data => data.TaskId == "TaskCreatingId",
-                                                      data => data.TaskId,
-                                                      data => data,
-                                                      false,
-                                                      0,
-                                                      10,
-                                                      CancellationToken.None)
-                                      .ConfigureAwait(false);
-
-      Assert.That(tasks.Single()
-                       .RemainingDataDependencies,
-                  Is.Empty);
-    }
-  }
-
-  [Test]
   public async Task BulkUpdateTasksShouldSucceed()
   {
     if (RunTests)
