@@ -510,11 +510,11 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   {
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
-    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
-                                                  .ConfigureAwait(false);
 
-    await using var batch = new NpgsqlBatch(connection,
-                                            transaction);
+    // A single NpgsqlBatch execution is already atomic (all commands run within the
+    // implicit transaction bounded by the batch's Sync message), so no explicit
+    // transaction is needed here.
+    await using var batch = new NpgsqlBatch(connection);
     foreach (var (filter, updates) in bulkUpdates)
     {
       var (whereSql, whereParams) = ExpressionToSql<Result>.Translate(filter);
@@ -537,9 +537,6 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     {
       totalMatched += batchCmd.RecordsAffected;
     }
-
-    await transaction.CommitAsync(cancellationToken)
-                     .ConfigureAwait(false);
 
     return totalMatched;
   }

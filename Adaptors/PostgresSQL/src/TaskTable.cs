@@ -493,11 +493,11 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   {
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
-    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
-                                                  .ConfigureAwait(false);
 
-    await using var batch = new NpgsqlBatch(connection,
-                                            transaction);
+    // A single NpgsqlBatch execution is already atomic (all commands run within the
+    // implicit transaction bounded by the batch's Sync message), so no explicit
+    // transaction is needed here.
+    await using var batch = new NpgsqlBatch(connection);
     foreach (var (filter, updates) in bulkUpdates)
     {
       var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
@@ -520,9 +520,6 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     {
       totalMatched += batchCmd.RecordsAffected;
     }
-
-    await transaction.CommitAsync(cancellationToken)
-                     .ConfigureAwait(false);
 
     return totalMatched;
   }
