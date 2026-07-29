@@ -110,7 +110,12 @@ public class ResultTable : IResultTable
                     : queryable.OrderByDescending(orderField);
 
     return Task.FromResult<(IEnumerable<Result> results, int totalCount)>((ordered.Skip(page * pageSize)
-                                                                                  .Take(pageSize), ordered.Count()));
+                                                                                  .Take(pageSize)
+                                                                                  .AsEnumerable()
+                                                                                  .Select(result => result with
+                                                                                                    {
+                                                                                                      DependentTasks = [],
+                                                                                                    }), ordered.Count()));
   }
 
   /// <inheritdoc />
@@ -186,7 +191,10 @@ public class ResultTable : IResultTable
 
     results_[resultId] = new Result(result,
                                     updates);
-    return Task.FromResult(result);
+    return Task.FromResult(result with
+                           {
+                             DependentTasks = [],
+                           });
   }
 
   /// <inheritdoc />

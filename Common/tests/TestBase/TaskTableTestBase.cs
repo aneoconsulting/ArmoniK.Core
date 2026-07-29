@@ -2264,6 +2264,316 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task UpdateOneTaskShouldReturnDataBeforeUpdateWhenBeforeIsTrue()
+  {
+    if (RunTests)
+    {
+      var before = await TaskTable!.UpdateOneTask("TaskProcessingId",
+                                                  null,
+                                                  new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                       TaskStatus.Completed),
+                                                  true,
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.That(before,
+                  Is.Not.Null);
+      Assert.That(before!.Status,
+                  Is.EqualTo(TaskStatus.Processing));
+
+      var after = await TaskTable!.ReadTaskAsync("TaskProcessingId",
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+      Assert.That(after.Status,
+                  Is.EqualTo(TaskStatus.Completed));
+    }
+  }
+
+  [Test]
+  public async Task UpdateOneTaskShouldNotReturnRemainingDataDependencies()
+  {
+    if (RunTests)
+    {
+      // Confirm the fixture genuinely has remaining dependencies stored, via a method
+      // known to load them.
+      var seeded = await TaskTable!.ReadTaskAsync("TaskCreatingId",
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+      Assert.That(seeded.RemainingDataDependencies,
+                  Is.Not.Empty);
+
+      // RemainingDataDependencies is not read off UpdateOneTask's result by any caller
+      // (EndTaskAsync's result flows into RetryTask, but by the time a task ends it has
+      // already left Creating/Pending, so its remaining dependencies are guaranteed empty
+      // anyway), so it must come back empty here regardless of what's actually stored.
+      var before = await TaskTable.UpdateOneTask("TaskCreatingId",
+                                                 null,
+                                                 new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                      TaskStatus.Cancelled),
+                                                 true,
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+      Assert.That(before,
+                  Is.Not.Null);
+      Assert.That(before!.RemainingDataDependencies,
+                  Is.Empty);
+    }
+  }
+
+  [Test]
+  public async Task BulkUpdateTasksShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var matched = await TaskTable!.BulkUpdateTasks(new (Expression<Func<TaskData, bool>> filter, UpdateDefinition<TaskData> updates)[]
+                                                     {
+                                                       (t => t.TaskId == "TaskCreatingId", new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                                                                TaskStatus.Completed)),
+                                                       (t => t.TaskId == "TaskPendingId", new UpdateDefinition<TaskData>().Set(t => t.Status,
+                                                                                                                               TaskStatus.Cancelled)),
+                                                     },
+                                                     CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(matched,
+                  Is.EqualTo(2));
+
+      var first = await TaskTable!.ReadTaskAsync("TaskCreatingId",
+                                                 CancellationToken.None)
+                                  .ConfigureAwait(false);
+      Assert.That(first.Status,
+                  Is.EqualTo(TaskStatus.Completed));
+
+      var second = await TaskTable!.ReadTaskAsync("TaskPendingId",
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+      Assert.That(second.Status,
+                  Is.EqualTo(TaskStatus.Cancelled));
+    }
+  }
+
+  [Test]
+  public async Task ListTasksAsyncStartsWithSpecialCharsShouldMatchLiterally()
+  {
+    if (RunTests)
+    {
+      // task_1 has a literal underscore; taskA1 has 'A' in the same position.
+      // StartsWith("task_") must match only task_1.
+      // Without LIKE-escaping the underscore becomes a wildcard and taskA1 would match too.
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionIdLikeTest",
+                                                  "task_1",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                     new TaskData("SessionIdLikeTest",
+                                                  "taskA1",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      var (tasks, count) = await TaskTable!.ListTasksAsync(data => data.TaskId.StartsWith("task_"),
+                                                           data => data.TaskId,
+                                                           data => data,
+                                                           false,
+                                                           0,
+                                                           10,
+                                                           CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+      Assert.That(tasks.Single()
+                       .TaskId,
+                  Is.EqualTo("task_1"));
+    }
+  }
+
+  [Test]
+  public async Task ListTasksAsyncSortByOptionsKeyWithSingleQuoteShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var optionsWithQuotedKey = Options with
+                                 {
+                                   Options = new Dictionary<string, string>
+                                             {
+                                               {
+                                                 "key'1", "val1"
+                                               },
+                                             },
+                                 };
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionIdQuoteTest",
+                                                  "TaskWithQuotedKey",
+                                                  "",
+                                                  "",
+                                                  "PayloadId",
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Submitted,
+                                                  optionsWithQuotedKey,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      var (tasks, count) = await TaskTable!.ListTasksAsync(data => data.SessionId == "SessionIdQuoteTest",
+                                                           data => data.Options.Options["key'1"],
+                                                           data => data,
+                                                           true,
+                                                           0,
+                                                           10,
+                                                           CancellationToken.None)
+                                           .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+      Assert.That(tasks.Single()
+                       .TaskId,
+                  Is.EqualTo("TaskWithQuotedKey"));
+    }
+  }
+
+  // --- Tests for fixes applied to the PostgreSQL adaptor ---
+
+  [Test]
+  public async Task FindTasksAsyncShouldReturnRemainingDataDependencies()
+  {
+    if (RunTests)
+    {
+      // Fix #1: FindTasksAsync was returning TaskData with RemainingDataDependencies always empty.
+      // taskSubmittedData_ has DataDependencies=["dependency1"] and PayloadId="PayloadId",
+      // so RemainingDataDependencies should contain both keys.
+      var tasks = await TaskTable!.FindTasksAsync(data => data.TaskId == "TaskSubmittedId",
+                                                  data => data,
+                                                  CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.That(tasks.Single()
+                       .RemainingDataDependencies,
+                  Does.ContainKey("dependency1"));
+    }
+  }
+
+  [Test]
+  public async Task RemoveRemainingDataDependenciesPartialShouldNotBeReady()
+  {
+    if (RunTests)
+    {
+      // Fix #2: verify that a task with 2 remaining dependencies is not "ready" after removing
+      // only one, and becomes ready only after both are removed.
+      var taskId = Guid.NewGuid()
+                       .ToString();
+      const string dep1      = "depA";
+      const string dep2      = "depB";
+      const string payloadId = "payloadForPartialTest";
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionId",
+                                                  taskId,
+                                                  "",
+                                                  "",
+                                                  payloadId,
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    dep1,
+                                                    dep2,
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Creating,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      // Remove only dep1 — dep2 and payloadId are still remaining.
+      var notReady = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                          {
+                                                                            taskId,
+                                                                          },
+                                                                          new[]
+                                                                          {
+                                                                            dep1,
+                                                                          },
+                                                                          td => td.TaskId,
+                                                                          CancellationToken.None)
+                                    .ToListAsync(CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(notReady,
+                  Is.Empty,
+                  "Task should not be ready when only one of its dependencies has been removed");
+
+      // Remove the remaining dep2 and payloadId — task is now ready.
+      var ready = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                       {
+                                                                         taskId,
+                                                                       },
+                                                                       new[]
+                                                                       {
+                                                                         dep2,
+                                                                         payloadId,
+                                                                       },
+                                                                       td => td.TaskId,
+                                                                       CancellationToken.None)
+                                 .ToListAsync(CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+      Assert.That(ready,
+                  Is.EqualTo(new[]
+                             {
+                               taskId,
+                             }));
+    }
+  }
+
+  [Test]
   public async Task ListApplicationFromTasksNoSortShouldSucceed()
   {
     if (RunTests)
@@ -2280,6 +2590,26 @@ public class TaskTableTestBase
                                               .ConfigureAwait(false);
 
       Assert.That(applications,
+                  Is.Not.Empty);
+    }
+  }
+
+  [Test]
+  public async Task FindTasksAsyncEqualsNullShouldUseIsNullInSql()
+  {
+    if (RunTests)
+    {
+      // Fix #10: .Equals(null) on a nullable field was previously translated to (col = NULL)
+      // which is never true in SQL. After the fix it translates to (col IS NULL).
+      // All fixture tasks are created via the short constructor that sets StartDate = null,
+      // so filtering on StartDate.Equals(null) must return at least the fixture tasks.
+      var tasks = await TaskTable!.FindTasksAsync(data => data.StartDate.Equals(null),
+                                                  data => data.TaskId,
+                                                  CancellationToken.None)
+                                  .ToListAsync()
+                                  .ConfigureAwait(false);
+
+      Assert.That(tasks,
                   Is.Not.Empty);
     }
   }

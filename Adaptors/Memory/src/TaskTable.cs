@@ -219,9 +219,13 @@ public class TaskTable : ITaskTable
 
     var newTaskData = taskId2TaskData_[taskId] = new TaskData(taskData,
                                                               updates);
-    return Task.FromResult<TaskData?>(before
-                                        ? taskData
-                                        : newTaskData);
+    var result = before
+                   ? taskData
+                   : newTaskData;
+    return Task.FromResult<TaskData?>(result with
+                                      {
+                                        RemainingDataDependencies = new Dictionary<string, bool>(),
+                                      });
   }
 
   /// <inheritdoc />

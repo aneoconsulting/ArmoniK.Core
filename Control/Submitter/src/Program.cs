@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
+using ArmoniK.Core.Adapters.PostgresSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -53,6 +54,8 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 using Serilog;
+
+using ServiceCollectionExt = ArmoniK.Core.Adapters.PostgresSQL.ServiceCollectionExt;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -89,12 +92,16 @@ public static class Program
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
       builder.Services.AddLogging(logger.Configure)
-             .AddHttpClient()
-             .AddMongoComponents(builder.Configuration,
-                                 logger.GetLogger())
-             .AddAdapter(builder.Configuration,
-                         nameof(Components.QueueAdaptorSettings),
-                         logger.GetLogger())
+             .AddHttpClient();
+
+      builder.Services.AddPostgresComponents(builder.Configuration,
+                                             logger.GetLogger());
+      builder.Services.AddMongoComponents(builder.Configuration,
+                                          logger.GetLogger());
+
+      builder.Services.AddAdapter(builder.Configuration,
+                                  nameof(Components.QueueAdaptorSettings),
+                                  logger.GetLogger())
              .AddAdapter(builder.Configuration,
                          nameof(Components.ObjectStorageAdaptorSettings),
                          logger.GetLogger())
@@ -161,7 +168,10 @@ public static class Program
                          });
       }
 
-      builder.Services.AddClientSubmitterAuthenticationStorage(builder.Configuration);
+      ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
+                                                                   builder.Configuration);
+      Adapters.MongoDB.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
+                                                                                    builder.Configuration);
       builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
                                                       out var authCache);
 

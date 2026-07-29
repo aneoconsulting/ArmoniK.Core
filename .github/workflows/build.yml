@@ -48,6 +48,7 @@ jobs:
         projects:
           - Common/tests
           - Adaptors/MongoDB/tests
+          - Adaptors/PostgresSQL/tests
           - Adaptors/Memory/tests
           - Adaptors/S3/tests
           - Adaptors/Gcs/tests
@@ -220,6 +221,7 @@ jobs:
           - Adaptors/Redis/tests
           - Common/tests
           - Adaptors/MongoDB/tests
+          - Adaptors/PostgresSQL/tests
           - Adaptors/Memory/tests
           - Adaptors/Embed/tests
       fail-fast: false
@@ -394,7 +396,7 @@ jobs:
     env:
       VERSION: ${{ needs.versionning.outputs.version }}
     runs-on: ubuntu-latest
-    name: Stream ${{ matrix.queue }} ${{ matrix.log-level }}
+    name: Stream ${{ matrix.queue }} ${{ matrix.log-level }} ${{ matrix.database }}
     strategy:
       fail-fast: false
       matrix:
@@ -407,6 +409,9 @@ jobs:
         log-level:
           - Information
           - Verbose
+        database:
+          - mongo
+          - postgresql
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
@@ -441,7 +446,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} worker=stream deploy
+            just log_level=${{ matrix.log-level }} tag=${VERSION} queue=${{ matrix.queue }} database=${{ matrix.database }} worker=stream deploy
           sleep 10
 
       - name: Dotnet Restore
@@ -466,7 +471,7 @@ jobs:
         uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
         if: ${{ success() || failure() }}
         with:
-          name: Test - ${{ matrix.queue }} x ${{ matrix.log-level }}
+          name: Test - ${{ matrix.queue }} x ${{ matrix.log-level }} x ${{ matrix.database }}
           path: ./Tests/Stream/Client/TestResults/test-results.trx
           reporter: dotnet-trx
           only-summary: ${{ env.REPOSITORY != github.repository }}
@@ -481,8 +486,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}.json.gz"
-          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-monitor.tar.gz"
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.database }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.database }}-monitor.tar.gz"
       - name: Collect docker container logs
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
         with:
@@ -497,16 +502,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-container-logs.tar.gz"
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.database }}-container-logs.tar.gz"
       - name: Export and upload database
-        if: ${{ always() && env.REPOSITORY == github.repository }}
+        if: ${{ always() && env.REPOSITORY == github.repository && matrix.database == 'mongo' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-database.tar.gz"
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/stream-${{ matrix.queue }}-${{ matrix.log-level }}-${{ matrix.database }}-database.tar.gz"
 
   testHtcMockDC:
     needs:
@@ -554,7 +559,11 @@ jobs:
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: false }
 
-    name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.socket_type }} ${{ matrix.target.cinit }}
+          - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true, database: postgresql }
+          - { queue: rabbitmq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true, database: postgresql }
+          - { queue: nats,     object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true, database: postgresql }
+
+    name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.socket_type }} ${{ matrix.target.cinit }} ${{ matrix.target.database || 'mongo' }}
     steps:
       - name: Checkout
         uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
@@ -590,7 +599,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=${{ matrix.target.log-level }} tag=${VERSION} queue=${{ matrix.target.queue }} object=${{ matrix.target.object }} socket_type=${{ matrix.target.socket_type }} cinit=${{ matrix.target.cinit }} worker=htcmock deploy
+            just log_level=${{ matrix.target.log-level }} tag=${VERSION} queue=${{ matrix.target.queue }} object=${{ matrix.target.object }} socket_type=${{ matrix.target.socket_type }} cinit=${{ matrix.target.cinit }} database=${{ matrix.target.database || 'mongo' }} worker=htcmock deploy
           sleep 10
 
       - name: Print And Time Metrics
@@ -701,8 +710,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}.json.gz"
-          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-monitor.tar.gz"
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-${{ matrix.target.database || 'mongo' }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-${{ matrix.target.database || 'mongo' }}-monitor.tar.gz"
 
       - name: Collect docker container logs
         if: ${{ always() }}
@@ -719,16 +728,16 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-container-logs.tar.gz"
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-${{ matrix.target.database || 'mongo' }}-container-logs.tar.gz"
       - name: Export and upload database
-        if: ${{ always() && env.REPOSITORY == github.repository }}
+        if: ${{ always() && env.REPOSITORY == github.repository && (matrix.target.database == '' || matrix.target.database == 'mongo') }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-database.tar.gz"
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-${{ matrix.target.database || 'mongo' }}-database.tar.gz"
 
   testWindowsDocker:
     needs:

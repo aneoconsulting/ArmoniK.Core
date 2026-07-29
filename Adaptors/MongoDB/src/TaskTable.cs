@@ -466,7 +466,12 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                     updates,
                     task);
 
-    return task;
+    return task is null
+             ? null
+             : task with
+               {
+                 RemainingDataDependencies = new Dictionary<string, bool>(),
+               };
   }
 
   /// <inheritdoc />

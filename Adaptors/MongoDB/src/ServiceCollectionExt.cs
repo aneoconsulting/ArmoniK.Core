@@ -223,6 +223,9 @@ public static class ServiceCollectionExt
 
     var components = configuration.GetSection(Components.SettingSection);
 
+    var usesMongo = components["TableStorage"]                           == "ArmoniK.Adapters.MongoDB.TableStorage" ||
+                    components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable";
+
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
       services.AddInitializedOption<TableStorage>(configuration,
@@ -233,6 +236,11 @@ public static class ServiceCollectionExt
               .AddSingleton<IPartitionTable, PartitionTable>()
               .AddSingleton<ITaskWatcher, TaskWatcher>()
               .AddSingleton<IResultWatcher, ResultWatcher>();
+    }
+
+    if (!usesMongo)
+    {
+      return services;
     }
 
     services.TryAddSingleton(_ => configuration.GetMongoOptions(logger));

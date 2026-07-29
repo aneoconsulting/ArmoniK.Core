@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -607,6 +608,35 @@ public class ResultTableTestBase
   }
 
   [Test]
+  public async Task ListResultsAsyncShouldNotReturnDependentTasks()
+  {
+    if (RunTests)
+    {
+      // Confirm the fixture genuinely has dependents stored, via a method known to load them.
+      var seeded = await ResultTable!.GetResult("ResultIsCompletedWithDependents",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.That(seeded.DependentTasks,
+                  Is.Not.Empty);
+
+      // DependentTasks is not read off ListResultsAsync results by any caller (they go
+      // through ToGrpcResultRaw, which never reads it), so it must come back empty here
+      // regardless of what's actually stored.
+      var res = (await ResultTable.ListResultsAsync(result => result.ResultId == "ResultIsCompletedWithDependents",
+                                                    result => result.ResultId,
+                                                    true,
+                                                    0,
+                                                    1,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false)).results;
+
+      Assert.That(res.Single()
+                     .DependentTasks,
+                  Is.Empty);
+    }
+  }
+
+  [Test]
   public async Task GetDependentsShouldSucceed()
   {
     if (RunTests)
@@ -833,6 +863,203 @@ public class ResultTableTestBase
                                                     id,
                                                     CancellationToken.None),
                   Throws.InstanceOf<ResultNotFoundException>());
+    }
+  }
+
+  [Test]
+  public async Task UpdateOneResultShouldReturnDataBeforeUpdate()
+  {
+    if (RunTests)
+    {
+      var before = await ResultTable!.UpdateOneResult("ResultIsCreated",
+                                                      new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                         ResultStatus.Completed),
+                                                      CancellationToken.None)
+                                     .ConfigureAwait(false);
+
+      Assert.That(before.Status,
+                  Is.EqualTo(ResultStatus.Created));
+
+      var after = await ResultTable!.GetResult("ResultIsCreated",
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
+      Assert.That(after.Status,
+                  Is.EqualTo(ResultStatus.Completed));
+    }
+  }
+
+  [Test]
+  public async Task UpdateOneResultShouldNotReturnDependentTasks()
+  {
+    if (RunTests)
+    {
+      // Confirm the fixture genuinely has dependents stored, via a method known to load them.
+      var seeded = await ResultTable!.GetResult("ResultIsCompletedWithDependents",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.That(seeded.DependentTasks,
+                  Is.Not.Empty);
+
+      // DependentTasks is not read off UpdateOneResult's result by any caller (CompleteResult
+      // goes through ToGrpcResultRaw, which never reads it), so it must come back empty here
+      // regardless of what's actually stored.
+      var before = await ResultTable.UpdateOneResult("ResultIsCompletedWithDependents",
+                                                     new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                        ResultStatus.Aborted),
+                                                     CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(before.DependentTasks,
+                  Is.Empty);
+    }
+  }
+
+  [Test]
+  public async Task BulkUpdateResultsShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var matched = await ResultTable!.BulkUpdateResults(new (Expression<Func<Result, bool>> filter, UpdateDefinition<Result> updates)[]
+                                                         {
+                                                           (r => r.ResultId == "ResultIsCreated", new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                                                                     ResultStatus.Completed)),
+                                                           (r => r.ResultId == "ResultIsCreated2", new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                                                                      ResultStatus.Aborted)),
+                                                         },
+                                                         CancellationToken.None)
+                                      .ConfigureAwait(false);
+
+      Assert.That(matched,
+                  Is.EqualTo(2));
+
+      var first = await ResultTable!.GetResult("ResultIsCreated",
+                                               CancellationToken.None)
+                                    .ConfigureAwait(false);
+      Assert.That(first.Status,
+                  Is.EqualTo(ResultStatus.Completed));
+
+      var second = await ResultTable!.GetResult("ResultIsCreated2",
+                                                CancellationToken.None)
+                                     .ConfigureAwait(false);
+      Assert.That(second.Status,
+                  Is.EqualTo(ResultStatus.Aborted));
+    }
+  }
+
+  [Test]
+  public async Task UpdateManyResultsWithIsNullOrEmptyFilterShouldSucceed()
+  {
+    if (RunTests)
+    {
+      var sessionId = Guid.NewGuid()
+                          .ToString();
+
+      await ResultTable!.Create(new[]
+                                {
+                                  new Result(sessionId,
+                                             "ResultEmptyOwner",
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.Today,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                  new Result(sessionId,
+                                             "ResultWithOwner",
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "SomeTask",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.Today,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                })
+                        .ConfigureAwait(false);
+
+      var count = await ResultTable!.UpdateManyResults(r => r.SessionId == sessionId && string.IsNullOrEmpty(r.OwnerTaskId),
+                                                       new UpdateDefinition<Result>().Set(r => r.Status,
+                                                                                          ResultStatus.Aborted),
+                                                       CancellationToken.None)
+                                    .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+
+      var updated = await ResultTable!.GetResult("ResultEmptyOwner",
+                                                 CancellationToken.None)
+                                      .ConfigureAwait(false);
+      Assert.That(updated.Status,
+                  Is.EqualTo(ResultStatus.Aborted));
+
+      var untouched = await ResultTable!.GetResult("ResultWithOwner",
+                                                   CancellationToken.None)
+                                        .ConfigureAwait(false);
+      Assert.That(untouched.Status,
+                  Is.EqualTo(ResultStatus.Created));
+    }
+  }
+
+  [Test]
+  public async Task ListResultsAsyncStartsWithSpecialCharsShouldMatchLiterally()
+  {
+    if (RunTests)
+    {
+      // "result_1" has a literal underscore; "resultA1" has 'A' in the same position.
+      // StartsWith("result_") must match only the underscore result.
+      // Without LIKE-escaping the underscore becomes a wildcard and resultA1 would also match.
+      await ResultTable!.Create(new[]
+                                {
+                                  new Result("SessionIdLikeTest",
+                                             "result_1",
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "OwnerId",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.Today,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                  new Result("SessionIdLikeTest",
+                                             "resultA1",
+                                             "",
+                                             "CreatedBy",
+                                             "CompletedBy",
+                                             "OwnerId",
+                                             ResultStatus.Created,
+                                             new List<string>(),
+                                             DateTime.Today,
+                                             null,
+                                             0,
+                                             Array.Empty<byte>(),
+                                             false),
+                                })
+                        .ConfigureAwait(false);
+
+      var (results, count) = await ResultTable!.ListResultsAsync(r => r.ResultId.StartsWith("result_"),
+                                                                 r => r.ResultId,
+                                                                 true,
+                                                                 0,
+                                                                 10,
+                                                                 CancellationToken.None)
+                                               .ConfigureAwait(false);
+
+      Assert.That(count,
+                  Is.EqualTo(1));
+      Assert.That(results.Single()
+                         .ResultId,
+                  Is.EqualTo("result_1"));
     }
   }
 }
