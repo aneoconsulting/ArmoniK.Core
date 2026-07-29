@@ -754,6 +754,34 @@ jobs:
           repository: ${{ env.REPOSITORY }}
           ref: ${{ env.REFERENCE }}
 
+      # Windows runners intermittently boot with the Docker Engine service stopped: on boot from the
+      # saved image, Docker tries to create its Hyper-V virtual switch and sometimes fails with
+      # "hnsCall failed in Win32: The system cannot find the file specified. (0x2)", after which the
+      # service stays Stopped. Waiting for the daemon does not help since nothing will restart it,
+      # but starting the service manually is a reliable fix.
+      # https://github.com/actions/runner-images/issues/13729
+      - name: Ensure the Docker daemon is running
+        run: |
+          Get-Service -Name "*docker*" |
+            Where-Object { $_.Status -ne "Running" } |
+            ForEach-Object {
+              Write-Host "Service '$($_.Name)' is $($_.Status), starting it"
+              Start-Service -Name $_.Name -ErrorAction SilentlyContinue
+            }
+
+          foreach ($attempt in 1..30) {
+            docker info *> $null
+            if ($LASTEXITCODE -eq 0) {
+              Write-Host "Docker daemon ready after $attempt attempt(s)"
+              exit 0
+            }
+            Start-Sleep -Seconds 2
+          }
+
+          Write-Host "::error::Docker daemon did not become available"
+          Get-Service -Name "*docker*" | Format-Table -AutoSize
+          exit 1
+
       - name: Docker networks
         run : docker network ls
 
