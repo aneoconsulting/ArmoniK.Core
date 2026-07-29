@@ -56,8 +56,10 @@ public class RowMapperTests
   {
     var source = StripCommentLines(ReadRowMapperSource());
 
+    // Matched on the parameter type alone: some of these methods take an extra optional argument,
+    // and the formatter pads the parameter name to align it.
     var starts = Sections.Select(section => (section.Table, Index: RequireIndex(source,
-                                                                                $" {section.Method}(NpgsqlDataReader reader)")))
+                                                                                $" {section.Method}(NpgsqlDataReader")))
                          .ToList();
     var helpersIndex = RequireIndex(source,
                                     HelpersBoundary);

@@ -32,69 +32,105 @@ namespace ArmoniK.Core.Adapters.PostgresSQL.Common;
 public static class RowMapper
 {
   /// <summary>
-  ///   Map a data reader row to a TaskData record
+  ///   Map a data reader row to a TaskData record, defaulting any field whose column is not present in
+  ///   <paramref name="columns" />
   /// </summary>
   /// <param name="reader">The data reader</param>
+  /// <param name="columns">
+  ///   Columns present in the reader's result set, or null if the full row (every column) is present
+  /// </param>
   /// <returns>The TaskData record</returns>
-  public static TaskData MapToTaskData(NpgsqlDataReader reader)
+  public static TaskData MapToTaskData(NpgsqlDataReader      reader,
+                                       IReadOnlySet<string>? columns = null)
   {
-    var options = new TaskOptions(DeserializeJsonDict(reader.GetString(reader.GetOrdinal("options_options"))),
-                                  TimeSpan.FromTicks(reader.GetInt64(reader.GetOrdinal("options_max_duration"))),
-                                  reader.GetInt32(reader.GetOrdinal("options_max_retries")),
-                                  reader.GetInt32(reader.GetOrdinal("options_priority")),
-                                  reader.GetString(reader.GetOrdinal("options_partition_id")),
-                                  reader.GetString(reader.GetOrdinal("options_app_name")),
-                                  reader.GetString(reader.GetOrdinal("options_app_version")),
-                                  reader.GetString(reader.GetOrdinal("options_app_namespace")),
-                                  reader.GetString(reader.GetOrdinal("options_app_service")),
-                                  reader.GetString(reader.GetOrdinal("options_engine_type")));
+    bool Has(string column)
+      => columns is null || columns.Contains(column);
 
-    var output = new Output((OutputStatus)reader.GetInt32(reader.GetOrdinal("output_status")),
-                            reader.GetString(reader.GetOrdinal("output_error")));
+    string Str(string column)
+      => Has(column)
+           ? reader.GetString(reader.GetOrdinal(column))
+           : "";
 
-    return new TaskData(reader.GetString(reader.GetOrdinal("session_id")),
-                        reader.GetString(reader.GetOrdinal("task_id")),
-                        reader.GetString(reader.GetOrdinal("owner_pod_id")),
-                        reader.GetString(reader.GetOrdinal("owner_pod_name")),
-                        reader.GetString(reader.GetOrdinal("payload_id")),
-                        GetStringArray(reader,
-                                       "parent_task_ids"),
-                        GetStringArray(reader,
-                                       "data_dependencies"),
+    int Int(string column)
+      => Has(column)
+           ? reader.GetInt32(reader.GetOrdinal(column))
+           : 0;
+
+    IDictionary<string, string> JsonDict(string column)
+      => Has(column)
+           ? DeserializeJsonDict(reader.GetString(reader.GetOrdinal(column)))
+           : new Dictionary<string, string>();
+
+    TimeSpan TicksDuration(string column)
+      => Has(column)
+           ? TimeSpan.FromTicks(reader.GetInt64(reader.GetOrdinal(column)))
+           : TimeSpan.Zero;
+
+    IList<string> StrArray(string column)
+      => Has(column)
+           ? GetStringArray(reader,
+                            column)
+           : Array.Empty<string>();
+
+    DateTime UtcDate(string column)
+      => Has(column)
+           ? GetUtcDateTime(reader,
+                            reader.GetOrdinal(column))
+           : default;
+
+    DateTime? NullableDate(string column)
+      => Has(column)
+           ? GetNullableDateTime(reader,
+                                 column)
+           : null;
+
+    TimeSpan? NullableSpan(string column)
+      => Has(column)
+           ? GetNullableTimeSpan(reader,
+                                 column)
+           : null;
+
+    var options = new TaskOptions(JsonDict("options_options"),
+                                  TicksDuration("options_max_duration"),
+                                  Int("options_max_retries"),
+                                  Int("options_priority"),
+                                  Str("options_partition_id"),
+                                  Str("options_app_name"),
+                                  Str("options_app_version"),
+                                  Str("options_app_namespace"),
+                                  Str("options_app_service"),
+                                  Str("options_engine_type"));
+
+    var output = new Output((OutputStatus)Int("output_status"),
+                            Str("output_error"));
+
+    return new TaskData(Str("session_id"),
+                        Str("task_id"),
+                        Str("owner_pod_id"),
+                        Str("owner_pod_name"),
+                        Str("payload_id"),
+                        StrArray("parent_task_ids"),
+                        StrArray("data_dependencies"),
                         new Dictionary<string, bool>(), // RemainingDataDependencies loaded separately
-                        GetStringArray(reader,
-                                       "expected_output_ids"),
-                        reader.GetString(reader.GetOrdinal("initial_task_id")),
-                        reader.GetString(reader.GetOrdinal("created_by")),
-                        GetStringArray(reader,
-                                       "retry_of_ids"),
-                        (TaskStatus)reader.GetInt32(reader.GetOrdinal("status")),
-                        reader.GetString(reader.GetOrdinal("status_message")),
+                        StrArray("expected_output_ids"),
+                        Str("initial_task_id"),
+                        Str("created_by"),
+                        StrArray("retry_of_ids"),
+                        (TaskStatus)Int("status"),
+                        Str("status_message"),
                         options,
-                        GetUtcDateTime(reader,
-                                       reader.GetOrdinal("creation_date")),
-                        GetNullableDateTime(reader,
-                                            "submitted_date"),
-                        GetNullableDateTime(reader,
-                                            "start_date"),
-                        GetNullableDateTime(reader,
-                                            "end_date"),
-                        GetNullableDateTime(reader,
-                                            "reception_date"),
-                        GetNullableDateTime(reader,
-                                            "acquisition_date"),
-                        GetNullableDateTime(reader,
-                                            "processed_date"),
-                        GetNullableDateTime(reader,
-                                            "fetched_date"),
-                        GetNullableDateTime(reader,
-                                            "pod_ttl"),
-                        GetNullableTimeSpan(reader,
-                                            "processing_to_end_duration"),
-                        GetNullableTimeSpan(reader,
-                                            "creation_to_end_duration"),
-                        GetNullableTimeSpan(reader,
-                                            "received_to_end_duration"),
+                        UtcDate("creation_date"),
+                        NullableDate("submitted_date"),
+                        NullableDate("start_date"),
+                        NullableDate("end_date"),
+                        NullableDate("reception_date"),
+                        NullableDate("acquisition_date"),
+                        NullableDate("processed_date"),
+                        NullableDate("fetched_date"),
+                        NullableDate("pod_ttl"),
+                        NullableSpan("processing_to_end_duration"),
+                        NullableSpan("creation_to_end_duration"),
+                        NullableSpan("received_to_end_duration"),
                         output);
   }
 
@@ -140,27 +176,70 @@ public static class RowMapper
   }
 
   /// <summary>
-  ///   Map a data reader row to a Result record
+  ///   Map a data reader row to a Result record, defaulting any field whose column is not present in
+  ///   <paramref name="columns" />
   /// </summary>
   /// <param name="reader">The data reader</param>
+  /// <param name="columns">
+  ///   Columns present in the reader's result set, or null if the full row (every column) is present
+  /// </param>
   /// <returns>The Result record</returns>
-  public static Result MapToResult(NpgsqlDataReader reader)
-    => new(reader.GetString(reader.GetOrdinal("session_id")),
-           reader.GetString(reader.GetOrdinal("result_id")),
-           reader.GetString(reader.GetOrdinal("name")),
-           reader.GetString(reader.GetOrdinal("created_by")),
-           reader.GetString(reader.GetOrdinal("completed_by")),
-           reader.GetString(reader.GetOrdinal("owner_task_id")),
-           (ResultStatus)reader.GetInt32(reader.GetOrdinal("status")),
-           new List<string>(), // DependentTasks loaded separately
-           GetUtcDateTime(reader,
-                          reader.GetOrdinal("creation_date")),
-           GetNullableDateTime(reader,
-                               "completion_date"),
-           reader.GetInt64(reader.GetOrdinal("size")),
-           GetByteArray(reader,
-                        "opaque_id"),
-           reader.GetBoolean(reader.GetOrdinal("manual_deletion")));
+  public static Result MapToResult(NpgsqlDataReader      reader,
+                                   IReadOnlySet<string>? columns = null)
+  {
+    bool Has(string column)
+      => columns is null || columns.Contains(column);
+
+    string Str(string column)
+      => Has(column)
+           ? reader.GetString(reader.GetOrdinal(column))
+           : "";
+
+    int Int(string column)
+      => Has(column)
+           ? reader.GetInt32(reader.GetOrdinal(column))
+           : 0;
+
+    long Long(string column)
+      => Has(column)
+           ? reader.GetInt64(reader.GetOrdinal(column))
+           : 0;
+
+    bool Bool(string column)
+      => Has(column) && reader.GetBoolean(reader.GetOrdinal(column));
+
+    byte[] ByteArray(string column)
+      => Has(column)
+           ? GetByteArray(reader,
+                          column)
+           : Array.Empty<byte>();
+
+    DateTime UtcDate(string column)
+      => Has(column)
+           ? GetUtcDateTime(reader,
+                            reader.GetOrdinal(column))
+           : default;
+
+    DateTime? NullableDate(string column)
+      => Has(column)
+           ? GetNullableDateTime(reader,
+                                 column)
+           : null;
+
+    return new Result(Str("session_id"),
+                      Str("result_id"),
+                      Str("name"),
+                      Str("created_by"),
+                      Str("completed_by"),
+                      Str("owner_task_id"),
+                      (ResultStatus)Int("status"),
+                      new List<string>(), // DependentTasks loaded separately
+                      UtcDate("creation_date"),
+                      NullableDate("completion_date"),
+                      Long("size"),
+                      ByteArray("opaque_id"),
+                      Bool("manual_deletion"));
+  }
 
   /// <summary>
   ///   Map a data reader row to a PartitionData record
