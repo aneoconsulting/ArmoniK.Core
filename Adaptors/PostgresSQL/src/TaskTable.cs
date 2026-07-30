@@ -376,11 +376,13 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                                               cancellationToken)
                            .ConfigureAwait(false);
 
-      rawTasks = rawTasks.Select(taskData => taskData with
-                                             {
-                                               RemainingDataDependencies = depsByTaskId[taskData.TaskId],
-                                             })
-                         .ToList();
+      for (var i = 0; i < rawTasks.Count; i++)
+      {
+        rawTasks[i] = rawTasks[i] with
+                      {
+                        RemainingDataDependencies = depsByTaskId[rawTasks[i].TaskId],
+                      };
+      }
     }
 
     var compiled = selector.Compile();
