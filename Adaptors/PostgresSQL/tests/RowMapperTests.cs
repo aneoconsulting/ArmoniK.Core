@@ -37,9 +37,8 @@ public class RowMapperTests
   public void LoadSchema()
     => schemaColumns_ = MigrationSchemaReader.ParseSchema(MigrationSchemaReader.ReadMigrationScript());
 
-  // Each mapping method reads columns from exactly one table; the source is sliced at each
-  // method's start (and at the point where the private per-value helpers begin) to attribute
-  // every column literal found in between to the right table.
+  // Each mapping method reads columns from exactly one table, so every column literal in its body
+  // is attributed to that table.
   private static readonly (string Method, string Table)[] Sections =
   {
     ("MapToTaskData", "tasks"),
@@ -48,7 +47,15 @@ public class RowMapperTests
     ("MapToPartitionData", "partitions"),
   };
 
-  private const string HelpersBoundary = "private static IList<string> GetStringArray";
+  // A method's body is bounded by the start of the next class member, so a slice can never pick up
+  // literals belonging to another member - RowMapper also holds the selector analysis, whose
+  // "Count" is not a column name - regardless of the order the formatter arranges members in.
+  private static readonly string[] MemberStarts =
+  {
+    "\n  public ",
+    "\n  private ",
+    "\n  internal ",
+  };
 
   private static Dictionary<string, HashSet<string>> schemaColumns_ = null!;
 
@@ -56,27 +63,24 @@ public class RowMapperTests
   {
     var source = StripCommentLines(ReadRowMapperSource());
 
-    // Matched on the parameter type alone: some of these methods take an extra optional argument,
-    // and the formatter pads the parameter name to align it.
-    var starts = Sections.Select(section => (section.Table, Index: RequireIndex(source,
-                                                                                $" {section.Method}(NpgsqlDataReader")))
-                         .ToList();
-    var helpersIndex = RequireIndex(source,
-                                    HelpersBoundary);
-
-    for (var i = 0; i < starts.Count; i++)
+    foreach (var (method, table) in Sections)
     {
-      var start = starts[i].Index;
-      var stop = i + 1 < starts.Count
-                   ? starts[i + 1].Index
-                   : helpersIndex;
+      // Matched on the parameter type alone, since the formatter pads the parameter name to align it.
+      var start = RequireIndex(source,
+                               $" {method}(NpgsqlDataReader");
+      var stop = MemberStarts.Select(marker => source.IndexOf(marker,
+                                                              start + 1,
+                                                              StringComparison.Ordinal))
+                             .Where(index => index >= 0)
+                             .DefaultIfEmpty(source.Length)
+                             .Min();
       var body = source[start..stop];
 
       foreach (Match match in Regex.Matches(body,
                                             "\"([a-zA-Z_][a-zA-Z0-9_]*)\""))
       {
-        yield return new TestCaseData(starts[i].Table,
-                                      match.Groups[1].Value).SetName($"{starts[i].Table}.{match.Groups[1].Value}");
+        yield return new TestCaseData(table,
+                                      match.Groups[1].Value).SetName($"{table}.{match.Groups[1].Value}");
       }
     }
   }
