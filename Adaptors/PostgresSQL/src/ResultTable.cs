@@ -274,7 +274,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
       throw new ResultNotFoundException($"Key '{key}' not found");
     }
 
-    var result = RowMapper.MapToResult(reader);
+    var result = RowMapper.FullRow.MapToResult(reader);
     await reader.CloseAsync()
                 .ConfigureAwait(false);
 
@@ -294,8 +294,12 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
+    // Project only the columns the selector needs, when we can determine them, instead of
+    // always fetching the whole row.
+    var mapper = RowMapper.For(convertor);
+
     await using var cmd = connection.CreateCommand();
-    cmd.CommandText = $"SELECT * FROM results WHERE {whereSql}";
+    cmd.CommandText = $"SELECT {mapper.SelectList} FROM results WHERE {whereSql}";
     SqlHelper.AddExpressionParameters(cmd,
                                       whereParams);
 
@@ -306,22 +310,31 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
       while (await reader.ReadAsync(cancellationToken)
                          .ConfigureAwait(false))
       {
-        rawResults.Add(RowMapper.MapToResult(reader));
+        rawResults.Add(mapper.MapToResult(reader));
       }
     }
 
-    var dependentTasksByResultId = await LoadDependentTasksBatch(connection,
-                                                                 rawResults,
-                                                                 cancellationToken)
-                                     .ConfigureAwait(false);
+    // DependentTasks lives in a separate join table; only load it when the selector
+    // explicitly reads it (or, for the identity/unrecognized-shape fallback, always -
+    // TaskLifeCycleHelper.ResolveDependencies relies on it being populated in that case).
+    if (mapper.NeedsSeparatelyStoredData)
+    {
+      var dependentTasksByResultId = await LoadDependentTasksBatch(connection,
+                                                                   rawResults,
+                                                                   cancellationToken)
+                                       .ConfigureAwait(false);
+
+      rawResults = rawResults.Select(result => result with
+                                               {
+                                                 DependentTasks = dependentTasksByResultId[result.ResultId],
+                                               })
+                             .ToList();
+    }
 
     var compiled = convertor.Compile();
     foreach (var result in rawResults)
     {
-      yield return compiled.Invoke(result with
-                                   {
-                                     DependentTasks = dependentTasksByResultId[result.ResultId],
-                                   });
+      yield return compiled.Invoke(result);
     }
   }
 
@@ -377,7 +390,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
     while (await reader.ReadAsync(cancellationToken)
                        .ConfigureAwait(false))
     {
-      results.Add(RowMapper.MapToResult(reader));
+      results.Add(RowMapper.FullRow.MapToResult(reader));
     }
 
     await reader.CloseAsync()
@@ -474,7 +487,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
       throw new ResultNotFoundException($"Result not found {resultId}");
     }
 
-    var before = RowMapper.MapToResult(reader);
+    var before = RowMapper.FullRow.MapToResult(reader);
     await reader.CloseAsync()
                 .ConfigureAwait(false);
 

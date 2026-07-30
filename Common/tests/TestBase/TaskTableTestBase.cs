@@ -443,6 +443,23 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task ReadTaskAsyncShouldReturnRemainingDataDependenciesWhenProjected()
+  {
+    if (RunTests)
+    {
+      // When the selector explicitly projects RemainingDataDependencies, it must come back
+      // populated, not empty.
+      var result = await TaskTable!.ReadTaskAsync("TaskCreatingId",
+                                                  data => data.RemainingDataDependencies,
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.That(result,
+                  Does.ContainKey("dependency1"));
+    }
+  }
+
+  [Test]
   public async Task UpdateAllTaskStatusAsyncShouldSucceed()
   {
     if (RunTests)
@@ -2294,12 +2311,14 @@ public class TaskTableTestBase
   {
     if (RunTests)
     {
-      // Confirm the fixture genuinely has remaining dependencies stored, via a method
-      // known to load them.
+      // Confirm the fixture genuinely has remaining dependencies stored, via a selector that
+      // explicitly requests them (the identity-selector ReadTaskAsync convenience overload no
+      // longer loads them unless asked, same as UpdateOneTask/ListTasksAsync).
       var seeded = await TaskTable!.ReadTaskAsync("TaskCreatingId",
+                                                  data => data.RemainingDataDependencies,
                                                   CancellationToken.None)
                                    .ConfigureAwait(false);
-      Assert.That(seeded.RemainingDataDependencies,
+      Assert.That(seeded,
                   Is.Not.Empty);
 
       // RemainingDataDependencies is not read off UpdateOneTask's result by any caller
@@ -2318,6 +2337,28 @@ public class TaskTableTestBase
                   Is.Not.Null);
       Assert.That(before!.RemainingDataDependencies,
                   Is.Empty);
+    }
+  }
+
+  [Test]
+  public async Task ListTasksAsyncShouldReturnRemainingDataDependenciesWhenProjected()
+  {
+    if (RunTests)
+    {
+      // Mirrors UpdateOneTaskShouldNotReturnRemainingDataDependencies from the other side:
+      // when the selector explicitly projects RemainingDataDependencies, it must come back
+      // populated, not empty.
+      var (tasks, _) = await TaskTable!.ListTasksAsync(data => data.TaskId == "TaskCreatingId",
+                                                       data => data.TaskId,
+                                                       data => data.RemainingDataDependencies,
+                                                       false,
+                                                       0,
+                                                       10,
+                                                       CancellationToken.None)
+                                       .ConfigureAwait(false);
+
+      Assert.That(tasks.Single(),
+                  Does.ContainKey("dependency1"));
     }
   }
 

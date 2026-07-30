@@ -142,8 +142,12 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
+    // Project only the columns the selector needs, when we can determine them, instead of
+    // always fetching the whole row.
+    var mapper = RowMapper.For(selector);
+
     await using var cmd = connection.CreateCommand();
-    cmd.CommandText = "SELECT * FROM tasks WHERE task_id = @task_id";
+    cmd.CommandText = $"SELECT {mapper.SelectList} FROM tasks WHERE task_id = @task_id";
     cmd.Parameters.AddWithValue("task_id",
                                 taskId);
 
@@ -156,15 +160,19 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       throw new TaskNotFoundException($"Task '{taskId}' not found.");
     }
 
-    var taskData = RowMapper.MapToTaskData(reader);
+    var taskData = mapper.MapToTaskData(reader);
     await reader.CloseAsync()
                 .ConfigureAwait(false);
 
-    // Load remaining dependencies
-    taskData = await LoadRemainingDependencies(connection,
-                                               taskData,
-                                               cancellationToken)
-                 .ConfigureAwait(false);
+    // RemainingDataDependencies lives in a separate join table; only load it when the
+    // selector explicitly reads it.
+    if (mapper.NeedsSeparatelyStoredData)
+    {
+      taskData = await LoadRemainingDependencies(connection,
+                                                 taskData,
+                                                 cancellationToken)
+                   .ConfigureAwait(false);
+    }
 
     return selector.Compile()
                    .Invoke(taskData);
@@ -335,9 +343,12 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       return (Enumerable.Empty<T>(), totalCount);
     }
 
-    // Data query
+    // Data query: project only the columns the selector needs, when we can determine them,
+    // instead of always fetching the whole row.
+    var mapper = RowMapper.For(selector);
+
     await using var dataCmd = connection.CreateCommand();
-    dataCmd.CommandText = $"SELECT * FROM tasks WHERE {whereSql} ORDER BY {orderColumn} {orderDir} LIMIT @limit OFFSET @offset";
+    dataCmd.CommandText = $"SELECT {mapper.SelectList} FROM tasks WHERE {whereSql} ORDER BY {orderColumn} {orderDir} LIMIT @limit OFFSET @offset";
     SqlHelper.AddExpressionParameters(dataCmd,
                                       whereParams);
     dataCmd.Parameters.AddWithValue("limit",
@@ -352,7 +363,25 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       while (await reader.ReadAsync(cancellationToken)
                          .ConfigureAwait(false))
       {
-        rawTasks.Add(RowMapper.MapToTaskData(reader));
+        rawTasks.Add(mapper.MapToTaskData(reader));
+      }
+    }
+
+    // RemainingDataDependencies lives in a separate join table; only load it when the
+    // selector explicitly reads it.
+    if (mapper.NeedsSeparatelyStoredData)
+    {
+      var depsByTaskId = await LoadRemainingDependenciesBatch(connection,
+                                                              rawTasks,
+                                                              cancellationToken)
+                           .ConfigureAwait(false);
+
+      for (var i = 0; i < rawTasks.Count; i++)
+      {
+        rawTasks[i] = rawTasks[i] with
+                      {
+                        RemainingDataDependencies = depsByTaskId[rawTasks[i].TaskId],
+                      };
       }
     }
 
@@ -384,7 +413,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       while (await reader.ReadAsync(cancellationToken)
                          .ConfigureAwait(false))
       {
-        rawTasks.Add(RowMapper.MapToTaskData(reader));
+        rawTasks.Add(RowMapper.FullRow.MapToTaskData(reader));
       }
     }
 
@@ -458,7 +487,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
       return null;
     }
 
-    var result = RowMapper.MapToTaskData(reader);
+    var result = RowMapper.FullRow.MapToTaskData(reader);
     await reader.CloseAsync()
                 .ConfigureAwait(false);
 
@@ -721,7 +750,7 @@ WHERE t.task_id = ANY(@ready_task_ids)
       while (await reader.ReadAsync(cancellationToken)
                          .ConfigureAwait(false))
       {
-        result.Add(RowMapper.MapToTaskData(reader));
+        result.Add(RowMapper.FullRow.MapToTaskData(reader));
       }
     }
 

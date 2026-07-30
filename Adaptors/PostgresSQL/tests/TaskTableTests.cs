@@ -15,6 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Threading;
+using System.Threading.Tasks;
+
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
 
@@ -42,5 +45,25 @@ public class TaskTableTests : TaskTableTestBase
 
     TaskTable = provider.GetRequiredService<ITaskTable>();
     RunTests  = true;
+  }
+
+  [Test]
+  public async Task ReadTaskAsyncShouldNotReturnRemainingDataDependencies()
+  {
+    if (RunTests)
+    {
+      // Postgres-specific: RemainingDataDependencies lives in a separate join table, so
+      // ReadTaskAsync only loads it when the selector explicitly reads it, avoiding the join
+      // query otherwise (no production caller needs it through the identity selector, e.g.
+      // Pollster's TaskHandler, or through TaskDataMask projections). Memory/MongoDB always
+      // have it already in the stored object regardless of selector shape, so this contract
+      // does not hold there.
+      var result = await TaskTable!.ReadTaskAsync("TaskCreatingId",
+                                                  CancellationToken.None)
+                                   .ConfigureAwait(false);
+
+      Assert.That(result.RemainingDataDependencies,
+                  Is.Empty);
+    }
   }
 }

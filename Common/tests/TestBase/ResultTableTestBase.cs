@@ -655,6 +655,31 @@ public class ResultTableTestBase
   }
 
   [Test]
+  public async Task GetResultsShouldReturnDependentTasksWithIdentitySelector()
+  {
+    if (RunTests)
+    {
+      // TaskLifeCycleHelper.ResolveDependencies reads DependentTasks off results obtained via
+      // the identity selector and relies on it being genuinely populated to resolve task
+      // readiness, so unlike TaskData.RemainingDataDependencies, this must stay populated even
+      // when the selector doesn't explicitly project it.
+      var results = await ResultTable!.GetResults(result => result.ResultId == "ResultIsCompletedWithDependents",
+                                                  result => result,
+                                                  CancellationToken.None)
+                                      .ToListAsync()
+                                      .ConfigureAwait(false);
+
+      Assert.That(results.Single()
+                         .DependentTasks,
+                  Is.EquivalentTo(new List<string>
+                                  {
+                                    "Dependent1",
+                                    "Dependent2",
+                                  }));
+    }
+  }
+
+  [Test]
   public async Task GetEmptyDependentsShouldSucceed()
   {
     if (RunTests)
