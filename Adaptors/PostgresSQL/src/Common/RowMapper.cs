@@ -117,10 +117,12 @@ public sealed class RowMapper
                                     columns,
                                     ref needsSeparateData))
     {
-      // Full row needed. Whether the separately-stored field must still be loaded in this case
-      // depends on the entity type - see SeparatelyStoredFields.
+      // Full row needed. The separately-stored field is not a column, so falling back does not
+      // cover it: it still has to be loaded if the walk saw it projected before giving up on a
+      // later part of the selector. Failing that, whether to load it depends on the entity type -
+      // see SeparatelyStoredFields.
       return new RowMapper(null,
-                           separateField?.LoadOnFallback ?? false);
+                           needsSeparateData || (separateField?.LoadOnFallback ?? false));
     }
 
     // The join query correlates by id, so it must always be selected when needed.
