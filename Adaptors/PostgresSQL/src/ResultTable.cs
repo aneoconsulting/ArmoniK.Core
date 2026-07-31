@@ -346,57 +346,18 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                                                                                     int                               pageSize,
                                                                                     CancellationToken                 cancellationToken = default)
   {
-    var (whereSql, whereParams)    = ExpressionToSql<Result>.Translate(filter);
-    var (orderColumn, orderParams) = ExpressionToSql<Result>.TranslateOrderBy(orderField);
-    foreach (var (key, value) in orderParams)
-    {
-      whereParams[key] = value;
-    }
+    var (results, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
+                                                              "results",
+                                                              filter,
+                                                              orderField,
+                                                              ascOrder,
+                                                              page,
+                                                              pageSize,
+                                                              RowMapper.FullRow.MapToResult,
+                                                              cancellationToken)
+                                                .ConfigureAwait(false);
 
-    var orderDir = ascOrder
-                     ? "ASC"
-                     : "DESC";
-
-    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
-
-    // Count query
-    await using var countCmd = connection.CreateCommand();
-    countCmd.CommandText = $"SELECT COUNT(*) FROM results WHERE {whereSql}";
-    SqlHelper.AddExpressionParameters(countCmd,
-                                      whereParams);
-    var totalCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync(cancellationToken)
-                                                   .ConfigureAwait(false));
-
-    if (pageSize <= 0)
-    {
-      return (Enumerable.Empty<Result>(), totalCount);
-    }
-
-    // Data query
-    await using var dataCmd = connection.CreateCommand();
-    dataCmd.CommandText = $"SELECT * FROM results WHERE {whereSql} ORDER BY {orderColumn} {orderDir} LIMIT @limit OFFSET @offset";
-    SqlHelper.AddExpressionParameters(dataCmd,
-                                      whereParams);
-    dataCmd.Parameters.AddWithValue("limit",
-                                    pageSize);
-    dataCmd.Parameters.AddWithValue("offset",
-                                    (long)page * pageSize);
-
-    await using var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
-                                          .ConfigureAwait(false);
-
-    var results = new List<Result>();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
-    {
-      results.Add(RowMapper.FullRow.MapToResult(reader));
-    }
-
-    await reader.CloseAsync()
-                .ConfigureAwait(false);
-
-    return (results, totalCount);
+    return (results, Convert.ToInt32(totalCount));
   }
 
   /// <inheritdoc />

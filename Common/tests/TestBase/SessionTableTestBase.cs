@@ -845,4 +845,64 @@ public class SessionTableTestBase
                   Is.EqualTo("Filter_test"));
     }
   }
+
+  [Test]
+  public async Task ListSessionsAsyncOrderByTaskOptionShouldSucceed()
+  {
+    if (RunTests)
+    {
+      // Ordering on a task option, rather than on a column, is the only shape that makes the order-by
+      // contribute a parameter of its own. It is therefore the only way to notice a paginated read
+      // handing the wrong parameters to its count or to its page.
+      await SessionTable!.SetSessionDataAsync(new[]
+                                              {
+                                                "partition",
+                                              },
+                                              Options with
+                                              {
+                                                ApplicationName = "OrderByOption",
+                                                Options = new Dictionary<string, string>
+                                                          {
+                                                            {
+                                                              "sortkey", "b"
+                                                            },
+                                                          },
+                                              })
+                         .ConfigureAwait(false);
+
+      await SessionTable!.SetSessionDataAsync(new[]
+                                              {
+                                                "partition",
+                                              },
+                                              Options with
+                                              {
+                                                ApplicationName = "OrderByOption",
+                                                Options = new Dictionary<string, string>
+                                                          {
+                                                            {
+                                                              "sortkey", "a"
+                                                            },
+                                                          },
+                                              })
+                         .ConfigureAwait(false);
+
+      var (sessions, count) = await SessionTable!.ListSessionsAsync(data => data.Options.ApplicationName == "OrderByOption",
+                                                                    data => data.Options.Options["sortkey"],
+                                                                    true,
+                                                                    0,
+                                                                    10,
+                                                                    CancellationToken.None)
+                                                 .ConfigureAwait(false);
+
+      // The count must see the filter, and the page must see both the filter and the sort key.
+      Assert.That(count,
+                  Is.EqualTo(2));
+      Assert.That(sessions.Select(session => session.Options.Options["sortkey"]),
+                  Is.EqualTo(new[]
+                             {
+                               "a",
+                               "b",
+                             }));
+    }
+  }
 }

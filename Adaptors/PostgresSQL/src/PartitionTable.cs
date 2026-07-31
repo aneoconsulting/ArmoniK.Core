@@ -170,54 +170,18 @@ INSERT INTO partitions (
                                                                                                  int                                      pageSize,
                                                                                                  CancellationToken                        cancellationToken = default)
   {
-    var (whereSql, whereParams)    = ExpressionToSql<PartitionData>.Translate(filter);
-    var (orderColumn, orderParams) = ExpressionToSql<PartitionData>.TranslateOrderBy(orderField);
-    foreach (var (key, value) in orderParams)
-    {
-      whereParams[key] = value;
-    }
+    var (partitions, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
+                                                                 "partitions",
+                                                                 filter,
+                                                                 orderField,
+                                                                 ascOrder,
+                                                                 page,
+                                                                 pageSize,
+                                                                 RowMapper.MapToPartitionData,
+                                                                 cancellationToken)
+                                                   .ConfigureAwait(false);
 
-    var orderDir = ascOrder
-                     ? "ASC"
-                     : "DESC";
-
-    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
-
-    // Count query
-    await using var countCmd = connection.CreateCommand();
-    countCmd.CommandText = $"SELECT COUNT(*) FROM partitions WHERE {whereSql}";
-    SqlHelper.AddExpressionParameters(countCmd,
-                                      whereParams);
-    var totalCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync(cancellationToken)
-                                                   .ConfigureAwait(false));
-
-    if (pageSize <= 0)
-    {
-      return (Enumerable.Empty<PartitionData>(), totalCount);
-    }
-
-    // Data query
-    await using var dataCmd = connection.CreateCommand();
-    dataCmd.CommandText = $"SELECT * FROM partitions WHERE {whereSql} ORDER BY {orderColumn} {orderDir} LIMIT @limit OFFSET @offset";
-    SqlHelper.AddExpressionParameters(dataCmd,
-                                      whereParams);
-    dataCmd.Parameters.AddWithValue("limit",
-                                    pageSize);
-    dataCmd.Parameters.AddWithValue("offset",
-                                    (long)page * pageSize);
-
-    await using var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
-                                          .ConfigureAwait(false);
-
-    var results = new List<PartitionData>();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
-    {
-      results.Add(RowMapper.MapToPartitionData(reader));
-    }
-
-    return (results, totalCount);
+    return (partitions, Convert.ToInt32(totalCount));
   }
 
   /// <inheritdoc />

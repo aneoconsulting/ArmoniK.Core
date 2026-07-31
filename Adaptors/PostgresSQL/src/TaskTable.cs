@@ -316,61 +316,29 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                                                                int                                 pageSize,
                                                                                CancellationToken                   cancellationToken = default)
   {
-    var (whereSql, whereParams)    = ExpressionToSql<TaskData>.Translate(filter);
-    var (orderColumn, orderParams) = ExpressionToSql<TaskData>.TranslateOrderBy(orderField);
-    foreach (var (key, value) in orderParams)
-    {
-      whereParams[key] = value;
-    }
-
-    var orderDir = ascOrder
-                     ? "ASC"
-                     : "DESC";
-
-    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
-
-    // Count query
-    await using var countCmd = connection.CreateCommand();
-    countCmd.CommandText = $"SELECT COUNT(*) FROM tasks WHERE {whereSql}";
-    SqlHelper.AddExpressionParameters(countCmd,
-                                      whereParams);
-    var totalCount = Convert.ToInt64(await countCmd.ExecuteScalarAsync(cancellationToken)
-                                                   .ConfigureAwait(false));
-
-    if (pageSize <= 0)
-    {
-      return (Enumerable.Empty<T>(), totalCount);
-    }
-
-    // Data query: project only the columns the selector needs, when we can determine them,
-    // instead of always fetching the whole row.
+    // Project only the columns the selector needs, when we can determine them, instead of
+    // always fetching the whole row.
     var mapper = RowMapper.For(selector);
 
-    await using var dataCmd = connection.CreateCommand();
-    dataCmd.CommandText = $"SELECT {mapper.SelectList} FROM tasks WHERE {whereSql} ORDER BY {orderColumn} {orderDir} LIMIT @limit OFFSET @offset";
-    SqlHelper.AddExpressionParameters(dataCmd,
-                                      whereParams);
-    dataCmd.Parameters.AddWithValue("limit",
-                                    pageSize);
-    dataCmd.Parameters.AddWithValue("offset",
-                                    (long)page * pageSize);
+    var (rawTasks, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
+                                                               "tasks",
+                                                               filter,
+                                                               orderField,
+                                                               ascOrder,
+                                                               page,
+                                                               pageSize,
+                                                               mapper.MapToTaskData,
+                                                               cancellationToken,
+                                                               mapper.SelectList)
+                                                 .ConfigureAwait(false);
 
-    var rawTasks = new List<TaskData>();
-    await using (var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
-                                           .ConfigureAwait(false))
-    {
-      while (await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false))
-      {
-        rawTasks.Add(mapper.MapToTaskData(reader));
-      }
-    }
-
-    // RemainingDataDependencies lives in a separate join table; only load it when the
-    // selector explicitly reads it.
+    // RemainingDataDependencies lives in a separate join table; only load it when the selector
+    // explicitly reads it. PagedQuery owns the connections it queries on, so this takes its own.
     if (mapper.NeedsSeparatelyStoredData)
     {
+      await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                            .ConfigureAwait(false);
+
       var depsByTaskId = await LoadRemainingDependenciesBatch(connection,
                                                               rawTasks,
                                                               cancellationToken)
@@ -386,9 +354,8 @@ SELECT @dep_task_id, unnest(@dep_ids)");
     }
 
     var compiled = selector.Compile();
-    var results  = rawTasks.Select(taskData => compiled.Invoke(taskData));
 
-    return (results, totalCount);
+    return (rawTasks.Select(taskData => compiled.Invoke(taskData)), totalCount);
   }
 
   /// <inheritdoc />
@@ -567,27 +534,17 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                      ? "ASC"
                      : "DESC";
 
-    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
-
-    // Count distinct applications
-    await using var countCmd = connection.CreateCommand();
-    countCmd.CommandText = $@"
+    // Only the page references the ORDER BY parameters, so they are collected separately and the
+    // filter's own set is left as it is for the count. Nothing is mutated after either Query is built,
+    // which matters because the two run concurrently.
+    var countQuery = new Query($@"
 SELECT COUNT(*) FROM (
   SELECT DISTINCT options_app_name, options_app_namespace, options_app_version, options_app_service
   FROM tasks WHERE {whereSql}
-) sub";
-    SqlHelper.AddExpressionParameters(countCmd,
-                                      whereParams);
-    var totalCount = Convert.ToInt32(await countCmd.ExecuteScalarAsync(cancellationToken)
-                                                   .ConfigureAwait(false));
+) sub",
+                               whereParams);
 
-    if (pageSize <= 0)
-    {
-      return (Enumerable.Empty<Application>(), totalCount);
-    }
-
-    // Get paginated applications
+    var pageParams   = new Dictionary<string, object?>();
     var orderClauses = new List<string>();
     var orderIndex   = 0;
     foreach (var f in orderFields)
@@ -596,10 +553,16 @@ SELECT COUNT(*) FROM (
                                                                                      orderIndex++);
       foreach (var (key, value) in orderParams)
       {
-        whereParams[key] = value;
+        pageParams[key] = value;
       }
 
       orderClauses.Add($"{orderColumn} {orderDir}");
+    }
+
+    // The page filters as well as orders, so it needs both sets.
+    foreach (var (key, value) in whereParams)
+    {
+      pageParams[key] = value;
     }
 
     var orderBySql = string.Join(", ",
@@ -608,33 +571,26 @@ SELECT COUNT(*) FROM (
                           ? $"ORDER BY {orderBySql}"
                           : "";
 
-    await using var dataCmd = connection.CreateCommand();
-    dataCmd.CommandText = $@"
+    var pageQuery = new Query($@"
 SELECT DISTINCT options_app_name, options_app_namespace, options_app_version, options_app_service
 FROM tasks WHERE {whereSql}
 {orderByClause}
-LIMIT @limit OFFSET @offset";
-    SqlHelper.AddExpressionParameters(dataCmd,
-                                      whereParams);
-    dataCmd.Parameters.AddWithValue("limit",
-                                    pageSize);
-    dataCmd.Parameters.AddWithValue("offset",
-                                    (long)page * pageSize);
+LIMIT @limit OFFSET @offset",
+                              pageParams);
 
-    await using var reader = await dataCmd.ExecuteReaderAsync(cancellationToken)
-                                          .ConfigureAwait(false);
+    var (applications, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
+                                                                   countQuery,
+                                                                   pageQuery,
+                                                                   page,
+                                                                   pageSize,
+                                                                   reader => new Application(reader.GetString(0),
+                                                                                             reader.GetString(1),
+                                                                                             reader.GetString(2),
+                                                                                             reader.GetString(3)),
+                                                                   cancellationToken)
+                                                     .ConfigureAwait(false);
 
-    var results = new List<Application>();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
-    {
-      results.Add(new Application(reader.GetString(0),
-                                  reader.GetString(1),
-                                  reader.GetString(2),
-                                  reader.GetString(3)));
-    }
-
-    return (results, totalCount);
+    return (applications, Convert.ToInt32(totalCount));
   }
 
   /// <inheritdoc />
