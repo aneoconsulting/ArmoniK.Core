@@ -534,18 +534,55 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                      ? "ASC"
                      : "DESC";
 
-    // The count gets its own copy of the parameters: building the page query below adds the ORDER BY
-    // parameters to whereParams, which would otherwise be mutated while the count reads it concurrently.
-    var (applications, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
-                                                                   $@"
+    // Only the page references the ORDER BY parameters, so they are collected separately and the
+    // filter's own set is left as it is for the count. Nothing is mutated after either Query is built,
+    // which matters because the two run concurrently.
+    var countQuery = new Query($@"
 SELECT COUNT(*) FROM (
   SELECT DISTINCT options_app_name, options_app_namespace, options_app_version, options_app_service
   FROM tasks WHERE {whereSql}
 ) sub",
-                                                                   new Dictionary<string, object?>(whereParams),
+                               whereParams);
+
+    var pageParams   = new Dictionary<string, object?>();
+    var orderClauses = new List<string>();
+    var orderIndex   = 0;
+    foreach (var f in orderFields)
+    {
+      var (orderColumn, orderParams) = ExpressionToSql<Application>.TranslateOrderBy(f,
+                                                                                     orderIndex++);
+      foreach (var (key, value) in orderParams)
+      {
+        pageParams[key] = value;
+      }
+
+      orderClauses.Add($"{orderColumn} {orderDir}");
+    }
+
+    // The page filters as well as orders, so it needs both sets.
+    foreach (var (key, value) in whereParams)
+    {
+      pageParams[key] = value;
+    }
+
+    var orderBySql = string.Join(", ",
+                                 orderClauses);
+    var orderByClause = orderBySql.Length > 0
+                          ? $"ORDER BY {orderBySql}"
+                          : "";
+
+    var pageQuery = new Query($@"
+SELECT DISTINCT options_app_name, options_app_namespace, options_app_version, options_app_service
+FROM tasks WHERE {whereSql}
+{orderByClause}
+LIMIT @limit OFFSET @offset",
+                              pageParams);
+
+    var (applications, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
+                                                                   countQuery,
+                                                                   pageQuery,
                                                                    page,
                                                                    pageSize,
-                                                                   BuildPageQuery,
                                                                    reader => new Application(reader.GetString(0),
                                                                                              reader.GetString(1),
                                                                                              reader.GetString(2),
@@ -554,36 +591,6 @@ SELECT COUNT(*) FROM (
                                                      .ConfigureAwait(false);
 
     return (applications, Convert.ToInt32(totalCount));
-
-    PageQuery BuildPageQuery()
-    {
-      var orderClauses = new List<string>();
-      var orderIndex   = 0;
-      foreach (var f in orderFields)
-      {
-        var (orderColumn, orderParams) = ExpressionToSql<Application>.TranslateOrderBy(f,
-                                                                                       orderIndex++);
-        foreach (var (key, value) in orderParams)
-        {
-          whereParams[key] = value;
-        }
-
-        orderClauses.Add($"{orderColumn} {orderDir}");
-      }
-
-      var orderBySql = string.Join(", ",
-                                   orderClauses);
-      var orderByClause = orderBySql.Length > 0
-                            ? $"ORDER BY {orderBySql}"
-                            : "";
-
-      return new PageQuery($@"
-SELECT DISTINCT options_app_name, options_app_namespace, options_app_version, options_app_service
-FROM tasks WHERE {whereSql}
-{orderByClause}
-LIMIT @limit OFFSET @offset",
-                           whereParams);
-    }
   }
 
   /// <inheritdoc />

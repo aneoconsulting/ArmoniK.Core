@@ -26,13 +26,12 @@ using Npgsql;
 namespace ArmoniK.Core.Adapters.PostgresSQL.Common;
 
 /// <summary>
-///   The page half of a paginated query: its SQL, which must end with <c>LIMIT @limit OFFSET @offset</c>,
-///   and the parameters its WHERE and ORDER BY clauses reference.
+///   A query and the parameters it references.
 /// </summary>
-/// <param name="Sql">The page query</param>
-/// <param name="Parameters">Parameters referenced by <paramref name="Sql" />, excluding limit and offset</param>
-public readonly record struct PageQuery(string                      Sql,
-                                        Dictionary<string, object?> Parameters);
+/// <param name="Sql">The query</param>
+/// <param name="Parameters">Parameters referenced by <paramref name="Sql" /></param>
+public readonly record struct Query(string                      Sql,
+                                    Dictionary<string, object?> Parameters);
 
 /// <summary>
 ///   Runs the two queries behind a paginated list: the total number of matches, and one page of rows.
@@ -47,7 +46,7 @@ public static class PagedQuery
   /// </summary>
   /// <remarks>
   ///   Queries that don't have that shape - one counting distinct combinations of columns, say, or one
-  ///   ordering on several fields - build their own SQL and call the overload taking it directly.
+  ///   ordering on several fields - build their own and call the overload taking them directly.
   /// </remarks>
   /// <typeparam name="TEntity">Entity type the filter and order field apply to</typeparam>
   /// <typeparam name="TRow">Type each row maps to</typeparam>
@@ -79,9 +78,13 @@ public static class PagedQuery
   {
     var (whereSql, parameters)     = ExpressionToSql<TEntity>.Translate(filter);
     var (orderColumn, orderParams) = ExpressionToSql<TEntity>.TranslateOrderBy(orderField);
-    foreach (var (key, value) in orderParams)
+
+    // Only the page references the ORDER BY parameters, so they are kept out of the count's set rather
+    // than merged into it. The two namespaces are disjoint - filters are named @p<n> and order keys
+    // @orderkey<n> - so nothing is overwritten either way round.
+    foreach (var (key, value) in parameters)
     {
-      parameters[key] = value;
+      orderParams[key] = value;
     }
 
     var orderDir = ascOrder
@@ -89,12 +92,12 @@ public static class PagedQuery
                      : "DESC";
 
     return await ExecuteAsync(connectionProvider,
-                              $"SELECT COUNT(*) FROM {table} WHERE {whereSql}",
-                              parameters,
+                              new Query($"SELECT COUNT(*) FROM {table} WHERE {whereSql}",
+                                        parameters),
+                              new Query($"SELECT {selectList} FROM {table} WHERE {whereSql} ORDER BY {orderColumn} {orderDir} LIMIT @limit OFFSET @offset",
+                                        orderParams),
                               page,
                               pageSize,
-                              () => new PageQuery($"SELECT {selectList} FROM {table} WHERE {whereSql} ORDER BY {orderColumn} {orderDir} LIMIT @limit OFFSET @offset",
-                                                  parameters),
                               mapRow,
                               cancellationToken)
              .ConfigureAwait(false);
@@ -111,42 +114,57 @@ public static class PagedQuery
   /// </remarks>
   /// <typeparam name="TRow">Type each row maps to</typeparam>
   /// <param name="connectionProvider">Provider of pooled connections</param>
-  /// <param name="countSql">Query returning the total number of matches as a single scalar</param>
-  /// <param name="countParameters">Parameters referenced by <paramref name="countSql" /></param>
+  /// <param name="countQuery">Query returning the total number of matches as a single scalar</param>
+  /// <param name="pageQuery">
+  ///   Query returning one page of rows; its SQL must end with <c>LIMIT @limit OFFSET @offset</c>, whose
+  ///   values are supplied from <paramref name="page" /> and <paramref name="pageSize" />
+  /// </param>
   /// <param name="page">Zero-based index of the page to read</param>
   /// <param name="pageSize">Rows per page; when not positive no page is read and no rows are returned</param>
-  /// <param name="pageQuery">
-  ///   Builds the page query. Only called when <paramref name="pageSize" /> is positive, so any cost of
-  ///   assembling it (translating ORDER BY fields, say) is skipped when only the count was asked for.
-  /// </param>
   /// <param name="mapRow">Maps the reader's current row to <typeparamref name="TRow" /></param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>The page's rows, and the total number of matches irrespective of paging</returns>
   public static async Task<(List<TRow> items, long totalCount)> ExecuteAsync<TRow>(NpgsqlConnectionProvider     connectionProvider,
-                                                                                   string                       countSql,
-                                                                                   Dictionary<string, object?>  countParameters,
+                                                                                   Query                        countQuery,
+                                                                                   Query                        pageQuery,
                                                                                    int                          page,
                                                                                    int                          pageSize,
-                                                                                   Func<PageQuery>              pageQuery,
                                                                                    Func<NpgsqlDataReader, TRow> mapRow,
                                                                                    CancellationToken            cancellationToken)
   {
-    var countTask = CountAsync(connectionProvider,
-                               countSql,
-                               countParameters,
-                               cancellationToken);
+    var countTask = RunAsync(connectionProvider,
+                             countQuery,
+                             async cmd => Convert.ToInt64(await cmd.ExecuteScalarAsync(cancellationToken)
+                                                                   .ConfigureAwait(false)),
+                             cancellationToken);
 
     if (pageSize <= 0)
     {
       return (new List<TRow>(), await countTask.ConfigureAwait(false));
     }
 
-    var pageTask = PageAsync(connectionProvider,
-                             pageQuery.Invoke(),
-                             page,
-                             pageSize,
-                             mapRow,
-                             cancellationToken);
+    var pageTask = RunAsync(connectionProvider,
+                            pageQuery,
+                            async cmd =>
+                            {
+                              cmd.Parameters.AddWithValue("limit",
+                                                          pageSize);
+                              cmd.Parameters.AddWithValue("offset",
+                                                          (long)page * pageSize);
+
+                              await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                                                .ConfigureAwait(false);
+
+                              var items = new List<TRow>();
+                              while (await reader.ReadAsync(cancellationToken)
+                                                 .ConfigureAwait(false))
+                              {
+                                items.Add(mapRow.Invoke(reader));
+                              }
+
+                              return items;
+                            },
+                            cancellationToken);
 
     // WhenAll rather than awaiting in sequence, so a failure of either still observes both.
     await Task.WhenAll(countTask,
@@ -156,50 +174,27 @@ public static class PagedQuery
     return (await pageTask.ConfigureAwait(false), await countTask.ConfigureAwait(false));
   }
 
-  private static async Task<long> CountAsync(NpgsqlConnectionProvider    connectionProvider,
-                                             string                      countSql,
-                                             Dictionary<string, object?> countParameters,
-                                             CancellationToken           cancellationToken)
+  /// <summary>
+  ///   Run <paramref name="query" /> on its own connection and return whatever
+  ///   <paramref name="execute" /> makes of the resulting command.
+  /// </summary>
+  /// <remarks>
+  ///   The connection has to be held open for as long as the command runs, so the caller passes what to
+  ///   do with the command rather than receiving it.
+  /// </remarks>
+  private static async Task<T> RunAsync<T>(NpgsqlConnectionProvider     connectionProvider,
+                                           Query                        query,
+                                           Func<NpgsqlCommand, Task<T>> execute,
+                                           CancellationToken            cancellationToken)
   {
     await using var connection = await connectionProvider.GetConnectionAsync(cancellationToken)
                                                          .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
-    cmd.CommandText = countSql;
+    cmd.CommandText = query.Sql;
     SqlHelper.AddExpressionParameters(cmd,
-                                      countParameters);
+                                      query.Parameters);
 
-    return Convert.ToInt64(await cmd.ExecuteScalarAsync(cancellationToken)
-                                    .ConfigureAwait(false));
-  }
-
-  private static async Task<List<TRow>> PageAsync<TRow>(NpgsqlConnectionProvider     connectionProvider,
-                                                        PageQuery                    pageQuery,
-                                                        int                          page,
-                                                        int                          pageSize,
-                                                        Func<NpgsqlDataReader, TRow> mapRow,
-                                                        CancellationToken            cancellationToken)
-  {
-    await using var connection = await connectionProvider.GetConnectionAsync(cancellationToken)
-                                                         .ConfigureAwait(false);
-    await using var cmd = connection.CreateCommand();
-    cmd.CommandText = pageQuery.Sql;
-    SqlHelper.AddExpressionParameters(cmd,
-                                      pageQuery.Parameters);
-    cmd.Parameters.AddWithValue("limit",
-                                pageSize);
-    cmd.Parameters.AddWithValue("offset",
-                                (long)page * pageSize);
-
-    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
-                                      .ConfigureAwait(false);
-
-    var items = new List<TRow>();
-    while (await reader.ReadAsync(cancellationToken)
-                       .ConfigureAwait(false))
-    {
-      items.Add(mapRow.Invoke(reader));
-    }
-
-    return items;
+    return await execute.Invoke(cmd)
+                        .ConfigureAwait(false);
   }
 }
