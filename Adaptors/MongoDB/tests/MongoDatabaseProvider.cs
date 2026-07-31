@@ -21,6 +21,7 @@ using System.Diagnostics;
 
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
+using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils;
 
 using EphemeralMongo;
@@ -55,27 +56,10 @@ internal class MongoDatabaseProvider : IDisposable
     var logger = LoggerFactory.Create(builder => builder.AddSerilog(loggerSerilog))
                               .CreateLogger("root");
 
-    var options = new MongoRunnerOptions
-                  {
-                    UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
-#pragma warning disable CA2254 // log inputs should be constant
-                    StandardOutputLogger = showMongoLogs
-                                             ? line => logger.LogInformation(line)
-                                             : null,
-                    StandardErrorLogger = showMongoLogs
-                                            ? line => logger.LogError(line)
-                                            : null,
-#pragma warning restore CA2254
-                    ReplicaSetSetupTimeout = TimeSpan.FromSeconds(30),
-                  };
-
-    var binDir = Environment.GetEnvironmentVariable("EphemeralMongo__BinaryDirectory");
-    if (!string.IsNullOrEmpty(binDir))
-    {
-      options.BinaryDirectory = binDir;
-    }
-
-    runner_ = MongoRunner.Run(options);
+    runner_ = MongoRunner.Run(MongoRunnerOptionsFactory.Create(useSingleNodeReplicaSet,
+                                                               showMongoLogs
+                                                                 ? logger
+                                                                 : null));
     var settings = MongoClientSettings.FromUrl(new MongoUrl(runner_.ConnectionString));
 
     settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
