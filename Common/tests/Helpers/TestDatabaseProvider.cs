@@ -66,21 +66,7 @@ public class TestDatabaseProvider : IDisposable
                               bool                           validateGrpcRequests             = false,
                               bool                           useSingleNodeReplicaSet          = false)
   {
-    var logger = NullLogger.Instance;
-    var options = new MongoRunnerOptions
-                  {
-                    UseSingleNodeReplicaSet = useSingleNodeReplicaSet,
-#pragma warning disable CA2254 // log inputs should be constant
-                    StandardOutputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger  = line => logger.LogError(line),
-#pragma warning restore CA2254
-                  };
-
-    var binDir = Environment.GetEnvironmentVariable("EphemeralMongo__BinaryDirectory");
-    if (!string.IsNullOrEmpty(binDir))
-    {
-      options.BinaryDirectory = binDir;
-    }
+    var options = MongoRunnerOptionsFactory.Create(useSingleNodeReplicaSet);
 
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var loggerDb       = loggerProvider.CreateLogger("db commands");

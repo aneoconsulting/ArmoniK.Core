@@ -85,22 +85,7 @@ public class TestTaskHandlerProvider : IDisposable
   {
     var logger = NullLogger.Instance;
 
-    var options = new MongoRunnerOptions
-                  {
-                    UseSingleNodeReplicaSet = false,
-#pragma warning disable CA2254 // log inputs should be constant
-                    StandardOutputLogger = line => logger.LogInformation(line),
-                    StandardErrorLogger  = line => logger.LogError(line),
-#pragma warning restore CA2254
-                  };
-
-    var binDir = Environment.GetEnvironmentVariable("EphemeralMongo__BinaryDirectory");
-    if (!string.IsNullOrEmpty(binDir))
-    {
-      options.BinaryDirectory = binDir;
-    }
-
-    runner_ = MongoRunner.Run(options);
+    runner_ = MongoRunner.Run(MongoRunnerOptionsFactory.Create());
     var client = new MongoClient(runner_.ConnectionString);
 
     // Minimal set of configurations to operate on a toy DB
