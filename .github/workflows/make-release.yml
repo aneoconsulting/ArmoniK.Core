@@ -35,6 +35,7 @@ jobs:
       id: snapshot
       uses: codacy/git-version@e81d6fdad74f9e114420d69ca8b47658f1182afb # 2.8.7
       with:
+        tool-version: "2.8.7"
         minor-identifier: "feat:"
         release-branch: ${{ github.ref_name }}-pre
         dev-branch: ${{ steps.rev.outputs.current-branch }}
@@ -43,6 +44,7 @@ jobs:
       id: release
       uses: codacy/git-version@e81d6fdad74f9e114420d69ca8b47658f1182afb # 2.8.7
       with:
+        tool-version: "2.8.7"
         minor-identifier: "feat:"
         release-branch: ${{ steps.rev.outputs.current-branch }}
         dev-branch: main
