@@ -32,6 +32,7 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -411,19 +412,32 @@ public class PollsterTest
     var mockPullQueueStorage = new Mock<IPullQueueStorage>();
     var mockAgentHandler     = new Mock<IAgentHandler>();
 
-    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync("partitionId",
+    // Completes once the pollster has actually reached the queue, which is the point this test wants
+    // to cancel it from. A delay here would be a race: the pollster would often not have got that far.
+    var pulled = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    // It.IsAny for the partition: the provider configures "DefaultPartition", so a setup matching the
+    // literal "partitionId" never matched and this mock returned null - the pollster then failed with a
+    // NullReferenceException instead of ever pulling anything, and the test passed only because its
+    // delay stopped the application regardless.
+    mockPullQueueStorage.Setup(storage => storage.PullMessagesAsync(It.IsAny<string>(),
                                                                     It.IsAny<int>(),
                                                                     It.IsAny<CancellationToken>()))
-                        .Returns(() => new List<IQueueMessageHandler>
-                                       {
-                                         new SimpleQueueMessageHandler
-                                         {
-                                           CancellationToken = CancellationToken.None,
-                                           Status            = QueueMessageStatus.Waiting,
-                                           MessageId = Guid.NewGuid()
-                                                           .ToString(),
-                                         },
-                                       }.ToAsyncEnumerable());
+                        .Returns(() =>
+                                 {
+                                   pulled.TrySetResult();
+
+                                   return new List<IQueueMessageHandler>
+                                          {
+                                            new SimpleQueueMessageHandler
+                                            {
+                                              CancellationToken = CancellationToken.None,
+                                              Status            = QueueMessageStatus.Waiting,
+                                              MessageId = Guid.NewGuid()
+                                                              .ToString(),
+                                            },
+                                          }.ToAsyncEnumerable();
+                                 });
 
     using var testServiceProvider = new TestPollsterProvider(mockStreamHandler.Object,
                                                              mockAgentHandler.Object,
@@ -432,7 +446,7 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMicroseconds(105));
+    var stop = testServiceProvider.StopApplicationWhen(pulled.Task);
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
@@ -446,8 +460,18 @@ public class PollsterTest
   {
     private readonly double delay_;
 
+    // RunContinuationsAsynchronously so whatever a test hangs off Started does not run inline on the
+    // pollster's thread, in the middle of it handing the task over.
+    private readonly TaskCompletionSource started_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
     public WaitWorkerStreamHandler(double delay)
       => delay_ = delay;
+
+    /// <summary>
+    ///   Completes the first time the pollster hands a task to this worker, before it starts waiting.
+    /// </summary>
+    public Task Started
+      => started_.Task;
 
     public Task<HealthCheckResult> Check(HealthCheckTag tag)
       => Task.FromResult(HealthCheckResult.Healthy());
@@ -464,6 +488,8 @@ public class PollsterTest
                                                   Configuration     configuration,
                                                   CancellationToken cancellationToken)
     {
+      started_.TrySetResult();
+
       await Task.Delay(TimeSpan.FromMilliseconds(delay_),
                        cancellationToken)
                 .ConfigureAwait(false);
@@ -475,7 +501,6 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
-  [Retry(3)]
   public async Task ExecuteTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -506,10 +531,22 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(1));
+    // Stop once the task has been handed to the worker. Waiting for it to be Completed instead would
+    // deadlock: finalizing it can happen while the application shuts down, so the state this test
+    // asserts on is not necessarily reached while the loop is still running.
+    var stop = testServiceProvider.StopApplicationWhen(waitWorkerStreamHandler.Started);
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
+
+    // Then wait for the status the assertion needs, rather than assuming the loop returning means the
+    // post processor has already written it.
+    await testServiceProvider.WaitForTaskStatus(taskSubmitted,
+                                                new[]
+                                                {
+                                                  TaskStatus.Completed,
+                                                })
+                             .ConfigureAwait(false);
 
     Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
                                                                   CancellationToken.None)
@@ -521,7 +558,6 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
-  [Retry(3)]
   public async Task ExecuteTaskTimeoutAcquire()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -616,7 +652,11 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(2));
+    // Stop once the first task has been handed to the worker, for the same reason as above: waiting for
+    // it to be Completed can deadlock, since that can happen only as the application shuts down. The
+    // second task stays Submitted because the pollster waits TimeoutBeforeNextAcquisition (10s here)
+    // before acquiring again, so it cannot have been picked up in the meantime.
+    var stop = testServiceProvider.StopApplicationWhen(waitWorkerStreamHandler.Started);
 
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
     Assert.DoesNotThrowAsync(() => stop);
@@ -631,6 +671,8 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
+  // Kept, unlike on the rest of the fixture: this test still depends on how much the pollster got done
+  // in a fixed time, for the reason given at its stop below.
   [Retry(3)]
   public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit([Values] bool healthy)
   {
@@ -668,7 +710,17 @@ public class PollsterTest
                                                    ? HealthStatus.Healthy
                                                    : HealthStatus.Unhealthy);
 
-    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMilliseconds(300));
+    // Left on delays, unlike the rest of this fixture. AssertFailAfterError(5) below only passes if the
+    // pollster has already recorded an error, and how many it records depends on how long it ran - so
+    // both of these delays feed the assertions rather than merely waiting for something observable.
+    // Triggering the stop on the worker starting, or replacing the second delay with a wait for the
+    // resubmitted status, each cut the run short and left the error count too low. Converting this test
+    // means changing what it asserts, which is a separate job.
+    //
+    // The delay still goes through StopApplicationWhen, so it is not awaiting the early cancellation
+    // token: a pollster that ends first can no longer fault this task, which was the original flake.
+    var stop = testServiceProvider.StopApplicationWhen(Task.Delay(TimeSpan.FromMilliseconds(300),
+                                                                  CancellationToken.None));
 
     Assert.That(() => testServiceProvider.Pollster.MainLoop(),
                 Throws.Nothing);
@@ -693,7 +745,6 @@ public class PollsterTest
 
   [Test]
   [Timeout(30000)]
-  [Retry(3)]
   public async Task CancelLongTaskShouldSucceed()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -724,13 +775,15 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(5));
+    // The test drives the whole scenario, so it says when the application may stop instead of hoping a
+    // delay outlasts the steps below.
+    var driven = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    var stop   = testServiceProvider.StopApplicationWhen(driven.Task);
 
     var mainLoopTask = testServiceProvider.Pollster.MainLoop();
 
-    await Task.Delay(TimeSpan.FromMilliseconds(200),
-                     CancellationToken.None)
-              .ConfigureAwait(false);
+    // Wait until the task is really being processed before cancelling it.
+    await waitWorkerStreamHandler.Started.ConfigureAwait(false);
 
     await testServiceProvider.TaskTable.CancelTaskAsync(new List<string>
                                                         {
@@ -739,12 +792,24 @@ public class PollsterTest
                                                         CancellationToken.None)
                              .ConfigureAwait(false);
 
-    await Task.Delay(TimeSpan.FromMilliseconds(200),
-                     CancellationToken.None)
-              .ConfigureAwait(false);
+    // Wait for the cancellation to reach the task rather than for a fixed delay.
+    await testServiceProvider.WaitForTaskStatus(taskSubmitted,
+                                                new[]
+                                                {
+                                                  TaskStatus.Cancelling,
+                                                  TaskStatus.Cancelled,
+                                                })
+                             .ConfigureAwait(false);
 
     await testServiceProvider.Pollster.StopCancelledTask()
                              .ConfigureAwait(false);
+
+    // Let the cancelled task drain out of TaskProcessing before stopping, since that is what this test
+    // goes on to assert - the old 5s delay was what happened to give it time.
+    await testServiceProvider.WaitForNoTaskProcessing()
+                             .ConfigureAwait(false);
+
+    driven.TrySetResult();
 
     Assert.DoesNotThrowAsync(() => mainLoopTask);
     Assert.DoesNotThrowAsync(() => stop);
@@ -830,11 +895,12 @@ public class PollsterTest
     await pollster.Init(CancellationToken.None)
                   .ConfigureAwait(false);
 
-    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromSeconds(10));
-
+    // Nothing stops the application here: the pollster is expected to give up on its own once it has
+    // recorded too many errors, so the early token firing is the outcome under test rather than
+    // something a delay has to outlive.
     Assert.That(pollster.MainLoop,
                 Throws.Nothing);
-    Assert.That(() => stop,
+    Assert.That(() => testServiceProvider.ExceptionManager.EarlyCancellationToken.AsTask(),
                 Throws.InstanceOf<OperationCanceledException>());
     Assert.That(testServiceProvider.ExceptionManager.Failed,
                 Is.True);
@@ -883,10 +949,9 @@ public class PollsterTest
     await testServiceProvider.Pollster.Init(CancellationToken.None)
                              .ConfigureAwait(false);
 
-    var stop = testServiceProvider.StopApplicationAfter(TimeSpan.FromMilliseconds(300));
-
+    // As above: an unavailable worker makes the pollster stop itself, so there is nothing to schedule.
     Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
-    Assert.That(() => stop,
+    Assert.That(() => testServiceProvider.ExceptionManager.EarlyCancellationToken.AsTask(),
                 Throws.InstanceOf<OperationCanceledException>());
 
     Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
