@@ -37,8 +37,8 @@ public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
   private readonly int  delay_;
   private readonly bool healthy_;
 
-  // RunContinuationsAsynchronously so whatever a test hangs off Started does not run inline on the
-  // pollster's thread, in the middle of it handing the task over.
+  // Continuations run on the thread pool: a test awaiting Started must not resume on the pollster's own
+  // thread while it is handing the task over, or test and pollster serialise on that thread.
   private readonly TaskCompletionSource started_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
   public ExceptionWorkerStreamHandler(int  delay,

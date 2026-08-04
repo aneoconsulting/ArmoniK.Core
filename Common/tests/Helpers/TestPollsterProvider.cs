@@ -268,14 +268,20 @@ public class TestPollsterProvider : IDisposable
   ///   and a delay awaiting that token then faults instead of firing. Trigger off the event the test is
   ///   actually waiting for and neither problem exists - the trigger is deliberately not cancellable, so
   ///   a pollster that ends first cannot fault this task either.
+  ///   <para>
+  ///     Task.Run so an already-completed trigger behaves like any other: awaited directly it would not
+  ///     yield, and StopApplication would run on the caller's thread before this method returned, stopping
+  ///     the application before the test had even started MainLoop.
+  ///   </para>
   /// </remarks>
   /// <param name="trigger">Task whose completion means the test has seen what it was waiting for</param>
-  public async Task StopApplicationWhen(Task trigger)
-  {
-    await trigger.ConfigureAwait(false);
+  public Task StopApplicationWhen(Task trigger)
+    => Task.Run(async () =>
+                {
+                  await trigger.ConfigureAwait(false);
 
-    Lifetime.StopApplication();
-  }
+                  Lifetime.StopApplication();
+                });
 
   /// <summary>
   ///   Wait until <paramref name="taskId" /> reaches one of <paramref name="statuses" />.

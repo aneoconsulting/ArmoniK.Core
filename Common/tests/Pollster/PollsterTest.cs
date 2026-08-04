@@ -460,8 +460,8 @@ public class PollsterTest
   {
     private readonly double delay_;
 
-    // RunContinuationsAsynchronously so whatever a test hangs off Started does not run inline on the
-    // pollster's thread, in the middle of it handing the task over.
+    // Continuations run on the thread pool: a test awaiting Started must not resume on the pollster's own
+    // thread while it is handing the task over, or test and pollster serialise on that thread.
     private readonly TaskCompletionSource started_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     public WaitWorkerStreamHandler(double delay)
@@ -671,9 +671,6 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
-  // Kept, unlike on the rest of the fixture: this test still depends on how much the pollster got done
-  // in a fixed time, for the reason given at its stop below.
-  [Retry(3)]
   public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit([Values] bool healthy)
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -710,17 +707,9 @@ public class PollsterTest
                                                    ? HealthStatus.Healthy
                                                    : HealthStatus.Unhealthy);
 
-    // Left on delays, unlike the rest of this fixture. AssertFailAfterError(5) below only passes if the
-    // pollster has already recorded an error, and how many it records depends on how long it ran - so
-    // both of these delays feed the assertions rather than merely waiting for something observable.
-    // Triggering the stop on the worker starting, or replacing the second delay with a wait for the
-    // resubmitted status, each cut the run short and left the error count too low. Converting this test
-    // means changing what it asserts, which is a separate job.
-    //
-    // The delay still goes through StopApplicationWhen, so it is not awaiting the early cancellation
-    // token: a pollster that ends first can no longer fault this task, which was the original flake.
-    var stop = testServiceProvider.StopApplicationWhen(Task.Delay(TimeSpan.FromMilliseconds(300),
-                                                                  CancellationToken.None));
+    // The task has to be in the worker's hands before the application stops, since the grace delay this
+    // test is about only starts running then: ExceptionManager arms the late token off the early one.
+    var stop = testServiceProvider.StopApplicationWhen(waitWorkerStreamHandler.Started);
 
     Assert.That(() => testServiceProvider.Pollster.MainLoop(),
                 Throws.Nothing);
@@ -729,13 +718,15 @@ public class PollsterTest
     Assert.That(testServiceProvider.ExceptionManager.Failed,
                 Is.False);
 
-    // wait to exceed grace delay and see that task is properly resubmitted
-    await Task.Delay(TimeSpan.FromMilliseconds(200),
-                     CancellationToken.None)
-              .ConfigureAwait(false);
+    // The task is resubmitted as the late token drops it, so waiting for the pollster to stop processing
+    // it waits for exactly what the status below asserts, instead of a delay assumed to outlast the
+    // grace delay.
+    await testServiceProvider.WaitForNoTaskProcessing()
+                             .ConfigureAwait(false);
 
-    Assert.That(() => testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
-                                                                  CancellationToken.None),
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
+                                                                  CancellationToken.None)
+                                         .ConfigureAwait(false),
                 Is.EqualTo(healthy
                              ? TaskStatus.Submitted
                              : TaskStatus.Retried));
