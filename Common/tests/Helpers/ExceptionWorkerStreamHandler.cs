@@ -37,6 +37,10 @@ public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
   private readonly int  delay_;
   private readonly bool healthy_;
 
+  // Continuations run on the thread pool: a test awaiting Started must not resume on the pollster's own
+  // thread while it is handing the task over, or test and pollster serialise on that thread.
+  private readonly TaskCompletionSource started_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
   public ExceptionWorkerStreamHandler(int  delay,
                                       bool acceptCancellation = true,
                                       bool healthy            = true)
@@ -45,6 +49,12 @@ public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
     acceptCancellation_ = acceptCancellation;
     healthy_            = healthy;
   }
+
+  /// <summary>
+  ///   Completes the first time the pollster hands a task to this worker, before it starts waiting.
+  /// </summary>
+  public Task Started
+    => started_.Task;
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(healthy_
@@ -64,6 +74,8 @@ public sealed class ExceptionWorkerStreamHandler<T> : IWorkerStreamHandler
                                                 Configuration     configuration,
                                                 CancellationToken cancellationToken)
   {
+    started_.TrySetResult();
+
     await Task.Delay(TimeSpan.FromMilliseconds(delay_),
                      acceptCancellation_
                        ? cancellationToken

@@ -32,8 +32,18 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleWorkerStreamHandler : IWorkerStreamHandler
 {
+  // Continuations run on the thread pool: a test awaiting Started must not resume on the pollster's own
+  // thread while it is handing the task over, or test and pollster serialise on that thread.
+  private readonly TaskCompletionSource started_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
   public Output Output = new(OutputStatus.Success,
                              "");
+
+  /// <summary>
+  ///   Completes the first time the pollster hands a task to this worker.
+  /// </summary>
+  public Task Started
+    => started_.Task;
 
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
     => Task.FromResult(HealthCheckResult.Healthy());
@@ -49,5 +59,9 @@ public class SimpleWorkerStreamHandler : IWorkerStreamHandler
                                           string            dataFolder,
                                           Configuration     configuration,
                                           CancellationToken cancellationToken)
-    => Task.FromResult(Output);
+  {
+    started_.TrySetResult();
+
+    return Task.FromResult(Output);
+  }
 }

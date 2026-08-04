@@ -54,6 +54,8 @@ using MongoDB.Driver;
 
 using NUnit.Framework;
 
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
+
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollsterProvider : IDisposable
@@ -240,15 +242,93 @@ public class TestPollsterProvider : IDisposable
     GC.SuppressFinalize(this);
   }
 
-  public Task StopApplicationAfter(TimeSpan delay = default)
+  /// <summary>
+  ///   Stop the application once <paramref name="trigger" /> completes.
+  /// </summary>
+  /// <remarks>
+  ///   Pollster.MainLoop runs until the application stops, so a test has to stop it before it can assert
+  ///   anything. Waiting a fixed delay first makes that a race: MainLoop's finally calls
+  ///   ExceptionManager.UnregisterAndStop, so a pollster that ends on its own cancels the early token,
+  ///   and a delay awaiting that token then faults instead of firing. Trigger off the event the test is
+  ///   actually waiting for and neither problem exists - the trigger is deliberately not cancellable, so
+  ///   a pollster that ends first cannot fault this task either.
+  ///   <para>
+  ///     Task.Run so an already-completed trigger behaves like any other: awaited directly it would not
+  ///     yield, and StopApplication would run on the caller's thread before this method returned, stopping
+  ///     the application before the test had even started MainLoop.
+  ///   </para>
+  /// </remarks>
+  /// <param name="trigger">Task whose completion means the test has seen what it was waiting for</param>
+  public Task StopApplicationWhen(Task trigger)
     => Task.Run(async () =>
                 {
-                  await Task.Delay(delay,
-                                   ExceptionManager.EarlyCancellationToken)
-                            .ConfigureAwait(false);
+                  await trigger.ConfigureAwait(false);
 
                   Lifetime.StopApplication();
                 });
+
+  /// <summary>
+  ///   Wait until <paramref name="taskId" /> reaches one of <paramref name="statuses" />.
+  /// </summary>
+  /// <remarks>
+  ///   For what a test asserts about the database there is no event to hook: MainLoop's finally closes
+  ///   the running-task queue without awaiting the post processor, so the loop can return before a final
+  ///   status is written. Polling the status the test is going to assert on is the closest thing to an
+  ///   event - it returns as soon as the work is done, and on timeout it says which status was reached
+  ///   instead of surfacing as a puzzling cancellation somewhere else.
+  /// </remarks>
+  public async Task WaitForTaskStatus(string                  taskId,
+                                      ICollection<TaskStatus> statuses,
+                                      TimeSpan?               timeout = null)
+  {
+    var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(30));
+    var status   = TaskStatus.Unspecified;
+
+    while (DateTime.UtcNow < deadline)
+    {
+      status = await TaskTable.GetTaskStatus(taskId,
+                                             CancellationToken.None)
+                              .ConfigureAwait(false);
+
+      if (statuses.Contains(status))
+      {
+        return;
+      }
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+    }
+
+    Assert.Fail($"Task '{taskId}' was still {status} after waiting for one of {string.Join(", ", statuses)}");
+  }
+
+  /// <summary>
+  ///   Wait until the pollster is no longer processing any task.
+  /// </summary>
+  /// <remarks>
+  ///   Draining a task out of Pollster.TaskProcessing is not instantaneous, and it is not something the
+  ///   loop ending guarantees, so tests that assert on it wait for it rather than for a delay assumed to
+  ///   be longer than the drain takes.
+  /// </remarks>
+  public async Task WaitForNoTaskProcessing(TimeSpan? timeout = null)
+  {
+    var deadline = DateTime.UtcNow + (timeout ?? TimeSpan.FromSeconds(30));
+
+    while (DateTime.UtcNow < deadline)
+    {
+      if (Pollster.TaskProcessing.Count == 0)
+      {
+        return;
+      }
+
+      await Task.Delay(TimeSpan.FromMilliseconds(20),
+                       CancellationToken.None)
+                .ConfigureAwait(false);
+    }
+
+    Assert.Fail($"Pollster was still processing {string.Join(", ", Pollster.TaskProcessing)}");
+  }
 
   public void AssertFailAfterError(int nbError = 1)
   {
