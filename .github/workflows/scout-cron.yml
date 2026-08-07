@@ -11,7 +11,7 @@ jobs:
     outputs:
       releases: ${{ steps.releases.outputs.releases }}
     steps:
-    - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
     - name: List last releases
       id: releases
       run: echo "releases=$(gh release list -L 3 --json tagName -q '[ .[].tagName ]')"  >> "$GITHUB_OUTPUT"
@@ -38,7 +38,7 @@ jobs:
         version: ${{ fromJSON(needs.releases.outputs.releases) }}
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
         password: ${{ secrets.DOCKER_HUB_TOKEN }}
