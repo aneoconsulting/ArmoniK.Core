@@ -30,7 +30,7 @@ jobs:
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
 
     - name: Remove old branch images
-      uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/remove-images@40131ac01ff60baea9e02612ced7ac9b69916a3d # main
+      uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/remove-images@c83a887c5a27fef327098a89bce0a28a4e82168d # main
       with:
         org: dockerhubaneo
         image: ${{ matrix.image }}
@@ -52,7 +52,7 @@ jobs:
       uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7
 
     - name: Unlist old branch nugets
-      uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/unlist-nugets@40131ac01ff60baea9e02612ced7ac9b69916a3d # main
+      uses: aneoconsulting/ArmoniK.Actions.CleanupArtifacts/unlist-nugets@c83a887c5a27fef327098a89bce0a28a4e82168d # main
       with:
         nuget: ${{ matrix.nuget }}
         token: ${{ secrets.NUGET_API_KEY }}
