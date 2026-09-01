@@ -39,7 +39,7 @@ public class TaskOptionsValidatorTest
                              Priority    = 2,
                            };
 
-  private readonly TaskOptionsValidator sessionValidator_ = new(true);
+  private readonly TaskOptionsValidator sessionValidator_ = new(false);
   private readonly TaskOptionsValidator taskValidator_    = new();
   private          TaskOptions?         validTaskOptions_;
 
