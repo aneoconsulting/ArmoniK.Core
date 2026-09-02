@@ -16,6 +16,8 @@ locals {
     tls-key-file /redis/certs/redis.key
     tls-ca-cert-file /redis/certs/ca.pem
     tls-auth-clients no
+    save ""
+    appendonly no
     EOT
 }
 resource "docker_container" "object" {
