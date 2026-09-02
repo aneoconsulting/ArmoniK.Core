@@ -26,7 +26,6 @@ using ArmoniK.Core.Base.DataStructures;
 
 using Google.Cloud.PubSub.V1;
 using Google.Protobuf;
-using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
@@ -58,12 +57,9 @@ internal class PushQueueStorage : IPushQueueStorage
       throw new InvalidOperationException($"{nameof(PushQueueStorage)} should be initialized before calling this method.");
     }
 
-    var topic = $"a{options_.Prefix}-{partitionId}";
-    var topicName = TopicName.FromProjectTopic(options_.ProjectId,
-                                               topic);
     foreach (var chunks in messages.Chunk(500))
     {
-      await Publish(topicName,
+      await Publish(partitionId,
                     chunks)
         .ConfigureAwait(false);
     }
@@ -88,9 +84,10 @@ internal class PushQueueStorage : IPushQueueStorage
     => int.MaxValue;
 
 
-  private async Task Publish(TopicName                topicName,
+  private async Task Publish(string                   partitionId,
                              ICollection<MessageData> messages)
   {
+    var topicName = options_.GetTopicName(partitionId);
     try
     {
       await publisher_.PublishAsync(topicName,
@@ -102,19 +99,9 @@ internal class PushQueueStorage : IPushQueueStorage
     }
     catch (RpcException e) when (e.StatusCode == StatusCode.NotFound)
     {
-      try
-      {
-        await publisher_.CreateTopicAsync(new Topic
-                                          {
-                                            MessageRetentionDuration = Duration.FromTimeSpan(options_.MessageRetention),
-                                            TopicName                = topicName,
-                                            KmsKeyName               = options_.KmsKeyName,
-                                          })
-                        .ConfigureAwait(false);
-      }
-      catch (RpcException ex) when (ex.StatusCode == StatusCode.AlreadyExists)
-      {
-      }
+      await publisher_.EnsureTopicIsCreatedAsync(options_,
+                                                 partitionId)
+                      .ConfigureAwait(false);
 
       await publisher_.PublishAsync(topicName,
                                     messages.Select(msg => new PubsubMessage

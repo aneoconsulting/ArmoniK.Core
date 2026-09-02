@@ -25,7 +25,6 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 
 using Google.Cloud.PubSub.V1;
-using Google.Protobuf.WellKnownTypes;
 
 using Grpc.Core;
 
@@ -36,16 +35,8 @@ namespace ArmoniK.Core.Adapters.PubSub;
 
 internal class PullQueueStorage : IPullQueueStorage
 {
-  private readonly int     ackDeadlinePeriod_;
-  private readonly int     ackExtendDeadlineStep_;
-  private readonly bool    exactlyOnceDelivery_;
-  private readonly string  kmsKeyName_;
-  private readonly ILogger logger_;
-  private readonly bool    messageOrdering_;
-
-  private readonly TimeSpan                   messageRetention_;
-  private readonly string                     prefix_;
-  private readonly string                     project_;
+  private readonly ILogger                    logger_;
+  private readonly PubSub                     options_;
   private readonly PublisherServiceApiClient  publisher_;
   private readonly SubscriberServiceApiClient subscriber_;
   private          bool                       isInitialized_;
@@ -55,17 +46,10 @@ internal class PullQueueStorage : IPullQueueStorage
                           PubSub                     options,
                           ILogger<PullQueueStorage>  logger)
   {
-    messageRetention_      = options.MessageRetention;
-    ackDeadlinePeriod_     = options.AckDeadlinePeriod;
-    ackExtendDeadlineStep_ = options.AckExtendDeadlineStep;
-    exactlyOnceDelivery_   = options.ExactlyOnceDelivery;
-    kmsKeyName_            = options.KmsKeyName;
-    messageOrdering_       = options.MessageOrdering;
-    subscriber_            = subscriber;
-    publisher_             = publisher;
-    prefix_                = options.Prefix;
-    project_               = options.ProjectId;
-    logger_                = logger;
+    options_    = options;
+    subscriber_ = subscriber;
+    publisher_  = publisher;
+    logger_     = logger;
   }
 
   public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
@@ -77,13 +61,8 @@ internal class PullQueueStorage : IPullQueueStorage
       throw new InvalidOperationException($"{nameof(PullQueueStorage)} should be initialized before calling this method.");
     }
 
-    var topic = $"a{prefix_}-{partitionId}";
-    var sub   = $"a{prefix_}-{partitionId}-ak-sub";
-
-    var topicName = TopicName.FromProjectTopic(project_,
-                                               topic);
-    var subscriptionName = SubscriptionName.FromProjectSubscription(project_,
-                                                                    sub);
+    var          topicName        = options_.GetTopicName(partitionId);
+    var          subscriptionName = options_.GetSubscriptionName(partitionId);
     PullResponse messages;
     try
     {
@@ -94,36 +73,12 @@ internal class PullQueueStorage : IPullQueueStorage
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
     {
-      try
-      {
-        await publisher_.CreateTopicAsync(new Topic
-                                          {
-                                            MessageRetentionDuration = Duration.FromTimeSpan(messageRetention_),
-                                            TopicName                = topicName,
-                                            KmsKeyName               = kmsKeyName_,
-                                          })
-                        .ConfigureAwait(false);
-      }
-      catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
-      {
-      }
-
-      var subscriptionRequest = new Subscription
-                                {
-                                  SubscriptionName          = subscriptionName,
-                                  TopicAsTopicName          = topicName,
-                                  EnableExactlyOnceDelivery = exactlyOnceDelivery_,
-                                  EnableMessageOrdering     = messageOrdering_,
-                                  AckDeadlineSeconds        = ackDeadlinePeriod_,
-                                };
-      try
-      {
-        await subscriber_.CreateSubscriptionAsync(subscriptionRequest)
-                         .ConfigureAwait(false);
-      }
-      catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
-      {
-      }
+      await publisher_.EnsureTopicIsCreatedAsync(options_,
+                                                 partitionId)
+                      .ConfigureAwait(false);
+      await subscriber_.EnsureSubscriptionIsCreatedAsync(options_,
+                                                         partitionId)
+                       .ConfigureAwait(false);
 
       messages = await subscriber_.PullAsync(subscriptionName,
                                              nbMessages,
@@ -137,8 +92,8 @@ internal class PullQueueStorage : IPullQueueStorage
       yield return new QueueMessageHandler(message,
                                            subscriber_,
                                            subscriptionName,
-                                           ackDeadlinePeriod_,
-                                           ackExtendDeadlineStep_,
+                                           options_.AckDeadlinePeriod,
+                                           options_.AckExtendDeadlineStep,
                                            logger_);
     }
   }
