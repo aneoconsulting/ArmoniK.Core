@@ -122,6 +122,8 @@ public class TaskOptionsTests
                                   Is.EqualTo(completeOptions_.MaxDuration));
                       Assert.That(merged.MaxRetries,
                                   Is.EqualTo(completeOptions_.MaxRetries));
+                      Assert.That(merged.Priority,
+                                  Is.EqualTo(completeOptions_.Priority));
                       Assert.That(merged.PartitionId,
                                   Is.EqualTo(completeOptions_.PartitionId));
                       Assert.That(merged.ApplicationName,

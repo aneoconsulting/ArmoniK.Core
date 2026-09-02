@@ -91,30 +91,30 @@ public class CreateSmallTaskRequestValidatorTest
   }
 
   [Test]
-  public void UndefinedMaxDurationShouldFail()
+  public void UndefinedMaxDurationShouldBeValid()
   {
     validCreateSmallTaskRequest_!.TaskOptions.MaxDuration = null;
     Assert.That(validator_.Validate(validCreateSmallTaskRequest_)
                           .IsValid,
-                Is.False);
+                Is.True);
   }
 
   [Test]
-  public void UndefinedMaxRetriesShouldFail()
+  public void UndefinedMaxRetriesShouldBeValid()
   {
     validCreateSmallTaskRequest_!.TaskOptions.MaxRetries = default;
     Assert.That(validator_.Validate(validCreateSmallTaskRequest_)
                           .IsValid,
-                Is.False);
+                Is.True);
   }
 
   [Test]
-  public void ZeroMaxRetryShouldFail()
+  public void ZeroMaxRetryShouldBeValid()
   {
     validCreateSmallTaskRequest_!.TaskOptions.MaxRetries = 0;
     Assert.That(validator_.Validate(validCreateSmallTaskRequest_)
                           .IsValid,
-                Is.False);
+                Is.True);
   }
 
   [Test]
@@ -137,21 +137,21 @@ public class CreateSmallTaskRequestValidatorTest
   }
 
   [Test]
-  public void UndefinedPriorityShouldFail()
+  public void UndefinedPriorityShouldBeValid()
   {
     validCreateSmallTaskRequest_!.TaskOptions.Priority = default;
     Assert.That(validator_.Validate(validCreateSmallTaskRequest_)
                           .IsValid,
-                Is.False);
+                Is.True);
   }
 
   [Test]
-  public void ZeroPriorityShouldFail()
+  public void ZeroPriorityShouldBeValid()
   {
     validCreateSmallTaskRequest_!.TaskOptions.Priority = 0;
     Assert.That(validator_.Validate(validCreateSmallTaskRequest_)
                           .IsValid,
-                Is.False);
+                Is.True);
   }
 
   [Test]

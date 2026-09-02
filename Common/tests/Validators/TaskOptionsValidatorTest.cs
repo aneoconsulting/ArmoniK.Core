@@ -39,107 +39,169 @@ public class TaskOptionsValidatorTest
                              Priority    = 2,
                            };
 
-  private readonly TaskOptionsValidator validator_ = new();
+  private readonly TaskOptionsValidator sessionValidator_ = new(false);
+  private readonly TaskOptionsValidator taskValidator_    = new();
   private          TaskOptions?         validTaskOptions_;
 
   [Test]
-  public void TaskOptionsShouldBeValid()
-    => Assert.That(validator_.Validate(validTaskOptions_!)
-                             .IsValid,
+  public void SessionTaskOptionsShouldBeValid()
+    => Assert.That(sessionValidator_.Validate(validTaskOptions_!)
+                                    .IsValid,
                    Is.True);
 
   [Test]
-  public void UndefinedMaxDurationShouldFail()
+  public void TaskTaskOptionsShouldBeValid()
+    => Assert.That(taskValidator_.Validate(validTaskOptions_!)
+                                 .IsValid,
+                   Is.True);
+
+  [Test]
+  public void UndefinedSessionMaxDurationShouldFail()
   {
     validTaskOptions_!.MaxDuration = null;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
+    Assert.That(sessionValidator_.Validate(validTaskOptions_)
+                                 .IsValid,
                 Is.False);
   }
 
   [Test]
-  public void UndefinedMaxRetriesShouldFail()
+  public void UndefinedTaskMaxDurationShouldBeValid()
   {
-    validTaskOptions_!.MaxRetries = default;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
-                Is.False);
-  }
-
-  [Test]
-  public void ZeroMaxRetryShouldFail()
-  {
-    validTaskOptions_!.MaxRetries = 0;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
-                Is.False);
-  }
-
-  [Test]
-  public void NegativeMaxRetryShouldFail()
-  {
-    validTaskOptions_!.MaxRetries = -6;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
-                Is.False);
-  }
-
-  [Test]
-  public void UndefinedPriorityShouldFail()
-  {
-    validTaskOptions_!.Priority = default;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
-                Is.False);
-  }
-
-  [Test]
-  public void ZeroPriorityShouldFail()
-  {
-    validTaskOptions_!.Priority = 0;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
-                Is.False);
-  }
-
-  [Test]
-  public void NegativePriorityShouldFail()
-  {
-    validTaskOptions_!.Priority = -6;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
-                Is.False);
-  }
-
-  [Test]
-  public void TooBigPriorityShouldFail()
-  {
-    validTaskOptions_!.Priority = 100;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
-                Is.False);
-  }
-
-  [Test]
-  public void EmptyPartitionShouldSucceed()
-  {
-    validTaskOptions_!.PartitionId = string.Empty;
-    Assert.That(validator_.Validate(validTaskOptions_)
-                          .IsValid,
+    validTaskOptions_!.MaxDuration = null;
+    Assert.That(taskValidator_.Validate(validTaskOptions_)
+                              .IsValid,
                 Is.True);
   }
 
   [Test]
-  public void OnlyMaxRetryAndPriorityDefinedShouldFail()
+  public void ZeroSessionMaxRetryShouldFail()
+  {
+    validTaskOptions_!.MaxRetries = 0;
+    Assert.That(sessionValidator_.Validate(validTaskOptions_)
+                                 .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ZeroTaskMaxRetryShouldBeValid()
+  {
+    validTaskOptions_!.MaxRetries = 0;
+    Assert.That(taskValidator_.Validate(validTaskOptions_)
+                              .IsValid,
+                Is.True);
+  }
+
+  [Test]
+  public void NegativeSessionMaxRetryShouldFail()
+  {
+    validTaskOptions_!.MaxRetries = -6;
+    Assert.That(sessionValidator_.Validate(validTaskOptions_)
+                                 .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void NegativeTaskMaxRetryShouldFail()
+  {
+    validTaskOptions_!.MaxRetries = -6;
+    Assert.That(taskValidator_.Validate(validTaskOptions_)
+                              .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ZeroSessionPriorityShouldFail()
+  {
+    validTaskOptions_!.Priority = 0;
+    Assert.That(sessionValidator_.Validate(validTaskOptions_)
+                                 .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ZeroTaskPriorityShouldBeValid()
+  {
+    validTaskOptions_!.Priority = 0;
+    Assert.That(taskValidator_.Validate(validTaskOptions_)
+                              .IsValid,
+                Is.True);
+  }
+
+  [Test]
+  public void NegativeSessionPriorityShouldFail()
+  {
+    validTaskOptions_!.Priority = -6;
+    Assert.That(sessionValidator_.Validate(validTaskOptions_)
+                                 .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void NegativeTaskPriorityShouldFail()
+  {
+    validTaskOptions_!.Priority = -6;
+    Assert.That(taskValidator_.Validate(validTaskOptions_)
+                              .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void TooBigSessionPriorityShouldFail()
+  {
+    validTaskOptions_!.Priority = 100;
+    Assert.That(sessionValidator_.Validate(validTaskOptions_)
+                                 .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void TooBigTaskPriorityShouldFail()
+  {
+    validTaskOptions_!.Priority = 100;
+    Assert.That(taskValidator_.Validate(validTaskOptions_)
+                              .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void EmptySessionPartitionShouldSucceed()
+  {
+    validTaskOptions_!.PartitionId = string.Empty;
+    Assert.That(sessionValidator_.Validate(validTaskOptions_)
+                                 .IsValid,
+                Is.True);
+  }
+
+  [Test]
+  public void EmptyTaskPartitionShouldSucceed()
+  {
+    validTaskOptions_!.PartitionId = string.Empty;
+    Assert.That(taskValidator_.Validate(validTaskOptions_)
+                              .IsValid,
+                Is.True);
+  }
+
+  [Test]
+  public void OnlySessionMaxRetryAndPriorityDefinedShouldFail()
   {
     var to = new TaskOptions
              {
                MaxRetries = 1,
-               Priority   = 100,
+               Priority   = 99,
              };
 
-    Assert.That(validator_.Validate(to)
-                          .IsValid,
+    Assert.That(sessionValidator_.Validate(to)
+                                 .IsValid,
                 Is.False);
+  }
+
+  [Test]
+  public void DefaultTaskTaskOptionsShouldBeValid()
+  {
+    var to = new TaskOptions();
+
+    Assert.That(taskValidator_.Validate(to)
+                              .IsValid,
+                Is.True);
   }
 }
