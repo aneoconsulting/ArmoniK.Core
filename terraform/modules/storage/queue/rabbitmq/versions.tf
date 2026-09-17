@@ -6,11 +6,11 @@ terraform {
     }
     random = {
       source  = "registry.opentofu.org/hashicorp/random"
-      version = ">= 3.9.0"
+      version = ">= 3.9.1"
     }
     external = {
       source  = "registry.opentofu.org/hashicorp/external"
-      version = ">= 2.4.1"
+      version = ">= 2.4.2"
     }
   }
 }
