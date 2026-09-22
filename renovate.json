@@ -31,7 +31,123 @@
       "matchDatasources": [
         "nuget"
       ],
-      "bumpVersion": "patch"
+      "bumpVersion": "patch",
+      "schedule": [
+        "on the first day of the month"
+      ]
+    },
+    {
+      "groupName": ".NET runtime",
+      "groupSlug": "nuget-dotnet",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "Microsoft.Extensions.*",
+        "Microsoft.AspNetCore.*",
+        "Microsoft.Bcl.*"
+      ]
+    },
+    {
+      "groupName": "gRPC",
+      "groupSlug": "nuget-grpc",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "Grpc.*"
+      ]
+    },
+    {
+      "groupName": "AWS SDK",
+      "groupSlug": "nuget-aws",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "AWSSDK.*"
+      ]
+    },
+    {
+      "groupName": "Google Cloud",
+      "groupSlug": "nuget-gcp",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "Google.Cloud.*"
+      ]
+    },
+    {
+      "groupName": "OpenTelemetry",
+      "groupSlug": "nuget-otel",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "OpenTelemetry*"
+      ]
+    },
+    {
+      "groupName": "OpenTelemetry",
+      "groupSlug": "nuget-otel",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "OpenTelemetry.Exporter.Prometheus.*"
+      ],
+      "ignoreUnstable": false
+    },
+    {
+      "groupName": "NUnit",
+      "groupSlug": "nuget-nunit",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "NUnit*"
+      ]
+    },
+    {
+      "groupName": "NATS",
+      "groupSlug": "nuget-nats",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "NATS.*"
+      ]
+    },
+    {
+      "groupName": "Serilog",
+      "groupSlug": "nuget-serilog",
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "Serilog*",
+        "Destructurama.*"
+      ]
+    },
+    {
+      "groupName": null,
+      "matchDatasources": [
+        "nuget"
+      ],
+      "matchPackageNames": [
+        "MongoDB.*",
+        "Npgsql",
+        "StackExchange.Redis",
+        "AMQPNetLite.Core",
+        "dbup-postgresql",
+        "Microsoft.NET.Test.Sdk",
+        "coverlet.*",
+        "Moq",
+        "EphemeralMongo*",
+        "MysticMind.PostgresEmbed",
+        "redis-inside"
+      ]
     },
     {
       "groupName": "ArmoniK.Api",
