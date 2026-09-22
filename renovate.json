@@ -145,7 +145,8 @@
         "coverlet.*",
         "Moq",
         "EphemeralMongo*",
-        "MysticMind.PostgresEmbed"
+        "MysticMind.PostgresEmbed",
+        "redis-inside"
       ]
     },
     {
