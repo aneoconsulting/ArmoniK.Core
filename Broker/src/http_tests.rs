@@ -94,10 +94,7 @@ async fn full_cycle_and_epoch_header() {
     )
     .await;
     assert_eq!(s, StatusCode::OK);
-    assert_eq!(
-        h["x-broker-epoch"].to_str().unwrap(),
-        reg.epoch.to_string()
-    );
+    assert_eq!(h["x-broker-epoch"].to_str().unwrap(), reg.epoch.to_string());
     let msgs = v["messages"].as_array().unwrap();
     assert_eq!(msgs.len(), 2);
     let items: Vec<Value> = msgs
@@ -225,10 +222,7 @@ async fn errors_follow_the_table() {
     let (s, v, _) = call(&app, Method::GET, "/nope", None).await;
     assert_eq!(
         (s, v["type"].as_str()),
-        (
-            StatusCode::NOT_FOUND,
-            Some("urn:armonik:broker:not-found")
-        )
+        (StatusCode::NOT_FOUND, Some("urn:armonik:broker:not-found"))
     );
     let (s, v) = enqueue(&app, "p", "k", 17, &["x"]).await;
     assert_eq!(

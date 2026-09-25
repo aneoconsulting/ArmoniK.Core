@@ -29,11 +29,7 @@ pub struct Config {
 
     #[arg(long, env = "BROKER_MAX_PARTITIONS", default_value_t = 20)]
     pub max_partitions: usize,
-    #[arg(
-        long,
-        env = "BROKER_MAX_KEYS_PER_PARTITION",
-        default_value_t = 65_536
-    )]
+    #[arg(long, env = "BROKER_MAX_KEYS_PER_PARTITION", default_value_t = 65_536)]
     pub max_keys_per_partition: usize,
     /// Hard limit on messages held (ready, delayed and in flight), all partitions together.
     #[arg(long, env = "BROKER_MAX_MESSAGES", default_value_t = 10_000_000)]
