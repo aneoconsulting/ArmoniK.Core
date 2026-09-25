@@ -9,6 +9,7 @@ pub mod actor;
 pub mod affinity;
 pub mod config;
 pub mod error;
+pub mod hashing;
 pub mod http;
 #[cfg(test)]
 mod http_tests;
