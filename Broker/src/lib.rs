@@ -20,3 +20,4 @@ pub mod state;
 #[cfg(test)]
 mod state_tests;
 pub mod token;
+pub mod wheel;
