@@ -14,7 +14,7 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 rounds="${1:-3}"
-filter="${FILTER:-^scheduler/(cycle/affinity|affinity-scoring|affinity-nodes/100|affinity-mirror/250000)}"
+filter="${FILTER:-^scheduler/(cycle/affinity|affinity-scoring|affinity-nodes/100|affinity-mirror/250000|affinity-fleet)}"
 core="${CORE-2}"
 out="${CARGO_TARGET_DIR:-$PWD/target}/compare-hashers"
 variants=(sip fx fold ahash)

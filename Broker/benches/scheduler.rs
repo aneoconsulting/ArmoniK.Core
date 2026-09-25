@@ -4,8 +4,12 @@
 //! Scheduler alone, in memory, without network (design C.8: > 5 M operations/s/core).
 //! One iteration is a full cycle: pull of 1 message, ack, and its share of an enqueue
 //! batch that keeps the depth constant, so throughput is reported in cycles/s.
-//! The clock advances as at 50 000 cycles/s and `tick` runs as the actor runs it, so
-//! the lease expiry heap stays at its steady size instead of growing without bound.
+//! The clock advances as at 50 000 cycles/s and `tick` runs as the actor runs it.
+//!
+//! Each benchmark builds its state once, on first use, and keeps it from one criterion
+//! sample to the next, cycle counter included. Before measuring, it runs one lease period
+//! of cycles (30 s simulated, 1.5 M cycles), so that the measured cycles process lease
+//! expiries and meet the expiry structures at their steady size, as in production.
 //!
 //! Affinity is swept one axis at a time around [`BASELINE`] (design E.5): dependencies
 //! per message, mirror size, share of dependencies already in the mirror, probe budget,
@@ -15,6 +19,7 @@
 //! prefetch, < 5.1 us without): with a budget of 0 the pull takes the head without
 //! scoring and everything else stays, so the scoring cost is `1/rate(64) - 1/rate(0)`.
 //! A small mirror stays in the processor cache, the default one does not.
+//! `scheduler/affinity-fleet` is the production scale: 100 nodes, default mirrors.
 
 use std::hint::black_box;
 use std::sync::Arc;
@@ -25,7 +30,10 @@ use armonik_broker::metrics::Globals;
 use armonik_broker::state::{ConsumerRef, EnqueueItem, NodeDecl, PartitionState};
 use armonik_broker::token::Token;
 use clap::Parser;
-use criterion::{BenchmarkId, Criterion, Throughput, criterion_group, criterion_main};
+use criterion::measurement::WallTime;
+use criterion::{
+    BenchmarkGroup, BenchmarkId, Criterion, Throughput, criterion_group, criterion_main,
+};
 
 /// Enqueue batch size, as sent by the adapter (design A.2).
 const BATCH: u64 = 150;
@@ -85,6 +93,8 @@ struct Bench {
     keys: u64,
     affinity: Option<AffinityCase>,
     next: u64,
+    /// Cycles run so far, warm-up included: the simulated clock.
+    i: u64,
 }
 
 impl Bench {
@@ -99,6 +109,7 @@ impl Bench {
             ]);
         }
         let cfg = Config::parse_from(args);
+        let warmup = cfg.lease_ms * CYCLES_PER_MS;
         let globals = Arc::new(Globals::new(cfg.max_messages, cfg.block_messages));
         let mut s = PartitionState::new(0, "bench".into(), 1, Arc::new(cfg), globals);
         let nodes = affinity.map_or(1, |a| a.nodes);
@@ -117,6 +128,7 @@ impl Bench {
             keys,
             affinity,
             next: 0,
+            i: 0,
         };
         if let Some(a) = affinity {
             for c in b.consumers.clone() {
@@ -125,6 +137,9 @@ impl Bench {
         }
         while b.next < DEPTH {
             b.enqueue_batch(0);
+        }
+        while b.i < warmup {
+            b.cycle();
         }
         b
     }
@@ -177,7 +192,9 @@ impl Bench {
         self.next += BATCH;
     }
 
-    fn cycle(&mut self, i: u64) {
+    fn cycle(&mut self) {
+        let i = self.i;
+        self.i += 1;
         let now = i / CYCLES_PER_MS;
         if i % CYCLES_PER_MS == 0 {
             self.s.tick(now);
@@ -192,12 +209,18 @@ impl Bench {
     }
 }
 
-fn run(b: &mut criterion::Bencher, keys: u64, affinity: Option<AffinityCase>) {
-    let mut bench = Bench::new(keys, affinity);
-    let mut i = 0;
-    b.iter(|| {
-        bench.cycle(i);
-        i += 1;
+/// Criterion calls the closure once per sample: the state is built on the first call
+/// only, so that a benchmark filtered out costs nothing, and then kept.
+fn run(
+    g: &mut BenchmarkGroup<'_, WallTime>,
+    id: BenchmarkId,
+    keys: u64,
+    affinity: Option<AffinityCase>,
+) {
+    let mut bench = None;
+    g.bench_function(id, |b| {
+        let bench = bench.get_or_insert_with(|| Bench::new(keys, affinity));
+        b.iter(|| bench.cycle());
     });
 }
 
@@ -210,9 +233,12 @@ fn cycles(c: &mut Criterion) {
         } else {
             "plain"
         };
-        g.bench_function(BenchmarkId::new(name, format!("keys={keys}")), |b| {
-            run(b, keys, affinity)
-        });
+        run(
+            &mut g,
+            BenchmarkId::new(name, format!("keys={keys}")),
+            keys,
+            affinity,
+        );
     }
     g.finish();
 }
@@ -222,9 +248,7 @@ fn axis(c: &mut Criterion, name: &str, points: impl IntoIterator<Item = (u32, Af
     let mut g = c.benchmark_group(format!("scheduler/affinity-{name}"));
     g.throughput(Throughput::Elements(1));
     for (value, case) in points {
-        g.bench_function(BenchmarkId::from_parameter(value), |b| {
-            run(b, 100, Some(case))
-        });
+        run(&mut g, BenchmarkId::from_parameter(value), 100, Some(case));
     }
     g.finish();
 }
@@ -278,11 +302,36 @@ fn affinity_scoring(c: &mut Criterion) {
                 ..BASELINE
             };
             let id = BenchmarkId::new(format!("mirror={mirror}"), format!("budget={budget}"));
-            g.bench_function(id, |b| run(b, 100, Some(case)));
+            run(&mut g, id, 100, Some(case));
         }
     }
     g.finish();
 }
 
-criterion_group!(benches, cycles, affinity_sweep, affinity_scoring);
+/// Production scale (design E.5): 100 nodes with a full default mirror each, about
+/// 25 M mirror entries, far beyond the processor caches.
+fn affinity_fleet(c: &mut Criterion) {
+    let mut g = c.benchmark_group("scheduler/affinity-fleet");
+    g.throughput(Throughput::Elements(1));
+    let case = AffinityCase {
+        mirror: 250_000,
+        nodes: 100,
+        ..BASELINE
+    };
+    run(
+        &mut g,
+        BenchmarkId::new("nodes=100", "mirror=250000"),
+        100,
+        Some(case),
+    );
+    g.finish();
+}
+
+criterion_group!(
+    benches,
+    cycles,
+    affinity_sweep,
+    affinity_scoring,
+    affinity_fleet
+);
 criterion_main!(benches);
