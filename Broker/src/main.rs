@@ -1,23 +1,9 @@
 // This file is part of the ArmoniK project. Copyright (C) ANEO, 2021-2026.
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
-//! ArmoniK Broker: task queue with fairness between keys, strict priorities
-//! inside a key and task/data affinity. Design: __docs__/broker-armonik-architecture-v0.49.md.
+//! ArmoniK Broker binary; the queue itself lives in the library (lib.rs).
 
-mod actor;
-mod affinity;
-mod config;
-mod error;
-mod http;
-#[cfg(test)]
-mod http_tests;
-mod metrics;
-mod mirror;
-mod server;
-mod state;
-#[cfg(test)]
-mod state_tests;
-mod token;
+use armonik_broker::{actor, config, server};
 
 use clap::Parser;
 
