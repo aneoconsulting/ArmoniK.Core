@@ -19,6 +19,7 @@ use crate::error::ApiError;
 use crate::hashing::Map;
 use crate::metrics::{Counters, Gauges, Globals};
 use crate::token::Token;
+use crate::wheel::Wheel;
 
 pub const NIL: u32 = u32::MAX;
 /// Period of the scans that have no sorted deadline (registrations, key retention, mirrors, gauges).
@@ -257,8 +258,10 @@ pub struct PartitionState {
     free_consumers: Vec<u32>,
     waiters: VecDeque<Waiter>,
     delayed: BinaryHeap<Reverse<(u64, u32, u32)>>,
-    /// Lease deadlines (deadline, slot, generation); one entry per lease, moved on expiry check.
-    expiries: BinaryHeap<Reverse<(u64, u32, u32)>>,
+    /// Lease deadlines, by lease index: an ended lease leaves the wheel at once.
+    lease_wheel: Wheel,
+    /// Leases found expired by the last tick, kept to reuse the allocation.
+    expired: Vec<u32>,
     /// Deadlines of the sleeping pulls; the sleepers themselves stay in FIFO order.
     waiter_deadlines: BinaryHeap<Reverse<u64>>,
     next_sweep_ms: u64,
@@ -281,7 +284,6 @@ impl PartitionState {
             index,
             name,
             epoch,
-            cfg,
             globals,
             gauges: Arc::new(Gauges::default()),
             held: 0,
@@ -300,13 +302,15 @@ impl PartitionState {
             free_consumers: Vec::new(),
             waiters: VecDeque::new(),
             delayed: BinaryHeap::new(),
-            expiries: BinaryHeap::new(),
+            lease_wheel: Wheel::new(cfg.lease_ms, 0),
+            expired: Vec::new(),
             waiter_deadlines: BinaryHeap::new(),
             next_sweep_ms: 0,
             mirrors: Map::default(),
             shutting_down: false,
             #[cfg(test)]
             examined: std::cell::Cell::new(0),
+            cfg,
         }
     }
 
@@ -713,7 +717,9 @@ impl PartitionState {
                     if self.leases[self.records[slot as usize].lease as usize].consumer == i =>
                 {
                     let l = self.records[slot as usize].lease;
-                    self.leases[l as usize].deadline_ms = now + self.cfg.lease_ms;
+                    let deadline = now + self.cfg.lease_ms;
+                    self.leases[l as usize].deadline_ms = deadline;
+                    self.lease_wheel.insert(l, deadline);
                 }
                 _ => unknown.push(*t),
             }
@@ -747,6 +753,7 @@ impl PartitionState {
             self.leases[dn as usize].d_prev = dp
         }
         self.consumers[c as usize].in_flight -= 1;
+        self.lease_wheel.remove(l);
         self.free_leases.push(l);
     }
 
@@ -830,10 +837,8 @@ impl PartitionState {
         r.state = SlotState::InFlight;
         r.lease = l;
         r.attempts = r.attempts.saturating_add(1);
-        let generation = r.generation;
-        self.expiries
-            .push(Reverse((lease_deadline, slot, generation)));
         let k = r.key;
+        self.lease_wheel.insert(l, lease_deadline);
         let key = &mut self.keys[k as usize];
         key.deficit -= 1;
         key.in_flight += 1;
@@ -1108,26 +1113,17 @@ impl PartitionState {
             self.deque_push(slot, false);
             self.refresh_key(k, now);
         }
-        // Leases not renewed in time go back with backoff. An entry whose distribution
-        // ended is dropped; one that was renewed moves to its new deadline.
-        while let Some(Reverse((due, slot, g))) = self.expiries.peek().copied() {
-            if due > now {
-                break;
-            }
-            self.expiries.pop();
-            let r = &self.records[slot as usize];
-            if r.state != SlotState::InFlight || r.generation != g {
-                continue;
-            }
-            let deadline = self.leases[r.lease as usize].deadline_ms;
-            if deadline > now {
-                self.expiries.push(Reverse((deadline, slot, g)));
-                continue;
-            }
+        // Leases not renewed in time go back with backoff. The wheel only holds current
+        // leases: ended ones left it, renewed ones moved.
+        let mut expired = std::mem::take(&mut self.expired);
+        self.lease_wheel.expire(now, &mut expired);
+        for l in expired.drain(..) {
+            let slot = self.leases[l as usize].slot;
             self.leave_flight(slot, now);
             self.place(slot, NackPolicy::Backoff, false, now);
             Counters::add(&self.gauges.counters.expired, 1);
         }
+        self.expired = expired;
         // Waits that ran out: answered empty, in one pass over the sleepers.
         let mut expired_wait = false;
         while let Some(Reverse(due)) = self.waiter_deadlines.peek().copied() {
@@ -1164,7 +1160,7 @@ impl PartitionState {
     pub fn next_deadline(&self) -> u64 {
         [
             self.delayed.peek().map(|Reverse((d, _, _))| *d),
-            self.expiries.peek().map(|Reverse((d, _, _))| *d),
+            self.lease_wheel.next_due(),
             self.waiter_deadlines.peek().map(|Reverse(d)| *d),
         ]
         .into_iter()
@@ -1440,6 +1436,11 @@ impl PartitionState {
             l = x.d_next;
         }
         assert_eq!(n, flight);
+        assert_eq!(
+            self.lease_wheel.len() as u64,
+            flight,
+            "one wheel entry per lease"
+        );
         let per_consumer: u64 = self
             .consumers
             .iter()
