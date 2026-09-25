@@ -4,7 +4,7 @@
 //! Cache mirror of one (node, partition) pair: a bounded LRU set of data hashes.
 //! Owned by the partition actor only; never shared between threads.
 
-use std::collections::HashMap;
+use crate::hashing::Map;
 
 const NIL: u32 = u32::MAX;
 
@@ -15,7 +15,7 @@ struct Entry {
 }
 
 pub struct Mirror {
-    index: HashMap<u32, u32>,
+    index: Map<u32, u32>,
     entries: Vec<Entry>,
     head: u32,
     tail: u32,
@@ -28,7 +28,7 @@ pub struct Mirror {
 impl Mirror {
     pub fn new(capacity: usize, pivot: f64, now: u64) -> Self {
         Mirror {
-            index: HashMap::new(),
+            index: Map::default(),
             entries: Vec::new(),
             head: NIL,
             tail: NIL,

@@ -6,7 +6,7 @@
 //! in milliseconds so that tests control time.
 
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap, HashMap, VecDeque};
+use std::collections::{BinaryHeap, VecDeque};
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
@@ -16,6 +16,7 @@ use tokio::sync::oneshot;
 use crate::affinity::{self, Affinity, Outputs};
 use crate::config::Config;
 use crate::error::ApiError;
+use crate::hashing::Map;
 use crate::metrics::{Counters, Gauges, Globals};
 use crate::token::Token;
 
@@ -243,7 +244,7 @@ pub struct PartitionState {
     free_slots: Vec<u32>,
 
     keys: Vec<Key>,
-    key_index: HashMap<Box<str>, u32>,
+    key_index: Map<Box<str>, u32>,
     free_keys: Vec<u32>,
     cursor: u32,
 
@@ -261,7 +262,7 @@ pub struct PartitionState {
     /// Deadlines of the sleeping pulls; the sleepers themselves stay in FIFO order.
     waiter_deadlines: BinaryHeap<Reverse<u64>>,
     next_sweep_ms: u64,
-    mirrors: HashMap<Box<str>, crate::mirror::Mirror>,
+    mirrors: Map<Box<str>, crate::mirror::Mirror>,
     shutting_down: bool,
     /// Candidates examined by the affinity scoring, for the tests.
     #[cfg(test)]
@@ -288,7 +289,7 @@ impl PartitionState {
             records: Vec::new(),
             free_slots: Vec::new(),
             keys: Vec::new(),
-            key_index: HashMap::new(),
+            key_index: Map::default(),
             free_keys: Vec::new(),
             cursor: NIL,
             leases: Vec::new(),
@@ -302,7 +303,7 @@ impl PartitionState {
             expiries: BinaryHeap::new(),
             waiter_deadlines: BinaryHeap::new(),
             next_sweep_ms: 0,
-            mirrors: HashMap::new(),
+            mirrors: Map::default(),
             shutting_down: false,
             #[cfg(test)]
             examined: std::cell::Cell::new(0),
