@@ -3,6 +3,15 @@ name = "armonik-broker"
 version = "0.1.0"
 edition = "2024"
 
+# Only the criterion targets are benchmarks: libtest would reject criterion's options.
+[lib]
+bench = false
+
+[[bin]]
+name = "armonik-broker"
+path = "src/main.rs"
+bench = false
+
 [dependencies]
 anyhow = "1.0.104"
 axum = "0.8.9"
@@ -23,8 +32,20 @@ tracing = "0.1.44"
 tracing-subscriber = { version = "0.3.23", features = ["json", "env-filter"] }
 
 [dev-dependencies]
+bytes = "1.12.1"
+criterion = "0.8.2"
+http-body-util = "0.1.5"
+hyper = { version = "1.11.1", features = ["client", "http1", "http2"] }
 proptest = "1.11.0"
 tower = { version = "0.5.3", features = ["util"] }
+
+[[bench]]
+name = "scheduler"
+harness = false
+
+[[bench]]
+name = "http"
+harness = false
 
 [profile.release]
 lto = "thin"
