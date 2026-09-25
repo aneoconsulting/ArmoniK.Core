@@ -17,6 +17,7 @@
     <ProjectReference Include="../Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj" PublishSubDir="sqs" />
     <ProjectReference Include="../Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj" PublishSubDir="pubsub" />
     <ProjectReference Include="../Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj" PublishSubDir="nats" />
+    <ProjectReference Include="../Adaptors/Broker/src/ArmoniK.Core.Adapters.Broker.csproj" PublishSubDir="broker" />
     <ProjectReference Include="../Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj" PublishSubDir="amqp" />
     <ProjectReference Include="../Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj" PublishSubDir="local_storage" />
     <ProjectReference Include="../Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj" PublishSubDir="embed" />

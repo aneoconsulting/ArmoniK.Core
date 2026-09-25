@@ -40,4 +40,11 @@ public interface IPushQueueStorage : IQueueStorage
   Task PushMessagesAsync(IEnumerable<MessageData> messages,
                          string                   partitionId,
                          CancellationToken        cancellationToken = default);
+
+  /// <summary>
+  ///   Whether the queue uses <see cref="MessageData.Dependencies" />. Core only reads the sizes of the
+  ///   data dependencies, which costs a database query, when this is true.
+  /// </summary>
+  bool UsesDataDependencies
+    => false;
 }
