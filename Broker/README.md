@@ -22,5 +22,17 @@ just buildBroker               # docker image (from the repository root)
 just queue=broker build-deploy # full deployment
 ```
 
+## Benchmarks
+
+```bash
+cargo bench                        # scheduler alone (benches/scheduler.rs) and HTTP chain (benches/http.rs)
+benches/check-floors.sh            # CI floors (benches/floors.json) against the last run
+benches/compare-hashers.sh 3       # hashers of the hot-path tables (src/hashing.rs), 3 rotating rounds
+```
+
+Numbers only hold on a quiet Linux machine: in a VM (WSL, CI runner) the host can slow a core several
+times over without the guest seeing it. The hasher is chosen at build time with the `hash-fx`,
+`hash-fold` or `hash-ahash` feature; without any, the server uses SipHash.
+
 The C# adapter tests (`Adaptors/Broker/tests`) start the debug binary; they look for it in
 `BROKER_BINARY`, `$HOME/.cache/armonik-broker-target/debug` or `Broker/target/debug`.
