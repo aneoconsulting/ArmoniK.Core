@@ -37,6 +37,8 @@ using Google.Protobuf.WellKnownTypes;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Microsoft.Extensions.Logging.Abstractions;
+
 using NUnit.Framework;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
@@ -633,8 +635,10 @@ public class SubmitterTests
                   Is.EqualTo(0));
       await TaskLifeCycleHelper.ResumeAsync(taskTable_!,
                                             sessionTable_!,
+                                            resultTable_!,
                                             pushQueueStorage_,
-                                            sessionData.SessionId)
+                                            sessionData.SessionId,
+                                            NullLogger.Instance)
                                .ConfigureAwait(false);
     }
 

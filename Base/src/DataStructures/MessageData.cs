@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
+
 namespace ArmoniK.Core.Base.DataStructures;
 
 /// <summary>
@@ -25,4 +27,18 @@ namespace ArmoniK.Core.Base.DataStructures;
 /// <param name="Options">Task options</param>
 public record MessageData(string      TaskId,
                           string      SessionId,
-                          TaskOptions Options);
+                          TaskOptions Options)
+{
+  /// <summary>
+  ///   Unit of fairness between workloads, opaque to the queue. Queues that share their capacity
+  ///   fairly (such as the Broker adapter) serve the keys in turn; the others ignore it.
+  ///   Defaults to the session.
+  /// </summary>
+  public string FairnessKey { get; init; } = SessionId;
+
+  /// <summary>
+  ///   Data dependencies of the task with their sizes in bytes, filled only for queues that declare
+  ///   <see cref="IPushQueueStorage.UsesDataDependencies" />; used for task and data affinity.
+  /// </summary>
+  public IReadOnlyList<(string Id, long Size)>? Dependencies { get; init; }
+}

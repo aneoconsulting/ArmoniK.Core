@@ -356,8 +356,10 @@ public class GrpcSessionsService : Sessions.SessionsBase
 
     var session = await TaskLifeCycleHelper.ResumeAsync(taskTable_,
                                                         sessionTable_,
+                                                        resultTable_,
                                                         pushQueueStorage_,
                                                         request.SessionId,
+                                                        logger_,
                                                         context.CancellationToken)
                                            .ConfigureAwait(false);
 

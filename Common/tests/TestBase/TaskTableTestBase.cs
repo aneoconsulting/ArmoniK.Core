@@ -2615,6 +2615,87 @@ public class TaskTableTestBase
   }
 
   [Test]
+  public async Task RemoveRemainingDataDependenciesShouldProjectReadyTask()
+  {
+    if (RunTests)
+    {
+      // The enqueue path reads the payload and the data dependencies of ready tasks through
+      // ReadyTask.Selector, in the same query that finds them; every task table must translate it.
+      var taskId = Guid.NewGuid()
+                       .ToString();
+      const string dep1      = "depReady1";
+      const string dep2      = "depReady2";
+      const string payloadId = "payloadForReadyTask";
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionReady",
+                                                  taskId,
+                                                  "",
+                                                  "",
+                                                  payloadId,
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    dep1,
+                                                    dep2,
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "outputReady",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Creating,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      var ready = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                       {
+                                                                         taskId,
+                                                                       },
+                                                                       new[]
+                                                                       {
+                                                                         dep1,
+                                                                         dep2,
+                                                                         payloadId,
+                                                                       },
+                                                                       ReadyTask.Selector,
+                                                                       CancellationToken.None)
+                                 .ToListAsync(CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+      Assert.That(ready,
+                  Has.Count.EqualTo(1));
+      var task = ready.Single();
+      Assert.Multiple(() =>
+                      {
+                        Assert.That(task.TaskId,
+                                    Is.EqualTo(taskId));
+                        Assert.That(task.SessionId,
+                                    Is.EqualTo("SessionReady"));
+                        Assert.That(task.PayloadId,
+                                    Is.EqualTo(payloadId));
+                        Assert.That(task.DataDependencies,
+                                    Is.EquivalentTo(new[]
+                                                    {
+                                                      dep1,
+                                                      dep2,
+                                                    }));
+                        Assert.That(task.Options,
+                                    Is.EqualTo(Options));
+                        Assert.That(task.ToMessage(),
+                                    Is.EqualTo(new MessageData(taskId,
+                                                               "SessionReady",
+                                                               Options)));
+                      });
+    }
+  }
+
+  [Test]
   public async Task ListApplicationFromTasksNoSortShouldSucceed()
   {
     if (RunTests)

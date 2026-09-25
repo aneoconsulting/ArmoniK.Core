@@ -19,6 +19,9 @@ ArmoniK provides multiple queue adapter implementations:
 - **Nats Jet Stream** - `ArmoniK.Core.Adapters.Nats`
   - Messaging service integration
 
+- **ArmoniK Broker** - `ArmoniK.Core.Adapters.Broker`
+  - Client of the ArmoniK Broker (`Broker/`): fairness between sessions, strict priorities inside a session, task and data affinity; in memory, no persistence
+
 - **Memory** - `ArmoniK.Core.Adapters.Memory`
   - In-memory queue for testing and development
 

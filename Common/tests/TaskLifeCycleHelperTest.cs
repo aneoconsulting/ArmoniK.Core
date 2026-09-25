@@ -300,8 +300,10 @@ public class TaskLifeCycleHelperTest
 
     await TaskLifeCycleHelper.ResumeAsync(holder.TaskTable,
                                           holder.SessionTable,
+                                          holder.ResultTable,
                                           holder.PushQueueStorage,
-                                          holder.Session)
+                                          holder.Session,
+                                          NullLogger.Instance)
                              .ConfigureAwait(false);
 
     session = await holder.SessionTable.GetSessionAsync(holder.Session)
@@ -313,6 +315,84 @@ public class TaskLifeCycleHelperTest
                 Is.EqualTo(1));
   }
 
+
+  /// <summary>
+  ///   Queue that asks for the data dependencies, to check what Core sends it.
+  /// </summary>
+  private sealed class DependencyAwareQueue : IPushQueueStorage
+  {
+    public readonly List<Base.DataStructures.MessageData> Messages = new();
+
+    public bool UsesDataDependencies
+      => true;
+
+    public int MaxPriority
+      => 10;
+
+    public Task PushMessagesAsync(IEnumerable<Base.DataStructures.MessageData> messages,
+                                  string                                       partitionId,
+                                  CancellationToken                            cancellationToken = default)
+    {
+      Messages.AddRange(messages);
+      return Task.CompletedTask;
+    }
+
+    public Task<Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult> Check(Base.DataStructures.HealthCheckTag tag)
+      => Task.FromResult(Microsoft.Extensions.Diagnostics.HealthChecks.HealthCheckResult.Healthy());
+
+    public Task Init(CancellationToken cancellationToken)
+      => Task.CompletedTask;
+  }
+
+  [Test]
+  public async Task ResumeAttachesDataDependenciesWhenTheQueueAsks()
+  {
+    using var holder = new Holder();
+
+    await TaskLifeCycleHelper.PauseAsync(holder.TaskTable,
+                                         holder.SessionTable,
+                                         holder.Session)
+                             .ConfigureAwait(false);
+
+    var queue = new DependencyAwareQueue();
+    await TaskLifeCycleHelper.ResumeAsync(holder.TaskTable,
+                                          holder.SessionTable,
+                                          holder.ResultTable,
+                                          queue,
+                                          holder.Session,
+                                          NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    Assert.That(queue.Messages,
+                Is.Not.Empty);
+    foreach (var message in queue.Messages)
+    {
+      var task = await holder.TaskTable.ReadTaskAsync(message.TaskId,
+                                                      data => new
+                                                              {
+                                                                data.PayloadId,
+                                                                data.DataDependencies,
+                                                              })
+                             .ConfigureAwait(false);
+      var expected = task.DataDependencies.Append(task.PayloadId)
+                         .ToList();
+      var sizes = await holder.ResultTable.GetResults(result => expected.Contains(result.ResultId),
+                                                      result => new
+                                                                {
+                                                                  result.ResultId,
+                                                                  result.Size,
+                                                                })
+                              .ToDictionaryAsync(r => r.ResultId,
+                                                 r => r.Size)
+                              .ConfigureAwait(false);
+
+      Assert.That(message.Dependencies,
+                  Is.EquivalentTo(expected.Select(id => (id, sizes[id]))),
+                  $"dependencies of {message.TaskId}, payload included, with their sizes");
+      Assert.That(sizes[task.PayloadId],
+                  Is.GreaterThan(0));
+    }
+  }
 
   [Test]
   public async Task TaskSubmissionShouldSucceed()
@@ -1085,8 +1165,10 @@ public class TaskLifeCycleHelperTest
 
     await TaskLifeCycleHelper.ResumeAsync(holder.TaskTable,
                                           holder.SessionTable,
+                                          holder.ResultTable,
                                           holder.PushQueueStorage,
-                                          holder.Session)
+                                          holder.Session,
+                                          NullLogger.Instance)
                              .ConfigureAwait(false);
 
     session = await holder.SessionTable.GetSessionAsync(holder.Session)
