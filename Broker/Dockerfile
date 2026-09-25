@@ -20,6 +20,7 @@ RUN set -eux; \
 WORKDIR /src
 COPY Broker/Cargo.toml Broker/Cargo.lock ./
 COPY Broker/src src
+COPY Broker/benches benches
 COPY Broker/conformance conformance
 RUN set -eux; \
     target="$(cat /target)"; cc="$(cat /cc)"; \

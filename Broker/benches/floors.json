@@ -1,0 +1,9 @@
+{
+  "scheduler/cycle/plain/keys=1": 150000,
+  "scheduler/cycle/plain/keys=100": 150000,
+  "scheduler/cycle/affinity/keys=100": 50000,
+  "http/cycle/h1/1": 1000,
+  "http/cycle/h1/64": 2500,
+  "http/cycle/h2c/1": 2000,
+  "http/cycle/h2c/64": 5000
+}
