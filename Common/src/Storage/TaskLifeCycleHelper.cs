@@ -286,6 +286,7 @@ public static class TaskLifeCycleHelper
                    .ConfigureAwait(false);
 
     await EnqueueReadyTasks(taskTable,
+                            resultTable,
                             pushQueueStorage,
                             sessionData,
                             readyTask,
@@ -334,7 +335,7 @@ public static class TaskLifeCycleHelper
   /// <returns>
   ///   Queue messages for ready tasks
   /// </returns>
-  private static async Task<ICollection<MessageData>> PrepareTaskDependencies(ITaskTable                       taskTable,
+  private static async Task<ICollection<ReadyTask>> PrepareTaskDependencies(ITaskTable                       taskTable,
                                                                               IResultTable                     resultTable,
                                                                               ICollection<TaskCreationRequest> taskRequests,
                                                                               ILogger                          logger,
@@ -476,9 +477,7 @@ public static class TaskLifeCycleHelper
     // This is benign as it will be handled during dequeue with message deduplication.
     return await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
                                                                 completedDependencies,
-                                                                data => new MessageData(data.TaskId,
-                                                                                        data.SessionId,
-                                                                                        data.Options),
+                                                                ReadyTask.Selector,
                                                                 recovery,
                                                                 cancellationToken)
                           .ToListAsync(cancellationToken)
@@ -536,9 +535,7 @@ public static class TaskLifeCycleHelper
     // This is benign as it will be handled during dequeue with message deduplication.
     var readyTasks = await taskTable.RemoveRemainingDataDependenciesAsync(dependentTasks,
                                                                           results,
-                                                                          data => new MessageData(data.TaskId,
-                                                                                                  data.SessionId,
-                                                                                                  data.Options),
+                                                                          ReadyTask.Selector,
                                                                           recovery,
                                                                           cancellationToken)
                                     .ToListAsync(cancellationToken)
@@ -549,6 +546,7 @@ public static class TaskLifeCycleHelper
                     readyTasks);
 
     await EnqueueReadyTasks(taskTable,
+                            resultTable,
                             pushQueueStorage,
                             sessionData,
                             readyTasks,
@@ -561,28 +559,43 @@ public static class TaskLifeCycleHelper
   ///   Enqueue all the messages that are ready for enqueueing, and mark them as enqueued in the task table
   /// </summary>
   /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
   /// <param name="sessionData">Data of the session in which the tasks are enqueued</param>
-  /// <param name="messages">Messages to enqueue</param>
+  /// <param name="readyTasks">Tasks to enqueue</param>
   /// <param name="logger"></param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
   /// </returns>
-  private static async Task EnqueueReadyTasks(ITaskTable               taskTable,
-                                              IPushQueueStorage        pushQueueStorage,
-                                              SessionData              sessionData,
-                                              ICollection<MessageData> messages,
-                                              ILogger                  logger,
-                                              CancellationToken        cancellationToken)
+  private static async Task EnqueueReadyTasks(ITaskTable             taskTable,
+                                              IResultTable           resultTable,
+                                              IPushQueueStorage      pushQueueStorage,
+                                              SessionData            sessionData,
+                                              ICollection<ReadyTask> readyTasks,
+                                              ILogger                logger,
+                                              CancellationToken      cancellationToken)
   {
-    if (!messages.Any())
+    if (!readyTasks.Any())
     {
       return;
     }
 
+    var messages = readyTasks.Select(task => task.ToMessage())
+                             .AsICollection();
+
     if (sessionData.Status is not SessionStatus.Paused)
     {
+      if (pushQueueStorage.UsesDataDependencies)
+      {
+        messages = await AttachDataDependencies(resultTable,
+                                                readyTasks,
+                                                messages,
+                                                logger,
+                                                cancellationToken)
+                     .ConfigureAwait(false);
+      }
+
       var groupedMessageByPartitionAndOrderedByPriority = messages.OrderByDescending(dm => dm.Options.Priority)
                                                                   .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority));
       foreach (var group in groupedMessageByPartitionAndOrderedByPriority)
@@ -605,20 +618,83 @@ public static class TaskLifeCycleHelper
   }
 
   /// <summary>
+  ///   Adds the data dependencies of the tasks, with their sizes, to the messages, for queues that place
+  ///   tasks next to their data. The payload is included: every task then has at least one dependency,
+  ///   and a retry, which reuses the payload, is placed where it is already cached.
+  ///   This is a placement hint only: if the sizes cannot be read, the messages are enqueued without it.
+  /// </summary>
+  /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="readyTasks">Tasks to enqueue, with their dependencies</param>
+  /// <param name="messages">Messages of <paramref name="readyTasks" />, in the same order</param>
+  /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   The messages with their dependencies, or unchanged if the sizes could not be read
+  /// </returns>
+  private static async Task<ICollection<MessageData>> AttachDataDependencies(IResultTable             resultTable,
+                                                                             ICollection<ReadyTask>   readyTasks,
+                                                                             ICollection<MessageData> messages,
+                                                                             ILogger                  logger,
+                                                                             CancellationToken        cancellationToken)
+  {
+    var dependencies = readyTasks.Select(task => task.DataDependencies.Append(task.PayloadId)
+                                                     .ToList())
+                                 .ToList();
+    var resultIds = dependencies.SelectMany(d => d)
+                                .ToHashSet()
+                                .AsICollection();
+
+    Dictionary<string, long> sizeById;
+    try
+    {
+      var sizes = await resultTable.GetResults(result => resultIds.Contains(result.ResultId),
+                                               result => new
+                                                         {
+                                                           result.ResultId,
+                                                           result.Size,
+                                                         },
+                                               cancellationToken)
+                                   .ToListAsync(cancellationToken)
+                                   .ConfigureAwait(false);
+      sizeById = sizes.ToDictionary(r => r.ResultId,
+                                    r => r.Size);
+    }
+    catch (Exception e) when (e is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+    {
+      logger.LogWarning(e,
+                        "Could not read the sizes of the data dependencies; tasks are enqueued without data affinity");
+      return messages;
+    }
+
+    return messages.Zip(dependencies,
+                        (message,
+                         deps) => message with
+                                  {
+                                    Dependencies = deps.Select(id => (id, sizeById.GetValueOrDefault(id)))
+                                                       .ToList(),
+                                  })
+                   .AsICollection();
+  }
+
+  /// <summary>
   ///   Resume session and its paused tasks
   /// </summary>
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="sessionTable">Interface to manage session states</param>
+  /// <param name="resultTable">Interface to manage result states, to read the sizes of the data dependencies</param>
   /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
   /// <param name="sessionId">Id of the session to resume</param>
+  /// <param name="logger">Logger used to produce logs</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   The updated data of the session
   /// </returns>
   public static async Task<SessionData> ResumeAsync(ITaskTable        taskTable,
                                                     ISessionTable     sessionTable,
+                                                    IResultTable      resultTable,
                                                     IPushQueueStorage pushQueueStorage,
                                                     string            sessionId,
+                                                    ILogger           logger,
                                                     CancellationToken cancellationToken = default)
   {
     var session = await sessionTable.ResumeSessionAsync(sessionId,
@@ -626,9 +702,7 @@ public static class TaskLifeCycleHelper
                                     .ConfigureAwait(false);
 
     await foreach (var grouping in taskTable.FindTasksAsync(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused,
-                                                            data => new MessageData(data.TaskId,
-                                                                                    data.SessionId,
-                                                                                    data.Options),
+                                                            ReadyTask.Selector,
                                                             cancellationToken)
                                             .OrderByDescending(msg => msg.Options.Priority)
                                             .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority))
@@ -656,7 +730,19 @@ public static class TaskLifeCycleHelper
                                         CancellationToken.None)
                        .ConfigureAwait(false);
 
-        await pushQueueStorage.PushMessagesAsync(tasks,
+        var messages = tasks.Select(task => task.ToMessage())
+                            .AsICollection();
+        if (pushQueueStorage.UsesDataDependencies)
+        {
+          messages = await AttachDataDependencies(resultTable,
+                                                  tasks,
+                                                  messages,
+                                                  logger,
+                                                  CancellationToken.None)
+                       .ConfigureAwait(false);
+        }
+
+        await pushQueueStorage.PushMessagesAsync(messages,
                                                  grouping.Key.PartitionId,
                                                  CancellationToken.None)
                               .ConfigureAwait(false);
