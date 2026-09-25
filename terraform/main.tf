@@ -138,6 +138,16 @@ module "queue_nats" {
   windows    = var.windows
 }
 
+module "queue_broker" {
+  source     = "./modules/storage/queue/broker"
+  count      = var.queue_storage.name == "broker" ? 1 : 0
+  queue_envs = var.queue_env_vars
+  queue_list = local.queue_list
+  image      = var.queue_storage.image
+  network    = local.network
+  windows    = var.windows
+}
+
 module "queue_sqs" {
   source     = "./modules/storage/queue/sqs"
   count      = var.queue_storage.name == "sqs" ? 1 : 0

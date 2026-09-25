@@ -1279,6 +1279,32 @@ public sealed class TaskHandler : IAsyncDisposable
         await agent_.CreateResultsAndSubmitChildTasksAsync(CancellationToken.None)
                     .ConfigureAwait(false);
 
+        // queues placing tasks next to their data learn where the outputs are, if they are kept in the cache
+        if (cacheEvictionThreshold_ > 0 && messageHandler_ is IDataAffinityMessageHandler affinityHandler && agent_.CreatedResultIds.Count > 0)
+        {
+          try
+          {
+            var createdIds = agent_.CreatedResultIds;
+            var outputs = await resultTable_.GetResults(result => createdIds.Contains(result.ResultId),
+                                                        result => new
+                                                                  {
+                                                                    result.ResultId,
+                                                                    result.Size,
+                                                                  },
+                                                        CancellationToken.None)
+                                            .Select(r => (r.ResultId, r.Size))
+                                            .ToListAsync(CancellationToken.None)
+                                            .ConfigureAwait(false);
+            affinityHandler.SetOutputs(outputs);
+          }
+          catch (Exception e)
+          {
+            // placement hint only: the task outcome does not depend on it
+            logger_.LogWarning(e,
+                               "Could not declare the outputs of the task to the queue");
+          }
+        }
+
         // add outputs to cache so they can be used as dependencies for other tasks without having to fetch them from the object storage
         if (cacheEvictionThreshold_ > 0)
         {
