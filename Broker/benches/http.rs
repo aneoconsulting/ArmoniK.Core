@@ -5,6 +5,10 @@
 //! keys while N consumers, one connection each, pull 1 message and ack it. Throughput is
 //! in cycles/s. Server and clients run on separate runtimes so that neither steals the
 //! other's workers; both still share the machine.
+//!
+//! Connections and registrations are made once per benchmark, on first use, and kept
+//! from one criterion sample to the next: a sample measures cycles only. The consumers
+//! unregister at the end of their benchmark, so that the next one starts clean.
 
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering};
@@ -65,6 +69,18 @@ impl Conn {
             .header("content-type", "application/json")
             .body(Full::new(Bytes::from(body.to_string())))
             .unwrap();
+        self.send(path, req).await
+    }
+
+    async fn delete(&mut self, path: &str) {
+        let req = Request::delete(path)
+            .header("host", "broker")
+            .body(Full::new(Bytes::new()))
+            .unwrap();
+        self.send(path, req).await;
+    }
+
+    async fn send(&mut self, path: &str, req: Request<Full<Bytes>>) -> (StatusCode, Value) {
         let resp = match self {
             Conn::H1(tx) => {
                 tx.ready().await.unwrap();
@@ -139,6 +155,12 @@ async fn setup(addr: SocketAddr, proto: Proto, n: usize) -> Setup {
     Setup {
         producer: Conn::open(addr, proto).await,
         consumers,
+    }
+}
+
+async fn teardown(setup: Setup) {
+    for mut c in setup.consumers {
+        c.conn.delete(&c.path).await;
     }
 }
 
@@ -285,15 +307,22 @@ fn cycles(c: &mut Criterion) {
         for consumers in [1, 64] {
             let name = format!("{proto:?}").to_lowercase();
             let mut tally = Tally::default();
+            // Criterion calls the closure once per sample: set up on the first call only.
+            let mut s = None;
             g.bench_function(BenchmarkId::new(&name, consumers), |b| {
-                let mut s = Some(rt.block_on(setup(addr, proto, consumers)));
                 b.iter_custom(|iters| {
-                    let (next, elapsed, t) = rt.block_on(round(s.take().unwrap(), iters as i64));
+                    let current = s
+                        .take()
+                        .unwrap_or_else(|| rt.block_on(setup(addr, proto, consumers)));
+                    let (next, elapsed, t) = rt.block_on(round(current, iters as i64));
                     s = Some(next);
                     tally.add(t);
                     elapsed
                 });
             });
+            if let Some(s) = s {
+                rt.block_on(teardown(s));
+            }
             tally.report(&format!("http/cycle/{name}/{consumers}"));
         }
     }
