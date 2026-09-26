@@ -74,6 +74,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
                    },
                  };
 
+    services.AddSingleton<IUuidGenerator, UuidGeneratorV4>();
     services.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                              TextWriter.Null)
                                                                     .GetDatabase());

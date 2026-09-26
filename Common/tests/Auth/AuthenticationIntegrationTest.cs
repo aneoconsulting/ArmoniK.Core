@@ -44,6 +44,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Utils;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -80,6 +81,7 @@ public class AuthenticationIntegrationTest
                                              LogLevel.Warning,
                                              s =>
                                              {
+                                               s.AddSingleton<IUuidGenerator, UuidGeneratorV4>();
                                                s.AddSingleton<ITaskTable, SimpleTaskTable>()
                                                 .AddSingleton<ISessionTable, SimpleSessionTable>()
                                                 .AddSingleton<IResultTable, SimpleResultTable>()
@@ -366,8 +368,7 @@ public class AuthenticationIntegrationTest
           "SomeRights",
         },
         ServicesPermissions.PermissionsLists[ServicesPermissions.All]
-                           .Where((_,
-                                   index) => index % 2 == 0),
+                           .Where((_, index) => index % 2 == 0),
         Authenticator.SchemeName),
     // Has the other half of the permissions
     new(5,
@@ -382,8 +383,7 @@ public class AuthenticationIntegrationTest
           "OtherRights",
         },
         ServicesPermissions.PermissionsLists[ServicesPermissions.All]
-                           .Where((_,
-                                   index) => index % 2 == 1),
+                           .Where((_, index) => index % 2 == 1),
         Authenticator.SchemeName),
   };
 
@@ -800,7 +800,7 @@ public class AuthenticationIntegrationTest
                                             impersonationType,
                                             impersonate);
         yield return new TestCaseData(caseParams,
-                                      //The 2 objects below are used to for the test case to use the right generic types
+                                      // The 2 objects below are used to for the test case to use the right generic types
                                       Activator.CreateInstance(caseConfig.RequestType),
                                       Activator.CreateInstance(caseConfig.ReplyType)).SetName((caseConfig.IsAsync
                                                                                                  ? "Async"
@@ -1130,7 +1130,7 @@ public class AuthenticationIntegrationTest
         }
 
         break;
-      //Authentication is required, but impersonation is not done
+      // Authentication is required, but impersonation is not done
       case AuthenticationType.NoImpersonationNoAuthorization:
         userIndex = (int)initialUserIndex;
         if (impersonationType == ImpersonationType.NoImpersonate)
@@ -1156,7 +1156,7 @@ public class AuthenticationIntegrationTest
         }
 
         break;
-      //Normal case : authentication and authorization are required, impersonation is authorized
+      // Normal case : authentication and authorization are required, impersonation is authorized
       default:
       case AuthenticationType.DefaultAuth:
         userIndex = impersonationType == ImpersonationType.NoImpersonate

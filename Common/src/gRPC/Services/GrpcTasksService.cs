@@ -58,6 +58,7 @@ public class GrpcTasksService : Task.TasksBase
   private readonly TaskDataMask                               taskDetailedMask_;
   private readonly TaskDataMask                               taskSummaryMask_;
   private readonly ITaskTable                                 taskTable_;
+  private readonly IUuidGenerator                             uuidGenerator_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="GrpcTasksService" /> class.
@@ -69,6 +70,7 @@ public class GrpcTasksService : Task.TasksBase
   /// <param name="meter">The metrics for function execution.</param>
   /// <param name="httpClient">The HTTP client for making requests.</param>
   /// <param name="options">The submitter options for task submission.</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">The logger for logging information.</param>
   public GrpcTasksService(ITaskTable                                 taskTable,
                           ISessionTable                              sessionTable,
@@ -77,9 +79,11 @@ public class GrpcTasksService : Task.TasksBase
                           FunctionExecutionMetrics<GrpcTasksService> meter,
                           HttpClient                                 httpClient,
                           Injection.Options.Submitter                options,
+                          IUuidGenerator                             uuidGenerator,
                           ILogger<GrpcTasksService>                  logger)
   {
     logger_           = logger;
+    uuidGenerator_    = uuidGenerator;
     taskTable_        = taskTable;
     sessionTable_     = sessionTable;
     resultTable_      = resultTable;
@@ -397,8 +401,8 @@ public class GrpcTasksService : Task.TasksBase
                                                                 logger_,
                                                                 context.CancellationToken);
 
-    var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(Guid.NewGuid()
-                                                                                                .ToString(),
+    var creationRequests = request.TaskCreations.Select(creation => new TaskCreationRequest(uuidGenerator_.GenerateUuid()
+                                                                                                          .ToString(),
                                                                                             creation.PayloadId,
                                                                                             TaskOptions.Merge(creation.TaskOptions.ToNullableTaskOptions(),
                                                                                                               submissionOptions),

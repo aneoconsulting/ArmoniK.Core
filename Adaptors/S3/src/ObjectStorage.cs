@@ -54,6 +54,7 @@ public class ObjectStorage : IObjectStorage
   private readonly string                 objectStorageName_;
   private readonly Options.S3             options_;
   private readonly AmazonS3Client         s3Client_;
+  private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -61,14 +62,17 @@ public class ObjectStorage : IObjectStorage
   /// </summary>
   /// <param name="s3Client">Connection to S3</param>
   /// <param name="options">S3 object storage options</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(AmazonS3Client         s3Client,
                        Options.S3             options,
+                       IUuidGenerator         uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
     s3Client_          = s3Client;
     objectStorageName_ = "objectStorageName";
     options_           = options;
+    uuidGenerator_     = uuidGenerator;
     logger_            = logger;
   }
 
@@ -154,8 +158,8 @@ public class ObjectStorage : IObjectStorage
     {
       0,
     };
-    var key = Guid.NewGuid()
-                  .ToString();
+    var key = uuidGenerator_.GenerateUuid()
+                            .ToString();
     var objectStorageFullName = $"{objectStorageName_}{key}";
 
     logger_.LogDebug("Upload object");

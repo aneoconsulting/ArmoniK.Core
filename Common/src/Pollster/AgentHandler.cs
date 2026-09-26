@@ -55,6 +55,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
   private readonly GrpcAgentService      service_;
   private readonly ISubmitter            submitter_;
   private readonly ITaskTable            taskTable_;
+  private readonly IUuidGenerator        uuidGenerator_;
 
   /// <summary>
   ///   Initializes a new instance
@@ -66,6 +67,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
   /// <param name="pushQueueStorage">Interface to put tasks in the queue</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskTable">Interface to manage task states</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public AgentHandler(LoggerInit            loggerInit,
                       ComputePlane          computePlaneOptions,
@@ -74,6 +76,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
                       IPushQueueStorage     pushQueueStorage,
                       IResultTable          resultTable,
                       ITaskTable            taskTable,
+                      IUuidGenerator        uuidGenerator,
                       ILogger<AgentHandler> logger)
   {
     computePlaneOptions_ = computePlaneOptions;
@@ -82,6 +85,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
     pushQueueStorage_    = pushQueueStorage;
     resultTable_         = resultTable;
     taskTable_           = taskTable;
+    uuidGenerator_       = uuidGenerator;
     logger_              = logger;
 
     try
@@ -103,8 +107,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
              .AddSingleton<GrpcAgentService>()
              .AddGrpc();
 
-      builder.WebHost.ConfigureKestrel((context,
-                                        options) =>
+      builder.WebHost.ConfigureKestrel((context, options) =>
                                        {
                                          var address = computePlaneOptions.AgentChannel.Address;
                                          switch (computePlaneOptions.AgentChannel.SocketType)
@@ -173,6 +176,7 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
                             taskData,
                             folder,
                             token,
+                            uuidGenerator_,
                             logger);
 
       await service_.Start(agent)

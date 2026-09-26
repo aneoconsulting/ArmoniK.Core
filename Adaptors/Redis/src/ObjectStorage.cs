@@ -43,8 +43,9 @@ public class ObjectStorage : IObjectStorage
 {
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
-  private readonly IDatabaseAsync         redis_;
   private readonly Options.Redis          redisOptions_;
+  private readonly IDatabaseAsync         redis_;
+  private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -52,14 +53,17 @@ public class ObjectStorage : IObjectStorage
   /// </summary>
   /// <param name="redis">Connection to redis database</param>
   /// <param name="redisOptions">Redis object storage options</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(IDatabaseAsync         redis,
                        Options.Redis          redisOptions,
+                       IUuidGenerator         uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
     redis_             = redis;
     redisOptions_      = redisOptions;
     objectStorageName_ = "objectStorageName";
+    uuidGenerator_     = uuidGenerator;
     logger_            = logger;
   }
 
@@ -95,8 +99,8 @@ public class ObjectStorage : IObjectStorage
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
-    var key = Guid.NewGuid()
-                  .ToString();
+    var key = uuidGenerator_.GenerateUuid()
+                            .ToString();
     var  storageNameKey = objectStorageName_ + key;
     long size           = 0;
 

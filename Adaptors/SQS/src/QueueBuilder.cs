@@ -20,11 +20,13 @@ using System;
 using Amazon.SQS;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.SQS;
@@ -48,6 +50,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
                                        ServiceURL = sqsOptions.ServiceURL,
                                      });
 
+    serviceCollection.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
     serviceCollection.AddSingleton(client);
     serviceCollection.AddSingleton(sqsOptions);
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();

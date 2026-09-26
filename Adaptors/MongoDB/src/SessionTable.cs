@@ -25,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -40,29 +41,32 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 /// <inheritdoc cref="ArmoniK.Core.Common.Storage.ISessionTable" />
 public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISessionTable
 {
+  private readonly IUuidGenerator uuidGenerator_;
+
   /// <inheritdoc />
   public SessionTable(SessionProvider                                               sessionProvider,
                       MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider,
                       ActivitySource                                                activitySource,
-                      ILogger<SessionTable>                                         logger)
+                      ILogger<SessionTable>                                         logger,
+                      IUuidGenerator                                                uuidGenerator)
     : base(sessionProvider,
            sessionCollectionProvider,
            activitySource,
            logger)
-  {
-  }
+    => uuidGenerator_ = uuidGenerator;
 
   /// <inheritdoc />
-  private SessionTable(SessionTable sessionTable,
-                       bool         readOnly)
+  private SessionTable(SessionTable   sessionTable,
+                       IUuidGenerator uuidGenerator,
+                       bool           readOnly)
     : base(sessionTable,
            readOnly)
-  {
-  }
+    => uuidGenerator_ = uuidGenerator;
 
   /// <inheritdoc />
   public ISessionTable Secondary
     => new SessionTable(this,
+                        uuidGenerator_,
                         true);
 
 
@@ -73,8 +77,8 @@ public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISe
                                                 CancellationToken   cancellationToken = default)
   {
     using var activity = StartActivity();
-    var rootSessionId = Guid.NewGuid()
-                            .ToString();
+    var rootSessionId = uuidGenerator_.GenerateUuid()
+                                      .ToString();
     activity?.SetTag($"{nameof(SetSessionDataAsync)}_sessionId",
                      rootSessionId);
     var sessionCollection = GetCollection();
