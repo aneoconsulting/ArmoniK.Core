@@ -30,7 +30,9 @@ benches/check-floors.sh            # CI floors (benches/floors.json) against the
 benches/compare-hashers.sh 3       # hashers of the hot-path tables (src/hashing.rs), 3 rotating rounds
 ```
 
-Numbers only hold on a quiet Linux machine: in a VM (WSL, CI runner) the host can slow a core several
+The HTTP bench reports, besides throughput, the CPU time of the server and client threads per cycle;
+`h1-raw` drives the consumers with a minimal HTTP/1.1 client so that the server, not the client, sets
+the pace. Numbers only hold on a quiet Linux machine: in a VM (WSL, CI runner) the host can slow a core several
 times over without the guest seeing it. The server hashes with foldhash; the `hash-sip`, `hash-fx`
 or `hash-ahash` feature selects another hasher at build time, for comparison only.
 
