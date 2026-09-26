@@ -232,7 +232,14 @@ fn threads() -> usize {
     (n / 2).clamp(1, 8)
 }
 
+/// Processors this process may run on; empty where confinement is not implemented.
+#[cfg(not(target_os = "linux"))]
+fn allowed_cpus() -> Vec<usize> {
+    Vec::new()
+}
+
 /// Processors this process may run on.
+#[cfg(target_os = "linux")]
 fn allowed_cpus() -> Vec<usize> {
     // SAFETY: plain system call on a zeroed set owned by this frame.
     unsafe {
@@ -258,6 +265,10 @@ fn halves() -> (Vec<usize>, Vec<usize>) {
     (server.to_vec(), client[client.len() - t..].to_vec())
 }
 
+#[cfg(not(target_os = "linux"))]
+fn confine(_: &[usize]) {}
+
+#[cfg(target_os = "linux")]
 fn confine(cpus: &[usize]) {
     if cpus.is_empty() {
         return;
@@ -282,8 +293,15 @@ fn runtime(name: &str, cpus: Vec<usize>) -> Runtime {
         .unwrap()
 }
 
+/// CPU time of threads is only read on Linux.
+#[cfg(not(target_os = "linux"))]
+fn cpu_time(_: &str) -> Option<Duration> {
+    None
+}
+
 /// CPU time consumed so far by the threads named `name` (scheduler statistics, in ns).
-fn cpu_time(name: &str) -> Duration {
+#[cfg(target_os = "linux")]
+fn cpu_time(name: &str) -> Option<Duration> {
     let mut ns = 0;
     for t in std::fs::read_dir("/proc/self/task")
         .into_iter()
@@ -301,7 +319,7 @@ fn cpu_time(name: &str) -> Duration {
             .and_then(|x| x.parse::<u64>().ok())
             .unwrap_or(0);
     }
-    Duration::from_nanos(ns)
+    Some(Duration::from_nanos(ns))
 }
 
 /// Starts the broker on its own runtime and returns its address.
@@ -405,9 +423,9 @@ struct Tally {
     empty_pulls: u64,
     producer: Duration,
     total: Duration,
-    /// CPU time of the server and client threads over the rounds.
-    server_cpu: Duration,
-    client_cpu: Duration,
+    /// CPU time of the server and client threads over the rounds, where it is read.
+    server_cpu: Option<Duration>,
+    client_cpu: Option<Duration>,
 }
 
 impl Tally {
@@ -416,8 +434,9 @@ impl Tally {
         self.empty_pulls += other.empty_pulls;
         self.producer += other.producer;
         self.total += other.total;
-        self.server_cpu += other.server_cpu;
-        self.client_cpu += other.client_cpu;
+        let sum = |a: Option<Duration>, b: Option<Duration>| Some(a.unwrap_or_default() + b?);
+        self.server_cpu = sum(self.server_cpu, other.server_cpu);
+        self.client_cpu = sum(self.client_cpu, other.client_cpu);
     }
 
     fn report(&self, id: &str) {
@@ -425,10 +444,13 @@ impl Tally {
         if self.cycles == 0 {
             return;
         }
-        let per_cycle = |d: Duration| d.as_secs_f64() * 1e6 / self.cycles as f64;
+        let per_cycle = |d: Option<Duration>| match d {
+            Some(d) => format!("{:.1} us", d.as_secs_f64() * 1e6 / self.cycles as f64),
+            None => "n/a".into(),
+        };
         eprintln!(
             "{id}: {} cycles, {} empty pulls, producer done at {:.0} % of the rounds, \
-             CPU per cycle: server {:.1} us, client {:.1} us",
+             CPU per cycle: server {}, client {}",
             self.cycles,
             self.empty_pulls,
             100.0 * self.producer.as_secs_f64() / self.total.as_secs_f64(),
@@ -502,8 +524,8 @@ async fn round(setup: Setup, n: i64) -> (Setup, Duration, Tally) {
     }
     let elapsed = end.lock().unwrap().unwrap() - start;
     let tally = Tally {
-        server_cpu: cpu_time("broker") - server0,
-        client_cpu: cpu_time("client") - client0,
+        server_cpu: cpu_time("broker").zip(server0).map(|(b, a)| b - a),
+        client_cpu: cpu_time("client").zip(client0).map(|(b, a)| b - a),
         cycles: n as u64,
         empty_pulls: empty_pulls.load(Ordering::Relaxed),
         producer: produced,
