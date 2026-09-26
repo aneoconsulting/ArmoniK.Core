@@ -16,6 +16,7 @@ mod http_tests;
 pub mod metrics;
 pub mod mirror;
 pub mod server;
+pub mod sleepers;
 pub mod state;
 #[cfg(test)]
 mod state_tests;

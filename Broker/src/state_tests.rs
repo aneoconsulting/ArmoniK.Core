@@ -615,6 +615,7 @@ enum Op {
     Tick(u16),
     Unregister(u8),
     StaleAck(u8),
+    Sleep(u8, u16),
 }
 
 fn op() -> impl Strategy<Value = Op> {
@@ -626,6 +627,7 @@ fn op() -> impl Strategy<Value = Op> {
         (0u16..40_000).prop_map(Op::Tick),
         (0u8..3).prop_map(Op::Unregister),
         any::<u8>().prop_map(Op::StaleAck),
+        (0u8..3, 0u16..20_000).prop_map(|(c, w)| Op::Sleep(c, w)),
     ]
 }
 
@@ -644,6 +646,8 @@ proptest! {
         let mut spent: Vec<Delivered> = Vec::new();
         let mut enqueued = 0u64;
         let mut acked = 0u64;
+        // Sleeping pulls: (deadline, answer).
+        let mut sleeping: Vec<(u64, oneshot::Receiver<Result<Vec<Delivered>, crate::error::ApiError>>)> = Vec::new();
         for op in ops {
             match op {
                 Op::Enqueue(k, p, n, delayed) => {
@@ -685,8 +689,37 @@ proptest! {
                     let (a, _) = ack1(&mut s, d, now);
                     prop_assert_eq!(a, 0, "a spent token acknowledged a message");
                 }
+                Op::Sleep(c, wait) => {
+                    let (tx, rx) = oneshot::channel();
+                    match s.pull(consumers[c as usize], 1, now) {
+                        Ok(got) if got.is_empty() => {
+                            s.add_waiter(consumers[c as usize], 1, u64::from(wait), now, tx);
+                            sleeping.push((now + u64::from(wait), rx));
+                        }
+                        Ok(got) => held.extend(got),
+                        Err(_) => {}
+                    }
+                }
                 _ => {}
             }
+            // As the actor does after every command.
+            s.tick(now);
+            while s.wake_pending() {
+                s.serve_waiters(now);
+            }
+            let mut still = Vec::new();
+            for (deadline, mut rx) in sleeping.drain(..) {
+                match rx.try_recv() {
+                    Ok(Ok(got)) => held.extend(got),
+                    Ok(Err(_)) => {}
+                    Err(_) => {
+                        prop_assert!(deadline > now, "a sleeping pull outlived its deadline");
+                        still.push((deadline, rx));
+                    }
+                }
+            }
+            sleeping = still;
+            held.retain(|d| s.inspect(&tok(d), now).is_in_flight());
             s.check();
         }
         prop_assert_eq!(s.held_for_tests().0, enqueued - acked);

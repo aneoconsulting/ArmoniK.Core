@@ -6,7 +6,7 @@
 //! in milliseconds so that tests control time.
 
 use std::cmp::Reverse;
-use std::collections::{BinaryHeap, VecDeque};
+use std::collections::BinaryHeap;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
@@ -18,6 +18,7 @@ use crate::config::Config;
 use crate::error::ApiError;
 use crate::hashing::Map;
 use crate::metrics::{Counters, Gauges, Globals};
+use crate::sleepers::Sleepers;
 use crate::token::Token;
 use crate::wheel::Wheel;
 
@@ -166,7 +167,6 @@ pub type PullReply = oneshot::Sender<Result<Vec<Delivered>, ApiError>>;
 struct Waiter {
     consumer: ConsumerRef,
     max: usize,
-    deadline_ms: u64,
     reply: PullReply,
 }
 
@@ -256,14 +256,13 @@ pub struct PartitionState {
 
     consumers: Vec<Consumer>,
     free_consumers: Vec<u32>,
-    waiters: VecDeque<Waiter>,
+    /// Sleeping pulls, served oldest first, each answered empty at its own deadline.
+    waiters: Sleepers<Waiter>,
     delayed: BinaryHeap<Reverse<(u64, u32, u32)>>,
     /// Lease deadlines, by lease index: an ended lease leaves the wheel at once.
     lease_wheel: Wheel,
     /// Leases found expired by the last tick, kept to reuse the allocation.
     expired: Vec<u32>,
-    /// Deadlines of the sleeping pulls; the sleepers themselves stay in FIFO order.
-    waiter_deadlines: BinaryHeap<Reverse<u64>>,
     next_sweep_ms: u64,
     mirrors: Map<Box<str>, crate::mirror::Mirror>,
     shutting_down: bool,
@@ -300,11 +299,10 @@ impl PartitionState {
             newest: NIL,
             consumers: Vec::new(),
             free_consumers: Vec::new(),
-            waiters: VecDeque::new(),
+            waiters: Sleepers::new(cfg.max_wait_ms, 0),
             delayed: BinaryHeap::new(),
             lease_wheel: Wheel::new(cfg.lease_ms, 0),
             expired: Vec::new(),
-            waiter_deadlines: BinaryHeap::new(),
             next_sweep_ms: 0,
             mirrors: Map::default(),
             shutting_down: false,
@@ -960,13 +958,12 @@ impl PartitionState {
             return;
         }
         let deadline_ms = now + wait_ms.min(self.cfg.max_wait_ms);
-        self.waiter_deadlines.push(Reverse(deadline_ms));
-        self.waiters.push_back(Waiter {
+        let waiter = Waiter {
             consumer,
             max: max.clamp(1, self.cfg.max_pull),
-            deadline_ms,
             reply,
-        });
+        };
+        self.waiters.push(waiter, deadline_ms);
         self.gauges
             .waiters
             .store(self.waiters.len() as u64, Ordering::Relaxed);
@@ -1124,28 +1121,12 @@ impl PartitionState {
             Counters::add(&self.gauges.counters.expired, 1);
         }
         self.expired = expired;
-        // Waits that ran out: answered empty, in one pass over the sleepers.
-        let mut expired_wait = false;
-        while let Some(Reverse(due)) = self.waiter_deadlines.peek().copied() {
-            if due > now {
-                break;
-            }
-            self.waiter_deadlines.pop();
-            expired_wait = true;
-        }
-        if expired_wait {
-            let mut kept = VecDeque::with_capacity(self.waiters.len());
-            for w in self.waiters.drain(..) {
-                if w.reply.is_closed() {
-                    continue;
-                }
-                if w.deadline_ms <= now {
-                    let _ = w.reply.send(Ok(Vec::new()));
-                } else {
-                    kept.push_back(w);
-                }
-            }
-            self.waiters = kept;
+        // Waits that ran out are answered empty; the other sleepers are not visited.
+        let before = self.waiters.len();
+        self.waiters.expire(now, |w| {
+            let _ = w.reply.send(Ok(Vec::new()));
+        });
+        if self.waiters.len() != before {
             self.gauges
                 .waiters
                 .store(self.waiters.len() as u64, Ordering::Relaxed);
@@ -1161,7 +1142,7 @@ impl PartitionState {
         [
             self.delayed.peek().map(|Reverse((d, _, _))| *d),
             self.lease_wheel.next_due(),
-            self.waiter_deadlines.peek().map(|Reverse(d)| *d),
+            self.waiters.next_due(),
         ]
         .into_iter()
         .flatten()
@@ -1213,9 +1194,9 @@ impl PartitionState {
     /// Clean stop: every sleeping consumer gets an empty answer.
     pub fn shutdown(&mut self) {
         self.shutting_down = true;
-        for w in self.waiters.drain(..) {
+        self.waiters.drain(|w| {
             let _ = w.reply.send(Ok(Vec::new()));
-        }
+        });
     }
 
     /// Returns the messages still held to the global counter; the partition is going away.
@@ -1448,5 +1429,6 @@ impl PartitionState {
             .map(|c| u64::from(c.in_flight))
             .sum();
         assert_eq!(per_consumer, flight);
+        self.waiters.check();
     }
 }
