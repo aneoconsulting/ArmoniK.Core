@@ -20,20 +20,29 @@
 //! scoring and everything else stays, so the scoring cost is `1/rate(64) - 1/rate(0)`.
 //! A small mirror stays in the processor cache, the default one does not.
 //! `scheduler/affinity-fleet` is the production scale: 100 nodes, default mirrors.
+//!
+//! `scheduler/waiters-idle` and `scheduler/waiters-wake` are long polling (design C.3.5):
+//! idle workers each hold a pull of 10 s, as the adapter does (PullWait), and pull again
+//! as soon as it is answered. `idle` measures one simulated millisecond of a partition
+//! without messages (expiries, new pulls, sweep): its time over 1 ms is the share of the
+//! actor spent on idle workers. `wake` measures a batch of 150 messages handed to
+//! sleeping workers, acknowledged, and those workers pulling again.
 
+use std::collections::VecDeque;
 use std::hint::black_box;
 use std::sync::Arc;
 
 use armonik_broker::affinity::{self, Affinity, Outputs};
 use armonik_broker::config::Config;
 use armonik_broker::metrics::Globals;
-use armonik_broker::state::{ConsumerRef, EnqueueItem, NodeDecl, PartitionState};
+use armonik_broker::state::{ConsumerRef, Delivered, EnqueueItem, NodeDecl, PartitionState};
 use armonik_broker::token::Token;
 use clap::Parser;
 use criterion::measurement::WallTime;
 use criterion::{
     BenchmarkGroup, BenchmarkId, Criterion, Throughput, criterion_group, criterion_main,
 };
+use tokio::sync::oneshot;
 
 /// Enqueue batch size, as sent by the adapter (design A.2).
 const BATCH: u64 = 150;
@@ -327,11 +336,130 @@ fn affinity_fleet(c: &mut Criterion) {
     g.finish();
 }
 
+/// Wait of each pull, as the adapter's default PullWait.
+const PULL_WAIT_MS: u64 = 10_000;
+
+type Reply = oneshot::Receiver<Result<Vec<Delivered>, armonik_broker::error::ApiError>>;
+
+/// A partition with `n` idle workers, one pull each always pending.
+struct Idle {
+    s: PartitionState,
+    consumers: Vec<ConsumerRef>,
+    replies: Vec<Option<Reply>>,
+    /// Pending pulls as the workers know them, (deadline, worker): in deadline order,
+    /// which is also the order in which the partition serves them.
+    pending: VecDeque<(u64, usize)>,
+    now: u64,
+    next: u64,
+}
+
+impl Idle {
+    /// Pulls start evenly spread over one wait, then a full wait runs, so that the
+    /// measurement starts in steady state.
+    fn new(n: usize) -> Self {
+        let cfg = Config::parse_from(["armonik-broker"]);
+        let globals = Arc::new(Globals::new(cfg.max_messages, cfg.block_messages));
+        let mut s = PartitionState::new(0, "bench".into(), 1, Arc::new(cfg), globals);
+        let consumers = (0..n).map(|_| s.register(NodeDecl::default(), 0)).collect();
+        let mut b = Idle {
+            s,
+            consumers,
+            replies: (0..n).map(|_| None).collect(),
+            pending: VecDeque::with_capacity(n),
+            now: 0,
+            next: 0,
+        };
+        for w in 0..n {
+            while b.now < w as u64 * PULL_WAIT_MS / n as u64 {
+                b.step();
+            }
+            b.wait(w);
+        }
+        while b.now < 2 * PULL_WAIT_MS {
+            b.step();
+        }
+        b
+    }
+
+    /// Worker `w` pulls; the partition being empty, the pull sleeps.
+    fn wait(&mut self, w: usize) {
+        let (tx, rx) = oneshot::channel();
+        let c = self.consumers[w];
+        assert!(self.s.pull(c, 1, self.now).unwrap().is_empty());
+        self.s.add_waiter(c, 1, PULL_WAIT_MS, self.now, tx);
+        self.replies[w] = Some(rx);
+        self.pending.push_back((self.now + PULL_WAIT_MS, w));
+    }
+
+    /// One simulated millisecond: the actor's tick, and the workers whose pull ran out
+    /// empty pull again.
+    fn step(&mut self) {
+        self.now += 1;
+        self.s.tick(self.now);
+        while let Some(&(due, w)) = self.pending.front() {
+            if due > self.now {
+                break;
+            }
+            self.pending.pop_front();
+            let got = self.replies[w].take().unwrap().try_recv().unwrap().unwrap();
+            assert!(got.is_empty());
+            self.wait(w);
+        }
+    }
+
+    /// A batch reaches the partition and goes to the longest sleeping workers, which
+    /// acknowledge it and pull again.
+    fn wake(&mut self) {
+        self.step();
+        let items = (self.next..self.next + BATCH)
+            .map(|n| EnqueueItem {
+                task_id: format!("task-{n}"),
+                affinity: None,
+            })
+            .collect();
+        self.next += BATCH;
+        self.s.enqueue("session", 1, items, 0, self.now).unwrap();
+        while self.s.wake_pending() {
+            self.s.serve_waiters(self.now);
+        }
+        for _ in 0..BATCH {
+            let (_, w) = self.pending.pop_front().unwrap();
+            let got = self.replies[w].take().unwrap().try_recv().unwrap().unwrap();
+            let t = Token::decode(&got[0].token).unwrap();
+            black_box(
+                self.s
+                    .ack(Some(self.consumers[w]), vec![(t, None)], self.now),
+            );
+            self.wait(w);
+        }
+    }
+}
+
+fn waiters(c: &mut Criterion) {
+    for (name, per_iter) in [("idle", 1), ("wake", BATCH)] {
+        let mut g = c.benchmark_group(format!("scheduler/waiters-{name}"));
+        g.throughput(Throughput::Elements(per_iter));
+        for n in [1_000, 10_000] {
+            let mut idle = None;
+            g.bench_function(BenchmarkId::from_parameter(n), |b| {
+                let idle = idle.get_or_insert_with(|| Idle::new(n));
+                if per_iter == 1 {
+                    b.iter(|| idle.step());
+                } else {
+                    b.iter(|| idle.wake());
+                }
+            });
+        }
+        g.finish();
+    }
+}
+
 criterion_group!(
     benches,
     cycles,
     affinity_sweep,
     affinity_scoring,
-    affinity_fleet
+    affinity_fleet,
+    waiters
 );
 criterion_main!(benches);
