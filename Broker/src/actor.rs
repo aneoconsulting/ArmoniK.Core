@@ -160,28 +160,46 @@ fn handle(state: &mut PartitionState, cmd: Command, now: u64) -> bool {
     true
 }
 
-/// Commands come first; time-driven events are processed after every command and, when
-/// the actor is idle, at their deadline. A busy actor therefore never starves them.
+/// Commands waiting in the queue, taken in one go.
+const COMMAND_BATCH: usize = 64;
+
+/// Commands come first, taken by batches of what is queued: the clock, the deadlines and
+/// the timer are handled once per batch instead of once per command. Time-driven events
+/// are processed after every batch and, when the actor is idle, at their deadline, so a
+/// busy actor never starves them. Sleepers are served after every command, as soon as
+/// something is eligible, so that a pull arriving later in the batch does not pass them.
 async fn run(mut state: PartitionState, mut rx: mpsc::Receiver<Command>, clock: Arc<Clock>) {
-    loop {
-        let deadline = clock.instant(state.next_deadline());
+    let mut batch = Vec::with_capacity(COMMAND_BATCH);
+    let mut deadline = state.next_deadline();
+    let sleep = tokio::time::sleep_until(clock.instant(deadline));
+    tokio::pin!(sleep);
+    'run: loop {
         tokio::select! {
             biased;
-            cmd = rx.recv() => match cmd {
-                Some(cmd) => {
-                    if !handle(&mut state, cmd, clock.now()) {
-                        break;
-                    }
-                }
-                None => break,
+            n = rx.recv_many(&mut batch, COMMAND_BATCH) => if n == 0 {
+                break;
             },
             // Keeps serving sleepers when a drain stopped at its wake limit.
             _ = std::future::ready(()), if state.wake_pending() => {}
-            _ = tokio::time::sleep_until(deadline) => {}
+            _ = &mut sleep => {}
         }
-        state.tick(clock.now());
+        let now = clock.now();
+        for cmd in batch.drain(..) {
+            if !handle(&mut state, cmd, now) {
+                break 'run;
+            }
+            if state.wake_pending() {
+                state.serve_waiters(now);
+            }
+        }
+        state.tick(now);
         if state.wake_pending() {
-            state.serve_waiters(clock.now());
+            state.serve_waiters(now);
+        }
+        let next = state.next_deadline();
+        if next != deadline || sleep.is_elapsed() {
+            deadline = next;
+            sleep.as_mut().reset(clock.instant(deadline));
         }
     }
     // Deleted or shutting down: answer the last sleepers, release the held messages.
