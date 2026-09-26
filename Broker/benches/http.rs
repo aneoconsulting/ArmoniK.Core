@@ -114,6 +114,7 @@ fn start_server() -> SocketAddr {
     std::thread::spawn(move || {
         let rt = tokio::runtime::Builder::new_multi_thread()
             .worker_threads(threads())
+            .thread_name("broker")
             .enable_all()
             .build()
             .unwrap();
@@ -297,6 +298,7 @@ fn cycles(c: &mut Criterion) {
     let addr = start_server();
     let rt: Runtime = tokio::runtime::Builder::new_multi_thread()
         .worker_threads(threads())
+        .thread_name("client")
         .enable_all()
         .build()
         .unwrap();
