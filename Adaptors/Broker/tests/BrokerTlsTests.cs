@@ -39,7 +39,7 @@ public class BrokerTlsTests
     binary_ = BrokerIntegrationTests.FindBinary();
     if (binary_ is null)
     {
-      Assert.Ignore("armonik-broker binary not built");
+      BrokerIntegrationTests.MissingBinary();
     }
 
     dir_ = Directory.CreateTempSubdirectory("broker-tls-")

@@ -33,7 +33,8 @@ namespace ArmoniK.Core.Adapters.Broker.Tests;
 
 /// <summary>
 ///   Runs the adapter against the real Rust server. The binary is found through BROKER_BINARY or the
-///   cargo target directories; the tests are ignored when it has not been built.
+///   cargo target directories; the tests are ignored when it has not been built, and fail when BROKER_BINARY
+///   designates a missing file.
 /// </summary>
 [TestFixture]
 [NonParallelizable]
@@ -45,7 +46,7 @@ public class BrokerIntegrationTests
     binary_ = FindBinary();
     if (binary_ is null)
     {
-      Assert.Ignore("armonik-broker binary not built (cargo build in Broker/, or set BROKER_BINARY)");
+      MissingBinary();
     }
 
     port_ = FreePort();
@@ -69,6 +70,21 @@ public class BrokerIntegrationTests
   private IPushQueueStorage push_     = null!;
   private IPullQueueStorage pull_     = null!;
   private ServiceProvider?  provider_;
+
+  /// <summary>
+  ///   Stops the test when the server binary is missing: a failure when BROKER_BINARY requires it, as in CI,
+  ///   so that the tests cannot pass by being skipped, and an ignore otherwise.
+  /// </summary>
+  internal static void MissingBinary()
+  {
+    var env = Environment.GetEnvironmentVariable("BROKER_BINARY");
+    if (!string.IsNullOrEmpty(env))
+    {
+      Assert.Fail($"BROKER_BINARY is set but {env} does not exist");
+    }
+
+    Assert.Ignore("armonik-broker binary not built (cargo build in Broker/, or set BROKER_BINARY)");
+  }
 
   internal static string? FindBinary()
   {
