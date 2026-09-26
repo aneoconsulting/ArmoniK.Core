@@ -35,7 +35,9 @@ pub struct Wheel {
     summary: Vec<u64>,
     nodes: Vec<Node>,
     mask: u64,
-    /// Every deadline before `cursor` has been expired.
+    /// Every deadline before `cursor` has been expired. It stops at the last expiry time,
+    /// not after it: an entry due then may still be added, and must come out on the next
+    /// expiry at that same time.
     cursor: u64,
     len: usize,
     /// Entries seen in a bucket before their deadline, put back once the pass is over.
@@ -237,7 +239,7 @@ impl Wheel {
             }
             off += 1;
         }
-        self.cursor = now + 1;
+        self.cursor = now;
         for id in later.drain(..) {
             let b = self.bucket_of(self.nodes[id as usize].due);
             self.link(id, b);
@@ -306,9 +308,12 @@ mod tests {
         let mut out = Vec::new();
         w.expire(50, &mut out);
         w.insert(3, 10);
-        assert_eq!(w.next_due(), Some(51));
-        w.expire(51, &mut out);
-        assert_eq!(out, [3]);
+        w.insert(4, 50);
+        assert_eq!(w.next_due(), Some(50));
+        // Due at the time of the last expiry: out on the next one at that same time.
+        w.expire(50, &mut out);
+        out.sort();
+        assert_eq!(out, [3, 4]);
     }
 
     /// Reference: the entries due at or before `now`, compared with the wheel after
@@ -360,7 +365,7 @@ mod tests {
                 prop_assert_eq!(w.len(), reference.len());
                 if let Some(first) = reference.values().min() {
                     let next = w.next_due().unwrap();
-                    prop_assert!(next <= (*first).max(now + 1), "next_due {} after {}", next, first);
+                    prop_assert!(next <= (*first).max(now), "next_due {} after {}", next, first);
                 } else {
                     prop_assert!(w.next_due().is_none());
                 }
