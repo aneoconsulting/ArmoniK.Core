@@ -9,7 +9,7 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, RwLock};
 use std::time::{Duration, Instant};
 
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::{Notify, mpsc, oneshot};
 
 use crate::affinity::Outputs;
 use crate::config::Config;
@@ -73,7 +73,6 @@ pub enum Command {
         token: Token,
         reply: oneshot::Sender<Inspection>,
     },
-    Shutdown,
 }
 
 pub struct Clock(Instant);
@@ -88,7 +87,7 @@ impl Clock {
     }
 }
 
-fn handle(state: &mut PartitionState, cmd: Command, now: u64) -> bool {
+fn handle(state: &mut PartitionState, cmd: Command, now: u64) {
     match cmd {
         Command::Enqueue {
             key,
@@ -152,12 +151,7 @@ fn handle(state: &mut PartitionState, cmd: Command, now: u64) -> bool {
         Command::Inspect { token, reply } => {
             let _ = reply.send(state.inspect(&token, now));
         }
-        Command::Shutdown => {
-            state.shutdown();
-            return false;
-        }
     }
-    true
 }
 
 /// Commands waiting in the queue, taken in one go.
@@ -168,14 +162,22 @@ const COMMAND_BATCH: usize = 64;
 /// are processed after every batch and, when the actor is idle, at their deadline, so a
 /// busy actor never starves them. Sleepers are served after every command, as soon as
 /// something is eligible, so that a pull arriving later in the batch does not pass them.
-async fn run(mut state: PartitionState, mut rx: mpsc::Receiver<Command>, clock: Arc<Clock>) {
+/// The stop signal comes out of band, before everything else: a full command queue can
+/// neither lose nor delay it.
+async fn run(
+    mut state: PartitionState,
+    mut rx: mpsc::Receiver<Command>,
+    stop: Arc<Notify>,
+    clock: Arc<Clock>,
+) {
     let mut batch = Vec::with_capacity(COMMAND_BATCH);
     let mut deadline = state.next_deadline();
     let sleep = tokio::time::sleep_until(clock.instant(deadline));
     tokio::pin!(sleep);
-    'run: loop {
+    loop {
         tokio::select! {
             biased;
+            _ = stop.notified() => break,
             n = rx.recv_many(&mut batch, COMMAND_BATCH) => if n == 0 {
                 break;
             },
@@ -185,9 +187,7 @@ async fn run(mut state: PartitionState, mut rx: mpsc::Receiver<Command>, clock: 
         }
         let now = clock.now();
         for cmd in batch.drain(..) {
-            if !handle(&mut state, cmd, now) {
-                break 'run;
-            }
+            handle(&mut state, cmd, now);
             if state.wake_pending() {
                 state.serve_waiters(now);
             }
@@ -214,6 +214,7 @@ pub struct Partition {
     pub name: Arc<str>,
     pub tx: mpsc::Sender<Command>,
     pub gauges: Arc<Gauges>,
+    stop: Arc<Notify>,
 }
 
 impl Partition {
@@ -324,8 +325,9 @@ impl Registry {
             name: name.into(),
             tx,
             gauges: state.gauges.clone(),
+            stop: Arc::new(Notify::new()),
         };
-        tokio::spawn(run(state, rx, self.clock.clone()));
+        tokio::spawn(run(state, rx, p.stop.clone(), self.clock.clone()));
         s.by_name.insert(name.to_string(), index);
         s.by_index.push(Some(p.clone()));
         tracing::info!(partition = name, index, "partition created");
@@ -338,7 +340,7 @@ impl Registry {
             return false;
         };
         if let Some(p) = s.by_index[i as usize].take() {
-            let _ = p.tx.try_send(Command::Shutdown);
+            p.stop.notify_one();
         }
         tracing::info!(partition = name, "partition deleted");
         true
@@ -347,7 +349,7 @@ impl Registry {
     pub fn shutdown(&self) {
         self.shutting_down.store(true, Ordering::Relaxed);
         for p in self.all() {
-            let _ = p.tx.try_send(Command::Shutdown);
+            p.stop.notify_one();
         }
     }
 }
@@ -357,6 +359,26 @@ mod tests {
     use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 
     use super::*;
+
+    #[tokio::test]
+    async fn shutdown_is_not_lost_when_the_queue_is_full() {
+        let reg = Registry::new(Config::for_tests());
+        let p = reg.get_or_create("p").unwrap();
+        // The actor has not run yet on this single thread runtime: its queue fills up.
+        let mut replies = Vec::new();
+        loop {
+            let (reply, rx) = oneshot::channel();
+            match p.send(Command::Peek { reply }) {
+                Ok(()) => replies.push(rx),
+                Err(ApiError::Overloaded) => break,
+                Err(e) => panic!("unexpected {e:?}"),
+            }
+        }
+        reg.shutdown();
+        tokio::time::timeout(Duration::from_secs(5), p.tx.closed())
+            .await
+            .expect("the actor stopped");
+    }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn busy_actor_still_processes_deadlines() {
