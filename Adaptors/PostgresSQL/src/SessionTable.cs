@@ -25,6 +25,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgresSQL.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 
@@ -39,14 +40,17 @@ namespace ArmoniK.Core.Adapters.PostgresSQL;
 public class SessionTable : ISessionTable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly IUuidGenerator           uuidGenerator_;
 
   /// <summary>
   ///   Creates a new SessionTable
   /// </summary>
   public SessionTable(NpgsqlConnectionProvider connectionProvider,
+                      IUuidGenerator           uuidGenerator,
                       ILogger<SessionTable>    logger)
   {
     connectionProvider_ = connectionProvider;
+    uuidGenerator_      = uuidGenerator;
     Logger              = logger;
   }
 
@@ -58,8 +62,8 @@ public class SessionTable : ISessionTable
                                                 TaskOptions         defaultOptions,
                                                 CancellationToken   cancellationToken = default)
   {
-    var sessionId = Guid.NewGuid()
-                        .ToString();
+    var sessionId = uuidGenerator_.GenerateUuid()
+                                  .ToString();
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);

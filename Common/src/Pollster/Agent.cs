@@ -54,12 +54,13 @@ public sealed class Agent : IAgent
   private readonly ConcurrentBag<ICollection<string>>                                 notifiedResults_ = new();
   private readonly IObjectStorage                                                     objectStorage_;
   private readonly IPushQueueStorage                                                  pushQueueStorage_;
-  private readonly ConcurrentBag<ICollection<(string id, ReadOnlyMemory<byte> data)>> resultsData_ = new();
   private readonly IResultTable                                                       resultTable_;
+  private readonly ConcurrentBag<ICollection<(string id, ReadOnlyMemory<byte> data)>> resultsData_ = new();
   private readonly SessionData                                                        sessionData_;
   private readonly ISubmitter                                                         submitter_;
   private readonly TaskData                                                           taskData_;
   private readonly ITaskTable                                                         taskTable_;
+  private readonly IUuidGenerator                                                     uuidGenerator_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -73,6 +74,7 @@ public sealed class Agent : IAgent
   /// <param name="taskData">OpaqueId of the task</param>
   /// <param name="folder">Shared folder between Agent and Worker</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter        submitter,
                IObjectStorage    objectStorage,
@@ -83,6 +85,7 @@ public sealed class Agent : IAgent
                TaskData          taskData,
                string            folder,
                string            token,
+               IUuidGenerator    uuidGenerator,
                ILogger           logger)
   {
     submitter_        = submitter;
@@ -90,6 +93,7 @@ public sealed class Agent : IAgent
     pushQueueStorage_ = pushQueueStorage;
     resultTable_      = resultTable;
     taskTable_        = taskTable;
+    uuidGenerator_    = uuidGenerator;
     logger_           = logger;
     sessionData_      = sessionData;
     taskData_         = taskData;
@@ -262,8 +266,8 @@ public sealed class Agent : IAgent
                                   .AsICollection());
     }
 
-    var createdTasks = requests.Select(creation => new TaskCreationRequest(Guid.NewGuid()
-                                                                               .ToString(),
+    var createdTasks = requests.Select(creation => new TaskCreationRequest(uuidGenerator_.GenerateUuid()
+                                                                                         .ToString(),
                                                                            creation.PayloadId,
                                                                            TaskOptions.Merge(creation.Options,
                                                                                              options),
@@ -285,8 +289,8 @@ public sealed class Agent : IAgent
     var now = DateTime.UtcNow;
 
     var results = requests.Select(tuple => (new Result(tuple.request.SessionId,
-                                                       Guid.NewGuid()
-                                                           .ToString(),
+                                                       uuidGenerator_.GenerateUuid()
+                                                                     .ToString(),
                                                        tuple.request.Name,
                                                        taskData_.TaskId,
                                                        "",
@@ -324,8 +328,8 @@ public sealed class Agent : IAgent
     ThrowIfInvalidToken(token);
 
     var results = requests.Select(request => new Result(request.SessionId,
-                                                        Guid.NewGuid()
-                                                            .ToString(),
+                                                        uuidGenerator_.GenerateUuid()
+                                                                      .ToString(),
                                                         request.Name,
                                                         taskData_.TaskId,
                                                         "",
