@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 
 namespace ArmoniK.Core.Common.Storage;
@@ -38,14 +39,39 @@ public record ReadyTask(string        TaskId,
                         string        PayloadId,
                         IList<string> DataDependencies)
 {
+  private static readonly IList<string> NoDependencies = Array.Empty<string>();
+
   /// <summary>
-  ///   Selector translated by every task table implementation.
+  ///   Selector translated by every task table implementation, reading the payload and the data dependencies.
   /// </summary>
   public static readonly Expression<Func<TaskData, ReadyTask>> Selector = data => new ReadyTask(data.TaskId,
                                                                                                    data.SessionId,
                                                                                                    data.Options,
                                                                                                    data.PayloadId,
                                                                                                    data.DataDependencies);
+
+  /// <summary>
+  ///   Selector translated by every task table implementation, reading only what the queue message needs:
+  ///   <see cref="PayloadId" /> is empty and <see cref="DataDependencies" /> has no element.
+  /// </summary>
+  public static readonly Expression<Func<TaskData, ReadyTask>> MessageSelector = data => new ReadyTask(data.TaskId,
+                                                                                                          data.SessionId,
+                                                                                                          data.Options,
+                                                                                                          "",
+                                                                                                          NoDependencies);
+
+  /// <summary>
+  ///   The selector suited to the queue: the data dependencies are read only for a queue that uses them,
+  ///   since they may be many for an aggregation task.
+  /// </summary>
+  /// <param name="pushQueueStorage">Queue in which the ready tasks are enqueued</param>
+  /// <returns>
+  ///   <see cref="Selector" /> if the queue uses the data dependencies, <see cref="MessageSelector" /> otherwise
+  /// </returns>
+  public static Expression<Func<TaskData, ReadyTask>> SelectorFor(IPushQueueStorage pushQueueStorage)
+    => pushQueueStorage.UsesDataDependencies
+         ? Selector
+         : MessageSelector;
 
   /// <summary>
   ///   The queue message of the task.
