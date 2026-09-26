@@ -31,8 +31,10 @@
 
 using System.Collections.Concurrent;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -47,6 +49,7 @@ public class SessionTableTests : SessionTableTestBase
   {
     var services = new ServiceCollection();
 
+    services.AddSingleton<IUuidGenerator, UuidGeneratorV4>();
     services.AddTransient<ISessionTable, SessionTable>();
     services.AddTransient<ConcurrentDictionary<string, SessionData>>();
     services.AddTransient<ConcurrentDictionary<string, ConcurrentDictionary<string, string>>>();

@@ -22,6 +22,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Amqp;
@@ -63,6 +64,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
     }
 
     serviceCollection.AddSingletonWithHealthCheck<IConnectionAmqp, ConnectionAmqp>(nameof(IConnectionAmqp));
+    serviceCollection.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
     serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
 

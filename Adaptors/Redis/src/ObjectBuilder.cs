@@ -25,6 +25,7 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using StackExchange.Redis;
@@ -94,6 +95,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                     redisOptions.EndpointUrl,
                     redisOptions.User);
 
+    serviceCollection.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
     serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                                       TextWriter.Null)
                                                                              .GetDatabase());

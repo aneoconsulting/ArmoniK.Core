@@ -21,6 +21,7 @@ using System.Security.Authentication;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection.Options;
@@ -228,6 +229,7 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
+      services.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
       services.AddInitializedOption<TableStorage>(configuration,
                                                   TableStorage.SettingSection)
               .AddSingleton<ITaskTable, TaskTable>()

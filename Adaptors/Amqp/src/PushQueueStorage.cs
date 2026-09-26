@@ -44,9 +44,11 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
   private readonly string                                               prefix_;
   private readonly ConcurrentDictionary<string, ObjectPool<SenderLink>> senders_ = new();
   private readonly string                                               separator_;
+  private readonly IUuidGenerator                                       uuidGenerator_;
 
   public PushQueueStorage(QueueCommon.Amqp          options,
                           IConnectionAmqp           connectionAmqp,
+                          IUuidGenerator            uuidGenerator,
                           ILogger<PushQueueStorage> logger)
     : base(options,
            connectionAmqp)
@@ -55,6 +57,7 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
     logger_           = logger;
     prefix_           = options.Prefix;
     separator_        = options.Separator;
+    uuidGenerator_    = uuidGenerator;
   }
 
   /// <inheritdoc />
@@ -117,8 +120,8 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                                                                             },
                                                                                                    Properties = new Properties
                                                                                                                 {
-                                                                                                                  MessageId = Guid.NewGuid()
-                                                                                                                                  .ToString(),
+                                                                                                                  MessageId = uuidGenerator_.GenerateUuid()
+                                                                                                                                            .ToString(),
                                                                                                                 },
                                                                                                  }),
                                                                       cancellationToken)
@@ -154,9 +157,8 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                          s => new ObjectPool<SenderLink>(200,
                                                          async token => new SenderLink(new Session(await ConnectionAmqp.GetConnectionAsync(token)
                                                                                                                        .ConfigureAwait(false)),
-                                                                                       Guid.NewGuid()
-                                                                                           .ToString(),
+                                                                                       uuidGenerator_.GenerateUuid()
+                                                                                                     .ToString(),
                                                                                        s),
-                                                         (link,
-                                                          _) => new ValueTask<bool>(!link.IsClosed && !link.Session.IsClosed)));
+                                                         (link, _) => new ValueTask<bool>(!link.IsClosed && !link.Session.IsClosed)));
 }

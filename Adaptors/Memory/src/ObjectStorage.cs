@@ -37,7 +37,11 @@ namespace ArmoniK.Core.Adapters.Memory;
 public class ObjectStorage : IObjectStorage
 {
   private readonly ConcurrentDictionary<string, byte[]> store_ = new();
+  private readonly IUuidGenerator                       uuidGenerator_;
   private          bool                                 isInitialized_;
+
+  public ObjectStorage(IUuidGenerator uuidGenerator)
+    => uuidGenerator_ = uuidGenerator;
 
   /// <inheritdoc />
   public Task Init(CancellationToken cancellationToken)
@@ -59,8 +63,8 @@ public class ObjectStorage : IObjectStorage
   {
     var array = new List<byte>();
 
-    var key = Guid.NewGuid()
-                  .ToString();
+    var key = uuidGenerator_.GenerateUuid()
+                            .ToString();
 
     await foreach (var val in valueChunks.WithCancellation(cancellationToken)
                                          .ConfigureAwait(false))

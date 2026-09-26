@@ -39,6 +39,7 @@ public class ObjectStorage : IObjectStorage
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 path_;
+  private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -46,9 +47,11 @@ public class ObjectStorage : IObjectStorage
   /// </summary>
   /// <param name="path">Path where the objects are stored</param>
   /// <param name="chunkSize">Size of the chunks when reading</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(string                 path,
                        int                    chunkSize,
+                       IUuidGenerator         uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
     path_ = path == ""
@@ -57,6 +60,7 @@ public class ObjectStorage : IObjectStorage
     chunkSize_ = chunkSize == 0
                    ? Options.LocalStorage.Default.ChunkSize
                    : chunkSize;
+    uuidGenerator_ = uuidGenerator;
 
 
     logger_ = logger;
@@ -101,8 +105,8 @@ public class ObjectStorage : IObjectStorage
                                                              CancellationToken                      cancellationToken = default)
   {
     long size = 0;
-    var key = Guid.NewGuid()
-                  .ToString();
+    var key = uuidGenerator_.GenerateUuid()
+                            .ToString();
     var filename = Path.Combine(path_,
                                 key);
 

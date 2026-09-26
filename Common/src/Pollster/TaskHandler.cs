@@ -57,12 +57,12 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public sealed class TaskHandler : IAsyncDisposable
 {
-  private readonly Activity?                             activity_;
   private readonly ActivityContext                       activityContext_;
   private readonly ActivitySource                        activitySource_;
+  private readonly Activity?                             activity_;
   private readonly IAgentHandler                         agentHandler_;
-  private readonly string                                cache_;
   private readonly double                                cacheEvictionThreshold_;
+  private readonly string                                cache_;
   private readonly DataPrefetcher                        dataPrefetcher_;
   private readonly TimeSpan                              delayBeforeAcquisition_;
   private readonly CancellationTokenSource               earlyCts_;
@@ -83,11 +83,12 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IPushQueueStorage                     pushQueueStorage_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
-  private readonly ISubmitter                            submitter_;
   private readonly Submitter                             submitterOptions_;
+  private readonly ISubmitter                            submitter_;
   private readonly ITaskProcessingChecker                taskProcessingChecker_;
   private readonly ITaskTable                            taskTable_;
   private readonly string                                token_;
+  private readonly IUuidGenerator                        uuidGenerator_;
   private readonly IWorkerStreamHandler                  workerStreamHandler_;
   private          IAgent?                               agent_;
   private          TimeSpan?                             delayMessage_;
@@ -122,6 +123,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <param name="exceptionManager">The exception manager for handling cancellation and errors.</param>
   /// <param name="functionExecutionMetrics">The metrics collector for function execution.</param>
   /// <param name="healthCheckRecord">The health check record for agent health monitoring.</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
   public TaskHandler(ISessionTable                         sessionTable,
                      ITaskTable                            taskTable,
@@ -143,7 +145,8 @@ public sealed class TaskHandler : IAsyncDisposable
                      Action                                onDispose,
                      ExceptionManager                      exceptionManager,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
-                     HealthCheckRecord                     healthCheckRecord)
+                     HealthCheckRecord                     healthCheckRecord,
+                     IUuidGenerator                        uuidGenerator)
   {
     exceptionManager_         = exceptionManager;
     sessionTable_             = sessionTable;
@@ -163,6 +166,7 @@ public sealed class TaskHandler : IAsyncDisposable
     functionExecutionMetrics_ = functionExecutionMetrics;
     submitterOptions_         = submitterOptions;
     healthCheckRecord_        = healthCheckRecord;
+    uuidGenerator_            = uuidGenerator;
     ownerPodId_               = ownerPodId;
     ownerPodName_             = ownerPodName;
     taskData_                 = null;
@@ -182,8 +186,8 @@ public sealed class TaskHandler : IAsyncDisposable
     activity_?.SetTagAndBaggage("OwnerPodName",
                                 ownerPodName);
 
-    token_ = Guid.NewGuid()
-                 .ToString();
+    token_ = uuidGenerator_.GenerateUuid()
+                           .ToString();
 
     cache_                  = pollsterOptions.InternalCacheFolder;
     cacheEvictionThreshold_ = pollsterOptions.CacheEvictionThreshold;
@@ -1048,7 +1052,7 @@ public sealed class TaskHandler : IAsyncDisposable
         foreach (var resultId in opaqueIds.Keys)
         {
           var tmp = Path.Combine(cache_,
-                                 $"{resultId}{Guid.NewGuid().ToString()}.tmp");
+                                 $"{resultId}{uuidGenerator_.GenerateUuid().ToString()}.tmp");
           try
           {
             File.Copy(Path.Combine(folder_,
