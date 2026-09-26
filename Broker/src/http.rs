@@ -10,10 +10,11 @@ use std::time::Duration;
 use axum::body::Bytes;
 use axum::extract::rejection::BytesRejection;
 use axum::extract::{DefaultBodyLimit, Path, Query, State};
-use axum::http::{HeaderValue, StatusCode, Uri, header};
+use axum::http::{HeaderValue, Request, StatusCode, Uri, header};
 use axum::response::{IntoResponse, Response};
 use axum::routing::{delete, get, post};
 use axum::{Json, Router, middleware};
+use http_body_util::BodyExt;
 use serde::Deserialize;
 use serde::de::DeserializeOwned;
 use serde_json::json;
@@ -32,6 +33,94 @@ const MAX_NAME: usize = 100;
 const MAX_TASK_ID: usize = 512;
 /// Grace given to the actor beyond the requested wait before answering 204 anyway.
 const WAIT_SLACK: Duration = Duration::from_secs(5);
+
+/// The service: pull and ack, which every consumer sends for every message, go straight
+/// to their handler; everything else goes through the axum router. The direct path
+/// skips the router's matching, middleware, extractors and boxed layers, and answers
+/// exactly as the router would (same handlers, body limit and epoch header).
+#[derive(Clone)]
+pub struct App {
+    reg: Reg,
+    router: Router,
+}
+
+pub fn app(reg: Reg) -> App {
+    App {
+        router: router(reg.clone()),
+        reg,
+    }
+}
+
+#[derive(Clone, Copy)]
+enum Hot {
+    Pull,
+    Ack,
+}
+
+/// `POST /v1/consumers/{id}/pull` or `/ack`, with an identifier the router would take
+/// as is (no percent-encoding).
+fn hot_route<B>(req: &Request<B>) -> Option<(Hot, String)> {
+    if req.method() != axum::http::Method::POST {
+        return None;
+    }
+    let rest = req.uri().path().strip_prefix("/v1/consumers/")?;
+    let (id, op) = rest.split_once('/')?;
+    if id.is_empty() || id.contains('%') {
+        return None;
+    }
+    let hot = match op {
+        "pull" => Hot::Pull,
+        "ack" => Hot::Ack,
+        _ => return None,
+    };
+    Some((hot, id.to_string()))
+}
+
+impl<B> tower::Service<Request<B>> for App
+where
+    B: axum::body::HttpBody<Data = Bytes> + Send + 'static,
+    B::Error: Into<axum::BoxError>,
+{
+    type Response = Response;
+    type Error = std::convert::Infallible;
+    type Future =
+        std::pin::Pin<Box<dyn std::future::Future<Output = Result<Response, Self::Error>> + Send>>;
+
+    fn poll_ready(
+        &mut self,
+        _: &mut std::task::Context<'_>,
+    ) -> std::task::Poll<Result<(), Self::Error>> {
+        std::task::Poll::Ready(Ok(()))
+    }
+
+    fn call(&mut self, req: Request<B>) -> Self::Future {
+        let Some((hot, id)) = hot_route(&req) else {
+            let mut router = self.router.clone();
+            return Box::pin(async move { router.call(req).await });
+        };
+        let reg = self.reg.clone();
+        Box::pin(async move {
+            let limit = reg.cfg.max_body_bytes;
+            let result = match http_body_util::Limited::new(req.into_body(), limit)
+                .collect()
+                .await
+            {
+                Ok(body) => {
+                    let body = body.to_bytes();
+                    match hot {
+                        Hot::Pull => pull_core(&reg, &id, &body).await,
+                        Hot::Ack => ack_core(&reg, &id, &body).await,
+                    }
+                }
+                Err(e) if e.is::<http_body_util::LengthLimitError>() => {
+                    Err(ApiError::PayloadTooLarge)
+                }
+                Err(_) => Err(ApiError::Malformed("unreadable body")),
+            };
+            Ok(epoch_header(State(reg), result.into_response()).await)
+        })
+    }
+}
 
 pub fn router(reg: Reg) -> Router {
     let limit = reg.cfg.max_body_bytes;
@@ -83,18 +172,25 @@ async fn fallback(uri: Uri) -> ApiError {
 
 // ------------------------------------------------------------------ helpers
 
-fn parse<T: DeserializeOwned>(body: Result<Bytes, BytesRejection>) -> Result<T, ApiError> {
-    let body = body.map_err(|r| {
+fn body_bytes(body: Result<Bytes, BytesRejection>) -> Result<Bytes, ApiError> {
+    body.map_err(|r| {
         if r.status() == StatusCode::PAYLOAD_TOO_LARGE {
             ApiError::PayloadTooLarge
         } else {
             ApiError::Malformed("unreadable body")
         }
-    })?;
+    })
+}
+
+fn parse<T: DeserializeOwned>(body: Result<Bytes, BytesRejection>) -> Result<T, ApiError> {
+    parse_bytes(&body_bytes(body)?)
+}
+
+fn parse_bytes<T: DeserializeOwned>(body: &[u8]) -> Result<T, ApiError> {
     if body.is_empty() {
         return serde_json::from_slice(b"{}").map_err(|_| ApiError::Malformed("missing body"));
     }
-    serde_json::from_slice(&body).map_err(|_| ApiError::Malformed("invalid JSON body"))
+    serde_json::from_slice(body).map_err(|_| ApiError::Malformed("invalid JSON body"))
 }
 
 fn check_name(s: &str) -> Result<(), ApiError> {
@@ -282,12 +378,16 @@ async fn pull(
     Path(id): Path<String>,
     body: Result<Bytes, BytesRejection>,
 ) -> ApiResult {
-    not_shutting(&reg)?;
-    let b: PullBody = parse(body)?;
+    pull_core(&reg, &id, &body_bytes(body)?).await
+}
+
+async fn pull_core(reg: &Registry, id: &str, body: &[u8]) -> ApiResult {
+    not_shutting(reg)?;
+    let b: PullBody = parse_bytes(body)?;
     if b.max == 0 || b.max > reg.cfg.max_pull {
         return Err(ApiError::Malformed("max must be within 1..=64"));
     }
-    let c = ConsumerRef::decode(&id).ok_or(ApiError::UnknownConsumer)?;
+    let c = ConsumerRef::decode(id).ok_or(ApiError::UnknownConsumer)?;
     let wait = b.wait_ms.min(reg.cfg.max_wait_ms);
     let (tx, rx) = oneshot::channel();
     reg.send_to(
@@ -440,7 +540,11 @@ async fn ack(
     Path(id): Path<String>,
     body: Result<Bytes, BytesRejection>,
 ) -> ApiResult {
-    let b: AckBody = parse(body)?;
+    ack_core(&reg, &id, &body_bytes(body)?).await
+}
+
+async fn ack_core(reg: &Registry, id: &str, body: &[u8]) -> ApiResult {
+    let b: AckBody = parse_bytes(body)?;
     let mut items = Vec::with_capacity(b.items.len());
     for i in b.items {
         if let Some(o) = &i.outputs {
@@ -448,7 +552,7 @@ async fn ack(
         }
         items.push((decode_token(&i.token)?, i.outputs));
     }
-    settle(&reg, &id, items, |consumer, items, reply| Command::Ack {
+    settle(reg, id, items, |consumer, items, reply| Command::Ack {
         consumer,
         items,
         reply,

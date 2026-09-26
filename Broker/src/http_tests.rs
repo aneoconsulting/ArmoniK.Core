@@ -3,7 +3,6 @@
 
 //! Protocol-level tests through the router, without network.
 
-use axum::Router;
 use axum::body::{Body, to_bytes};
 use axum::http::{Method, Request, StatusCode};
 use serde_json::{Value, json};
@@ -11,18 +10,19 @@ use tower::ServiceExt;
 
 use crate::actor::Registry;
 use crate::config::Config;
+use crate::http::App;
 
-fn app_with(cfg: Config) -> (Router, std::sync::Arc<Registry>) {
+fn app_with(cfg: Config) -> (App, std::sync::Arc<Registry>) {
     let reg = Registry::new(cfg);
-    (crate::http::router(reg.clone()), reg)
+    (crate::http::app(reg.clone()), reg)
 }
 
-fn app() -> (Router, std::sync::Arc<Registry>) {
+fn app() -> (App, std::sync::Arc<Registry>) {
     app_with(Config::for_tests())
 }
 
 async fn call(
-    app: &Router,
+    app: &App,
     method: Method,
     uri: &str,
     body: Option<Value>,
@@ -46,7 +46,7 @@ async fn call(
     (status, v, headers)
 }
 
-async fn register(app: &Router, partition: &str) -> String {
+async fn register(app: &App, partition: &str) -> String {
     let (s, v, _) = call(
         app,
         Method::POST,
@@ -59,7 +59,7 @@ async fn register(app: &Router, partition: &str) -> String {
 }
 
 async fn enqueue(
-    app: &Router,
+    app: &App,
     partition: &str,
     key: &str,
     prio: u8,
@@ -410,4 +410,56 @@ async fn nack_policies_and_diagnostics() {
     assert_eq!(v["heads"].as_array().unwrap().len(), 0);
     let (s, _, _) = call(&app, Method::GET, "/metrics", None).await;
     assert_eq!(s, StatusCode::OK);
+}
+
+/// Pull and ack skip the router (http::App): same answers, epoch header and body limit.
+#[tokio::test]
+async fn direct_pull_and_ack_answer_as_the_router() {
+    let (app, reg) = app();
+    let id = register(&app, "p").await;
+    let big = json!({ "items": [{ "token": "x".repeat(70_000) }] });
+    for op in ["pull", "ack"] {
+        let uri = format!("/v1/consumers/{id}/{op}");
+        let (s, v, h) = call(&app, Method::POST, &uri, Some(big.clone())).await;
+        assert_eq!(s, StatusCode::PAYLOAD_TOO_LARGE, "{op}: {v}");
+        assert_eq!(v["title"], "payload-too-large");
+        assert_eq!(h["x-broker-epoch"].to_str().unwrap(), reg.epoch.to_string());
+        let (s, v, _) = call(&app, Method::POST, &uri, Some(json!("not an object"))).await;
+        assert_eq!(s, StatusCode::BAD_REQUEST, "{op}: {v}");
+    }
+    let (s, _, _) = call(&app, Method::POST, "/v1/consumers/c-0-0-0-0/pull", None).await;
+    assert_eq!(s, StatusCode::GONE, "unknown consumer");
+    // A percent-encoded identifier goes through the router, which decodes it.
+    let encoded = id.replace('-', "%2D");
+    let (s, _, h) = call(
+        &app,
+        Method::POST,
+        &format!("/v1/consumers/{encoded}/pull"),
+        None,
+    )
+    .await;
+    assert_eq!(s, StatusCode::NO_CONTENT);
+    assert!(h.contains_key("x-broker-epoch"));
+    enqueue(&app, "p", "k", 1, &["t"]).await;
+    let (s, v, h) = call(
+        &app,
+        Method::POST,
+        &format!("/v1/consumers/{id}/pull"),
+        None,
+    )
+    .await;
+    assert_eq!(s, StatusCode::OK);
+    assert_eq!(h["content-type"], "application/json");
+    let token = v["messages"][0]["token"].clone();
+    let (s, v, _) = call(
+        &app,
+        Method::POST,
+        &format!("/v1/consumers/{id}/ack"),
+        Some(json!({ "items": [{ "token": token }] })),
+    )
+    .await;
+    assert_eq!(
+        (s, v),
+        (StatusCode::OK, json!({ "applied": 1, "ignored": 0 }))
+    );
 }
