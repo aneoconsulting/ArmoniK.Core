@@ -290,11 +290,16 @@ fn confine(cpus: &[usize]) {
 }
 
 fn runtime(name: &str, cpus: Vec<usize>) -> Runtime {
-    tokio::runtime::Builder::new_multi_thread()
+    configured_runtime(name, cpus, &Config::parse_from(["armonik-broker"]))
+}
+
+/// The server's runtime as the binary builds it, with one worker per processor of its
+/// half; confined to that half and named after its side.
+fn configured_runtime(name: &str, cpus: Vec<usize>, cfg: &Config) -> Runtime {
+    server::runtime_builder(cfg)
         .worker_threads(threads())
         .thread_name(name)
         .on_thread_start(move || confine(&cpus))
-        .enable_all()
         .build()
         .unwrap()
 }
@@ -336,7 +341,7 @@ fn start_server(cpus: Vec<usize>) -> SocketAddr {
         .unwrap();
     let cfg = Config::parse_from(["armonik-broker", "--listen", &addr.to_string()]);
     std::thread::spawn(move || {
-        let rt = runtime("broker", cpus);
+        let rt = configured_runtime("broker", cpus, &cfg);
         rt.block_on(server::serve(Registry::new(cfg), std::future::pending()))
             .unwrap();
     });

@@ -45,8 +45,7 @@ fn health_probe() -> ! {
     std::process::exit(if ok { 0 } else { 1 })
 }
 
-#[tokio::main]
-async fn main() -> anyhow::Result<()> {
+fn main() -> anyhow::Result<()> {
     if std::env::args().nth(1).as_deref() == Some("health") {
         health_probe();
     }
@@ -58,6 +57,9 @@ async fn main() -> anyhow::Result<()> {
         )
         .init();
     let cfg = config::Config::parse();
-    let reg = actor::Registry::new(cfg);
-    server::serve(reg, shutdown_signal()).await
+    let rt = server::runtime_builder(&cfg).build()?;
+    rt.block_on(async {
+        let reg = actor::Registry::new(cfg);
+        server::serve(reg, shutdown_signal()).await
+    })
 }
