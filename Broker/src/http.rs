@@ -114,6 +114,19 @@ async fn call<T>(
     rx.await.map_err(|_| ApiError::ShuttingDown)
 }
 
+/// Like [`call`], to the partition of an index; `None` when there is no such partition.
+async fn call_index<T>(
+    reg: &Registry,
+    index: u16,
+    make: impl FnOnce(oneshot::Sender<T>) -> Command,
+) -> Option<Result<T, ApiError>> {
+    let (tx, rx) = oneshot::channel();
+    if let Err(e) = reg.send_to(index, make(tx))? {
+        return Some(Err(e));
+    }
+    Some(rx.await.map_err(|_| ApiError::ShuttingDown))
+}
+
 fn consumer_partition(reg: &Registry, id: &str) -> Result<(ConsumerRef, Partition), ApiError> {
     let c = ConsumerRef::decode(id).ok_or(ApiError::UnknownConsumer)?;
     let p = reg.by_index(c.partition).ok_or(ApiError::UnknownConsumer)?;
@@ -274,15 +287,19 @@ async fn pull(
     if b.max == 0 || b.max > reg.cfg.max_pull {
         return Err(ApiError::Malformed("max must be within 1..=64"));
     }
-    let (c, p) = consumer_partition(&reg, &id)?;
+    let c = ConsumerRef::decode(&id).ok_or(ApiError::UnknownConsumer)?;
     let wait = b.wait_ms.min(reg.cfg.max_wait_ms);
     let (tx, rx) = oneshot::channel();
-    p.send(Command::Pull {
-        consumer: c,
-        max: b.max,
-        wait_ms: wait,
-        reply: tx,
-    })?;
+    reg.send_to(
+        c.partition,
+        Command::Pull {
+            consumer: c,
+            max: b.max,
+            wait_ms: wait,
+            reply: tx,
+        },
+    )
+    .ok_or(ApiError::UnknownConsumer)??;
     // Dropping `rx` (client gone, or timeout) makes the actor requeue what it elected.
     let got = match tokio::time::timeout(Duration::from_millis(wait) + WAIT_SLACK, rx).await {
         Ok(Ok(r)) => r?,
@@ -292,7 +309,18 @@ async fn pull(
     if got.is_empty() {
         return Ok(StatusCode::NO_CONTENT.into_response());
     }
-    ok(json!({ "messages": got }))
+    ok(Messages { messages: got })
+}
+
+#[derive(serde::Serialize)]
+struct Messages {
+    messages: Vec<crate::state::Delivered>,
+}
+
+#[derive(serde::Serialize)]
+struct Settled {
+    applied: u32,
+    ignored: u32,
 }
 
 #[derive(Deserialize, Default)]
@@ -359,32 +387,48 @@ async fn settle<I: Send + 'static>(
     make: impl Fn(Option<ConsumerRef>, Vec<(Token, I)>, oneshot::Sender<(u32, u32)>) -> Command,
 ) -> ApiResult {
     let c = ConsumerRef::decode(consumer);
-    let mut groups: BTreeMap<u16, Vec<(Token, I)>> = BTreeMap::new();
     let mut ignored = 0u32;
     // Ignored here, before reaching an actor; actors count their own.
     let mut outside = 0u64;
-    for (t, i) in items {
-        if t.epoch == reg.epoch {
-            groups.entry(t.partition).or_default().push((t, i));
-        } else {
-            ignored += 1;
-            outside += 1;
+    // Usually every token belongs to one partition: one group, no map.
+    let groups: Vec<(u16, Vec<(Token, I)>)> = match items.first() {
+        Some((first, _))
+            if items
+                .iter()
+                .all(|(t, _)| t.epoch == reg.epoch && t.partition == first.partition) =>
+        {
+            vec![(first.partition, items)]
         }
-    }
+        _ => {
+            let mut groups: BTreeMap<u16, Vec<(Token, I)>> = BTreeMap::new();
+            for (t, i) in items {
+                if t.epoch == reg.epoch {
+                    groups.entry(t.partition).or_default().push((t, i));
+                } else {
+                    ignored += 1;
+                    outside += 1;
+                }
+            }
+            groups.into_iter().collect()
+        }
+    };
     let mut applied = 0u32;
     for (index, group) in groups {
-        let Some(p) = reg.by_index(index) else {
-            ignored += group.len() as u32;
-            outside += group.len() as u64;
+        let owner = c.filter(|c| c.partition == index);
+        let n = group.len();
+        let Some(r) = call_index(reg, index, |reply| make(owner, group, reply)).await else {
+            ignored += n as u32;
+            outside += n as u64;
             continue;
         };
-        let owner = c.filter(|c| c.partition == index);
-        let (a, i) = call(&p, |reply| make(owner, group, reply)).await?;
+        let (a, i) = r?;
         applied += a;
         ignored += i;
     }
-    crate::metrics::Counters::add(&reg.globals.retired.ack_ignored, outside);
-    ok(json!({ "applied": applied, "ignored": ignored }))
+    if outside > 0 {
+        crate::metrics::Counters::add(&reg.globals.retired.ack_ignored, outside);
+    }
+    ok(Settled { applied, ignored })
 }
 
 fn decode_token(s: &str) -> Result<Token, ApiError> {
@@ -531,7 +575,7 @@ async fn metrics(State(reg): State<Reg>) -> Response {
     let parts = reg.all();
     let view: Vec<(String, &crate::metrics::Gauges)> = parts
         .iter()
-        .map(|p| (p.name.clone(), p.gauges.as_ref()))
+        .map(|p| (p.name.to_string(), p.gauges.as_ref()))
         .collect();
     let body = crate::metrics::render(&reg.globals, &view);
     ([(header::CONTENT_TYPE, "text/plain; version=0.0.4")], body).into_response()

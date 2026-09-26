@@ -211,7 +211,7 @@ async fn run(mut state: PartitionState, mut rx: mpsc::Receiver<Command>, clock: 
 
 #[derive(Clone)]
 pub struct Partition {
-    pub name: String,
+    pub name: Arc<str>,
     pub tx: mpsc::Sender<Command>,
     pub gauges: Arc<Gauges>,
 }
@@ -265,6 +265,15 @@ impl Registry {
             .and_then(|&i| s.by_index[i as usize].clone())
     }
 
+    /// Sends to the partition of that index without cloning its handle: requests of the
+    /// hot path would otherwise bump shared reference counts from every worker thread.
+    /// `None` when there is no such partition.
+    pub fn send_to(&self, index: u16, cmd: Command) -> Option<Result<(), ApiError>> {
+        let s = self.slots.read().unwrap();
+        let p = s.by_index.get(index as usize)?.as_ref()?;
+        Some(p.send(cmd))
+    }
+
     pub fn by_index(&self, index: u16) -> Option<Partition> {
         self.slots
             .read()
@@ -312,7 +321,7 @@ impl Registry {
         );
         let (tx, rx) = mpsc::channel(self.cfg.actor_queue);
         let p = Partition {
-            name: name.to_string(),
+            name: name.into(),
             tx,
             gauges: state.gauges.clone(),
         };
