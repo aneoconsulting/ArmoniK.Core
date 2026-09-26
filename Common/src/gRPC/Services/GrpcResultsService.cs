@@ -59,6 +59,7 @@ public class GrpcResultsService : Results.ResultsBase
   private readonly IResultTable                                 resultTable_;
   private readonly ISessionTable                                sessionTable_;
   private readonly ITaskTable                                   taskTable_;
+  private readonly IUuidGenerator                               uuidGenerator_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="GrpcResultsService" /> class.
@@ -70,6 +71,7 @@ public class GrpcResultsService : Results.ResultsBase
   /// <param name="pushQueueStorage">The interface to push tasks into the queue.</param>
   /// <param name="meter">The metrics for function execution.</param>
   /// <param name="options">The submitter options for configuration.</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">The logger for logging information.</param>
   public GrpcResultsService(IResultTable                                 resultTable,
                             ITaskTable                                   taskTable,
@@ -78,9 +80,11 @@ public class GrpcResultsService : Results.ResultsBase
                             IPushQueueStorage                            pushQueueStorage,
                             FunctionExecutionMetrics<GrpcResultsService> meter,
                             Injection.Options.Submitter                  options,
+                            IUuidGenerator                               uuidGenerator,
                             ILogger<GrpcResultsService>                  logger)
   {
     logger_           = logger;
+    uuidGenerator_    = uuidGenerator;
     resultTable_      = resultTable;
     taskTable_        = taskTable;
     sessionTable_     = sessionTable;
@@ -161,8 +165,8 @@ public class GrpcResultsService : Results.ResultsBase
   {
     using var measure = meter_.CountAndTime();
     var results = request.Results.Select(rc => new Result(request.SessionId,
-                                                          Guid.NewGuid()
-                                                              .ToString(),
+                                                          uuidGenerator_.GenerateUuid()
+                                                                        .ToString(),
                                                           rc.Name,
                                                           "",
                                                           "",
@@ -214,8 +218,8 @@ public class GrpcResultsService : Results.ResultsBase
       results = await request.Results.ParallelSelect(new ParallelTaskOptions(options_.DegreeOfParallelism),
                                                      async rc =>
                                                      {
-                                                       var resultId = Guid.NewGuid()
-                                                                          .ToString();
+                                                       var resultId = uuidGenerator_.GenerateUuid()
+                                                                                    .ToString();
                                                        var (opaqueId, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
                                                                                                                     {
                                                                                                                       ResultId  = resultId,

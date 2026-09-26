@@ -23,6 +23,8 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
+
 using Npgsql.Replication;
 using Npgsql.Replication.PgOutput;
 using Npgsql.Replication.PgOutput.Messages;
@@ -53,15 +55,18 @@ internal sealed class WalBroadcaster<T> : IDisposable
   private readonly NpgsqlConnectionProvider                                      provider_;
   private readonly ConcurrentDictionary<Guid, Channel<T>>                        subscribers_ = new();
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
+  private readonly IUuidGenerator                                                uuidGenerator_;
   private          Task?                                                         broadcastLoop_;
   private          CancellationTokenSource?                                      loopCts_;
   private          TaskCompletionSource?                                         slotReady_;
 
   internal WalBroadcaster(NpgsqlConnectionProvider                                      provider,
-                          Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse)
+                          Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse,
+                          IUuidGenerator                                                uuidGenerator)
   {
-    provider_ = provider;
-    tryParse_ = tryParse;
+    provider_      = provider;
+    tryParse_      = tryParse;
+    uuidGenerator_ = uuidGenerator;
   }
 
   public void Dispose()
@@ -89,7 +94,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
   /// </summary>
   public async Task<IAsyncEnumerable<T>> SubscribeAsync(CancellationToken cancellationToken)
   {
-    var id      = Guid.NewGuid();
+    var id      = uuidGenerator_.GenerateUuid();
     var channel = Channel.CreateUnbounded<T>();
 
     // Register the channel inside EnsureStartedAndRegister (while holding the lock),
@@ -271,7 +276,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     Exception? loopException = null;
     try
     {
-      var slotName = $"armonik_{Guid.NewGuid():N}";
+      var slotName = $"armonik_{uuidGenerator_.GenerateUuid():N}";
       var options = new PgOutputReplicationOptions("armonik_pub",
                                                    PgOutputProtocolVersion.V1,
                                                    true);

@@ -59,8 +59,8 @@ public class Pollster : IInitializable
   private readonly DataPrefetcher                            dataPrefetcher_;
   private readonly ExceptionManager                          exceptionManager_;
   private readonly HealthCheckRecord                         healthCheckRecord_;
-  private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
+  private readonly ILogger<Pollster>                         logger_;
   private readonly int                                       messageBatchSize_;
   private readonly MeterHolder                               meterHolder_;
   private readonly IObjectStorage                            objectStorage_;
@@ -73,11 +73,12 @@ public class Pollster : IInitializable
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
   private readonly ISessionTable                             sessionTable_;
-  private readonly ISubmitter                                submitter_;
   private readonly Submitter                                 submitterOptions_;
+  private readonly ISubmitter                                submitter_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
   private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
   private readonly ITaskTable                                taskTable_;
+  private readonly IUuidGenerator                            uuidGenerator_;
   private readonly IWorkerStreamHandler                      workerStreamHandler_;
   private          bool                                      endLoopReached_;
   private          HealthCheckResult?                        healthCheckFailedResult_;
@@ -107,6 +108,7 @@ public class Pollster : IInitializable
   /// <param name="identifier">Identifier for the agent running the pollster.</param>
   /// <param name="meterHolder">Holder for metrics collection.</param>
   /// <param name="healthCheckRecord">Record for the health check of the application.</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <exception cref="ArgumentOutOfRangeException">Thrown when message batch size is less than 1.</exception>
   public Pollster(IPullQueueStorage          pullQueueStorage,
                   IPushQueueStorage          pushQueueStorage,
@@ -129,7 +131,8 @@ public class Pollster : IInitializable
                   RunningTaskQueue           runningTaskQueue,
                   AgentIdentifier            identifier,
                   MeterHolder                meterHolder,
-                  HealthCheckRecord          healthCheckRecord)
+                  HealthCheckRecord          healthCheckRecord,
+                  IUuidGenerator             uuidGenerator)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -164,6 +167,7 @@ public class Pollster : IInitializable
     meterHolder_           = meterHolder;
     submitterOptions_      = submitterOptions;
     healthCheckRecord_     = healthCheckRecord;
+    uuidGenerator_         = uuidGenerator;
     ownerPodId_            = identifier.OwnerPodId;
     ownerPodName_          = identifier.OwnerPodName;
 
@@ -182,7 +186,7 @@ public class Pollster : IInitializable
     meterHolder.Meter.CreateObservableGauge("TaskRunningTime",
                                             () => taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
                                                   {
-                                                    null => 0.0,
+                                                    null                    => 0.0,
                                                     // ReSharper disable once PatternAlwaysMatches
                                                     TaskHandler taskHandler => (DateTime.UtcNow - taskHandler.StartedAt).TotalMilliseconds,
                                                   },
@@ -193,7 +197,7 @@ public class Pollster : IInitializable
     meterHolder.Meter.CreateObservableGauge("TaskStartTime",
                                             () => (taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
                                                    {
-                                                     null => TimeSpan.MaxValue,
+                                                     null                    => TimeSpan.MaxValue,
                                                      // ReSharper disable once PatternAlwaysMatches
                                                      TaskHandler taskHandler => taskHandler.StartedAt - DateTime.UnixEpoch,
                                                    }).TotalSeconds,
@@ -383,7 +387,8 @@ public class Pollster : IInitializable
                                               },
                                               exceptionManager_,
                                               new FunctionExecutionMetrics<TaskHandler>(meterHolder_),
-                                              healthCheckRecord_);
+                                              healthCheckRecord_,
+                                              uuidGenerator_);
             pipeliningCounter_.Add(1);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
             messageDispose.Reset();

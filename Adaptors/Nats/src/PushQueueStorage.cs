@@ -40,6 +40,7 @@ internal class PushQueueStorage : IPushQueueStorage
 {
   private readonly INatsJSContext js_;
   private readonly Nats           options_;
+  private readonly IUuidGenerator uuidGenerator_;
   private          bool           isInitialized_;
 
   /// <summary>
@@ -48,11 +49,14 @@ internal class PushQueueStorage : IPushQueueStorage
   /// </summary>
   /// <param name="js">The DI container to register services into.</param>
   /// <param name="options">The options </param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   public PushQueueStorage(INatsJSContext js,
-                          Nats           options)
+                          Nats           options,
+                          IUuidGenerator uuidGenerator)
   {
-    js_      = js;
-    options_ = options;
+    js_            = js;
+    options_       = options;
+    uuidGenerator_ = uuidGenerator;
   }
 
 
@@ -145,8 +149,8 @@ internal class PushQueueStorage : IPushQueueStorage
                                                                headers: new NatsHeaders
                                                                         {
                                                                           {
-                                                                            "Nats-Msg-Id", Guid.NewGuid()
-                                                                                               .ToString()
+                                                                            "Nats-Msg-Id", uuidGenerator_.GenerateUuid()
+                                                                                                         .ToString()
                                                                           },
                                                                         },
                                                                cancellationToken: cancellationToken)

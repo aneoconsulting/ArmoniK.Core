@@ -47,6 +47,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
     serviceCollection.AddSingletonWithHealthCheck<IObjectStorage>(nameof(IObjectStorage),
                                                                   sp => new ObjectStorage(storageOptions.Path,
                                                                                           storageOptions.ChunkSize,
+                                                                                          sp.GetRequiredService<IUuidGenerator>(),
                                                                                           sp.GetRequiredService<ILogger<ObjectStorage>>()));
   }
 }

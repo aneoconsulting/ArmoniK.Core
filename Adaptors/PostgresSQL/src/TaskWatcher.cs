@@ -23,6 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgresSQL.Common;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
@@ -43,13 +44,13 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   /// <summary>
   ///   Creates a new TaskWatcher
   /// </summary>
-  public TaskWatcher(NpgsqlConnectionProvider connectionProvider)
+  public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
+                     IUuidGenerator           uuidGenerator)
   {
     connectionProvider_ = connectionProvider;
 
     insertBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
-                                                      async (message,
-                                                             ct) =>
+                                                      async (message, ct) =>
                                                       {
                                                         if (message is InsertMessage insert && insert.Relation.RelationName == "tasks")
                                                         {
@@ -62,11 +63,11 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                                                         ct)
                                                                         .ConfigureAwait(false);
                                                         return null;
-                                                      });
+                                                      },
+                                                      uuidGenerator);
 
     updateBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
-                                                      async (message,
-                                                             ct) =>
+                                                      async (message, ct) =>
                                                       {
                                                         if (message is UpdateMessage update && update.Relation.RelationName == "tasks")
                                                         {
@@ -82,7 +83,8 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                                                         ct)
                                                                         .ConfigureAwait(false);
                                                         return null;
-                                                      });
+                                                      },
+                                                      uuidGenerator);
   }
 
   /// <inheritdoc />

@@ -49,6 +49,7 @@ public class ObjectStorage : IObjectStorage
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 objectStorageName_;
   private readonly Options.Gcs            options_;
+  private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -56,14 +57,17 @@ public class ObjectStorage : IObjectStorage
   /// </summary>
   /// <param name="client">Connection to Google Cloud Storage</param>
   /// <param name="options">Gcs object storage options</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
   public ObjectStorage(StorageClient          client,
                        Options.Gcs            options,
+                       IUuidGenerator         uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
     client_            = client;
     objectStorageName_ = "objectStorageName";
     options_           = options;
+    uuidGenerator_     = uuidGenerator;
     logger_            = logger;
   }
 
@@ -103,8 +107,8 @@ public class ObjectStorage : IObjectStorage
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
-    var key = Guid.NewGuid()
-                  .ToString();
+    var key = uuidGenerator_.GenerateUuid()
+                            .ToString();
     var objectStorageFullName = $"{objectStorageName_}{key}";
 
     logger_.LogDebug("Upload object {Key} to bucket {Bucket}",

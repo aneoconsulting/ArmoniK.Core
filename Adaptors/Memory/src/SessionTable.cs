@@ -23,6 +23,7 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -35,14 +36,17 @@ namespace ArmoniK.Core.Adapters.Memory;
 public class SessionTable : ISessionTable
 {
   private readonly ConcurrentDictionary<string, SessionData> storage_;
+  private readonly IUuidGenerator                            uuidGenerator_;
 
   private bool isInitialized_;
 
   public SessionTable(ConcurrentDictionary<string, SessionData> storage,
-                      ILogger<SessionTable>                     logger)
+                      ILogger<SessionTable>                     logger,
+                      IUuidGenerator                            uuidGenerator)
   {
-    storage_ = storage;
-    Logger   = logger;
+    storage_       = storage;
+    Logger         = logger;
+    uuidGenerator_ = uuidGenerator;
   }
 
   /// <inheritdoc />
@@ -63,8 +67,8 @@ public class SessionTable : ISessionTable
                                           TaskOptions         defaultOptions,
                                           CancellationToken   cancellationToken = default)
   {
-    var rootSessionId = Guid.NewGuid()
-                            .ToString();
+    var rootSessionId = uuidGenerator_.GenerateUuid()
+                                      .ToString();
 
     storage_.TryAdd(rootSessionId,
                     new SessionData(rootSessionId,
