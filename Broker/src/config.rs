@@ -82,6 +82,12 @@ pub struct Config {
     pub actor_queue: usize,
     #[arg(long, env = "BROKER_PING_MS", default_value_t = 30_000)]
     pub ping_ms: u64,
+    /// Worker threads of the server runtime; default: the processors available to the
+    /// process (affinity and Linux CPU quota, rounded up). Keep it at most the cores
+    /// really available: extra workers get preempted, the partition actors with them,
+    /// and throughput drops (-25 % with 3 workers on 2 cores).
+    #[arg(long, env = "BROKER_WORKER_THREADS", value_parser = clap::value_parser!(u16).range(1..))]
+    pub worker_threads: Option<u16>,
 }
 
 impl Config {
