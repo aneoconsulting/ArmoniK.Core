@@ -13,9 +13,9 @@ path = "src/main.rs"
 bench = false
 
 [features]
-# Hasher of the hot-path tables, at most one; SipHash without any (src/hashing.rs).
+# Alternative hasher of the hot-path tables, at most one; foldhash without any (src/hashing.rs).
+hash-sip = []
 hash-fx = ["dep:rustc-hash"]
-hash-fold = ["dep:foldhash"]
 hash-ahash = ["dep:ahash"]
 
 [dependencies]
@@ -24,7 +24,7 @@ anyhow = "1.0.104"
 axum = "0.8.9"
 base64 = "0.23.1"
 clap = { version = "4.6.7", features = ["derive", "env"] }
-foldhash = { version = "0.2.0", optional = true }
+foldhash = "0.2.0"
 hyper = { version = "1.11.1", features = ["server", "http1", "http2"] }
 hyper-util = { version = "0.1.20", features = ["server-auto", "tokio", "service"] }
 rand = "0.10.3"
