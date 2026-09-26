@@ -2,7 +2,7 @@
 # Compares the hashers of the hot-path tables (src/hashing.rs) on the scheduler benchmark.
 # Builds one binary per hasher before measuring anything, then runs them in rotating order
 # so that a drift of the machine hits every hasher alike, and prints for each benchmark
-# the median over the rounds, its spread and its gap to SipHash, the default.
+# the median over the rounds, its spread and its gap to foldhash, the default.
 #
 # Usage: benches/compare-hashers.sh [rounds, default 3]
 # Environment:
@@ -17,7 +17,7 @@ rounds="${1:-3}"
 filter="${FILTER:-^scheduler/(cycle/affinity|affinity-scoring|affinity-nodes/100|affinity-mirror/250000|affinity-fleet)}"
 core="${CORE-2}"
 out="${CARGO_TARGET_DIR:-$PWD/target}/compare-hashers"
-variants=(sip fx fold ahash)
+variants=(fold sip fx ahash)
 
 pin=()
 if [[ -n "$core" ]] && command -v taskset > /dev/null; then
@@ -28,7 +28,7 @@ rm -rf "$out"
 mkdir -p "$out/bin"
 for v in "${variants[@]}"; do
   features=()
-  [[ "$v" == sip ]] || features=(--features "hash-$v")
+  [[ "$v" == fold ]] || features=(--features "hash-$v")
   echo "build $v"
   exe="$(cargo bench --locked --bench scheduler --no-run "${features[@]}" 2>&1 \
     | tee "$out/build-$v.log" \
@@ -67,7 +67,7 @@ awk -F '\t' -v order="${variants[*]}" '
   END {
     flush()
     nv = split(order, vs, " ")
-    printf "%-52s", "cycles/s: median ±half spread, gap to sip"
+    printf "%-52s", "cycles/s: median ±half spread, gap to fold"
     for (j = 1; j <= nv; j++) printf "%26s", vs[j]
     printf "\n"
     for (i = 1; i <= nid; i++) {
