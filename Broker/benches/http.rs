@@ -40,6 +40,10 @@ const KEYS: i64 = 100;
 const BATCH: i64 = 150;
 /// Short long poll, so that consumers notice the end of a round quickly.
 const WAIT_MS: u64 = 20;
+/// Long poll of the adapter (PullWait): consumers then sleep in the broker; a round ends
+/// by handing each of them a stop message.
+const LONG_WAIT_MS: u64 = 10_000;
+const STOP: &str = "stop";
 
 #[derive(Clone, Copy, Debug)]
 enum Proto {
@@ -130,10 +134,10 @@ struct Raw {
 }
 
 impl Raw {
-    async fn open(addr: SocketAddr, path: &str) -> Raw {
+    async fn open(addr: SocketAddr, path: &str, wait_ms: u64) -> Raw {
         let stream = TcpStream::connect(addr).await.unwrap();
         stream.set_nodelay(true).unwrap();
-        let body = format!(r#"{{"max":1,"wait_ms":{WAIT_MS}}}"#);
+        let body = format!(r#"{{"max":1,"wait_ms":{wait_ms}}}"#);
         Raw {
             stream,
             buf: Vec::with_capacity(4096),
@@ -196,8 +200,9 @@ impl Raw {
         assert!(n > 0, "connection closed by the broker");
     }
 
-    /// Pulls one message; `None` when the wait ran out. The token is left in `req`.
-    async fn pull(&mut self) -> Option<()> {
+    /// Pulls one message; `None` when the wait ran out, else whether it is a stop
+    /// message. The acknowledgement of the message is left in `req`.
+    async fn pull(&mut self) -> Option<bool> {
         let pull = std::mem::take(&mut self.pull);
         let (status, body) = self.call(&pull).await;
         self.pull = pull;
@@ -206,6 +211,7 @@ impl Raw {
         }
         const KEY: &[u8] = br#""token":""#;
         let b = &self.buf[body];
+        let stop = find(b, format!(r#""task_id":"{STOP}""#).as_bytes()).is_some();
         let start = find(b, KEY).unwrap() + KEY.len();
         let end = start + b[start..].iter().position(|&c| c == b'"').unwrap();
         let mut body = Vec::with_capacity(64);
@@ -213,7 +219,7 @@ impl Raw {
         body.extend_from_slice(&b[start..end]);
         body.extend_from_slice(br#""}]}"#);
         self.req = Self::encode(&self.ack_path, &body);
-        Some(())
+        Some(stop)
     }
 
     async fn ack(&mut self) {
@@ -352,9 +358,10 @@ struct Consumer {
 struct Setup {
     producer: Conn,
     consumers: Vec<Consumer>,
+    wait_ms: u64,
 }
 
-async fn setup(addr: SocketAddr, proto: Proto, n: usize) -> Setup {
+async fn setup(addr: SocketAddr, proto: Proto, n: usize, wait_ms: u64) -> Setup {
     let mut consumers = Vec::with_capacity(n);
     for _ in 0..n {
         let mut conn = Conn::open(addr, proto).await;
@@ -364,7 +371,7 @@ async fn setup(addr: SocketAddr, proto: Proto, n: usize) -> Setup {
         let id = v["consumer_id"].as_str().unwrap().to_string();
         let path = format!("/v1/consumers/{id}");
         let raw = match proto {
-            Proto::H1Raw => Some(Raw::open(addr, &path).await),
+            Proto::H1Raw => Some(Raw::open(addr, &path, wait_ms).await),
             _ => None,
         };
         consumers.push(Consumer { conn, path, raw });
@@ -372,27 +379,41 @@ async fn setup(addr: SocketAddr, proto: Proto, n: usize) -> Setup {
     Setup {
         producer: Conn::open(addr, proto).await,
         consumers,
+        wait_ms,
     }
 }
 
+/// Outcome of one consumer cycle.
+enum Got {
+    /// The wait ran out empty.
+    Empty,
+    /// Messages pulled and acknowledged.
+    Work(i64),
+    /// The stop message that ends a round of long polls, acknowledged.
+    Stop,
+}
+
 impl Consumer {
-    /// Pulls one message and acks it; `None` when the wait ran out empty.
-    async fn cycle(&mut self) -> Option<i64> {
+    /// Pulls one message and acks it.
+    async fn cycle(&mut self, wait_ms: u64) -> Got {
         if let Some(raw) = &mut self.raw {
-            raw.pull().await?;
+            let Some(stop) = raw.pull().await else {
+                return Got::Empty;
+            };
             raw.ack().await;
-            return Some(1);
+            return if stop { Got::Stop } else { Got::Work(1) };
         }
         let (status, v) = self
             .conn
             .post(
                 &format!("{}/pull", self.path),
-                json!({ "max": 1, "wait_ms": WAIT_MS }),
+                json!({ "max": 1, "wait_ms": wait_ms }),
             )
             .await;
         if status == StatusCode::NO_CONTENT {
-            return None;
+            return Got::Empty;
         }
+        let stop = v["messages"][0]["task_id"] == STOP;
         let items: Vec<Value> = v["messages"]
             .as_array()
             .unwrap()
@@ -403,7 +424,23 @@ impl Consumer {
         self.conn
             .post(&format!("{}/ack", self.path), json!({ "items": items }))
             .await;
-        Some(got)
+        if stop { Got::Stop } else { Got::Work(got) }
+    }
+}
+
+/// Enqueues one stop message per consumer, so that sleeping consumers wake and leave.
+async fn send_stops(producer: &mut Conn, n: usize) {
+    let mut left = n;
+    while left > 0 {
+        let size = left.min(BATCH as usize);
+        let items: Vec<Value> = (0..size).map(|_| json!({ "task_id": STOP })).collect();
+        producer
+            .post(
+                &format!("/v1/partitions/{PARTITION}/messages"),
+                json!({ "key": STOP, "priority": 1, "items": items }),
+            )
+            .await;
+        left -= size;
     }
 }
 
@@ -466,6 +503,8 @@ async fn round(setup: Setup, n: i64) -> (Setup, Duration, Tally) {
     let done = Arc::new(AtomicBool::new(false));
     let end = Arc::new(Mutex::new(None::<Instant>));
     let empty_pulls = Arc::new(AtomicU64::new(0));
+    let finished = Arc::new(tokio::sync::Notify::new());
+    let (wait_ms, long) = (setup.wait_ms, setup.wait_ms >= LONG_WAIT_MS);
     let (server0, client0) = (cpu_time("broker"), cpu_time("client"));
     let start = Instant::now();
 
@@ -493,23 +532,30 @@ async fn round(setup: Setup, n: i64) -> (Setup, Duration, Tally) {
         .consumers
         .into_iter()
         .map(|mut c| {
-            let (remaining, done, end, empty_pulls) = (
+            let (remaining, done, end, empty_pulls, finished) = (
                 remaining.clone(),
                 done.clone(),
                 end.clone(),
                 empty_pulls.clone(),
+                finished.clone(),
             );
             tokio::spawn(async move {
-                while !done.load(Ordering::Acquire) {
-                    let Some(got) = c.cycle().await else {
-                        if !done.load(Ordering::Acquire) {
-                            empty_pulls.fetch_add(1, Ordering::Relaxed);
+                // Short polls notice the end by themselves; long ones get a stop message.
+                while long || !done.load(Ordering::Acquire) {
+                    let got = match c.cycle(wait_ms).await {
+                        Got::Work(got) => got,
+                        Got::Stop => break,
+                        Got::Empty => {
+                            if !done.load(Ordering::Acquire) {
+                                empty_pulls.fetch_add(1, Ordering::Relaxed);
+                            }
+                            continue;
                         }
-                        continue;
                     };
                     if remaining.fetch_sub(got, Ordering::AcqRel) == got {
                         *end.lock().unwrap() = Some(Instant::now());
                         done.store(true, Ordering::Release);
+                        finished.notify_one();
                     }
                 }
                 c
@@ -517,7 +563,11 @@ async fn round(setup: Setup, n: i64) -> (Setup, Duration, Tally) {
         })
         .collect();
 
-    let (producer, produced) = produce.await.unwrap();
+    let (mut producer, produced) = produce.await.unwrap();
+    if long {
+        finished.notified().await;
+        send_stops(&mut producer, consume.len()).await;
+    }
     let mut consumers = Vec::with_capacity(consume.len());
     for c in consume {
         consumers.push(c.await.unwrap());
@@ -535,6 +585,7 @@ async fn round(setup: Setup, n: i64) -> (Setup, Duration, Tally) {
         Setup {
             producer,
             consumers,
+            wait_ms,
         },
         elapsed,
         tally,
@@ -551,30 +602,139 @@ fn cycles(c: &mut Criterion) {
     let mut g = c.benchmark_group("http/cycle");
     g.throughput(Throughput::Elements(1));
     g.sample_size(10);
-    for proto in [Proto::H1, Proto::H2c, Proto::H1Raw] {
-        for consumers in [1, 64] {
-            let name = proto.name();
-            let mut tally = Tally::default();
-            // Criterion calls the closure once per sample: set up on the first call only.
-            let mut s = None;
-            g.bench_function(BenchmarkId::new(name, consumers), |b| {
-                b.iter_custom(|iters| {
-                    let current = s
-                        .take()
-                        .unwrap_or_else(|| rt.block_on(setup(addr, proto, consumers)));
-                    let (next, elapsed, t) = rt.block_on(round(current, iters as i64));
-                    s = Some(next);
-                    tally.add(t);
-                    elapsed
-                });
+    let cases = [Proto::H1, Proto::H2c, Proto::H1Raw]
+        .into_iter()
+        .flat_map(|p| [(p, 1, WAIT_MS), (p, 64, WAIT_MS)])
+        .chain([(Proto::H1Raw, 1024, LONG_WAIT_MS)]);
+    for (proto, consumers, wait_ms) in cases {
+        let name = proto.name();
+        let mut tally = Tally::default();
+        // Criterion calls the closure once per sample: set up on the first call only.
+        let mut s = None;
+        g.bench_function(BenchmarkId::new(name, consumers), |b| {
+            b.iter_custom(|iters| {
+                let current = s
+                    .take()
+                    .unwrap_or_else(|| rt.block_on(setup(addr, proto, consumers, wait_ms)));
+                let (next, elapsed, t) = rt.block_on(round(current, iters as i64));
+                s = Some(next);
+                tally.add(t);
+                elapsed
             });
-            if let Some(s) = s {
-                rt.block_on(teardown(s));
-            }
-            tally.report(&format!("http/cycle/{name}/{consumers}"));
+        });
+        if let Some(s) = s {
+            rt.block_on(teardown(s));
         }
+        tally.report(&format!("http/cycle/{name}/{consumers}"));
     }
     g.finish();
+    wake(c, addr, &rt);
+}
+
+/// Consumers sleeping in long polls, each reporting when it receives a message.
+struct Sleepers {
+    producer: Conn,
+    consumers: Vec<tokio::task::JoinHandle<Consumer>>,
+    received: tokio::sync::mpsc::UnboundedReceiver<Instant>,
+    next: u64,
+}
+
+async fn start_sleepers(addr: SocketAddr, n: usize) -> Sleepers {
+    let s = setup(addr, Proto::H1Raw, n, LONG_WAIT_MS).await;
+    let (tx, received) = tokio::sync::mpsc::unbounded_channel();
+    let consumers = s
+        .consumers
+        .into_iter()
+        .map(|mut c| {
+            let tx = tx.clone();
+            tokio::spawn(async move {
+                let raw = c.raw.as_mut().unwrap();
+                loop {
+                    match raw.pull().await {
+                        None => continue,
+                        Some(stop) => {
+                            if !stop {
+                                let _ = tx.send(Instant::now());
+                            }
+                            raw.ack().await;
+                            if stop {
+                                break;
+                            }
+                        }
+                    }
+                }
+                c
+            })
+        })
+        .collect();
+    Sleepers {
+        producer: s.producer,
+        consumers,
+        received,
+        next: 0,
+    }
+}
+
+async fn stop_sleepers(mut s: Sleepers) {
+    send_stops(&mut s.producer, s.consumers.len()).await;
+    let mut consumers = Vec::new();
+    for c in s.consumers {
+        consumers.push(c.await.unwrap());
+    }
+    teardown(Setup {
+        producer: s.producer,
+        consumers,
+        wait_ms: LONG_WAIT_MS,
+    })
+    .await;
+}
+
+/// Latency from the start of an enqueue of one message to its reception by one of the
+/// consumers sleeping in long polls (design C.3.5): the path of an idle partition.
+fn wake(c: &mut Criterion, addr: SocketAddr, rt: &Runtime) {
+    const SLEEPERS: usize = 1024;
+    let mut g = c.benchmark_group("http/wake");
+    g.sample_size(10);
+    let mut sleepers = None;
+    let mut latencies = Vec::new();
+    g.bench_function(BenchmarkId::new("h1-raw", SLEEPERS), |b| {
+        b.iter_custom(|iters| {
+            let s = sleepers.get_or_insert_with(|| rt.block_on(start_sleepers(addr, SLEEPERS)));
+            rt.block_on(async {
+                let mut total = Duration::ZERO;
+                for _ in 0..iters {
+                    let item = json!({ "task_id": format!("wake-{}", s.next) });
+                    s.next += 1;
+                    let start = Instant::now();
+                    s.producer
+                        .post(
+                            &format!("/v1/partitions/{PARTITION}/messages"),
+                            json!({ "key": "wake", "priority": 1, "items": [item] }),
+                        )
+                        .await;
+                    let latency = s.received.recv().await.unwrap() - start;
+                    latencies.push(latency);
+                    total += latency;
+                }
+                total
+            })
+        });
+    });
+    g.finish();
+    if let Some(s) = sleepers {
+        rt.block_on(stop_sleepers(s));
+    }
+    if !latencies.is_empty() {
+        latencies.sort();
+        let at = |q: f64| latencies[((latencies.len() - 1) as f64 * q) as usize];
+        eprintln!(
+            "http/wake/h1-raw/{SLEEPERS}: {} wakes, latency p50 {:?}, p99 {:?}, max {:?}",
+            latencies.len(),
+            at(0.5),
+            at(0.99),
+            at(1.0)
+        );
+    }
 }
 
 criterion_group!(benches, cycles);
