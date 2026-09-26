@@ -15,8 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -61,17 +63,58 @@ internal class PushQueueStorage : IPushQueueStorage
         var items = chunk.Select(m => new BrokerClient.EnqueueItem(m.TaskId,
                                                                       AffinityOf(m)))
                          .ToList();
-        await client_.EnqueueAsync(partitionId,
-                                   group.Key.FairnessKey,
-                                   group.Key.Priority,
-                                   items,
-                                   cancellationToken)
-                     .ConfigureAwait(false);
+        await EnqueueAsync(partitionId,
+                           group.Key.FairnessKey,
+                           group.Key.Priority,
+                           items,
+                           cancellationToken)
+          .ConfigureAwait(false);
       }
     }
 
     logger_.LogDebug("Pushed messages to broker partition {PartitionId}",
                      partitionId);
+  }
+
+  /// <summary>
+  ///   Sends one batch, split when the server finds it too large (protocol §6.1): its limits may not have been
+  ///   read yet, it may have restarted with smaller ones, or long identifiers may exceed its body size.
+  ///   The server rejects the whole batch in that case, so resending its parts enqueues nothing twice.
+  /// </summary>
+  private async Task EnqueueAsync(string                                  partitionId,
+                                  string                                  fairnessKey,
+                                  int                                     priority,
+                                  IReadOnlyList<BrokerClient.EnqueueItem> items,
+                                  CancellationToken                       cancellationToken)
+  {
+    try
+    {
+      await client_.EnqueueAsync(partitionId,
+                                 fairnessKey,
+                                 priority,
+                                 items,
+                                 cancellationToken)
+                   .ConfigureAwait(false);
+    }
+    catch (BrokerException e) when (e.Status == HttpStatusCode.RequestEntityTooLarge && items.Count > 1)
+    {
+      await client_.RefreshLimitsAsync(cancellationToken)
+                   .ConfigureAwait(false);
+      var size = Math.Min(client_.MaxBatchItems,
+                          (items.Count + 1) / 2);
+      logger_.LogDebug("Broker batch of {Count} items too large, splitting it in batches of {Size}",
+                       items.Count,
+                       size);
+      foreach (var part in items.Chunk(size))
+      {
+        await EnqueueAsync(partitionId,
+                           fairnessKey,
+                           priority,
+                           part,
+                           cancellationToken)
+          .ConfigureAwait(false);
+      }
+    }
   }
 
   private BrokerClient.AffinityBody? AffinityOf(MessageData message)
