@@ -22,3 +22,10 @@ pub mod state;
 mod state_tests;
 pub mod token;
 pub mod wheel;
+
+/// Requests, commands and answers are allocated on one thread and often freed on
+/// another (HTTP handler and partition actor); the system allocator pays for that in
+/// contention, mimalloc much less. Declared here so that the benchmarks, which link the
+/// library, run with the same allocator as the binary.
+#[global_allocator]
+static ALLOCATOR: mimalloc::MiMalloc = mimalloc::MiMalloc;
