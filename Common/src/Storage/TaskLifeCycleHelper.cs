@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -240,6 +241,7 @@ public static class TaskLifeCycleHelper
     var prepareTaskDependencies = PrepareTaskDependencies(taskTable,
                                                           resultTable,
                                                           taskRequests,
+                                                          ReadyTask.SelectorFor(pushQueueStorage),
                                                           logger,
                                                           cancellationToken);
 
@@ -314,16 +316,18 @@ public static class TaskLifeCycleHelper
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskRequests">Tasks requests to finalize</param>
+  /// <param name="selector">Projection of the ready tasks, from <see cref="ReadyTask.SelectorFor" /></param>
   /// <param name="logger">Logger used to produce logs</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   Queue messages for ready tasks
+  ///   Ready tasks
   /// </returns>
-  private static async Task<ICollection<ReadyTask>> PrepareTaskDependencies(ITaskTable                       taskTable,
-                                                                              IResultTable                     resultTable,
-                                                                              ICollection<TaskCreationRequest> taskRequests,
-                                                                              ILogger                          logger,
-                                                                              CancellationToken                cancellationToken)
+  private static async Task<ICollection<ReadyTask>> PrepareTaskDependencies(ITaskTable                              taskTable,
+                                                                            IResultTable                            resultTable,
+                                                                            ICollection<TaskCreationRequest>        taskRequests,
+                                                                            Expression<Func<TaskData, ReadyTask>> selector,
+                                                                            ILogger                                 logger,
+                                                                            CancellationToken                       cancellationToken)
   {
     using var scope = logger.BeginScope("Prepare task dependencies for {@TaskIds}",
                                         taskRequests.ViewSelect(req => req.TaskId));
@@ -460,7 +464,7 @@ public static class TaskLifeCycleHelper
     // This is benign as it will be handled during dequeue with message deduplication.
     return await taskTable.RemoveRemainingDataDependenciesAsync(taskDependencies.Keys,
                                                                 completedDependencies,
-                                                                ReadyTask.Selector,
+                                                                selector,
                                                                 cancellationToken)
                           .ToListAsync(cancellationToken)
                           .ConfigureAwait(false);
@@ -515,7 +519,7 @@ public static class TaskLifeCycleHelper
     // This is benign as it will be handled during dequeue with message deduplication.
     var readyTasks = await taskTable.RemoveRemainingDataDependenciesAsync(dependentTasks,
                                                                           results,
-                                                                          ReadyTask.Selector,
+                                                                          ReadyTask.SelectorFor(pushQueueStorage),
                                                                           cancellationToken)
                                     .ToListAsync(cancellationToken)
                                     .ConfigureAwait(false);
@@ -681,7 +685,7 @@ public static class TaskLifeCycleHelper
                                     .ConfigureAwait(false);
 
     await foreach (var grouping in taskTable.FindTasksAsync(data => data.SessionId == sessionId && data.Status == TaskStatus.Paused,
-                                                            ReadyTask.Selector,
+                                                            ReadyTask.SelectorFor(pushQueueStorage),
                                                             cancellationToken)
                                             .OrderByDescending(msg => msg.Options.Priority)
                                             .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority))
