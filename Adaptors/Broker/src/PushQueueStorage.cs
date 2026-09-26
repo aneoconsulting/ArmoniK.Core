@@ -124,7 +124,7 @@ internal class PushQueueStorage : IPushQueueStorage
       return null;
     }
 
-    var a = Affinity.Select(deps.Select(d => (d.Id, (ulong)d.Size)));
+    var a = Affinity.Select(deps);
     return a is null
              ? null
              : new BrokerClient.AffinityBody(a.Hashes,
