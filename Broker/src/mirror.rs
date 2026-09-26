@@ -3,6 +3,11 @@
 
 //! Cache mirror of one (node, partition) pair: a bounded LRU set of data hashes.
 //! Owned by the partition actor only; never shared between threads.
+//!
+//! An entry is confirmed when the node is known to hold the data: an output it declared,
+//! or a dependency of a task it completed. It is anticipated while only deliveries in
+//! flight announce it, the node fetching it to run them; it goes away when the last of
+//! them ends without success, the node having possibly never fetched it.
 
 use crate::hashing::Map;
 
@@ -12,11 +17,15 @@ struct Entry {
     hash: u32,
     prev: u32,
     next: u32,
+    /// Deliveries in flight that announced an entry not confirmed yet.
+    pending: u16,
+    confirmed: bool,
 }
 
 pub struct Mirror {
     index: Map<u32, u32>,
     entries: Vec<Entry>,
+    free: Vec<u32>,
     head: u32,
     tail: u32,
     capacity: usize,
@@ -30,6 +39,7 @@ impl Mirror {
         Mirror {
             index: Map::default(),
             entries: Vec::new(),
+            free: Vec::new(),
             head: NIL,
             tail: NIL,
             capacity: capacity.max(1),
@@ -72,29 +82,71 @@ impl Mirror {
         }
     }
 
-    /// Marks `hash` as most recently used, evicting the least recently used entry if full.
+    /// Marks `hash` as held by the node and most recently used, evicting the least
+    /// recently used entry if full.
     pub fn insert(&mut self, hash: u32) {
+        let i = self.touch(hash);
+        self.entries[i as usize].confirmed = true;
+    }
+
+    /// Marks `hash` as most recently used on behalf of a delivery in flight, until
+    /// [`Mirror::withdraw`] or a confirmation.
+    pub fn anticipate(&mut self, hash: u32) {
+        let i = self.touch(hash);
+        let e = &mut self.entries[i as usize];
+        if !e.confirmed {
+            e.pending = e.pending.saturating_add(1);
+        }
+    }
+
+    /// A delivery that anticipated `hash` ended without success: the entry goes away
+    /// once no delivery announces it any more, unless it was confirmed meanwhile.
+    pub fn withdraw(&mut self, hash: u32) {
+        let Some(&i) = self.index.get(&hash) else {
+            return;
+        };
+        let e = &mut self.entries[i as usize];
+        if e.confirmed {
+            return;
+        }
+        e.pending = e.pending.saturating_sub(1);
+        if e.pending == 0 {
+            self.unlink(i);
+            self.index.remove(&hash);
+            self.free.push(i);
+        }
+    }
+
+    /// Finds or creates the entry of `hash`, most recently used.
+    fn touch(&mut self, hash: u32) -> u32 {
         if let Some(&i) = self.index.get(&hash) {
             self.unlink(i);
             self.push_front(i);
-            return;
+            return i;
         }
-        let i = if self.index.len() >= self.capacity {
+        let entry = Entry {
+            hash,
+            prev: NIL,
+            next: NIL,
+            pending: 0,
+            confirmed: false,
+        };
+        let i = if let Some(i) = self.free.pop() {
+            self.entries[i as usize] = entry;
+            i
+        } else if self.index.len() >= self.capacity {
             let t = self.tail;
             self.unlink(t);
             self.index.remove(&self.entries[t as usize].hash);
-            self.entries[t as usize].hash = hash;
+            self.entries[t as usize] = entry;
             t
         } else {
-            self.entries.push(Entry {
-                hash,
-                prev: NIL,
-                next: NIL,
-            });
+            self.entries.push(entry);
             (self.entries.len() - 1) as u32
         };
         self.index.insert(hash, i);
         self.push_front(i);
+        i
     }
 }
 
@@ -111,5 +163,33 @@ mod tests {
         m.insert(3); // evicts 2
         assert!(m.contains(1) && m.contains(3) && !m.contains(2));
         assert_eq!(m.len(), 2);
+    }
+
+    #[test]
+    fn anticipated_entries_are_withdrawn() {
+        let mut m = Mirror::new(4, 0.0, 0);
+        m.anticipate(1);
+        m.anticipate(1);
+        m.withdraw(1);
+        assert!(m.contains(1), "another delivery still announces it");
+        m.withdraw(1);
+        assert!(!m.contains(1));
+
+        m.insert(2);
+        m.anticipate(2);
+        m.withdraw(2);
+        assert!(m.contains(2), "confirmed before the delivery");
+
+        m.anticipate(3);
+        m.insert(3);
+        m.withdraw(3);
+        assert!(m.contains(3), "confirmed during the delivery");
+
+        m.withdraw(4);
+        for h in 5..9 {
+            m.insert(h);
+        }
+        assert_eq!(m.len(), 4, "freed entries are reused");
+        assert!(!m.contains(2) && !m.contains(3));
     }
 }

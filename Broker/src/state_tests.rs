@@ -508,6 +508,69 @@ fn affinity_prefers_candidates_with_local_data() {
 }
 
 #[test]
+fn undone_delivery_withdraws_its_dependencies_from_the_mirror() {
+    let mut s = state();
+    let n1 = s.register(
+        NodeDecl {
+            id: Some("n1".into()),
+            ..Default::default()
+        },
+        0,
+    );
+    let n2 = s.register(NodeDecl::default(), 0);
+    // A task ran on n1 and declared "seed", so that n1 scores its candidates.
+    s.enqueue("k", 1, items("seed", 1), 0, 0).unwrap();
+    let p = s.pull(n1, 1, 0).unwrap().remove(0);
+    let out = aff(&[("seed", 1 << 30)]).unwrap();
+    s.ack(
+        Some(n1),
+        vec![(
+            tok(&p),
+            Some(Outputs {
+                hashes: out.hashes,
+                sizes: out.sizes,
+            }),
+        )],
+        0,
+    );
+    // Elected for n1, whose pull vanished: n1 never fetched "big".
+    s.enqueue(
+        "k",
+        1,
+        vec![EnqueueItem {
+            task_id: "a".into(),
+            affinity: aff(&[("big", 1 << 30)]),
+        }],
+        0,
+        0,
+    )
+    .unwrap();
+    let d = s.pull(n1, 1, 0).unwrap();
+    s.undo_delivery(d, 0);
+    s.enqueue(
+        "k",
+        1,
+        vec![
+            EnqueueItem {
+                task_id: "other".into(),
+                affinity: aff(&[("x", 1 << 30)]),
+            },
+            EnqueueItem {
+                task_id: "b".into(),
+                affinity: aff(&[("big", 1 << 30)]),
+            },
+        ],
+        0,
+        0,
+    )
+    .unwrap();
+    assert_eq!(s.pull(n2, 1, 0).unwrap().remove(0).task_id, "a");
+    // Nothing is local to n1 any more: plain FIFO.
+    assert_eq!(s.pull(n1, 1, 0).unwrap().remove(0).task_id, "other");
+    s.check();
+}
+
+#[test]
 fn scoring_window_is_bounded_without_affinity() {
     let mut s = state();
     let n1 = s.register(
