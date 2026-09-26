@@ -58,7 +58,7 @@ pub async fn serve(
     let listener = TcpListener::bind(cfg.listen).await?;
     tracing::info!(listen = %cfg.listen, tls = tls.is_some(), mtls = cfg.tls_client_ca.is_some(), epoch = reg.epoch, "broker listening");
 
-    let app = crate::http::router(reg.clone());
+    let app = crate::http::app(reg.clone());
     let ping = Duration::from_millis(cfg.ping_ms);
     let mut builder = Builder::new(TokioExecutor::new());
     builder
