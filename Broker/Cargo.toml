@@ -45,6 +45,7 @@ bytes = "1.12.1"
 criterion = "0.8.2"
 http-body-util = "0.1.5"
 hyper = { version = "1.11.1", features = ["client", "http1", "http2"] }
+libc = "0.2.189"
 proptest = "1.11.0"
 tower = { version = "0.5.3", features = ["util"] }
 
