@@ -33,8 +33,9 @@ benches/compare-hashers.sh 3       # hashers of the hot-path tables (src/hashing
 The HTTP bench reports, besides throughput, the CPU time of the server and client threads per cycle;
 `h1-raw` drives the consumers with a minimal HTTP/1.1 client so that the server, not the client, sets
 the pace. Numbers only hold on a quiet Linux machine: in a VM (WSL, CI runner) the host can slow a core several
-times over without the guest seeing it. The server hashes with foldhash; the `hash-sip`, `hash-fx`
-or `hash-ahash` feature selects another hasher at build time, for comparison only.
+times over without the guest seeing it. The server hashes with FxHash (unseeded, see src/hashing.rs for why that
+is acceptable); the `hash-sip`, `hash-fold` or `hash-ahash` feature selects another hasher at build
+time, for comparison only.
 
 The C# adapter tests (`Adaptors/Broker/tests`) start the debug binary; they look for it in
 `BROKER_BINARY`, `$HOME/.cache/armonik-broker-target/debug` or `Broker/target/debug`.
