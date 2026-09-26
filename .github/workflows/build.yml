@@ -146,6 +146,7 @@ jobs:
           - sqs
           - pubsub
           - nats
+          - broker
       fail-fast: false
     runs-on: ubuntu-latest
     steps:
@@ -173,6 +174,12 @@ jobs:
         }
         EOF
         sudo systemctl restart docker
+
+    - name: Build broker image
+      if: ${{ matrix.queue == 'broker' }}
+      run: |
+          MONITOR_PREFIX="monitor/build-broker/" tools/monitor.sh \
+            just buildBroker
 
     - name: Set up queue
       run: |
@@ -270,6 +277,42 @@ jobs:
 
     - name: Build the solution
       run: dotnet build ArmoniK.Core.sln -c Release -warnAsError:"CS1570;CS1571;CS1572;CS1573;CS1587;CS1591"
+
+  brokerTests:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        repository: ${{ env.REPOSITORY }}
+        ref: ${{ env.REFERENCE }}
+
+    - name: Check format
+      working-directory: Broker
+      run: cargo fmt --check
+
+    - name: Run broker tests
+      working-directory: Broker
+      run: cargo test --locked
+
+    - name: Build broker
+      working-directory: Broker
+      run: cargo build --locked
+
+    - name: Run adapter tests
+      env:
+        BROKER_BINARY: ${{ github.workspace }}/Broker/target/debug/armonik-broker
+      run: |
+        dotnet test Adaptors/Broker/tests --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+
+    - name: Test Report
+      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+      if: ${{ success() || failure() }}
+      with:
+        name: Test - Adaptors/Broker/tests
+        path: Adaptors/Broker/tests/TestResults/test-results.trx
+        reporter: dotnet-trx
+        only-summary: ${{ env.REPOSITORY != github.repository }}
 
   brokerBenchmarks:
     runs-on: ubuntu-latest
@@ -1878,6 +1921,7 @@ jobs:
     needs:
       - tests
       - testsQueueProtos
+      - brokerTests
       - testsWinOnly
       - testHtcMockDC
       - testHtcMockBinary
