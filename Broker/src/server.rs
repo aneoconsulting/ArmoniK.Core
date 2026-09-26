@@ -49,6 +49,17 @@ fn tls_config(cfg: &Config) -> anyhow::Result<Option<Arc<ServerConfig>>> {
     Ok(Some(Arc::new(sc)))
 }
 
+/// Builder of the server runtime, as configured; the caller may refine it (thread names,
+/// affinity) before building.
+pub fn runtime_builder(cfg: &Config) -> tokio::runtime::Builder {
+    let mut b = tokio::runtime::Builder::new_multi_thread();
+    b.enable_all();
+    if let Some(n) = cfg.worker_threads {
+        b.worker_threads(usize::from(n));
+    }
+    b
+}
+
 pub async fn serve(
     reg: Arc<Registry>,
     shutdown: impl std::future::Future<Output = ()>,
