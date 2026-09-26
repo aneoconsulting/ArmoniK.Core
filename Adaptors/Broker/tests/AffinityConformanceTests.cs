@@ -79,6 +79,34 @@ public class AffinityConformanceTests
   }
 
   [Test]
+  public void NegativeSizesCountAsEmpty()
+  {
+    var actual = Affinity.Select(new List<(string Id, long Size)>
+                                 {
+                                   ("unknown", -1),
+                                   ("known", 1024),
+                                 });
+    Assert.That(actual,
+                Is.Not.Null);
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(actual!.Hashes,
+                                  Is.EqualTo(new[]
+                                             {
+                                               Affinity.Hash("known"),
+                                               Affinity.Hash("unknown"),
+                                             }),
+                                  "the real size ranks first");
+                      Assert.That(actual.Sizes,
+                                  Is.EqualTo(new[]
+                                             {
+                                               Affinity.Encode(1024),
+                                               Affinity.Encode(0),
+                                             }));
+                    });
+  }
+
+  [Test]
   public void SelectMatchesReference()
   {
     foreach (var v in Vectors()

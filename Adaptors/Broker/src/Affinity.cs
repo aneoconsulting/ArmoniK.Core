@@ -100,6 +100,14 @@ public static class Affinity
   }
 
   /// <summary>
+  ///   Selects the affinity structure from data sizes as ArmoniK stores them, where a negative size
+  ///   is not a real one and counts as empty. Returns null when there is no data.
+  /// </summary>
+  public static AffinityData? Select(IEnumerable<(string Id, long Size)> data)
+    => Select(data.Select(d => (d.Id, (ulong)Math.Max(0,
+                                                      d.Size))));
+
+  /// <summary>
   ///   Selects the affinity structure of a task from its dependencies (identifier, size in bytes).
   ///   Returns null when the task has no dependency.
   /// </summary>

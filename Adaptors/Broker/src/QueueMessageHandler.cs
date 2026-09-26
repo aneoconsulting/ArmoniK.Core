@@ -122,8 +122,7 @@ internal sealed class QueueMessageHandler : IQueueMessageHandler, IDataAffinityM
       return null;
     }
 
-    var a = Affinity.Select(outputs_.Select(o => (o.Id, (ulong)Math.Max(0,
-                                                                         o.Size))));
+    var a = Affinity.Select(outputs_);
     return a is null
              ? null
              : new BrokerClient.OutputsBody(a.Hashes,
