@@ -31,8 +31,8 @@ benches/compare-hashers.sh 3       # hashers of the hot-path tables (src/hashing
 ```
 
 Numbers only hold on a quiet Linux machine: in a VM (WSL, CI runner) the host can slow a core several
-times over without the guest seeing it. The hasher is chosen at build time with the `hash-fx`,
-`hash-fold` or `hash-ahash` feature; without any, the server uses SipHash.
+times over without the guest seeing it. The server hashes with foldhash; the `hash-sip`, `hash-fx`
+or `hash-ahash` feature selects another hasher at build time, for comparison only.
 
 The C# adapter tests (`Adaptors/Broker/tests`) start the debug binary; they look for it in
 `BROKER_BINARY`, `$HOME/.cache/armonik-broker-target/debug` or `Broker/target/debug`.
