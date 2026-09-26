@@ -691,7 +691,7 @@ impl PartitionState {
         while self.consumers[c as usize].leases != NIL {
             let l = self.consumers[c as usize].leases;
             let slot = self.leases[l as usize].slot;
-            self.leave_flight(slot, now);
+            self.leave_flight(slot, false, now);
             self.place(slot, policy, false, now);
         }
     }
@@ -756,9 +756,28 @@ impl PartitionState {
     }
 
     /// Takes a message out of the in-flight state: new generation, lease released,
-    /// key counters updated. The caller then frees or places the slot.
-    fn leave_flight(&mut self, slot: u32, now: u64) {
+    /// key counters updated. The caller then frees or places the slot. The dependencies
+    /// its delivery announced to the mirror of the node are confirmed when it `succeeded`,
+    /// the node having fetched them to run it, and withdrawn otherwise.
+    fn leave_flight(&mut self, slot: u32, succeeded: bool, now: u64) {
         let l = self.records[slot as usize].lease;
+        let holder = self.leases[l as usize].consumer;
+        if let (Some(node), Some(aff)) = (
+            &self.consumers[holder as usize].node,
+            &self.records[slot as usize].affinity,
+        ) && let Some(m) = self.mirrors.get_mut(node)
+        {
+            for (&h, &s) in aff.hashes.iter().zip(&aff.sizes) {
+                if s == 0 {
+                    break;
+                }
+                if succeeded {
+                    m.insert(h);
+                } else {
+                    m.withdraw(h);
+                }
+            }
+        }
         self.lease_unlink(l);
         let r = &mut self.records[slot as usize];
         r.lease = NIL;
@@ -851,7 +870,7 @@ impl PartitionState {
                 if s == 0 {
                     break;
                 }
-                m.insert(h);
+                m.anticipate(h);
             }
         }
         self.gauges.in_flight.fetch_add(1, Ordering::Relaxed);
@@ -1008,7 +1027,7 @@ impl PartitionState {
             let Some(slot) = Token::decode(&d.token).and_then(|t| self.in_flight_slot(&t)) else {
                 continue;
             };
-            self.leave_flight(slot, now);
+            self.leave_flight(slot, false, now);
             let r = &mut self.records[slot as usize];
             r.attempts = r.attempts.saturating_sub(1);
             self.place(slot, NackPolicy::Requeue, true, now);
@@ -1057,7 +1076,7 @@ impl PartitionState {
                     m.insert(h);
                 }
             }
-            self.leave_flight(slot, now);
+            self.leave_flight(slot, true, now);
             self.free_slot(slot);
             applied += 1;
         }
@@ -1079,7 +1098,7 @@ impl PartitionState {
                 ignored += 1;
                 continue;
             };
-            self.leave_flight(slot, now);
+            self.leave_flight(slot, false, now);
             self.place(slot, policy, false, now);
             applied += 1;
         }
@@ -1116,7 +1135,7 @@ impl PartitionState {
         self.lease_wheel.expire(now, &mut expired);
         for l in expired.drain(..) {
             let slot = self.leases[l as usize].slot;
-            self.leave_flight(slot, now);
+            self.leave_flight(slot, false, now);
             self.place(slot, NackPolicy::Backoff, false, now);
             Counters::add(&self.gauges.counters.expired, 1);
         }
