@@ -1934,6 +1934,7 @@ jobs:
       - tests
       - testsQueueProtos
       - brokerTests
+      - brokerBenchmarks
       - testsWinOnly
       - testHtcMockDC
       - testHtcMockBinary
