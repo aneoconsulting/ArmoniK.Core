@@ -52,6 +52,10 @@ impl Mirror {
         self.index.len()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.index.is_empty()
+    }
+
     pub fn contains(&self, hash: u32) -> bool {
         self.index.contains_key(&hash)
     }

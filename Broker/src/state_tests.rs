@@ -731,7 +731,8 @@ proptest! {
         let mut enqueued = 0u64;
         let mut acked = 0u64;
         // Sleeping pulls: (deadline, answer).
-        let mut sleeping: Vec<(u64, oneshot::Receiver<Result<Vec<Delivered>, crate::error::ApiError>>)> = Vec::new();
+        type Answer = oneshot::Receiver<Result<Vec<Delivered>, crate::error::ApiError>>;
+        let mut sleeping: Vec<(u64, Answer)> = Vec::new();
         for op in ops {
             match op {
                 Op::Enqueue(k, p, n, delayed) => {
