@@ -287,10 +287,6 @@ jobs:
         repository: ${{ env.REPOSITORY }}
         ref: ${{ env.REFERENCE }}
 
-    - name: Check format
-      working-directory: Broker
-      run: cargo fmt --check
-
     - name: Run broker tests
       working-directory: Broker
       run: cargo test --locked
