@@ -2,7 +2,7 @@
 # Cross-compiled on the build platform for linux/amd64, linux/arm64 and windows/amd64,
 # like the other Core images; the final stages only copy the binary.
 
-FROM --platform=$BUILDPLATFORM rust:1-bookworm AS build
+FROM --platform=$BUILDPLATFORM rust:1.98.0-bookworm AS build
 ARG TARGETOS
 ARG TARGETARCH
 RUN set -eux; \
