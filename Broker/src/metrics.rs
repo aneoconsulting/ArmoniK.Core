@@ -58,6 +58,12 @@ pub struct Counters {
     pub ack_ignored: AtomicU64,
     pub expired: AtomicU64,
     pub rejected: AtomicU64,
+    pub affinity_hit: AtomicU64,
+    pub affinity_miss: AtomicU64,
+    pub affinity_reordered: AtomicU64,
+    pub affinity_local_bytes: AtomicU64,
+    pub affinity_dep_bytes: AtomicU64,
+    pub mirror_withdrawn: AtomicU64,
 }
 
 impl Counters {
@@ -66,7 +72,7 @@ impl Counters {
         c.fetch_add(n, Ordering::Relaxed);
     }
 
-    fn all(&self) -> [(&'static str, &AtomicU64, &'static str); 7] {
+    fn all(&self) -> [(&'static str, &AtomicU64, &'static str); 13] {
         [
             (
                 "broker_enqueued_total",
@@ -103,6 +109,36 @@ impl Counters {
                 &self.rejected,
                 "Enqueue batches rejected by backpressure",
             ),
+            (
+                "broker_affinity_hit_total",
+                &self.affinity_hit,
+                "Distributions to a node whose mirror holds some of the dependencies",
+            ),
+            (
+                "broker_affinity_miss_total",
+                &self.affinity_miss,
+                "Distributions to a node with a mirror holding none of the dependencies",
+            ),
+            (
+                "broker_affinity_reordered_total",
+                &self.affinity_reordered,
+                "Distributions of another message than the head of its queue, chosen for its data",
+            ),
+            (
+                "broker_affinity_local_bytes_total",
+                &self.affinity_local_bytes,
+                "Estimated bytes of dependencies distributed to a node whose mirror holds them",
+            ),
+            (
+                "broker_affinity_dep_bytes_total",
+                &self.affinity_dep_bytes,
+                "Estimated bytes of dependencies distributed to a node with a mirror",
+            ),
+            (
+                "broker_mirror_withdrawn_total",
+                &self.mirror_withdrawn,
+                "Mirror entries withdrawn after the deliveries announcing them ended without success",
+            ),
         ]
     }
 
@@ -138,6 +174,8 @@ pub struct Gauges {
     pub consumers: AtomicU64,
     pub waiters: AtomicU64,
     pub held: AtomicU64,
+    /// Entries of the mirrors of the partition, refreshed by the periodic sweep.
+    pub mirror_entries: AtomicU64,
     pub counters: Counters,
 }
 
@@ -184,13 +222,14 @@ pub fn render(g: &Globals, partitions: &[(String, &Gauges)]) -> String {
     );
     let _ = writeln!(out, "broker_pool_used_ratio {}", g.pool.used_fraction());
     type Getter = fn(&Gauges) -> &AtomicU64;
-    let gauges: [(&str, Getter); 6] = [
+    let gauges: [(&str, Getter); 7] = [
         ("broker_partition_ready", |x| &x.ready),
         ("broker_partition_in_flight", |x| &x.in_flight),
         ("broker_partition_delayed", |x| &x.delayed),
         ("broker_partition_held", |x| &x.held),
         ("broker_partition_consumers", |x| &x.consumers),
         ("broker_partition_waiters", |x| &x.waiters),
+        ("broker_partition_mirror_entries", |x| &x.mirror_entries),
     ];
     for (name, get) in gauges {
         line(&mut out, name, "gauge", "Per partition");
@@ -219,6 +258,22 @@ mod tests {
         assert!(p.take(1));
         p.give(3);
         assert!(p.take(3));
+    }
+
+    #[test]
+    fn affinity_counters_are_exported() {
+        let g = Globals::new(100, 10);
+        let p = Gauges::default();
+        Counters::add(&p.counters.affinity_hit, 2);
+        Counters::add(&g.retired.affinity_hit, 1);
+        p.mirror_entries.store(7, Ordering::Relaxed);
+        let out = render(&g, &[("p".into(), &p)]);
+        assert!(out.contains("\nbroker_affinity_hit_total 3\n"), "{out}");
+        assert!(out.contains("\nbroker_mirror_withdrawn_total 0\n"), "{out}");
+        assert!(
+            out.contains("broker_partition_mirror_entries{partition=\"p\"} 7\n"),
+            "{out}"
+        );
     }
 
     #[test]

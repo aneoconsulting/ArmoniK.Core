@@ -773,8 +773,8 @@ impl PartitionState {
                 }
                 if succeeded {
                     m.insert(h);
-                } else {
-                    m.withdraw(h);
+                } else if m.withdraw(h) {
+                    Counters::add(&self.gauges.counters.mirror_withdrawn, 1);
                 }
             }
         }
@@ -866,12 +866,29 @@ impl PartitionState {
             &self.records[slot as usize].affinity,
         ) && let Some(m) = self.mirrors.get_mut(node)
         {
+            // What the node already holds, or is fetching, before this delivery announces it.
+            let (mut local, mut total) = (0.0, 0.0);
             for (&h, &s) in aff.hashes.iter().zip(&aff.sizes) {
                 if s == 0 {
                     break;
                 }
-                m.anticipate(h);
+                let size = affinity::decode(s);
+                total += size;
+                if m.anticipate(h) {
+                    local += size;
+                }
             }
+            let counters = &self.gauges.counters;
+            Counters::add(
+                if local > 0.0 {
+                    &counters.affinity_hit
+                } else {
+                    &counters.affinity_miss
+                },
+                1,
+            );
+            Counters::add(&counters.affinity_local_bytes, local as u64);
+            Counters::add(&counters.affinity_dep_bytes, total as u64);
         }
         self.gauges.in_flight.fetch_add(1, Ordering::Relaxed);
         Counters::add(&self.gauges.counters.dispatched, 1);
@@ -948,6 +965,9 @@ impl PartitionState {
             // Strict priority inside the key: highest non-empty level.
             let prio = (15 - key.levels.leading_zeros()) as usize;
             let slot = self.select_candidate(k, prio, c, &mut budget);
+            if slot != self.keys[k as usize].deques[prio].head {
+                Counters::add(&self.gauges.counters.affinity_reordered, 1);
+            }
             out.push(self.dispatch(slot, c, now));
         }
         out
@@ -1208,6 +1228,10 @@ impl PartitionState {
         self.gauges.ready.store(ready, Ordering::Relaxed);
         self.gauges.delayed.store(delayed, Ordering::Relaxed);
         self.gauges.held.store(self.held, Ordering::Relaxed);
+        let entries: usize = self.mirrors.values().map(|m| m.len()).sum();
+        self.gauges
+            .mirror_entries
+            .store(entries as u64, Ordering::Relaxed);
     }
 
     /// Clean stop: every sleeping consumer gets an empty answer.
