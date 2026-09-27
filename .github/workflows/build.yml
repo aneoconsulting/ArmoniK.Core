@@ -1432,8 +1432,11 @@ jobs:
         runner:
           - ubuntu-latest
           - ubuntu-24.04-arm
+        queue:
+          - activemq
+          - broker
     runs-on: ${{ matrix.runner }}
-    name: Bench ${{ matrix.runner }}
+    name: Bench ${{ matrix.queue }} ${{ matrix.runner }}
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
@@ -1469,7 +1472,7 @@ jobs:
       - name: Deploy Core
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just log_level=Information tag=${VERSION} queue=activemq worker=bench deploy
+            just log_level=Information tag=${VERSION} queue=${{ matrix.queue }} worker=bench deploy
           sleep 10
 
       - name: Run Bench test tasks - many tasks (400)
@@ -1532,6 +1535,32 @@ jobs:
             -e BenchOptions__PayloadSize=1 \
             -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
             dockerhubaneo/armonik_core_bench_test_client:$VERSION
+      - name: Run Bench test data - tasks depending on shared data
+        timeout-minutes: 3
+        run: |
+          MONITOR_PREFIX="monitor/bench-shared-data/" tools/monitor.sh \
+            docker run --net armonik_network --rm \
+            -e BenchOptions__NTasks=400 \
+            -e BenchOptions__TaskDurationMs=10 \
+            -e BenchOptions__SharedDataCount=4 \
+            -e BenchOptions__SharedDataSize=1000 \
+            -e GrpcClient__Endpoint=http://armonik.control.submitter:1080 \
+            dockerhubaneo/armonik_core_bench_test_client:$VERSION
+      - name: Check data cache hits
+        run: |
+          for port in 9980 9981 9982; do
+            curl -sf "http://localhost:$port/metrics" | grep -E '^agent_(cache|data)_' | grep -v '_bucket' | tee -a cache-metrics.txt
+          done
+          hits="$(grep -E '^agent_cache_hits_total\{.*kind="dependency"' cache-metrics.txt | sed -E 's/\{[^}]*\}//' | awk '{s += $2} END {print s + 0}')"
+          echo "agent cache hits: $hits" >> $GITHUB_STEP_SUMMARY
+          test "$hits" -gt 0
+      - name: Check broker affinity
+        if: ${{ matrix.queue == 'broker' }}
+        run: |
+          curl -sf http://localhost:8080/metrics | grep -E '^broker_(affinity|mirror)_' | tee affinity-metrics.txt
+          hits="$(awk '$1 == "broker_affinity_hit_total" {s += $2} END {print s + 0}' affinity-metrics.txt)"
+          echo "broker affinity hits: $hits" >> $GITHUB_STEP_SUMMARY
+          test "$hits" -gt 0
       - name: Show logs
         if: ${{ always() }}
         run: docker cp fluentd:/armonik-logs.json -
@@ -1542,8 +1571,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}.json.gz"
-          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-monitor.tar.gz"
+          docker cp fluentd:/armonik-logs.json - | gzip -c | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.queue }}-${{ matrix.runner }}.json.gz"
+          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.queue }}-${{ matrix.runner }}-monitor.tar.gz"
       - name: Collect docker container logs
         if: ${{ always() }}
         uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
@@ -1559,7 +1588,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
-          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-container-logs.tar.gz"
+          tar -cvf - ./container-logs | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.queue }}-${{ matrix.runner }}-container-logs.tar.gz"
       - name: Export and upload database
         if: ${{ always() && env.REPOSITORY == github.repository }}
         env:
@@ -1568,7 +1597,7 @@ jobs:
           AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
         run: |
           bash tools/export_mongodb.sh
-          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.runner }}-database.tar.gz"
+          tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/runBench-${{ matrix.queue }}-${{ matrix.runner }}-database.tar.gz"
 
   runCrash:
     needs:
