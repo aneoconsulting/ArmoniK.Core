@@ -109,24 +109,24 @@ public class GrpcTasksServiceTests
   [Test]
   public async Task CancelNonScheduledTaskShouldSucceed()
   {
-    var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
-                                                                  .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
-                                                                  .AddSingleton<IPartitionTable, SimplePartitionTable>()
-                                                                  .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<MeterHolder>()
-                                                                  .AddSingleton<AgentIdentifier>()
-                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
-                                                                  .AddHttpClient()
-                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                          builder => builder.UseRouting()
-                                                            .UseAuthorization(),
-                                          builder =>
-                                          {
-                                            builder.MapGrpcService<GrpcTasksService>();
-                                            builder.MapGrpcService<GrpcSessionsService>();
-                                            builder.MapGrpcService<GrpcResultsService>();
-                                          },
-                                          true);
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                        .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                        .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                        .AddSingleton<Injection.Options.Submitter>()
+                                                                        .AddSingleton<MeterHolder>()
+                                                                        .AddSingleton<AgentIdentifier>()
+                                                                        .AddScoped(typeof(FunctionExecutionMetrics<>))
+                                                                        .AddHttpClient()
+                                                                        .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
+                                                builder => builder.UseRouting()
+                                                                  .UseAuthorization(),
+                                                builder =>
+                                                {
+                                                  builder.MapGrpcService<GrpcTasksService>();
+                                                  builder.MapGrpcService<GrpcSessionsService>();
+                                                  builder.MapGrpcService<GrpcResultsService>();
+                                                },
+                                                true);
     await helper.App.StartAsync()
                 .ConfigureAwait(false);
 
@@ -220,24 +220,24 @@ public class GrpcTasksServiceTests
   [Test]
   public async Task SubmitTaskWithoutCreationsShouldFailWithRpcException()
   {
-    var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
-                                                                  .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
-                                                                  .AddSingleton<IPartitionTable, SimplePartitionTable>()
-                                                                  .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<MeterHolder>()
-                                                                  .AddSingleton<AgentIdentifier>()
-                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
-                                                                  .AddHttpClient()
-                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                          builder => builder.UseRouting()
-                                                            .UseAuthorization(),
-                                          builder =>
-                                          {
-                                            builder.MapGrpcService<GrpcTasksService>();
-                                            builder.MapGrpcService<GrpcSessionsService>();
-                                          },
-                                          true,
-                                          true);
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                        .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                        .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                        .AddSingleton<Injection.Options.Submitter>()
+                                                                        .AddSingleton<MeterHolder>()
+                                                                        .AddSingleton<AgentIdentifier>()
+                                                                        .AddScoped(typeof(FunctionExecutionMetrics<>))
+                                                                        .AddHttpClient()
+                                                                        .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
+                                                builder => builder.UseRouting()
+                                                                  .UseAuthorization(),
+                                                builder =>
+                                                {
+                                                  builder.MapGrpcService<GrpcTasksService>();
+                                                  builder.MapGrpcService<GrpcSessionsService>();
+                                                },
+                                                true,
+                                                true);
 
     await helper.App.StartAsync()
                 .ConfigureAwait(false);
@@ -281,24 +281,24 @@ public class GrpcTasksServiceTests
   [Test]
   public async Task SubmitTaskWithSubmissionClosedShouldFailWithRpcException()
   {
-    var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
-                                                                  .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
-                                                                  .AddSingleton<IPartitionTable, SimplePartitionTable>()
-                                                                  .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<MeterHolder>()
-                                                                  .AddSingleton<AgentIdentifier>()
-                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
-                                                                  .AddHttpClient()
-                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                          builder => builder.UseRouting()
-                                                            .UseAuthorization(),
-                                          builder =>
-                                          {
-                                            builder.MapGrpcService<GrpcTasksService>();
-                                            builder.MapGrpcService<GrpcSessionsService>();
-                                          },
-                                          true,
-                                          true);
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                        .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                        .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                        .AddSingleton<Injection.Options.Submitter>()
+                                                                        .AddSingleton<MeterHolder>()
+                                                                        .AddSingleton<AgentIdentifier>()
+                                                                        .AddScoped(typeof(FunctionExecutionMetrics<>))
+                                                                        .AddHttpClient()
+                                                                        .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
+                                                builder => builder.UseRouting()
+                                                                  .UseAuthorization(),
+                                                builder =>
+                                                {
+                                                  builder.MapGrpcService<GrpcTasksService>();
+                                                  builder.MapGrpcService<GrpcSessionsService>();
+                                                },
+                                                true,
+                                                true);
 
     await helper.App.StartAsync()
                 .ConfigureAwait(false);
@@ -363,25 +363,25 @@ public class GrpcTasksServiceTests
                                                      It.IsAny<CancellationToken>()))
          .Throws<Exception>();
 
-    var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
-                                                                  .AddSingleton(queue.Object)
-                                                                  .AddSingleton<IPartitionTable, SimplePartitionTable>()
-                                                                  .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<MeterHolder>()
-                                                                  .AddSingleton<AgentIdentifier>()
-                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
-                                                                  .AddHttpClient()
-                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                          builder => builder.UseRouting()
-                                                            .UseAuthorization(),
-                                          builder =>
-                                          {
-                                            builder.MapGrpcService<GrpcTasksService>();
-                                            builder.MapGrpcService<GrpcSessionsService>();
-                                            builder.MapGrpcService<GrpcResultsService>();
-                                          },
-                                          true,
-                                          true);
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                        .AddSingleton(queue.Object)
+                                                                        .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                        .AddSingleton<Injection.Options.Submitter>()
+                                                                        .AddSingleton<MeterHolder>()
+                                                                        .AddSingleton<AgentIdentifier>()
+                                                                        .AddScoped(typeof(FunctionExecutionMetrics<>))
+                                                                        .AddHttpClient()
+                                                                        .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
+                                                builder => builder.UseRouting()
+                                                                  .UseAuthorization(),
+                                                builder =>
+                                                {
+                                                  builder.MapGrpcService<GrpcTasksService>();
+                                                  builder.MapGrpcService<GrpcSessionsService>();
+                                                  builder.MapGrpcService<GrpcResultsService>();
+                                                },
+                                                true,
+                                                true);
 
     await helper.App.StartAsync()
                 .ConfigureAwait(false);
@@ -477,25 +477,25 @@ public class GrpcTasksServiceTests
                                          It.IsAny<CancellationToken>()))
         .Throws<Exception>();
 
-    var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
-                                                                  .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
-                                                                  .AddSingleton<IPartitionTable, SimplePartitionTable>()
-                                                                  .AddSingleton(mock.Object)
-                                                                  .AddSingleton<Injection.Options.Submitter>()
-                                                                  .AddSingleton<MeterHolder>()
-                                                                  .AddSingleton<AgentIdentifier>()
-                                                                  .AddScoped(typeof(FunctionExecutionMetrics<>))
-                                                                  .AddHttpClient()
-                                                                  .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                          builder => builder.UseRouting()
-                                                            .UseAuthorization(),
-                                          builder =>
-                                          {
-                                            builder.MapGrpcService<GrpcTasksService>();
-                                            builder.MapGrpcService<GrpcSessionsService>();
-                                          },
-                                          true,
-                                          true);
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                        .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                        .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                        .AddSingleton(mock.Object)
+                                                                        .AddSingleton<Injection.Options.Submitter>()
+                                                                        .AddSingleton<MeterHolder>()
+                                                                        .AddSingleton<AgentIdentifier>()
+                                                                        .AddScoped(typeof(FunctionExecutionMetrics<>))
+                                                                        .AddHttpClient()
+                                                                        .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
+                                                builder => builder.UseRouting()
+                                                                  .UseAuthorization(),
+                                                builder =>
+                                                {
+                                                  builder.MapGrpcService<GrpcTasksService>();
+                                                  builder.MapGrpcService<GrpcSessionsService>();
+                                                },
+                                                true,
+                                                true);
 
     await helper.App.StartAsync()
                 .ConfigureAwait(false);
