@@ -908,7 +908,7 @@ impl PartitionState {
             Some(n) => self.mirrors.get(n),
             None => None,
         };
-        let Some(m) = mirror.filter(|m| m.len() > 0 && *budget > 0) else {
+        let Some(m) = mirror.filter(|m| !m.is_empty() && *budget > 0) else {
             return head;
         };
         let (mut best, mut best_score) = (head, -1.0f64);
