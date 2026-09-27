@@ -85,44 +85,48 @@ impl Mirror {
     /// Marks `hash` as held by the node and most recently used, evicting the least
     /// recently used entry if full.
     pub fn insert(&mut self, hash: u32) {
-        let i = self.touch(hash);
+        let (i, _) = self.touch(hash);
         self.entries[i as usize].confirmed = true;
     }
 
     /// Marks `hash` as most recently used on behalf of a delivery in flight, until
-    /// [`Mirror::withdraw`] or a confirmation.
-    pub fn anticipate(&mut self, hash: u32) {
-        let i = self.touch(hash);
+    /// [`Mirror::withdraw`] or a confirmation. Returns whether it was already there.
+    pub fn anticipate(&mut self, hash: u32) -> bool {
+        let (i, present) = self.touch(hash);
         let e = &mut self.entries[i as usize];
         if !e.confirmed {
             e.pending = e.pending.saturating_add(1);
         }
+        present
     }
 
     /// A delivery that anticipated `hash` ended without success: the entry goes away
     /// once no delivery announces it any more, unless it was confirmed meanwhile.
-    pub fn withdraw(&mut self, hash: u32) {
+    /// Returns whether the entry went away.
+    pub fn withdraw(&mut self, hash: u32) -> bool {
         let Some(&i) = self.index.get(&hash) else {
-            return;
+            return false;
         };
         let e = &mut self.entries[i as usize];
         if e.confirmed {
-            return;
+            return false;
         }
         e.pending = e.pending.saturating_sub(1);
-        if e.pending == 0 {
-            self.unlink(i);
-            self.index.remove(&hash);
-            self.free.push(i);
+        if e.pending > 0 {
+            return false;
         }
+        self.unlink(i);
+        self.index.remove(&hash);
+        self.free.push(i);
+        true
     }
 
-    /// Finds or creates the entry of `hash`, most recently used.
-    fn touch(&mut self, hash: u32) -> u32 {
+    /// Finds or creates the entry of `hash`, most recently used; true when it was found.
+    fn touch(&mut self, hash: u32) -> (u32, bool) {
         if let Some(&i) = self.index.get(&hash) {
             self.unlink(i);
             self.push_front(i);
-            return i;
+            return (i, true);
         }
         let entry = Entry {
             hash,
@@ -146,7 +150,7 @@ impl Mirror {
         };
         self.index.insert(hash, i);
         self.push_front(i);
-        i
+        (i, false)
     }
 }
 
