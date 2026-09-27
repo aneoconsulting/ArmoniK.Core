@@ -205,10 +205,10 @@ impl Bench {
         let i = self.i;
         self.i += 1;
         let now = i / CYCLES_PER_MS;
-        if i % CYCLES_PER_MS == 0 {
+        if i.is_multiple_of(CYCLES_PER_MS) {
             self.s.tick(now);
         }
-        if i % BATCH == 0 {
+        if i.is_multiple_of(BATCH) {
             self.enqueue_batch(now);
         }
         let c = self.consumers[(i % self.consumers.len() as u64) as usize];
