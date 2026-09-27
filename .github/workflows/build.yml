@@ -472,6 +472,7 @@ jobs:
           - sqs
           - pubsub
           - nats
+          - broker
         log-level:
           - Information
           - Verbose
@@ -595,24 +596,28 @@ jobs:
           - { queue: pubsub, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: broker, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: rabbitmq, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: sqs, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
           - { queue: nats, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
+          - { queue: broker, object: redis, log-level: Information, socket_type: tcp, cinit: true  }
 
           - { queue: activemq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true }
           - { queue: rabbitmq, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: broker, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: rabbitmq, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: pubsub, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: sqs, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: broker, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: gcs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
@@ -621,6 +626,7 @@ jobs:
           - { queue: pubsub, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: sqs, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: nats, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
+          - { queue: broker, object: embed, log-level: Information, socket_type: unixdomainsocket, cinit: true }
 
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true }
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: false }
@@ -628,6 +634,7 @@ jobs:
           - { queue: activemq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true, database: postgresql }
           - { queue: rabbitmq, object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true, database: postgresql }
           - { queue: nats,     object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true, database: postgresql }
+          - { queue: broker,   object: redis, log-level: Information, socket_type: unixdomainsocket, cinit: true, database: postgresql }
 
     name: HtcMock ${{ matrix.target.queue }} ${{ matrix.target.object }} ${{ matrix.target.log-level }} ${{ matrix.target.socket_type }} ${{ matrix.target.cinit }} ${{ matrix.target.database || 'mongo' }}
     steps:
