@@ -127,6 +127,7 @@ public static class Program
              .AddSingleton<IAgentHandler, AgentHandler>()
              .AddSingleton<DataPrefetcher>()
              .AddSingleton<MeterHolder>()
+             .AddSingleton<DataCacheMetrics>()
              .AddSingleton<AgentIdentifier>()
              .AddScoped(typeof(FunctionExecutionMetrics<>))
              .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()

@@ -18,6 +18,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
 using System.Linq.Expressions;
@@ -30,6 +31,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -2768,6 +2770,41 @@ public class TaskHandlerTest
 
     sqmh.TaskId = taskId;
 
+    // Sums of the cache metrics, by instrument and kind of data
+    var measured = new Dictionary<string, long>();
+    using var listener = new MeterListener
+                         {
+                           InstrumentPublished = (instrument,
+                                                  l) =>
+                                                 {
+                                                   if (instrument.Meter.Name == MeterHolder.Name && instrument.Name.StartsWith("agent_"))
+                                                   {
+                                                     l.EnableMeasurementEvents(instrument);
+                                                   }
+                                                 },
+                         };
+    listener.SetMeasurementEventCallback<long>((instrument,
+                                                value,
+                                                tags,
+                                                _) =>
+                                               {
+                                                 var kind = "";
+                                                 foreach (var tag in tags)
+                                                 {
+                                                   if (tag.Key == "kind")
+                                                   {
+                                                     kind = $"/{tag.Value}";
+                                                   }
+                                                 }
+
+                                                 lock (measured)
+                                                 {
+                                                   var key = instrument.Name + kind;
+                                                   measured[key] = measured.GetValueOrDefault(key) + value;
+                                                 }
+                                               });
+    listener.Start();
+
     var acquired = await testServiceProvider.TaskHandler.AcquireTask()
                                             .ConfigureAwait(false);
 
@@ -2781,12 +2818,29 @@ public class TaskHandlerTest
                 Times.Once);
     mock.Reset();
 
+    // The payload was fetched, 4 chunks of 3 bytes, and stored in the cache
+    Assert.That(measured,
+                Is.EquivalentTo(new Dictionary<string, long>
+                                {
+                                  ["agent_cache_misses/payload"]       = 1,
+                                  ["agent_data_fetched_bytes/payload"] = 12,
+                                  ["agent_data_fetch_duration"]        = measured.GetValueOrDefault("agent_data_fetch_duration"),
+                                  ["agent_cache_stored_bytes"]         = 12,
+                                }));
+    measured.Clear();
+
     // validate prefetch is not called again if the object is already in cache
     await testServiceProvider.TaskHandler.PreProcessing()
                              .ConfigureAwait(false);
     mock.Verify(x => x.GetValuesAsync(It.IsAny<byte[]>(),
                                       It.IsAny<CancellationToken>()),
                 Times.Never);
+    Assert.That(measured,
+                Is.EquivalentTo(new Dictionary<string, long>
+                                {
+                                  ["agent_cache_hits/payload"]      = 1,
+                                  ["agent_cache_hit_bytes/payload"] = 12,
+                                }));
   }
 
   [Test]

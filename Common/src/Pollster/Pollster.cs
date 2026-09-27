@@ -62,6 +62,7 @@ public class Pollster : IInitializable
   private readonly ILogger<Pollster>                         logger_;
   private readonly ILoggerFactory                            loggerFactory_;
   private readonly int                                       messageBatchSize_;
+  private readonly DataCacheMetrics                          dataCacheMetrics_;
   private readonly MeterHolder                               meterHolder_;
   private readonly IObjectStorage                            objectStorage_;
   private readonly string                                    ownerPodId_;
@@ -106,6 +107,7 @@ public class Pollster : IInitializable
   /// <param name="runningTaskQueue">Queue for running tasks.</param>
   /// <param name="identifier">Identifier for the agent running the pollster.</param>
   /// <param name="meterHolder">Holder for metrics collection.</param>
+  /// <param name="dataCacheMetrics">Metrics of the data served by the cache or fetched from the object storage.</param>
   /// <param name="healthCheckRecord">Record for the health check of the application.</param>
   /// <exception cref="ArgumentOutOfRangeException">Thrown when message batch size is less than 1.</exception>
   public Pollster(IPullQueueStorage          pullQueueStorage,
@@ -129,6 +131,7 @@ public class Pollster : IInitializable
                   RunningTaskQueue           runningTaskQueue,
                   AgentIdentifier            identifier,
                   MeterHolder                meterHolder,
+                  DataCacheMetrics           dataCacheMetrics,
                   HealthCheckRecord          healthCheckRecord)
   {
     if (options.MessageBatchSize < 1)
@@ -162,6 +165,7 @@ public class Pollster : IInitializable
     agentHandler_          = agentHandler;
     runningTaskQueue_      = runningTaskQueue;
     meterHolder_           = meterHolder;
+    dataCacheMetrics_      = dataCacheMetrics;
     submitterOptions_      = submitterOptions;
     healthCheckRecord_     = healthCheckRecord;
     ownerPodId_            = identifier.OwnerPodId;
@@ -383,6 +387,7 @@ public class Pollster : IInitializable
                                               },
                                               exceptionManager_,
                                               new FunctionExecutionMetrics<TaskHandler>(meterHolder_),
+                                              dataCacheMetrics_,
                                               healthCheckRecord_);
             pipeliningCounter_.Add(1);
             // Message has been "acquired" by the taskHandler and will be disposed by the TaskHandler
