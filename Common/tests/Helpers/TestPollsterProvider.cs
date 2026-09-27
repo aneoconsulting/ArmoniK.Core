@@ -197,6 +197,7 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<InitDatabase>()
            .AddExceptionManager(sp => ExceptionManager.Options.FromPollsterOptions(sp.GetRequiredService<Injection.Options.Pollster>()))
            .AddSingleton<MeterHolder>()
+           .AddSingleton<DataCacheMetrics>()
            .AddSingleton<AgentIdentifier>()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton<HealthCheckRecord>()
