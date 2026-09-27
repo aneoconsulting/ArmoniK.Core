@@ -54,12 +54,16 @@ pub fn encode(size: u64) -> u8 {
     (6 * e + k).min(255) as u8
 }
 
-/// Approximate size in bytes of an encoded size; 0 for the absence marker.
+/// Approximate size in bytes of an encoded size; 0 for the absence marker. Read from a
+/// table: the scheduler decodes every dependency it scores or distributes.
 pub fn decode(code: u8) -> f64 {
-    if code == 0 {
-        return 0.0;
-    }
-    (f64::from(code - 1) / 6.0).exp2() - 1.0
+    static DECODED: std::sync::LazyLock<[f64; 256]> = std::sync::LazyLock::new(|| {
+        std::array::from_fn(|c| match c {
+            0 => 0.0,
+            c => ((c - 1) as f64 / 6.0).exp2() - 1.0,
+        })
+    });
+    DECODED[usize::from(code)]
 }
 
 /// Affinity structure carried by an enqueued message.

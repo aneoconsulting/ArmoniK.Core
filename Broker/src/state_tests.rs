@@ -504,6 +504,20 @@ fn affinity_prefers_candidates_with_local_data() {
     let _ = n2;
     let got = s.pull(n1, 1, 0).unwrap().remove(0);
     assert_eq!(got.task_id, "consumer-of-big");
+    let c = &s.gauges.counters;
+    let load = |x: &std::sync::atomic::AtomicU64| x.load(std::sync::atomic::Ordering::Relaxed);
+    assert_eq!(
+        (load(&c.affinity_hit), load(&c.affinity_miss)),
+        (1, 1),
+        "the producer found nothing local, its consumer found \"big\""
+    );
+    assert_eq!(load(&c.affinity_reordered), 1);
+    let big = affinity::decode(affinity::encode(1 << 30)) as u64;
+    assert_eq!(load(&c.affinity_local_bytes), big);
+    assert_eq!(
+        load(&c.affinity_dep_bytes),
+        big + affinity::decode(affinity::encode(10)) as u64
+    );
     s.check();
 }
 
@@ -567,6 +581,13 @@ fn undone_delivery_withdraws_its_dependencies_from_the_mirror() {
     assert_eq!(s.pull(n2, 1, 0).unwrap().remove(0).task_id, "a");
     // Nothing is local to n1 any more: plain FIFO.
     assert_eq!(s.pull(n1, 1, 0).unwrap().remove(0).task_id, "other");
+    assert_eq!(
+        s.gauges
+            .counters
+            .mirror_withdrawn
+            .load(std::sync::atomic::Ordering::Relaxed),
+        1
+    );
     s.check();
 }
 
