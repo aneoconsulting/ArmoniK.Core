@@ -94,7 +94,7 @@ Shared variables (apply to both `runHtcmock` and `runBench`): `ntasks` (default 
 
 Overridable variables for `runHtcmock`: `htcmock_time` `htcmock_datasize` `htcmock_memsize` `htcmock_levels` `htcmock_fast_compute` `htcmock_low_mem` `htcmock_small_output` `htcmock_purge_data` `htcmock_task_rpc_exception` `htcmock_task_error`
 
-Overridable variables for `runBench`: `bench_duration_ms` `bench_payload_size` `bench_result_size` `bench_batch_size` `bench_max_retries` `bench_degree_of_parallelism` `bench_show_events` `bench_purge_data` `bench_download_results` `bench_exit_after_submission` `bench_pause_session` `bench_max_duration` `bench_priority` `bench_task_rpc_exception` `bench_task_error`
+Overridable variables for `runBench`: `bench_duration_ms` `bench_payload_size` `bench_result_size` `bench_shared_data_count` `bench_shared_data_size` `bench_batch_size` `bench_max_retries` `bench_degree_of_parallelism` `bench_show_events` `bench_purge_data` `bench_download_results` `bench_exit_after_submission` `bench_pause_session` `bench_max_duration` `bench_priority` `bench_task_rpc_exception` `bench_task_error`
 
 Test framework: **NUnit**. Mock library: **Moq**.
 
