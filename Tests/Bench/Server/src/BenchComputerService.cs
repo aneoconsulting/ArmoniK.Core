@@ -75,6 +75,17 @@ public class BenchComputerService : WorkerStreamWrapper
         throw new InvalidOperationException("Payload should have the same size as the one specified");
       }
 
+      // The only data dependencies of bench tasks are the shared data
+      var sharedDataSize = int.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("SharedDataSize",
+                                                                                       "0"));
+      foreach (var (id, data) in taskHandler.DataDependencies)
+      {
+        if (data.Length != sharedDataSize * 1024)
+        {
+          throw new InvalidOperationException($"Shared data {id} should have the same size as the one specified");
+        }
+      }
+
       var sleep = int.Parse(taskHandler.TaskOptions.Options.GetValueOrDefault("TaskDurationMs",
                                                                               "100"));
 
