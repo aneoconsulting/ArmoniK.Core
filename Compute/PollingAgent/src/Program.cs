@@ -23,7 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.PostgresSQL;
+using ArmoniK.Core.Adapters.PostgreSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common;

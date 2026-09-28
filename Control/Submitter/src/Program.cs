@@ -23,7 +23,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB;
-using ArmoniK.Core.Adapters.PostgresSQL;
+using ArmoniK.Core.Adapters.PostgreSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
@@ -55,7 +55,7 @@ using OpenTelemetry.Trace;
 
 using Serilog;
 
-using ServiceCollectionExt = ArmoniK.Core.Adapters.PostgresSQL.ServiceCollectionExt;
+using ServiceCollectionExt = ArmoniK.Core.Adapters.PostgreSQL.ServiceCollectionExt;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
