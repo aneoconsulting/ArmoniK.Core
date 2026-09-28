@@ -25,11 +25,11 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
-using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
@@ -46,6 +46,11 @@ using Moq;
 
 using NUnit.Framework;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
+using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
+using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
+using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
+using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 using TimeoutException = ArmoniK.Core.Common.Exceptions.TimeoutException;
 
@@ -1511,6 +1516,314 @@ public class TaskHandlerTest
                     acquired);
   }
 
+  public class SequentialReadTaskTable : ITaskTable
+  {
+    private readonly int nbPendingReads_;
+    private          int readCount_;
+
+    public SequentialReadTaskTable(int nbPendingReads)
+    {
+      nbPendingReads_ = nbPendingReads;
+      Logger          = NullLogger.Instance;
+    }
+
+    public int ReadTaskAsyncCallCount
+      => readCount_;
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
+
+    public Task Init(CancellationToken cancellationToken)
+      => Task.CompletedTask;
+
+    public TimeSpan PollingDelayMin { get; } = TimeSpan.Zero;
+    public TimeSpan PollingDelayMax { get; } = TimeSpan.Zero;
+    public ILogger  Logger          { get; }
+
+    public Task CreateTasks(IEnumerable<TaskData> tasks,
+                            CancellationToken     cancellationToken = default)
+      => Task.CompletedTask;
+
+    public Task<T> ReadTaskAsync<T>(string                        taskId,
+                                    Expression<Func<TaskData, T>> selector,
+                                    CancellationToken             cancellationToken = default)
+    {
+      var count = Interlocked.Increment(ref readCount_);
+      var status = count <= nbPendingReads_
+                     ? TaskStatus.Pending
+                     : TaskStatus.Submitted;
+      return Task.FromResult(selector.Compile()
+                                     .Invoke(new TaskData("SessionId",
+                                                          taskId,
+                                                          "",
+                                                          "",
+                                                          "payload",
+                                                          new List<string>(),
+                                                          new List<string>(),
+                                                          new Dictionary<string, bool>(),
+                                                          new List<string>(),
+                                                          taskId,
+                                                          "createdby",
+                                                          new List<string>(),
+                                                          status,
+                                                          "",
+                                                          new TaskOptions(new Dictionary<string, string>(),
+                                                                          TimeSpan.FromMinutes(4),
+                                                                          2,
+                                                                          1,
+                                                                          "part1",
+                                                                          "",
+                                                                          "",
+                                                                          "",
+                                                                          "",
+                                                                          ""),
+                                                          DateTime.UtcNow,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          null,
+                                                          new Output(OutputStatus.Error,
+                                                                     ""))));
+    }
+
+    public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
+                                                              CancellationToken                cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<int> CountAllTasksAsync(TaskStatus        status,
+                                        CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task DeleteTaskAsync(string            id,
+                                CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task DeleteTasksAsync(string            sessionId,
+                                 CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task DeleteTasksAsync(ICollection<string> taskIds,
+                                 CancellationToken   cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public Task<(IEnumerable<T> tasks, long totalCount)> ListTasksAsync<T>(Expression<Func<TaskData, bool>>    filter,
+                                                                           Expression<Func<TaskData, object?>> orderField,
+                                                                           Expression<Func<TaskData, T>>       selector,
+                                                                           bool                                ascOrder,
+                                                                           int                                 page,
+                                                                           int                                 pageSize,
+                                                                           CancellationToken                   cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public async IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>>           filter,
+                                                       Expression<Func<TaskData, T>>              selector,
+                                                       [EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+      yield return await ReadTaskAsync("taskId",
+                                       selector,
+                                       cancellationToken)
+                     .ConfigureAwait(false);
+    }
+
+    public Task<TaskData?> UpdateOneTask(string                            taskId,
+                                         Expression<Func<TaskData, bool>>? filter,
+                                         UpdateDefinition<TaskData>        updates,
+                                         bool                              before            = false,
+                                         CancellationToken                 cancellationToken = default)
+      => Task.FromResult<TaskData?>(new TaskData("SessionId",
+                                                 taskId,
+                                                 "ownerpodid",
+                                                 "ownerpodname",
+                                                 "payload",
+                                                 new List<string>(),
+                                                 new List<string>(),
+                                                 new Dictionary<string, bool>(),
+                                                 new List<string>(),
+                                                 taskId,
+                                                 "createdby",
+                                                 new List<string>(),
+                                                 TaskStatus.Dispatched,
+                                                 "",
+                                                 new TaskOptions(new Dictionary<string, string>(),
+                                                                 TimeSpan.FromMinutes(4),
+                                                                 2,
+                                                                 1,
+                                                                 "part1",
+                                                                 "",
+                                                                 "",
+                                                                 "",
+                                                                 "",
+                                                                 ""),
+                                                 DateTime.UtcNow,
+                                                 null,
+                                                 null,
+                                                 null,
+                                                 null,
+                                                 DateTime.UtcNow,
+                                                 null,
+                                                 null,
+                                                 null,
+                                                 null,
+                                                 null,
+                                                 null,
+                                                 new Output(OutputStatus.Error,
+                                                            "")));
+
+    public Task<long> UpdateManyTasks(Expression<Func<TaskData, bool>> filter,
+                                      UpdateDefinition<TaskData>       updates,
+                                      CancellationToken                cancellationToken = default)
+      => Task.FromResult<long>(0);
+
+    public Task<(IEnumerable<Application> applications, int totalCount)> ListApplicationsAsync(Expression<Func<TaskData, bool>> filter,
+                                                                                               ICollection<Expression<Func<Application, object?>>> orderFields,
+                                                                                               bool ascOrder,
+                                                                                               int page,
+                                                                                               int pageSize,
+                                                                                               CancellationToken cancellationToken = default)
+      => throw new NotImplementedException();
+
+    public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
+                                                                       ICollection<string>           dependenciesToRemove,
+                                                                       Expression<Func<TaskData, T>> selector,
+                                                                       CancellationToken             cancellationToken = default)
+      => AsyncEnumerable.Empty<T>();
+  }
+
+  [Test]
+  public async Task AcquirePendingTaskWithNbPendingRetryZeroShouldReturnPending()
+  {
+    var taskId = Guid.NewGuid()
+                     .ToString();
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+                 TaskId = taskId,
+               };
+
+    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
+    var conf = new Dictionary<string, string>
+               {
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.NbPendingRetry)}", "0"
+                 },
+               };
+
+    var taskTable    = new SequentialReadTaskTable(int.MaxValue);
+    var sessionTable = new WaitSessionTable(0);
+
+    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
+                                                                mockAgentHandler.Object,
+                                                                sqmh,
+                                                                taskTable,
+                                                                sessionTable,
+                                                                additionalConfig: conf);
+
+    await testServiceProvider.SessionTable.SetSessionDataAsync(new List<string>
+                                                               {
+                                                                 "part1",
+                                                               },
+                                                               new TaskOptions(new Dictionary<string, string>(),
+                                                                               TimeSpan.FromMinutes(4),
+                                                                               2,
+                                                                               1,
+                                                                               "part1",
+                                                                               "",
+                                                                               "",
+                                                                               "",
+                                                                               "",
+                                                                               ""))
+                             .ConfigureAwait(false);
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.TaskIsPending));
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Postponed));
+    Assert.That(taskTable.ReadTaskAsyncCallCount,
+                Is.EqualTo(1));
+  }
+
+  [Test]
+  public async Task AcquirePendingTaskThatBecomesSubmittedDuringRetryShouldSucceed()
+  {
+    var taskId = Guid.NewGuid()
+                     .ToString();
+    var sqmh = new SimpleQueueMessageHandler
+               {
+                 CancellationToken = CancellationToken.None,
+                 Status            = QueueMessageStatus.Waiting,
+                 MessageId = Guid.NewGuid()
+                                 .ToString(),
+                 TaskId = taskId,
+               };
+
+    var mockStreamHandler = new Mock<IWorkerStreamHandler>();
+    var mockAgentHandler  = new Mock<IAgentHandler>();
+    var conf = new Dictionary<string, string>
+               {
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.NbPendingRetry)}", "5"
+                 },
+                 {
+                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.PendingRetryDelay)}", TimeSpan.FromMilliseconds(1)
+                                                                                                                           .ToString()
+                 },
+               };
+
+    // Returns Pending on the first 2 reads, then Submitted; the acquisition loop sees:
+    // read 1 (initial) = Pending, read 2 (retry i=0) = Pending, read 3 (retry i=1) = Submitted → exits loop
+    var taskTable    = new SequentialReadTaskTable(2);
+    var sessionTable = new WaitSessionTable(0);
+
+    using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
+                                                                mockAgentHandler.Object,
+                                                                sqmh,
+                                                                taskTable,
+                                                                sessionTable,
+                                                                additionalConfig: conf);
+
+    await testServiceProvider.SessionTable.SetSessionDataAsync(new List<string>
+                                                               {
+                                                                 "part1",
+                                                               },
+                                                               new TaskOptions(new Dictionary<string, string>(),
+                                                                               TimeSpan.FromMinutes(4),
+                                                                               2,
+                                                                               1,
+                                                                               "part1",
+                                                                               "",
+                                                                               "",
+                                                                               "",
+                                                                               "",
+                                                                               ""))
+                             .ConfigureAwait(false);
+
+    var acquired = await testServiceProvider.TaskHandler.AcquireTask()
+                                            .ConfigureAwait(false);
+
+    Assert.That(acquired,
+                Is.EqualTo(AcquisitionStatus.Acquired));
+    // 1 initial read + 2 retry reads (i=0 still Pending, i=1 sees Submitted and exits)
+    Assert.That(taskTable.ReadTaskAsyncCallCount,
+                Is.EqualTo(3));
+  }
+
   public class TestRpcException : RpcException
   {
     public TestRpcException()
@@ -1914,6 +2227,7 @@ public class TaskHandlerTest
     mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                       It.IsAny<string>(),
                                                       It.IsAny<string>(),
+                                                      It.IsAny<Configuration>(),
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromResult(new Output(OutputStatus.Timeout,
                                                   "Deadline Exceeded")));
@@ -1988,6 +2302,7 @@ public class TaskHandlerTest
     mock.Setup(handler => handler.StartTaskProcessing(It.IsAny<TaskData>(),
                                                       It.IsAny<string>(),
                                                       It.IsAny<string>(),
+                                                      It.IsAny<Configuration>(),
                                                       It.IsAny<CancellationToken>()))
         .Returns(() => Task.FromException<Output>(exception));
     mock.Setup(handler => handler.Check(It.IsAny<HealthCheckTag>()))
@@ -2306,8 +2621,15 @@ public class TaskHandlerTest
                     await testServiceProvider.TaskTable.GetTaskStatus(taskId)
                                              .ConfigureAwait(false));
 
-    Assert.AreEqual(QueueMessageStatus.Cancelled,
-                    sqmh.Status);
+    Assert.That(sqmh.Status,
+                Is.EqualTo(QueueMessageStatus.Processed));
+
+    await testServiceProvider.TaskHandler.DisposeAsync()
+                             .ConfigureAwait(false);
+
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskId)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Cancelled));
   }
 
   [Test]

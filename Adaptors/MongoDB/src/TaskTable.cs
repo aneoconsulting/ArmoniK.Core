@@ -360,15 +360,24 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                                                    data.Options.ApplicationService))
                                   .Select(group => group.Key);
 
-    var ordered = queryable.OrderByList(orderFields,
-                                        ascOrder);
+    IMongoQueryable<Application> paged = orderFields.Count > 0
+                                           ? queryable.OrderByList(orderFields,
+                                                                   ascOrder)
+                                           : queryable;
 
-    var taskResult = ordered.Skip(page * pageSize)
-                            .Take(pageSize)
-                            .ToListAsync(cancellationToken);
+    var totalCount = paged.CountAsync(cancellationToken);
 
-    return (await taskResult.ConfigureAwait(false), await ordered.CountAsync(cancellationToken)
-                                                                 .ConfigureAwait(false));
+    if (pageSize <= 0)
+    {
+      return (Enumerable.Empty<Application>(), await totalCount.ConfigureAwait(false));
+    }
+
+    var taskResult = await paged.Skip(page * pageSize)
+                                .Take(pageSize)
+                                .ToListAsync(cancellationToken)
+                                .ConfigureAwait(false);
+
+    return (taskResult, await totalCount.ConfigureAwait(false));
   }
 
   /// <inheritdoc />

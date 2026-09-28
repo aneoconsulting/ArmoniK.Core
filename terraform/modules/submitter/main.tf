@@ -8,8 +8,9 @@ resource "docker_container" "submitter" {
   image = docker_image.submitter.image_id
 
   networks_advanced {
-    name = var.network
+    name = var.network.name
   }
+  network_mode = var.network.driver
 
   env = concat(local.env, local.gen_env)
 

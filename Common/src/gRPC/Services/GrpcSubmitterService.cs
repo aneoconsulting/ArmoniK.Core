@@ -309,6 +309,20 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         "Session not found"));
     }
+    catch (ResultInvalidStatusException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while submitting tasks due to invalid dependency status");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "One or more dependencies have an invalid status"));
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while submitting tasks due to dependency that does not exist");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "One or more dependencies do not exist"));
+    }
     catch (ArmoniKException e)
     {
       logger_.LogWarning(e,
@@ -401,6 +415,20 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                          "Error while creating tasks");
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         "Session not found"));
+    }
+    catch (ResultInvalidStatusException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while submitting tasks due to invalid dependency status");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "One or more dependencies have an invalid status"));
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while submitting tasks due to dependency that does not exist");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "One or more dependencies do not exist"));
     }
     catch (ArmoniKException e)
     {

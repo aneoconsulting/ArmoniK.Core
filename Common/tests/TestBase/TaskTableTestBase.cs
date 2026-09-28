@@ -22,6 +22,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -2268,6 +2269,45 @@ public class TaskTableTestBase
                         Assert.That(taskData.DataDependencies,
                                     Is.Empty);
                       });
+    }
+  }
+
+  [Test]
+  public async Task ListApplicationFromTasksNoSortShouldSucceed()
+  {
+    if (RunTests)
+    {
+      // ListApplicationsAsync with an empty sort field list called OrderByList, which
+      // unconditionally called .First() on the field collection and threw
+      // InvalidOperationException instead of leaving results in natural order.
+      var (applications, _) = await TaskTable!.ListApplicationsAsync(_ => true,
+                                                                     Array.Empty<Expression<Func<Application, object?>>>(),
+                                                                     false,
+                                                                     0,
+                                                                     10,
+                                                                     CancellationToken.None)
+                                              .ConfigureAwait(false);
+
+      Assert.That(applications,
+                  Is.Not.Empty);
+    }
+  }
+
+  [Test]
+  public async Task ListApplicationsAsyncShouldReturnEmptyForNegativePageSize()
+  {
+    if (RunTests)
+    {
+      var (applications, _) = await TaskTable!.ListApplicationsAsync(_ => true,
+                                                                     new List<Expression<Func<Application, object?>>>(),
+                                                                     false,
+                                                                     0,
+                                                                     -1,
+                                                                     CancellationToken.None)
+                                              .ConfigureAwait(false);
+
+      Assert.That(applications,
+                  Is.Empty);
     }
   }
 }

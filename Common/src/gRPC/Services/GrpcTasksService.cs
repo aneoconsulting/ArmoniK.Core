@@ -348,11 +348,11 @@ public class GrpcTasksService : Task.TasksBase
                                         })
                        .ConfigureAwait(false);
 
-      await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                       resultTable_,
-                                                       request.TaskIds,
-                                                       reason: $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
-                                                       cancellationToken: context.CancellationToken)
+      await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                           resultTable_,
+                                                           request.TaskIds,
+                                                           reason: $"Client requested cancellation of tasks {string.Join(", ", request.TaskIds)}",
+                                                           cancellationToken: context.CancellationToken)
                                  .ConfigureAwait(false);
 
       return new CancelTasksResponse
@@ -570,6 +570,20 @@ public class GrpcTasksService : Task.TasksBase
                          "Error while submitting tasks");
       throw new RpcException(new Status(StatusCode.FailedPrecondition,
                                         "Client submission is closed, no tasks can be submitted"));
+    }
+    catch (ResultInvalidStatusException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while submitting tasks due to invalid dependency status");
+      throw new RpcException(new Status(StatusCode.FailedPrecondition,
+                                        "One or more dependencies have an invalid status"));
+    }
+    catch (ResultNotFoundException e)
+    {
+      logger_.LogWarning(e,
+                         "Error while submitting tasks due to dependency that does not exist");
+      throw new RpcException(new Status(StatusCode.NotFound,
+                                        "One or more dependencies do not exist"));
     }
   }
 }

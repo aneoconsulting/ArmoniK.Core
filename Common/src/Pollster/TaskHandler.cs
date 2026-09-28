@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Utils;
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
@@ -41,6 +42,8 @@ using Grpc.Core;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
+using Output = ArmoniK.Core.Common.Storage.Output;
+using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
@@ -72,6 +75,8 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IObjectStorage                        objectStorage_;
   private readonly string                                ownerPodId_;
   private readonly string                                ownerPodName_;
+  private readonly TimeSpan                              pendingRetryDelay_;
+  private readonly int                                   pendingRetryNb_;
   private readonly TimeSpan                              processingCrashedDelay_;
   private readonly IPushQueueStorage                     pushQueueStorage_;
   private readonly IResultTable                          resultTable_;
@@ -88,6 +93,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private          Action?                               onDispose_;
   private          Output?                               output_;
   private          SessionData?                          sessionData_;
+  private          bool                                  taskCancelled_;
   private          TaskData?                             taskData_;
 
   /// <summary>
@@ -181,6 +187,8 @@ public sealed class TaskHandler : IAsyncDisposable
     delayBeforeAcquisition_  = pollsterOptions.TimeoutBeforeNextAcquisition + TimeSpan.FromSeconds(2);
     messageDuplicationDelay_ = pollsterOptions.MessageDuplicationDelay;
     processingCrashedDelay_  = pollsterOptions.ProcessingCrashedDelay;
+    pendingRetryDelay_       = pollsterOptions.PendingRetryDelay;
+    pendingRetryNb_          = pollsterOptions.NbPendingRetry;
 
     earlyCts_ = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.EarlyCancellationToken);
     lateCts_  = CancellationTokenSource.CreateLinkedTokenSource(exceptionManager.LateCancellationToken);
@@ -202,6 +210,13 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("taskId", messageHandler_.TaskId),
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
+
+    if (taskData_ != null && (taskCancelled_ || taskData_.Status is TaskStatus.Cancelling))
+    {
+      taskData_ = await taskTable_.SetCancelledAsync(taskData_.TaskId,
+                                                     CancellationToken.None)
+                                  .ConfigureAwait(false) ?? taskData_;
+    }
 
     await ReleaseTaskHandler()
       .ConfigureAwait(false);
@@ -266,14 +281,14 @@ public sealed class TaskHandler : IAsyncDisposable
                      catch (OperationCanceledException)
                      {
                        logger_.LogDebug("Agent stopping: MessageHandler for {Task} is released with status {Status}",
-                                        taskData_.TaskId,
+                                        taskData_?.TaskId ?? "",
                                         messageHandler_.Status);
                      }
                      catch (Exception ex)
                      {
                        logger_.LogError(ex,
                                         "Error while checking other pod for {Task}: MessageHandler is released with status {Status}",
-                                        taskData_.TaskId,
+                                        taskData_?.TaskId ?? "",
                                         messageHandler_.Status);
                      }
                      finally
@@ -307,12 +322,15 @@ public sealed class TaskHandler : IAsyncDisposable
                                           ("messageHandler", messageHandler_.MessageId),
                                           ("sessionId", taskData_?.SessionId ?? ""));
 
-    if (taskData_?.Status is not null or TaskStatus.Cancelled or TaskStatus.Cancelling)
+    if (taskData_?.Status is not null)
     {
       taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
                                                  CancellationToken.None)
                                   .ConfigureAwait(false);
-      if (taskData_.Status is TaskStatus.Cancelling)
+      sessionData_ = await sessionTable_.GetSessionAsync(taskData_.SessionId,
+                                                         CancellationToken.None)
+                                        .ConfigureAwait(false);
+      if (taskData_.Status is TaskStatus.Cancelling or TaskStatus.Cancelled || sessionData_.Status is SessionStatus.Cancelled)
       {
         logger_.LogWarning("Task has been cancelled, trigger cancellation from exterior.");
         await earlyCts_.CancelAsync()
@@ -322,10 +340,8 @@ public sealed class TaskHandler : IAsyncDisposable
 
         // Upon cancellation, dispose the messageHandler to remove the message from the queue, and call onDispose
         // Calling the TaskHandler dispose is not possible here as the cancellationTokenSource is still in use
-        messageHandler_.Status = QueueMessageStatus.Cancelled;
-        await ReleaseTaskHandler()
-          .ConfigureAwait(false);
-
+        messageHandler_.Status = QueueMessageStatus.Processed;
+        taskCancelled_         = true;
         return true;
       }
     }
@@ -400,14 +416,14 @@ public sealed class TaskHandler : IAsyncDisposable
                                                   TaskStatus.Cancelled)
                                     .ConfigureAwait(false);
 
-        await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                         resultTable_,
-                                                         new[]
-                                                         {
-                                                           messageHandler_.TaskId,
-                                                         },
-                                                         reason:
-                                                         $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}")
+        await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                             resultTable_,
+                                                             new[]
+                                                             {
+                                                               messageHandler_.TaskId,
+                                                             },
+                                                             reason:
+                                                             $"Task {messageHandler_.TaskId} has been cancelled because its session {taskData_.SessionId} is {sessionData_.Status}")
                                    .ConfigureAwait(false);
 
         return AcquisitionStatus.SessionNotExecutable;
@@ -418,6 +434,23 @@ public sealed class TaskHandler : IAsyncDisposable
         logger_.LogDebug("Session paused; message deleted");
         messageHandler_.Status = QueueMessageStatus.Processed;
         return AcquisitionStatus.SessionPaused;
+      }
+
+      // During task submission, the task is pushed to the queue before its status is set to Submitted.
+      // An agent may therefore dequeue a task that is still Pending. Retry a few times to give the
+      // submitter time to complete the status transition before falling through to TaskIsPending.
+      for (var i = 0; i < pendingRetryNb_ && taskData_.Status == TaskStatus.Pending; i++)
+      {
+        logger_.LogInformation("Task is pending, waiting for {PendingRetryDelay} before retrying (retry {Retry}/{MaxRetries})",
+                               pendingRetryDelay_,
+                               i + 1,
+                               pendingRetryNb_);
+        await Task.Delay(pendingRetryDelay_,
+                         CancellationToken.None)
+                  .ConfigureAwait(false);
+        taskData_ = await taskTable_.ReadTaskAsync(messageHandler_.TaskId,
+                                                   CancellationToken.None)
+                                    .ConfigureAwait(false);
       }
 
       switch (taskData_.Status)
@@ -431,13 +464,13 @@ public sealed class TaskHandler : IAsyncDisposable
                                                     TaskStatus.Cancelled)
                                       .ConfigureAwait(false);
 
-          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                           resultTable_,
-                                                           new[]
-                                                           {
-                                                             messageHandler_.TaskId,
-                                                           },
-                                                           reason: $"Task {messageHandler_.TaskId} has been cancelled:\n{taskData_.Output.Error}")
+          await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                               resultTable_,
+                                                               new[]
+                                                               {
+                                                                 messageHandler_.TaskId,
+                                                               },
+                                                               reason: $"Task {messageHandler_.TaskId} has been cancelled:\n{taskData_.Output.Error}")
                                      .ConfigureAwait(false);
 
           return AcquisitionStatus.TaskIsCancelling;
@@ -464,13 +497,13 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Error:
           logger_.LogInformation("Task was on error elsewhere ; task should have been resubmitted");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                           resultTable_,
-                                                           new[]
-                                                           {
-                                                             messageHandler_.TaskId,
-                                                           },
-                                                           reason: $"Task {messageHandler_.TaskId} was on error:\n{taskData_.Output.Error}")
+          await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                               resultTable_,
+                                                               new[]
+                                                               {
+                                                                 messageHandler_.TaskId,
+                                                               },
+                                                               reason: $"Task {messageHandler_.TaskId} was on error:\n{taskData_.Output.Error}")
                                      .ConfigureAwait(false);
           return AcquisitionStatus.TaskIsError;
         case TaskStatus.Timeout:
@@ -480,13 +513,13 @@ public sealed class TaskHandler : IAsyncDisposable
         case TaskStatus.Cancelled:
           logger_.LogInformation("Task has been cancelled");
           messageHandler_.Status = QueueMessageStatus.Cancelled;
-          await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                           resultTable_,
-                                                           new[]
-                                                           {
-                                                             messageHandler_.TaskId,
-                                                           },
-                                                           reason: $"Task {messageHandler_.TaskId} was cancelled:\n{taskData_.Output.Error}")
+          await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                               resultTable_,
+                                                               new[]
+                                                               {
+                                                                 messageHandler_.TaskId,
+                                                               },
+                                                               reason: $"Task {messageHandler_.TaskId} was cancelled:\n{taskData_.Output.Error}")
                                      .ConfigureAwait(false);
           return AcquisitionStatus.TaskIsCancelled;
         case TaskStatus.Processing:
@@ -737,14 +770,14 @@ public sealed class TaskHandler : IAsyncDisposable
             taskData_ = await taskTable_.EndTaskAsync(taskData_,
                                                       TaskStatus.Cancelled)
                                         .ConfigureAwait(false);
-            await ResultLifeCycleHelper.AbortTasksAndResults(taskTable_,
-                                                             resultTable_,
-                                                             new[]
-                                                             {
-                                                               messageHandler_.TaskId,
-                                                             },
-                                                             reason:
-                                                             $"Task {messageHandler_.TaskId} has been cancelled while acquired on another pod:\n{taskData_.Output.Error}")
+            await ResultLifeCycleHelper.TerminateTasksAndResults(taskTable_,
+                                                                 resultTable_,
+                                                                 new[]
+                                                                 {
+                                                                   messageHandler_.TaskId,
+                                                                 },
+                                                                 reason:
+                                                                 $"Task {messageHandler_.TaskId} has been cancelled while acquired on another pod:\n{taskData_.Output.Error}")
                                        .ConfigureAwait(false);
             return AcquisitionStatus.AcquisitionFailedTaskCancelling;
           }
@@ -1011,12 +1044,17 @@ public sealed class TaskHandler : IAsyncDisposable
     {
       activity?.AddEvent(new ActivityEvent("Start request"));
       logger_.LogDebug("Send request to worker");
+
+      var configuration = await submitter_.GetServiceConfiguration(new Empty(),
+                                                                   earlyCts_.Token)
+                                          .ConfigureAwait(false);
       // ReSharper disable once ExplicitCallerInfoArgument
       using (functionExecutionMetrics_.CountAndTime("RequestExecution"))
       {
         output_ = await workerStreamHandler_.StartTaskProcessing(taskData_,
                                                                  token_,
                                                                  folder_,
+                                                                 configuration,
                                                                  lateCts_.Token)
                                             .ConfigureAwait(false);
       }
@@ -1135,7 +1173,7 @@ public sealed class TaskHandler : IAsyncDisposable
       throw new NullReferenceException(nameof(sessionData_) + " is null.");
     }
 
-    if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling)
+    if (taskData.Status is TaskStatus.Cancelled or TaskStatus.Cancelling || taskCancelled_)
     {
       messageHandler_.Status = QueueMessageStatus.Processed;
     }

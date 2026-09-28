@@ -16,7 +16,7 @@ locals {
   worker   = merge(var.compute_plane.worker, { image = var.worker_image })
   queue    = one(concat(module.queue_activemq, module.queue_rabbitmq, module.queue_artemis, module.queue_pubsub, module.queue_sqs, module.queue_none))
   database = module.database
-  object   = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed))
+  object   = one(concat(module.object_redis, module.object_minio, module.object_local, module.object_embed, module.object_null))
   env_maps = concat([
     local.queue.generated_env_vars,
     local.object.generated_env_vars,
@@ -31,6 +31,7 @@ locals {
   compute_plane       = merge(var.compute_plane, { tag = var.core_tag }, { worker = local.worker })
   partition_list      = { for i in local.partitions : i => merge(var.partition_data, { _id = "${var.partition_data._id}${i}" }) }
   polling_agent_names = toset([for v in module.compute_plane : v.polling_agent_name])
+  network             = docker_network.armonik
 }
 resource "local_file" "queue_env" {
   filename = "${path.root}/generated/queue_env.sh"
