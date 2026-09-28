@@ -52,12 +52,12 @@ variable "object_storage" {
   type = object({
     name  = optional(string, "local")
     image = optional(string, "")
-    # used by minio :
-    host               = optional(string, "minio")
+    # used by seaweedfs :
+    host               = optional(string, "seaweedfs")
     port               = optional(number, 9000)
-    login              = optional(string, "minioadmin")
-    password           = optional(string, "minioadmin")
-    bucket_name        = optional(string, "miniobucket")
+    login              = optional(string, "seaweedfs")
+    password           = optional(string, "seaweedfs")
+    bucket_name        = optional(string, "armonik-bucket")
     local_storage_path = optional(string, "/local_storage")
     # used by gcs (fake-gcs-server) :
     gcs_host        = optional(string, "fake-gcs")
@@ -66,8 +66,8 @@ variable "object_storage" {
     gcs_bucket_name = optional(string, "armonik-test-bucket")
   })
   validation {
-    condition     = can(regex("^(redis|local|minio|gcs|embed|null)$", var.object_storage.name))
-    error_message = "Must be redis, minio, gcs, embed, local, or null"
+    condition     = can(regex("^(redis|local|seaweedfs|gcs|embed|null)$", var.object_storage.name))
+    error_message = "Must be redis, seaweedfs, gcs, embed, local, or null"
   }
   default = {}
 }

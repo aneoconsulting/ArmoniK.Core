@@ -65,7 +65,7 @@ Configuration example:
 
 ### On-premises
 - **Queue**: RabbitMQ or AMQP or Nats
-- **Object Storage**: Minio
+- **Object Storage**: S3-compatible storage
 - **Database**: MongoDB
 
 ### AWS

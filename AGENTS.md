@@ -61,7 +61,7 @@ just tag=<tag> queue=<q> worker=<w> object=<o> build-deploy   # full build + dep
 just destroy                          # tear down the deployment
 ```
 
-Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|minio|gcs|local|embed|null), `replicas`, `partitions`, `log_level`.
+Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|seaweedfs|gcs|local|embed|null), `replicas`, `partitions`, `log_level`.
 
 ## Tests
 
