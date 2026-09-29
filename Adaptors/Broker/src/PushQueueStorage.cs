@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -96,7 +97,7 @@ internal class PushQueueStorage : IPushQueueStorage
                                  cancellationToken)
                    .ConfigureAwait(false);
     }
-    catch (BrokerException e) when (e.Status == HttpStatusCode.RequestEntityTooLarge && items.Count > 1)
+    catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.RequestEntityTooLarge && items.Count > 1)
     {
       var size = (items.Count + 1) / 2;
       logger_.LogDebug("Broker batch of {Count} items too large, splitting it in batches of {Size}",

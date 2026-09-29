@@ -69,7 +69,9 @@ public class QueueBuilder : IDependencyInjectionBuildable
                                     })
                      .ConfigurePrimaryHttpMessageHandler(sp => CreateHandler(options,
                                                                              sp.GetRequiredService<ILogger<BrokerClient>>()))
+                     .AddHttpMessageHandler<RetryHandler>()
                      .RemoveAllLoggers();
+    serviceCollection.AddTransient<RetryHandler>();
     serviceCollection.AddSingleton<BrokerClient>();
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
     serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
