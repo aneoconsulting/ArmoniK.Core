@@ -16,8 +16,8 @@ use crate::config::Config;
 use crate::error::ApiError;
 use crate::metrics::{Gauges, Globals};
 use crate::state::{
-    ConsumerRef, EnqueueItem, Inspection, LeaseInfo, NackPolicy, NodeDecl, PartitionState,
-    PartitionStats, PeekHead, PullReply,
+    EnqueueItem, Inspection, LeaseInfo, NackPolicy, NodeDecl, PartitionState, PartitionStats,
+    PeekHead, PullReply,
 };
 use crate::token::Token;
 
@@ -29,31 +29,21 @@ pub enum Command {
         delay_ms: u64,
         reply: oneshot::Sender<Result<(usize, bool), ApiError>>,
     },
-    Register {
-        node: NodeDecl,
-        reply: oneshot::Sender<ConsumerRef>,
-    },
-    Unregister {
-        consumer: ConsumerRef,
-    },
     Pull {
-        consumer: ConsumerRef,
+        node: NodeDecl,
         max: usize,
         wait_ms: u64,
         reply: PullReply,
     },
     Renew {
-        consumer: ConsumerRef,
         tokens: Vec<Token>,
-        reply: oneshot::Sender<Result<Vec<Token>, ApiError>>,
+        reply: oneshot::Sender<Vec<Token>>,
     },
     Ack {
-        consumer: Option<ConsumerRef>,
         items: Vec<(Token, Option<Outputs>)>,
         reply: oneshot::Sender<(u32, u32)>,
     },
     Nack {
-        consumer: Option<ConsumerRef>,
         items: Vec<(Token, NackPolicy)>,
         reply: oneshot::Sender<(u32, u32)>,
     },
@@ -98,46 +88,29 @@ fn handle(state: &mut PartitionState, cmd: Command, now: u64) {
         } => {
             let _ = reply.send(state.enqueue(&key, priority, items, delay_ms, now));
         }
-        Command::Register { node, reply } => {
-            let _ = reply.send(state.register(node, now));
-        }
-        Command::Unregister { consumer } => state.unregister(consumer, now),
         Command::Pull {
-            consumer,
+            node,
             max,
             wait_ms,
             reply,
-        } => match state.pull(consumer, max, now) {
-            Ok(got) if got.is_empty() && wait_ms > 0 => {
-                state.add_waiter(consumer, max, wait_ms, now, reply)
+        } => {
+            let node = state.node(&node, now);
+            let got = state.pull(node, max, now);
+            if got.is_empty() && wait_ms > 0 {
+                state.add_waiter(node, max, wait_ms, now, reply)
+            } else if let Err(back) = reply.send(got) {
+                // Requester gone before the answer: the messages were never delivered.
+                state.undo_delivery(back, now);
             }
-            other => {
-                if let Err(Ok(back)) = reply.send(other) {
-                    // Requester gone before the answer: the messages were never delivered.
-                    state.undo_delivery(back, now);
-                }
-            }
-        },
-        Command::Renew {
-            consumer,
-            tokens,
-            reply,
-        } => {
-            let _ = reply.send(state.renew(consumer, &tokens, now));
         }
-        Command::Ack {
-            consumer,
-            items,
-            reply,
-        } => {
-            let _ = reply.send(state.ack(consumer, items, now));
+        Command::Renew { tokens, reply } => {
+            let _ = reply.send(state.renew(&tokens, now));
         }
-        Command::Nack {
-            consumer,
-            items,
-            reply,
-        } => {
-            let _ = reply.send(state.nack(consumer, items, now));
+        Command::Ack { items, reply } => {
+            let _ = reply.send(state.ack(items, now));
+        }
+        Command::Nack { items, reply } => {
+            let _ = reply.send(state.nack(items, now));
         }
         Command::Stats { top, key, reply } => {
             let _ = reply.send(state.stats(top, key.as_deref(), now));
@@ -273,6 +246,22 @@ impl Registry {
         let s = self.slots.read().unwrap();
         let p = s.by_index.get(index as usize)?.as_ref()?;
         Some(p.send(cmd))
+    }
+
+    /// Sends to the partition of that name, creating it on first use, without cloning its
+    /// handle when it exists (see [`Self::send_to`]).
+    pub fn send_named(&self, name: &str, cmd: Command) -> Result<(), ApiError> {
+        {
+            let s = self.slots.read().unwrap();
+            if let Some(p) = s
+                .by_name
+                .get(name)
+                .and_then(|&i| s.by_index[i as usize].as_ref())
+            {
+                return p.send(cmd);
+            }
+        }
+        self.get_or_create(name)?.send(cmd)
     }
 
     pub fn by_index(&self, index: u16) -> Option<Partition> {

@@ -35,7 +35,7 @@ use std::sync::Arc;
 use armonik_broker::affinity::{self, Affinity, Outputs};
 use armonik_broker::config::Config;
 use armonik_broker::metrics::Globals;
-use armonik_broker::state::{ConsumerRef, Delivered, EnqueueItem, NodeDecl, PartitionState};
+use armonik_broker::state::{Delivered, EnqueueItem, NodeDecl, PartitionState};
 use armonik_broker::token::Token;
 use clap::Parser;
 use criterion::measurement::WallTime;
@@ -98,7 +98,7 @@ fn splitmix64(x: u64) -> u64 {
 
 struct Bench {
     s: PartitionState,
-    consumers: Vec<ConsumerRef>,
+    consumers: Vec<u32>,
     keys: u64,
     affinity: Option<AffinityCase>,
     next: u64,
@@ -128,7 +128,7 @@ impl Bench {
                     id: affinity.map(|_| format!("node-{n}")),
                     ..NodeDecl::default()
                 };
-                s.register(node, 0)
+                s.node(&node, 0)
             })
             .collect();
         let mut b = Bench {
@@ -155,7 +155,7 @@ impl Bench {
 
     /// The mirror learns what a node holds from the outputs declared at ack. Filled with
     /// the first hashes of the universe, it starts at its steady size.
-    fn fill_mirror(&mut self, c: ConsumerRef, entries: u32) {
+    fn fill_mirror(&mut self, c: u32, entries: u32) {
         let size = affinity::encode(1 << 20);
         for chunk in (0..entries).collect::<Vec<_>>().chunks(affinity::SLOTS) {
             let item = EnqueueItem {
@@ -163,13 +163,12 @@ impl Bench {
                 affinity: None,
             };
             self.s.enqueue("warmup", 1, vec![item], 0, 0).unwrap();
-            let d = self.s.pull(c, 1, 0).unwrap();
+            let d = self.s.pull(c, 1, 0);
             let outputs = Outputs {
                 hashes: chunk.to_vec(),
                 sizes: vec![size; chunk.len()],
             };
             self.s.ack(
-                Some(c),
                 vec![(Token::decode(&d[0].token).unwrap(), Some(outputs))],
                 0,
             );
@@ -212,9 +211,9 @@ impl Bench {
             self.enqueue_batch(now);
         }
         let c = self.consumers[(i % self.consumers.len() as u64) as usize];
-        let d = self.s.pull(c, 1, now).unwrap();
+        let d = self.s.pull(c, 1, now);
         let t = Token::decode(&d[0].token).unwrap();
-        black_box(self.s.ack(Some(c), vec![(t, None)], now));
+        black_box(self.s.ack(vec![(t, None)], now));
     }
 }
 
@@ -339,12 +338,12 @@ fn affinity_fleet(c: &mut Criterion) {
 /// Wait of each pull, as the adapter's default PullWait.
 const PULL_WAIT_MS: u64 = 10_000;
 
-type Reply = oneshot::Receiver<Result<Vec<Delivered>, armonik_broker::error::ApiError>>;
+type Reply = oneshot::Receiver<Vec<Delivered>>;
 
 /// A partition with `n` idle workers, one pull each always pending.
 struct Idle {
     s: PartitionState,
-    consumers: Vec<ConsumerRef>,
+    consumers: Vec<u32>,
     replies: Vec<Option<Reply>>,
     /// Pending pulls as the workers know them, (deadline, worker): in deadline order,
     /// which is also the order in which the partition serves them.
@@ -360,7 +359,7 @@ impl Idle {
         let cfg = Config::parse_from(["armonik-broker"]);
         let globals = Arc::new(Globals::new(cfg.max_messages, cfg.block_messages));
         let mut s = PartitionState::new(0, "bench".into(), 1, Arc::new(cfg), globals);
-        let consumers = (0..n).map(|_| s.register(NodeDecl::default(), 0)).collect();
+        let consumers = (0..n).map(|_| s.node(&NodeDecl::default(), 0)).collect();
         let mut b = Idle {
             s,
             consumers,
@@ -385,7 +384,7 @@ impl Idle {
     fn wait(&mut self, w: usize) {
         let (tx, rx) = oneshot::channel();
         let c = self.consumers[w];
-        assert!(self.s.pull(c, 1, self.now).unwrap().is_empty());
+        assert!(self.s.pull(c, 1, self.now).is_empty());
         self.s.add_waiter(c, 1, PULL_WAIT_MS, self.now, tx);
         self.replies[w] = Some(rx);
         self.pending.push_back((self.now + PULL_WAIT_MS, w));
@@ -401,7 +400,7 @@ impl Idle {
                 break;
             }
             self.pending.pop_front();
-            let got = self.replies[w].take().unwrap().try_recv().unwrap().unwrap();
+            let got = self.replies[w].take().unwrap().try_recv().unwrap();
             assert!(got.is_empty());
             self.wait(w);
         }
@@ -424,12 +423,9 @@ impl Idle {
         }
         for _ in 0..BATCH {
             let (_, w) = self.pending.pop_front().unwrap();
-            let got = self.replies[w].take().unwrap().try_recv().unwrap().unwrap();
+            let got = self.replies[w].take().unwrap().try_recv().unwrap();
             let t = Token::decode(&got[0].token).unwrap();
-            black_box(
-                self.s
-                    .ack(Some(self.consumers[w]), vec![(t, None)], self.now),
-            );
+            black_box(self.s.ack(vec![(t, None)], self.now));
             self.wait(w);
         }
     }

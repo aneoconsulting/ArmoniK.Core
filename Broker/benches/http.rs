@@ -13,9 +13,8 @@
 //! that the server is the bottleneck. Each benchmark also reports the CPU time of the
 //! server and client threads per cycle, which does not depend on who sets the pace.
 //!
-//! Connections and registrations are made once per benchmark, on first use, and kept
-//! from one criterion sample to the next: a sample measures cycles only. The consumers
-//! unregister at the end of their benchmark, so that the next one starts clean.
+//! Connections are made once per benchmark, on first use, and kept from one criterion
+//! sample to the next: a sample measures cycles only.
 
 use std::net::SocketAddr;
 use std::sync::atomic::{AtomicBool, AtomicI64, AtomicU64, Ordering};
@@ -96,14 +95,6 @@ impl Conn {
         self.send(path, req).await
     }
 
-    async fn delete(&mut self, path: &str) {
-        let req = Request::delete(path)
-            .header("host", "broker")
-            .body(Full::new(Bytes::new()))
-            .unwrap();
-        self.send(path, req).await;
-    }
-
     async fn send(&mut self, path: &str, req: Request<Full<Bytes>>) -> (StatusCode, Value) {
         let resp = match self {
             Conn::H1(tx) => {
@@ -134,15 +125,15 @@ struct Raw {
 }
 
 impl Raw {
-    async fn open(addr: SocketAddr, path: &str, wait_ms: u64) -> Raw {
+    async fn open(addr: SocketAddr, wait_ms: u64) -> Raw {
         let stream = TcpStream::connect(addr).await.unwrap();
         stream.set_nodelay(true).unwrap();
         let body = format!(r#"{{"max":1,"wait_ms":{wait_ms}}}"#);
         Raw {
             stream,
             buf: Vec::with_capacity(4096),
-            pull: Self::encode(&format!("{path}/pull"), body.as_bytes()),
-            ack_path: format!("{path}/ack"),
+            pull: Self::encode(&pull_path(), body.as_bytes()),
+            ack_path: ACK_PATH.to_string(),
             req: Vec::with_capacity(512),
         }
     }
@@ -356,8 +347,13 @@ fn start_server(cpus: Vec<usize>) -> SocketAddr {
 
 struct Consumer {
     conn: Conn,
-    path: String,
     raw: Option<Raw>,
+}
+
+const ACK_PATH: &str = "/v1/ack";
+
+fn pull_path() -> String {
+    format!("/v1/partitions/{PARTITION}/pull")
 }
 
 struct Setup {
@@ -369,17 +365,12 @@ struct Setup {
 async fn setup(addr: SocketAddr, proto: Proto, n: usize, wait_ms: u64) -> Setup {
     let mut consumers = Vec::with_capacity(n);
     for _ in 0..n {
-        let mut conn = Conn::open(addr, proto).await;
-        let (_, v) = conn
-            .post("/v1/consumers", json!({ "partition": PARTITION }))
-            .await;
-        let id = v["consumer_id"].as_str().unwrap().to_string();
-        let path = format!("/v1/consumers/{id}");
+        let conn = Conn::open(addr, proto).await;
         let raw = match proto {
-            Proto::H1Raw => Some(Raw::open(addr, &path, wait_ms).await),
+            Proto::H1Raw => Some(Raw::open(addr, wait_ms).await),
             _ => None,
         };
-        consumers.push(Consumer { conn, path, raw });
+        consumers.push(Consumer { conn, raw });
     }
     Setup {
         producer: Conn::open(addr, proto).await,
@@ -410,10 +401,7 @@ impl Consumer {
         }
         let (status, v) = self
             .conn
-            .post(
-                &format!("{}/pull", self.path),
-                json!({ "max": 1, "wait_ms": wait_ms }),
-            )
+            .post(&pull_path(), json!({ "max": 1, "wait_ms": wait_ms }))
             .await;
         if status == StatusCode::NO_CONTENT {
             return Got::Empty;
@@ -426,9 +414,7 @@ impl Consumer {
             .map(|m| json!({ "token": m["token"] }))
             .collect();
         let got = items.len() as i64;
-        self.conn
-            .post(&format!("{}/ack", self.path), json!({ "items": items }))
-            .await;
+        self.conn.post(ACK_PATH, json!({ "items": items })).await;
         if stop { Got::Stop } else { Got::Work(got) }
     }
 }
@@ -446,12 +432,6 @@ async fn send_stops(producer: &mut Conn, n: usize) {
             )
             .await;
         left -= size;
-    }
-}
-
-async fn teardown(setup: Setup) {
-    for mut c in setup.consumers {
-        c.conn.delete(&c.path).await;
     }
 }
 
@@ -627,9 +607,6 @@ fn cycles(c: &mut Criterion) {
                 elapsed
             });
         });
-        if let Some(s) = s {
-            rt.block_on(teardown(s));
-        }
         tally.report(&format!("http/cycle/{name}/{consumers}"));
     }
     g.finish();
@@ -682,16 +659,9 @@ async fn start_sleepers(addr: SocketAddr, n: usize) -> Sleepers {
 
 async fn stop_sleepers(mut s: Sleepers) {
     send_stops(&mut s.producer, s.consumers.len()).await;
-    let mut consumers = Vec::new();
     for c in s.consumers {
-        consumers.push(c.await.unwrap());
+        c.await.unwrap();
     }
-    teardown(Setup {
-        producer: s.producer,
-        consumers,
-        wait_ms: LONG_WAIT_MS,
-    })
-    .await;
 }
 
 /// Latency from the start of an enqueue of one message to its reception by one of the

@@ -171,7 +171,6 @@ pub struct Gauges {
     pub ready: AtomicU64,
     pub in_flight: AtomicU64,
     pub delayed: AtomicU64,
-    pub consumers: AtomicU64,
     pub waiters: AtomicU64,
     pub held: AtomicU64,
     /// Entries of the mirrors of the partition, refreshed by the periodic sweep.
@@ -222,12 +221,11 @@ pub fn render(g: &Globals, partitions: &[(String, &Gauges)]) -> String {
     );
     let _ = writeln!(out, "broker_pool_used_ratio {}", g.pool.used_fraction());
     type Getter = fn(&Gauges) -> &AtomicU64;
-    let gauges: [(&str, Getter); 7] = [
+    let gauges: [(&str, Getter); 6] = [
         ("broker_partition_ready", |x| &x.ready),
         ("broker_partition_in_flight", |x| &x.in_flight),
         ("broker_partition_delayed", |x| &x.delayed),
         ("broker_partition_held", |x| &x.held),
-        ("broker_partition_consumers", |x| &x.consumers),
         ("broker_partition_waiters", |x| &x.waiters),
         ("broker_partition_mirror_entries", |x| &x.mirror_entries),
     ];

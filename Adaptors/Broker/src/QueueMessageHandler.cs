@@ -30,19 +30,16 @@ namespace ArmoniK.Core.Adapters.Broker;
 internal sealed class QueueMessageHandler : IQueueMessageHandler, IDataAffinityMessageHandler
 {
   private readonly BrokerClient client_;
-  private readonly string          consumerId_;
   private readonly ILogger         logger_;
   private          int             disposed_;
 
   private IReadOnlyCollection<(string Id, long Size)>? outputs_;
 
   public QueueMessageHandler(BrokerClient client,
-                             string          consumerId,
                              PulledMessage   message,
                              ILogger         logger)
   {
     client_           = client;
-    consumerId_       = consumerId;
     logger_           = logger;
     MessageId         = message.Token;
     TaskId            = message.TaskId;
@@ -89,15 +86,13 @@ internal sealed class QueueMessageHandler : IQueueMessageHandler, IDataAffinityM
         case QueueMessageStatus.Failed:
         case QueueMessageStatus.Running:
         case QueueMessageStatus.Postponed:
-          await client_.NackAsync(consumerId_,
-                                  MessageId)
+          await client_.NackAsync(MessageId)
                        .ConfigureAwait(false);
           break;
         case QueueMessageStatus.Cancelled:
         case QueueMessageStatus.Processed:
         case QueueMessageStatus.Poisonous:
-          await client_.AckAsync(consumerId_,
-                                 MessageId,
+          await client_.AckAsync(MessageId,
                                  OutputsBody())
                        .ConfigureAwait(false);
           break;

@@ -1,7 +1,7 @@
 # ArmoniK Broker
 
 In-memory task queue for ArmoniK, written in Rust: fairness between sessions (deficit round robin),
-strict priorities (1 to 16) inside a session, leases renewed per consumer, and task/data affinity
+strict priorities (1 to 16) inside a session, leases renewed per message, and task/data affinity
 (tasks are preferably given to the node that already holds their data).
 
 - Protocol v1 (REST, JSON, HTTP/1.1 and HTTP/2): `docs/protocol.md`
