@@ -23,7 +23,7 @@ use crate::token::Token;
 use crate::wheel::Wheel;
 
 pub const NIL: u32 = u32::MAX;
-/// Period of the scans that have no sorted deadline (registrations, key retention, mirrors, gauges).
+/// Period of the scans that have no sorted deadline (key retention, mirrors, gauges).
 pub const SWEEP_MS: u64 = 1_000;
 pub const LEVELS: usize = 16;
 
@@ -86,53 +86,22 @@ struct Key {
 
 struct Lease {
     slot: u32,
-    consumer: u32,
+    /// Node the message was delivered to, or [`NIL`] without affinity.
+    node: u32,
     dispatched_ms: u64,
     /// Each message has its own lease, extended only by a renew that names it.
     deadline_ms: u64,
-    c_prev: u32,
-    c_next: u32,
     d_prev: u32,
     d_next: u32,
 }
 
-struct Consumer {
-    generation: u32,
-    alive: bool,
-    leases: u32,
+/// A node declared by a pull. Its index is never reused, so that leases and sleeping
+/// pulls can hold it; forgetting a node only drops its mirror, the costly part.
+struct Node {
+    name: Box<str>,
+    mirror: Option<crate::mirror::Mirror>,
     in_flight: u32,
-    registration_deadline_ms: u64,
-    node: Option<Box<str>>,
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct ConsumerRef {
-    pub epoch: u32,
-    pub partition: u16,
-    pub index: u32,
-    pub generation: u32,
-}
-
-impl ConsumerRef {
-    /// Carries the epoch so that an identifier from before a restart is never taken for a new consumer.
-    pub fn encode(&self) -> String {
-        format!(
-            "c-{:x}-{:x}-{:x}-{:x}",
-            self.epoch, self.partition, self.index, self.generation
-        )
-    }
-
-    pub fn decode(s: &str) -> Option<ConsumerRef> {
-        let mut it = s.strip_prefix("c-")?.split('-');
-        let mut next = || it.next().and_then(|x| u32::from_str_radix(x, 16).ok());
-        let r = ConsumerRef {
-            epoch: next()?,
-            partition: u16::try_from(next()?).ok()?,
-            index: next()?,
-            generation: next()?,
-        };
-        it.next().is_none().then_some(r)
-    }
+    last_used_ms: u64,
 }
 
 #[derive(Clone, Debug, Default)]
@@ -162,10 +131,10 @@ pub enum NackPolicy {
     Backoff,
 }
 
-pub type PullReply = oneshot::Sender<Result<Vec<Delivered>, ApiError>>;
+pub type PullReply = oneshot::Sender<Vec<Delivered>>;
 
 struct Waiter {
-    consumer: ConsumerRef,
+    node: u32,
     max: usize,
     reply: PullReply,
 }
@@ -185,7 +154,6 @@ pub struct PartitionStats {
     pub in_flight: u64,
     pub delayed: u64,
     pub oldest_ready_age_ms: u64,
-    pub consumers: u64,
     pub waiters: u64,
     pub keys: Vec<KeyStats>,
 }
@@ -194,7 +162,6 @@ pub struct PartitionStats {
 pub struct LeaseInfo {
     pub token: String,
     pub task_id: String,
-    pub consumer_id: String,
     pub node_id: Option<String>,
     pub dispatched_age_ms: u64,
     pub lease_expires_in_ms: u64,
@@ -214,7 +181,6 @@ pub enum Inspection {
     InFlight {
         task_id: String,
         partition: String,
-        consumer_id: String,
         node_id: Option<String>,
         dispatched_age_ms: u64,
         attempts: u8,
@@ -254,8 +220,8 @@ pub struct PartitionState {
     oldest: u32,
     newest: u32,
 
-    consumers: Vec<Consumer>,
-    free_consumers: Vec<u32>,
+    nodes: Vec<Node>,
+    node_index: Map<Box<str>, u32>,
     /// Sleeping pulls, served oldest first, each answered empty at its own deadline.
     waiters: Sleepers<Waiter>,
     delayed: BinaryHeap<Reverse<(u64, u32, u32)>>,
@@ -264,7 +230,6 @@ pub struct PartitionState {
     /// Leases found expired by the last tick, kept to reuse the allocation.
     expired: Vec<u32>,
     next_sweep_ms: u64,
-    mirrors: Map<Box<str>, crate::mirror::Mirror>,
     shutting_down: bool,
     /// Candidates examined by the affinity scoring, for the tests.
     #[cfg(test)]
@@ -297,14 +262,13 @@ impl PartitionState {
             free_leases: Vec::new(),
             oldest: NIL,
             newest: NIL,
-            consumers: Vec::new(),
-            free_consumers: Vec::new(),
+            nodes: Vec::new(),
+            node_index: Map::default(),
             waiters: Sleepers::new(cfg.max_wait_ms, 0),
             delayed: BinaryHeap::new(),
             lease_wheel: Wheel::new(cfg.lease_ms, 0),
             expired: Vec::new(),
             next_sweep_ms: 0,
-            mirrors: Map::default(),
             shutting_down: false,
             #[cfg(test)]
             examined: std::cell::Cell::new(0),
@@ -604,142 +568,83 @@ impl PartitionState {
         Ok((n, high))
     }
 
-    // ---------------------------------------------------------------- consumers
+    // ---------------------------------------------------------------- nodes
 
-    fn consumer(&self, c: ConsumerRef) -> Option<u32> {
-        if c.epoch != self.epoch || c.partition != self.index {
-            return None;
-        }
-        let x = self.consumers.get(c.index as usize)?;
-        (x.alive && x.generation == c.generation).then_some(c.index)
-    }
-
-    fn touch(&mut self, c: u32, now: u64) {
-        let x = &mut self.consumers[c as usize];
-        x.registration_deadline_ms = now + self.cfg.registration_ms;
-        if let Some(n) = &x.node
-            && let Some(m) = self.mirrors.get_mut(n)
-        {
-            m.last_used_ms = now;
-        }
-    }
-
-    pub fn register(&mut self, node: NodeDecl, now: u64) -> ConsumerRef {
-        let idx = self.free_consumers.pop().unwrap_or_else(|| {
-            self.consumers.push(Consumer {
-                generation: 0,
-                alive: false,
-                leases: NIL,
-                in_flight: 0,
-                registration_deadline_ms: 0,
-                node: None,
-            });
-            (self.consumers.len() - 1) as u32
-        });
-        let node_id = node
+    /// Resolves the node a pull declares, creating it or reviving its mirror; [`NIL`]
+    /// when affinity does not apply (no identifier, no cache, or disabled).
+    pub fn node(&mut self, decl: &NodeDecl, now: u64) -> u32 {
+        let Some(id) = decl
             .id
-            .filter(|_| !self.cfg.disable_affinity && node.cache_capacity_bytes != Some(0));
-        if let Some(id) = &node_id {
-            let pivot = match (node.fetch_fixed_cost_us, node.fetch_throughput_bytes_per_s) {
-                (Some(c), Some(t)) if c > 0 && t > 0 => c as f64 * t as f64 / 1e6,
-                _ => self.cfg.default_pivot_bytes,
-            };
-            let cap = self.cfg.mirror_entries;
-            self.mirrors
-                .entry(id.as_str().into())
-                .and_modify(|m| {
-                    if node.fetch_fixed_cost_us.is_some() {
-                        m.pivot = pivot
-                    }
-                })
-                .or_insert_with(|| crate::mirror::Mirror::new(cap, pivot, now));
-        }
-        let x = &mut self.consumers[idx as usize];
-        x.alive = true;
-        x.leases = NIL;
-        x.in_flight = 0;
-        x.node = node_id.map(String::into_boxed_str);
-        let r = ConsumerRef {
-            epoch: self.epoch,
-            partition: self.index,
-            index: idx,
-            generation: x.generation,
+            .as_deref()
+            .filter(|_| !self.cfg.disable_affinity && decl.cache_capacity_bytes != Some(0))
+        else {
+            return NIL;
         };
-        self.touch(idx, now);
-        self.gauges.consumers.fetch_add(1, Ordering::Relaxed);
-        r
-    }
-
-    /// Removes a consumer; its messages go back to the queue immediately.
-    pub fn unregister(&mut self, c: ConsumerRef, now: u64) {
-        if let Some(i) = self.consumer(c) {
-            self.drop_consumer(i, now, NackPolicy::Requeue);
+        let n = match self.node_index.get(id) {
+            Some(&n) => n,
+            None => {
+                self.nodes.push(Node {
+                    name: id.into(),
+                    mirror: None,
+                    in_flight: 0,
+                    last_used_ms: now,
+                });
+                let n = (self.nodes.len() - 1) as u32;
+                self.node_index.insert(id.into(), n);
+                n
+            }
+        };
+        let pivot = match (decl.fetch_fixed_cost_us, decl.fetch_throughput_bytes_per_s) {
+            (Some(c), Some(t)) if c > 0 && t > 0 => Some(c as f64 * t as f64 / 1e6),
+            _ => None,
+        };
+        let cap = self.cfg.mirror_entries;
+        let default_pivot = self.cfg.default_pivot_bytes;
+        let x = &mut self.nodes[n as usize];
+        x.last_used_ms = now;
+        match &mut x.mirror {
+            Some(m) => {
+                if let Some(p) = pivot {
+                    m.pivot = p
+                }
+            }
+            None => {
+                x.mirror = Some(crate::mirror::Mirror::new(
+                    cap,
+                    pivot.unwrap_or(default_pivot),
+                ))
+            }
         }
+        n
     }
 
-    fn drop_consumer(&mut self, i: u32, now: u64, policy: NackPolicy) {
-        self.requeue_all(i, now, policy);
-        let x = &mut self.consumers[i as usize];
-        x.alive = false;
-        x.generation = x.generation.wrapping_add(1);
-        x.node = None;
-        self.free_consumers.push(i);
-        self.gauges.consumers.fetch_sub(1, Ordering::Relaxed);
-    }
-
-    fn requeue_all(&mut self, c: u32, now: u64, policy: NackPolicy) {
-        while self.consumers[c as usize].leases != NIL {
-            let l = self.consumers[c as usize].leases;
-            let slot = self.leases[l as usize].slot;
-            self.leave_flight(slot, false, now);
-            self.place(slot, policy, false, now);
-        }
-    }
-
-    /// Extends the lease of the messages the consumer names, and only those: a message
-    /// the consumer does not hold any more (answer lost in transit, settlement given up)
-    /// is not renewed and expires. Returns the tokens that designate nothing the consumer
-    /// holds, so that it can drop them.
-    pub fn renew(
-        &mut self,
-        c: ConsumerRef,
-        tokens: &[Token],
-        now: u64,
-    ) -> Result<Vec<Token>, ApiError> {
-        let i = self.consumer(c).ok_or(ApiError::UnknownConsumer)?;
-        self.touch(i, now);
+    /// Extends the lease of the messages named, and only those: a message the client does
+    /// not hold any more (answer lost in transit, settlement given up) is not renewed and
+    /// expires. Returns the tokens that designate no current distribution, so that the
+    /// client can drop them.
+    pub fn renew(&mut self, tokens: &[Token], now: u64) -> Vec<Token> {
         let mut unknown = Vec::new();
         for t in tokens {
             match self.in_flight_slot(t) {
-                Some(slot)
-                    if self.leases[self.records[slot as usize].lease as usize].consumer == i =>
-                {
+                Some(slot) => {
                     let l = self.records[slot as usize].lease;
                     let deadline = now + self.cfg.lease_ms;
                     self.leases[l as usize].deadline_ms = deadline;
                     self.lease_wheel.insert(l, deadline);
                 }
-                _ => unknown.push(*t),
+                None => unknown.push(*t),
             }
         }
-        Ok(unknown)
+        unknown
     }
 
     // ---------------------------------------------------------------- flight
 
     fn lease_unlink(&mut self, l: u32) {
-        let (c, cp, cn, dp, dn) = {
+        let (node, dp, dn) = {
             let x = &self.leases[l as usize];
-            (x.consumer, x.c_prev, x.c_next, x.d_prev, x.d_next)
+            (x.node, x.d_prev, x.d_next)
         };
-        if cp == NIL {
-            self.consumers[c as usize].leases = cn
-        } else {
-            self.leases[cp as usize].c_next = cn
-        }
-        if cn != NIL {
-            self.leases[cn as usize].c_prev = cp;
-        }
         if dp == NIL {
             self.oldest = dn
         } else {
@@ -750,7 +655,9 @@ impl PartitionState {
         } else {
             self.leases[dn as usize].d_prev = dp
         }
-        self.consumers[c as usize].in_flight -= 1;
+        if node != NIL {
+            self.nodes[node as usize].in_flight -= 1;
+        }
         self.lease_wheel.remove(l);
         self.free_leases.push(l);
     }
@@ -761,11 +668,12 @@ impl PartitionState {
     /// the node having fetched them to run it, and withdrawn otherwise.
     fn leave_flight(&mut self, slot: u32, succeeded: bool, now: u64) {
         let l = self.records[slot as usize].lease;
-        let holder = self.leases[l as usize].consumer;
-        if let (Some(node), Some(aff)) = (
-            &self.consumers[holder as usize].node,
-            &self.records[slot as usize].affinity,
-        ) && let Some(m) = self.mirrors.get_mut(node)
+        let node = self.leases[l as usize].node;
+        if let Some(aff) = &self.records[slot as usize].affinity
+            && let Some(m) = self
+                .nodes
+                .get_mut(node as usize)
+                .and_then(|n| n.mirror.as_mut())
         {
             for (&h, &s) in aff.hashes.iter().zip(&aff.sizes) {
                 if s == 0 {
@@ -811,37 +719,30 @@ impl PartitionState {
         self.refresh_key(k, now);
     }
 
-    fn dispatch(&mut self, slot: u32, c: u32, now: u64) -> Delivered {
+    fn dispatch(&mut self, slot: u32, node: u32, now: u64) -> Delivered {
         self.deque_unlink(slot);
         let l = self.free_leases.pop().unwrap_or_else(|| {
             self.leases.push(Lease {
                 slot: 0,
-                consumer: 0,
+                node: NIL,
                 dispatched_ms: 0,
                 deadline_ms: 0,
-                c_prev: NIL,
-                c_next: NIL,
                 d_prev: NIL,
                 d_next: NIL,
             });
             (self.leases.len() - 1) as u32
         });
-        let head = self.consumers[c as usize].leases;
         self.leases[l as usize] = Lease {
             slot,
-            consumer: c,
+            node,
             dispatched_ms: now,
             deadline_ms: now + self.cfg.lease_ms,
-            c_prev: NIL,
-            c_next: head,
             d_prev: self.newest,
             d_next: NIL,
         };
-        if head != NIL {
-            self.leases[head as usize].c_prev = l;
+        if node != NIL {
+            self.nodes[node as usize].in_flight += 1;
         }
-        self.consumers[c as usize].leases = l;
-        self.consumers[c as usize].in_flight += 1;
         if self.newest == NIL {
             self.oldest = l
         } else {
@@ -861,10 +762,11 @@ impl PartitionState {
         key.in_flight += 1;
         self.refresh_key(k, now);
 
-        if let (Some(node), Some(aff)) = (
-            &self.consumers[c as usize].node,
-            &self.records[slot as usize].affinity,
-        ) && let Some(m) = self.mirrors.get_mut(node)
+        if let Some(aff) = &self.records[slot as usize].affinity
+            && let Some(m) = self
+                .nodes
+                .get_mut(node as usize)
+                .and_then(|n| n.mirror.as_mut())
         {
             // What the node already holds, or is fetching, before this delivery announces it.
             let (mut local, mut total) = (0.0, 0.0);
@@ -902,12 +804,12 @@ impl PartitionState {
 
     // ---------------------------------------------------------------- selection
 
-    fn select_candidate(&self, k: u32, prio: usize, c: u32, budget: &mut u32) -> u32 {
+    fn select_candidate(&self, k: u32, prio: usize, node: u32, budget: &mut u32) -> u32 {
         let head = self.keys[k as usize].deques[prio].head;
-        let mirror = match &self.consumers[c as usize].node {
-            Some(n) => self.mirrors.get(n),
-            None => None,
-        };
+        let mirror = self
+            .nodes
+            .get(node as usize)
+            .and_then(|n| n.mirror.as_ref());
         let Some(m) = mirror.filter(|m| !m.is_empty() && *budget > 0) else {
             return head;
         };
@@ -947,7 +849,7 @@ impl PartitionState {
     }
 
     /// Deficit round robin with a persistent cursor.
-    fn select(&mut self, c: u32, max: usize, now: u64) -> Vec<Delivered> {
+    fn select(&mut self, node: u32, max: usize, now: u64) -> Vec<Delivered> {
         let mut out = Vec::new();
         let mut budget = self.cfg.probe_budget;
         while out.len() < max && self.cursor != NIL {
@@ -964,41 +866,28 @@ impl PartitionState {
             }
             // Strict priority inside the key: highest non-empty level.
             let prio = (15 - key.levels.leading_zeros()) as usize;
-            let slot = self.select_candidate(k, prio, c, &mut budget);
+            let slot = self.select_candidate(k, prio, node, &mut budget);
             if slot != self.keys[k as usize].deques[prio].head {
                 Counters::add(&self.gauges.counters.affinity_reordered, 1);
             }
-            out.push(self.dispatch(slot, c, now));
+            out.push(self.dispatch(slot, node, now));
         }
         out
     }
 
-    pub fn pull(
-        &mut self,
-        c: ConsumerRef,
-        max: usize,
-        now: u64,
-    ) -> Result<Vec<Delivered>, ApiError> {
-        let i = self.consumer(c).ok_or(ApiError::UnknownConsumer)?;
-        self.touch(i, now);
-        Ok(self.select(i, max.clamp(1, self.cfg.max_pull), now))
+    /// Delivers up to `max` messages, bounded by `max_pull`, to the node returned by [`Self::node`].
+    pub fn pull(&mut self, node: u32, max: usize, now: u64) -> Vec<Delivered> {
+        self.select(node, max.clamp(1, self.cfg.max_pull), now)
     }
 
-    pub fn add_waiter(
-        &mut self,
-        consumer: ConsumerRef,
-        max: usize,
-        wait_ms: u64,
-        now: u64,
-        reply: PullReply,
-    ) {
+    pub fn add_waiter(&mut self, node: u32, max: usize, wait_ms: u64, now: u64, reply: PullReply) {
         if self.shutting_down {
-            let _ = reply.send(Ok(Vec::new()));
+            let _ = reply.send(Vec::new());
             return;
         }
         let deadline_ms = now + wait_ms.min(self.cfg.max_wait_ms);
         let waiter = Waiter {
-            consumer,
+            node,
             max: max.clamp(1, self.cfg.max_pull),
             reply,
         };
@@ -1012,7 +901,7 @@ impl PartitionState {
         self.cursor != NIL && !self.waiters.is_empty()
     }
 
-    /// Serves sleeping consumers while messages are eligible, at most `limit` of them
+    /// Serves sleeping pulls while messages are eligible, at most `limit` of them
     /// per call; the rest is served on the next drain, never dropped.
     pub fn serve_waiters(&mut self, now: u64) {
         let mut served = 0;
@@ -1023,14 +912,9 @@ impl PartitionState {
             if w.reply.is_closed() {
                 continue;
             }
-            let Some(i) = self.consumer(w.consumer) else {
-                let _ = w.reply.send(Err(ApiError::UnknownConsumer));
-                continue;
-            };
-            self.touch(i, now);
-            let got = self.select(i, w.max, now);
+            let got = self.select(w.node, w.max, now);
             served += 1;
-            if let Err(Ok(back)) = w.reply.send(Ok(got)) {
+            if let Err(back) = w.reply.send(got) {
                 self.undo_delivery(back, now);
             }
         }
@@ -1066,28 +950,19 @@ impl PartitionState {
         (r.state == SlotState::InFlight && r.generation == t.generation).then_some(t.slot)
     }
 
-    fn touch_ref(&mut self, c: Option<ConsumerRef>, now: u64) {
-        if let Some(i) = c.and_then(|c| self.consumer(c)) {
-            self.touch(i, now);
-        }
-    }
-
-    pub fn ack(
-        &mut self,
-        c: Option<ConsumerRef>,
-        items: Vec<(Token, Option<Outputs>)>,
-        now: u64,
-    ) -> (u32, u32) {
-        self.touch_ref(c, now);
+    pub fn ack(&mut self, items: Vec<(Token, Option<Outputs>)>, now: u64) -> (u32, u32) {
         let (mut applied, mut ignored) = (0, 0);
         for (t, outputs) in items {
             let Some(slot) = self.in_flight_slot(&t) else {
                 ignored += 1;
                 continue;
             };
-            let holder = self.leases[self.records[slot as usize].lease as usize].consumer;
-            if let (Some(o), Some(node)) = (outputs, self.consumers[holder as usize].node.clone())
-                && let Some(m) = self.mirrors.get_mut(&node)
+            let node = self.leases[self.records[slot as usize].lease as usize].node;
+            if let Some(o) = outputs
+                && let Some(m) = self
+                    .nodes
+                    .get_mut(node as usize)
+                    .and_then(|n| n.mirror.as_mut())
             {
                 for (&h, &s) in o.hashes.iter().zip(&o.sizes) {
                     if s == 0 {
@@ -1105,13 +980,7 @@ impl PartitionState {
         (applied, ignored)
     }
 
-    pub fn nack(
-        &mut self,
-        c: Option<ConsumerRef>,
-        items: Vec<(Token, NackPolicy)>,
-        now: u64,
-    ) -> (u32, u32) {
-        self.touch_ref(c, now);
+    pub fn nack(&mut self, items: Vec<(Token, NackPolicy)>, now: u64) -> (u32, u32) {
         let (mut applied, mut ignored) = (0, 0);
         for (t, policy) in items {
             let Some(slot) = self.in_flight_slot(&t) else {
@@ -1163,7 +1032,7 @@ impl PartitionState {
         // Waits that ran out are answered empty; the other sleepers are not visited.
         let before = self.waiters.len();
         self.waiters.expire(now, |w| {
-            let _ = w.reply.send(Ok(Vec::new()));
+            let _ = w.reply.send(Vec::new());
         });
         if self.waiters.len() != before {
             self.gauges
@@ -1190,13 +1059,6 @@ impl PartitionState {
 
     /// Scans without sorted deadlines, run once per [`SWEEP_MS`].
     fn sweep(&mut self, now: u64) {
-        // Consumers silent for the whole registration period are forgotten.
-        for i in 0..self.consumers.len() as u32 {
-            let x = &self.consumers[i as usize];
-            if x.alive && x.registration_deadline_ms <= now {
-                self.drop_consumer(i, now, NackPolicy::Backoff);
-            }
-        }
         // Key retention.
         let retention = self.cfg.key_retention_ms;
         for k in 0..self.keys.len() as u32 {
@@ -1209,16 +1071,13 @@ impl PartitionState {
                 self.release_key(k);
             }
         }
-        // Forgotten nodes.
+        // Nodes that stopped pulling lose their mirror, once nothing of theirs is in flight.
         let forget = self.cfg.node_forget_ms;
-        let used: std::collections::HashSet<&str> = self
-            .consumers
-            .iter()
-            .filter(|c| c.alive)
-            .filter_map(|c| c.node.as_deref())
-            .collect();
-        self.mirrors
-            .retain(|n, m| used.contains(n.as_ref()) || m.last_used_ms + forget > now);
+        for n in &mut self.nodes {
+            if n.in_flight == 0 && n.last_used_ms + forget <= now {
+                n.mirror = None;
+            }
+        }
         self.update_gauges();
     }
 
@@ -1228,17 +1087,22 @@ impl PartitionState {
         self.gauges.ready.store(ready, Ordering::Relaxed);
         self.gauges.delayed.store(delayed, Ordering::Relaxed);
         self.gauges.held.store(self.held, Ordering::Relaxed);
-        let entries: usize = self.mirrors.values().map(|m| m.len()).sum();
+        let entries: usize = self
+            .nodes
+            .iter()
+            .filter_map(|n| n.mirror.as_ref())
+            .map(|m| m.len())
+            .sum();
         self.gauges
             .mirror_entries
             .store(entries as u64, Ordering::Relaxed);
     }
 
-    /// Clean stop: every sleeping consumer gets an empty answer.
+    /// Clean stop: every sleeping pull gets an empty answer.
     pub fn shutdown(&mut self) {
         self.shutting_down = true;
         self.waiters.drain(|w| {
-            let _ = w.reply.send(Ok(Vec::new()));
+            let _ = w.reply.send(Vec::new());
         });
     }
 
@@ -1281,7 +1145,6 @@ impl PartitionState {
                 .filter_map(|k| self.oldest_ready(k))
                 .min()
                 .map_or(0, |t| now.saturating_sub(t)),
-            consumers: self.consumers.iter().filter(|c| c.alive).count() as u64,
             waiters: self.waiters.len() as u64,
             keys: Vec::new(),
         };
@@ -1307,18 +1170,10 @@ impl PartitionState {
     fn lease_info(&self, l: u32, now: u64) -> LeaseInfo {
         let x = &self.leases[l as usize];
         let r = &self.records[x.slot as usize];
-        let c = &self.consumers[x.consumer as usize];
         LeaseInfo {
             token: self.token(x.slot).encode(),
             task_id: r.task_id.to_string(),
-            consumer_id: ConsumerRef {
-                epoch: self.epoch,
-                partition: self.index,
-                index: x.consumer,
-                generation: c.generation,
-            }
-            .encode(),
-            node_id: c.node.as_deref().map(str::to_string),
+            node_id: self.nodes.get(x.node as usize).map(|n| n.name.to_string()),
             dispatched_age_ms: now.saturating_sub(x.dispatched_ms),
             lease_expires_in_ms: x.deadline_ms.saturating_sub(now),
             attempts: r.attempts,
@@ -1359,7 +1214,6 @@ impl PartitionState {
                 Inspection::InFlight {
                     task_id: i.task_id,
                     partition: self.name.clone(),
-                    consumer_id: i.consumer_id,
                     node_id: i.node_id,
                     dispatched_age_ms: i.dispatched_age_ms,
                     attempts: i.attempts,
@@ -1372,6 +1226,12 @@ impl PartitionState {
     #[cfg(test)]
     pub fn held_for_tests(&self) -> (u64, u64) {
         (self.held, self.blocks)
+    }
+
+    /// Entries of the mirror of a node, `None` once it has been forgotten.
+    #[cfg(test)]
+    pub fn node_mirror_len_for_tests(&self, node: u32) -> Option<usize> {
+        self.nodes[node as usize].mirror.as_ref().map(|m| m.len())
     }
 
     // ---------------------------------------------------------------- invariants
@@ -1451,12 +1311,13 @@ impl PartitionState {
             "at most one spare block"
         );
         let mut l = self.oldest;
-        let mut n = 0;
+        let (mut n, mut with_node) = (0, 0u64);
         while l != NIL {
             let x = &self.leases[l as usize];
             assert_eq!(self.records[x.slot as usize].lease, l);
             assert_eq!(self.records[x.slot as usize].state, SlotState::InFlight);
             n += 1;
+            with_node += u64::from(x.node != NIL);
             l = x.d_next;
         }
         assert_eq!(n, flight);
@@ -1465,13 +1326,8 @@ impl PartitionState {
             flight,
             "one wheel entry per lease"
         );
-        let per_consumer: u64 = self
-            .consumers
-            .iter()
-            .filter(|c| c.alive)
-            .map(|c| u64::from(c.in_flight))
-            .sum();
-        assert_eq!(per_consumer, flight);
+        let per_node: u64 = self.nodes.iter().map(|n| u64::from(n.in_flight)).sum();
+        assert_eq!(per_node, with_node);
         self.waiters.check();
     }
 }

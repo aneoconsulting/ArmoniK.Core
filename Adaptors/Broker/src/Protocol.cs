@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 namespace ArmoniK.Core.Adapters.Broker;
 
 /// <summary>
@@ -28,17 +30,12 @@ internal static class Protocol
   public const int MaxPriority = 16;
 
   /// <summary>
-  ///   Largest pull allowed by default, used until the server limits are read (§6.3).
+  ///   First delay of the exponential back-off on retryable failures (§5).
   /// </summary>
-  public const int DefaultMaxPull = 64;
+  public static readonly TimeSpan BackoffMin = TimeSpan.FromMilliseconds(100);
 
   /// <summary>
-  ///   Relative jitter of the back-off: each delay is drawn uniformly within ±50 % (§5).
+  ///   Largest delay of the exponential back-off on retryable failures (§5).
   /// </summary>
-  public const double BackoffJitter = 0.5;
-
-  /// <summary>
-  ///   Number of doublings after which the back-off stops growing before its maximum applies.
-  /// </summary>
-  public const int BackoffMaxDoublings = 10;
+  public static readonly TimeSpan BackoffMax = TimeSpan.FromSeconds(10);
 }

@@ -68,55 +68,15 @@ public class Broker
   public TimeSpan PullWait { get; set; } = TimeSpan.FromSeconds(10);
 
   /// <summary>
-  ///   Period of the lease renewal of a consumer. Must stay well below the server lease (30 s by default).
-  /// </summary>
-  public TimeSpan RenewPeriod { get; set; } = TimeSpan.FromSeconds(10);
-
-  /// <summary>
   ///   How long retryable failures (backpressure, overload, restart, network) are retried before an
   ///   operation fails. Failures are absorbed here so that they do not consume task retries in Core.
   /// </summary>
   public TimeSpan MaxRetryDuration { get; set; } = TimeSpan.FromMinutes(5);
 
   /// <summary>
-  ///   Timeout of an enqueue, registration, acknowledgement or negative acknowledgement request.
+  ///   Timeout of a request; a pull is given it beyond <see cref="PullWait" />.
   /// </summary>
   public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds(30);
-
-  /// <summary>
-  ///   Timeout of a lease renewal request; it must stay well below the server lease.
-  /// </summary>
-  public TimeSpan RenewTimeout { get; set; } = TimeSpan.FromSeconds(10);
-
-  /// <summary>
-  ///   Timeout of the requests reading the server limits and its health.
-  /// </summary>
-  public TimeSpan ProbeTimeout { get; set; } = TimeSpan.FromSeconds(5);
-
-  /// <summary>
-  ///   Time given to a pull beyond <see cref="PullWait" /> before it is abandoned.
-  /// </summary>
-  public TimeSpan PullTimeoutMargin { get; set; } = TimeSpan.FromSeconds(10);
-
-  /// <summary>
-  ///   First delay of the exponential back-off on retryable failures (protocol §5).
-  /// </summary>
-  public TimeSpan BackoffMin { get; set; } = TimeSpan.FromMilliseconds(100);
-
-  /// <summary>
-  ///   Largest delay of the exponential back-off on retryable failures (protocol §5).
-  /// </summary>
-  public TimeSpan BackoffMax { get; set; } = TimeSpan.FromSeconds(10);
-
-  /// <summary>
-  ///   Period of the HTTP/2 PING frames keeping idle connections alive through firewalls and NAT.
-  /// </summary>
-  public TimeSpan KeepAlivePingPeriod { get; set; } = TimeSpan.FromSeconds(30);
-
-  /// <summary>
-  ///   Timeout of a TCP connection establishment.
-  /// </summary>
-  public TimeSpan ConnectTimeout { get; set; } = TimeSpan.FromSeconds(10);
 
   /// <summary>
   ///   Largest enqueue batch sent in one request. The limit the server returns (<c>GET /v1/limits</c>,

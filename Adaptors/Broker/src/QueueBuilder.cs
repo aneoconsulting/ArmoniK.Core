@@ -16,8 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils;
 
 using JetBrains.Annotations;
 
@@ -33,6 +37,16 @@ namespace ArmoniK.Core.Adapters.Broker;
 [PublicAPI]
 public class QueueBuilder : IDependencyInjectionBuildable
 {
+  /// <summary>
+  ///   Period of the HTTP/2 PING frames keeping idle connections alive through firewalls and NAT.
+  /// </summary>
+  private static readonly TimeSpan KeepAlivePingPeriod = TimeSpan.FromSeconds(30);
+
+  /// <summary>
+  ///   Timeout of a TCP connection establishment.
+  /// </summary>
+  private static readonly TimeSpan ConnectTimeout = TimeSpan.FromSeconds(10);
+
   /// <inheritdoc />
   public void Build(IServiceCollection   serviceCollection,
                     ConfigurationManager configuration,
@@ -46,9 +60,51 @@ public class QueueBuilder : IDependencyInjectionBuildable
     }
 
     serviceCollection.AddSingleton(options);
-    serviceCollection.AddSingleton(sp => new BrokerClient(options,
-                                                             sp.GetRequiredService<ILogger<BrokerClient>>()));
+    // Request logging is removed: the Pollster long polls in a loop, which would log several lines per second at Information.
+    serviceCollection.AddHttpClient(BrokerClient.HttpClientName,
+                                    client =>
+                                    {
+                                      client.BaseAddress = new Uri(options.Endpoint.TrimEnd('/') + "/");
+                                      client.Timeout     = Timeout.InfiniteTimeSpan;
+                                    })
+                     .ConfigurePrimaryHttpMessageHandler(sp => CreateHandler(options,
+                                                                             sp.GetRequiredService<ILogger<BrokerClient>>()))
+                     .RemoveAllLoggers();
+    serviceCollection.AddSingleton<BrokerClient>();
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
     serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
+  }
+
+  private static SocketsHttpHandler CreateHandler(Broker  options,
+                                                  ILogger logger)
+  {
+    var handler = new SocketsHttpHandler
+                  {
+                    EnableMultipleHttp2Connections = true,
+                    KeepAlivePingDelay             = KeepAlivePingPeriod,
+                    KeepAlivePingTimeout           = KeepAlivePingPeriod,
+                    KeepAlivePingPolicy            = HttpKeepAlivePingPolicy.Always,
+                    ConnectTimeout                 = ConnectTimeout,
+                  };
+
+    if (!string.IsNullOrEmpty(options.ClientCertificateFile))
+    {
+      handler.SslOptions.ClientCertificates = new X509CertificateCollection
+                                              {
+                                                X509Certificate2.CreateFromPemFile(options.ClientCertificateFile,
+                                                                                   string.IsNullOrEmpty(options.ClientKeyFile)
+                                                                                     ? null
+                                                                                     : options.ClientKeyFile),
+                                              };
+    }
+
+    if (!string.IsNullOrEmpty(options.CaFile))
+    {
+      handler.SslOptions.RemoteCertificateValidationCallback = CertificateValidator.CreateCallback(options.CaFile,
+                                                                                                  options.AllowHostMismatch,
+                                                                                                  logger);
+    }
+
+    return handler;
   }
 }

@@ -31,11 +31,10 @@ pub struct Mirror {
     capacity: usize,
     /// Fetch cost pivot of the node, in bytes (protocol E.2).
     pub pivot: f64,
-    pub last_used_ms: u64,
 }
 
 impl Mirror {
-    pub fn new(capacity: usize, pivot: f64, now: u64) -> Self {
+    pub fn new(capacity: usize, pivot: f64) -> Self {
         Mirror {
             index: Map::default(),
             entries: Vec::new(),
@@ -44,7 +43,6 @@ impl Mirror {
             tail: NIL,
             capacity: capacity.max(1),
             pivot,
-            last_used_ms: now,
         }
     }
 
@@ -164,7 +162,7 @@ mod tests {
 
     #[test]
     fn lru_eviction() {
-        let mut m = Mirror::new(2, 0.0, 0);
+        let mut m = Mirror::new(2, 0.0);
         m.insert(1);
         m.insert(2);
         m.insert(1); // 1 becomes most recent
@@ -175,7 +173,7 @@ mod tests {
 
     #[test]
     fn anticipated_entries_are_withdrawn() {
-        let mut m = Mirror::new(4, 0.0, 0);
+        let mut m = Mirror::new(4, 0.0);
         m.anticipate(1);
         m.anticipate(1);
         m.withdraw(1);
