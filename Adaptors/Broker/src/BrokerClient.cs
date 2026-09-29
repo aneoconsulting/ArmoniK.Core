@@ -1,17 +1,17 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-//
+// 
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-//
+// 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-//
+// 
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
@@ -29,40 +29,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
-using Polly;
-using Polly.Retry;
-
 namespace ArmoniK.Core.Adapters.Broker;
-
-/// <summary>
-///   Error returned by the broker, following protocol §4.
-/// </summary>
-public sealed class BrokerException : Exception
-{
-  internal BrokerException(HttpStatusCode status,
-                           string         type,
-                           TimeSpan?      retryAfter,
-                           string?        detail)
-    : base($"Broker answered {(int)status} {type}: {detail}")
-  {
-    Status     = status;
-    Type       = type;
-    RetryAfter = retryAfter;
-  }
-
-  /// <summary>HTTP status</summary>
-  public HttpStatusCode Status { get; }
-
-  /// <summary>Problem type, without the URN prefix</summary>
-  public string Type { get; }
-
-  /// <summary>Whether the protocol allows a retry: only 429 and 503 do (§4)</summary>
-  public bool Retryable
-    => Status is HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable;
-
-  /// <summary>Delay the server asked for before a retry (<c>Retry-After</c>)</summary>
-  public TimeSpan? RetryAfter { get; }
-}
 
 internal sealed record PulledMessage(string Token,
                                      string TaskId,
@@ -70,7 +37,7 @@ internal sealed record PulledMessage(string Token,
 
 /// <summary>
 ///   REST client of the broker (protocol v1). Stateless towards the server: it holds the tokens it
-///   received and renews them all in one call. Retryable failures are absorbed with back-off and jitter.
+///   received and renews them all in one call. Transient failures are retried by <see cref="RetryHandler" />.
 /// </summary>
 internal sealed class BrokerClient : IAsyncDisposable
 {
@@ -78,8 +45,6 @@ internal sealed class BrokerClient : IAsyncDisposable
   ///   Name of the <see cref="HttpClient" /> registered for the broker.
   /// </summary>
   public const string HttpClientName = "ArmoniK.Broker";
-
-  private const string UrnPrefix = "urn:armonik:broker:";
 
   private static readonly JsonSerializerOptions Json = new()
                                                        {
@@ -93,7 +58,6 @@ internal sealed class BrokerClient : IAsyncDisposable
   private readonly ILogger                            logger_;
   private readonly NodeBody?                          node_;
   private readonly Broker                             options_;
-  private readonly ResiliencePipeline                 retry_;
   private readonly Version                            version_;
   private          long                               epoch_ = -1;
   private          long                               renewPeriodMs_;
@@ -117,33 +81,6 @@ internal sealed class BrokerClient : IAsyncDisposable
               ? null
               : new NodeBody(nodeId,
                              options.CacheCapacityBytes);
-
-    // Retryable failures are retried until MaxRetryDuration, waiting what the server asks (Retry-After) when it does (protocol §5).
-    retry_ = new ResiliencePipelineBuilder().AddTimeout(options.MaxRetryDuration)
-                                            .AddRetry(new RetryStrategyOptions
-                                                      {
-                                                        ShouldHandle = args => ValueTask.FromResult(!args.Context.CancellationToken.IsCancellationRequested &&
-                                                                                                    args.Outcome.Exception is { } e && IsRetryable(e)),
-                                                        MaxRetryAttempts = int.MaxValue,
-                                                        BackoffType      = DelayBackoffType.Exponential,
-                                                        UseJitter        = true,
-                                                        Delay            = Protocol.BackoffMin,
-                                                        MaxDelay         = Protocol.BackoffMax,
-                                                        DelayGenerator = args => ValueTask.FromResult(args.Outcome.Exception is BrokerException
-                                                                                                                                  {
-                                                                                                                                    RetryAfter: { } after,
-                                                                                                                                  }
-                                                                                                        ? after
-                                                                                                        : (TimeSpan?)null),
-                                                        OnRetry = args =>
-                                                                  {
-                                                                    logger_.LogWarning(args.Outcome.Exception,
-                                                                                       "Broker request failed, retrying in {Delay}",
-                                                                                       args.RetryDelay);
-                                                                    return ValueTask.CompletedTask;
-                                                                  },
-                                                      })
-                                            .Build();
   }
 
   /// <summary>
@@ -160,16 +97,22 @@ internal sealed class BrokerClient : IAsyncDisposable
     return ValueTask.CompletedTask;
   }
 
-  private async Task<(HttpStatusCode Status, T? Body)> SendAsync<T>(HttpMethod        method,
-                                                                    string            path,
-                                                                    object            body,
-                                                                    TimeSpan          timeout,
-                                                                    CancellationToken cancellationToken)
+  /// <summary>
+  ///   Posts a request and reads its answer, <c>null</c> when it has none. An error status throws an
+  ///   <see cref="HttpRequestException" /> carrying it.
+  /// </summary>
+  /// <param name="path">Route, relative to the endpoint</param>
+  /// <param name="body">Request body</param>
+  /// <param name="once">Timeout of a request sent once; <c>null</c> to retry it (<see cref="RetryHandler" />)</param>
+  /// <param name="cancellationToken">Token to cancel the request</param>
+  private async Task<T?> PostAsync<T>(string            path,
+                                      object            body,
+                                      TimeSpan?         once,
+                                      CancellationToken cancellationToken)
     where T : class
   {
     using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    cts.CancelAfter(timeout);
-    using var request = new HttpRequestMessage(method,
+    using var request = new HttpRequestMessage(HttpMethod.Post,
                                                path)
                         {
                           Version       = version_,
@@ -178,48 +121,24 @@ internal sealed class BrokerClient : IAsyncDisposable
                                                        body.GetType(),
                                                        options: Json),
                         };
+    if (once is { } timeout)
+    {
+      cts.CancelAfter(timeout);
+      request.Options.Set(RetryHandler.Disabled,
+                          true);
+    }
+
     using var response = await httpClientFactory_.CreateClient(HttpClientName)
                                                  .SendAsync(request,
                                                             cts.Token)
                                                  .ConfigureAwait(false);
     ObserveEpoch(response);
-    var raw = await response.Content.ReadAsByteArrayAsync(cts.Token)
-                            .ConfigureAwait(false);
-
-    if (response.IsSuccessStatusCode)
-    {
-      return (response.StatusCode, raw.Length > 0
-                                     ? JsonSerializer.Deserialize<T>(raw,
-                                                                     Json)
-                                     : null);
-    }
-
-    ProblemBody? problem = null;
-    try
-    {
-      problem = raw.Length > 0
-                  ? JsonSerializer.Deserialize<ProblemBody>(raw,
-                                                            Json)
-                  : null;
-    }
-    catch (JsonException)
-    {
-      // Non JSON error body (proxy, load balancer): the status alone is used.
-    }
-
-    var type = problem?.Type ?? "";
-    throw new BrokerException(response.StatusCode,
-                              type.StartsWith(UrnPrefix,
-                                              StringComparison.Ordinal)
-                                ? type[UrnPrefix.Length..]
-                                : type,
-                              response.Headers.RetryAfter switch
-                              {
-                                { Delta: { } delta } => delta,
-                                { Date: { } date }   => date - DateTimeOffset.UtcNow,
-                                _                    => null,
-                              },
-                              problem?.Detail ?? response.ReasonPhrase);
+    response.EnsureSuccessStatusCode();
+    return response.StatusCode == HttpStatusCode.NoContent
+             ? null
+             : await response.Content.ReadFromJsonAsync<T>(Json,
+                                                           cts.Token)
+                             .ConfigureAwait(false);
   }
 
   private void ObserveEpoch(HttpResponseMessage response)
@@ -242,39 +161,17 @@ internal sealed class BrokerClient : IAsyncDisposable
     }
   }
 
-  private static bool IsRetryable(Exception e)
-    => e switch
-       {
-         BrokerException s     => s.Retryable,
-         HttpRequestException  => true,
-         TaskCanceledException => true,
-         System.IO.IOException => true,
-         _                     => false,
-       };
-
-  /// <summary>
-  ///   Runs an operation, retrying retryable failures with back-off until <see cref="Broker.MaxRetryDuration" />.
-  /// </summary>
-  private async Task RetryAsync(Func<CancellationToken, Task> operation,
-                                CancellationToken             cancellationToken)
-    => await retry_.ExecuteAsync(async ct => await operation(ct)
-                                               .ConfigureAwait(false),
-                                 cancellationToken)
-                   .ConfigureAwait(false);
-
   public Task EnqueueAsync(string                     partition,
                            string                     key,
                            int                        priority,
                            IReadOnlyList<EnqueueItem> items,
                            CancellationToken          cancellationToken)
-    => RetryAsync(ct => SendAsync<EnqueueResponse>(HttpMethod.Post,
-                                                   $"v1/partitions/{Uri.EscapeDataString(partition)}/messages",
-                                                   new EnqueueBody(key,
-                                                                   priority,
-                                                                   items),
-                                                   options_.RequestTimeout,
-                                                   ct),
-                  cancellationToken);
+    => PostAsync<object>($"v1/partitions/{Uri.EscapeDataString(partition)}/messages",
+                         new EnqueueBody(key,
+                                         priority,
+                                         items),
+                         null,
+                         cancellationToken);
 
   /// <summary>
   ///   Long polls messages. Never throws for a broker failure: it logs, waits and returns nothing,
@@ -286,15 +183,14 @@ internal sealed class BrokerClient : IAsyncDisposable
   {
     try
     {
-      var (_, body) = await SendAsync<PullResponse>(HttpMethod.Post,
-                                                    $"v1/partitions/{Uri.EscapeDataString(partition)}/pull",
-                                                    new PullBody(Math.Max(1,
-                                                                          max),
-                                                                 (long)options_.PullWait.TotalMilliseconds,
-                                                                 node_),
-                                                    options_.PullWait + options_.RequestTimeout,
-                                                    cancellationToken)
-                        .ConfigureAwait(false);
+      var body = await PostAsync<PullResponse>($"v1/partitions/{Uri.EscapeDataString(partition)}/pull",
+                                               new PullBody(Math.Max(1,
+                                                                     max),
+                                                            (long)options_.PullWait.TotalMilliseconds,
+                                                            node_),
+                                               options_.PullWait + options_.RequestTimeout,
+                                               cancellationToken)
+                   .ConfigureAwait(false);
       if (body is null)
       {
         return [];
@@ -318,7 +214,7 @@ internal sealed class BrokerClient : IAsyncDisposable
                          "Broker pull failed on partition {PartitionId}, retrying later",
                          partition);
       // Jittered, so that the agents do not all come back at once when the broker restarts.
-      await Task.Delay((e as BrokerException)?.RetryAfter ?? TimeSpan.FromSeconds(0.5 + Random.Shared.NextDouble()),
+      await Task.Delay(TimeSpan.FromSeconds(0.5 + Random.Shared.NextDouble()),
                        cancellationToken)
                 .ConfigureAwait(false);
       return [];
@@ -326,7 +222,7 @@ internal sealed class BrokerClient : IAsyncDisposable
   }
 
   /// <summary>
-  ///   Renews well within the server lease: a renewal lost in a row still leaves time for the next one.
+  ///   Renews at a third of the lease: a renewal lost in a row still leaves time for the next one.
   ///   The loop starts with the first message received.
   /// </summary>
   private void StartRenewing(long leaseMs)
@@ -356,22 +252,13 @@ internal sealed class BrokerClient : IAsyncDisposable
           continue;
         }
 
-        var (_, body) = await SendAsync<RenewResponse>(HttpMethod.Post,
-                                                       "v1/renew",
-                                                       new RenewBody(held_.Keys.ToList()),
-                                                       period,
-                                                       token)
-                          .ConfigureAwait(false);
-        if (body is null)
-        {
-          continue;
-        }
-
-        Volatile.Write(ref renewPeriodMs_,
-                       Math.Max(1,
-                                body.LeaseMs / 3));
+        var body = await PostAsync<RenewResponse>("v1/renew",
+                                                  new RenewBody(held_.Keys.ToList()),
+                                                  period,
+                                                  token)
+                     .ConfigureAwait(false);
         // Tokens that designate no current distribution any more: stop renewing them.
-        foreach (var t in body.Unknown)
+        foreach (var t in body?.Unknown ?? [])
         {
           if (held_.TryRemove(t,
                               out _))
@@ -402,17 +289,15 @@ internal sealed class BrokerClient : IAsyncDisposable
   {
     held_.TryRemove(token,
                     out _);
-    return RetryAsync(ct => SendAsync<SettleResponse>(HttpMethod.Post,
-                                                      "v1/ack",
-                                                      new AckBody([
-                                                                    new AckItem(token,
-                                                                                options_.Affinity
-                                                                                  ? outputs
-                                                                                  : null),
-                                                                  ]),
-                                                      options_.RequestTimeout,
-                                                      ct),
-                      disposed_.Token);
+    return PostAsync<object>("v1/ack",
+                             new AckBody([
+                                           new AckItem(token,
+                                                       options_.Affinity
+                                                         ? outputs
+                                                         : null),
+                                         ]),
+                             null,
+                             disposed_.Token);
   }
 
   /// <summary>
@@ -422,12 +307,10 @@ internal sealed class BrokerClient : IAsyncDisposable
   {
     held_.TryRemove(token,
                     out _);
-    return RetryAsync(ct => SendAsync<SettleResponse>(HttpMethod.Post,
-                                                      "v1/nack",
-                                                      new NackBody([new NackItem(token, "requeue")]),
-                                                      options_.RequestTimeout,
-                                                      ct),
-                      disposed_.Token);
+    return PostAsync<object>("v1/nack",
+                             new NackBody([new NackItem(token, "requeue")]),
+                             null,
+                             disposed_.Token);
   }
 
   // ------------------------------------------------------------------ wire types
@@ -447,8 +330,6 @@ internal sealed class BrokerClient : IAsyncDisposable
                                     int                        Priority,
                                     IReadOnlyList<EnqueueItem> Items);
 
-  private sealed record EnqueueResponse(int Accepted);
-
   private sealed record NodeBody(string Id,
                                  long   CacheCapacityBytes);
 
@@ -461,8 +342,7 @@ internal sealed class BrokerClient : IAsyncDisposable
 
   private sealed record RenewBody(IReadOnlyList<string> Tokens);
 
-  private sealed record RenewResponse(long                  LeaseMs,
-                                      IReadOnlyList<string> Unknown);
+  private sealed record RenewResponse(IReadOnlyList<string> Unknown);
 
   private sealed record AckItem(string       Token,
                                 OutputsBody? Outputs);
@@ -473,10 +353,4 @@ internal sealed class BrokerClient : IAsyncDisposable
                                  string Policy);
 
   private sealed record NackBody(IReadOnlyList<NackItem> Items);
-
-  private sealed record SettleResponse(int Applied,
-                                       int Ignored);
-
-  private sealed record ProblemBody(string? Type,
-                                    string? Detail);
 }
