@@ -46,16 +46,15 @@ async fn call(
     (status, v, headers)
 }
 
-async fn register(app: &App, partition: &str) -> String {
+async fn pull(app: &App, partition: &str, body: Value) -> (StatusCode, Value) {
     let (s, v, _) = call(
         app,
         Method::POST,
-        "/v1/consumers",
-        Some(json!({ "partition": partition })),
+        &format!("/v1/partitions/{partition}/pull"),
+        Some(body),
     )
     .await;
-    assert_eq!(s, StatusCode::OK, "{v}");
-    v["consumer_id"].as_str().unwrap().to_string()
+    (s, v)
 }
 
 async fn enqueue(
@@ -79,7 +78,6 @@ async fn enqueue(
 #[tokio::test]
 async fn full_cycle_and_epoch_header() {
     let (app, reg) = app();
-    let c = register(&app, "p").await;
     let (s, v) = enqueue(&app, "p", "session-1", 5, &["t1", "t2"]).await;
     assert_eq!(
         (s, v["accepted"].as_u64(), v["occupancy"].as_str()),
@@ -89,12 +87,13 @@ async fn full_cycle_and_epoch_header() {
     let (s, v, h) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/pull"),
+        "/v1/partitions/p/pull",
         Some(json!({ "max": 2 })),
     )
     .await;
     assert_eq!(s, StatusCode::OK);
     assert_eq!(h["x-broker-epoch"].to_str().unwrap(), reg.epoch.to_string());
+    assert_eq!(v["lease_ms"], reg.cfg.lease_ms, "the pull tells the lease");
     let msgs = v["messages"].as_array().unwrap();
     assert_eq!(msgs.len(), 2);
     let items: Vec<Value> = msgs
@@ -105,7 +104,7 @@ async fn full_cycle_and_epoch_header() {
     let (s, v, _) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/ack"),
+        "/v1/ack",
         Some(json!({ "items": items.clone() })),
     )
     .await;
@@ -117,7 +116,7 @@ async fn full_cycle_and_epoch_header() {
     let (s, v, _) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/renew"),
+        "/v1/renew",
         Some(json!({ "tokens": [items[0]["token"]] })),
     )
     .await;
@@ -125,23 +124,17 @@ async fn full_cycle_and_epoch_header() {
         (s, v["unknown"].as_array().map(Vec::len)),
         (StatusCode::OK, Some(1))
     );
-    let (s, _, _) = call(
-        &app,
-        Method::POST,
-        &format!("/v1/consumers/{c}/renew"),
-        None,
-    )
-    .await;
+    let (s, v, _) = call(&app, Method::POST, "/v1/renew", None).await;
     assert_eq!(
-        s,
-        StatusCode::OK,
-        "an empty renew only keeps the registration alive"
+        (s, v["unknown"].as_array().map(Vec::len)),
+        (StatusCode::OK, Some(0)),
+        "an empty renew renews nothing"
     );
     // Acknowledging again is a silent success.
     let (s, v, _) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/ack"),
+        "/v1/ack",
         Some(json!({ "items": items })),
     )
     .await;
@@ -160,51 +153,44 @@ async fn full_cycle_and_epoch_header() {
 #[tokio::test]
 async fn long_poll_is_woken_by_enqueue() {
     let (app, _) = app();
-    let c = register(&app, "p").await;
     let a2 = app.clone();
-    let uri = format!("/v1/consumers/{c}/pull");
-    let waiting = tokio::spawn(async move {
-        call(
-            &a2,
-            Method::POST,
-            &uri,
-            Some(json!({ "max": 1, "wait_ms": 5000 })),
-        )
-        .await
-    });
+    let waiting =
+        tokio::spawn(async move { pull(&a2, "p", json!({ "max": 1, "wait_ms": 5000 })).await });
     tokio::time::sleep(std::time::Duration::from_millis(100)).await;
     enqueue(&app, "p", "k", 1, &["late"]).await;
-    let (s, v, _) = waiting.await.unwrap();
+    let (s, v) = waiting.await.unwrap();
     assert_eq!(s, StatusCode::OK);
     assert_eq!(v["messages"][0]["task_id"], "late");
 }
 
 #[tokio::test]
-async fn limits_reflect_the_configuration() {
+async fn pull_bounds_max_instead_of_rejecting_it() {
     let mut cfg = Config::for_tests();
     cfg.max_pull = 2;
-    cfg.max_body_bytes = 2048;
-    cfg.lease_ms = 5000;
     let (app, _) = app_with(cfg);
-    let (s, v, _) = call(&app, Method::GET, "/v1/limits", None).await;
-    assert_eq!(s, StatusCode::OK);
-    assert_eq!(v["max_pull"], 2);
-    assert_eq!(v["max_batch_items"], (2048 - 256) / 400);
-    assert_eq!(v["lease_ms"], 5000);
-    assert_eq!(v["max_wait_ms"], 600_000);
+    enqueue(&app, "p", "k", 1, &["a", "b", "c"]).await;
+    let (s, v) = pull(&app, "p", json!({ "max": 100 })).await;
+    assert_eq!(
+        (s, v["messages"].as_array().map(Vec::len)),
+        (StatusCode::OK, Some(2))
+    );
+    let (s, v) = pull(&app, "p", json!({ "max": 0 })).await;
+    assert_eq!(
+        (s, v["type"].as_str()),
+        (
+            StatusCode::BAD_REQUEST,
+            Some("urn:armonik:broker:malformed")
+        )
+    );
+    // Nothing for the client to read beforehand.
+    let (s, _, _) = call(&app, Method::GET, "/v1/limits", None).await;
+    assert_eq!(s, StatusCode::NOT_FOUND);
 }
 
 #[tokio::test]
 async fn long_poll_expires_with_204() {
     let (app, _) = app();
-    let c = register(&app, "p").await;
-    let (s, _, _) = call(
-        &app,
-        Method::POST,
-        &format!("/v1/consumers/{c}/pull"),
-        Some(json!({ "max": 1, "wait_ms": 200 })),
-    )
-    .await;
+    let (s, _) = pull(&app, "p", json!({ "max": 1, "wait_ms": 200 })).await;
     assert_eq!(s, StatusCode::NO_CONTENT);
 }
 
@@ -224,6 +210,9 @@ async fn errors_follow_the_table() {
         (s, v["type"].as_str()),
         (StatusCode::NOT_FOUND, Some("urn:armonik:broker:not-found"))
     );
+    // Consumers are gone from the protocol.
+    let (s, _, _) = call(&app, Method::POST, "/v1/consumers", Some(json!({}))).await;
+    assert_eq!(s, StatusCode::NOT_FOUND);
     let (s, v) = enqueue(&app, "p", "k", 17, &["x"]).await;
     assert_eq!(
         (s, v["type"].as_str()),
@@ -232,41 +221,14 @@ async fn errors_follow_the_table() {
             Some("urn:armonik:broker:invalid-priority")
         )
     );
+    assert!(
+        v.get("retryable").is_none(),
+        "the client decides on the status alone: {v}"
+    );
     let (s, v, _) = call(
         &app,
         Method::POST,
-        "/v1/consumers/c-1-0-0-9/pull",
-        Some(json!({})),
-    )
-    .await;
-    assert_eq!(
-        (s, v["retryable"].as_bool()),
-        (StatusCode::GONE, Some(true))
-    );
-    let (s, _, _) = call(&app, Method::POST, "/v1/consumers/garbage/renew", None).await;
-    assert_eq!(s, StatusCode::GONE);
-    // An identifier of another epoch is unknown, even if everything else matches.
-    let c = register(&app, "p").await;
-    let parts: Vec<&str> = c.split('-').collect();
-    let other = format!(
-        "c-{:x}-{}-{}-{}",
-        u32::from_str_radix(parts[1], 16).unwrap().wrapping_add(1),
-        parts[2],
-        parts[3],
-        parts[4]
-    );
-    let (s, _, _) = call(
-        &app,
-        Method::POST,
-        &format!("/v1/consumers/{other}/renew"),
-        None,
-    )
-    .await;
-    assert_eq!(s, StatusCode::GONE);
-    let (s, v, _) = call(
-        &app,
-        Method::POST,
-        "/v1/consumers/x/ack",
+        "/v1/ack",
         Some(json!({ "items": [{ "token": "!!" }] })),
     )
     .await;
@@ -280,11 +242,13 @@ async fn errors_follow_the_table() {
     let (s, _, _) = call(
         &app,
         Method::POST,
-        "/v1/consumers",
-        Some(json!({ "nope": 1 })),
+        "/v1/renew",
+        Some(json!({ "tokens": ["!!"] })),
     )
     .await;
     assert_eq!(s, StatusCode::BAD_REQUEST);
+    let (s, _) = pull(&app, "p", json!({ "node": { "id": "" } })).await;
+    assert_eq!(s, StatusCode::BAD_REQUEST, "empty node identifier");
 }
 
 #[tokio::test]
@@ -316,8 +280,11 @@ async fn backpressure_rejects_whole_batch() {
         .await
     };
     assert_eq!(
-        (s, v["retryable"].as_bool()),
-        (StatusCode::TOO_MANY_REQUESTS, Some(true))
+        (s, v["type"].as_str()),
+        (
+            StatusCode::TOO_MANY_REQUESTS,
+            Some("urn:armonik:broker:backpressure")
+        )
     );
     assert!(h.contains_key("retry-after"));
     let (_, v, _) = call(&app, Method::GET, "/v1/partitions/p/stats", None).await;
@@ -329,24 +296,58 @@ async fn backpressure_rejects_whole_batch() {
 }
 
 #[tokio::test]
-async fn tokens_of_deleted_partition_are_ignored() {
-    let (app, _) = app();
-    let c = register(&app, "p").await;
-    enqueue(&app, "p", "k", 1, &["t"]).await;
-    let (_, v, _) = call(
+async fn renew_spans_partitions() {
+    let (app, reg) = app();
+    enqueue(&app, "p", "k", 1, &["a"]).await;
+    enqueue(&app, "q", "k", 1, &["b"]).await;
+    let (_, a) = pull(&app, "p", json!({})).await;
+    let (_, b) = pull(&app, "q", json!({})).await;
+    let (ta, tb) = (
+        a["messages"][0]["token"].clone(),
+        b["messages"][0]["token"].clone(),
+    );
+    let renew = |tokens: Value| {
+        let app = app.clone();
+        async move {
+            let (s, v, _) = call(
+                &app,
+                Method::POST,
+                "/v1/renew",
+                Some(json!({ "tokens": tokens })),
+            )
+            .await;
+            assert_eq!(s, StatusCode::OK);
+            v["unknown"].as_array().unwrap().clone()
+        }
+    };
+    assert!(renew(json!([ta, tb])).await.is_empty());
+    call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/pull"),
-        Some(json!({})),
+        "/v1/ack",
+        Some(json!({ "items": [{ "token": ta }] })),
     )
     .await;
+    assert_eq!(renew(json!([ta, tb])).await, vec![ta.clone()]);
+    // A token of another epoch designates nothing current.
+    let mut other = crate::token::Token::decode(tb.as_str().unwrap()).unwrap();
+    other.epoch = reg.epoch.wrapping_add(1);
+    let other = json!(other.encode());
+    assert_eq!(renew(json!([other])).await, vec![other]);
+}
+
+#[tokio::test]
+async fn tokens_of_deleted_partition_are_ignored() {
+    let (app, _) = app();
+    enqueue(&app, "p", "k", 1, &["t"]).await;
+    let (_, v) = pull(&app, "p", json!({})).await;
     let token = v["messages"][0]["token"].clone();
     let (s, _, _) = call(&app, Method::DELETE, "/v1/partitions/p", None).await;
     assert_eq!(s, StatusCode::NO_CONTENT);
     let (s, v, _) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/ack"),
+        "/v1/ack",
         Some(json!({ "items": [{ "token": token }] })),
     )
     .await;
@@ -359,32 +360,31 @@ async fn tokens_of_deleted_partition_are_ignored() {
     )
     .await;
     assert_eq!(v["state"], "stale");
-    // The consumer belonged to the deleted partition.
-    let (s, _, _) = call(
+    let (s, v, _) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/renew"),
-        None,
+        "/v1/renew",
+        Some(json!({ "tokens": [token] })),
     )
     .await;
-    assert_eq!(s, StatusCode::GONE);
+    assert_eq!(
+        (s, v["unknown"].as_array().map(Vec::len)),
+        (StatusCode::OK, Some(1))
+    );
 }
 
 #[tokio::test]
 async fn nack_policies_and_diagnostics() {
     let (app, _) = app();
-    let c = register(&app, "p").await;
     enqueue(&app, "p", "k", 3, &["t"]).await;
-    let (_, v, _) = call(
-        &app,
-        Method::POST,
-        &format!("/v1/consumers/{c}/pull"),
-        Some(json!({})),
-    )
-    .await;
+    let (_, v) = pull(&app, "p", json!({ "node": { "id": "n1" } })).await;
     let token = v["messages"][0]["token"].clone();
     let (_, v, _) = call(&app, Method::GET, "/v1/partitions/p/leases", None).await;
-    assert_eq!(v["leases"][0]["task_id"], "t");
+    assert_eq!(
+        (&v["leases"][0]["task_id"], &v["leases"][0]["node_id"]),
+        (&json!("t"), &json!("n1")),
+        "the node declared by the pull"
+    );
     let (_, v, _) = call(
         &app,
         Method::GET,
@@ -396,7 +396,7 @@ async fn nack_policies_and_diagnostics() {
     let (s, v, _) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{c}/nack"),
+        "/v1/nack",
         Some(json!({ "items": [{ "token": token, "policy": "delay", "delay_ms": 60000 }] })),
     )
     .await;
@@ -416,45 +416,29 @@ async fn nack_policies_and_diagnostics() {
 #[tokio::test]
 async fn direct_pull_and_ack_answer_as_the_router() {
     let (app, reg) = app();
-    let id = register(&app, "p").await;
     let big = json!({ "items": [{ "token": "x".repeat(70_000) }] });
-    for op in ["pull", "ack"] {
-        let uri = format!("/v1/consumers/{id}/{op}");
-        let (s, v, h) = call(&app, Method::POST, &uri, Some(big.clone())).await;
-        assert_eq!(s, StatusCode::PAYLOAD_TOO_LARGE, "{op}: {v}");
+    for uri in ["/v1/partitions/p/pull", "/v1/ack"] {
+        let (s, v, h) = call(&app, Method::POST, uri, Some(big.clone())).await;
+        assert_eq!(s, StatusCode::PAYLOAD_TOO_LARGE, "{uri}: {v}");
         assert_eq!(v["title"], "payload-too-large");
         assert_eq!(h["x-broker-epoch"].to_str().unwrap(), reg.epoch.to_string());
-        let (s, v, _) = call(&app, Method::POST, &uri, Some(json!("not an object"))).await;
-        assert_eq!(s, StatusCode::BAD_REQUEST, "{op}: {v}");
+        let (s, v, _) = call(&app, Method::POST, uri, Some(json!("not an object"))).await;
+        assert_eq!(s, StatusCode::BAD_REQUEST, "{uri}: {v}");
     }
-    let (s, _, _) = call(&app, Method::POST, "/v1/consumers/c-0-0-0-0/pull", None).await;
-    assert_eq!(s, StatusCode::GONE, "unknown consumer");
-    // A percent-encoded identifier goes through the router, which decodes it.
-    let encoded = id.replace('-', "%2D");
-    let (s, _, h) = call(
-        &app,
-        Method::POST,
-        &format!("/v1/consumers/{encoded}/pull"),
-        None,
-    )
-    .await;
+    // A percent-encoded partition goes through the router, which decodes it.
+    let (s, _, h) = call(&app, Method::POST, "/v1/partitions/%70/pull", None).await;
     assert_eq!(s, StatusCode::NO_CONTENT);
     assert!(h.contains_key("x-broker-epoch"));
+    assert!(reg.get("p").is_some(), "decoded to the same partition");
     enqueue(&app, "p", "k", 1, &["t"]).await;
-    let (s, v, h) = call(
-        &app,
-        Method::POST,
-        &format!("/v1/consumers/{id}/pull"),
-        None,
-    )
-    .await;
+    let (s, v, h) = call(&app, Method::POST, "/v1/partitions/p/pull", None).await;
     assert_eq!(s, StatusCode::OK);
     assert_eq!(h["content-type"], "application/json");
     let token = v["messages"][0]["token"].clone();
     let (s, v, _) = call(
         &app,
         Method::POST,
-        &format!("/v1/consumers/{id}/ack"),
+        "/v1/ack",
         Some(json!({ "items": [{ "token": token }] })),
     )
     .await;

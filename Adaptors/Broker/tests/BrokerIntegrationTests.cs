@@ -190,7 +190,6 @@ public class BrokerIntegrationTests
                                         {
                                           ["Broker:Endpoint"]         = $"http://127.0.0.1:{port_}",
                                           ["Broker:PullWait"]         = "00:00:01",
-                                          ["Broker:RenewPeriod"]      = "00:00:01",
                                           ["Broker:MaxRetryDuration"] = "00:00:20",
                                           ["Broker:NodeId"]           = "node-a",
                                           ["Broker:Affinity"]         = "true",
@@ -265,7 +264,8 @@ public class BrokerIntegrationTests
   [Test]
   public async Task ClientFollowsTheServerLimits()
   {
-    // Batches of at most (2048 - 256) / 400 = 4 items and pulls of at most 2 messages.
+    // The server takes batches of at most (2048 - 256) / 400 = 4 items, answering 413 beyond, which the
+    // client splits; and it bounds pulls to 2 messages, whatever the client asks.
     StopServer();
     await provider_!.DisposeAsync();
     await StartServer(new Dictionary<string, string>
@@ -295,37 +295,6 @@ public class BrokerIntegrationTests
       got.AddRange(batch);
     }
 
-    Assert.That(got.Select(h => h.TaskId),
-                Is.EquivalentTo(Enumerable.Range(0,
-                                                 20)
-                                          .Select(i => $"t{i}")));
-    foreach (var h in got)
-    {
-      h.Status = QueueMessageStatus.Processed;
-      await h.DisposeAsync();
-    }
-  }
-
-  [Test]
-  public async Task BatchesAreSplitWhenTheLimitsAreUnknown()
-  {
-    // Limits never read, as when the broker is unreachable at Init: the first batch of 20 exceeds the 4 allowed.
-    StopServer();
-    await provider_!.DisposeAsync();
-    await StartServer(new Dictionary<string, string>
-                      {
-                        ["BROKER_MAX_BODY_BYTES"] = "2048",
-                      });
-    (push_, pull_, provider_) = await BuildAdapter(false);
-
-    await push_.PushMessagesAsync(Enumerable.Range(0,
-                                                   20)
-                                            .Select(i => Message($"t{i}",
-                                                                 "s1")),
-                                  "part");
-    await pull_.Init(CancellationToken.None);
-    var got = await PullAll(20,
-                            40);
     Assert.That(got.Select(h => h.TaskId),
                 Is.EquivalentTo(Enumerable.Range(0,
                                                  20)

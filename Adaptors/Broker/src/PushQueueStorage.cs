@@ -77,9 +77,9 @@ internal class PushQueueStorage : IPushQueueStorage
   }
 
   /// <summary>
-  ///   Sends one batch, split when the server finds it too large (protocol §6.1): its limits may not have been
-  ///   read yet, it may have restarted with smaller ones, or long identifiers may exceed its body size.
-  ///   The server rejects the whole batch in that case, so resending its parts enqueues nothing twice.
+  ///   Sends one batch, split in two when the server finds it too large (protocol §6.1): a smaller server limit,
+  ///   or long identifiers exceeding its body size. The server rejects the whole batch in that case, so resending
+  ///   its parts enqueues nothing twice.
   /// </summary>
   private async Task EnqueueAsync(string                                  partitionId,
                                   string                                  fairnessKey,
@@ -98,10 +98,7 @@ internal class PushQueueStorage : IPushQueueStorage
     }
     catch (BrokerException e) when (e.Status == HttpStatusCode.RequestEntityTooLarge && items.Count > 1)
     {
-      await client_.RefreshLimitsAsync(cancellationToken)
-                   .ConfigureAwait(false);
-      var size = Math.Min(client_.MaxBatchItems,
-                          (items.Count + 1) / 2);
+      var size = (items.Count + 1) / 2;
       logger_.LogDebug("Broker batch of {Count} items too large, splitting it in batches of {Size}",
                        items.Count,
                        size);
@@ -145,14 +142,9 @@ internal class PushQueueStorage : IPushQueueStorage
                          : HealthCheckResult.Unhealthy("Plugin is not yet initialized."));
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
-    if (!isInitialized_)
-    {
-      await client_.RefreshLimitsAsync(cancellationToken)
-                   .ConfigureAwait(false);
-    }
-
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 }

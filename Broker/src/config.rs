@@ -44,8 +44,6 @@ pub struct Config {
 
     #[arg(long, env = "BROKER_LEASE_MS", default_value_t = 30_000)]
     pub lease_ms: u64,
-    #[arg(long, env = "BROKER_REGISTRATION_MS", default_value_t = 7_200_000)]
-    pub registration_ms: u64,
     #[arg(long, env = "BROKER_MAX_WAIT_MS", default_value_t = 600_000)]
     pub max_wait_ms: u64,
     #[arg(long, env = "BROKER_MAX_BODY_BYTES", default_value_t = 65_536)]

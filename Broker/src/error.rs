@@ -13,7 +13,6 @@ pub enum ApiError {
     NotFound,
     InvalidPriority,
     PartitionLimit,
-    UnknownConsumer,
     PayloadTooLarge,
     Backpressure(&'static str),
     Overloaded,
@@ -21,52 +20,40 @@ pub enum ApiError {
 }
 
 impl ApiError {
-    fn parts(self) -> (&'static str, StatusCode, bool, &'static str) {
+    fn parts(self) -> (&'static str, StatusCode, &'static str) {
         use ApiError::*;
         match self {
-            Malformed(d) => ("malformed", StatusCode::BAD_REQUEST, false, d),
+            Malformed(d) => ("malformed", StatusCode::BAD_REQUEST, d),
             UnsupportedVersion => (
                 "unsupported-version",
                 StatusCode::NOT_FOUND,
-                true,
                 "protocol version not served",
             ),
-            NotFound => ("not-found", StatusCode::NOT_FOUND, false, "unknown route"),
+            NotFound => ("not-found", StatusCode::NOT_FOUND, "unknown route"),
             InvalidPriority => (
                 "invalid-priority",
                 StatusCode::CONFLICT,
-                false,
                 "priority must be within 1..=16",
             ),
             PartitionLimit => (
                 "partition-limit",
                 StatusCode::CONFLICT,
-                true,
                 "maximum number of partitions reached",
-            ),
-            UnknownConsumer => (
-                "unknown-consumer",
-                StatusCode::GONE,
-                true,
-                "unknown or expired consumer, register again",
             ),
             PayloadTooLarge => (
                 "payload-too-large",
                 StatusCode::PAYLOAD_TOO_LARGE,
-                false,
                 "body exceeds the buffer capacity",
             ),
-            Backpressure(d) => ("backpressure", StatusCode::TOO_MANY_REQUESTS, true, d),
+            Backpressure(d) => ("backpressure", StatusCode::TOO_MANY_REQUESTS, d),
             Overloaded => (
                 "overloaded",
                 StatusCode::SERVICE_UNAVAILABLE,
-                true,
                 "partition actor queue full",
             ),
             ShuttingDown => (
                 "shutting-down",
                 StatusCode::SERVICE_UNAVAILABLE,
-                true,
                 "server is shutting down",
             ),
         }
@@ -75,13 +62,12 @@ impl ApiError {
 
 impl IntoResponse for ApiError {
     fn into_response(self) -> Response {
-        let (kind, status, retryable, detail) = self.parts();
+        let (kind, status, detail) = self.parts();
         let body = serde_json::json!({
             "type": format!("urn:armonik:broker:{kind}"),
             "title": kind,
             "status": status.as_u16(),
             "detail": detail,
-            "retryable": retryable,
         });
         let mut resp = (status, body.to_string()).into_response();
         let h = resp.headers_mut();

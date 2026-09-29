@@ -12,7 +12,7 @@ use tokio::sync::oneshot;
 use crate::affinity::{self, Affinity, Outputs};
 use crate::config::Config;
 use crate::metrics::Globals;
-use crate::state::{ConsumerRef, Delivered, EnqueueItem, NackPolicy, NodeDecl, PartitionState};
+use crate::state::{Delivered, EnqueueItem, NIL, NackPolicy, NodeDecl, PartitionState};
 use crate::token::Token;
 
 const EPOCH: u32 = 7;
@@ -47,7 +47,7 @@ fn tok(d: &Delivered) -> Token {
 }
 
 fn ack1(s: &mut PartitionState, d: &Delivered, now: u64) -> (u32, u32) {
-    s.ack(None, vec![(tok(d), None)], now)
+    s.ack(vec![(tok(d), None)], now)
 }
 
 #[test]
@@ -56,10 +56,10 @@ fn fairness_with_single_message_pulls() {
     for k in 0..50 {
         enq(&mut s, &format!("k{k}"), 1 + (k % 16) as u8, 40, 0);
     }
-    let c = s.register(NodeDecl::default(), 0);
+    let c = s.node(&NodeDecl::default(), 0);
     let mut served: HashMap<String, usize> = HashMap::new();
     for _ in 0..1000 {
-        let got = s.pull(c, 1, 1).unwrap();
+        let got = s.pull(c, 1, 1);
         assert_eq!(got.len(), 1);
         let key = got[0].task_id.split('-').next().unwrap().to_string();
         *served.entry(key).or_default() += 1;
@@ -95,8 +95,8 @@ fn higher_priority_first_within_key() {
         0,
     )
     .unwrap();
-    let c = s.register(NodeDecl::default(), 0);
-    let got = s.pull(c, 2, 0).unwrap();
+    let c = s.node(&NodeDecl::default(), 0);
+    let got = s.pull(c, 2, 0);
     assert_eq!(
         got.iter().map(|d| d.task_id.as_str()).collect::<Vec<_>>(),
         ["high", "low"]
@@ -108,14 +108,11 @@ fn higher_priority_first_within_key() {
 fn token_never_acknowledges_another_distribution() {
     let mut s = state();
     enq(&mut s, "a", 1, 1, 0);
-    let c = s.register(NodeDecl::default(), 0);
-    let first = s.pull(c, 1, 0).unwrap().remove(0);
+    let c = s.node(&NodeDecl::default(), 0);
+    let first = s.pull(c, 1, 0).remove(0);
     // Nack: the same message comes back with a new generation.
-    assert_eq!(
-        s.nack(None, vec![(tok(&first), NackPolicy::Requeue)], 0),
-        (1, 0)
-    );
-    let second = s.pull(c, 1, 0).unwrap().remove(0);
+    assert_eq!(s.nack(vec![(tok(&first), NackPolicy::Requeue)], 0), (1, 0));
+    let second = s.pull(c, 1, 0).remove(0);
     assert_eq!(second.task_id, first.task_id);
     assert_ne!(tok(&second).generation, tok(&first).generation);
     // The old token designates a past distribution: ignored, the message stays in flight.
@@ -124,13 +121,13 @@ fn token_never_acknowledges_another_distribution() {
     // Another epoch, even with a matching slot and generation: ignored.
     let mut other = tok(&second);
     other.epoch += 1;
-    assert_eq!(s.ack(None, vec![(other, None)], 0), (0, 1));
+    assert_eq!(s.ack(vec![(other, None)], 0), (0, 1));
     // The right token: applied once, then ignored.
     assert_eq!(ack1(&mut s, &second, 0), (1, 0));
     assert_eq!(ack1(&mut s, &second, 0), (0, 1));
     // Slot reused by a new message: old tokens still ignored.
     enq(&mut s, "b", 1, 1, 0);
-    let third = s.pull(c, 1, 0).unwrap().remove(0);
+    let third = s.pull(c, 1, 0).remove(0);
     assert_eq!(tok(&third).slot, tok(&second).slot);
     assert_eq!(ack1(&mut s, &second, 0), (0, 1));
     assert_eq!(ack1(&mut s, &third, 0), (1, 0));
@@ -146,16 +143,12 @@ fn out_of_range_slot_is_ignored() {
         slot: 999,
         generation: 0,
     };
-    assert_eq!(s.ack(None, vec![(t, None)], 0), (0, 1));
+    assert_eq!(s.ack(vec![(t, None)], 0), (0, 1));
 }
 
-fn waiter(
-    s: &mut PartitionState,
-    c: ConsumerRef,
-    now: u64,
-) -> oneshot::Receiver<Result<Vec<Delivered>, crate::error::ApiError>> {
+fn waiter(s: &mut PartitionState, c: u32, now: u64) -> oneshot::Receiver<Vec<Delivered>> {
     let (tx, rx) = oneshot::channel();
-    assert!(s.pull(c, 1, now).unwrap().is_empty());
+    assert!(s.pull(c, 1, now).is_empty());
     s.add_waiter(c, 1, 60_000, now, tx);
     rx
 }
@@ -165,14 +158,14 @@ fn every_eligibility_transition_wakes_sleepers() {
     let mut cfg = Config::for_tests();
     cfg.max_in_flight_per_key = Some(1);
     let mut s = state_with(cfg);
-    let a = s.register(NodeDecl::default(), 0);
-    let b = s.register(NodeDecl::default(), 0);
+    let a = s.node(&NodeDecl::default(), 0);
+    let b = s.node(&NodeDecl::default(), 0);
 
     // 1. enqueue
     let mut rx = waiter(&mut s, b, 0);
     enq(&mut s, "k", 1, 2, 0);
     s.serve_waiters(0);
-    let first = rx.try_recv().unwrap().unwrap().remove(0);
+    let first = rx.try_recv().unwrap().remove(0);
 
     // 2. key blocked at its limit, unblocked by an ack
     let mut rx = waiter(&mut s, a, 0);
@@ -180,37 +173,37 @@ fn every_eligibility_transition_wakes_sleepers() {
     ack1(&mut s, &first, 0);
     assert!(s.wake_pending());
     s.serve_waiters(0);
-    let second = rx.try_recv().unwrap().unwrap().remove(0);
+    let second = rx.try_recv().unwrap().remove(0);
 
     // 3. nack
     let mut rx = waiter(&mut s, b, 0);
-    s.nack(None, vec![(tok(&second), NackPolicy::Requeue)], 0);
+    s.nack(vec![(tok(&second), NackPolicy::Requeue)], 0);
     s.serve_waiters(0);
-    let third = rx.try_recv().unwrap().unwrap().remove(0);
+    let third = rx.try_recv().unwrap().remove(0);
     assert_eq!(third.task_id, second.task_id);
 
     // 4. lease expiry of the holder (b stops renewing), with backoff, then delay elapsed
     let mut rx = waiter(&mut s, a, 0);
-    s.renew(a, &[], 40_000).unwrap();
+    s.renew(&[], 40_000);
     s.tick(40_000);
     assert!(!s.wake_pending(), "backoff delays the requeue");
     // Second attempt: backoff of twice the base delay.
     s.tick(42_000);
     s.serve_waiters(42_000);
-    assert_eq!(rx.try_recv().unwrap().unwrap()[0].task_id, second.task_id);
+    assert_eq!(rx.try_recv().unwrap()[0].task_id, second.task_id);
     s.check();
 }
 
 #[test]
 fn vanished_waiter_returns_messages_at_the_head() {
     let mut s = state();
-    let c = s.register(NodeDecl::default(), 0);
+    let c = s.node(&NodeDecl::default(), 0);
     let rx = waiter(&mut s, c, 0);
     drop(rx);
     enq(&mut s, "k", 1, 1, 0);
     s.serve_waiters(0);
     assert_eq!(s.stats(10, None, 0).ready, 1);
-    let got = s.pull(c, 1, 0).unwrap();
+    let got = s.pull(c, 1, 0);
     assert_eq!(got[0].attempts, 1);
     s.check();
 }
@@ -219,14 +212,14 @@ fn vanished_waiter_returns_messages_at_the_head() {
 fn undelivered_pull_returns_to_the_head_unchanged() {
     let mut s = state();
     enq(&mut s, "k", 1, 3, 0);
-    let c = s.register(NodeDecl::default(), 0);
+    let c = s.node(&NodeDecl::default(), 0);
     // A direct pull whose answer cannot be delivered.
-    let elected = s.pull(c, 2, 0).unwrap();
+    let elected = s.pull(c, 2, 0);
     assert_eq!(elected[0].task_id, "k-0");
     s.undo_delivery(elected, 0);
     let st = s.stats(10, None, 0);
     assert_eq!((st.ready, st.in_flight), (3, 0));
-    let again = s.pull(c, 3, 0).unwrap();
+    let again = s.pull(c, 3, 0);
     assert_eq!(
         again
             .iter()
@@ -249,11 +242,11 @@ fn undelivered_pull_returns_to_the_head_unchanged() {
 fn transient_disconnection_keeps_leases() {
     let mut s = state();
     enq(&mut s, "k", 1, 1, 0);
-    let c = s.register(NodeDecl::default(), 0);
-    let d = s.pull(c, 1, 0).unwrap().remove(0);
-    // The consumer keeps renewing: nothing moves, whatever happens to connections.
+    let c = s.node(&NodeDecl::default(), 0);
+    let d = s.pull(c, 1, 0).remove(0);
+    // The client keeps renewing: nothing moves, whatever happens to connections.
     for t in (10_000..120_000).step_by(10_000) {
-        assert!(s.renew(c, &[tok(&d)], t).unwrap().is_empty());
+        assert!(s.renew(&[tok(&d)], t).is_empty());
         s.tick(t);
     }
     assert_eq!(ack1(&mut s, &d, 120_000), (1, 0));
@@ -263,12 +256,12 @@ fn transient_disconnection_keeps_leases() {
 fn message_not_named_by_renew_expires() {
     let mut s = state();
     enq(&mut s, "k", 1, 2, 0);
-    let c = s.register(NodeDecl::default(), 0);
-    let got = s.pull(c, 2, 0).unwrap();
+    let c = s.node(&NodeDecl::default(), 0);
+    let got = s.pull(c, 2, 0);
     let (kept, lost) = (&got[0], &got[1]);
-    // The consumer is alive and renews, but only names the message it received.
+    // The client is alive and renews, but only names the message it received.
     for t in (10_000..=30_000).step_by(10_000) {
-        assert!(s.renew(c, &[tok(kept)], t).unwrap().is_empty());
+        assert!(s.renew(&[tok(kept)], t).is_empty());
         s.tick(t);
     }
     let st = s.stats(10, None, 30_000);
@@ -279,26 +272,11 @@ fn message_not_named_by_renew_expires() {
     );
     // Back after the backoff, as a new distribution.
     s.tick(31_000);
-    let again = s.pull(c, 1, 31_000).unwrap().remove(0);
+    let again = s.pull(c, 1, 31_000).remove(0);
     assert_eq!(again.task_id, lost.task_id);
     assert_eq!(ack1(&mut s, lost, 31_000), (0, 1));
     assert_eq!(ack1(&mut s, kept, 31_000), (1, 0));
     s.check();
-}
-
-#[test]
-fn renew_does_not_extend_messages_of_others() {
-    let mut s = state();
-    enq(&mut s, "k", 1, 1, 0);
-    let a = s.register(NodeDecl::default(), 0);
-    let b = s.register(NodeDecl::default(), 0);
-    let d = s.pull(a, 1, 0).unwrap().remove(0);
-    // b names a's message: reported unknown, not extended.
-    for t in (10_000..=30_000).step_by(10_000) {
-        assert_eq!(s.renew(b, &[tok(&d)], t).unwrap(), vec![tok(&d)]);
-        s.tick(t);
-    }
-    assert_eq!(s.stats(10, None, 30_000).in_flight, 0);
 }
 
 #[test]
@@ -316,8 +294,8 @@ fn backpressure_is_decided_by_the_actor_all_or_nothing() {
     assert_eq!(s.stats(10, None, 0).ready, 5);
     assert_eq!(s.held_for_tests(), (5, 2));
     // Acknowledging frees capacity; blocks go back to the pool with one spare kept.
-    let c = s.register(NodeDecl::default(), 0);
-    for d in s.pull(c, 5, 0).unwrap() {
+    let c = s.node(&NodeDecl::default(), 0);
+    for d in s.pull(c, 5, 0) {
         ack1(&mut s, &d, 0);
     }
     assert_eq!(s.held_for_tests(), (0, 1));
@@ -343,46 +321,74 @@ fn stopping_partition_returns_its_blocks() {
 }
 
 #[test]
-fn unregister_requeues_immediately() {
+fn forgotten_node_keeps_its_mirror_while_in_flight() {
     let mut s = state();
-    enq(&mut s, "k", 1, 1, 0);
-    let c = s.register(NodeDecl::default(), 0);
-    s.pull(c, 1, 0).unwrap();
-    s.unregister(c, 0);
-    assert_eq!(s.stats(10, None, 0).ready, 1);
-    assert!(s.renew(c, &[], 0).is_err(), "consumer id is gone");
+    let decl = NodeDecl {
+        id: Some("n1".into()),
+        ..Default::default()
+    };
+    let n1 = s.node(&decl, 0);
+    assert_ne!(n1, NIL);
+    s.enqueue(
+        "k",
+        1,
+        vec![EnqueueItem {
+            task_id: "t".into(),
+            affinity: aff(&[("d", 100)]),
+        }],
+        0,
+        0,
+    )
+    .unwrap();
+    let d = s.pull(n1, 1, 0).remove(0);
+    // Silent past the forget delay, but still holding a message: the mirror stays.
+    let late = Config::for_tests().node_forget_ms + 1;
+    s.renew(&[tok(&d)], late);
+    s.tick(late);
+    assert!(s.node_mirror_len_for_tests(n1).is_some());
+    ack1(&mut s, &d, late);
+    // Nothing in flight any more: the next sweep drops it; a new pull revives it.
+    let later = late + crate::state::SWEEP_MS;
+    s.tick(later);
+    assert_eq!(s.node_mirror_len_for_tests(n1), None);
+    assert_eq!(s.node(&decl, later), n1, "same index");
+    assert!(s.node_mirror_len_for_tests(n1).is_some());
     s.check();
 }
 
 #[test]
-fn registration_expires_after_inactivity() {
+fn node_without_cache_or_identifier_has_no_affinity() {
     let mut s = state();
-    let c = s.register(NodeDecl::default(), 0);
-    s.tick(7_200_001);
-    assert!(s.pull(c, 1, 7_200_001).is_err());
+    assert_eq!(s.node(&NodeDecl::default(), 0), NIL);
+    let no_cache = NodeDecl {
+        id: Some("n1".into()),
+        cache_capacity_bytes: Some(0),
+        ..Default::default()
+    };
+    assert_eq!(s.node(&no_cache, 0), NIL);
 }
 
 #[test]
 fn delayed_and_backoff() {
     let mut s = state();
     s.enqueue("k", 1, items("d", 1), 5_000, 0).unwrap();
-    let c = s.register(NodeDecl::default(), 0);
-    assert!(s.pull(c, 1, 0).unwrap().is_empty());
+    let c = s.node(&NodeDecl::default(), 0);
+    assert!(s.pull(c, 1, 0).is_empty());
     s.tick(5_000);
-    let d = s.pull(c, 1, 5_000).unwrap().remove(0);
+    let d = s.pull(c, 1, 5_000).remove(0);
     // Backoff after the first attempt: base delay.
-    s.nack(None, vec![(tok(&d), NackPolicy::Backoff)], 5_000);
+    s.nack(vec![(tok(&d), NackPolicy::Backoff)], 5_000);
     s.tick(5_999);
-    assert!(s.pull(c, 1, 5_999).unwrap().is_empty());
+    assert!(s.pull(c, 1, 5_999).is_empty());
     s.tick(6_000);
-    let d = s.pull(c, 1, 6_000).unwrap().remove(0);
+    let d = s.pull(c, 1, 6_000).remove(0);
     assert_eq!(d.attempts, 2);
     // Second attempt: twice the base.
-    s.nack(None, vec![(tok(&d), NackPolicy::Backoff)], 6_000);
+    s.nack(vec![(tok(&d), NackPolicy::Backoff)], 6_000);
     s.tick(7_999);
-    assert!(s.pull(c, 1, 7_999).unwrap().is_empty());
+    assert!(s.pull(c, 1, 7_999).is_empty());
     s.tick(8_000);
-    assert_eq!(s.pull(c, 1, 8_000).unwrap().len(), 1);
+    assert_eq!(s.pull(c, 1, 8_000).len(), 1);
     s.check();
 }
 
@@ -393,8 +399,8 @@ fn key_reserve_evicts_only_free_keys() {
     let mut s = state_with(cfg);
     enq(&mut s, "a", 1, 1, 0);
     enq(&mut s, "b", 1, 1, 0);
-    let c = s.register(NodeDecl::default(), 0);
-    let da = s.pull(c, 1, 0).unwrap().remove(0);
+    let c = s.node(&NodeDecl::default(), 0);
+    let da = s.pull(c, 1, 0).remove(0);
     // "a" is empty but has a message in flight: not evictable; "b" is ready.
     assert!(s.enqueue("c", 1, items("c", 1), 0, 0).is_err());
     ack1(&mut s, &da, 0);
@@ -407,16 +413,16 @@ fn stats_leases_peek_inspect() {
     let mut s = state();
     enq(&mut s, "a", 2, 3, 0);
     enq(&mut s, "b", 5, 1, 0);
-    let c = s.register(
-        NodeDecl {
+    let c = s.node(
+        &NodeDecl {
             id: Some("n1".into()),
             ..Default::default()
         },
         0,
     );
-    let d = s.pull(c, 1, 100).unwrap().remove(0);
+    let d = s.pull(c, 1, 100).remove(0);
     let st = s.stats(10, None, 400);
-    assert_eq!((st.ready, st.in_flight, st.consumers), (3, 1, 1));
+    assert_eq!((st.ready, st.in_flight), (3, 1));
     assert_eq!(st.oldest_ready_age_ms, 400);
     assert_eq!(s.stats(10, Some("b"), 400).keys.len(), 1);
     let l = s.oldest_leases(10, 600);
@@ -443,15 +449,15 @@ fn aff(deps: &[(&str, u64)]) -> Option<Affinity> {
 #[test]
 fn affinity_prefers_candidates_with_local_data() {
     let mut s = state();
-    let n1 = s.register(
-        NodeDecl {
+    let n1 = s.node(
+        &NodeDecl {
             id: Some("n1".into()),
             ..Default::default()
         },
         0,
     );
-    let n2 = s.register(
-        NodeDecl {
+    let n2 = s.node(
+        &NodeDecl {
             id: Some("n2".into()),
             ..Default::default()
         },
@@ -469,10 +475,9 @@ fn affinity_prefers_candidates_with_local_data() {
         0,
     )
     .unwrap();
-    let p = s.pull(n1, 1, 0).unwrap().remove(0);
+    let p = s.pull(n1, 1, 0).remove(0);
     let out = aff(&[("big", 1 << 30)]).unwrap();
     s.ack(
-        Some(n1),
         vec![(
             tok(&p),
             Some(Outputs {
@@ -502,7 +507,7 @@ fn affinity_prefers_candidates_with_local_data() {
     .unwrap();
     // n2 has an empty mirror for these: plain FIFO.
     let _ = n2;
-    let got = s.pull(n1, 1, 0).unwrap().remove(0);
+    let got = s.pull(n1, 1, 0).remove(0);
     assert_eq!(got.task_id, "consumer-of-big");
     let c = &s.gauges.counters;
     let load = |x: &std::sync::atomic::AtomicU64| x.load(std::sync::atomic::Ordering::Relaxed);
@@ -524,20 +529,19 @@ fn affinity_prefers_candidates_with_local_data() {
 #[test]
 fn undone_delivery_withdraws_its_dependencies_from_the_mirror() {
     let mut s = state();
-    let n1 = s.register(
-        NodeDecl {
+    let n1 = s.node(
+        &NodeDecl {
             id: Some("n1".into()),
             ..Default::default()
         },
         0,
     );
-    let n2 = s.register(NodeDecl::default(), 0);
+    let n2 = s.node(&NodeDecl::default(), 0);
     // A task ran on n1 and declared "seed", so that n1 scores its candidates.
     s.enqueue("k", 1, items("seed", 1), 0, 0).unwrap();
-    let p = s.pull(n1, 1, 0).unwrap().remove(0);
+    let p = s.pull(n1, 1, 0).remove(0);
     let out = aff(&[("seed", 1 << 30)]).unwrap();
     s.ack(
-        Some(n1),
         vec![(
             tok(&p),
             Some(Outputs {
@@ -559,7 +563,7 @@ fn undone_delivery_withdraws_its_dependencies_from_the_mirror() {
         0,
     )
     .unwrap();
-    let d = s.pull(n1, 1, 0).unwrap();
+    let d = s.pull(n1, 1, 0);
     s.undo_delivery(d, 0);
     s.enqueue(
         "k",
@@ -578,9 +582,9 @@ fn undone_delivery_withdraws_its_dependencies_from_the_mirror() {
         0,
     )
     .unwrap();
-    assert_eq!(s.pull(n2, 1, 0).unwrap().remove(0).task_id, "a");
+    assert_eq!(s.pull(n2, 1, 0).remove(0).task_id, "a");
     // Nothing is local to n1 any more: plain FIFO.
-    assert_eq!(s.pull(n1, 1, 0).unwrap().remove(0).task_id, "other");
+    assert_eq!(s.pull(n1, 1, 0).remove(0).task_id, "other");
     assert_eq!(
         s.gauges
             .counters
@@ -594,8 +598,8 @@ fn undone_delivery_withdraws_its_dependencies_from_the_mirror() {
 #[test]
 fn scoring_window_is_bounded_without_affinity() {
     let mut s = state();
-    let n1 = s.register(
-        NodeDecl {
+    let n1 = s.node(
+        &NodeDecl {
             id: Some("n1".into()),
             ..Default::default()
         },
@@ -613,7 +617,7 @@ fn scoring_window_is_bounded_without_affinity() {
         0,
     )
     .unwrap();
-    let seed = s.pull(n1, 1, 0).unwrap().remove(0);
+    let seed = s.pull(n1, 1, 0).remove(0);
     ack1(&mut s, &seed, 0);
     // A deep queue of messages without affinity structure.
     for _ in 0..100 {
@@ -621,7 +625,7 @@ fn scoring_window_is_bounded_without_affinity() {
     }
     for _ in 0..10 {
         s.examined.set(0);
-        let d = s.pull(n1, 1, 0).unwrap().remove(0);
+        let d = s.pull(n1, 1, 0).remove(0);
         assert!(
             s.examined.get() <= 64,
             "examined {} candidates",
@@ -631,7 +635,7 @@ fn scoring_window_is_bounded_without_affinity() {
     }
     // The budget is per request: a pull of many messages examines no more in total.
     s.examined.set(0);
-    let got = s.pull(n1, 32, 0).unwrap();
+    let got = s.pull(n1, 32, 0);
     assert_eq!(got.len(), 32);
     assert!(
         s.examined.get() <= 64,
@@ -643,8 +647,8 @@ fn scoring_window_is_bounded_without_affinity() {
 #[test]
 fn affinity_never_bypasses_fairness() {
     let mut s = state();
-    let n1 = s.register(
-        NodeDecl {
+    let n1 = s.node(
+        &NodeDecl {
             id: Some("n1".into()),
             ..Default::default()
         },
@@ -661,7 +665,7 @@ fn affinity_never_bypasses_fairness() {
         0,
     )
     .unwrap();
-    let seed = s.pull(n1, 1, 0).unwrap().remove(0);
+    let seed = s.pull(n1, 1, 0).remove(0);
     ack1(&mut s, &seed, 0);
     // Key "a" has well placed data, key "b" does not: they still alternate.
     for (k, t) in [("a", "a1"), ("b", "b1"), ("a", "a2"), ("b", "b2")] {
@@ -679,7 +683,7 @@ fn affinity_never_bypasses_fairness() {
     }
     let order: Vec<String> = (0..4)
         .map(|_| {
-            let d = s.pull(n1, 1, 0).unwrap().remove(0);
+            let d = s.pull(n1, 1, 0).remove(0);
             ack1(&mut s, &d, 0);
             d.task_id.chars().next().unwrap().to_string()
         })
@@ -697,7 +701,6 @@ enum Op {
     Ack(u8),
     Nack(u8, u8),
     Tick(u16),
-    Unregister(u8),
     StaleAck(u8),
     Sleep(u8, u16),
 }
@@ -709,7 +712,6 @@ fn op() -> impl Strategy<Value = Op> {
         any::<u8>().prop_map(Op::Ack),
         (any::<u8>(), 0u8..3).prop_map(|(i, p)| Op::Nack(i, p)),
         (0u16..40_000).prop_map(Op::Tick),
-        (0u8..3).prop_map(Op::Unregister),
         any::<u8>().prop_map(Op::StaleAck),
         (0u8..3, 0u16..20_000).prop_map(|(c, w)| Op::Sleep(c, w)),
     ]
@@ -725,13 +727,17 @@ proptest! {
         cfg.max_keys_per_partition = 4;
         let mut s = state_with(cfg);
         let mut now = 0u64;
-        let mut consumers: Vec<ConsumerRef> = (0..3).map(|_| s.register(NodeDecl::default(), 0)).collect();
+        // One pull without affinity and two nodes, so that the leases of nodes are exercised.
+        let nodes: Vec<u32> = [None, Some("n1"), Some("n2")]
+            .iter()
+            .map(|id| s.node(&NodeDecl { id: id.map(str::to_string), ..Default::default() }, 0))
+            .collect();
         let mut held: Vec<Delivered> = Vec::new();
         let mut spent: Vec<Delivered> = Vec::new();
         let mut enqueued = 0u64;
         let mut acked = 0u64;
         // Sleeping pulls: (deadline, answer).
-        type Answer = oneshot::Receiver<Result<Vec<Delivered>, crate::error::ApiError>>;
+        type Answer = oneshot::Receiver<Vec<Delivered>>;
         let mut sleeping: Vec<(u64, Answer)> = Vec::new();
         for op in ops {
             match op {
@@ -741,9 +747,7 @@ proptest! {
                     }
                 }
                 Op::Pull(c, n) => {
-                    if let Ok(got) = s.pull(consumers[c as usize], n as usize, now) {
-                        held.extend(got);
-                    }
+                    held.extend(s.pull(nodes[c as usize], n as usize, now));
                 }
                 Op::Ack(i) if !held.is_empty() => {
                     let d = held.remove(i as usize % held.len());
@@ -754,19 +758,14 @@ proptest! {
                 Op::Nack(i, p) if !held.is_empty() => {
                     let d = held.remove(i as usize % held.len());
                     let policy = [NackPolicy::Requeue, NackPolicy::Delay(300), NackPolicy::Backoff][p as usize];
-                    s.nack(None, vec![(tok(&d), policy)], now);
+                    s.nack(vec![(tok(&d), policy)], now);
                     spent.push(d);
                 }
                 Op::Tick(dt) => {
                     now += u64::from(dt);
                     let held_tokens: Vec<Token> = held.iter().map(tok).collect();
-                    for c in &consumers { let _ = s.renew(*c, &held_tokens, now); }
+                    s.renew(&held_tokens, now);
                     s.tick(now);
-                }
-                Op::Unregister(c) => {
-                    s.unregister(consumers[c as usize], now);
-                    consumers[c as usize] = s.register(NodeDecl::default(), now);
-                    held.retain(|d| s.inspect(&tok(d), now).is_in_flight());
                 }
                 Op::StaleAck(i) if !spent.is_empty() => {
                     let d = &spent[i as usize % spent.len()];
@@ -776,13 +775,12 @@ proptest! {
                 }
                 Op::Sleep(c, wait) => {
                     let (tx, rx) = oneshot::channel();
-                    match s.pull(consumers[c as usize], 1, now) {
-                        Ok(got) if got.is_empty() => {
-                            s.add_waiter(consumers[c as usize], 1, u64::from(wait), now, tx);
-                            sleeping.push((now + u64::from(wait), rx));
-                        }
-                        Ok(got) => held.extend(got),
-                        Err(_) => {}
+                    let got = s.pull(nodes[c as usize], 1, now);
+                    if got.is_empty() {
+                        s.add_waiter(nodes[c as usize], 1, u64::from(wait), now, tx);
+                        sleeping.push((now + u64::from(wait), rx));
+                    } else {
+                        held.extend(got);
                     }
                 }
                 _ => {}
@@ -795,8 +793,7 @@ proptest! {
             let mut still = Vec::new();
             for (deadline, mut rx) in sleeping.drain(..) {
                 match rx.try_recv() {
-                    Ok(Ok(got)) => held.extend(got),
-                    Ok(Err(_)) => {}
+                    Ok(got) => held.extend(got),
                     Err(_) => {
                         prop_assert!(deadline > now, "a sleeping pull outlived its deadline");
                         still.push((deadline, rx));

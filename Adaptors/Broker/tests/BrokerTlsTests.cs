@@ -20,6 +20,11 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
@@ -150,15 +155,41 @@ public class BrokerTlsTests
   private async Task<bool> Healthy(int  port,
                                    bool allowHostMismatch = false)
   {
-    await using var client = new BrokerClient(new Broker
-                                                 {
-                                                   Endpoint          = $"https://localhost:{port}",
-                                                   CaFile            = Path.Combine(dir_!,
-                                                                                    "ca.pem"),
-                                                   AllowHostMismatch = allowHostMismatch,
-                                                 },
-                                                 NullLogger.Instance);
-    return await client.IsHealthyAsync(CancellationToken.None);
+    var configuration = new ConfigurationManager();
+    configuration.AddInMemoryCollection(new Dictionary<string, string?>
+                                        {
+                                          ["Broker:Endpoint"]          = $"https://localhost:{port}",
+                                          ["Broker:CaFile"]            = Path.Combine(dir_!,
+                                                                                      "ca.pem"),
+                                          ["Broker:AllowHostMismatch"] = allowHostMismatch.ToString(),
+                                          // A rejected certificate is a network failure, retried until this duration.
+                                          ["Broker:MaxRetryDuration"] = "00:00:01",
+                                        });
+    var services = new ServiceCollection();
+    services.AddLogging();
+    new QueueBuilder().Build(services,
+                             configuration,
+                             NullLogger.Instance);
+    await using var provider = services.BuildServiceProvider();
+    try
+    {
+      await provider.GetRequiredService<IPushQueueStorage>()
+                    .PushMessagesAsync([
+                                         new MessageData("t",
+                                                         "s",
+                                                         new TaskOptions
+                                                         {
+                                                           Priority    = 1,
+                                                           PartitionId = "part",
+                                                         }),
+                                       ],
+                                       "part");
+      return true;
+    }
+    catch (Exception)
+    {
+      return false;
+    }
   }
 
   [Test]

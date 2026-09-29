@@ -50,14 +50,13 @@ internal class PullQueueStorage : IPullQueueStorage
                                                                         int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var (consumerId, messages) = await client_.PullAsync(partitionId,
-                                                         nbMessages,
-                                                         cancellationToken)
-                                              .ConfigureAwait(false);
+    var messages = await client_.PullAsync(partitionId,
+                                           nbMessages,
+                                           cancellationToken)
+                                .ConfigureAwait(false);
     foreach (var m in messages)
     {
       yield return new QueueMessageHandler(client_,
-                                           consumerId,
                                            m,
                                            logger_);
     }
@@ -73,14 +72,9 @@ internal class PullQueueStorage : IPullQueueStorage
                          : HealthCheckResult.Unhealthy("Plugin is not yet initialized."));
 
   /// <inheritdoc />
-  public async Task Init(CancellationToken cancellationToken)
+  public Task Init(CancellationToken cancellationToken)
   {
-    if (!isInitialized_ && !await client_.RefreshLimitsAsync(cancellationToken)
-                                         .ConfigureAwait(false))
-    {
-      logger_.LogWarning("Broker is not reachable yet; pulls will retry");
-    }
-
     isInitialized_ = true;
+    return Task.CompletedTask;
   }
 }

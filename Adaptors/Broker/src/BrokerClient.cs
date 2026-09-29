@@ -1,37 +1,36 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU Affero General Public License for more details.
-// 
+//
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Json;
-using System.Security.Cryptography.X509Certificates;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Utils;
-
 using Microsoft.Extensions.Logging;
+
+using Polly;
+using Polly.Retry;
 
 namespace ArmoniK.Core.Adapters.Broker;
 
@@ -41,14 +40,14 @@ namespace ArmoniK.Core.Adapters.Broker;
 public sealed class BrokerException : Exception
 {
   internal BrokerException(HttpStatusCode status,
-                              string         type,
-                              bool           retryable,
-                              string?        detail)
+                           string         type,
+                           TimeSpan?      retryAfter,
+                           string?        detail)
     : base($"Broker answered {(int)status} {type}: {detail}")
   {
-    Status    = status;
-    Type      = type;
-    Retryable = retryable;
+    Status     = status;
+    Type       = type;
+    RetryAfter = retryAfter;
   }
 
   /// <summary>HTTP status</summary>
@@ -57,8 +56,12 @@ public sealed class BrokerException : Exception
   /// <summary>Problem type, without the URN prefix</summary>
   public string Type { get; }
 
-  /// <summary>Whether the protocol allows a retry</summary>
-  public bool Retryable { get; }
+  /// <summary>Whether the protocol allows a retry: only 429 and 503 do (§4)</summary>
+  public bool Retryable
+    => Status is HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable;
+
+  /// <summary>Delay the server asked for before a retry (<c>Retry-After</c>)</summary>
+  public TimeSpan? RetryAfter { get; }
 }
 
 internal sealed record PulledMessage(string Token,
@@ -66,13 +69,17 @@ internal sealed record PulledMessage(string Token,
                                      int    Attempts);
 
 /// <summary>
-///   REST client of the broker (protocol v1). Retryable failures are absorbed with back-off and
-///   jitter; consumers are registered lazily per partition and re-registered after a restart.
+///   REST client of the broker (protocol v1). Stateless towards the server: it holds the tokens it
+///   received and renews them all in one call. Retryable failures are absorbed with back-off and jitter.
 /// </summary>
 internal sealed class BrokerClient : IAsyncDisposable
 {
-  private const string UrnPrefix = "urn:armonik:broker:";
+  /// <summary>
+  ///   Name of the <see cref="HttpClient" /> registered for the broker.
+  /// </summary>
+  public const string HttpClientName = "ArmoniK.Broker";
 
+  private const string UrnPrefix = "urn:armonik:broker:";
 
   private static readonly JsonSerializerOptions Json = new()
                                                        {
@@ -80,81 +87,85 @@ internal sealed class BrokerClient : IAsyncDisposable
                                                          DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                                                        };
 
-  private readonly ConcurrentDictionary<string, Lazy<Task<Consumer>>> consumers_ = new();
-  private readonly ConcurrentDictionary<string, Consumer>             byId_      = new();
-  private readonly CancellationTokenSource                               disposed_  = new();
-  private readonly HttpClient                                            http_;
-  private readonly ILogger                                               logger_;
-  private readonly Broker                                             options_;
-  private readonly Version                                               version_;
-  private          long                                                  epoch_ = -1;
-  private          int                                                   limitsLoaded_;
-  private          int                                                   maxBatchItems_ = int.MaxValue;
-  private          int                                                   maxPull_       = Protocol.DefaultMaxPull;
-  private          int                                                   refreshingLimits_;
+  private readonly CancellationTokenSource            disposed_ = new();
+  private readonly ConcurrentDictionary<string, byte> held_     = new();
+  private readonly IHttpClientFactory                 httpClientFactory_;
+  private readonly ILogger                            logger_;
+  private readonly NodeBody?                          node_;
+  private readonly Broker                             options_;
+  private readonly ResiliencePipeline                 retry_;
+  private readonly Version                            version_;
+  private          long                               epoch_ = -1;
+  private          long                               renewPeriodMs_;
+  private          int                                renewing_;
 
-  public BrokerClient(Broker options,
-                         ILogger   logger)
+  public BrokerClient(Broker                options,
+                      IHttpClientFactory    httpClientFactory,
+                      ILogger<BrokerClient> logger)
   {
-    options_ = options;
-    logger_  = logger;
+    options_           = options;
+    httpClientFactory_ = httpClientFactory;
+    logger_            = logger;
     version_ = options.Http2
                  ? HttpVersion.Version20
                  : HttpVersion.Version11;
 
-    var handler = new SocketsHttpHandler
-                  {
-                    EnableMultipleHttp2Connections = true,
-                    KeepAlivePingDelay             = options.KeepAlivePingPeriod,
-                    KeepAlivePingTimeout           = options.KeepAlivePingPeriod,
-                    KeepAlivePingPolicy            = HttpKeepAlivePingPolicy.Always,
-                    ConnectTimeout                 = options.ConnectTimeout,
-                    PooledConnectionLifetime       = Timeout.InfiniteTimeSpan,
-                  };
+    var nodeId = string.IsNullOrEmpty(options.NodeId)
+                   ? Environment.GetEnvironmentVariable("NODE_NAME") ?? Environment.MachineName
+                   : options.NodeId;
+    node_ = !options.Affinity || nodeId == "-" || options.CacheCapacityBytes <= 0
+              ? null
+              : new NodeBody(nodeId,
+                             options.CacheCapacityBytes);
 
-    if (!string.IsNullOrEmpty(options.ClientCertificateFile))
-    {
-      handler.SslOptions.ClientCertificates = new X509CertificateCollection
-                                              {
-                                                X509Certificate2.CreateFromPemFile(options.ClientCertificateFile,
-                                                                                   string.IsNullOrEmpty(options.ClientKeyFile)
-                                                                                     ? null
-                                                                                     : options.ClientKeyFile),
-                                              };
-    }
-
-    if (!string.IsNullOrEmpty(options.CaFile))
-    {
-      handler.SslOptions.RemoteCertificateValidationCallback = CertificateValidator.CreateCallback(options.CaFile,
-                                                                                                  options.AllowHostMismatch,
-                                                                                                  logger);
-    }
-
-    http_ = new HttpClient(handler)
-            {
-              BaseAddress = new Uri(options.Endpoint.TrimEnd('/') + "/"),
-              Timeout     = Timeout.InfiniteTimeSpan,
-            };
+    // Retryable failures are retried until MaxRetryDuration, waiting what the server asks (Retry-After) when it does (protocol §5).
+    retry_ = new ResiliencePipelineBuilder().AddTimeout(options.MaxRetryDuration)
+                                            .AddRetry(new RetryStrategyOptions
+                                                      {
+                                                        ShouldHandle = args => ValueTask.FromResult(!args.Context.CancellationToken.IsCancellationRequested &&
+                                                                                                    args.Outcome.Exception is { } e && IsRetryable(e)),
+                                                        MaxRetryAttempts = int.MaxValue,
+                                                        BackoffType      = DelayBackoffType.Exponential,
+                                                        UseJitter        = true,
+                                                        Delay            = Protocol.BackoffMin,
+                                                        MaxDelay         = Protocol.BackoffMax,
+                                                        DelayGenerator = args => ValueTask.FromResult(args.Outcome.Exception is BrokerException
+                                                                                                                                  {
+                                                                                                                                    RetryAfter: { } after,
+                                                                                                                                  }
+                                                                                                        ? after
+                                                                                                        : (TimeSpan?)null),
+                                                        OnRetry = args =>
+                                                                  {
+                                                                    logger_.LogWarning(args.Outcome.Exception,
+                                                                                       "Broker request failed, retrying in {Delay}",
+                                                                                       args.RetryDelay);
+                                                                    return ValueTask.CompletedTask;
+                                                                  },
+                                                      })
+                                            .Build();
   }
+
+  /// <summary>
+  ///   Largest enqueue batch; a batch the server finds too large is split (protocol §6.1).
+  /// </summary>
+  public int MaxBatchItems
+    => Math.Max(1,
+                options_.MaxBatchItems);
 
   public ValueTask DisposeAsync()
   {
     disposed_.Cancel();
-    foreach (var c in consumers_.Values.Where(l => l.IsValueCreated && l.Value.IsCompletedSuccessfully))
-    {
-      c.Value.Result.Renewal.Dispose();
-    }
-
-    http_.Dispose();
     disposed_.Dispose();
     return ValueTask.CompletedTask;
   }
 
-  private async Task<(HttpStatusCode Status, JsonElement? Body)> SendAsync(HttpMethod        method,
-                                                                          string            path,
-                                                                          object?           body,
-                                                                          TimeSpan          timeout,
-                                                                          CancellationToken cancellationToken)
+  private async Task<(HttpStatusCode Status, T? Body)> SendAsync<T>(HttpMethod        method,
+                                                                    string            path,
+                                                                    object            body,
+                                                                    TimeSpan          timeout,
+                                                                    CancellationToken cancellationToken)
+    where T : class
   {
     using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
     cts.CancelAfter(timeout);
@@ -163,53 +174,52 @@ internal sealed class BrokerClient : IAsyncDisposable
                         {
                           Version       = version_,
                           VersionPolicy = HttpVersionPolicy.RequestVersionExact,
-                          Content = body is null
-                                      ? null
-                                      : JsonContent.Create(body,
-                                                           body.GetType(),
-                                                           options: Json),
+                          Content = JsonContent.Create(body,
+                                                       body.GetType(),
+                                                       options: Json),
                         };
-    using var response = await http_.SendAsync(request,
-                                               cts.Token)
-                                    .ConfigureAwait(false);
+    using var response = await httpClientFactory_.CreateClient(HttpClientName)
+                                                 .SendAsync(request,
+                                                            cts.Token)
+                                                 .ConfigureAwait(false);
     ObserveEpoch(response);
-
-    JsonElement? content = null;
     var raw = await response.Content.ReadAsByteArrayAsync(cts.Token)
                             .ConfigureAwait(false);
-    if (raw.Length > 0)
-    {
-      try
-      {
-        content = JsonSerializer.Deserialize<JsonElement>(raw);
-      }
-      catch (JsonException) when (!response.IsSuccessStatusCode)
-      {
-        // Non JSON error body (proxy, load balancer): the status alone is used.
-      }
-    }
 
     if (response.IsSuccessStatusCode)
     {
-      return (response.StatusCode, content);
+      return (response.StatusCode, raw.Length > 0
+                                     ? JsonSerializer.Deserialize<T>(raw,
+                                                                     Json)
+                                     : null);
     }
 
-    var type = content?.TryGetProperty("type",
-                                       out var t) == true
-                 ? t.GetString() ?? ""
-                 : "";
-    var retryable = content?.TryGetProperty("retryable",
-                                            out var r) == true && r.GetBoolean();
-    var detail = content?.TryGetProperty("detail",
-                                         out var d) == true
-                   ? d.GetString()
-                   : response.ReasonPhrase;
+    ProblemBody? problem = null;
+    try
+    {
+      problem = raw.Length > 0
+                  ? JsonSerializer.Deserialize<ProblemBody>(raw,
+                                                            Json)
+                  : null;
+    }
+    catch (JsonException)
+    {
+      // Non JSON error body (proxy, load balancer): the status alone is used.
+    }
+
+    var type = problem?.Type ?? "";
     throw new BrokerException(response.StatusCode,
-                                 type.StartsWith(UrnPrefix)
-                                   ? type[UrnPrefix.Length..]
-                                   : type,
-                                 retryable || response.StatusCode is HttpStatusCode.TooManyRequests or HttpStatusCode.ServiceUnavailable,
-                                 detail);
+                              type.StartsWith(UrnPrefix,
+                                              StringComparison.Ordinal)
+                                ? type[UrnPrefix.Length..]
+                                : type,
+                              response.Headers.RetryAfter switch
+                              {
+                                { Delta: { } delta } => delta,
+                                { Date: { } date }   => date - DateTimeOffset.UtcNow,
+                                _                    => null,
+                              },
+                              problem?.Detail ?? response.ReasonPhrase);
   }
 
   private void ObserveEpoch(HttpResponseMessage response)
@@ -223,12 +233,6 @@ internal sealed class BrokerClient : IAsyncDisposable
 
     var previous = Interlocked.Exchange(ref epoch_,
                                         epoch);
-    // A restarted broker may run another configuration; limits never read are read now.
-    if (previous != epoch && (previous >= 0 || Volatile.Read(ref limitsLoaded_) == 0))
-    {
-      _ = RefreshLimitsAsync(disposed_.Token);
-    }
-
     if (previous >= 0 && previous != epoch)
     {
       // The queue content was lost: tasks submitted before this point must be resumed (pause then resume their sessions).
@@ -241,156 +245,139 @@ internal sealed class BrokerClient : IAsyncDisposable
   private static bool IsRetryable(Exception e)
     => e switch
        {
-         BrokerException s          => s.Retryable,
-         HttpRequestException          => true,
-         TaskCanceledException         => true,
-         System.IO.IOException         => true,
-         _                             => false,
+         BrokerException s     => s.Retryable,
+         HttpRequestException  => true,
+         TaskCanceledException => true,
+         System.IO.IOException => true,
+         _                     => false,
        };
-
-  /// <summary>
-  ///   Exponential back-off with ±50 % uniform jitter (protocol §5).
-  /// </summary>
-  private TimeSpan Backoff(int attempt)
-  {
-    var ms = Math.Min(options_.BackoffMax.TotalMilliseconds,
-                      options_.BackoffMin.TotalMilliseconds * Math.Pow(2,
-                                                                       Math.Min(attempt,
-                                                                                Protocol.BackoffMaxDoublings)));
-    return TimeSpan.FromMilliseconds(ms * (1 - Protocol.BackoffJitter + 2 * Protocol.BackoffJitter * Random.Shared.NextDouble()));
-  }
 
   /// <summary>
   ///   Runs an operation, retrying retryable failures with back-off until <see cref="Broker.MaxRetryDuration" />.
   /// </summary>
-  private async Task<T> RetryAsync<T>(Func<CancellationToken, Task<T>> operation,
-                                      string                           what,
-                                      CancellationToken                cancellationToken)
+  private async Task RetryAsync(Func<CancellationToken, Task> operation,
+                                CancellationToken             cancellationToken)
+    => await retry_.ExecuteAsync(async ct => await operation(ct)
+                                               .ConfigureAwait(false),
+                                 cancellationToken)
+                   .ConfigureAwait(false);
+
+  public Task EnqueueAsync(string                     partition,
+                           string                     key,
+                           int                        priority,
+                           IReadOnlyList<EnqueueItem> items,
+                           CancellationToken          cancellationToken)
+    => RetryAsync(ct => SendAsync<EnqueueResponse>(HttpMethod.Post,
+                                                   $"v1/partitions/{Uri.EscapeDataString(partition)}/messages",
+                                                   new EnqueueBody(key,
+                                                                   priority,
+                                                                   items),
+                                                   options_.RequestTimeout,
+                                                   ct),
+                  cancellationToken);
+
+  /// <summary>
+  ///   Long polls messages. Never throws for a broker failure: it logs, waits and returns nothing,
+  ///   so that a restart of the broker does not stop the Pollster.
+  /// </summary>
+  public async Task<IReadOnlyList<PulledMessage>> PullAsync(string            partition,
+                                                            int               max,
+                                                            CancellationToken cancellationToken)
   {
-    var watch = Stopwatch.StartNew();
-    for (var attempt = 0;; attempt++)
+    try
     {
-      try
+      var (_, body) = await SendAsync<PullResponse>(HttpMethod.Post,
+                                                    $"v1/partitions/{Uri.EscapeDataString(partition)}/pull",
+                                                    new PullBody(Math.Max(1,
+                                                                          max),
+                                                                 (long)options_.PullWait.TotalMilliseconds,
+                                                                 node_),
+                                                    options_.PullWait + options_.RequestTimeout,
+                                                    cancellationToken)
+                        .ConfigureAwait(false);
+      if (body is null)
       {
-        return await operation(cancellationToken)
-                 .ConfigureAwait(false);
+        return [];
       }
-      catch (Exception e) when (!cancellationToken.IsCancellationRequested && IsRetryable(e) && watch.Elapsed < options_.MaxRetryDuration)
+
+      foreach (var m in body.Messages)
       {
-        var delay = Backoff(attempt);
-        logger_.LogWarning(e,
-                           "Broker {Operation} failed, retrying in {Delay}",
-                           what,
-                           delay);
-        await Task.Delay(delay,
-                         cancellationToken)
-                  .ConfigureAwait(false);
+        held_[m.Token] = 0;
       }
+
+      StartRenewing(body.LeaseMs);
+      return body.Messages;
+    }
+    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+    {
+      throw;
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Broker pull failed on partition {PartitionId}, retrying later",
+                         partition);
+      // Jittered, so that the agents do not all come back at once when the broker restarts.
+      await Task.Delay((e as BrokerException)?.RetryAfter ?? TimeSpan.FromSeconds(0.5 + Random.Shared.NextDouble()),
+                       cancellationToken)
+                .ConfigureAwait(false);
+      return [];
     }
   }
 
-  // ------------------------------------------------------------------ producer
-
-  public Task EnqueueAsync(string                         partition,
-                           string                         key,
-                           int                            priority,
-                           IReadOnlyList<EnqueueItem>     items,
-                           CancellationToken              cancellationToken)
-    => RetryAsync(ct => SendAsync(HttpMethod.Post,
-                                  $"v1/partitions/{Uri.EscapeDataString(partition)}/messages",
-                                  new EnqueueBody(key,
-                                                  priority,
-                                                  items),
-                                  options_.RequestTimeout,
-                                  ct),
-                  "enqueue",
-                  cancellationToken);
-
-  // ------------------------------------------------------------------ consumer
-
-  private sealed class Consumer
+  /// <summary>
+  ///   Renews well within the server lease: a renewal lost in a row still leaves time for the next one.
+  ///   The loop starts with the first message received.
+  /// </summary>
+  private void StartRenewing(long leaseMs)
   {
-    public required string                  Id          { get; init; }
-    public required CancellationTokenSource Renewal     { get; init; }
-    public required TimeSpan                RenewPeriod { get; init; }
-
-    /// <summary>
-    ///   Tokens received and not settled yet. Only these are renewed: a message whose answer was lost,
-    ///   or whose settlement was given up, is not renewed and the broker redelivers it after its lease.
-    /// </summary>
-    public ConcurrentDictionary<string, byte> Held { get; } = new();
+    Volatile.Write(ref renewPeriodMs_,
+                   Math.Max(1,
+                            leaseMs / 3));
+    if (Interlocked.Exchange(ref renewing_,
+                             1) == 0)
+    {
+      _ = RenewLoopAsync(disposed_.Token);
+    }
   }
 
-  private async Task<Consumer> RegisterAsync(string            partition,
-                                             CancellationToken cancellationToken)
+  private async Task RenewLoopAsync(CancellationToken token)
   {
-    var nodeId = string.IsNullOrEmpty(options_.NodeId)
-                   ? Environment.GetEnvironmentVariable("NODE_NAME") ?? Environment.MachineName
-                   : options_.NodeId;
-    var node = !options_.Affinity || nodeId == "-" || options_.CacheCapacityBytes <= 0
-                 ? null
-                 : new NodeBody(nodeId,
-                                options_.CacheCapacityBytes);
-    var (_, body) = await RetryAsync(ct => SendAsync(HttpMethod.Post,
-                                                     "v1/consumers",
-                                                     new RegisterBody(partition,
-                                                                      node),
-                                                     options_.RequestTimeout,
-                                                     ct),
-                                     "register",
-                                     cancellationToken)
-                      .ConfigureAwait(false);
-    // Renew well within the server lease, whatever the configured period.
-    var lease = TimeSpan.FromMilliseconds(body!.Value.GetProperty("lease_ms")
-                                              .GetInt64());
-    var consumer = new Consumer
-                   {
-                     Id      = body.Value.GetProperty("consumer_id").GetString()!,
-                     Renewal = CancellationTokenSource.CreateLinkedTokenSource(disposed_.Token),
-                     RenewPeriod = options_.RenewPeriod < lease / 3
-                                     ? options_.RenewPeriod
-                                     : lease / 3,
-                   };
-    byId_[consumer.Id] = consumer;
-    logger_.LogInformation("Registered broker consumer {ConsumerId} on partition {PartitionId} (node {NodeId})",
-                           consumer.Id,
-                           partition,
-                           node?.Id);
-    _ = RenewLoopAsync(partition,
-                       consumer);
-    return consumer;
-  }
-
-  private async Task RenewLoopAsync(string   partition,
-                                    Consumer consumer)
-  {
-    var token = consumer.Renewal.Token;
     while (!token.IsCancellationRequested)
     {
       try
       {
-        await Task.Delay(consumer.RenewPeriod,
+        var period = TimeSpan.FromMilliseconds(Volatile.Read(ref renewPeriodMs_));
+        await Task.Delay(period,
                          token)
                   .ConfigureAwait(false);
-        var (_, body) = await SendAsync(HttpMethod.Post,
-                                        $"v1/consumers/{consumer.Id}/renew",
-                                        new RenewBody(consumer.Held.Keys.ToList()),
-                                        options_.RenewTimeout,
-                                        token)
-                          .ConfigureAwait(false);
-        // Tokens the broker no longer knows for this consumer are gone: stop renewing them.
-        if (body?.TryGetProperty("unknown",
-                                 out var unknown) == true)
+        if (held_.IsEmpty)
         {
-          foreach (var t in unknown.EnumerateArray())
+          continue;
+        }
+
+        var (_, body) = await SendAsync<RenewResponse>(HttpMethod.Post,
+                                                       "v1/renew",
+                                                       new RenewBody(held_.Keys.ToList()),
+                                                       period,
+                                                       token)
+                          .ConfigureAwait(false);
+        if (body is null)
+        {
+          continue;
+        }
+
+        Volatile.Write(ref renewPeriodMs_,
+                       Math.Max(1,
+                                body.LeaseMs / 3));
+        // Tokens that designate no current distribution any more: stop renewing them.
+        foreach (var t in body.Unknown)
+        {
+          if (held_.TryRemove(t,
+                              out _))
           {
-            if (consumer.Held.TryRemove(t.GetString()!,
-                                        out _))
-            {
-              logger_.LogWarning("Broker no longer holds message {MessageId} for consumer {ConsumerId}",
-                                 t.GetString(),
-                                 consumer.Id);
-            }
+            logger_.LogWarning("Broker no longer holds message {MessageId}",
+                               t);
           }
         }
       }
@@ -398,240 +385,49 @@ internal sealed class BrokerClient : IAsyncDisposable
       {
         return;
       }
-      catch (BrokerException e) when (e.Status == HttpStatusCode.Gone)
-      {
-        Forget(partition,
-               consumer);
-        return;
-      }
       catch (Exception e)
       {
         logger_.LogWarning(e,
-                           "Broker lease renewal failed for {ConsumerId}",
-                           consumer.Id);
+                           "Broker lease renewal failed");
       }
-    }
-  }
-
-  private void Forget(string   partition,
-                      Consumer consumer)
-  {
-    if (consumers_.TryGetValue(partition,
-                               out var current) && current.IsValueCreated && current.Value.IsCompletedSuccessfully &&
-        current.Value.Result == consumer)
-    {
-      consumers_.TryRemove(new KeyValuePair<string, Lazy<Task<Consumer>>>(partition,
-                                                                          current));
-    }
-
-    byId_.TryRemove(consumer.Id,
-                    out _);
-    consumer.Renewal.Cancel();
-  }
-
-  private async Task<Consumer> GetConsumerAsync(string            partition,
-                                                CancellationToken cancellationToken)
-  {
-    var lazy = consumers_.GetOrAdd(partition,
-                                   p => new Lazy<Task<Consumer>>(() => RegisterAsync(p,
-                                                                                     disposed_.Token)));
-    try
-    {
-      return await lazy.Value.WaitAsync(cancellationToken)
-                       .ConfigureAwait(false);
-    }
-    catch when (lazy.Value.IsFaulted)
-    {
-      consumers_.TryRemove(new KeyValuePair<string, Lazy<Task<Consumer>>>(partition,
-                                                                          lazy));
-      throw;
     }
   }
 
   /// <summary>
-  ///   Long polls messages. Never throws for a broker failure: it logs, waits and returns nothing,
-  ///   so that a restart of the broker does not stop the Pollster.
-  /// </summary>
-  public async Task<(string ConsumerId, IReadOnlyList<PulledMessage> Messages)> PullAsync(string            partition,
-                                                                                         int               max,
-                                                                                         CancellationToken cancellationToken)
-  {
-    Consumer? consumer = null;
-    try
-    {
-      consumer = await GetConsumerAsync(partition,
-                                        cancellationToken)
-                   .ConfigureAwait(false);
-      var (status, body) = await SendAsync(HttpMethod.Post,
-                                           $"v1/consumers/{consumer.Id}/pull",
-                                           new PullBody(Math.Clamp(max,
-                                                                   1,
-                                                                   Volatile.Read(ref maxPull_)),
-                                                        (long)options_.PullWait.TotalMilliseconds),
-                                           options_.PullWait + options_.PullTimeoutMargin,
-                                           cancellationToken)
-                             .ConfigureAwait(false);
-      if (status == HttpStatusCode.NoContent || body is null)
-      {
-        return (consumer.Id, []);
-      }
-
-      var messages = body.Value.GetProperty("messages")
-                         .EnumerateArray()
-                         .Select(m => new PulledMessage(m.GetProperty("token").GetString()!,
-                                                        m.GetProperty("task_id").GetString()!,
-                                                        m.GetProperty("attempts").GetInt32()))
-                         .ToList();
-      foreach (var m in messages)
-      {
-        consumer.Held[m.Token] = 0;
-      }
-
-      return (consumer.Id, messages);
-    }
-    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
-    {
-      throw;
-    }
-    catch (BrokerException e) when (e.Status == HttpStatusCode.Gone && consumer is not null)
-    {
-      logger_.LogInformation("Broker consumer {ConsumerId} is unknown, registering again",
-                             consumer.Id);
-      Forget(partition,
-             consumer);
-      return ("", []);
-    }
-    catch (Exception e)
-    {
-      logger_.LogWarning(e,
-                         "Broker pull failed on partition {PartitionId}, retrying later",
-                         partition);
-      await Task.Delay(Backoff(3),
-                       cancellationToken)
-                .ConfigureAwait(false);
-      return ("", []);
-    }
-  }
-
-  /// <summary>
-  ///   Stops renewing a message, before settling it: if the settlement fails, the lease expires and
+  ///   Acknowledges a message. It stops being renewed first: if the settlement fails, the lease expires and
   ///   the broker redelivers the message instead of keeping it forever.
   /// </summary>
-  private void Release(string consumerId,
-                       string token)
-  {
-    if (byId_.TryGetValue(consumerId,
-                          out var consumer))
-    {
-      consumer.Held.TryRemove(token,
-                              out _);
-    }
-  }
-
-  public Task AckAsync(string       consumerId,
-                       string       token,
+  public Task AckAsync(string       token,
                        OutputsBody? outputs)
   {
-    Release(consumerId,
-            token);
-    if (!options_.Affinity)
-    {
-      outputs = null;
-    }
-
-    return RetryAsync(ct => SendAsync(HttpMethod.Post,
-                                  $"v1/consumers/{consumerId}/ack",
-                                  new AckBody([new AckItem(token, outputs)]),
-                                  options_.RequestTimeout,
-                                  ct),
-                  "ack",
-                  disposed_.Token);
-  }
-
-  public Task NackAsync(string consumerId,
-                        string token)
-  {
-    Release(consumerId,
-            token);
-    return RetryAsync(ct => SendAsync(HttpMethod.Post,
-                                  $"v1/consumers/{consumerId}/nack",
-                                  new NackBody([new NackItem(token, "requeue")]),
-                                  options_.RequestTimeout,
-                                  ct),
-                  "nack",
-                  disposed_.Token);
+    held_.TryRemove(token,
+                    out _);
+    return RetryAsync(ct => SendAsync<SettleResponse>(HttpMethod.Post,
+                                                      "v1/ack",
+                                                      new AckBody([
+                                                                    new AckItem(token,
+                                                                                options_.Affinity
+                                                                                  ? outputs
+                                                                                  : null),
+                                                                  ]),
+                                                      options_.RequestTimeout,
+                                                      ct),
+                      disposed_.Token);
   }
 
   /// <summary>
-  ///   Largest enqueue batch: the configured size, bounded by the server limit.
+  ///   Puts a message back in the queue at once; see <see cref="AckAsync" /> for the renewal.
   /// </summary>
-  public int MaxBatchItems
-    => Math.Max(1,
-                Math.Min(options_.MaxBatchItems,
-                         Volatile.Read(ref maxBatchItems_)));
-
-  /// <summary>
-  ///   Reads the limits of the server (<c>GET /v1/limits</c>). Returns false, keeping the current values,
-  ///   when the server cannot be reached; they are read again at the next epoch change.
-  /// </summary>
-  public async Task<bool> RefreshLimitsAsync(CancellationToken cancellationToken)
+  public Task NackAsync(string token)
   {
-    if (Interlocked.Exchange(ref refreshingLimits_,
-                             1) != 0)
-    {
-      return false;
-    }
-
-    try
-    {
-      var (_, body) = await SendAsync(HttpMethod.Get,
-                                      "v1/limits",
-                                      null,
-                                      options_.ProbeTimeout,
-                                      cancellationToken)
-                        .ConfigureAwait(false);
-      var limits = body!.Value;
-      Volatile.Write(ref maxBatchItems_,
-                     limits.GetProperty("max_batch_items")
-                           .GetInt32());
-      Volatile.Write(ref maxPull_,
-                     limits.GetProperty("max_pull")
-                           .GetInt32());
-      Volatile.Write(ref limitsLoaded_,
-                     1);
-      logger_.LogDebug("Broker limits: {Limits}",
-                       limits.ToString());
-      return true;
-    }
-    catch (Exception e) when (e is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
-    {
-      logger_.LogWarning(e,
-                         "Could not read the broker limits; defaults are used until it is reachable");
-      return false;
-    }
-    finally
-    {
-      Volatile.Write(ref refreshingLimits_,
-                     0);
-    }
-  }
-
-  public async Task<bool> IsHealthyAsync(CancellationToken cancellationToken)
-  {
-    try
-    {
-      var (status, _) = await SendAsync(HttpMethod.Get,
-                                        "v1/health",
-                                        null,
-                                        options_.ProbeTimeout,
-                                        cancellationToken)
-                          .ConfigureAwait(false);
-      return status == HttpStatusCode.OK;
-    }
-    catch
-    {
-      return false;
-    }
+    held_.TryRemove(token,
+                    out _);
+    return RetryAsync(ct => SendAsync<SettleResponse>(HttpMethod.Post,
+                                                      "v1/nack",
+                                                      new NackBody([new NackItem(token, "requeue")]),
+                                                      options_.RequestTimeout,
+                                                      ct),
+                      disposed_.Token);
   }
 
   // ------------------------------------------------------------------ wire types
@@ -651,16 +447,22 @@ internal sealed class BrokerClient : IAsyncDisposable
                                     int                        Priority,
                                     IReadOnlyList<EnqueueItem> Items);
 
+  private sealed record EnqueueResponse(int Accepted);
+
   private sealed record NodeBody(string Id,
                                  long   CacheCapacityBytes);
 
-  private sealed record RegisterBody(string    Partition,
-                                     NodeBody? Node);
+  private sealed record PullBody(int       Max,
+                                 long      WaitMs,
+                                 NodeBody? Node);
+
+  private sealed record PullResponse(long                         LeaseMs,
+                                     IReadOnlyList<PulledMessage> Messages);
 
   private sealed record RenewBody(IReadOnlyList<string> Tokens);
 
-  private sealed record PullBody(int  Max,
-                                 long WaitMs);
+  private sealed record RenewResponse(long                  LeaseMs,
+                                      IReadOnlyList<string> Unknown);
 
   private sealed record AckItem(string       Token,
                                 OutputsBody? Outputs);
@@ -671,4 +473,10 @@ internal sealed class BrokerClient : IAsyncDisposable
                                  string Policy);
 
   private sealed record NackBody(IReadOnlyList<NackItem> Items);
+
+  private sealed record SettleResponse(int Applied,
+                                       int Ignored);
+
+  private sealed record ProblemBody(string? Type,
+                                    string? Detail);
 }

@@ -23,7 +23,7 @@ use tokio::sync::oneshot;
 use crate::actor::{Command, Partition, Registry};
 use crate::affinity::{Affinity, Outputs, SLOTS};
 use crate::error::ApiError;
-use crate::state::{ConsumerRef, EnqueueItem, Inspection, NackPolicy, NodeDecl, PartitionStats};
+use crate::state::{EnqueueItem, Inspection, NackPolicy, NodeDecl, PartitionStats};
 use crate::token::Token;
 
 type Reg = Arc<Registry>;
@@ -34,7 +34,7 @@ const MAX_TASK_ID: usize = 512;
 /// Grace given to the actor beyond the requested wait before answering 204 anyway.
 const WAIT_SLACK: Duration = Duration::from_secs(5);
 
-/// The service: pull and ack, which every consumer sends for every message, go straight
+/// The service: pull and ack, which every agent sends for every message, go straight
 /// to their handler; everything else goes through the axum router. The direct path
 /// skips the router's matching, middleware, extractors and boxed layers, and answers
 /// exactly as the router would (same handlers, body limit and epoch header).
@@ -51,29 +51,28 @@ pub fn app(reg: Reg) -> App {
     }
 }
 
-#[derive(Clone, Copy)]
 enum Hot {
-    Pull,
+    Pull(String),
     Ack,
 }
 
-/// `POST /v1/consumers/{id}/pull` or `/ack`, with an identifier the router would take
-/// as is (no percent-encoding).
-fn hot_route<B>(req: &Request<B>) -> Option<(Hot, String)> {
+/// `POST /v1/partitions/{partition}/pull`, with a partition the router would take as is
+/// (no percent-encoding), or `POST /v1/ack`.
+fn hot_route<B>(req: &Request<B>) -> Option<Hot> {
     if req.method() != axum::http::Method::POST {
         return None;
     }
-    let rest = req.uri().path().strip_prefix("/v1/consumers/")?;
-    let (id, op) = rest.split_once('/')?;
-    if id.is_empty() || id.contains('%') {
+    let path = req.uri().path();
+    if path == "/v1/ack" {
+        return Some(Hot::Ack);
+    }
+    let partition = path
+        .strip_prefix("/v1/partitions/")?
+        .strip_suffix("/pull")?;
+    if partition.is_empty() || partition.contains(['%', '/']) {
         return None;
     }
-    let hot = match op {
-        "pull" => Hot::Pull,
-        "ack" => Hot::Ack,
-        _ => return None,
-    };
-    Some((hot, id.to_string()))
+    Some(Hot::Pull(partition.to_string()))
 }
 
 impl<B> tower::Service<Request<B>> for App
@@ -94,7 +93,7 @@ where
     }
 
     fn call(&mut self, req: Request<B>) -> Self::Future {
-        let Some((hot, id)) = hot_route(&req) else {
+        let Some(hot) = hot_route(&req) else {
             let mut router = self.router.clone();
             return Box::pin(async move { router.call(req).await });
         };
@@ -108,8 +107,8 @@ where
                 Ok(body) => {
                     let body = body.to_bytes();
                     match hot {
-                        Hot::Pull => pull_core(&reg, &id, &body).await,
-                        Hot::Ack => ack_core(&reg, &id, &body).await,
+                        Hot::Pull(partition) => pull_core(&reg, &partition, &body).await,
+                        Hot::Ack => ack_core(&reg, &body).await,
                     }
                 }
                 Err(e) if e.is::<http_body_util::LengthLimitError>() => {
@@ -130,15 +129,12 @@ pub fn router(reg: Reg) -> Router {
         .route("/partitions/{partition}/stats", get(stats))
         .route("/partitions/{partition}/leases", get(leases))
         .route("/partitions/{partition}/peek", get(peek))
-        .route("/consumers", post(register))
-        .route("/consumers/{id}", delete(unregister))
-        .route("/consumers/{id}/pull", post(pull))
-        .route("/consumers/{id}/renew", post(renew))
-        .route("/consumers/{id}/ack", post(ack))
-        .route("/consumers/{id}/nack", post(nack))
+        .route("/partitions/{partition}/pull", post(pull))
+        .route("/renew", post(renew))
+        .route("/ack", post(ack))
+        .route("/nack", post(nack))
         .route("/messages/{token}", get(inspect))
-        .route("/health", get(health))
-        .route("/limits", get(limits));
+        .route("/health", get(health));
     Router::new()
         .nest("/v1", v1)
         .route("/metrics", get(metrics))
@@ -221,12 +217,6 @@ async fn call_index<T>(
         return Some(Err(e));
     }
     Some(rx.await.map_err(|_| ApiError::ShuttingDown))
-}
-
-fn consumer_partition(reg: &Registry, id: &str) -> Result<(ConsumerRef, Partition), ApiError> {
-    let c = ConsumerRef::decode(id).ok_or(ApiError::UnknownConsumer)?;
-    let p = reg.by_index(c.partition).ok_or(ApiError::UnknownConsumer)?;
-    Ok((c, p))
 }
 
 fn not_shutting(reg: &Registry) -> Result<(), ApiError> {
@@ -316,14 +306,7 @@ async fn enqueue(
     ok(json!({ "accepted": accepted, "occupancy": if high { "high" } else { "normal" } }))
 }
 
-// ------------------------------------------------------------------ consumers
-
-#[derive(Deserialize)]
-struct RegisterBody {
-    partition: String,
-    #[serde(default)]
-    node: Option<NodeBody>,
-}
+// ------------------------------------------------------------------ pull / renew
 
 #[derive(Deserialize, Default)]
 struct NodeBody {
@@ -333,10 +316,35 @@ struct NodeBody {
     fetch_throughput_bytes_per_s: Option<u64>,
 }
 
-async fn register(State(reg): State<Reg>, body: Result<Bytes, BytesRejection>) -> ApiResult {
-    not_shutting(&reg)?;
-    let b: RegisterBody = parse(body)?;
-    check_name(&b.partition)?;
+#[derive(Deserialize)]
+struct PullBody {
+    #[serde(default = "one")]
+    max: usize,
+    #[serde(default)]
+    wait_ms: u64,
+    #[serde(default)]
+    node: Option<NodeBody>,
+}
+
+fn one() -> usize {
+    1
+}
+
+async fn pull(
+    State(reg): State<Reg>,
+    Path(partition): Path<String>,
+    body: Result<Bytes, BytesRejection>,
+) -> ApiResult {
+    pull_core(&reg, &partition, &body_bytes(body)?).await
+}
+
+async fn pull_core(reg: &Registry, partition: &str, body: &[u8]) -> ApiResult {
+    not_shutting(reg)?;
+    let b: PullBody = parse_bytes(body)?;
+    if b.max == 0 {
+        return Err(ApiError::Malformed("max must be at least 1"));
+    }
+    check_name(partition)?;
     let n = b.node.unwrap_or_default();
     if let Some(id) = &n.id {
         check_name(id)?;
@@ -347,73 +355,37 @@ async fn register(State(reg): State<Reg>, body: Result<Bytes, BytesRejection>) -
         fetch_fixed_cost_us: n.fetch_fixed_cost_us,
         fetch_throughput_bytes_per_s: n.fetch_throughput_bytes_per_s,
     };
-    let p = reg.get_or_create(&b.partition)?;
-    let c = call(&p, |reply| Command::Register { node, reply }).await?;
-    ok(
-        json!({ "consumer_id": c.encode(), "lease_ms": reg.cfg.lease_ms, "grace_ms": reg.cfg.lease_ms }),
-    )
-}
-
-async fn unregister(State(reg): State<Reg>, Path(id): Path<String>) -> ApiResult {
-    if let Ok((c, p)) = consumer_partition(&reg, &id) {
-        let _ = p.send(Command::Unregister { consumer: c });
-    }
-    Ok(StatusCode::NO_CONTENT.into_response())
-}
-
-#[derive(Deserialize)]
-struct PullBody {
-    #[serde(default = "one")]
-    max: usize,
-    #[serde(default)]
-    wait_ms: u64,
-}
-
-fn one() -> usize {
-    1
-}
-
-async fn pull(
-    State(reg): State<Reg>,
-    Path(id): Path<String>,
-    body: Result<Bytes, BytesRejection>,
-) -> ApiResult {
-    pull_core(&reg, &id, &body_bytes(body)?).await
-}
-
-async fn pull_core(reg: &Registry, id: &str, body: &[u8]) -> ApiResult {
-    not_shutting(reg)?;
-    let b: PullBody = parse_bytes(body)?;
-    if b.max == 0 || b.max > reg.cfg.max_pull {
-        return Err(ApiError::Malformed("max must be within 1..=64"));
-    }
-    let c = ConsumerRef::decode(id).ok_or(ApiError::UnknownConsumer)?;
+    // Bounded here rather than rejected: the client needs no knowledge of the server limits.
+    let max = b.max.min(reg.cfg.max_pull);
     let wait = b.wait_ms.min(reg.cfg.max_wait_ms);
     let (tx, rx) = oneshot::channel();
-    reg.send_to(
-        c.partition,
+    reg.send_named(
+        partition,
         Command::Pull {
-            consumer: c,
-            max: b.max,
+            node,
+            max,
             wait_ms: wait,
             reply: tx,
         },
-    )
-    .ok_or(ApiError::UnknownConsumer)??;
+    )?;
     // Dropping `rx` (client gone, or timeout) makes the actor requeue what it elected.
     let got = match tokio::time::timeout(Duration::from_millis(wait) + WAIT_SLACK, rx).await {
-        Ok(Ok(r)) => r?,
+        Ok(Ok(r)) => r,
         Ok(Err(_)) => return Err(ApiError::ShuttingDown),
         Err(_) => Vec::new(),
     };
     if got.is_empty() {
         return Ok(StatusCode::NO_CONTENT.into_response());
     }
-    ok(Messages { messages: got })
+    ok(Messages {
+        lease_ms: reg.cfg.lease_ms,
+        messages: got,
+    })
 }
 
 #[derive(serde::Serialize)]
 struct Messages {
+    lease_ms: u64,
     messages: Vec<crate::state::Delivered>,
 }
 
@@ -429,24 +401,27 @@ struct RenewBody {
     tokens: Vec<String>,
 }
 
-async fn renew(
-    State(reg): State<Reg>,
-    Path(id): Path<String>,
-    body: Result<Bytes, BytesRejection>,
-) -> ApiResult {
+/// Renews the named tokens, whatever their partition. Tokens of another epoch or of an
+/// unknown partition designate no current distribution: they are listed as unknown.
+async fn renew(State(reg): State<Reg>, body: Result<Bytes, BytesRejection>) -> ApiResult {
     let b: RenewBody = parse(body)?;
-    let tokens = b
-        .tokens
-        .iter()
-        .map(|t| decode_token(t))
-        .collect::<Result<Vec<_>, _>>()?;
-    let (c, p) = consumer_partition(&reg, &id)?;
-    let unknown = call(&p, |reply| Command::Renew {
-        consumer: c,
-        tokens,
-        reply,
-    })
-    .await??;
+    let mut groups: BTreeMap<u16, Vec<Token>> = BTreeMap::new();
+    let mut unknown = Vec::new();
+    for t in &b.tokens {
+        let t = decode_token(t)?;
+        if t.epoch == reg.epoch {
+            groups.entry(t.partition).or_default().push(t);
+        } else {
+            unknown.push(t);
+        }
+    }
+    for (index, tokens) in groups {
+        let n = tokens.clone();
+        match call_index(&reg, index, |reply| Command::Renew { tokens, reply }).await {
+            Some(r) => unknown.extend(r?),
+            None => unknown.extend(n),
+        }
+    }
     let unknown: Vec<String> = unknown.iter().map(Token::encode).collect();
     ok(json!({ "lease_ms": reg.cfg.lease_ms, "unknown": unknown }))
 }
@@ -482,11 +457,9 @@ struct NackItem {
 /// Tokens of an unknown partition or another epoch are ignored with success.
 async fn settle<I: Send + 'static>(
     reg: &Registry,
-    consumer: &str,
     items: Vec<(Token, I)>,
-    make: impl Fn(Option<ConsumerRef>, Vec<(Token, I)>, oneshot::Sender<(u32, u32)>) -> Command,
+    make: impl Fn(Vec<(Token, I)>, oneshot::Sender<(u32, u32)>) -> Command,
 ) -> ApiResult {
-    let c = ConsumerRef::decode(consumer);
     let mut ignored = 0u32;
     // Ignored here, before reaching an actor; actors count their own.
     let mut outside = 0u64;
@@ -514,9 +487,8 @@ async fn settle<I: Send + 'static>(
     };
     let mut applied = 0u32;
     for (index, group) in groups {
-        let owner = c.filter(|c| c.partition == index);
         let n = group.len();
-        let Some(r) = call_index(reg, index, |reply| make(owner, group, reply)).await else {
+        let Some(r) = call_index(reg, index, |reply| make(group, reply)).await else {
             ignored += n as u32;
             outside += n as u64;
             continue;
@@ -535,15 +507,11 @@ fn decode_token(s: &str) -> Result<Token, ApiError> {
     Token::decode(s).ok_or(ApiError::Malformed("unreadable token"))
 }
 
-async fn ack(
-    State(reg): State<Reg>,
-    Path(id): Path<String>,
-    body: Result<Bytes, BytesRejection>,
-) -> ApiResult {
-    ack_core(&reg, &id, &body_bytes(body)?).await
+async fn ack(State(reg): State<Reg>, body: Result<Bytes, BytesRejection>) -> ApiResult {
+    ack_core(&reg, &body_bytes(body)?).await
 }
 
-async fn ack_core(reg: &Registry, id: &str, body: &[u8]) -> ApiResult {
+async fn ack_core(reg: &Registry, body: &[u8]) -> ApiResult {
     let b: AckBody = parse_bytes(body)?;
     let mut items = Vec::with_capacity(b.items.len());
     for i in b.items {
@@ -552,19 +520,10 @@ async fn ack_core(reg: &Registry, id: &str, body: &[u8]) -> ApiResult {
         }
         items.push((decode_token(&i.token)?, i.outputs));
     }
-    settle(reg, id, items, |consumer, items, reply| Command::Ack {
-        consumer,
-        items,
-        reply,
-    })
-    .await
+    settle(reg, items, |items, reply| Command::Ack { items, reply }).await
 }
 
-async fn nack(
-    State(reg): State<Reg>,
-    Path(id): Path<String>,
-    body: Result<Bytes, BytesRejection>,
-) -> ApiResult {
+async fn nack(State(reg): State<Reg>, body: Result<Bytes, BytesRejection>) -> ApiResult {
     let b: NackBody = parse(body)?;
     let mut items = Vec::with_capacity(b.items.len());
     for i in b.items {
@@ -580,12 +539,7 @@ async fn nack(
         };
         items.push((decode_token(&i.token)?, policy));
     }
-    settle(&reg, &id, items, |consumer, items, reply| Command::Nack {
-        consumer,
-        items,
-        reply,
-    })
-    .await
+    settle(&reg, items, |items, reply| Command::Nack { items, reply }).await
 }
 
 // ------------------------------------------------------------------ diagnostics
@@ -661,18 +615,6 @@ async fn health(State(reg): State<Reg>) -> Response {
     } else {
         Json(json!({ "status": "ok" })).into_response()
     }
-}
-
-/// Limits the clients must respect; read once at startup and after a restart (epoch change).
-async fn limits(State(reg): State<Reg>) -> Response {
-    let c = &reg.cfg;
-    Json(json!({
-        "lease_ms": c.lease_ms,
-        "max_pull": c.max_pull,
-        "max_batch_items": c.max_batch_items(),
-        "max_wait_ms": c.max_wait_ms,
-    }))
-    .into_response()
 }
 
 async fn metrics(State(reg): State<Reg>) -> Response {
