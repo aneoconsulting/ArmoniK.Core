@@ -153,11 +153,18 @@ internal class PostgresDatabaseProvider : IDisposable
       var server = new PgServer("18.4.0",
                                 PgUser,
                                 pgDir,
-                                // The watchers stream changes through logical replication.
                                 pgServerParams: new Dictionary<string, string>
                                                 {
+                                                  // The watchers stream changes through logical replication.
                                                   {
                                                     "wal_level", "logical"
+                                                  },
+                                                  // PgServer redirects the server output to pipes it never reads. Once
+                                                  // a pipe is full (4 KB on Windows), every server process that logs
+                                                  // blocks, which hung all the tests after a few replication slots.
+                                                  // Log to files in the data directory instead.
+                                                  {
+                                                    "logging_collector", "on"
                                                   },
                                                 },
                                 addLocalUserAccessPermission: true,
