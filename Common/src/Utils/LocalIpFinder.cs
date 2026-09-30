@@ -15,10 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Immutable;
-using System.Linq;
+using System;
 using System.Net.NetworkInformation;
-using System.Net.Sockets;
 
 using JetBrains.Annotations;
 
@@ -28,6 +26,7 @@ namespace ArmoniK.Core.Common.Utils;
 ///   Helper to get local IP address.
 /// </summary>
 [PublicAPI]
+[Obsolete("Use ArmoniK.Core.Utils.LocalIpFinder")]
 public class LocalIpFinder
 {
   /// <summary>
@@ -38,25 +37,5 @@ public class LocalIpFinder
   ///   <see cref="string" /> representing the IP.
   /// </returns>
   public static string LocalIpv4Address(NetworkInterfaceType type = NetworkInterfaceType.Ethernet)
-  {
-    var result = NetworkInterface.GetAllNetworkInterfaces()
-                                 .Where(@interface => @interface.OperationalStatus == OperationalStatus.Up)
-                                 .SelectMany(@interface => @interface.GetIPProperties()
-                                                                     .UnicastAddresses.Select(information => information.Address)
-                                                                     .Where(address => address.AddressFamily == AddressFamily.InterNetwork)
-                                                                     .Select(address => (@interface.NetworkInterfaceType, address: address.ToString())))
-                                 .GroupBy(tuple => tuple.NetworkInterfaceType) // there might be several interfaces of the same type
-                                 .ToImmutableDictionary(tuple => tuple.Key,
-                                                        tuple => tuple.Select(valueTuple => valueTuple.address));
-
-    if (result.TryGetValue(type,
-                           out var ethernet))
-    {
-      return ethernet.First();
-    }
-
-    // No interface of desired type ; choose any other available interface and in last resort, the default 127.0.0.1
-    return result.Values.SelectMany(enumerable => enumerable)
-                 .FirstOrDefault("127.0.0.1");
-  }
+    => Core.Utils.LocalIpFinder.LocalIpv4Address(type);
 }

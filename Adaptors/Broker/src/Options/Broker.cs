@@ -86,11 +86,15 @@ public class Broker
 
   /// <summary>
   ///   Identifier of the cache the agent fills, used for task and data affinity: agents sharing a cache must
-  ///   share it, agents with their own cache must not. Defaults to the machine name, which fits a cache per
-  ///   agent; set it to the node name (for example from <c>spec.nodeName</c>) when the agents of a node share
-  ///   their cache.
+  ///   share it, agents with their own cache must not. Empty to find it from <see cref="NodeIdSource" />.
   /// </summary>
   public string NodeId { get; set; } = string.Empty;
+
+  /// <summary>
+  ///   Where the identifier of the node is found when <see cref="NodeId" /> is empty. The default, the host
+  ///   name, fits a cache per agent; <see cref="IdSource.NodeName" /> fits a cache shared by the agents of a node.
+  /// </summary>
+  public IdSource NodeIdSource { get; set; } = IdSource.HostName;
 
   /// <summary>
   ///   Capacity of the local data cache of the node, in bytes; must be positive with <see cref="Affinity" />.
@@ -105,4 +109,25 @@ public class Broker
   ///   disabled by default, the broker then serves each priority in FIFO order.
   /// </summary>
   public bool Affinity { get; set; }
+
+  /// <summary>
+  ///   Where the adapter finds the identifier of the cache the agent fills, when <see cref="NodeId" /> is empty.
+  /// </summary>
+  public enum IdSource
+  {
+    /// <summary>
+    ///   Host name of the container, the pod name under Kubernetes: a cache per agent.
+    /// </summary>
+    HostName,
+
+    /// <summary>
+    ///   IPv4 address of the container, as the Pollster identifies its agent: a cache per agent.
+    /// </summary>
+    Ip,
+
+    /// <summary>
+    ///   <c>NODE_NAME</c> environment variable, to inject from <c>spec.nodeName</c>: a cache shared by the agents of a node.
+    /// </summary>
+    NodeName,
+  }
 }

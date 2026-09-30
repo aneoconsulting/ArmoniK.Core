@@ -40,7 +40,7 @@ using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.ListTasksRequestExt;
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
