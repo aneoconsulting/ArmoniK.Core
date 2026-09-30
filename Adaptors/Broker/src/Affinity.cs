@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO.Hashing;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -56,38 +57,8 @@ public static class Affinity
 
   private const int SizeHalf = 4;
 
-  private static readonly ulong[] Thresholds =
-  [
-    4_294_967_296UL, 4_820_937_788UL, 5_411_319_705UL, 6_074_001_000UL, 6_817_835_604UL, 7_652_761_717UL,
-  ];
-
-  private static ulong Fnv1A64(ReadOnlySpan<byte> bytes)
-  {
-    var h = 0xcbf29ce484222325UL;
-    foreach (var b in bytes)
-    {
-      h ^= b;
-      h =  unchecked(h * 0x100000001b3UL);
-    }
-
-    return h;
-  }
-
-  private static ulong Fmix64(ulong k)
-  {
-    unchecked
-    {
-      k ^= k >> 33;
-      k *= 0xff51afd7ed558ccdUL;
-      k ^= k >> 33;
-      k *= 0xc4ceb9fe1a85ec53UL;
-      k ^= k >> 33;
-      return k;
-    }
-  }
-
   /// <summary>
-  ///   32-bit hash of a data identifier.
+  ///   32-bit hash of a data identifier: XXH32 of its UTF-8 bytes, seed 0.
   /// </summary>
   public static uint Hash(string id)
   {
@@ -97,11 +68,12 @@ public static class Affinity
                    : new byte[max];
     var length = Encoding.UTF8.GetBytes(id,
                                         buffer);
-    return unchecked((uint)Fmix64(Fnv1A64(buffer[..length])));
+    return XxHash32.HashToUInt32(buffer[..length]);
   }
 
   /// <summary>
-  ///   Logarithmic encoding of a size, six steps per octave; never 0.
+  ///   Logarithmic encoding of <c>size + 1</c> as a minifloat: 4 times its exponent plus the two bits
+  ///   after its leading one, 4 steps per octave, plus 1; never 0.
   /// </summary>
   public static byte Encode(ulong size)
   {
@@ -109,10 +81,11 @@ public static class Affinity
               ? size
               : size + 1;
     var e = 63 - BitOperations.LeadingZeroCount(v);
-    var f = ((UInt128)v << 32) >> e;
-    var k = Thresholds.Count(t => t <= f);
+    var m = (int)((e >= 2
+                     ? v >> (e - 2)
+                     : v << (2 - e)) & 3);
     return (byte)Math.Min(255,
-                          6 * e + k);
+                          1 + 4 * e + m);
   }
 
   /// <summary>
@@ -129,16 +102,15 @@ public static class Affinity
   /// </summary>
   public static AffinityData? Select(IEnumerable<(string Id, ulong Size)> dependencies)
   {
-    var seen = new HashSet<string>(StringComparer.Ordinal);
-    var all  = new List<(string Id, ulong Size, uint Hash)>();
-    foreach (var (id, size) in dependencies)
-    {
-      if (seen.Add(id))
-      {
-        all.Add((id, size, Hash(id)));
-      }
-    }
-
+    // The first size of an identifier wins; largest first, ties broken by hash then identifier.
+    var all = dependencies.DistinctBy(d => d.Id,
+                                      StringComparer.Ordinal)
+                          .Select(d => (d.Id, d.Size, Hash: Hash(d.Id)))
+                          .OrderByDescending(d => d.Size)
+                          .ThenBy(d => d.Hash)
+                          .ThenBy(d => d.Id,
+                                  StringComparer.Ordinal)
+                          .ToList();
     if (all.Count == 0)
     {
       return null;
@@ -150,19 +122,15 @@ public static class Affinity
                                        ? ulong.MaxValue
                                        : acc + d.Size);
 
-    var bySize = all.OrderByDescending(d => d.Size)
-                    .ThenBy(d => d.Hash)
-                    .ThenBy(d => d.Id,
-                            StringComparer.Ordinal)
-                    .ToList();
-    var taken = bySize.Take(SizeHalf)
-                      .ToList();
-    var rest = bySize.Skip(SizeHalf)
-                     .OrderBy(d => d.Hash)
-                     .ThenBy(d => d.Id,
-                             StringComparer.Ordinal)
-                     .Take(Slots - taken.Count);
-    taken.AddRange(rest);
+    // The largest dependencies, then the smallest hashes among the others: a sample that tasks
+    // sharing most of their dependencies have in common.
+    var taken = all.Take(SizeHalf)
+                   .Concat(all.Skip(SizeHalf)
+                              .OrderBy(d => d.Hash)
+                              .ThenBy(d => d.Id,
+                                      StringComparer.Ordinal)
+                              .Take(Slots - SizeHalf))
+                   .ToList();
 
     return new AffinityData(taken.Select(d => d.Hash)
                                  .ToArray(),
