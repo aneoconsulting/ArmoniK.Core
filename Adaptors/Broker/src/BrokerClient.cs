@@ -75,7 +75,7 @@ internal sealed class BrokerClient : IAsyncDisposable
 
     node_ = options.Affinity
               ? new NodeBody(string.IsNullOrEmpty(options.NodeId)
-                               ? Environment.GetEnvironmentVariable("NODE_NAME") ?? Environment.MachineName
+                               ? Environment.MachineName
                                : options.NodeId,
                              options.CacheCapacityBytes)
               : null;
