@@ -21,7 +21,7 @@ use serde_json::json;
 use tokio::sync::oneshot;
 
 use crate::actor::{Command, Partition, Registry};
-use crate::affinity::{Affinity, Outputs, SLOTS};
+use crate::affinity::{Outputs, SLOTS};
 use crate::error::ApiError;
 use crate::state::{EnqueueItem, Inspection, NackPolicy, NodeDecl, PartitionStats};
 use crate::token::Token;
@@ -239,13 +239,7 @@ struct EnqueueBody {
     priority: u8,
     #[serde(default)]
     delay_ms: u64,
-    items: Vec<ItemBody>,
-}
-
-#[derive(Deserialize)]
-struct ItemBody {
-    task_id: String,
-    affinity: Option<Affinity>,
+    items: Vec<EnqueueItem>,
 }
 
 fn check_affinity(hashes: usize, sizes: usize) -> Result<(), ApiError> {
@@ -287,18 +281,10 @@ async fn enqueue(
     let p = reg.get_or_create(&partition)?;
 
     // Backpressure is decided by the actor, before insertion; the batch is all or nothing.
-    let items = b
-        .items
-        .into_iter()
-        .map(|i| EnqueueItem {
-            task_id: i.task_id,
-            affinity: i.affinity,
-        })
-        .collect();
     let (accepted, high) = call(&p, |reply| Command::Enqueue {
         key: b.key,
         priority: b.priority,
-        items,
+        items: b.items,
         delay_ms: b.delay_ms,
         reply,
     })
@@ -308,14 +294,6 @@ async fn enqueue(
 
 // ------------------------------------------------------------------ pull / renew
 
-#[derive(Deserialize, Default)]
-struct NodeBody {
-    id: Option<String>,
-    cache_capacity_bytes: Option<u64>,
-    fetch_fixed_cost_us: Option<u64>,
-    fetch_throughput_bytes_per_s: Option<u64>,
-}
-
 #[derive(Deserialize)]
 struct PullBody {
     #[serde(default = "one")]
@@ -323,7 +301,7 @@ struct PullBody {
     #[serde(default)]
     wait_ms: u64,
     #[serde(default)]
-    node: Option<NodeBody>,
+    node: Option<NodeDecl>,
 }
 
 fn one() -> usize {
@@ -345,16 +323,10 @@ async fn pull_core(reg: &Registry, partition: &str, body: &[u8]) -> ApiResult {
         return Err(ApiError::Malformed("max must be at least 1"));
     }
     check_name(partition)?;
-    let n = b.node.unwrap_or_default();
-    if let Some(id) = &n.id {
+    let node = b.node.unwrap_or_default();
+    if let Some(id) = &node.id {
         check_name(id)?;
     }
-    let node = NodeDecl {
-        id: n.id,
-        cache_capacity_bytes: n.cache_capacity_bytes,
-        fetch_fixed_cost_us: n.fetch_fixed_cost_us,
-        fetch_throughput_bytes_per_s: n.fetch_throughput_bytes_per_s,
-    };
     // Bounded here rather than rejected: the client needs no knowledge of the server limits.
     let max = b.max.min(reg.cfg.max_pull);
     let wait = b.wait_ms.min(reg.cfg.max_wait_ms);

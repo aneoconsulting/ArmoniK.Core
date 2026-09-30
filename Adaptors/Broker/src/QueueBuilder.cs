@@ -52,8 +52,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
                     ConfigurationManager configuration,
                     ILogger              logger)
   {
-    var options = configuration.GetSection(Broker.SettingSection)
-                               .Get<Broker>() ?? throw new InvalidOperationException("Options not found");
+    var options = configuration.GetRequiredValue<Broker>(Broker.SettingSection);
     if (string.IsNullOrEmpty(options.Endpoint))
     {
       throw new InvalidOperationException($"{Broker.SettingSection}:{nameof(Broker.Endpoint)} is required");

@@ -10,7 +10,7 @@ use std::collections::BinaryHeap;
 use std::sync::Arc;
 use std::sync::atomic::Ordering;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use tokio::sync::oneshot;
 
 use crate::affinity::{self, Affinity, Outputs};
@@ -104,7 +104,7 @@ struct Node {
     last_used_ms: u64,
 }
 
-#[derive(Clone, Debug, Default)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct NodeDecl {
     pub id: Option<String>,
     pub cache_capacity_bytes: Option<u64>,
@@ -119,6 +119,7 @@ pub struct Delivered {
     pub attempts: u8,
 }
 
+#[derive(Deserialize)]
 pub struct EnqueueItem {
     pub task_id: String,
     pub affinity: Option<Affinity>,
@@ -675,10 +676,7 @@ impl PartitionState {
                 .get_mut(node as usize)
                 .and_then(|n| n.mirror.as_mut())
         {
-            for (&h, &s) in aff.hashes.iter().zip(&aff.sizes) {
-                if s == 0 {
-                    break;
-                }
+            for (h, _) in aff.deps() {
                 if succeeded {
                     m.insert(h);
                 } else if m.withdraw(h) {
@@ -770,10 +768,7 @@ impl PartitionState {
         {
             // What the node already holds, or is fetching, before this delivery announces it.
             let (mut local, mut total) = (0.0, 0.0);
-            for (&h, &s) in aff.hashes.iter().zip(&aff.sizes) {
-                if s == 0 {
-                    break;
-                }
+            for (h, s) in aff.deps() {
                 let size = affinity::decode(s);
                 total += size;
                 if m.anticipate(h) {
@@ -824,10 +819,7 @@ impl PartitionState {
             self.examined.set(self.examined.get() + 1);
             let mut score = 0.0;
             if let Some(a) = &self.records[cand as usize].affinity {
-                for (i, (&h, &s)) in a.hashes.iter().zip(&a.sizes).enumerate() {
-                    if s == 0 {
-                        break;
-                    }
+                for (i, (h, s)) in a.deps().enumerate() {
                     if i > 0 {
                         if *budget == 0 {
                             break;
@@ -964,10 +956,7 @@ impl PartitionState {
                     .get_mut(node as usize)
                     .and_then(|n| n.mirror.as_mut())
             {
-                for (&h, &s) in o.hashes.iter().zip(&o.sizes) {
-                    if s == 0 {
-                        break;
-                    }
+                for (h, _) in o.deps() {
                     m.insert(h);
                 }
             }
@@ -1106,7 +1095,6 @@ impl PartitionState {
         });
     }
 
-    /// Returns the messages still held to the global counter; the partition is going away.
     /// The partition is going away: its blocks return to the pool and its counters are
     /// folded into the retired totals.
     pub fn release_held(&mut self) {

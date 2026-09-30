@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use clap::Parser;
 
 /// Size of one enqueue item in JSON, affinity included.
-pub const ENQUEUE_ITEM_BYTES: usize = 400;
+const ENQUEUE_ITEM_BYTES: usize = 400;
 const ENQUEUE_HEADER_BYTES: usize = 256;
 
 #[derive(Parser, Clone, Debug)]

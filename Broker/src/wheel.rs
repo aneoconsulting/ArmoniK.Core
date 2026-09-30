@@ -8,7 +8,8 @@
 //! of the turn and is moved again when that bucket comes due. A bitmap of the occupied
 //! buckets gives the next deadline and lets a long idle period be skipped at once.
 
-const NIL: u32 = u32::MAX;
+use crate::state::NIL;
+
 /// Largest wheel: 65 536 buckets of 1 ms, 256 KiB of heads.
 const MAX_BITS: u32 = 16;
 

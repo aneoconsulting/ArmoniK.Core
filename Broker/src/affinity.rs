@@ -84,6 +84,29 @@ pub struct Outputs {
     pub sizes: Vec<u8>,
 }
 
+/// The (hash, encoded size) pairs of the selected data, up to the first empty slot.
+fn deps<'a>(hashes: &'a [u32], sizes: &'a [u8]) -> impl Iterator<Item = (u32, u8)> + 'a {
+    hashes
+        .iter()
+        .copied()
+        .zip(sizes.iter().copied())
+        .take_while(|&(_, s)| s != 0)
+}
+
+impl Affinity {
+    /// The selected dependencies, as (hash, encoded size).
+    pub fn deps(&self) -> impl Iterator<Item = (u32, u8)> + '_ {
+        deps(&self.hashes, &self.sizes)
+    }
+}
+
+impl Outputs {
+    /// The selected outputs, as (hash, encoded size).
+    pub fn deps(&self) -> impl Iterator<Item = (u32, u8)> + '_ {
+        deps(&self.hashes, &self.sizes)
+    }
+}
+
 /// Reference selection of the affinity structure (protocol §8.1).
 pub fn select<'a>(deps: impl IntoIterator<Item = (&'a str, u64)>) -> Option<Affinity> {
     let mut seen = std::collections::HashSet::new();
