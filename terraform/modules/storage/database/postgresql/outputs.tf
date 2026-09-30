@@ -1,5 +1,5 @@
 output "generated_env_vars" {
-  value = {
+  value = merge({
     "Components__TableStorage"                  = "ArmoniK.Adapters.PostgreSQL.TableStorage"
     "Components__AuthenticationStorage"         = "ArmoniK.Adapters.PostgreSQL.AuthenticationTable"
     "PostgreSQL__Host"                          = docker_container.database.name
@@ -11,7 +11,9 @@ output "generated_env_vars" {
     "PostgreSQL__MaxPoolSize"                   = tostring(var.postgresql_params.max_pool_size)
     "PostgreSQL__TableStorage__PollingDelayMin" = var.postgresql_params.min_polling_delay
     "PostgreSQL__TableStorage__PollingDelayMax" = var.postgresql_params.max_polling_delay
-  }
+    }, var.postgresql_params.ssl ? {
+    "PostgreSQL__CAFile" = "/postgresql-certificate/ca.pem"
+  } : {})
 }
 
 output "core_mounts" {

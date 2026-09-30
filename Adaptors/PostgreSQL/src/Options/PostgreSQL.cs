@@ -64,9 +64,21 @@ public class PostgreSQL
   public string? ConnectionString { get; set; }
 
   /// <summary>
-  ///   Whether to use SSL
+  ///   Whether to use SSL. The server certificate is validated against <see cref="CAFile" />.
   /// </summary>
   public bool Ssl { get; set; }
+
+  /// <summary>
+  ///   Path to the certificate authority used to validate the server certificate. Required when <see cref="Ssl" /> is
+  ///   true.
+  /// </summary>
+  public string CAFile { get; set; } = "";
+
+  /// <summary>
+  ///   Accept a server certificate whose name does not match the host. The certificate must still be issued by
+  ///   <see cref="CAFile" />.
+  /// </summary>
+  public bool AllowInsecureTls { get; set; }
 
   /// <summary>
   ///   Path to the credentials file
