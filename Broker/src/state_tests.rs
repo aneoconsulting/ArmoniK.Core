@@ -526,6 +526,93 @@ fn affinity_prefers_candidates_with_local_data() {
     s.check();
 }
 
+/// A partition whose node n1 holds "hot", behind a head that needs data no node holds.
+fn cold_head_before_hot_data(max_reorder_pulls: u32) -> (PartitionState, u32) {
+    let mut cfg = Config::for_tests();
+    cfg.max_reorder_pulls = max_reorder_pulls;
+    let mut s = state_with(cfg);
+    let n1 = s.node(
+        &NodeDecl {
+            id: Some("n1".into()),
+            ..Default::default()
+        },
+        0,
+    );
+    s.enqueue(
+        "k",
+        1,
+        vec![EnqueueItem {
+            task_id: "producer".into(),
+            affinity: aff(&[("in", 10)]),
+        }],
+        0,
+        0,
+    )
+    .unwrap();
+    let p = s.pull(n1, 1, 0).remove(0);
+    let hot = aff(&[("hot", 1 << 30)]).unwrap();
+    s.ack(
+        vec![(
+            tok(&p),
+            Some(Outputs {
+                hashes: hot.hashes,
+                sizes: hot.sizes,
+            }),
+        )],
+        0,
+    );
+    s.enqueue(
+        "k",
+        1,
+        vec![EnqueueItem {
+            task_id: "cold".into(),
+            affinity: aff(&[("cold", 1 << 30)]),
+        }],
+        0,
+        0,
+    )
+    .unwrap();
+    (s, n1)
+}
+
+fn enqueue_hot(s: &mut PartitionState, n: usize) {
+    let items = (0..n)
+        .map(|_| EnqueueItem {
+            task_id: "hot".into(),
+            affinity: aff(&[("hot", 1 << 30)]),
+        })
+        .collect();
+    s.enqueue("k", 1, items, 0, 0).unwrap();
+}
+
+#[test]
+fn affinity_passes_over_the_head_of_a_queue_for_a_bounded_number_of_pulls() {
+    let (mut s, n1) = cold_head_before_hot_data(5);
+    // A steady flow of consumers of "hot" arrives behind it, one per pull.
+    let mut served_at = None;
+    for pull in 0..10 {
+        enqueue_hot(&mut s, 1);
+        if s.pull(n1, 1, 0).remove(0).task_id == "cold" {
+            served_at = Some(pull);
+            break;
+        }
+    }
+    // Passed over by five pulls, served by the sixth.
+    assert_eq!(served_at, Some(5));
+    s.check();
+}
+
+#[test]
+fn a_pull_serving_several_messages_passes_over_the_head_once() {
+    let (mut s, n1) = cold_head_before_hot_data(2);
+    enqueue_hot(&mut s, 6);
+    let first = s.pull(n1, 3, 0);
+    assert!(first.iter().all(|d| d.task_id == "hot"), "one pass so far");
+    let second = s.pull(n1, 3, 0);
+    assert_eq!(second[1].task_id, "cold", "the second pull is the bound");
+    s.check();
+}
+
 #[test]
 fn undone_delivery_withdraws_its_dependencies_from_the_mirror() {
     let mut s = state();
