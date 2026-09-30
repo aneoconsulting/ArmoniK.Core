@@ -153,6 +153,13 @@ internal class PostgresDatabaseProvider : IDisposable
       var server = new PgServer("18.4.0",
                                 PgUser,
                                 pgDir,
+                                // The watchers stream changes through logical replication.
+                                pgServerParams: new Dictionary<string, string>
+                                                {
+                                                  {
+                                                    "wal_level", "logical"
+                                                  },
+                                                },
                                 addLocalUserAccessPermission: true,
                                 // Keep the data directory between runs; TruncateAllTables handles cleanup.
                                 clearWorkingDirOnStart: false,

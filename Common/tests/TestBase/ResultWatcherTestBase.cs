@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -258,6 +259,53 @@ public class ResultWatcherTestBase
                                                   },
                                                   false);
 
+  /// <summary>
+  ///   Reads the results of the session "SessionId" before the events are produced.
+  /// </summary>
+  /// <returns>
+  ///   The results indexed by their id
+  /// </returns>
+  private async Task<Dictionary<string, Result>> GetSessionResults()
+    => (await ResultTable!.GetResults(result => result.SessionId == "SessionId",
+                                      result => result,
+                                      CancellationToken.None)
+                          .ToListAsync()
+                          .ConfigureAwait(false)).ToDictionary(result => result.ResultId);
+
+  /// <summary>
+  ///   Ignores the events that do not change the state of their result.
+  ///   Some adaptors cannot tell which fields an update changed, so they notify
+  ///   every update of a result, even when the watched field keeps its value.
+  /// </summary>
+  /// <param name="events">Events received by the watcher</param>
+  /// <param name="state">Value of the watched field for each result before the events</param>
+  /// <param name="key">Id of the result targeted by the event</param>
+  /// <param name="value">Value of the watched field carried by the event</param>
+  /// <returns>
+  ///   The events that change the state of their result, in their original order
+  /// </returns>
+  private static List<TEvent> IgnoreNoOpEvents<TEvent, TValue>(IEnumerable<TEvent>        events,
+                                                               Dictionary<string, TValue> state,
+                                                               Func<TEvent, string>       key,
+                                                               Func<TEvent, TValue>       value)
+  {
+    var changes = new List<TEvent>();
+    foreach (var ev in events)
+    {
+      if (state.TryGetValue(key(ev),
+                            out var current) && EqualityComparer<TValue>.Default.Equals(current,
+                                                                                        value(ev)))
+      {
+        continue;
+      }
+
+      state[key(ev)] = value(ev);
+      changes.Add(ev);
+    }
+
+    return changes;
+  }
+
   private NewResult ResultToNewResult(Result result)
     => new(result.SessionId,
            result.ResultId,
@@ -365,6 +413,9 @@ public class ResultWatcherTestBase
   {
     if (RunTests)
     {
+      var results = await GetSessionResults()
+                      .ConfigureAwait(false);
+
       var cts = new CancellationTokenSource();
 
       var watchEnumerator = await ResultWatcher!.GetResultStatusUpdates(result => result.SessionId == "SessionId",
@@ -396,6 +447,12 @@ public class ResultWatcherTestBase
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
 
+      newResults = IgnoreNoOpEvents(newResults,
+                                    results.ToDictionary(pair => pair.Key,
+                                                         pair => pair.Value.Status),
+                                    cur => cur.ResultId,
+                                    cur => cur.Status);
+
       Assert.That(newResults,
                   Is.EqualTo(new List<ResultStatusUpdate>
                              {
@@ -418,6 +475,9 @@ public class ResultWatcherTestBase
   {
     if (RunTests)
     {
+      var results = await GetSessionResults()
+                      .ConfigureAwait(false);
+
       var cts = new CancellationTokenSource();
 
       var watchEnumerator = await ResultWatcher!.GetResultOwnerUpdates(result => result.SessionId == "SessionId",
@@ -448,6 +508,12 @@ public class ResultWatcherTestBase
 
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
+
+      newResults = IgnoreNoOpEvents(newResults,
+                                    results.ToDictionary(pair => pair.Key,
+                                                         pair => pair.Value.OwnerTaskId),
+                                    cur => cur.ResultId,
+                                    cur => cur.NewOwner);
 
       Assert.That(newResults,
                   Is.EqualTo(new List<ResultOwnerUpdate>
