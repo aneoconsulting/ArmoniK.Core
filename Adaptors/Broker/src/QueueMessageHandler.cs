@@ -28,21 +28,61 @@ namespace ArmoniK.Core.Adapters.Broker;
 
 internal sealed class QueueMessageHandler : IQueueMessageHandler
 {
+  private readonly Heart        autoRenewLease_;
   private readonly BrokerClient client_;
-  private readonly ILogger         logger_;
-  private          int             disposed_;
+  private readonly ILogger      logger_;
+  private readonly TimeSpan     renewPeriod_;
+  private          int          disposed_;
+  private          bool         lost_;
 
   private IReadOnlyCollection<(string Id, long Size)>? outputs_;
 
-  public QueueMessageHandler(BrokerClient client,
-                             PulledMessage   message,
-                             ILogger         logger)
+  public QueueMessageHandler(BrokerClient  client,
+                             PulledMessage message,
+                             TimeSpan      lease,
+                             ILogger       logger)
   {
     client_           = client;
     logger_           = logger;
     MessageId         = message.Token;
     TaskId            = message.TaskId;
     ReceptionDateTime = DateTime.UtcNow;
+    // A third of the lease: a renewal lost in a row still leaves time for the next one.
+    renewPeriod_ = TimeSpan.FromTicks(Math.Max(TimeSpan.TicksPerMillisecond,
+                                               lease.Ticks / 3));
+    autoRenewLease_ = new Heart(RenewLease,
+                                renewPeriod_);
+    autoRenewLease_.Start();
+  }
+
+  private async Task RenewLease(CancellationToken cancellationToken)
+  {
+    if (lost_)
+    {
+      return;
+    }
+
+    try
+    {
+      if (!await client_.RenewAsync(MessageId,
+                                    renewPeriod_,
+                                    cancellationToken)
+                        .ConfigureAwait(false))
+      {
+        // The message designates no current distribution any more: stop renewing it.
+        lost_ = true;
+        logger_.LogWarning("Broker no longer holds message {MessageId} of task {TaskId}",
+                           MessageId,
+                           TaskId);
+      }
+    }
+    catch (Exception e) when (e is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
+    {
+      logger_.LogWarning(e,
+                         "Lease renewal of broker message {MessageId} of task {TaskId} failed",
+                         MessageId,
+                         TaskId);
+    }
   }
 
   /// <summary>
@@ -73,8 +113,8 @@ internal sealed class QueueMessageHandler : IQueueMessageHandler
   public DateTime ReceptionDateTime { get; init; }
 
   /// <summary>
-  ///   Settles the message. Leases are renewed in batches by the client, which stops renewing this one
-  ///   before settling it: a failure here is logged, not thrown, and the broker redelivers after the lease.
+  ///   Settles the message. Its lease stops being renewed first: if the settlement fails, it is logged, not
+  ///   thrown, and the broker redelivers the message after the lease instead of keeping it forever.
   /// </summary>
   public async ValueTask DisposeAsync()
   {
@@ -83,6 +123,9 @@ internal sealed class QueueMessageHandler : IQueueMessageHandler
     {
       return;
     }
+
+    await autoRenewLease_.Stop()
+                         .ConfigureAwait(false);
 
     try
     {
