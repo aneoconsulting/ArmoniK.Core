@@ -4,10 +4,13 @@ resource "docker_image" "object" {
 }
 
 resource "docker_container" "object" {
-  name       = var.host
-  image      = docker_image.object.image_id
-  entrypoint = ["/bin/bash"]
-  command    = ["-c", "mkdir -p /data/${var.bucket_name} && minio server /data --console-address :9001"]
+  name    = var.host
+  image   = docker_image.object.image_id
+  command = ["mini", "-dir=/data", "-s3.port=${var.port}", "-bucket=${var.bucket_name}", "-master.telemetry=false"]
+  env = [
+    "AWS_ACCESS_KEY_ID=${var.login}",
+    "AWS_SECRET_ACCESS_KEY=${var.password}",
+  ]
 
   networks_advanced {
     name = var.network.name
@@ -17,9 +20,5 @@ resource "docker_container" "object" {
   ports {
     internal = var.port
     external = var.port
-  }
-  ports {
-    internal = 9001
-    external = 9001
   }
 }

@@ -52,9 +52,9 @@ module "object_redis" {
   network = local.network
 }
 
-module "object_minio" {
-  source      = "./modules/storage/object/minio"
-  count       = var.object_storage.name == "minio" ? 1 : 0
+module "object_seaweedfs" {
+  source      = "./modules/storage/object/seaweedfs"
+  count       = var.object_storage.name == "seaweedfs" ? 1 : 0
   image       = var.object_storage.image
   host        = var.object_storage.host
   port        = var.object_storage.port

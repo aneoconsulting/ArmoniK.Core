@@ -58,16 +58,16 @@ public class ObjectStorageTests : ObjectStorageTestBase
                                                     "Components:ObjectStorageAdaptorSettings:AdapterAbsolutePath", $"{SolutionRoot}{S3Path}"
                                                   },
                                                   {
-                                                    "S3:BucketName", "miniobucket"
+                                                    "S3:BucketName", "armonik-bucket"
                                                   },
                                                   {
                                                     "S3:EndpointUrl", "http://127.0.0.1:9000"
                                                   },
                                                   {
-                                                    "S3:Login", "minioadmin"
+                                                    "S3:Login", "seaweedfs"
                                                   },
                                                   {
-                                                    "S3:Password", "minioadmin"
+                                                    "S3:Password", "seaweedfs"
                                                   },
                                                   {
                                                     "S3:MustForcePathStyle", "true"

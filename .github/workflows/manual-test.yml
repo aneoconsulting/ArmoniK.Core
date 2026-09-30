@@ -30,11 +30,11 @@ jobs:
         with:
           tool: just
 
-      - name: Minio Server UP
+      - name: SeaweedFS Server UP
         if: ${{ matrix.projects }} == "Adaptors/S3/tests"
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just object=minio deployTargetObject
+            just object=seaweedfs deployTargetObject
 
       - name: Dotnet Restore
         run: |

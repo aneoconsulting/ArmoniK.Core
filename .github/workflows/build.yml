@@ -92,11 +92,11 @@ jobs:
         EOF
         sudo systemctl restart docker
 
-    - name: Minio Server UP
+    - name: SeaweedFS Server UP
       if: ${{ matrix.projects }} == "Adaptors/S3/tests"
       run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just object=minio deployTargetObject
+            just object=seaweedfs deployTargetObject
 
     - name: Fake GCS Server UP
       if: ${{ matrix.projects }} == "Adaptors/Gcs/tests"
@@ -543,11 +543,11 @@ jobs:
           - { queue: sqs, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
           - { queue: nats, object: redis, log-level: Verbose, socket_type: unixdomainsocket, cinit: true  }
 
-          - { queue: activemq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: rabbitmq, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: pubsub, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: sqs, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
-          - { queue: nats, object: minio, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: activemq, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: rabbitmq, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: pubsub, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: sqs, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
+          - { queue: nats, object: seaweedfs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 
           - { queue: activemq, object: gcs, log-level: Information, socket_type: unixdomainsocket, cinit: true  }
 

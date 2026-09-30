@@ -9,11 +9,6 @@ variable "network" {
   })
 }
 
-variable "exposed_port" {
-  type    = number
-  default = 9000
-}
-
 variable "host" {
   type = string
 }

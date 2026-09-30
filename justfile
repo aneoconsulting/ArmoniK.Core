@@ -11,7 +11,7 @@ log_level    := "Information"    # Serilog log level: Verbose, Debug, Informatio
 queue        := "activemq"       # Queue backend: activemq, rabbitmq, nats, sqs, pubsub, none
 database     := "mongo"          # Database backend: mongo, postgresql
 worker       := "htcmock"        # Test worker: htcmock, stream, bench, crashingworker
-object       := "redis"          # Object storage: redis, minio, gcs, local, embed, null
+object       := "redis"          # Object storage: redis, seaweedfs, gcs, local, embed, null
 replicas     := "3"              # Number of PollingAgent+Worker pairs to deploy
 partitions   := "2"              # Number of ArmoniK partitions
 platform     := ""               # Docker build platform override (e.g. "linux/amd64"); empty = host platform
@@ -110,8 +110,8 @@ export TF_VAR_database_storage := if database == "postgresql" {
 # Sets the object storage
 object_storage := if object == "redis" {
   '{ name = "redis", image = "redis:bullseye" '
-} else if object == "minio" {
-  '{ name = "minio", image = "quay.io/minio/minio" '
+} else if object == "seaweedfs" {
+  '{ name = "seaweedfs", image = "chrislusf/seaweedfs:4.47" '
 } else if object == "gcs" {
   '{ name = "gcs", image = "fsouza/fake-gcs-server:latest" '
 } else if object == "embed" {
@@ -235,7 +235,7 @@ _usage:
 
       object: allowed values below
         redis: to use redis for object storage (default)
-        minio: to use minio for object storage.
+        seaweedfs: to use SeaweedFS (S3 compatible) for object storage.
         gcs: to use fake-gcs-server (Google Cloud Storage emulator) for object storage.
         local: to mount a local volume for object storage
         embed: to use the database as an object storage
