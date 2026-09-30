@@ -228,27 +228,26 @@ Aucune dépendance : `affinity` absent.
 ### 8.2 Hachage
 
 ```
-fnv1a64(bytes):  h = 0xcbf29ce484222325 ; pour chaque octet b : h = (h XOR b) * 0x100000001b3   (mod 2^64)
-fmix64(k):       k ^= k >> 33 ; k *= 0xff51afd7ed558ccd ; k ^= k >> 33 ; k *= 0xc4ceb9fe1a85ec53 ; k ^= k >> 33
-hash(id)       = (fmix64(fnv1a64(utf8(id))) mod 2^32)
+hash(id) = XXH32(utf8(id), seed = 0)
 ```
 
-Le mélange final garantit que des identifiants proches (UUID v7 horodatés, compteurs) ne produisent pas de
-hachages proches.
+XXH32 est l'algorithme standard de xxHash, disponible dans les deux langages (`System.IO.Hashing.XxHash32`
+en .NET, `xxhash-rust` en Rust) ; son mélange garantit que des identifiants proches (UUID v7 horodatés,
+compteurs) ne produisent pas de hachages proches.
 
 ### 8.3 Encodage logarithmique des tailles
 
-Six pas par octave (≈ 12,2 % par pas), sur la valeur `v = s + 1` ; calcul entier uniquement.
+Mini-flottant sur la valeur `v = s + 1` : l'exposant et les deux bits qui suivent le bit de tête, soit
+quatre pas par octave (au plus 25 % d'écart par pas) ; calcul entier uniquement.
 
 ```
-T = [ 4294967296, 4820937788, 5411319705, 6074001000, 6817835604, 7652761717 ]   // round(2^32 · 2^(k/6))
 encode(s):
     v = s + 1                      (saturé à 2^64 - 1)
     e = 63 - leading_zeros(v)      // floor(log2 v)
-    f = (v · 2^32) >> e            // calcul sur 128 bits ; f ∈ [2^32, 2^33)
-    k = nombre d'éléments de T inférieurs ou égaux à f   (1 à 6)
-    return min(255, 6·e + k)
-decode(c) ≈ 2^((c - 1) / 6) - 1    // usage indicatif (scoring), jamais comparé entre implémentations
+    m = (e ≥ 2 ? v >> (e - 2) : v << (2 - e)) & 3
+    return min(255, 1 + 4·e + m)
+decode(c) ≈ (4 + m) · 2^(e - 2) - 1  avec e = (c - 1) / 4, m = (c - 1) mod 4
+                                   // borne basse du pas ; usage indicatif (scoring), jamais comparé entre implémentations
 ```
 
-`encode(0) = 1`, `encode(1) = 7`, encodage croissant au sens large ; 255 est atteint vers 2^42 octets (≈ 4 Tio).
+`encode(0) = 1`, `encode(1) = 5`, encodage croissant au sens large ; 255 n'est atteint qu'au-delà de 2^63 octets.
