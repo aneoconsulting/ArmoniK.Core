@@ -15,6 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Net;
+
+using ArmoniK.Core.Utils;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -67,6 +71,58 @@ public class BrokerOptionsTests
     else
     {
       Assert.Throws<InvalidOperationException>(() => Build(settings));
+    }
+  }
+
+  [TestCase(Broker.IdSource.HostName)]
+  [TestCase(Broker.IdSource.Ip)]
+  public void NodeIdIsFoundFromItsSource(Broker.IdSource source)
+    => Assert.That(NodeIdentity.Resolve(new Broker
+                                        {
+                                          NodeIdSource = source,
+                                        }),
+                   Is.EqualTo(source == Broker.IdSource.HostName
+                                ? Dns.GetHostName()
+                                : LocalIpFinder.LocalIpv4Address()));
+
+  [Test]
+  public void ExplicitNodeIdWinsOverItsSource()
+    => Assert.That(NodeIdentity.Resolve(new Broker
+                                        {
+                                          NodeId       = "cache-group-1",
+                                          NodeIdSource = Broker.IdSource.NodeName,
+                                        }),
+                   Is.EqualTo("cache-group-1"));
+
+  [Test]
+  [NonParallelizable]
+  public void NodeNameIsReadFromTheEnvironment()
+  {
+    var previous = Environment.GetEnvironmentVariable("NODE_NAME");
+    try
+    {
+      Environment.SetEnvironmentVariable("NODE_NAME",
+                                         "k8s-node-3");
+      Assert.That(NodeIdentity.Resolve(new Broker
+                                       {
+                                         NodeIdSource = Broker.IdSource.NodeName,
+                                       }),
+                  Is.EqualTo("k8s-node-3"));
+
+      // Missing: fails at startup rather than falling back to another identity.
+      Environment.SetEnvironmentVariable("NODE_NAME",
+                                         null);
+      Assert.Throws<InvalidOperationException>(() => Build(new Dictionary<string, string?>
+                                                           {
+                                                             ["Broker:Endpoint"]     = "http://127.0.0.1:1",
+                                                             ["Broker:Affinity"]     = "true",
+                                                             ["Broker:NodeIdSource"] = "NodeName",
+                                                           }));
+    }
+    finally
+    {
+      Environment.SetEnvironmentVariable("NODE_NAME",
+                                         previous);
     }
   }
 }

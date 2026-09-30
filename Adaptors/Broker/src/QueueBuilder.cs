@@ -63,6 +63,14 @@ public class QueueBuilder : IDependencyInjectionBuildable
       throw new InvalidOperationException($"{Broker.SettingSection}:{nameof(Broker.CacheCapacityBytes)} must be positive with {Broker.SettingSection}:{nameof(Broker.Affinity)}");
     }
 
+    if (options.Affinity)
+    {
+      // Resolved once, at startup: a source that gives nothing fails here rather than at the first pull.
+      options.NodeId = NodeIdentity.Resolve(options);
+      logger.LogInformation("Broker affinity declares node {NodeId}",
+                            options.NodeId);
+    }
+
     serviceCollection.AddSingleton(options);
     // Request logging is removed: the Pollster long polls in a loop, which would log several lines per second at Information.
     serviceCollection.AddHttpClient(BrokerClient.HttpClientName,
