@@ -91,6 +91,10 @@ public class TlsTests
                                              {
                                                "wal_level", "logical"
                                              },
+                                             // See PostgresDatabaseProvider: the output pipes are never read.
+                                             {
+                                               "logging_collector", "on"
+                                             },
                                            },
                            addLocalUserAccessPermission: true,
                            clearInstanceDirOnStop: true,
