@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
@@ -35,8 +34,8 @@ internal sealed record PulledMessage(string Token,
                                      string TaskId);
 
 /// <summary>
-///   REST client of the broker (protocol v1). Stateless towards the server: it holds the tokens it
-///   received and renews them all in one call. Transient failures are retried by <see cref="RetryHandler" />.
+///   REST client of the broker (protocol v1). Stateless: each message handler renews its own lease.
+///   Transient failures are retried by <see cref="RetryHandler" />.
 /// </summary>
 internal sealed class BrokerClient : IAsyncDisposable
 {
@@ -51,16 +50,13 @@ internal sealed class BrokerClient : IAsyncDisposable
                                                          DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
                                                        };
 
-  private readonly CancellationTokenSource            disposed_ = new();
-  private readonly ConcurrentDictionary<string, byte> held_     = new();
-  private readonly IHttpClientFactory                 httpClientFactory_;
-  private readonly ILogger                            logger_;
-  private readonly NodeBody?                          node_;
-  private readonly Broker                             options_;
-  private readonly Version                            version_;
-  private          long                               epoch_ = -1;
-  private          long                               renewPeriodMs_;
-  private          int                                renewing_;
+  private readonly CancellationTokenSource disposed_ = new();
+  private readonly IHttpClientFactory      httpClientFactory_;
+  private readonly ILogger                 logger_;
+  private readonly NodeBody?               node_;
+  private readonly Broker                  options_;
+  private readonly Version                 version_;
+  private          long                    epoch_ = -1;
 
   public BrokerClient(Broker                options,
                       IHttpClientFactory    httpClientFactory,
@@ -182,12 +178,12 @@ internal sealed class BrokerClient : IAsyncDisposable
                          cancellationToken);
 
   /// <summary>
-  ///   Long polls messages. Never throws for a broker failure: it logs, waits and returns nothing,
-  ///   so that a restart of the broker does not stop the Pollster.
+  ///   Long polls messages, with the duration of their lease. Never throws for a broker failure: it logs,
+  ///   waits and returns nothing, so that a restart of the broker does not stop the Pollster.
   /// </summary>
-  public async Task<IReadOnlyList<PulledMessage>> PullAsync(string            partition,
-                                                            int               max,
-                                                            CancellationToken cancellationToken)
+  public async Task<(TimeSpan Lease, IReadOnlyList<PulledMessage> Messages)> PullAsync(string            partition,
+                                                                                       int               max,
+                                                                                       CancellationToken cancellationToken)
   {
     try
     {
@@ -199,18 +195,9 @@ internal sealed class BrokerClient : IAsyncDisposable
                                                options_.PullWait + options_.RequestTimeout,
                                                cancellationToken)
                    .ConfigureAwait(false);
-      if (body is null)
-      {
-        return [];
-      }
-
-      foreach (var m in body.Messages)
-      {
-        held_[m.Token] = 0;
-      }
-
-      StartRenewing(body.LeaseMs);
-      return body.Messages;
+      return body is null
+               ? (TimeSpan.Zero, [])
+               : (TimeSpan.FromMilliseconds(body.LeaseMs), body.Messages);
     }
     catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
     {
@@ -225,100 +212,49 @@ internal sealed class BrokerClient : IAsyncDisposable
       await Task.Delay(TimeSpan.FromSeconds(0.5 + Random.Shared.NextDouble()),
                        cancellationToken)
                 .ConfigureAwait(false);
-      return [];
+      return (TimeSpan.Zero, []);
     }
   }
 
   /// <summary>
-  ///   Renews at a third of the lease: a renewal lost in a row still leaves time for the next one.
-  ///   The loop starts with the first message received.
+  ///   Renews the lease of a message, sent once with the given timeout.
   /// </summary>
-  private void StartRenewing(long leaseMs)
+  /// <returns>
+  ///   False when the token designates no current distribution any more, so that renewing it is useless
+  /// </returns>
+  public async Task<bool> RenewAsync(string            token,
+                                     TimeSpan          timeout,
+                                     CancellationToken cancellationToken)
   {
-    Volatile.Write(ref renewPeriodMs_,
-                   Math.Max(1,
-                            leaseMs / 3));
-    if (Interlocked.Exchange(ref renewing_,
-                             1) == 0)
-    {
-      _ = RenewLoopAsync(disposed_.Token);
-    }
-  }
-
-  private async Task RenewLoopAsync(CancellationToken token)
-  {
-    while (!token.IsCancellationRequested)
-    {
-      try
-      {
-        var period = TimeSpan.FromMilliseconds(Volatile.Read(ref renewPeriodMs_));
-        await Task.Delay(period,
-                         token)
-                  .ConfigureAwait(false);
-        if (held_.IsEmpty)
-        {
-          continue;
-        }
-
-        var body = await PostAsync<RenewResponse>("v1/renew",
-                                                  new RenewBody(held_.Select(kv => kv.Key)
-                                                                .ToList()),
-                                                  period,
-                                                  token)
-                     .ConfigureAwait(false);
-        // Tokens that designate no current distribution any more: stop renewing them.
-        foreach (var t in body?.Unknown ?? [])
-        {
-          if (held_.TryRemove(t,
-                              out _))
-          {
-            logger_.LogWarning("Broker no longer holds message {MessageId}",
-                               t);
-          }
-        }
-      }
-      catch (OperationCanceledException) when (token.IsCancellationRequested)
-      {
-        return;
-      }
-      catch (Exception e)
-      {
-        logger_.LogWarning(e,
-                           "Broker lease renewal failed");
-      }
-    }
+    var body = await PostAsync<RenewResponse>("v1/renew",
+                                              new RenewBody([token]),
+                                              timeout,
+                                              cancellationToken)
+                 .ConfigureAwait(false);
+    return body?.Unknown is not { Count: > 0 };
   }
 
   /// <summary>
-  ///   Acknowledges a message. It stops being renewed first: if the settlement fails, the lease expires and
-  ///   the broker redelivers the message instead of keeping it forever.
+  ///   Acknowledges a message.
   /// </summary>
   public Task AckAsync(string       token,
                        OutputsBody? outputs)
-  {
-    held_.TryRemove(token,
-                    out _);
-    return PostAsync<object>("v1/ack",
-                             new AckBody([
-                                           new AckItem(token,
-                                                       outputs),
-                                         ]),
-                             null,
-                             disposed_.Token);
-  }
+    => PostAsync<object>("v1/ack",
+                         new AckBody([
+                                       new AckItem(token,
+                                                   outputs),
+                                     ]),
+                         null,
+                         disposed_.Token);
 
   /// <summary>
-  ///   Puts a message back in the queue at once; see <see cref="AckAsync" /> for the renewal.
+  ///   Puts a message back in the queue at once.
   /// </summary>
   public Task NackAsync(string token)
-  {
-    held_.TryRemove(token,
-                    out _);
-    return PostAsync<object>("v1/nack",
-                             new NackBody([new NackItem(token, "requeue")]),
-                             null,
-                             disposed_.Token);
-  }
+    => PostAsync<object>("v1/nack",
+                         new NackBody([new NackItem(token, "requeue")]),
+                         null,
+                         disposed_.Token);
 
   // ------------------------------------------------------------------ wire types
 

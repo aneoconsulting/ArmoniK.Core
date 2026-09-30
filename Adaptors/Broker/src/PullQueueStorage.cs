@@ -50,14 +50,15 @@ internal class PullQueueStorage : IPullQueueStorage
                                                                         int                                        nbMessages,
                                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var messages = await client_.PullAsync(partitionId,
-                                           nbMessages,
-                                           cancellationToken)
-                                .ConfigureAwait(false);
+    var (lease, messages) = await client_.PullAsync(partitionId,
+                                                    nbMessages,
+                                                    cancellationToken)
+                                         .ConfigureAwait(false);
     foreach (var m in messages)
     {
       yield return new QueueMessageHandler(client_,
                                            m,
+                                           lease,
                                            logger_);
     }
   }

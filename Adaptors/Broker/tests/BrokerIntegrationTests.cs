@@ -412,7 +412,7 @@ public class BrokerIntegrationTests
   [Test]
   public async Task HeldMessagesOutliveTheirLease()
   {
-    // The test server lease is 3 s; the client renews what it holds every second.
+    // The test server lease is 3 s; the handler renews its message every second.
     await push_.PushMessagesAsync([Message("long", "s1")],
                                   "part");
     var held = (await PullAll(1)).Single();

@@ -143,8 +143,9 @@ fait foi.
 { "tokens": [ "AAAB…", "AAAC…" ] }
 ```
 
-Prolonge de `lease_ms` le bail des messages **nommés**, et d'eux seuls, en un seul appel pour tous les
-messages que le client détient, quelle que soit leur partition. Un message qu'il ne nomme pas n'est pas
+Prolonge de `lease_ms` le bail des messages **nommés**, et d'eux seuls, quelle que soit leur partition.
+Un appel peut en nommer plusieurs ; l'adaptateur C# renouvelle chaque message par son propre heartbeat.
+Un message qu'il ne nomme pas n'est pas
 renouvelé et revient en file à l'expiration de son bail : c'est ce qui récupère une réponse de pull
 perdue en route ou un règlement abandonné. Réponse `200` :
 
