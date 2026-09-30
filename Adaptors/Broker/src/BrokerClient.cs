@@ -73,13 +73,12 @@ internal sealed class BrokerClient : IAsyncDisposable
                  ? HttpVersion.Version20
                  : HttpVersion.Version11;
 
-    var nodeId = string.IsNullOrEmpty(options.NodeId)
-                   ? Environment.GetEnvironmentVariable("NODE_NAME") ?? Environment.MachineName
-                   : options.NodeId;
-    node_ = !options.Affinity || nodeId == "-" || options.CacheCapacityBytes <= 0
-              ? null
-              : new NodeBody(nodeId,
-                             options.CacheCapacityBytes);
+    node_ = options.Affinity
+              ? new NodeBody(string.IsNullOrEmpty(options.NodeId)
+                               ? Environment.GetEnvironmentVariable("NODE_NAME") ?? Environment.MachineName
+                               : options.NodeId,
+                             options.CacheCapacityBytes)
+              : null;
   }
 
   /// <summary>
