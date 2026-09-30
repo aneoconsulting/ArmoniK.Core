@@ -2,65 +2,42 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 
 //! Affinity structure computed by producers (protocol §8). The server only needs
-//! [`decode`]; [`hash`], [`encode`] and [`select`] are the reference implementation
-//! that the conformance vectors are generated from.
-#![cfg_attr(not(test), allow(dead_code))]
+//! [`decode`]; [`encode`] and, in tests, `hash` and `select` are the reference
+//! implementation that the conformance vectors are generated from.
 
 use serde::{Deserialize, Serialize};
 
 /// Maximum number of dependencies kept in the affinity structure.
 pub const SLOTS: usize = 8;
+#[cfg(test)]
 const SIZE_HALF: usize = 4;
 
-/// round(2^32 * 2^(k/6)) for k in 0..6.
-const THRESHOLDS: [u64; 6] = [
-    4_294_967_296,
-    4_820_937_788,
-    5_411_319_705,
-    6_074_001_000,
-    6_817_835_604,
-    7_652_761_717,
-];
-
-fn fnv1a64(bytes: &[u8]) -> u64 {
-    let mut h: u64 = 0xcbf2_9ce4_8422_2325;
-    for &b in bytes {
-        h ^= u64::from(b);
-        h = h.wrapping_mul(0x0000_0100_0000_01b3);
-    }
-    h
-}
-
-fn fmix64(mut k: u64) -> u64 {
-    k ^= k >> 33;
-    k = k.wrapping_mul(0xff51_afd7_ed55_8ccd);
-    k ^= k >> 33;
-    k = k.wrapping_mul(0xc4ce_b9fe_1a85_ec53);
-    k ^= k >> 33;
-    k
-}
-
-/// 32-bit hash of a data identifier.
+/// 32-bit hash of a data identifier: XXH32 of its UTF-8 bytes, seed 0.
+#[cfg(test)]
 pub fn hash(id: &str) -> u32 {
-    fmix64(fnv1a64(id.as_bytes())) as u32
+    xxhash_rust::xxh32::xxh32(id.as_bytes(), 0)
 }
 
-/// Logarithmic size encoding, 6 steps per octave. Never returns 0.
+/// Logarithmic size encoding of `size + 1` as a minifloat: 4 times its exponent plus the two
+/// bits after its leading one, 4 steps per octave, plus 1. Never returns 0.
 pub fn encode(size: u64) -> u8 {
     let v = size.saturating_add(1);
     let e = 63 - v.leading_zeros();
-    let f = ((u128::from(v)) << 32) >> e;
-    let k = THRESHOLDS.iter().filter(|&&t| u128::from(t) <= f).count() as u32;
-    (6 * e + k).min(255) as u8
+    let m = if e >= 2 { v >> (e - 2) } else { v << (2 - e) } & 3;
+    (1 + 4 * e + m as u32).min(255) as u8
 }
 
-/// Approximate size in bytes of an encoded size; 0 for the absence marker. Read from a
-/// table: the scheduler decodes every dependency it scores or distributes.
+/// Approximate size in bytes of an encoded size, the lower bound of its step; 0 for the
+/// absence marker. Read from a table: the scheduler decodes every dependency it scores or
+/// distributes.
 pub fn decode(code: u8) -> f64 {
     static DECODED: std::sync::LazyLock<[f64; 256]> = std::sync::LazyLock::new(|| {
         std::array::from_fn(|c| match c {
             0 => 0.0,
-            c => ((c - 1) as f64 / 6.0).exp2() - 1.0,
+            c => {
+                let (e, m) = ((c - 1) / 4, (c - 1) % 4);
+                (4 + m) as f64 * (e as f64 - 2.0).exp2() - 1.0
+            }
         })
     });
     DECODED[usize::from(code)]
@@ -108,6 +85,7 @@ impl Outputs {
 }
 
 /// Reference selection of the affinity structure (protocol §8.1).
+#[cfg(test)]
 pub fn select<'a>(deps: impl IntoIterator<Item = (&'a str, u64)>) -> Option<Affinity> {
     let mut seen = std::collections::HashSet::new();
     let mut all: Vec<(&str, u64, u32)> = Vec::new();
@@ -144,10 +122,13 @@ mod tests {
     #[test]
     fn encode_reference_points() {
         assert_eq!(encode(0), 1);
-        assert_eq!(encode(1), 7);
+        assert_eq!(encode(1), 5);
+        assert_eq!(encode(2), 7);
         assert_eq!(encode(u64::MAX), 255);
-        // 2^20 - 1 bytes => v = 2^20 => 6*20 + 1
-        assert_eq!(encode((1 << 20) - 1), 121);
+        // 2^20 - 1 bytes => v = 2^20 => 1 + 4*20
+        assert_eq!(encode((1 << 20) - 1), 81);
+        // 5 * 2^18 - 1 bytes => v = 1.25 * 2^20 => 1 + 4*20 + 1
+        assert_eq!(encode(5 * (1 << 18) - 1), 82);
     }
 
     #[test]
@@ -262,7 +243,7 @@ mod tests {
         fn decode_is_close(s in 0u64..(1u64 << 40)) {
             let d = decode(encode(s));
             let v = (s + 1) as f64;
-            prop_assert!(d + 1.0 <= v * 1.0001 && v < (d + 1.0) * 1.1225 + 1.0);
+            prop_assert!(d + 1.0 <= v * 1.0001 && v < (d + 1.0) * 1.25 + 1.0);
         }
 
         #[test]
