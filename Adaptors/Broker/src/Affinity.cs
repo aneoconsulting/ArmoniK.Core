@@ -34,7 +34,15 @@ namespace ArmoniK.Core.Adapters.Broker;
 public sealed record AffinityData(uint[] Hashes,
                                   byte[] Sizes,
                                   ushort DepCount,
-                                  byte   TotalSize);
+                                  byte   TotalSize)
+{
+  /// <summary>
+  ///   <see cref="Sizes" /> as numbers for the JSON wire format, which would encode a byte array in base64.
+  /// </summary>
+  public int[] WireSizes()
+    => Array.ConvertAll(Sizes,
+                        s => (int)s);
+}
 
 /// <summary>
 ///   Reference implementation of the affinity computation, shared with the Rust server through the conformance vectors.
@@ -82,7 +90,15 @@ public static class Affinity
   ///   32-bit hash of a data identifier.
   /// </summary>
   public static uint Hash(string id)
-    => unchecked((uint)Fmix64(Fnv1A64(Encoding.UTF8.GetBytes(id))));
+  {
+    var max = Encoding.UTF8.GetMaxByteCount(id.Length);
+    Span<byte> buffer = max <= 256
+                   ? stackalloc byte[max]
+                   : new byte[max];
+    var length = Encoding.UTF8.GetBytes(id,
+                                        buffer);
+    return unchecked((uint)Fmix64(Fnv1A64(buffer[..length])));
+  }
 
   /// <summary>
   ///   Logarithmic encoding of a size, six steps per octave; never 0.

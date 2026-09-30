@@ -79,8 +79,8 @@ public class Broker
   public TimeSpan RequestTimeout { get; set; } = TimeSpan.FromSeconds(30);
 
   /// <summary>
-  ///   Largest enqueue batch sent in one request. The limit the server returns (<c>GET /v1/limits</c>,
-  ///   about 150 with its default 64 KiB body size) also applies.
+  ///   Largest enqueue batch sent in one request. The server enforces its own limit (about 150 items with
+  ///   its default 64 KiB body size) with a 413, on which the batch is split and sent again.
   /// </summary>
   public int MaxBatchItems { get; set; } = 128;
 

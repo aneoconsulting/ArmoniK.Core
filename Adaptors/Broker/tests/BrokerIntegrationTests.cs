@@ -437,7 +437,7 @@ public class BrokerIntegrationTests
                                   ],
                                   "part");
     var h = (await PullAll(1)).Single();
-    ((IDataAffinityMessageHandler)h).SetOutputs([("out", 1L << 20)]);
+    h.SetOutputs([("out", 1L << 20)]);
     h.Status = QueueMessageStatus.Processed;
     await h.DisposeAsync();
     Assert.That(await PullAll(1,

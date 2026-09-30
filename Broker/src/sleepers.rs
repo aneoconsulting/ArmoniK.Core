@@ -8,7 +8,7 @@
 
 use crate::wheel::Wheel;
 
-const NIL: u32 = u32::MAX;
+use crate::state::NIL;
 
 struct Slot<T> {
     item: Option<T>,

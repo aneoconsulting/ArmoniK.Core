@@ -564,20 +564,14 @@ public static class TaskLifeCycleHelper
       return;
     }
 
-    var messages = readyTasks.Select(task => task.ToMessage())
-                             .AsICollection();
-
     if (sessionData.Status is not SessionStatus.Paused)
     {
-      if (pushQueueStorage.UsesDataDependencies)
-      {
-        messages = await AttachDataDependencies(resultTable,
-                                                readyTasks,
-                                                messages,
-                                                logger,
-                                                cancellationToken)
-                     .ConfigureAwait(false);
-      }
+      var messages = await ToMessagesAsync(resultTable,
+                                           pushQueueStorage,
+                                           readyTasks,
+                                           logger,
+                                           cancellationToken)
+                       .ConfigureAwait(false);
 
       var groupedMessageByPartitionAndOrderedByPriority = messages.OrderByDescending(dm => dm.Options.Priority)
                                                                   .GroupBy(msg => (msg.Options.PartitionId, msg.Options.Priority));
@@ -593,33 +587,40 @@ public static class TaskLifeCycleHelper
                       messages);
     }
 
-    await taskTable.FinalizeTaskCreation(messages.Select(task => task.TaskId)
-                                                 .AsICollection(),
+    await taskTable.FinalizeTaskCreation(readyTasks.Select(task => task.TaskId)
+                                                   .AsICollection(),
                                          sessionData.Status == SessionStatus.Paused,
                                          cancellationToken)
                    .ConfigureAwait(false);
   }
 
   /// <summary>
-  ///   Adds the data dependencies of the tasks, with their sizes, to the messages, for queues that place
-  ///   tasks next to their data. The payload is included: every task then has at least one dependency,
-  ///   and a retry, which reuses the payload, is placed where it is already cached.
+  ///   Builds the queue messages of the tasks. For queues that place tasks next to their data, the data
+  ///   dependencies of the tasks are attached with their sizes. The payload is included: every task then has
+  ///   at least one dependency, and a retry, which reuses the payload, is placed where it is already cached.
   ///   This is a placement hint only: if the sizes cannot be read, the messages are enqueued without it.
   /// </summary>
   /// <param name="resultTable">Interface to manage result states</param>
+  /// <param name="pushQueueStorage">Interface to push tasks in the queue</param>
   /// <param name="readyTasks">Tasks to enqueue, with their dependencies</param>
-  /// <param name="messages">Messages of <paramref name="readyTasks" />, in the same order</param>
   /// <param name="logger">Logger used to produce logs</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   The messages with their dependencies, or unchanged if the sizes could not be read
+  ///   The messages, with their dependencies when the queue uses them and their sizes could be read
   /// </returns>
-  private static async Task<ICollection<MessageData>> AttachDataDependencies(IResultTable             resultTable,
-                                                                             ICollection<ReadyTask>   readyTasks,
-                                                                             ICollection<MessageData> messages,
-                                                                             ILogger                  logger,
-                                                                             CancellationToken        cancellationToken)
+  private static async Task<ICollection<MessageData>> ToMessagesAsync(IResultTable           resultTable,
+                                                                      IPushQueueStorage      pushQueueStorage,
+                                                                      ICollection<ReadyTask> readyTasks,
+                                                                      ILogger                logger,
+                                                                      CancellationToken      cancellationToken)
   {
+    var messages = readyTasks.Select(task => task.ToMessage())
+                             .AsICollection();
+    if (!pushQueueStorage.UsesDataDependencies)
+    {
+      return messages;
+    }
+
     var dependencies = readyTasks.Select(task => task.DataDependencies.Append(task.PayloadId)
                                                      .ToList())
                                  .ToList();
@@ -713,17 +714,12 @@ public static class TaskLifeCycleHelper
                                         CancellationToken.None)
                        .ConfigureAwait(false);
 
-        var messages = tasks.Select(task => task.ToMessage())
-                            .AsICollection();
-        if (pushQueueStorage.UsesDataDependencies)
-        {
-          messages = await AttachDataDependencies(resultTable,
-                                                  tasks,
-                                                  messages,
-                                                  logger,
-                                                  CancellationToken.None)
-                       .ConfigureAwait(false);
-        }
+        var messages = await ToMessagesAsync(resultTable,
+                                             pushQueueStorage,
+                                             tasks,
+                                             logger,
+                                             CancellationToken.None)
+                         .ConfigureAwait(false);
 
         await pushQueueStorage.PushMessagesAsync(messages,
                                                  grouping.Key.PartitionId,
