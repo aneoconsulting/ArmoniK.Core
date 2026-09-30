@@ -86,18 +86,19 @@ public class Broker
 
   /// <summary>
   ///   Identifier of the compute node, used for task and data affinity. Defaults to the <c>NODE_NAME</c>
-  ///   environment variable, then to the machine name. Set to <c>-</c> to disable affinity.
+  ///   environment variable, then to the machine name.
   /// </summary>
   public string NodeId { get; set; } = string.Empty;
 
   /// <summary>
-  ///   Capacity of the local data cache of the node, in bytes; 0 disables affinity for this consumer.
+  ///   Capacity of the local data cache of the node, in bytes; must be positive with <see cref="Affinity" />.
   /// </summary>
   public long CacheCapacityBytes { get; set; } = 10L * 1024 * 1024 * 1024;
 
   /// <summary>
-  ///   Task and data affinity: declare the node at registration, read the sizes of the data dependencies
+  ///   Task and data affinity: declare the node at each pull, read the sizes of the data dependencies
   ///   at enqueue (one more database query per batch) and declare the outputs at acknowledgement.
+  ///   Set per process: disabling it on one agent excludes only that agent from the placement.
   ///   Only useful when the agents keep data in their cache (<c>Pollster:CacheEvictionThreshold</c> above 0);
   ///   disabled by default, the broker then serves each priority in FIFO order.
   /// </summary>
