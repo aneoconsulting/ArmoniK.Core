@@ -11,7 +11,7 @@
 
 use crate::hashing::Map;
 
-const NIL: u32 = u32::MAX;
+use crate::state::NIL;
 
 struct Entry {
     hash: u32,

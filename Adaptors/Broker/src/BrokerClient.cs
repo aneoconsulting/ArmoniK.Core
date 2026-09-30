@@ -32,8 +32,7 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Adapters.Broker;
 
 internal sealed record PulledMessage(string Token,
-                                     string TaskId,
-                                     int    Attempts);
+                                     string TaskId);
 
 /// <summary>
 ///   REST client of the broker (protocol v1). Stateless towards the server: it holds the tokens it
@@ -84,6 +83,12 @@ internal sealed class BrokerClient : IAsyncDisposable
   }
 
   /// <summary>
+  ///   Whether tasks are placed next to their data (<see cref="Broker.Affinity" />).
+  /// </summary>
+  public bool Affinity
+    => options_.Affinity;
+
+  /// <summary>
   ///   Largest enqueue batch; a batch the server finds too large is split (protocol §6.1).
   /// </summary>
   public int MaxBatchItems
@@ -111,7 +116,6 @@ internal sealed class BrokerClient : IAsyncDisposable
                                       CancellationToken cancellationToken)
     where T : class
   {
-    using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
     using var request = new HttpRequestMessage(HttpMethod.Post,
                                                path)
                         {
@@ -121,23 +125,28 @@ internal sealed class BrokerClient : IAsyncDisposable
                                                        body.GetType(),
                                                        options: Json),
                         };
+    // A linked source only for a request with its own timeout: the others are cancelled by the caller only.
+    using var cts = once is null
+                      ? null
+                      : CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
     if (once is { } timeout)
     {
-      cts.CancelAfter(timeout);
+      cts!.CancelAfter(timeout);
       request.Options.Set(RetryHandler.Disabled,
                           true);
     }
 
+    var token = cts?.Token ?? cancellationToken;
     using var response = await httpClientFactory_.CreateClient(HttpClientName)
                                                  .SendAsync(request,
-                                                            cts.Token)
+                                                            token)
                                                  .ConfigureAwait(false);
     ObserveEpoch(response);
     response.EnsureSuccessStatusCode();
     return response.StatusCode == HttpStatusCode.NoContent
              ? null
              : await response.Content.ReadFromJsonAsync<T>(Json,
-                                                           cts.Token)
+                                                           token)
                              .ConfigureAwait(false);
   }
 
@@ -253,7 +262,8 @@ internal sealed class BrokerClient : IAsyncDisposable
         }
 
         var body = await PostAsync<RenewResponse>("v1/renew",
-                                                  new RenewBody(held_.Keys.ToList()),
+                                                  new RenewBody(held_.Select(kv => kv.Key)
+                                                                .ToList()),
                                                   period,
                                                   token)
                      .ConfigureAwait(false);
@@ -292,9 +302,7 @@ internal sealed class BrokerClient : IAsyncDisposable
     return PostAsync<object>("v1/ack",
                              new AckBody([
                                            new AckItem(token,
-                                                       options_.Affinity
-                                                         ? outputs
-                                                         : null),
+                                                       outputs),
                                          ]),
                              null,
                              disposed_.Token);

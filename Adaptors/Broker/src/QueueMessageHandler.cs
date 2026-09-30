@@ -17,7 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -27,7 +26,7 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Broker;
 
-internal sealed class QueueMessageHandler : IQueueMessageHandler, IDataAffinityMessageHandler
+internal sealed class QueueMessageHandler : IQueueMessageHandler
 {
   private readonly BrokerClient client_;
   private readonly ILogger         logger_;
@@ -46,9 +45,16 @@ internal sealed class QueueMessageHandler : IQueueMessageHandler, IDataAffinityM
     ReceptionDateTime = DateTime.UtcNow;
   }
 
-  /// <inheritdoc />
+  /// <summary>
+  ///   Kept only with <see cref="Broker.Affinity" />: the broker ignores the outputs otherwise.
+  /// </summary>
   public void SetOutputs(IReadOnlyCollection<(string Id, long Size)> outputs)
-    => outputs_ = outputs;
+  {
+    if (client_.Affinity)
+    {
+      outputs_ = outputs;
+    }
+  }
 
   /// <inheritdoc />
   [Obsolete("ArmoniK now manages loss of link with the queue")]
@@ -117,11 +123,9 @@ internal sealed class QueueMessageHandler : IQueueMessageHandler, IDataAffinityM
       return null;
     }
 
-    var a = Affinity.Select(outputs_);
-    return a is null
-             ? null
-             : new BrokerClient.OutputsBody(a.Hashes,
-                                               a.Sizes.Select(s => (int)s)
-                                                .ToArray());
+    return Affinity.Select(outputs_) is { } a
+             ? new BrokerClient.OutputsBody(a.Hashes,
+                                            a.WireSizes())
+             : null;
   }
 }

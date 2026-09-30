@@ -323,16 +323,15 @@ impl Registry {
         Ok(p)
     }
 
-    pub fn delete(&self, name: &str) -> bool {
+    pub fn delete(&self, name: &str) {
         let mut s = self.slots.write().unwrap();
         let Some(i) = s.by_name.remove(name) else {
-            return false;
+            return;
         };
         if let Some(p) = s.by_index[i as usize].take() {
             p.stop.notify_one();
         }
         tracing::info!(partition = name, "partition deleted");
-        true
     }
 
     pub fn shutdown(&self) {
