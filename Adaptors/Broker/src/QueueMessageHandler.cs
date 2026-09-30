@@ -129,24 +129,33 @@ internal sealed class QueueMessageHandler : IQueueMessageHandler
 
     try
     {
+      bool applied;
       switch (Status)
       {
         case QueueMessageStatus.Waiting:
         case QueueMessageStatus.Failed:
         case QueueMessageStatus.Running:
         case QueueMessageStatus.Postponed:
-          await client_.NackAsync(MessageId)
-                       .ConfigureAwait(false);
+          applied = await client_.NackAsync(MessageId)
+                                 .ConfigureAwait(false);
           break;
         case QueueMessageStatus.Cancelled:
         case QueueMessageStatus.Processed:
         case QueueMessageStatus.Poisonous:
-          await client_.AckAsync(MessageId,
-                                 OutputsBody())
-                       .ConfigureAwait(false);
+          applied = await client_.AckAsync(MessageId,
+                                           OutputsBody())
+                                 .ConfigureAwait(false);
           break;
         default:
           throw new ArgumentOutOfRangeException(nameof(Status));
+      }
+
+      if (!applied)
+      {
+        logger_.LogWarning("Broker ignored the settlement of message {MessageId} of task {TaskId} as {Status}: its lease had ended, the task may run again",
+                           MessageId,
+                           TaskId,
+                           Status);
       }
     }
     catch (Exception e) when (e is not ArgumentOutOfRangeException)
