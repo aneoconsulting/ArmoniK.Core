@@ -16,8 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -37,15 +37,14 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 /// <inheritdoc cref="ITaskWatcher" />
 public class TaskWatcher : ITaskWatcher, IDisposable
 {
-  private readonly NpgsqlConnectionProvider connectionProvider_;
   private readonly ActivitySource           activitySource_;
+  private readonly NpgsqlConnectionProvider connectionProvider_;
   private readonly WalBroadcaster<TaskData> insertBroadcaster_;
   private readonly WalBroadcaster<TaskData> updateBroadcaster_;
 
   /// <summary>
   ///   Creates a new TaskWatcher
   /// </summary>
-  /// <param name="activitySource">Activity source used to trace the calls</param>
   public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
                      ActivitySource           activitySource)
   {
@@ -102,7 +101,7 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                            CancellationToken                cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity();
-    var compiled = filter.Compile();
+    var       compiled = filter.Compile();
     var rawStream = await insertBroadcaster_.SubscribeAsync(cancellationToken)
                                             .ConfigureAwait(false);
     return FilterNewTasks(rawStream,

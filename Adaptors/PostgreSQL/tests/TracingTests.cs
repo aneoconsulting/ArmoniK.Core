@@ -43,8 +43,8 @@ public class TracingTests
     tableProvider_ = new PostgresDatabaseProvider();
     listener_ = new ActivityListener
                 {
-                  ShouldListenTo = source => source.Name is PostgresDatabaseProvider.ActivitySourceName or "Npgsql",
-                  Sample         = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
+                  ShouldListenTo  = source => source.Name is PostgresDatabaseProvider.ActivitySourceName or "Npgsql",
+                  Sample          = (ref ActivityCreationOptions<ActivityContext> _) => ActivitySamplingResult.AllDataAndRecorded,
                   ActivityStopped = activity => activities_.Add(activity),
                 };
     ActivitySource.AddActivityListener(listener_);
@@ -58,8 +58,8 @@ public class TracingTests
     activities_.Clear();
   }
 
-  private readonly ConcurrentBag<Activity> activities_ = new();
-  private          ActivityListener?       listener_;
+  private readonly ConcurrentBag<Activity>   activities_ = new();
+  private          ActivityListener?         listener_;
   private          PostgresDatabaseProvider? tableProvider_;
 
   [Test]

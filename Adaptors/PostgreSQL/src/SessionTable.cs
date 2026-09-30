@@ -16,8 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -39,13 +39,12 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 /// <inheritdoc cref="ISessionTable" />
 public class SessionTable : ISessionTable
 {
-  private readonly NpgsqlConnectionProvider connectionProvider_;
   private readonly ActivitySource           activitySource_;
+  private readonly NpgsqlConnectionProvider connectionProvider_;
 
   /// <summary>
   ///   Creates a new SessionTable
   /// </summary>
-  /// <param name="activitySource">Activity source used to trace the calls</param>
   public SessionTable(NpgsqlConnectionProvider connectionProvider,
                       ActivitySource           activitySource,
                       ILogger<SessionTable>    logger)

@@ -16,8 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Diagnostics;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading;
@@ -37,8 +37,8 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 /// <inheritdoc cref="IResultWatcher" />
 public class ResultWatcher : IResultWatcher, IDisposable
 {
-  private readonly NpgsqlConnectionProvider connectionProvider_;
   private readonly ActivitySource           activitySource_;
+  private readonly NpgsqlConnectionProvider connectionProvider_;
   private readonly WalBroadcaster<Result>   insertBroadcaster_;
 
   // Shared between GetResultStatusUpdates and GetResultOwnerUpdates — both consume
@@ -48,7 +48,6 @@ public class ResultWatcher : IResultWatcher, IDisposable
   /// <summary>
   ///   Creates a new ResultWatcher
   /// </summary>
-  /// <param name="activitySource">Activity source used to trace the calls</param>
   public ResultWatcher(NpgsqlConnectionProvider connectionProvider,
                        ActivitySource           activitySource)
   {
@@ -109,7 +108,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
                                                                CancellationToken              cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity();
-    var compiled = filter.Compile();
+    var       compiled = filter.Compile();
     var rawStream = await insertBroadcaster_.SubscribeAsync(cancellationToken)
                                             .ConfigureAwait(false);
     return FilterNewResults(rawStream,
@@ -122,7 +121,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
                                                                                CancellationToken              cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity();
-    var compiled = filter.Compile();
+    var       compiled = filter.Compile();
     var rawStream = await updateBroadcaster_.SubscribeAsync(cancellationToken)
                                             .ConfigureAwait(false);
     return FilterResultOwnerUpdates(rawStream,
