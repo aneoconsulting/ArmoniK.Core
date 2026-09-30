@@ -85,8 +85,10 @@ public class Broker
   public int MaxBatchItems { get; set; } = 128;
 
   /// <summary>
-  ///   Identifier of the compute node, used for task and data affinity. Defaults to the <c>NODE_NAME</c>
-  ///   environment variable, then to the machine name.
+  ///   Identifier of the cache the agent fills, used for task and data affinity: agents sharing a cache must
+  ///   share it, agents with their own cache must not. Defaults to the machine name, which fits a cache per
+  ///   agent; set it to the node name (for example from <c>spec.nodeName</c>) when the agents of a node share
+  ///   their cache.
   /// </summary>
   public string NodeId { get; set; } = string.Empty;
 
