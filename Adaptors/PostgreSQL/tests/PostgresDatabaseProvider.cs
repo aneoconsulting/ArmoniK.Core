@@ -39,9 +39,10 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Tests;
 
 internal class PostgresDatabaseProvider : IDisposable
 {
-  private const           string         DatabaseName   = "armonik_test";
-  private const           string         PgUser         = "postgres";
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Adapters.PostgreSQL.Tests");
+  internal const          string         ActivitySourceName = "ArmoniK.Core.Adapters.PostgreSQL.Tests";
+  private const           string         DatabaseName       = "armonik_test";
+  private const           string         PgUser             = "postgres";
+  private static readonly ActivitySource ActivitySource     = new(ActivitySourceName);
 
   private static readonly object    Lock = new();
   private static          PgServer? sharedServer_;

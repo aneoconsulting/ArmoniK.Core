@@ -150,6 +150,8 @@ public static class Program
         otel.WithTracing(b =>
                          {
                            b.AddSource(ActivitySource.Name);
+                           // Spans of the commands sent by the PostgreSQL adaptor
+                           b.AddSource("Npgsql");
                            b.AddOtlpExporter(options =>
                                              {
                                                options.HttpClientFactory = () =>

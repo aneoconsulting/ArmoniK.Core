@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -42,14 +43,18 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 public class ResultTable : IResultTable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly ActivitySource           activitySource_;
 
   /// <summary>
   ///   Creates a new ResultTable
   /// </summary>
+  /// <param name="activitySource">Activity source used to trace the calls</param>
   public ResultTable(NpgsqlConnectionProvider connectionProvider,
+                     ActivitySource           activitySource,
                      ILogger<ResultTable>     logger)
   {
     connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
     Logger              = logger;
   }
 
@@ -60,6 +65,7 @@ public class ResultTable : IResultTable
   public async Task Create(ICollection<Result> results,
                            CancellationToken   cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     if (results.Count == 0)
     {
       return;
@@ -136,6 +142,7 @@ SELECT @result_id, unnest(@task_ids)");
   public async Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
                                         CancellationToken                        cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     if (dependencies.Count == 0)
     {
       return;
@@ -184,6 +191,7 @@ ON CONFLICT DO NOTHING");
   public async Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                                      CancellationToken                             cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     if (requests.Count == 0)
     {
       return;
@@ -225,6 +233,7 @@ ON CONFLICT DO NOTHING");
                                           IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
                                           CancellationToken                                      cancellationToken)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
@@ -257,6 +266,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   public async Task<Result> GetResult(string            key,
                                       CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -289,6 +299,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                                                  Expression<Func<Result, T>>                convertor,
                                                  [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<Result>.Translate(filter);
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
@@ -346,6 +357,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                                                                                     int                               pageSize,
                                                                                     CancellationToken                 cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (results, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
                                                               "results",
                                                               filter,
@@ -364,6 +376,9 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   public async Task DeleteResult(string            key,
                                  CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag($"{nameof(DeleteResult)}_key",
+                     key);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -385,6 +400,9 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   public async Task DeleteResults(string            sessionId,
                                   CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag($"{nameof(DeleteResults)}_sessionId",
+                     sessionId);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -404,6 +422,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   public async Task DeleteResults(ICollection<string> results,
                                   CancellationToken   cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -422,6 +441,9 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                                             UpdateDefinition<Result> updates,
                                             CancellationToken        cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag($"{nameof(DeleteResult)}_resultId",
+                     resultId);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -460,6 +482,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
                                             UpdateDefinition<Result>       updates,
                                             CancellationToken              cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<Result>.Translate(filter);
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
@@ -482,6 +505,7 @@ WHERE result_id = ANY(@keys) AND owner_task_id = @old_task_id";
   public async Task<long> BulkUpdateResults(IEnumerable<(Expression<Func<Result, bool>> filter, UpdateDefinition<Result> updates)> bulkUpdates,
                                             CancellationToken                                                                      cancellationToken)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 

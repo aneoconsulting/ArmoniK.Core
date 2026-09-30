@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -37,6 +38,7 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 public class ResultWatcher : IResultWatcher, IDisposable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly ActivitySource           activitySource_;
   private readonly WalBroadcaster<Result>   insertBroadcaster_;
 
   // Shared between GetResultStatusUpdates and GetResultOwnerUpdates — both consume
@@ -46,9 +48,12 @@ public class ResultWatcher : IResultWatcher, IDisposable
   /// <summary>
   ///   Creates a new ResultWatcher
   /// </summary>
-  public ResultWatcher(NpgsqlConnectionProvider connectionProvider)
+  /// <param name="activitySource">Activity source used to trace the calls</param>
+  public ResultWatcher(NpgsqlConnectionProvider connectionProvider,
+                       ActivitySource           activitySource)
   {
     connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
 
     insertBroadcaster_ = new WalBroadcaster<Result>(connectionProvider,
                                                     async (message,
@@ -103,6 +108,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
   public async Task<IAsyncEnumerable<NewResult>> GetNewResults(Expression<Func<Result, bool>> filter,
                                                                CancellationToken              cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var compiled = filter.Compile();
     var rawStream = await insertBroadcaster_.SubscribeAsync(cancellationToken)
                                             .ConfigureAwait(false);
@@ -115,6 +121,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
   public async Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(Expression<Func<Result, bool>> filter,
                                                                                CancellationToken              cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var compiled = filter.Compile();
     var rawStream = await updateBroadcaster_.SubscribeAsync(cancellationToken)
                                             .ConfigureAwait(false);
@@ -127,6 +134,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
   public async Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(Expression<Func<Result, bool>> filter,
                                                                                  CancellationToken              cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     // DEFAULT replica identity: same caveat as GetResultOwnerUpdates — no old row values
     // in the WAL, so status comparisons are impossible. Every result UPDATE fires here.
     // Consumers must tolerate duplicate status notifications.

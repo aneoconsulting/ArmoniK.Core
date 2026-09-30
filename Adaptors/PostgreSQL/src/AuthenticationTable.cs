@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
@@ -36,18 +37,25 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 public class AuthenticationTable : IAuthenticationTable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly ActivitySource           activitySource_;
 
   /// <summary>
   ///   Creates a new AuthenticationTable
   /// </summary>
-  public AuthenticationTable(NpgsqlConnectionProvider connectionProvider)
-    => connectionProvider_ = connectionProvider;
+  /// <param name="activitySource">Activity source used to trace the calls</param>
+  public AuthenticationTable(NpgsqlConnectionProvider connectionProvider,
+                             ActivitySource           activitySource)
+  {
+    connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
+  }
 
   /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
                                                                                string            fingerprint,
                                                                                CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -93,6 +101,7 @@ LIMIT 1";
                                                                         string?           username,
                                                                         CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 

@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -37,15 +38,19 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 public class TaskWatcher : ITaskWatcher, IDisposable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly ActivitySource           activitySource_;
   private readonly WalBroadcaster<TaskData> insertBroadcaster_;
   private readonly WalBroadcaster<TaskData> updateBroadcaster_;
 
   /// <summary>
   ///   Creates a new TaskWatcher
   /// </summary>
-  public TaskWatcher(NpgsqlConnectionProvider connectionProvider)
+  /// <param name="activitySource">Activity source used to trace the calls</param>
+  public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
+                     ActivitySource           activitySource)
   {
     connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
 
     insertBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
                                                       async (message,
@@ -96,6 +101,7 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   public async Task<IAsyncEnumerable<NewTask>> GetNewTasks(Expression<Func<TaskData, bool>> filter,
                                                            CancellationToken                cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var compiled = filter.Compile();
     var rawStream = await insertBroadcaster_.SubscribeAsync(cancellationToken)
                                             .ConfigureAwait(false);
@@ -108,6 +114,7 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   public async Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(Expression<Func<TaskData, bool>> filter,
                                                                              CancellationToken                cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     // DEFAULT replica identity: the WAL does not carry old row values, so we cannot
     // compare old vs new status to suppress no-op events. Every task UPDATE reaches
     // this watcher — including timestamp-only changes (e.g. acquisition_date).

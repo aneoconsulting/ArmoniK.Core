@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Diagnostics;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -39,14 +40,18 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 public class SessionTable : ISessionTable
 {
   private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly ActivitySource           activitySource_;
 
   /// <summary>
   ///   Creates a new SessionTable
   /// </summary>
+  /// <param name="activitySource">Activity source used to trace the calls</param>
   public SessionTable(NpgsqlConnectionProvider connectionProvider,
+                      ActivitySource           activitySource,
                       ILogger<SessionTable>    logger)
   {
     connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
     Logger              = logger;
   }
 
@@ -58,8 +63,11 @@ public class SessionTable : ISessionTable
                                                 TaskOptions         defaultOptions,
                                                 CancellationToken   cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var sessionId = Guid.NewGuid()
                         .ToString();
+    activity?.SetTag($"{nameof(SetSessionDataAsync)}_sessionId",
+                     sessionId);
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
@@ -123,6 +131,7 @@ INSERT INTO sessions (
                                                         Expression<Func<SessionData, T>>           selector,
                                                         [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<SessionData>.Translate(filter);
     var compiled = selector.Compile();
 
@@ -148,6 +157,9 @@ INSERT INTO sessions (
   public async Task DeleteSessionAsync(string            sessionId,
                                        CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag($"{nameof(DeleteSessionAsync)}_sessionId",
+                     sessionId);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -178,16 +190,19 @@ INSERT INTO sessions (
                                                                                             int                                    page,
                                                                                             int                                    pageSize,
                                                                                             CancellationToken                      cancellationToken = default)
-    => await PagedQuery.ExecuteAsync(connectionProvider_,
-                                     "sessions",
-                                     filter,
-                                     orderField,
-                                     ascOrder,
-                                     page,
-                                     pageSize,
-                                     RowMapper.MapToSessionData,
-                                     cancellationToken)
-                       .ConfigureAwait(false);
+  {
+    using var activity = activitySource_.StartActivity();
+    return await PagedQuery.ExecuteAsync(connectionProvider_,
+                                         "sessions",
+                                         filter,
+                                         orderField,
+                                         ascOrder,
+                                         page,
+                                         pageSize,
+                                         RowMapper.MapToSessionData,
+                                         cancellationToken)
+                           .ConfigureAwait(false);
+  }
 
   /// <inheritdoc />
   public async Task<SessionData?> UpdateOneSessionAsync(string                               sessionId,
@@ -196,6 +211,7 @@ INSERT INTO sessions (
                                                         bool                                 before,
                                                         CancellationToken                    cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
