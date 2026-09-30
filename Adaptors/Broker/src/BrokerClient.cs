@@ -69,10 +69,9 @@ internal sealed class BrokerClient : IAsyncDisposable
                  ? HttpVersion.Version20
                  : HttpVersion.Version11;
 
+    // The node identifier is resolved by the QueueBuilder when affinity is on.
     node_ = options.Affinity
-              ? new NodeBody(string.IsNullOrEmpty(options.NodeId)
-                               ? Environment.MachineName
-                               : options.NodeId,
+              ? new NodeBody(options.NodeId,
                              options.CacheCapacityBytes)
               : null;
   }
