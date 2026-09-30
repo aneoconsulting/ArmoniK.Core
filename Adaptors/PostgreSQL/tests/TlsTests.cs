@@ -58,8 +58,8 @@ public class TlsTests
                                                "localhost");
     using var otherCa = CreateCa("CN=Other CA");
 
-    caFile_      = WritePem("ca.pem",
-                            ca.ExportCertificatePem());
+    caFile_ = WritePem("ca.pem",
+                       ca.ExportCertificatePem());
     otherCaFile_ = WritePem("other-ca.pem",
                             otherCa.ExportCertificatePem());
     var certFile = WritePem("server.crt",
@@ -236,7 +236,7 @@ public class TlsTests
     request.CertificateExtensions.Add(san.Build());
     request.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(new OidCollection
                                                                         {
-                                                                          new("1.3.6.1.5.5.7.3.1"), // server authentication
+                                                                          new Oid("1.3.6.1.5.5.7.3.1"), // server authentication
                                                                         },
                                                                         false));
     using var certificate = request.Create(ca,
