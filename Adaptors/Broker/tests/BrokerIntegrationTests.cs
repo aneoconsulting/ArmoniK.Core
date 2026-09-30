@@ -426,6 +426,25 @@ public class BrokerIntegrationTests
   }
 
   [Test]
+  public async Task SettlementOfAStaleTokenIsReportedAsIgnored()
+  {
+    await push_.PushMessagesAsync([Message("once", "s1")],
+                                  "part");
+    var h      = (await PullAll(1)).Single();
+    var client = provider_!.GetRequiredService<BrokerClient>();
+    Assert.That(await client.AckAsync(h.MessageId,
+                                      null),
+                Is.True);
+    // The token designates no current distribution any more.
+    Assert.That(await client.AckAsync(h.MessageId,
+                                      null),
+                Is.False);
+    Assert.That(await client.NackAsync(h.MessageId),
+                Is.False);
+    await h.DisposeAsync();
+  }
+
+  [Test]
   public async Task OutputsAreAcceptedAtAck()
   {
     await push_.PushMessagesAsync([

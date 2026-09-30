@@ -164,17 +164,29 @@ internal sealed class BrokerClient : IAsyncDisposable
     }
   }
 
-  public Task EnqueueAsync(string                     partition,
-                           string                     key,
-                           int                        priority,
-                           IReadOnlyList<EnqueueItem> items,
-                           CancellationToken          cancellationToken)
-    => PostAsync<object>($"v1/partitions/{Uri.EscapeDataString(partition)}/messages",
-                         new EnqueueBody(key,
-                                         priority,
-                                         items),
-                         null,
-                         cancellationToken);
+  /// <summary>
+  ///   Enqueues a batch. The broker tells when it nears its capacity, before it starts to refuse batches.
+  /// </summary>
+  public async Task EnqueueAsync(string                     partition,
+                                 string                     key,
+                                 int                        priority,
+                                 IReadOnlyList<EnqueueItem> items,
+                                 CancellationToken          cancellationToken)
+  {
+    var body = await PostAsync<EnqueueResponse>($"v1/partitions/{Uri.EscapeDataString(partition)}/messages",
+                                                new EnqueueBody(key,
+                                                                priority,
+                                                                items),
+                                                null,
+                                                cancellationToken)
+                 .ConfigureAwait(false);
+    if (body?.Occupancy == "high")
+    {
+      logger_.LogDebug("Broker is near its capacity after enqueueing {Count} messages in partition {PartitionId}",
+                       items.Count,
+                       partition);
+    }
+  }
 
   /// <summary>
   ///   Long polls messages, with the duration of their lease. Never throws for a broker failure: it logs,
@@ -236,24 +248,35 @@ internal sealed class BrokerClient : IAsyncDisposable
   /// <summary>
   ///   Acknowledges a message.
   /// </summary>
-  public Task AckAsync(string       token,
-                       OutputsBody? outputs)
-    => PostAsync<object>("v1/ack",
-                         new AckBody([
-                                       new AckItem(token,
-                                                   outputs),
-                                     ]),
-                         null,
-                         disposed_.Token);
+  /// <returns>
+  ///   False when the broker ignored it, the message designating no current distribution any more
+  /// </returns>
+  public async Task<bool> AckAsync(string       token,
+                                   OutputsBody? outputs)
+    => Applied(await PostAsync<SettleResponse>("v1/ack",
+                                               new AckBody([
+                                                             new AckItem(token,
+                                                                         outputs),
+                                                           ]),
+                                               null,
+                                               disposed_.Token)
+                 .ConfigureAwait(false));
 
   /// <summary>
   ///   Puts a message back in the queue at once.
   /// </summary>
-  public Task NackAsync(string token)
-    => PostAsync<object>("v1/nack",
-                         new NackBody([new NackItem(token, "requeue")]),
-                         null,
-                         disposed_.Token);
+  /// <returns>
+  ///   False when the broker ignored it, the message designating no current distribution any more
+  /// </returns>
+  public async Task<bool> NackAsync(string token)
+    => Applied(await PostAsync<SettleResponse>("v1/nack",
+                                               new NackBody([new NackItem(token, "requeue")]),
+                                               null,
+                                               disposed_.Token)
+                 .ConfigureAwait(false));
+
+  private static bool Applied(SettleResponse? response)
+    => response is not { Ignored: > 0 };
 
   // ------------------------------------------------------------------ wire types
 
@@ -271,6 +294,9 @@ internal sealed class BrokerClient : IAsyncDisposable
   private sealed record EnqueueBody(string                     Key,
                                     int                        Priority,
                                     IReadOnlyList<EnqueueItem> Items);
+
+  private sealed record EnqueueResponse(int    Accepted,
+                                        string Occupancy);
 
   private sealed record NodeBody(string Id,
                                  long   CacheCapacityBytes);
@@ -295,4 +321,7 @@ internal sealed class BrokerClient : IAsyncDisposable
                                  string Policy);
 
   private sealed record NackBody(IReadOnlyList<NackItem> Items);
+
+  private sealed record SettleResponse(int Applied,
+                                       int Ignored);
 }
