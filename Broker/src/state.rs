@@ -54,11 +54,18 @@ struct Record {
 struct Deque {
     head: u32,
     tail: u32,
+    /// Pulls that served another message before the current head. Kept here rather
+    /// than in every record: only the head needs it.
+    head_passes: u32,
+    /// Last pull counted in `head_passes`: a pull serving several messages counts once.
+    head_passed_by: u32,
 }
 
 const EMPTY_DEQUE: Deque = Deque {
     head: NIL,
     tail: NIL,
+    head_passes: 0,
+    head_passed_by: NIL,
 };
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -215,6 +222,8 @@ pub struct PartitionState {
     key_index: Map<Box<str>, u32>,
     free_keys: Vec<u32>,
     cursor: u32,
+    /// Pulls served so far, wrapping: identifies a pull in the deques it passes over.
+    pulls: u32,
 
     leases: Vec<Lease>,
     free_leases: Vec<u32>,
@@ -259,6 +268,7 @@ impl PartitionState {
             key_index: Map::default(),
             free_keys: Vec::new(),
             cursor: NIL,
+            pulls: 0,
             leases: Vec::new(),
             free_leases: Vec::new(),
             oldest: NIL,
@@ -361,12 +371,14 @@ impl PartitionState {
             self.keys[k].deques[p] = Deque {
                 head: slot,
                 tail: slot,
+                ..EMPTY_DEQUE
             };
         } else if at_head {
             self.records[slot as usize].prev = NIL;
             self.records[slot as usize].next = d.head;
             self.records[d.head as usize].prev = slot;
             self.keys[k].deques[p].head = slot;
+            self.keys[k].deques[p].head_passes = 0;
         } else {
             self.records[slot as usize].prev = d.tail;
             self.records[slot as usize].next = NIL;
@@ -385,7 +397,9 @@ impl PartitionState {
             (r.key as usize, r.prio as usize, r.prev, r.next)
         };
         if prev == NIL {
-            self.keys[k].deques[p].head = next
+            let d = &mut self.keys[k].deques[p];
+            d.head = next;
+            d.head_passes = 0;
         } else {
             self.records[prev as usize].next = next
         }
@@ -800,7 +814,13 @@ impl PartitionState {
     // ---------------------------------------------------------------- selection
 
     fn select_candidate(&self, k: u32, prio: usize, node: u32, budget: &mut u32) -> u32 {
-        let head = self.keys[k as usize].deques[prio].head;
+        let d = self.keys[k as usize].deques[prio];
+        let head = d.head;
+        // Affinity passes over the head for a bounded number of pulls only, so that it
+        // cannot starve.
+        if d.head_passes >= self.cfg.max_reorder_pulls {
+            return head;
+        }
         let mirror = self
             .nodes
             .get(node as usize)
@@ -842,6 +862,7 @@ impl PartitionState {
 
     /// Deficit round robin with a persistent cursor.
     fn select(&mut self, node: u32, max: usize, now: u64) -> Vec<Delivered> {
+        self.pulls = self.pulls.wrapping_add(1);
         let mut out = Vec::new();
         let mut budget = self.cfg.probe_budget;
         while out.len() < max && self.cursor != NIL {
@@ -859,8 +880,13 @@ impl PartitionState {
             // Strict priority inside the key: highest non-empty level.
             let prio = (15 - key.levels.leading_zeros()) as usize;
             let slot = self.select_candidate(k, prio, node, &mut budget);
-            if slot != self.keys[k as usize].deques[prio].head {
+            let d = &mut self.keys[k as usize].deques[prio];
+            if slot != d.head {
                 Counters::add(&self.gauges.counters.affinity_reordered, 1);
+                if d.head_passed_by != self.pulls {
+                    d.head_passes += 1;
+                    d.head_passed_by = self.pulls;
+                }
             }
             out.push(self.dispatch(slot, node, now));
         }

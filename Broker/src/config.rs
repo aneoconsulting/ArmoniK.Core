@@ -61,6 +61,10 @@ pub struct Config {
 
     #[arg(long, env = "BROKER_PROBE_BUDGET", default_value_t = 64)]
     pub probe_budget: u32,
+    /// Pulls that can pass over the message at the head of a queue for messages whose data
+    /// are local to the pulling node; 0 disables this reordering.
+    #[arg(long, env = "BROKER_MAX_REORDER_PULLS", default_value_t = 16)]
+    pub max_reorder_pulls: u32,
     #[arg(long, env = "BROKER_MIRROR_ENTRIES", default_value_t = 250_000)]
     pub mirror_entries: usize,
     #[arg(
