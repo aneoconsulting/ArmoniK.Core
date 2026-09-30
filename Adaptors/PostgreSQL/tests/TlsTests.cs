@@ -239,9 +239,11 @@ public class TlsTests
                                                                           new Oid("1.3.6.1.5.5.7.3.1"), // server authentication
                                                                         },
                                                                         false));
+    // Same validity as the CA: a notBefore computed again here can fall before the CA's
+    // (the CA's is truncated to the second, and the clock may step back), which Create rejects.
     using var certificate = request.Create(ca,
-                                           DateTimeOffset.UtcNow.AddDays(-1),
-                                           DateTimeOffset.UtcNow.AddMonths(6),
+                                           ca.NotBefore,
+                                           ca.NotAfter,
                                            RandomNumberGenerator.GetBytes(16));
     return certificate.CopyWithPrivateKey(key);
   }
