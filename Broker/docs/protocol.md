@@ -1,91 +1,95 @@
-# ArmoniK Broker — protocole v1
+# ArmoniK Broker — protocol v1
 
-Contrat entre le serveur `Broker/` (Rust) et son client `Adaptors/Broker/` (C#).
-Il n'y a pas de génération de code : ce document et les vecteurs de `Broker/conformance/` sont
-la seule source de vérité.
+Contract between the `Broker/` server (Rust) and its `Adaptors/Broker/` client (C#).
+There is no code generation: this document and the vectors in `Broker/conformance/` are the only
+source of truth.
 
 ## 1. Transport
 
-- HTTP/1.1 et HTTP/2 (h2 via ALPN, ou h2c en clair pour le développement). Même API.
-- TLS optionnel ; mTLS quand une autorité cliente est configurée. Aucune autorisation par opération.
-- Corps en `application/json`, UTF-8. Tailles de corps plafonnées par `max_body_bytes` (64 Kio par défaut).
-- Toute réponse porte l'en-tête **`X-Broker-Epoch`** : entier non signé 32 bits en décimal, tiré au
-  hasard au démarrage. Son changement signifie que le contenu de la file a été perdu.
+- HTTP/1.1 and HTTP/2 (h2 through ALPN, or cleartext h2c for development). Same API.
+- Optional TLS; mutual TLS when a client certificate authority is configured. No per-operation
+  authorization.
+- Bodies in `application/json`, UTF-8. Body sizes are capped by `max_body_bytes` (64 KiB by default).
+- Every response carries the **`X-Broker-Epoch`** header: an unsigned 32-bit integer in decimal, drawn
+  at random at startup. A change means that the content of the queue was lost.
 
 ## 2. Version
 
-Toutes les routes sont préfixées par `/v1`. Une seule version est servie à la fois. Une requête vers un
-autre préfixe `/vN` reçoit `404` avec le type `unsupported-version`. Le broker est une instance unique
-dont la file est perdue au redémarrage (§1) : il n'y a pas de mise à jour progressive à traverser, et le
-client traite ce `404` comme toute erreur définitive.
+All routes are prefixed with `/v1`. A single version is served at a time. A request to another `/vN`
+prefix gets `404` with the `unsupported-version` type. The broker is a single instance whose queue is
+lost on restart (§1): there is no rolling upgrade to go through, and the client treats this `404` like
+any final error.
 
-## 3. Conventions de valeurs
+## 3. Value conventions
 
-| Valeur | Règle |
+| Value | Rule |
 |---|---|
-| Partition, clé de répartition, identifiant de noeud | chaîne UTF-8 non vide, au plus 100 octets |
-| Identifiant de tâche | chaîne UTF-8 non vide, au plus 59 octets en place, jusqu'à 512 octets via débordement |
-| Priorité | entier de 1 à 16, 16 = plus urgent. Hors plage : `409 invalid-priority` |
-| Durées | millisecondes (`*_ms`), entiers non signés |
-| Tailles | octets (`*_bytes`), entiers non signés 64 bits |
-| Taille encodée | entier 0 à 255 (§8.3) ; 0 = absence |
-| Hachage d'identifiant | entier non signé 32 bits (§8.2) |
-| Jeton | chaîne opaque ; le client ne doit ni la construire ni l'interpréter |
+| Partition, fairness key, node identifier | non-empty UTF-8 string, at most 100 bytes |
+| Task identifier | non-empty UTF-8 string, at most 59 bytes inline, up to 512 bytes through overflow |
+| Priority | integer from 1 to 16, 16 = most urgent. Out of range: `409 invalid-priority` |
+| Durations | milliseconds (`*_ms`), unsigned integers |
+| Sizes | bytes (`*_bytes`), unsigned 64-bit integers |
+| Encoded size | integer from 0 to 255 (§8.3); 0 = absent |
+| Identifier hash | unsigned 32-bit integer (§8.2) |
+| Token | opaque string; the client must neither build nor interpret it |
 
-Champs inconnus : ignorés. Champs obligatoires absents ou mal typés : `400 malformed`.
+Unknown fields are ignored. Missing or mistyped required fields: `400 malformed`.
 
-## 4. Erreurs
+## 4. Errors
 
-Corps `application/problem+json` (RFC 9457), à usage de diagnostic :
+Body in `application/problem+json` (RFC 9457), for diagnostics:
 
 ```json
 { "type": "urn:armonik:broker:backpressure", "title": "backpressure", "status": 429,
   "detail": "hard memory threshold reached" }
 ```
 
-**Le client décide d'après le seul statut** : `429` et `503` se réessaient, tout autre statut d'erreur
-est définitif. Le type et le détail ne servent qu'à journaliser.
+**The client decides on the status alone**: `429` and `503` are retried, any other error status is
+final. The type and the detail are only logged.
 
-| Type (`urn:armonik:broker:…`) | Statut | Signification | Conduite du client |
+| Type (`urn:armonik:broker:…`) | Status | Meaning | Client behavior |
 |---|---|---|---|
-| `malformed` | 400 | corps invalide, jeton illisible, valeur hors format | bug client : journaliser, échouer |
-| `unsupported-version` | 404 | préfixe de version non servi (§2) | échouer |
-| `not-found` | 404 | route inconnue | bug client : échouer |
-| `invalid-priority` | 409 | priorité hors de 1 à 16 | rejeter la soumission |
-| `partition-limit` | 409 | nombre maximal de partitions atteint | échouer : c'est une limite de configuration |
-| `payload-too-large` | 413 | corps au-delà de `max_body_bytes` | découper le lot (§6.1) |
-| `backpressure` | 429 | seuil mémoire dur, réserve de clés pleine | attendre `Retry-After`, rejouer le lot entier |
-| `overloaded` | 503 | anneau d'acteur plein, requêtes concurrentes en excès | attendre `Retry-After`, rejouer |
-| `shutting-down` | 503 | arrêt en cours | attendre `Retry-After`, rejouer |
+| `malformed` | 400 | invalid body, unreadable token, value out of format | client bug: log, fail |
+| `unsupported-version` | 404 | version prefix not served (§2) | fail |
+| `not-found` | 404 | unknown route | client bug: fail |
+| `invalid-priority` | 409 | priority outside 1 to 16 | reject the submission |
+| `partition-limit` | 409 | maximum number of partitions reached | fail: it is a configuration limit |
+| `payload-too-large` | 413 | body beyond `max_body_bytes` | split the batch (§6.1) |
+| `backpressure` | 429 | hard memory threshold, key pool full | wait `Retry-After`, replay the whole batch |
+| `overloaded` | 503 | actor queue full, too many concurrent requests | wait `Retry-After`, replay |
+| `shutting-down` | 503 | shutdown in progress | wait `Retry-After`, replay |
 
-`429` et `503` portent `Retry-After` (secondes). Un statut d'erreur est définitif : **rien n'a été
-appliqué**, un rejeu ne crée pas de doublon. Le lot d'enqueue est atomique.
+`429` and `503` carry `Retry-After` (seconds). An error status is final: **nothing was applied**, so a
+replay creates no duplicate. An enqueue batch is atomic.
 
-La livraison est **au moins une fois** : une requête dont la réponse se perd (coupure, timeout) est
-rejouée par le client alors qu'elle a pu être appliquée, et un enqueue rejoué peut alors enfiler une
-seconde fois les mêmes tâches. Core tolère ces doublons, comme avec les autres files.
+Delivery is **at least once**: a request whose response is lost (disconnection, timeout) is replayed by
+the client although it may have been applied, and a replayed enqueue may then enqueue the same tasks a
+second time. Core tolerates these duplicates, as with the other queues.
 
-## 5. Conduite du client
+## 5. Client behavior
 
-Le protocole est sans état côté client : aucun enregistrement, aucun identifiant de session. Chaque
-requête porte tout ce dont le serveur a besoin.
+The protocol is stateless: no registration, no session identifier. Each request carries everything the
+server needs.
 
-- **Réessai** : `429`, `503`, erreur réseau et timeout se réessaient, avec un back-off exponentiel de
-  100 ms à 10 s avec gigue, remplacé par `Retry-After` quand le serveur le fournit.
-- **Bail** : le client tient l'ensemble des jetons reçus et non réglés, et les renouvelle tous en un
-  seul appel (§6.3), au tiers de `lease_ms` au plus. Il retire un jeton de cet ensemble **avant** de le
-  régler : si le règlement échoue, le bail expire et le message est redistribué.
-- **Indisponibilité** : pendant une indisponibilité, un `pull` du client C# **rend une liste vide** et
-  reste sain ; il ne propage pas l'erreur au Pollster.
-- **Redémarrage** : un changement d'`X-Broker-Epoch` est journalisé ; les tâches soumises avant doivent
-  être reprises (pause puis reprise de leurs sessions). Les jetons de l'epoch précédente restent
-  acquittables : ils reçoivent un succès silencieux.
+- **Retry**: `429`, `503`, network errors and timeouts are retried, with an exponential backoff from
+  100 ms to 10 s with jitter, replaced by `Retry-After` when the server provides it.
+- **Lease**: the client renews the lease of each message it holds at a third of `lease_ms` at most
+  (§6.3), and stops renewing it **before** settling it: if the settlement fails, the lease expires and
+  the message is delivered again.
+- **Settlement**: an ack or nack the server reports as ignored (§6.4) is logged as a warning by the C#
+  client: its task may run again.
+- **Unavailability**: while the broker is unavailable, a `pull` of the C# client **returns an empty
+  list** and stays healthy; it does not propagate the error to the Pollster.
+- **Restart**: a change of `X-Broker-Epoch` is logged; the tasks submitted before it must be resumed
+  (pause then resume their sessions). Tokens of the previous epoch can still be settled: they get a
+  silent success.
 
-## 6. Opérations
+## 6. Operations
 
 ### 6.1 Enqueue — `POST /v1/partitions/{partition}/messages`
 
-Lot homogène : partition, clé et priorité dans l'en-tête. La partition est créée si elle n'existe pas.
+Homogeneous batch: partition, key and priority are given once for the whole batch. The partition is
+created if it does not exist.
 
 ```json
 { "key": "session-42", "priority": 5,
@@ -94,19 +98,20 @@ Lot homogène : partition, clé et priorité dans l'en-tête. La partition est c
                "affinity": { "hashes": [123, 456], "sizes": [40, 12], "dep_count": 2, "total_size": 41 } } ] }
 ```
 
-- `items` : 1 à `max_batch_items` éléments (dérivé de `max_body_bytes`, ≈ 150 par défaut). Au-delà, ou si
-  le corps dépasse `max_body_bytes` : `413`, et le client découpe le lot en deux puis renvoie chaque moitié.
-- `affinity` (facultatif) : `hashes` et `sizes` de même longueur, au plus 8 (§8.1) ;
-  `dep_count` : nombre total de dépendances, saturé à 65535 ; `total_size` : taille encodée de la somme des tailles.
-- `delay_ms` (facultatif, sur l'en-tête) : visibilité différée du lot, au plus 24 h.
+- `items`: 1 to `max_batch_items` items (derived from `max_body_bytes`, about 150 by default). Beyond,
+  or if the body exceeds `max_body_bytes`: `413`, and the client splits the batch in two and sends each
+  half again.
+- `affinity` (optional): `hashes` and `sizes` of the same length, at most 8 (§8.1); `dep_count`: total
+  number of dependencies, saturated at 65535; `total_size`: encoded size of the sum of the sizes.
+- `delay_ms` (optional, for the whole batch): delayed visibility of the batch, at most 24 h.
 
-Réponse `200` :
+Response `200`:
 
 ```json
 { "accepted": 2, "occupancy": "normal" }
 ```
 
-`occupancy` vaut `normal` ou `high` (seuil mémoire souple dépassé, indicatif).
+`occupancy` is `normal` or `high` (soft memory threshold exceeded, informative).
 
 ### 6.2 Pull — `POST /v1/partitions/{partition}/pull`
 
@@ -116,45 +121,43 @@ Réponse `200` :
             "fetch_fixed_cost_us": 3000, "fetch_throughput_bytes_per_s": 1000000000 } }
 ```
 
-- `max` : au moins 1, **plafonné** par `max_pull` (64 par défaut) ; `0` produit `400`.
-- `wait_ms` : **plafonné** par `max_wait_ms` (10 min par défaut).
-- `node` et chacun de ses champs sont facultatifs ; sans `node.id`, l'affinité est inactive pour ce
-  pull. Le serveur retient la dernière déclaration de chaque noeud, et l'oublie après
-  `node_forget_ms` sans pull de sa part.
-- La partition est créée si elle n'existe pas.
-- Retour **partiel** dès qu'au moins un message est disponible.
+- `max`: at least 1, **capped** by `max_pull` (64 by default); `0` gives `400`.
+- `wait_ms`: **capped** by `max_wait_ms` (10 min by default).
+- `node` and each of its fields are optional; without `node.id`, affinity is inactive for this pull.
+  The server keeps the last declaration of each node, and forgets it after `node_forget_ms` without a
+  pull from it.
+- The partition is created if it does not exist.
+- **Partial** return as soon as at least one message is available.
 
-Réponse `200` :
+Response `200`:
 
 ```json
 { "lease_ms": 30000,
   "messages": [ { "token": "AAAB…", "task_id": "0f8c…###1", "attempts": 1 } ] }
 ```
 
-Chaque message distribué a son propre bail de `lease_ms` à partir de sa distribution, prolongé seulement
-par un renouvellement qui le nomme (§6.3). Une rupture de connexion ne remet rien en file : seul le bail
-fait foi.
+Each delivered message has its own lease of `lease_ms` from its delivery, extended only by a renew that
+names it (§6.3). A broken connection requeues nothing: only the lease counts.
 
-`204` sans corps si l'attente expire. À l'arrêt propre du broker, les attentes reçoivent `204`.
+`204` without a body if the wait expires. On a clean shutdown of the broker, waiting pulls get `204`.
 
-### 6.3 Renouvellement — `POST /v1/renew`
+### 6.3 Renew — `POST /v1/renew`
 
 ```json
 { "tokens": [ "AAAB…", "AAAC…" ] }
 ```
 
-Prolonge de `lease_ms` le bail des messages **nommés**, et d'eux seuls, quelle que soit leur partition.
-Un appel peut en nommer plusieurs ; l'adaptateur C# renouvelle chaque message par son propre heartbeat.
-Un message qu'il ne nomme pas n'est pas
-renouvelé et revient en file à l'expiration de son bail : c'est ce qui récupère une réponse de pull
-perdue en route ou un règlement abandonné. Réponse `200` :
+Extends by `lease_ms` the lease of the **named** messages, and only those, whatever their partition. A
+call may name several; the C# adapter renews each message with its own heartbeat. A message that is not
+named is not renewed and goes back to the queue when its lease expires: this is what recovers a pull
+response lost on the way or an abandoned settlement. Response `200`:
 
 ```json
 { "lease_ms": 30000, "unknown": [ "AAAC…" ] }
 ```
 
-`unknown` liste les jetons qui ne désignent plus une distribution en cours (déjà réglés, expirés, d'une
-autre epoch) : le client cesse de les renouveler. Un jeton illisible produit `400`.
+`unknown` lists the tokens that no longer designate a current delivery (already settled, expired, from
+another epoch): the client stops renewing them. An unreadable token gives `400`.
 
 ### 6.4 Ack — `POST /v1/ack`
 
@@ -162,12 +165,13 @@ autre epoch) : le client cesse de les renouveler. Un jeton illisible produit `40
 { "items": [ { "token": "AAAB…", "outputs": { "hashes": [789], "sizes": [33] } } ] }
 ```
 
-`outputs` (facultatif) : sorties produites, même règle de sélection que les dépendances (§8.1).
-Réponse `200` : `{ "applied": 1, "ignored": 0 }`.
+`outputs` (optional): outputs produced, selected with the same rule as the dependencies (§8.1).
+Response `200`: `{ "applied": 1, "ignored": 0 }`.
 
-**Règle de sûreté.** Un jeton n'acquitte jamais un autre message que celui de sa distribution. Un jeton
-bien formé qui ne désigne plus une distribution en cours — acquitté, redistribué, autre epoch, slot
-inconnu — est **ignoré avec succès** et compté dans `ignored`. Seul un jeton illisible produit `400`.
+**Safety rule.** A token never acknowledges another message than the one of its delivery. A well-formed
+token that no longer designates a current delivery — acknowledged, delivered again, other epoch,
+unknown slot — is **ignored with success** and counted in `ignored`. Only an unreadable token gives
+`400`.
 
 ### 6.5 Nack — `POST /v1/nack`
 
@@ -177,77 +181,78 @@ inconnu — est **ignoré avec succès** et compté dans `ignored`. Seul un jeto
              { "token": "AAAD…", "policy": "backoff" } ] }
 ```
 
-- `requeue` (défaut) : remise en file immédiate, en queue de sa priorité.
-- `delay` : remise en file après `delay_ms` (au plus 24 h).
-- `backoff` : délai `min(backoff_base_ms × 2^(attempts-1), backoff_max_ms)`, soit 1 s × 2^n plafonné à 60 s par défaut.
+- `requeue` (default): back to the queue at once, at the tail of its priority.
+- `delay`: back to the queue after `delay_ms` (at most 24 h).
+- `backoff`: delay of `min(backoff_base_ms × 2^(attempts-1), backoff_max_ms)`, that is 1 s × 2^n capped
+  at 60 s by default.
 
-Même règle de sûreté que l'ack. Réponse `200` : `{ "applied": n, "ignored": m }`.
+Same safety rule as the ack. Response `200`: `{ "applied": n, "ignored": m }`.
 
-### 6.6 Administration et diagnostic
+### 6.6 Administration and diagnostics
 
-| Route | Réponse |
+| Route | Response |
 |---|---|
-| `GET /v1/partitions/{p}/stats?top=N&key=K` | `{ "ready": n, "in_flight": n, "delayed": n, "oldest_ready_age_ms": n, "waiters": n, "keys": [ { "key": "…", "ready": n, "in_flight": n, "oldest_ready_age_ms": n } ] }` — `keys` : la clé `K` si fournie, sinon les `N` plus grosses (défaut 10) |
-| `GET /v1/partitions/{p}/leases?limit=N` | `{ "leases": [ { "token", "task_id", "node_id", "dispatched_age_ms", "attempts" } ] }`, des plus anciennement distribués aux plus récents |
-| `GET /v1/partitions/{p}/peek` | `{ "heads": [ { "key", "priority", "task_id" } ] }` : tête de chaque couple clé et priorité non vide, au plus 1000 |
-| `GET /v1/messages/{token}` | `{ "state": "in-flight", "task_id", "partition", "node_id", "dispatched_age_ms", "attempts" }` ou `{ "state": "stale" }` |
-| `DELETE /v1/partitions/{p}` | `204` ; supprime messages, baux et clés ; les pulls en attente reçoivent `204` et les jetons émis deviennent périmés |
-| `GET /v1/health` | `200 { "status": "ok" }`, ou `503` à l'arrêt |
-| `GET /metrics` | format texte Prometheus |
+| `GET /v1/partitions/{p}/stats?top=N&key=K` | `{ "ready": n, "in_flight": n, "delayed": n, "oldest_ready_age_ms": n, "waiters": n, "keys": [ { "key": "…", "ready": n, "in_flight": n, "oldest_ready_age_ms": n } ] }` — `keys`: the key `K` if given, otherwise the `N` largest (10 by default) |
+| `GET /v1/partitions/{p}/leases?limit=N` | `{ "leases": [ { "token", "task_id", "node_id", "dispatched_age_ms", "attempts" } ] }`, from the oldest delivered to the most recent |
+| `GET /v1/partitions/{p}/peek` | `{ "heads": [ { "key", "priority", "task_id" } ] }`: head of each non-empty key and priority pair, at most 1000 |
+| `GET /v1/messages/{token}` | `{ "state": "in-flight", "task_id", "partition", "node_id", "dispatched_age_ms", "attempts" }` or `{ "state": "stale" }` |
+| `DELETE /v1/partitions/{p}` | `204`; deletes messages, leases and keys; waiting pulls get `204` and the tokens issued become stale |
+| `GET /v1/health` | `200 { "status": "ok" }`, or `503` during shutdown |
+| `GET /metrics` | Prometheus text format |
 
-Une partition inconnue en lecture renvoie des compteurs nuls, pas `404`.
+An unknown partition read returns zero counters, not `404`.
 
-## 7. Jeton
+## 7. Token
 
-Opaque pour le client. Le serveur y code `epoch`, `partition`, `slot` et `génération` et le valide
-entièrement ; la génération change à chaque sortie de l'état en vol. La forme actuelle (base64url de
-16 octets) n'est pas contractuelle.
+Opaque to the client. The server encodes `epoch`, `partition`, `slot` and `generation` in it and
+validates all of them; the generation changes each time the message leaves the in-flight state. The
+current form (base64url of 16 bytes) is not part of the contract.
 
-## 8. Structure d'affinité
+## 8. Affinity structure
 
-Calculée par le producteur (Core) ; le broker ne voit que le résultat. Les vecteurs de
-`conformance/affinity.json` fixent le comportement attendu ; Rust et C# doivent les reproduire à l'identique.
+Computed by the producer (Core); the broker only sees the result. The vectors of
+`conformance/affinity.json` set the expected behavior; Rust and C# must reproduce them exactly.
 
-### 8.1 Sélection des 8 emplacements
+### 8.1 Selection of the 8 slots
 
-Entrée : liste de couples (identifiant, taille en octets). Les identifiants en double sont fusionnés
-(on garde la première taille).
+Input: list of (identifier, size in bytes) pairs. Duplicate identifiers are merged (the first size is
+kept).
 
-1. Calculer `h = hash(id)` (§8.2) pour chaque dépendance.
-2. **Moitié par taille** : trier par taille décroissante, puis par `h` croissant, puis par identifiant
-   (ordinal) croissant ; prendre les 4 premiers.
-3. **Moitié par hachage** : parmi les dépendances restantes, trier par `h` croissant, puis par
-   identifiant croissant ; compléter jusqu'à 8 au total.
-4. Émettre dans l'ordre : moitié par taille, puis moitié par hachage. `sizes[i] = encode(taille)` (§8.3),
-   jamais 0 pour une dépendance réelle.
-5. `dep_count = min(nombre de dépendances distinctes, 65535)` ;
-   `total_size = encode(somme des tailles, saturée à 2^64-1)`.
+1. Compute `h = hash(id)` (§8.2) for each dependency.
+2. **Half by size**: sort by decreasing size, then by increasing `h`, then by increasing identifier
+   (ordinal); take the first 4.
+3. **Half by hash**: among the remaining dependencies, sort by increasing `h`, then by increasing
+   identifier; complete up to 8 in total.
+4. Emit in order: the half by size, then the half by hash. `sizes[i] = encode(size)` (§8.3), never 0
+   for a real dependency.
+5. `dep_count = min(number of distinct dependencies, 65535)`;
+   `total_size = encode(sum of the sizes, saturated at 2^64-1)`.
 
-Aucune dépendance : `affinity` absent.
+No dependency: `affinity` absent.
 
-### 8.2 Hachage
+### 8.2 Hash
 
 ```
 hash(id) = XXH32(utf8(id), seed = 0)
 ```
 
-XXH32 est l'algorithme standard de xxHash, disponible dans les deux langages (`System.IO.Hashing.XxHash32`
-en .NET, `xxhash-rust` en Rust) ; son mélange garantit que des identifiants proches (UUID v7 horodatés,
-compteurs) ne produisent pas de hachages proches.
+XXH32 is the standard xxHash algorithm, available in both languages (`System.IO.Hashing.XxHash32` in
+.NET, `xxhash-rust` in Rust); its mixing ensures that close identifiers (time-ordered UUID v7,
+counters) do not give close hashes.
 
-### 8.3 Encodage logarithmique des tailles
+### 8.3 Logarithmic encoding of sizes
 
-Mini-flottant sur la valeur `v = s + 1` : l'exposant et les deux bits qui suivent le bit de tête, soit
-quatre pas par octave (au plus 25 % d'écart par pas) ; calcul entier uniquement.
+Minifloat of the value `v = s + 1`: the exponent and the two bits after the leading one, that is four
+steps per octave (at most 25 % between steps); integer arithmetic only.
 
 ```
 encode(s):
-    v = s + 1                      (saturé à 2^64 - 1)
+    v = s + 1                      (saturated at 2^64 - 1)
     e = 63 - leading_zeros(v)      // floor(log2 v)
     m = (e ≥ 2 ? v >> (e - 2) : v << (2 - e)) & 3
     return min(255, 1 + 4·e + m)
-decode(c) ≈ (4 + m) · 2^(e - 2) - 1  avec e = (c - 1) / 4, m = (c - 1) mod 4
-                                   // borne basse du pas ; usage indicatif (scoring), jamais comparé entre implémentations
+decode(c) ≈ (4 + m) · 2^(e - 2) - 1  with e = (c - 1) / 4, m = (c - 1) mod 4
+                                   // lower bound of the step; indicative use (scoring), never compared between implementations
 ```
 
-`encode(0) = 1`, `encode(1) = 5`, encodage croissant au sens large ; 255 n'est atteint qu'au-delà de 2^63 octets.
+`encode(0) = 1`, `encode(1) = 5`, non-decreasing encoding; 255 is only reached beyond 2^63 bytes.
