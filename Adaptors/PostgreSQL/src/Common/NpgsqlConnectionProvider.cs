@@ -45,9 +45,10 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Common;
 /// </summary>
 public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDisposable
 {
-  private readonly InitDatabase                      initDatabase_;
-  private readonly SemaphoreSlim                     initSemaphore_ = new(1,
-                                                                          1);
+  private readonly InitDatabase initDatabase_;
+
+  private readonly SemaphoreSlim initSemaphore_ = new(1,
+                                                      1);
 
   private readonly ILogger<NpgsqlConnectionProvider> logger_;
   private readonly Options.PostgreSQL                options_;
@@ -163,6 +164,22 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
     }
   }
 
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    if (!isInitialized_)
+    {
+      return Task.FromResult(HealthCheckResult.Unhealthy("Not initialized"));
+    }
+
+    if (tag == HealthCheckTag.Liveness)
+    {
+      return CheckLiveness();
+    }
+
+    return Task.FromResult(HealthCheckResult.Healthy());
+  }
+
   private async Task InitializeDatabase(CancellationToken cancellationToken)
   {
     logger_.LogInformation("Initializing PostgreSQL schema");
@@ -217,22 +234,6 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
       .ConfigureAwait(false);
 
     logger_.LogInformation("PostgreSQL schema initialized successfully");
-  }
-
-  /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    if (!isInitialized_)
-    {
-      return Task.FromResult(HealthCheckResult.Unhealthy("Not initialized"));
-    }
-
-    if (tag == HealthCheckTag.Liveness)
-    {
-      return CheckLiveness();
-    }
-
-    return Task.FromResult(HealthCheckResult.Healthy());
   }
 
   /// <summary>
