@@ -381,7 +381,10 @@ public class ResultWatcherTestBase
                                                                       .ConfigureAwait(false))
                              {
                                Console.WriteLine(cur);
-                               newResults.Add(cur);
+                               lock (newResults)
+                               {
+                                 newResults.Add(cur);
+                               }
                              }
                            },
                            CancellationToken.None);
@@ -394,17 +397,21 @@ public class ResultWatcherTestBase
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+      var expected = new List<NewResult>
+                     {
+                       ResultToNewResult(NewResult1),
+                       ResultToNewResult(NewResult2),
+                     };
+      await WatchTestHelper.StopWhenReceived(newResults,
+                                             expected,
+                                             cts)
+                           .ConfigureAwait(false);
 
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
 
       Assert.That(newResults,
-                  Is.EquivalentTo(new List<NewResult>
-                                  {
-                                    ResultToNewResult(NewResult1),
-                                    ResultToNewResult(NewResult2),
-                                  }));
+                  Is.EquivalentTo(expected));
     }
   }
 
@@ -429,7 +436,10 @@ public class ResultWatcherTestBase
                                                                       .ConfigureAwait(false))
                              {
                                Console.WriteLine(cur);
-                               newResults.Add(cur);
+                               lock (newResults)
+                               {
+                                 newResults.Add(cur);
+                               }
                              }
                            },
                            CancellationToken.None);
@@ -442,7 +452,22 @@ public class ResultWatcherTestBase
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+      var expected = new List<ResultStatusUpdate>
+                     {
+                       new("SessionId",
+                           "ResultIsCreated",
+                           ResultStatus.Aborted),
+                       new("SessionId",
+                           "ResultIsCreated2",
+                           ResultStatus.Aborted),
+                       new("SessionId",
+                           "ResultIsCreated3",
+                           ResultStatus.Aborted),
+                     };
+      await WatchTestHelper.StopWhenReceived(newResults,
+                                             expected,
+                                             cts)
+                           .ConfigureAwait(false);
 
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
@@ -454,18 +479,7 @@ public class ResultWatcherTestBase
                                     cur => cur.Status);
 
       Assert.That(newResults,
-                  Is.EqualTo(new List<ResultStatusUpdate>
-                             {
-                               new("SessionId",
-                                   "ResultIsCreated",
-                                   ResultStatus.Aborted),
-                               new("SessionId",
-                                   "ResultIsCreated2",
-                                   ResultStatus.Aborted),
-                               new("SessionId",
-                                   "ResultIsCreated3",
-                                   ResultStatus.Aborted),
-                             }));
+                  Is.EqualTo(expected));
     }
   }
 
@@ -491,7 +505,10 @@ public class ResultWatcherTestBase
                                                                       .ConfigureAwait(false))
                              {
                                Console.WriteLine(cur);
-                               newResults.Add(cur);
+                               lock (newResults)
+                               {
+                                 newResults.Add(cur);
+                               }
                              }
                            },
                            CancellationToken.None);
@@ -504,7 +521,17 @@ public class ResultWatcherTestBase
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+      var expected = new List<ResultOwnerUpdate>
+                     {
+                       new("SessionId",
+                           "ResultIsCreated3",
+                           "",
+                           "NewOwnerId"),
+                     };
+      await WatchTestHelper.StopWhenReceived(newResults,
+                                             expected,
+                                             cts)
+                           .ConfigureAwait(false);
 
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
@@ -516,13 +543,7 @@ public class ResultWatcherTestBase
                                     cur => cur.NewOwner);
 
       Assert.That(newResults,
-                  Is.EqualTo(new List<ResultOwnerUpdate>
-                             {
-                               new("SessionId",
-                                   "ResultIsCreated3",
-                                   "",
-                                   "NewOwnerId"),
-                             }));
+                  Is.EqualTo(expected));
     }
   }
 }
