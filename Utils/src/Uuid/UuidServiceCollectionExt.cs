@@ -15,26 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Tests.TestBase;
-using ArmoniK.Core.Utils.Uuid;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-using NUnit.Framework;
+namespace ArmoniK.Core.Utils.Uuid;
 
-namespace ArmoniK.Core.Adapters.Memory.Tests;
-
-[TestFixture]
-public class ObjectStorageTests : ObjectStorageTestBase
+public static class UuidServiceCollectionExt
 {
-  public override void TearDown()
+  public static IServiceCollection AddUuidGeneratorDefault(this IServiceCollection services)
   {
-    ObjectStorage = null;
-    RunTests      = false;
-  }
-
-
-  protected override void GetObjectStorageInstance()
-  {
-    ObjectStorage = new ObjectStorage(new UuidGeneratorV4());
-    RunTests      = true;
+    services.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
+    services.TryAddKeyedSingleton<IUuidGenerator, UuidGeneratorV4>(KeyedService.AnyKey);
+    return services;
   }
 }

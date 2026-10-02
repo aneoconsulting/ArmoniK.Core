@@ -21,6 +21,7 @@ using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -100,7 +101,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.PostgreSQL.TableStorage")
     {
-      services.AddSingleton<ITaskTable, TaskTable>()
+      services.AddUuidGeneratorDefault()
+              .AddSingleton<ITaskTable, TaskTable>()
               .AddSingleton<ISessionTable, SessionTable>()
               .AddSingleton<IResultTable, ResultTable>()
               .AddSingleton<IPartitionTable, PartitionTable>()

@@ -35,10 +35,12 @@ using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -88,6 +90,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly ITaskProcessingChecker                taskProcessingChecker_;
   private readonly ITaskTable                            taskTable_;
   private readonly string                                token_;
+  private readonly IUuidGenerator                        uuidGenerator_;
   private readonly IWorkerStreamHandler                  workerStreamHandler_;
   private          IAgent?                               agent_;
   private          TimeSpan?                             delayMessage_;
@@ -122,6 +125,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <param name="exceptionManager">The exception manager for handling cancellation and errors.</param>
   /// <param name="functionExecutionMetrics">The metrics collector for function execution.</param>
   /// <param name="healthCheckRecord">The health check record for agent health monitoring.</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
   public TaskHandler(ISessionTable                         sessionTable,
                      ITaskTable                            taskTable,
@@ -143,7 +147,9 @@ public sealed class TaskHandler : IAsyncDisposable
                      Action                                onDispose,
                      ExceptionManager                      exceptionManager,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
-                     HealthCheckRecord                     healthCheckRecord)
+                     HealthCheckRecord                     healthCheckRecord,
+                     [FromKeyedServices(UuidServiceKey.Monotonic)]
+                     IUuidGenerator uuidGenerator)
   {
     exceptionManager_         = exceptionManager;
     sessionTable_             = sessionTable;
@@ -163,6 +169,7 @@ public sealed class TaskHandler : IAsyncDisposable
     functionExecutionMetrics_ = functionExecutionMetrics;
     submitterOptions_         = submitterOptions;
     healthCheckRecord_        = healthCheckRecord;
+    uuidGenerator_            = uuidGenerator;
     ownerPodId_               = ownerPodId;
     ownerPodName_             = ownerPodName;
     taskData_                 = null;
@@ -182,8 +189,8 @@ public sealed class TaskHandler : IAsyncDisposable
     activity_?.SetTagAndBaggage("OwnerPodName",
                                 ownerPodName);
 
-    token_ = Guid.NewGuid()
-                 .ToString();
+    token_ = uuidGenerator_.GenerateUuid()
+                           .ToString();
 
     cache_                  = pollsterOptions.InternalCacheFolder;
     cacheEvictionThreshold_ = pollsterOptions.CacheEvictionThreshold;
@@ -1048,7 +1055,7 @@ public sealed class TaskHandler : IAsyncDisposable
         foreach (var resultId in opaqueIds.Keys)
         {
           var tmp = Path.Combine(cache_,
-                                 $"{resultId}{Guid.NewGuid().ToString()}.tmp");
+                                 $"{resultId}{uuidGenerator_.GenerateUuid().ToString()}.tmp");
           try
           {
             File.Copy(Path.Combine(folder_,

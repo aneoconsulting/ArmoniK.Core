@@ -32,10 +32,12 @@ using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
@@ -60,6 +62,7 @@ public sealed class Agent : IAgent
   private readonly ISubmitter                                                         submitter_;
   private readonly TaskData                                                           taskData_;
   private readonly ITaskTable                                                         taskTable_;
+  private readonly IUuidGenerator                                                     uuidGenerator_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Agent" />
@@ -73,6 +76,7 @@ public sealed class Agent : IAgent
   /// <param name="taskData">OpaqueId of the task</param>
   /// <param name="folder">Shared folder between Agent and Worker</param>
   /// <param name="token">Token send to the worker to identify the running task</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
   public Agent(ISubmitter        submitter,
                IObjectStorage    objectStorage,
@@ -83,13 +87,16 @@ public sealed class Agent : IAgent
                TaskData          taskData,
                string            folder,
                string            token,
-               ILogger           logger)
+               [FromKeyedServices(UuidServiceKey.Monotonic)]
+               IUuidGenerator uuidGenerator,
+               ILogger logger)
   {
     submitter_        = submitter;
     objectStorage_    = objectStorage;
     pushQueueStorage_ = pushQueueStorage;
     resultTable_      = resultTable;
     taskTable_        = taskTable;
+    uuidGenerator_    = uuidGenerator;
     logger_           = logger;
     sessionData_      = sessionData;
     taskData_         = taskData;
@@ -262,8 +269,8 @@ public sealed class Agent : IAgent
                                   .AsICollection());
     }
 
-    var createdTasks = requests.Select(creation => new TaskCreationRequest(Guid.NewGuid()
-                                                                               .ToString(),
+    var createdTasks = requests.Select(creation => new TaskCreationRequest(uuidGenerator_.GenerateUuid()
+                                                                                         .ToString(),
                                                                            creation.PayloadId,
                                                                            TaskOptions.Merge(creation.Options,
                                                                                              options),
@@ -285,8 +292,8 @@ public sealed class Agent : IAgent
     var now = DateTime.UtcNow;
 
     var results = requests.Select(tuple => (new Result(tuple.request.SessionId,
-                                                       Guid.NewGuid()
-                                                           .ToString(),
+                                                       uuidGenerator_.GenerateUuid()
+                                                                     .ToString(),
                                                        tuple.request.Name,
                                                        taskData_.TaskId,
                                                        "",
@@ -324,8 +331,8 @@ public sealed class Agent : IAgent
     ThrowIfInvalidToken(token);
 
     var results = requests.Select(request => new Result(request.SessionId,
-                                                        Guid.NewGuid()
-                                                            .ToString(),
+                                                        uuidGenerator_.GenerateUuid()
+                                                                      .ToString(),
                                                         request.Name,
                                                         taskData_.TaskId,
                                                         "",

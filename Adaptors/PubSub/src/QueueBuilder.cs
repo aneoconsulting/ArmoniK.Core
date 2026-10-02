@@ -18,6 +18,7 @@
 using System;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils.Uuid;
 
 using Google.Api.Gax;
 using Google.Cloud.PubSub.V1;
@@ -52,6 +53,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
                        EmulatorDetection = EmulatorDetection.EmulatorOrProduction,
                      }.Build();
 
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingleton(pubSubOptions);
     serviceCollection.AddSingleton(publisher);
     serviceCollection.AddSingleton(subscriber);

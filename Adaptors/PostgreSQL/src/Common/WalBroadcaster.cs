@@ -23,6 +23,8 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Utils.Uuid;
+
 using Npgsql.Replication;
 using Npgsql.Replication.PgOutput;
 using Npgsql.Replication.PgOutput.Messages;
@@ -53,15 +55,18 @@ internal sealed class WalBroadcaster<T> : IDisposable
   private readonly NpgsqlConnectionProvider                                      provider_;
   private readonly ConcurrentDictionary<Guid, Channel<T>>                        subscribers_ = new();
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
+  private readonly IUuidGenerator                                                uuidGenerator_;
   private          Task?                                                         broadcastLoop_;
   private          CancellationTokenSource?                                      loopCts_;
   private          TaskCompletionSource?                                         slotReady_;
 
   internal WalBroadcaster(NpgsqlConnectionProvider                                      provider,
-                          Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse)
+                          Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse,
+                          IUuidGenerator                                                uuidGenerator)
   {
-    provider_ = provider;
-    tryParse_ = tryParse;
+    provider_      = provider;
+    tryParse_      = tryParse;
+    uuidGenerator_ = uuidGenerator;
   }
 
   public void Dispose()
@@ -89,7 +94,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
   /// </summary>
   public async Task<IAsyncEnumerable<T>> SubscribeAsync(CancellationToken cancellationToken)
   {
-    var id      = Guid.NewGuid();
+    var id      = uuidGenerator_.GenerateUuid();
     var channel = Channel.CreateUnbounded<T>();
 
     // Register the channel inside EnsureStartedAndRegister (while holding the lock),
@@ -155,12 +160,12 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
   // Ensures the broadcast loop is running (starting a new one if needed), registers the
   // subscriber channel while holding the lock, and returns the slot-ready TCS.
-  //
+  // 
   // Registering inside the lock (after verifying the loop is not cancelling) prevents a
   // race where StopIfIdle cancels the loop after the channel is added to subscribers_ but
   // before EnsureStarted runs — in that scenario the old loop's finally would complete the
   // new channel with immediate EOF.
-  //
+  // 
   // When the previous loop is still winding down we wait for it OUTSIDE the lock so we do
   // not block other concurrent SubscribeAsync callers (which would hang if the replication
   // connection takes time to respond to cancellation).
@@ -271,7 +276,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     Exception? loopException = null;
     try
     {
-      var slotName = $"armonik_{Guid.NewGuid():N}";
+      var slotName = $"armonik_{uuidGenerator_.GenerateUuid():N}";
       var options = new PgOutputReplicationOptions("armonik_pub",
                                                    PgOutputProtocolVersion.V1,
                                                    true);

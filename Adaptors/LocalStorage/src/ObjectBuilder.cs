@@ -17,6 +17,7 @@
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -44,9 +45,11 @@ public class ObjectBuilder : IDependencyInjectionBuildable
 
     logger.LogDebug("setup local storage");
 
-    serviceCollection.AddSingletonWithHealthCheck<IObjectStorage>(nameof(IObjectStorage),
+    serviceCollection.AddUuidGeneratorDefault()
+                     .AddSingletonWithHealthCheck<IObjectStorage>(nameof(IObjectStorage),
                                                                   sp => new ObjectStorage(storageOptions.Path,
                                                                                           storageOptions.ChunkSize,
+                                                                                          sp.GetRequiredService<IUuidGenerator>(),
                                                                                           sp.GetRequiredService<ILogger<ObjectStorage>>()));
   }
 }

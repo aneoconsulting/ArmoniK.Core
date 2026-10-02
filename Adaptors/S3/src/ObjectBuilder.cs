@@ -19,6 +19,7 @@ using Amazon.S3;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -70,7 +71,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                                     s3Config);
     }
 
-
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingleton(_ => s3Client);
     serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
   }

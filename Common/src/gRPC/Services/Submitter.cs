@@ -31,6 +31,7 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Google.Protobuf;
@@ -63,6 +64,7 @@ public class Submitter : ISubmitter
   private readonly ISessionTable               sessionTable_;
   private readonly Injection.Options.Submitter submitterOptions_;
   private readonly ITaskTable                  taskTable_;
+  private readonly IUuidGenerator              uuidGenerator_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Submitter" /> class.
@@ -76,6 +78,7 @@ public class Submitter : ISubmitter
   /// <param name="partitionTable">The partition table for managing partition metadata.</param>
   /// <param name="submitterOptions">The submitter options for configuration.</param>
   /// <param name="activitySource">The activity source for distributed tracing.</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   [UsedImplicitly]
   public Submitter(IPushQueueStorage           pushQueueStorage,
                    IObjectStorage              objectStorage,
@@ -85,7 +88,8 @@ public class Submitter : ISubmitter
                    IResultTable                resultTable,
                    IPartitionTable             partitionTable,
                    Injection.Options.Submitter submitterOptions,
-                   ActivitySource              activitySource)
+                   ActivitySource              activitySource,
+                   IUuidGenerator              uuidGenerator)
   {
     objectStorage_    = objectStorage;
     logger_           = logger;
@@ -95,6 +99,7 @@ public class Submitter : ISubmitter
     partitionTable_   = partitionTable;
     submitterOptions_ = submitterOptions;
     activitySource_   = activitySource;
+    uuidGenerator_    = uuidGenerator;
     pushQueueStorage_ = pushQueueStorage;
   }
 
@@ -459,10 +464,10 @@ public class Submitter : ISubmitter
     await foreach (var taskRequest in taskRequests.WithCancellation(cancellationToken)
                                                   .ConfigureAwait(false))
     {
-      var taskId = Guid.NewGuid()
-                       .ToString();
-      var payloadId = Guid.NewGuid()
-                          .ToString();
+      var taskId = uuidGenerator_.GenerateUuid()
+                                 .ToString();
+      var payloadId = uuidGenerator_.GenerateUuid()
+                                    .ToString();
 
       requests.Add(new TaskCreationRequest(taskId,
                                            payloadId,

@@ -20,6 +20,7 @@ using System.Net.Security;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -94,6 +95,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                     redisOptions.EndpointUrl,
                     redisOptions.User);
 
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                                       TextWriter.Null)
                                                                              .GetDatabase());

@@ -20,6 +20,7 @@ using System;
 using Amazon.SQS;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -48,6 +49,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
                                        ServiceURL = sqsOptions.ServiceURL,
                                      });
 
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingleton(client);
     serviceCollection.AddSingleton(sqsOptions);
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();

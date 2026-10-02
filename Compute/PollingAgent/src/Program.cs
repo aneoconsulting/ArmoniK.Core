@@ -37,6 +37,7 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
@@ -114,6 +115,7 @@ public static class Program
              .AddSingleton<PostProcessingTaskQueue>()
              .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
+             .AddUuidGeneratorDefault()
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddInitializedOption<Submitter>(builder.Configuration,
                                               Submitter.SettingSection)

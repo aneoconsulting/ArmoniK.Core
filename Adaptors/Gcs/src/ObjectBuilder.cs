@@ -17,6 +17,7 @@
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Google.Cloud.Storage.V1;
 
@@ -66,6 +67,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
     var storageClient = builder.Build();
 
     serviceCollection.AddSingleton(_ => storageClient);
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
   }
 }
