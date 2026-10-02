@@ -413,7 +413,10 @@ public class TaskWatcherTestBase
                                                                       .ConfigureAwait(false))
                              {
                                Console.WriteLine(cur);
-                               newResults.Add(cur);
+                               lock (newResults)
+                               {
+                                 newResults.Add(cur);
+                               }
                              }
                            },
                            CancellationToken.None);
@@ -426,17 +429,21 @@ public class TaskWatcherTestBase
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromSeconds(1));
+      var expected = new List<NewTask>
+                     {
+                       TaskDataToNewTask(TaskEventCreating1),
+                       TaskDataToNewTask(TaskEventCreating2),
+                     };
+      await WatchTestHelper.StopWhenReceived(newResults,
+                                             expected,
+                                             cts)
+                           .ConfigureAwait(false);
 
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
 
       Assert.That(newResults,
-                  Is.EquivalentTo(new List<NewTask>
-                                  {
-                                    TaskDataToNewTask(TaskEventCreating1),
-                                    TaskDataToNewTask(TaskEventCreating2),
-                                  }));
+                  Is.EquivalentTo(expected));
     }
   }
 
@@ -458,7 +465,10 @@ public class TaskWatcherTestBase
                                                                       .ConfigureAwait(false))
                              {
                                Console.WriteLine(cur);
-                               newResults.Add(cur);
+                               lock (newResults)
+                               {
+                                 newResults.Add(cur);
+                               }
                              }
                            },
                            CancellationToken.None);
@@ -471,27 +481,31 @@ public class TaskWatcherTestBase
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+      var expected = new List<TaskStatusUpdate>
+                     {
+                       new("SessionId",
+                           TaskProcessingData.TaskId,
+                           TaskStatus.Error),
+                       new("SessionId",
+                           TaskSubmittedData.TaskId,
+                           TaskStatus.Dispatched),
+                       new("SessionId",
+                           TaskSubmittedData.TaskId,
+                           TaskStatus.Processing),
+                       new("SessionId",
+                           TaskSubmittedData.TaskId,
+                           TaskStatus.Cancelling),
+                     };
+      await WatchTestHelper.StopWhenReceived(newResults,
+                                             expected,
+                                             cts)
+                           .ConfigureAwait(false);
 
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
 
       Assert.That(newResults,
-                  Is.EqualTo(new List<TaskStatusUpdate>
-                             {
-                               new("SessionId",
-                                   TaskProcessingData.TaskId,
-                                   TaskStatus.Error),
-                               new("SessionId",
-                                   TaskSubmittedData.TaskId,
-                                   TaskStatus.Dispatched),
-                               new("SessionId",
-                                   TaskSubmittedData.TaskId,
-                                   TaskStatus.Processing),
-                               new("SessionId",
-                                   TaskSubmittedData.TaskId,
-                                   TaskStatus.Cancelling),
-                             }));
+                  Is.EqualTo(expected));
     }
   }
 
@@ -515,7 +529,10 @@ public class TaskWatcherTestBase
                                                                       .ConfigureAwait(false))
                              {
                                Console.WriteLine(cur);
-                               newResults.Add(cur);
+                               lock (newResults)
+                               {
+                                 newResults.Add(cur);
+                               }
                              }
                            },
                            CancellationToken.None);
@@ -528,18 +545,22 @@ public class TaskWatcherTestBase
                           cts.Token)
         .ConfigureAwait(false);
 
-      cts.CancelAfter(TimeSpan.FromMilliseconds(100));
+      var expected = new List<TaskStatusUpdate>
+                     {
+                       new("SessionId",
+                           TaskProcessingData.TaskId,
+                           TaskStatus.Error),
+                     };
+      await WatchTestHelper.StopWhenReceived(newResults,
+                                             expected,
+                                             cts)
+                           .ConfigureAwait(false);
 
       Assert.That(() => watch,
                   Throws.InstanceOf<OperationCanceledException>());
 
       Assert.That(newResults,
-                  Is.EqualTo(new List<TaskStatusUpdate>
-                             {
-                               new("SessionId",
-                                   TaskProcessingData.TaskId,
-                                   TaskStatus.Error),
-                             }));
+                  Is.EqualTo(expected));
     }
   }
 }
