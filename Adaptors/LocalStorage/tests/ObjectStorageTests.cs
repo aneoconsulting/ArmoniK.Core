@@ -19,7 +19,7 @@ using System;
 using System.IO;
 
 using ArmoniK.Core.Common.Tests.TestBase;
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.Logging.Abstractions;
 

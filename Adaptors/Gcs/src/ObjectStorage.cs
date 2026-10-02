@@ -30,11 +30,13 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Google;
 using Google.Cloud.Storage.V1;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -59,9 +61,10 @@ public class ObjectStorage : IObjectStorage
   /// <param name="options">Gcs object storage options</param>
   /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
-  public ObjectStorage(StorageClient          client,
-                       Options.Gcs            options,
-                       IUuidGenerator         uuidGenerator,
+  public ObjectStorage(StorageClient client,
+                       Options.Gcs   options,
+                       [FromKeyedServices(UuidServiceKey.Uniform)]
+                       IUuidGenerator uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
     client_            = client;

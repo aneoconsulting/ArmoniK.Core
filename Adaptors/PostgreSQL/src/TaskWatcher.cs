@@ -24,11 +24,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgreSQL.Common;
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
+using ArmoniK.Core.Utils.Uuid;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using Npgsql.Replication.PgOutput.Messages;
@@ -47,14 +48,16 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   ///   Creates a new TaskWatcher
   /// </summary>
   public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
+                     [FromKeyedServices(UuidServiceKey.Monotonic)]
                      IUuidGenerator uuidGenerator,
-                     ActivitySource           activitySource)
+                     ActivitySource activitySource)
   {
     connectionProvider_ = connectionProvider;
     activitySource_     = activitySource;
 
     insertBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
-                                                      async (message, ct) =>
+                                                      async (message,
+                                                             ct) =>
                                                       {
                                                         if (message is InsertMessage insert && insert.Relation.RelationName == "tasks")
                                                         {
@@ -71,7 +74,8 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                       uuidGenerator);
 
     updateBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
-                                                      async (message, ct) =>
+                                                      async (message,
+                                                             ct) =>
                                                       {
                                                         if (message is UpdateMessage update && update.Relation.RelationName == "tasks")
                                                         {

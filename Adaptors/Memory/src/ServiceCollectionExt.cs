@@ -15,16 +15,14 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Memory;
@@ -43,8 +41,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.Memory.TableStorage")
     {
-      services.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
-      services.AddTransient<ITaskTable, TaskTable>()
+      services.AddUuidGeneratorDefault()
+              .AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
               .AddTransient<IResultTable, ResultTable>();
     }

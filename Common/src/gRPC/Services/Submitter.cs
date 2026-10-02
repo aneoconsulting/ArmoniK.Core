@@ -31,6 +31,7 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Google.Protobuf;
@@ -488,23 +489,24 @@ public class Submitter : ISubmitter
     var now = DateTime.UtcNow;
 
     await resultTable_.Create(requests.Zip(payloadSizes,
-                                           (request, r) => new Result(sessionId,
-                                                                      request.PayloadId,
-                                                                      "",
-                                                                      parentTaskId.Equals(sessionId)
-                                                                        ? ""
-                                                                        : parentTaskId,
-                                                                      parentTaskId.Equals(sessionId)
-                                                                        ? ""
-                                                                        : parentTaskId,
-                                                                      parentTaskId,
-                                                                      ResultStatus.Completed,
-                                                                      new List<string>(),
-                                                                      now,
-                                                                      now,
-                                                                      r.size,
-                                                                      r.id,
-                                                                      false))
+                                           (request,
+                                            r) => new Result(sessionId,
+                                                             request.PayloadId,
+                                                             "",
+                                                             parentTaskId.Equals(sessionId)
+                                                               ? ""
+                                                               : parentTaskId,
+                                                             parentTaskId.Equals(sessionId)
+                                                               ? ""
+                                                               : parentTaskId,
+                                                             parentTaskId,
+                                                             ResultStatus.Completed,
+                                                             new List<string>(),
+                                                             now,
+                                                             now,
+                                                             r.size,
+                                                             r.id,
+                                                             false))
                                       .AsICollection(),
                               cancellationToken)
                       .ConfigureAwait(false);

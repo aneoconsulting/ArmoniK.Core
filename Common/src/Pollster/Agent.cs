@@ -32,10 +32,12 @@ using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
@@ -54,8 +56,8 @@ public sealed class Agent : IAgent
   private readonly ConcurrentBag<ICollection<string>>                                 notifiedResults_ = new();
   private readonly IObjectStorage                                                     objectStorage_;
   private readonly IPushQueueStorage                                                  pushQueueStorage_;
-  private readonly IResultTable                                                       resultTable_;
   private readonly ConcurrentBag<ICollection<(string id, ReadOnlyMemory<byte> data)>> resultsData_ = new();
+  private readonly IResultTable                                                       resultTable_;
   private readonly SessionData                                                        sessionData_;
   private readonly ISubmitter                                                         submitter_;
   private readonly TaskData                                                           taskData_;
@@ -85,8 +87,9 @@ public sealed class Agent : IAgent
                TaskData          taskData,
                string            folder,
                string            token,
-               IUuidGenerator    uuidGenerator,
-               ILogger           logger)
+               [FromKeyedServices(UuidServiceKey.Monotonic)]
+               IUuidGenerator uuidGenerator,
+               ILogger logger)
   {
     submitter_        = submitter;
     objectStorage_    = objectStorage;

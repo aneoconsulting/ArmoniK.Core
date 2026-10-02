@@ -25,13 +25,14 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -48,7 +49,8 @@ public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISe
                       MongoCollectionProvider<SessionData, SessionDataModelMapping> sessionCollectionProvider,
                       ActivitySource                                                activitySource,
                       ILogger<SessionTable>                                         logger,
-                      IUuidGenerator                                                uuidGenerator)
+                      [FromKeyedServices(UuidServiceKey.Monotonic)]
+                      IUuidGenerator uuidGenerator)
     : base(sessionProvider,
            sessionCollectionProvider,
            activitySource,

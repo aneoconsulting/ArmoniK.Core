@@ -26,6 +26,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -69,14 +70,15 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
   /// <param name="taskTable">Interface to manage task states</param>
   /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to produce logs for this class</param>
-  public AgentHandler(LoggerInit            loggerInit,
-                      ComputePlane          computePlaneOptions,
-                      ISubmitter            submitter,
-                      IObjectStorage        objectStorage,
-                      IPushQueueStorage     pushQueueStorage,
-                      IResultTable          resultTable,
-                      ITaskTable            taskTable,
-                      IUuidGenerator        uuidGenerator,
+  public AgentHandler(LoggerInit        loggerInit,
+                      ComputePlane      computePlaneOptions,
+                      ISubmitter        submitter,
+                      IObjectStorage    objectStorage,
+                      IPushQueueStorage pushQueueStorage,
+                      IResultTable      resultTable,
+                      ITaskTable        taskTable,
+                      [FromKeyedServices(UuidServiceKey.Monotonic)]
+                      IUuidGenerator uuidGenerator,
                       ILogger<AgentHandler> logger)
   {
     computePlaneOptions_ = computePlaneOptions;
@@ -107,7 +109,8 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
              .AddSingleton<GrpcAgentService>()
              .AddGrpc();
 
-      builder.WebHost.ConfigureKestrel((context, options) =>
+      builder.WebHost.ConfigureKestrel((context,
+                                        options) =>
                                        {
                                          var address = computePlaneOptions.AgentChannel.Address;
                                          switch (computePlaneOptions.AgentChannel.SocketType)

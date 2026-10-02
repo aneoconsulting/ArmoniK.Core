@@ -26,10 +26,11 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgreSQL.Common;
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -48,9 +49,10 @@ public class SessionTable : ISessionTable
   ///   Creates a new SessionTable
   /// </summary>
   public SessionTable(NpgsqlConnectionProvider connectionProvider,
-                      IUuidGenerator           uuidGenerator,
-                      ActivitySource           activitySource,
-                      ILogger<SessionTable>    logger)
+                      [FromKeyedServices(UuidServiceKey.Monotonic)]
+                      IUuidGenerator uuidGenerator,
+                      ActivitySource        activitySource,
+                      ILogger<SessionTable> logger)
   {
     connectionProvider_ = connectionProvider;
     uuidGenerator_      = uuidGenerator;

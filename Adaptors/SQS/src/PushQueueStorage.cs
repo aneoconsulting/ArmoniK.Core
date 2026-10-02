@@ -28,6 +28,7 @@ using ArmoniK.Core.Adapters.SQS.Extensions;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Caching.Memory;

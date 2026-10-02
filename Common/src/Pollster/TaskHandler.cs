@@ -35,10 +35,12 @@ using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -57,12 +59,12 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 public sealed class TaskHandler : IAsyncDisposable
 {
+  private readonly Activity?                             activity_;
   private readonly ActivityContext                       activityContext_;
   private readonly ActivitySource                        activitySource_;
-  private readonly Activity?                             activity_;
   private readonly IAgentHandler                         agentHandler_;
-  private readonly double                                cacheEvictionThreshold_;
   private readonly string                                cache_;
+  private readonly double                                cacheEvictionThreshold_;
   private readonly DataPrefetcher                        dataPrefetcher_;
   private readonly TimeSpan                              delayBeforeAcquisition_;
   private readonly CancellationTokenSource               earlyCts_;
@@ -83,8 +85,8 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IPushQueueStorage                     pushQueueStorage_;
   private readonly IResultTable                          resultTable_;
   private readonly ISessionTable                         sessionTable_;
-  private readonly Submitter                             submitterOptions_;
   private readonly ISubmitter                            submitter_;
+  private readonly Submitter                             submitterOptions_;
   private readonly ITaskProcessingChecker                taskProcessingChecker_;
   private readonly ITaskTable                            taskTable_;
   private readonly string                                token_;
@@ -146,7 +148,8 @@ public sealed class TaskHandler : IAsyncDisposable
                      ExceptionManager                      exceptionManager,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
                      HealthCheckRecord                     healthCheckRecord,
-                     IUuidGenerator                        uuidGenerator)
+                     [FromKeyedServices(UuidServiceKey.Monotonic)]
+                     IUuidGenerator uuidGenerator)
   {
     exceptionManager_         = exceptionManager;
     sessionTable_             = sessionTable;

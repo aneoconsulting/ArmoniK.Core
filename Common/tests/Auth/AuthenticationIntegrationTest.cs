@@ -44,7 +44,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;
@@ -81,8 +81,8 @@ public class AuthenticationIntegrationTest
                                              LogLevel.Warning,
                                              s =>
                                              {
-                                               s.AddSingleton<IUuidGenerator, UuidGeneratorV4>();
-                                               s.AddSingleton<ITaskTable, SimpleTaskTable>()
+                                               s.AddUuidGeneratorDefault()
+                                                .AddSingleton<ITaskTable, SimpleTaskTable>()
                                                 .AddSingleton<ISessionTable, SimpleSessionTable>()
                                                 .AddSingleton<IResultTable, SimpleResultTable>()
                                                 .AddSingleton<IPartitionTable, SimplePartitionTable>()
@@ -368,7 +368,8 @@ public class AuthenticationIntegrationTest
           "SomeRights",
         },
         ServicesPermissions.PermissionsLists[ServicesPermissions.All]
-                           .Where((_, index) => index % 2 == 0),
+                           .Where((_,
+                                   index) => index % 2 == 0),
         Authenticator.SchemeName),
     // Has the other half of the permissions
     new(5,
@@ -383,7 +384,8 @@ public class AuthenticationIntegrationTest
           "OtherRights",
         },
         ServicesPermissions.PermissionsLists[ServicesPermissions.All]
-                           .Where((_, index) => index % 2 == 1),
+                           .Where((_,
+                                   index) => index % 2 == 1),
         Authenticator.SchemeName),
   };
 

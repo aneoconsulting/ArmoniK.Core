@@ -15,18 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace ArmoniK.Core.Base;
+namespace ArmoniK.Core.Utils.Uuid;
 
-/// <summary>
-///   UUID Generator
-/// </summary>
-public interface IUuidGenerator
+public static class UuidServiceCollectionExt
 {
-  /// <summary>
-  ///   Generate a new UUID
-  /// </summary>
-  /// <returns>The generated UUID</returns>
-  Guid GenerateUuid();
+  public static IServiceCollection AddUuidGeneratorDefault(this IServiceCollection services)
+  {
+    services.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
+    services.TryAddKeyedSingleton<IUuidGenerator, UuidGeneratorV4>(KeyedService.AnyKey);
+    return services;
+  }
 }

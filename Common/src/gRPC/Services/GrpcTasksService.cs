@@ -32,6 +32,7 @@ using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Grpc.Core;

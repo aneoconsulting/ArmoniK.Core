@@ -15,26 +15,16 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using ArmoniK.Core.Common.Tests.TestBase;
-using ArmoniK.Core.Utils.Uuid;
+using System;
 
-using NUnit.Framework;
+namespace ArmoniK.Core.Utils.Uuid;
 
-namespace ArmoniK.Core.Adapters.Memory.Tests;
-
-[TestFixture]
-public class ObjectStorageTests : ObjectStorageTestBase
+/// <summary>
+///   Generate UUIDv4
+/// </summary>
+public class UuidGeneratorV4 : IUuidGenerator
 {
-  public override void TearDown()
-  {
-    ObjectStorage = null;
-    RunTests      = false;
-  }
-
-
-  protected override void GetObjectStorageInstance()
-  {
-    ObjectStorage = new ObjectStorage(new UuidGeneratorV4());
-    RunTests      = true;
-  }
+  /// <inheritdoc />
+  public Guid GenerateUuid()
+    => Guid.NewGuid();
 }

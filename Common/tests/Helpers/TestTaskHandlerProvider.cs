@@ -36,6 +36,7 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using EphemeralMongo;
 
@@ -55,20 +56,20 @@ public class TestTaskHandlerProvider : IDisposable
 {
   private const           string            DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
+  private readonly        WebApplication    app_;
   public readonly         HealthCheckRecord HealthCheckRecord;
   public readonly         ILogger           Logger;
-  public readonly         IPartitionTable   PartitionTable;
-  public readonly         IPushQueueStorage PushQueueStorage;
-  public readonly         IResultTable      ResultTable;
-  public readonly         ISessionTable     SessionTable;
-  public readonly         ISubmitter        Submitter;
-  public readonly         TaskHandler       TaskHandler;
-  public readonly         ITaskTable        TaskTable;
-  private readonly        WebApplication    app_;
 
-  private readonly LoggerFactory  loggerFactory_;
-  private readonly IObjectStorage objectStorage_;
-  private readonly IMongoRunner   runner_;
+  private readonly LoggerFactory     loggerFactory_;
+  private readonly IObjectStorage    objectStorage_;
+  public readonly  IPartitionTable   PartitionTable;
+  public readonly  IPushQueueStorage PushQueueStorage;
+  public readonly  IResultTable      ResultTable;
+  private readonly IMongoRunner      runner_;
+  public readonly  ISessionTable     SessionTable;
+  public readonly  ISubmitter        Submitter;
+  public readonly  TaskHandler       TaskHandler;
+  public readonly  ITaskTable        TaskTable;
 
 
   public IHostApplicationLifetime Lifetime;
@@ -170,7 +171,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddExceptionManager()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton<HealthCheckRecord>()
-           .AddSingleton<IUuidGenerator, UuidGeneratorV4>()
+           .AddUuidGeneratorDefault()
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),

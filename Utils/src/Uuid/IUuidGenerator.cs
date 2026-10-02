@@ -17,16 +17,16 @@
 
 using System;
 
-using ArmoniK.Core.Base;
-
-namespace ArmoniK.Core.Utils;
+namespace ArmoniK.Core.Utils.Uuid;
 
 /// <summary>
-///   Generate UUIDv4
+///   UUID Generator
 /// </summary>
-public class UuidGeneratorV4 : IUuidGenerator
+public interface IUuidGenerator
 {
-  /// <inheritdoc />
-  public Guid GenerateUuid()
-    => Guid.NewGuid();
+  /// <summary>
+  ///   Generate a new UUID
+  /// </summary>
+  /// <returns>The generated UUID</returns>
+  Guid GenerateUuid();
 }

@@ -17,8 +17,8 @@
 
 using Amazon.SQS.Model;
 
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils.Uuid;
 
 namespace ArmoniK.Core.Adapters.SQS.Extensions;
 
