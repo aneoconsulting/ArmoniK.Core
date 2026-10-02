@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -35,19 +36,25 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 /// <inheritdoc cref="IAuthenticationTable" />
 public class AuthenticationTable : IAuthenticationTable
 {
+  private readonly ActivitySource           activitySource_;
   private readonly NpgsqlConnectionProvider connectionProvider_;
 
   /// <summary>
   ///   Creates a new AuthenticationTable
   /// </summary>
-  public AuthenticationTable(NpgsqlConnectionProvider connectionProvider)
-    => connectionProvider_ = connectionProvider;
+  public AuthenticationTable(NpgsqlConnectionProvider connectionProvider,
+                             ActivitySource           activitySource)
+  {
+    connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
+  }
 
   /// <inheritdoc />
   public async Task<UserAuthenticationResult?> GetIdentityFromCertificateAsync(string            cn,
                                                                                string            fingerprint,
                                                                                CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -93,6 +100,7 @@ LIMIT 1";
                                                                         string?           username,
                                                                         CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 

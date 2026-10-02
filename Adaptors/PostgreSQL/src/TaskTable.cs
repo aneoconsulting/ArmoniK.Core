@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -42,15 +43,18 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 /// <inheritdoc cref="ITaskTable" />
 public class TaskTable : ITaskTable
 {
+  private readonly ActivitySource           activitySource_;
   private readonly NpgsqlConnectionProvider connectionProvider_;
 
   /// <summary>
   ///   Creates a new TaskTable
   /// </summary>
   public TaskTable(NpgsqlConnectionProvider connectionProvider,
+                   ActivitySource           activitySource,
                    ILogger<TaskTable>       logger)
   {
     connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
     Logger              = logger;
   }
 
@@ -67,6 +71,7 @@ public class TaskTable : ITaskTable
   public async Task CreateTasks(IEnumerable<TaskData> tasks,
                                 CancellationToken     cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
@@ -139,6 +144,9 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                         Expression<Func<TaskData, T>> selector,
                                         CancellationToken             cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag("ReadTaskId",
+                     taskId);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -182,6 +190,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   public async Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                                   CancellationToken                cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
@@ -209,6 +218,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   /// <inheritdoc />
   public async Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -234,6 +244,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   public async Task<int> CountAllTasksAsync(TaskStatus        status,
                                             CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -251,6 +262,9 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   public async Task DeleteTaskAsync(string            id,
                                     CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag($"{nameof(DeleteTaskAsync)}_TaskId",
+                     id);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -272,6 +286,9 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   public async Task DeleteTasksAsync(string            sessionId,
                                      CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag($"{nameof(DeleteTaskAsync)}_SessionId",
+                     sessionId);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -294,6 +311,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   public async Task DeleteTasksAsync(ICollection<string> taskIds,
                                      CancellationToken   cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -316,6 +334,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                                                                int                                 pageSize,
                                                                                CancellationToken                   cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     // Project only the columns the selector needs, when we can determine them, instead of
     // always fetching the whole row.
     var mapper = RowMapper.For(selector);
@@ -363,6 +382,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                                      Expression<Func<TaskData, T>>              selector,
                                                      [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
@@ -406,6 +426,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                              bool                              before,
                                              CancellationToken                 cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -466,6 +487,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                           UpdateDefinition<TaskData>       updates,
                                           CancellationToken                cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
@@ -488,6 +510,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
   public async Task<long> BulkUpdateTasks(IEnumerable<(Expression<Func<TaskData, bool>> filter, UpdateDefinition<TaskData> updates)> bulkUpdates,
                                           CancellationToken                                                                          cancellationToken)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -529,6 +552,7 @@ SELECT @dep_task_id, unnest(@dep_ids)");
                                                                                                    int pageSize,
                                                                                                    CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<TaskData>.Translate(filter);
     var orderDir = ascOrder
                      ? "ASC"
@@ -599,6 +623,7 @@ LIMIT @limit OFFSET @offset",
                                                                            Expression<Func<TaskData, T>>              selector,
                                                                            [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     if (dependenciesToRemove.Count == 0)
     {
       yield break;

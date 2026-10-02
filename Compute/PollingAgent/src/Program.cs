@@ -161,6 +161,8 @@ public static class Program
                          {
                            b.AddSource(ActivitySource.Name);
                            b.AddMongoDBInstrumentation();
+                           // Spans of the commands sent by the PostgreSQL adaptor
+                           b.AddSource("Npgsql");
                            b.AddOtlpExporter(options =>
                                              {
                                                options.HttpClientFactory = () =>

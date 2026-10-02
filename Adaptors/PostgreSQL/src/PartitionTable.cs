@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
@@ -40,18 +41,24 @@ namespace ArmoniK.Core.Adapters.PostgreSQL;
 /// <inheritdoc cref="IPartitionTable" />
 public class PartitionTable : IPartitionTable
 {
+  private readonly ActivitySource           activitySource_;
   private readonly NpgsqlConnectionProvider connectionProvider_;
 
   /// <summary>
   ///   Creates a new PartitionTable
   /// </summary>
-  public PartitionTable(NpgsqlConnectionProvider connectionProvider)
-    => connectionProvider_ = connectionProvider;
+  public PartitionTable(NpgsqlConnectionProvider connectionProvider,
+                        ActivitySource           activitySource)
+  {
+    connectionProvider_ = connectionProvider;
+    activitySource_     = activitySource;
+  }
 
   /// <inheritdoc />
   public async Task CreatePartitionsAsync(IEnumerable<PartitionData> partitions,
                                           CancellationToken          cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -80,6 +87,9 @@ INSERT INTO partitions (
   public async Task<PartitionData> ReadPartitionAsync(string            partitionId,
                                                       CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag("ReadPartitionId",
+                     partitionId);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -103,6 +113,7 @@ INSERT INTO partitions (
   /// <inheritdoc />
   public async IAsyncEnumerable<PartitionData> GetPartitionWithAllocationAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -123,6 +134,9 @@ INSERT INTO partitions (
   public async Task DeletePartitionAsync(string            partitionId,
                                          CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
+    activity?.SetTag($"{nameof(DeletePartitionAsync)}_TaskId",
+                     partitionId);
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -144,6 +158,7 @@ INSERT INTO partitions (
   public async Task<bool> ArePartitionsExistingAsync(IEnumerable<string> partitionIds,
                                                      CancellationToken   cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var ids = partitionIds.Distinct()
                           .ToArray();
 
@@ -170,6 +185,7 @@ INSERT INTO partitions (
                                                                                                  int                                      pageSize,
                                                                                                  CancellationToken                        cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (partitions, totalCount) = await PagedQuery.ExecuteAsync(connectionProvider_,
                                                                  "partitions",
                                                                  filter,
@@ -189,6 +205,7 @@ INSERT INTO partitions (
                                                           Expression<Func<PartitionData, T>>         selector,
                                                           [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
+    using var activity = activitySource_.StartActivity();
     var (whereSql, whereParams) = ExpressionToSql<PartitionData>.Translate(filter);
 
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
