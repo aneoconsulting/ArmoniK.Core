@@ -49,7 +49,7 @@ jobs:
         projects:
           - Common/tests
           - Adaptors/MongoDB/tests
-          - Adaptors/PostgresSQL/tests
+          - Adaptors/PostgreSQL/tests
           - Adaptors/Memory/tests
           - Adaptors/S3/tests
           - Adaptors/Gcs/tests
@@ -222,7 +222,7 @@ jobs:
           - Adaptors/Redis/tests
           - Common/tests
           - Adaptors/MongoDB/tests
-          - Adaptors/PostgresSQL/tests
+          - Adaptors/PostgreSQL/tests
           - Adaptors/Memory/tests
           - Adaptors/Embed/tests
       fail-fast: false

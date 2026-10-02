@@ -101,9 +101,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Embed
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.Embed.Tests", "Adaptors\Embed\tests\ArmoniK.Core.Adapters.Embed.Tests.csproj", "{2DC798DD-F147-4245-BD63-E0E6E5BB5E9E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.PostgresSQL", "Adaptors\PostgresSQL\src\ArmoniK.Core.Adapters.PostgresSQL.csproj", "{7533AF18-B243-4343-945F-EA3FFAC2F218}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.PostgreSQL", "Adaptors\PostgreSQL\src\ArmoniK.Core.Adapters.PostgreSQL.csproj", "{7533AF18-B243-4343-945F-EA3FFAC2F218}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.PostgresSQL.Tests", "Adaptors\PostgresSQL\tests\ArmoniK.Core.Adapters.PostgresSQL.Tests.csproj", "{0DAB0834-71A8-4680-A337-2D5E58E74C00}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ArmoniK.Core.Adapters.PostgreSQL.Tests", "Adaptors\PostgreSQL\tests\ArmoniK.Core.Adapters.PostgreSQL.Tests.csproj", "{0DAB0834-71A8-4680-A337-2D5E58E74C00}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Base", "Base", "{44FE7EFD-2EAA-49BA-9621-D9EFCB39D50B}"
 EndProject
