@@ -25,8 +25,10 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Injection.Options.Database;
+using ArmoniK.Core.Utils;
 
 using DbUp;
+using DbUp.Postgresql;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -70,6 +72,23 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
 
     var connectionString = BuildConnectionString(options);
     var builder          = new NpgsqlDataSourceBuilder(connectionString);
+
+    if (options.Ssl)
+    {
+      if (string.IsNullOrEmpty(options.CAFile))
+      {
+        throw new ArgumentOutOfRangeException(nameof(options),
+                                              $"{nameof(Options.PostgreSQL.CAFile)} is required when {nameof(Options.PostgreSQL.Ssl)} is enabled.");
+      }
+
+      // Same validation as the other adaptors: the server certificate must be issued by CAFile,
+      // without relying on the system store, which is missing in chiseled images.
+      var validationCallback = CertificateValidator.CreateCallback(options.CAFile,
+                                                                   options.AllowInsecureTls,
+                                                                   logger);
+      builder.UseSslClientAuthenticationOptionsCallback(sslOptions => sslOptions.RemoteCertificateValidationCallback = validationCallback);
+    }
+
     DataSource = builder.Build();
   }
 
@@ -119,7 +138,8 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
                    .ConfigureAwait(false);
     }
 
-    var upgrader = DeployChanges.To.PostgresqlDatabase(BuildConnectionString(options_))
+    // DbUp connects through the data source so that it validates the server certificate like the pool.
+    var upgrader = DeployChanges.To.PostgresqlDatabase(new PostgresqlConnectionManager(DataSource))
                                 .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
                                 .WithTransactionPerScript()
                                 .LogTo(logger_)
@@ -166,7 +186,7 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
   ///   RDS/Aurora).
   /// </summary>
   public LogicalReplicationConnection CreateReplicationConnection()
-    => new(BuildConnectionString(options_));
+    => new(BuildReplicationConnectionString(options_));
 
   /// <summary>
   ///   Get a new connection from the pool
@@ -294,6 +314,13 @@ ON CONFLICT (auth_id) DO NOTHING";
                   MaxPoolSize        = options.MaxPoolSize,
                   IncludeErrorDetail = true,
                 };
+
+      if (options.Ssl)
+      {
+        // The validation callback set on the data source only works with Require.
+        builder.SslMode = SslMode.Require;
+      }
+
       return builder.ConnectionString;
     }
 
@@ -317,6 +344,24 @@ ON CONFLICT (auth_id) DO NOTHING";
     if (!string.IsNullOrEmpty(options.Password))
     {
       builder.Password = options.Password;
+    }
+
+    return builder.ConnectionString;
+  }
+
+  private static string BuildReplicationConnectionString(Options.PostgreSQL options)
+  {
+    var builder = new NpgsqlConnectionStringBuilder(BuildConnectionString(options));
+
+    // A replication connection does not accept a validation callback. Npgsql validates the server
+    // certificate against CAFile itself, with a custom root trust like the callback, so it does not
+    // need the system store either.
+    if (options.Ssl)
+    {
+      builder.SslMode = options.AllowInsecureTls
+                          ? SslMode.VerifyCA
+                          : SslMode.VerifyFull;
+      builder.RootCertificate = options.CAFile;
     }
 
     return builder.ConnectionString;
