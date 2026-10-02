@@ -89,4 +89,9 @@ public class PostgreSQL
   ///   Maximum connection pool size
   /// </summary>
   public int MaxPoolSize { get; set; } = 100;
+
+  /// <summary>
+  ///   Number of attempts to initialize the database when it is not reachable yet
+  /// </summary>
+  public int MaxRetries { get; set; } = 5;
 }

@@ -45,10 +45,14 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Common;
 /// </summary>
 public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDisposable
 {
-  private readonly InitDatabase                      initDatabase_;
+  private readonly InitDatabase initDatabase_;
+
+  private readonly SemaphoreSlim initSemaphore_ = new(1,
+                                                      1);
+
   private readonly ILogger<NpgsqlConnectionProvider> logger_;
   private readonly Options.PostgreSQL                options_;
-  private          bool                              isInitialized_;
+  private volatile bool                              isInitialized_;
 
 #pragma warning disable CS0618 // Type or member is obsolete
   static NpgsqlConnectionProvider()
@@ -98,15 +102,85 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
   public NpgsqlDataSource DataSource { get; }
 
   /// <inheritdoc />
-  public ValueTask DisposeAsync()
-    => DataSource.DisposeAsync();
+  public async ValueTask DisposeAsync()
+  {
+    initSemaphore_.Dispose();
+    await DataSource.DisposeAsync()
+                    .ConfigureAwait(false);
+  }
 
   /// <inheritdoc />
   public void Dispose()
-    => DataSource.Dispose();
+  {
+    initSemaphore_.Dispose();
+    DataSource.Dispose();
+  }
 
   /// <inheritdoc />
   public async Task Init(CancellationToken cancellationToken)
+  {
+    // Every table and watcher calls Init on this shared provider: initialize once.
+    if (isInitialized_)
+    {
+      return;
+    }
+
+    await initSemaphore_.WaitAsync(cancellationToken)
+                        .ConfigureAwait(false);
+    try
+    {
+      if (isInitialized_)
+      {
+        return;
+      }
+
+      for (var attempt = 1;; attempt++)
+      {
+        try
+        {
+          await InitializeDatabase(cancellationToken)
+            .ConfigureAwait(false);
+          break;
+        }
+        // Retry only while the database is not reachable yet; a missing database or a refused
+        // authentication will not fix itself.
+        catch (NpgsqlException ex) when (ex.IsTransient && attempt < options_.MaxRetries)
+        {
+          logger_.LogWarning(ex,
+                             "PostgreSQL is not reachable, retrying the initialization ({Attempt}/{MaxRetries})",
+                             attempt,
+                             options_.MaxRetries);
+          await Task.Delay(TimeSpan.FromSeconds(attempt),
+                           cancellationToken)
+                    .ConfigureAwait(false);
+        }
+      }
+
+      isInitialized_ = true;
+    }
+    finally
+    {
+      initSemaphore_.Release();
+    }
+  }
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    if (!isInitialized_)
+    {
+      return Task.FromResult(HealthCheckResult.Unhealthy("Not initialized"));
+    }
+
+    if (tag == HealthCheckTag.Liveness)
+    {
+      return CheckLiveness();
+    }
+
+    return Task.FromResult(HealthCheckResult.Healthy());
+  }
+
+  private async Task InitializeDatabase(CancellationToken cancellationToken)
   {
     logger_.LogInformation("Initializing PostgreSQL schema");
 
@@ -159,24 +233,7 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
                        cancellationToken)
       .ConfigureAwait(false);
 
-    isInitialized_ = true;
     logger_.LogInformation("PostgreSQL schema initialized successfully");
-  }
-
-  /// <inheritdoc />
-  public Task<HealthCheckResult> Check(HealthCheckTag tag)
-  {
-    if (!isInitialized_)
-    {
-      return Task.FromResult(HealthCheckResult.Unhealthy("Not initialized"));
-    }
-
-    if (tag == HealthCheckTag.Liveness)
-    {
-      return CheckLiveness();
-    }
-
-    return Task.FromResult(HealthCheckResult.Healthy());
   }
 
   /// <summary>
