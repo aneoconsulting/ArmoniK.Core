@@ -28,6 +28,7 @@ using Amqp.Framing;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 using ArmoniK.Utils.Pool;
 
@@ -160,5 +161,6 @@ public class PushQueueStorage : QueueStorage, IPushQueueStorage
                                                                                        uuidGenerator_.GenerateUuid()
                                                                                                      .ToString(),
                                                                                        s),
-                                                         (link, _) => new ValueTask<bool>(!link.IsClosed && !link.Session.IsClosed)));
+                                                         (link,
+                                                          _) => new ValueTask<bool>(!link.IsClosed && !link.Session.IsClosed)));
 }

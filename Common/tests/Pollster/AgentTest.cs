@@ -33,7 +33,7 @@ using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
-using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Google.Protobuf;
@@ -134,6 +134,7 @@ public class AgentTest
     public readonly  IAgent               Agent;
     public readonly  string               Folder;
     public readonly  IObjectStorage       ObjectStorage;
+    private readonly TestDatabaseProvider prov_;
     public readonly  MyPushQueueStorage   QueueStorage;
     public readonly  IResultTable         ResultTable;
     public readonly  string               Session;
@@ -144,7 +145,6 @@ public class AgentTest
     public readonly  string               TaskWithDependencies1;
     public readonly  string               TaskWithDependencies2;
     public readonly  string               Token;
-    private readonly TestDatabaseProvider prov_;
 
     public AgentHolder()
     {

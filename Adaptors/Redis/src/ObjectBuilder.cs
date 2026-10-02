@@ -20,12 +20,12 @@ using System.Net.Security;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 using StackExchange.Redis;
@@ -95,7 +95,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
                     redisOptions.EndpointUrl,
                     redisOptions.User);
 
-    serviceCollection.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                                       TextWriter.Null)
                                                                              .GetDatabase());

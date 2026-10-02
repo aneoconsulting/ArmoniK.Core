@@ -16,12 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Adapters.PostgreSQL.Common;
-using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -101,8 +101,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.PostgreSQL.TableStorage")
     {
-      services.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
-      services.AddSingleton<ITaskTable, TaskTable>()
+      services.AddUuidGeneratorDefault()
+              .AddSingleton<ITaskTable, TaskTable>()
               .AddSingleton<ISessionTable, SessionTable>()
               .AddSingleton<IResultTable, ResultTable>()
               .AddSingleton<IPartitionTable, PartitionTable>()

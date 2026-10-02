@@ -17,6 +17,7 @@
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Google.Cloud.Storage.V1;
 
@@ -24,7 +25,6 @@ using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Gcs;
@@ -67,7 +67,7 @@ public class ObjectBuilder : IDependencyInjectionBuildable
     var storageClient = builder.Build();
 
     serviceCollection.AddSingleton(_ => storageClient);
-    serviceCollection.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
   }
 }

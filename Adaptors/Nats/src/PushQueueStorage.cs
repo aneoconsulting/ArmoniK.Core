@@ -23,6 +23,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;

@@ -23,7 +23,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils.Uuid;
 
 using Npgsql.Replication;
 using Npgsql.Replication.PgOutput;
@@ -160,12 +160,12 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
   // Ensures the broadcast loop is running (starting a new one if needed), registers the
   // subscriber channel while holding the lock, and returns the slot-ready TCS.
-  //
+  // 
   // Registering inside the lock (after verifying the loop is not cancelling) prevents a
   // race where StopIfIdle cancels the loop after the channel is added to subscribers_ but
   // before EnsureStarted runs — in that scenario the old loop's finally would complete the
   // new channel with immediate EOF.
-  //
+  // 
   // When the previous loop is still winding down we wait for it OUTSIDE the lock so we do
   // not block other concurrent SubscribeAsync callers (which would hang if the replication
   // connection takes time to respond to cancellation).

@@ -36,10 +36,12 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -59,8 +61,8 @@ public class Pollster : IInitializable
   private readonly DataPrefetcher                            dataPrefetcher_;
   private readonly ExceptionManager                          exceptionManager_;
   private readonly HealthCheckRecord                         healthCheckRecord_;
-  private readonly ILoggerFactory                            loggerFactory_;
   private readonly ILogger<Pollster>                         logger_;
+  private readonly ILoggerFactory                            loggerFactory_;
   private readonly int                                       messageBatchSize_;
   private readonly MeterHolder                               meterHolder_;
   private readonly IObjectStorage                            objectStorage_;
@@ -73,8 +75,8 @@ public class Pollster : IInitializable
   private readonly IResultTable                              resultTable_;
   private readonly RunningTaskQueue                          runningTaskQueue_;
   private readonly ISessionTable                             sessionTable_;
-  private readonly Submitter                                 submitterOptions_;
   private readonly ISubmitter                                submitter_;
+  private readonly Submitter                                 submitterOptions_;
   private readonly ITaskProcessingChecker                    taskProcessingChecker_;
   private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
   private readonly ITaskTable                                taskTable_;
@@ -132,7 +134,8 @@ public class Pollster : IInitializable
                   AgentIdentifier            identifier,
                   MeterHolder                meterHolder,
                   HealthCheckRecord          healthCheckRecord,
-                  IUuidGenerator             uuidGenerator)
+                  [FromKeyedServices(UuidServiceKey.Monotonic)]
+                  IUuidGenerator uuidGenerator)
   {
     if (options.MessageBatchSize < 1)
     {
@@ -186,7 +189,7 @@ public class Pollster : IInitializable
     meterHolder.Meter.CreateObservableGauge("TaskRunningTime",
                                             () => taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
                                                   {
-                                                    null                    => 0.0,
+                                                    null => 0.0,
                                                     // ReSharper disable once PatternAlwaysMatches
                                                     TaskHandler taskHandler => (DateTime.UtcNow - taskHandler.StartedAt).TotalMilliseconds,
                                                   },
@@ -197,7 +200,7 @@ public class Pollster : IInitializable
     meterHolder.Meter.CreateObservableGauge("TaskStartTime",
                                             () => (taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
                                                    {
-                                                     null                    => TimeSpan.MaxValue,
+                                                     null => TimeSpan.MaxValue,
                                                      // ReSharper disable once PatternAlwaysMatches
                                                      TaskHandler taskHandler => taskHandler.StartedAt - DateTime.UnixEpoch,
                                                    }).TotalSeconds,
