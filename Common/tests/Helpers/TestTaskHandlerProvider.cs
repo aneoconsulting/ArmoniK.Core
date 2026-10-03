@@ -166,6 +166,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
            .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton<MeterHolder>()
+           .AddSingleton<DataCacheMetrics>()
            .AddSingleton<AgentIdentifier>()
            .AddExceptionManager()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
@@ -192,6 +193,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                      },
                                                      provider.GetRequiredService<ExceptionManager>(),
                                                      provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>(),
+                                                     provider.GetRequiredService<DataCacheMetrics>(),
                                                      provider.GetRequiredService<HealthCheckRecord>()))
            .AddSingleton<DataPrefetcher>();
 

@@ -17,7 +17,7 @@
 
 using System.Net;
 
-using ArmoniK.Core.Common.Utils;
+using ArmoniK.Core.Utils;
 
 namespace ArmoniK.Core.Common.Pollster;
 

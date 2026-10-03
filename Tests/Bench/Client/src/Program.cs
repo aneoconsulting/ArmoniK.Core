@@ -258,6 +258,9 @@ internal static class Program
                                                                                                        {
                                                                                                          "ResultSize", benchOptions.ResultSize.ToString()
                                                                                                        },
+                                                                                                       {
+                                                                                                         "SharedDataSize", benchOptions.SharedDataSize.ToString()
+                                                                                                       },
                                                                                                        benchOptions.Options,
                                                                                                      },
                                                                                                    },
@@ -331,6 +334,54 @@ internal static class Program
                                 Environment.Exit(0);
                               };
 
+    // Data shared by the tasks: the task i depends on the shared data i modulo their number
+    var sharedIds = Array.Empty<string>();
+    if (benchOptions.SharedDataCount > 0)
+    {
+      sharedIds = await channelPool.WithInstanceAsync(async channel =>
+                                                      {
+                                                        var resultClient = new Results.ResultsClient(channel);
+                                                        var conf         = await resultClient.GetServiceConfigurationAsync(new Empty());
+                                                        var created = await resultClient.CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                                                                    {
+                                                                                                                      SessionId = createSessionReply.SessionId,
+                                                                                                                      Results =
+                                                                                                                      {
+                                                                                                                        Enumerable.Range(0,
+                                                                                                                                         benchOptions.SharedDataCount)
+                                                                                                                                  .Select(i => new CreateResultsMetaDataRequest.
+                                                                                                                                                 Types.ResultCreate
+                                                                                                                                                 {
+                                                                                                                                                   Name = $"shared {i}",
+                                                                                                                                                 }),
+                                                                                                                      },
+                                                                                                                    });
+                                                        var idByName = created.Results.ToDictionary(raw => raw.Name,
+                                                                                                    raw => raw.ResultId);
+                                                        var ids = Enumerable.Range(0,
+                                                                                   benchOptions.SharedDataCount)
+                                                                            .Select(i => idByName[$"shared {i}"])
+                                                                            .ToArray();
+                                                        var rnd = new Random();
+                                                        foreach (var id in ids)
+                                                        {
+                                                          await UploadRandomData(resultClient,
+                                                                                 createSessionReply.SessionId,
+                                                                                 id,
+                                                                                 benchOptions.SharedDataSize * 1024,
+                                                                                 conf.DataChunkMaxSize,
+                                                                                 rnd)
+                                                            .ConfigureAwait(false);
+                                                        }
+
+                                                        return ids;
+                                                      })
+                                   .ConfigureAwait(false);
+      logger.LogInformation("{SharedDataCount} shared data of {SharedDataSize} KB created",
+                            benchOptions.SharedDataCount,
+                            benchOptions.SharedDataSize);
+    }
+
     var resultChunk = await Enumerable.Range(0,
                                              benchOptions.NTasks)
                                       .Chunk(benchOptions.BatchSize)
@@ -377,42 +428,13 @@ internal static class Program
 
                                                           foreach (var id in payloadIds)
                                                           {
-                                                            var stream = resultClient.UploadResultData();
-
-                                                            await stream.RequestStream.WriteAsync(new UploadResultDataRequest
-                                                                                                  {
-                                                                                                    Id = new UploadResultDataRequest.Types.ResultIdentifier
-                                                                                                         {
-                                                                                                           ResultId  = id,
-                                                                                                           SessionId = createSessionReply.SessionId,
-                                                                                                         },
-                                                                                                  },
-                                                                                                  CancellationToken.None)
-                                                                        .ConfigureAwait(false);
-
-                                                            var s = 0;
-                                                            while (s < benchOptions.PayloadSize * 1024)
-                                                            {
-                                                              var chunkSize = Math.Min(conf.DataChunkMaxSize,
-                                                                                       benchOptions.PayloadSize * 1024 - s);
-
-                                                              var dataBytes = new byte [chunkSize];
-                                                              rnd.NextBytes(dataBytes);
-
-                                                              await stream.RequestStream.WriteAsync(new UploadResultDataRequest
-                                                                                                    {
-                                                                                                      DataChunk = UnsafeByteOperations.UnsafeWrap(dataBytes),
-                                                                                                    },
-                                                                                                    CancellationToken.None)
-                                                                          .ConfigureAwait(false);
-
-                                                              s += chunkSize;
-                                                            }
-
-                                                            await stream.RequestStream.CompleteAsync()
-                                                                        .ConfigureAwait(false);
-
-                                                            await stream.ResponseAsync.ConfigureAwait(false);
+                                                            await UploadRandomData(resultClient,
+                                                                                   createSessionReply.SessionId,
+                                                                                   id,
+                                                                                   benchOptions.PayloadSize * 1024,
+                                                                                   conf.DataChunkMaxSize,
+                                                                                   rnd)
+                                                              .ConfigureAwait(false);
                                                           }
                                                         }
                                                         else
@@ -443,6 +465,14 @@ internal static class Program
                                                                                                                  .AsICollection();
                                                         }
 
+                                                        var dependencies = req.Select(i => sharedIds.Length > 0
+                                                                                             ? new[]
+                                                                                               {
+                                                                                                 sharedIds[i % sharedIds.Length],
+                                                                                               }
+                                                                                             : Array.Empty<string>())
+                                                                              .ToList();
+
                                                         var tasksClient = new Tasks.TasksClient(channel);
                                                         var submitResponse = await tasksClient.SubmitTasksAsync(new SubmitTasksRequest
                                                                                                                 {
@@ -458,6 +488,10 @@ internal static class Program
                                                                                                                                               ExpectedOutputKeys =
                                                                                                                                               {
                                                                                                                                                 resultIds.ElementAt(i),
+                                                                                                                                              },
+                                                                                                                                              DataDependencies =
+                                                                                                                                              {
+                                                                                                                                                dependencies[i],
                                                                                                                                               },
                                                                                                                                             }),
                                                                                                                   },
@@ -664,5 +698,59 @@ internal static class Program
     }
 
     cts.Dispose();
+  }
+
+  /// <summary>
+  ///   Uploads random data by chunks into a result whose metadata was created.
+  /// </summary>
+  /// <param name="resultClient">Client of the results service</param>
+  /// <param name="sessionId">Session of the result</param>
+  /// <param name="resultId">Result to fill</param>
+  /// <param name="size">Size of the data in bytes</param>
+  /// <param name="chunkMaxSize">Largest chunk accepted by the server</param>
+  /// <param name="rnd">Source of the random data</param>
+  private static async Task UploadRandomData(Results.ResultsClient resultClient,
+                                             string                sessionId,
+                                             string                resultId,
+                                             int                   size,
+                                             int                   chunkMaxSize,
+                                             Random                rnd)
+  {
+    var stream = resultClient.UploadResultData();
+
+    await stream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                          {
+                                            Id = new UploadResultDataRequest.Types.ResultIdentifier
+                                                 {
+                                                   ResultId  = resultId,
+                                                   SessionId = sessionId,
+                                                 },
+                                          },
+                                          CancellationToken.None)
+                .ConfigureAwait(false);
+
+    var s = 0;
+    while (s < size)
+    {
+      var chunkSize = Math.Min(chunkMaxSize,
+                               size - s);
+
+      var dataBytes = new byte [chunkSize];
+      rnd.NextBytes(dataBytes);
+
+      await stream.RequestStream.WriteAsync(new UploadResultDataRequest
+                                            {
+                                              DataChunk = UnsafeByteOperations.UnsafeWrap(dataBytes),
+                                            },
+                                            CancellationToken.None)
+                  .ConfigureAwait(false);
+
+      s += chunkSize;
+    }
+
+    await stream.RequestStream.CompleteAsync()
+                .ConfigureAwait(false);
+
+    await stream.ResponseAsync.ConfigureAwait(false);
   }
 }

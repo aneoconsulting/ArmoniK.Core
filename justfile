@@ -47,6 +47,8 @@ htcmock_task_error         := ""
 bench_duration_ms              := "100"
 bench_payload_size             := "1"
 bench_result_size              := "1"
+bench_shared_data_count        := "0"
+bench_shared_data_size         := "1"
 bench_batch_size               := "100"
 bench_max_retries              := "1"
 bench_degree_of_parallelism    := "1"
@@ -94,6 +96,8 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
   }
 } else if queue == "sqs" {
   '{ name = "sqs", image = "softwaremill/elasticmq:latest" }'
+} else if queue == "broker" {
+  '{ name = "broker", image = "' + ARMONIK_BROKER + '" }'
 } else {
   '{ name = "none" }'
 }
@@ -152,6 +156,7 @@ export TF_VAR_worker_docker_file_path := env_var_or_default('WORKER_DOCKER_FILE_
 image_metrics               := env_var_or_default('METRICS_IMAGE', "dockerhubaneo/armonik_control_metrics")
 image_submitter             := env_var_or_default('SUBMITTER_IMAGE', "dockerhubaneo/armonik_control")
 image_polling_agent         := env_var_or_default('POLLING_AGENT_IMAGE', "dockerhubaneo/armonik_pollingagent")
+image_broker             := env_var_or_default('BROKER_IMAGE', "dockerhubaneo/armonik_core_broker")
 image_client_mock           := env_var_or_default('MOCK_CLIENT_IMAGE', "dockerhubaneo/armonik_core_htcmock_test_client")
 image_client_bench          := env_var_or_default('BENCH_CLIENT_IMAGE', "dockerhubaneo/armonik_core_bench_test_client")
 image_client_stream         := env_var_or_default('STREAM_CLIENT_IMAGE', "dockerhubaneo/armonik_core_stream_test_client")
@@ -161,6 +166,7 @@ image_client_crashingworker := env_var_or_default('CRASHINGWORKER_CLIENT_IMAGE',
 export ARMONIK_METRICS             := image_metrics + ":" + tag
 export ARMONIK_SUBMITTER           := image_submitter + ":" + tag
 export ARMONIK_POLLINGAGENT        := image_polling_agent + ":" + tag
+export ARMONIK_BROKER           := image_broker + ":" + tag
 export HTCMOCK_CLIENT_IMAGE        := image_client_mock + ":" + tag
 export STREAM_CLIENT_IMAGE         := image_client_stream + ":" + tag
 export BENCH_CLIENT_IMAGE          := image_client_bench + ":" + tag
@@ -216,6 +222,7 @@ _usage:
         sqs         :  for AWS SQS (using elasticmq)
         pubsub      :  for Google PubSub
         nats        :  for Nats with JetStream
+        broker   :  for the ArmoniK Broker (Broker/)
         none        :  for external queue configurations
 
       database: allowed values below
@@ -346,6 +353,9 @@ buildSubmitter: (build ARMONIK_SUBMITTER "./Dockerfile" "submitter")
 # Build Polling Agent
 buildPollingAgent: (build ARMONIK_POLLINGAGENT "./Dockerfile" "polling_agent")
 
+# Build the ArmoniK Broker queue server
+buildBroker: (build ARMONIK_BROKER "./Broker/Dockerfile")
+
 # Build Htcmock Client
 buildHtcmockClient: (build HTCMOCK_CLIENT_IMAGE  "./Tests/HtcMock/Client/src/Dockerfile")
 
@@ -406,6 +416,8 @@ runBench: buildBenchClient
     -e BenchOptions__TaskDurationMs={{bench_duration_ms}} \
     -e BenchOptions__PayloadSize={{bench_payload_size}} \
     -e BenchOptions__ResultSize={{bench_result_size}} \
+    -e BenchOptions__SharedDataCount={{bench_shared_data_count}} \
+    -e BenchOptions__SharedDataSize={{bench_shared_data_size}} \
     -e BenchOptions__BatchSize={{bench_batch_size}} \
     -e BenchOptions__Partition={{partition}} \
     -e BenchOptions__MaxRetries={{bench_max_retries}} \
@@ -426,7 +438,7 @@ runBench: buildBenchClient
 buildCrashingWorkerClient: (build CRASHINGWORKER_CLIENT_IMAGE  "./Tests/CrashingWorker/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment
-build-core: buildMetrics buildSubmitter buildPollingAgent
+build-core: buildMetrics buildSubmitter buildPollingAgent buildBroker
 
 # Build all images necessary for the deployment and the worker
 build-all: buildWorker build-core

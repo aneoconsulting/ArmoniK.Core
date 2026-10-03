@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Threading;
 
 namespace ArmoniK.Core.Base;
@@ -50,4 +51,14 @@ public interface IQueueMessageHandler : IAsyncDisposable
   ///   Date of reception of the message
   /// </summary>
   DateTime ReceptionDateTime { get; init; }
+
+  /// <summary>
+  ///   Declares the results produced by the task and kept in the local cache, with their sizes in bytes,
+  ///   before the handler is disposed. Queues that place downstream tasks next to their data use them;
+  ///   the others ignore them.
+  /// </summary>
+  /// <param name="outputs">Result identifiers and sizes</param>
+  void SetOutputs(IReadOnlyCollection<(string Id, long Size)> outputs)
+  {
+  }
 }

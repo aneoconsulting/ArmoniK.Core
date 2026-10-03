@@ -68,6 +68,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly CancellationTokenSource               earlyCts_;
   private readonly ExceptionManager                      exceptionManager_;
   private readonly string                                folder_;
+  private readonly DataCacheMetrics                      dataCacheMetrics_;
   private readonly FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics_;
   private readonly HealthCheckRecord                     healthCheckRecord_;
   private readonly CancellationTokenSource               lateCts_;
@@ -121,6 +122,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <param name="onDispose">The action to execute on disposal.</param>
   /// <param name="exceptionManager">The exception manager for handling cancellation and errors.</param>
   /// <param name="functionExecutionMetrics">The metrics collector for function execution.</param>
+  /// <param name="dataCacheMetrics">The metrics of the data served by the cache or fetched from the object storage.</param>
   /// <param name="healthCheckRecord">The health check record for agent health monitoring.</param>
   /// <exception cref="ArgumentOutOfRangeException"></exception>
   public TaskHandler(ISessionTable                         sessionTable,
@@ -143,6 +145,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      Action                                onDispose,
                      ExceptionManager                      exceptionManager,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
+                     DataCacheMetrics                      dataCacheMetrics,
                      HealthCheckRecord                     healthCheckRecord)
   {
     exceptionManager_         = exceptionManager;
@@ -161,6 +164,7 @@ public sealed class TaskHandler : IAsyncDisposable
     logger_                   = logger;
     onDispose_                = onDispose;
     functionExecutionMetrics_ = functionExecutionMetrics;
+    dataCacheMetrics_         = dataCacheMetrics;
     submitterOptions_         = submitterOptions;
     healthCheckRecord_        = healthCheckRecord;
     ownerPodId_               = ownerPodId;
@@ -270,6 +274,21 @@ public sealed class TaskHandler : IAsyncDisposable
     earlyCts_.Dispose();
   }
 
+  /// <summary>
+  ///   Size of a file for the metrics, 0 if it cannot be read.
+  /// </summary>
+  private static long SizeOf(string path)
+  {
+    try
+    {
+      return new FileInfo(path).Length;
+    }
+    catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+    {
+      return 0;
+    }
+  }
+
   private bool IsEvictionNeeded()
   {
     var drive = new DriveInfo(Path.GetPathRoot(cache_)!);
@@ -292,6 +311,7 @@ public sealed class TaskHandler : IAsyncDisposable
                                            .Select(f => new
                                                         {
                                                           f.FullName,
+                                                          f.Length,
                                                           Access = Math.Max(f.LastAccessTimeUtc.Ticks,
                                                                             f.LastWriteTimeUtc.Ticks),
                                                         })
@@ -303,6 +323,7 @@ public sealed class TaskHandler : IAsyncDisposable
       try
       {
         File.Delete(entry.FullName);
+        dataCacheMetrics_.Evicted(entry.Length);
       }
       catch (Exception e) when (e is IOException or UnauthorizedAccessException)
       {
@@ -1020,12 +1041,15 @@ public sealed class TaskHandler : IAsyncDisposable
       {
         try
         {
+          var input = Path.Combine(folder_,
+                                   resultId);
           File.Copy(Path.Combine(cache_,
                                  resultId),
-                    Path.Combine(folder_,
-                                 resultId),
+                    input,
                     true);
           opaqueIds.Remove(resultId);
+          dataCacheMetrics_.Hit(resultId == taskData_.PayloadId,
+                                SizeOf(input));
         }
         catch (Exception e) when (e is FileNotFoundException or UnauthorizedAccessException)
         {
@@ -1039,10 +1063,22 @@ public sealed class TaskHandler : IAsyncDisposable
       // Prefetch data that are not in cache yet. Data that are already in cache will not be prefetched again, so we avoid unnecessary prefetching from the object storage.
       // We prefetch data in the folder_ and then copy them to cache_. This ensures that data are not evicted between the prefetching and the copy in the cache.
       // This way, if the same data are needed for another task, they will be in cache_ and we will avoid prefetching them again from the object storage.
+      var fetch = Stopwatch.StartNew();
       await dataPrefetcher_.PrefetchDataAsync(opaqueIds,
                                               folder_,
                                               earlyCts_.Token)
                            .ConfigureAwait(false);
+      if (opaqueIds.Count > 0)
+      {
+        dataCacheMetrics_.Fetched(fetch.ElapsedMilliseconds);
+        foreach (var resultId in opaqueIds.Keys)
+        {
+          dataCacheMetrics_.Miss(resultId == taskData_.PayloadId,
+                                 SizeOf(Path.Combine(folder_,
+                                                     resultId)));
+        }
+      }
+
       if (cacheEvictionThreshold_ > 0)
       {
         foreach (var resultId in opaqueIds.Keys)
@@ -1054,9 +1090,13 @@ public sealed class TaskHandler : IAsyncDisposable
             File.Copy(Path.Combine(folder_,
                                    resultId),
                       tmp);
-            FileExt.MoveOrDelete(tmp,
-                                 Path.Combine(cache_,
-                                              resultId));
+            var size = SizeOf(tmp);
+            if (FileExt.MoveOrDelete(tmp,
+                                     Path.Combine(cache_,
+                                                  resultId)))
+            {
+              dataCacheMetrics_.Stored(size);
+            }
           }
           catch (Exception e) when (e is IOException or UnauthorizedAccessException)
           {
@@ -1282,14 +1322,19 @@ public sealed class TaskHandler : IAsyncDisposable
         // add outputs to cache so they can be used as dependencies for other tasks without having to fetch them from the object storage
         if (cacheEvictionThreshold_ > 0)
         {
+          var cached = new List<(string Id, long Size)>();
           foreach (var id in agent_.CreatedResultIds)
           {
             try
             {
-              File.Copy(Path.Combine(folder_,
-                                     id),
+              var output = Path.Combine(folder_,
+                                        id);
+              File.Copy(output,
                         Path.Combine(cache_,
                                      id));
+              var size = SizeOf(output);
+              dataCacheMetrics_.Stored(size);
+              cached.Add((id, size));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException)
             {
@@ -1298,6 +1343,12 @@ public sealed class TaskHandler : IAsyncDisposable
                                  "Output {ResultId} was not stored in the cache",
                                  id);
             }
+          }
+
+          // queues placing tasks next to their data learn which outputs are in the cache
+          if (cached.Count > 0)
+          {
+            messageHandler_.SetOutputs(cached);
           }
         }
       }
