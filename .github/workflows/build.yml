@@ -71,7 +71,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+      uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
       with:
         tool: just
 
@@ -120,7 +120,7 @@ jobs:
             dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
-      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+      uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
       if: ${{ success() || failure() }}
       with:
         name: Test - ${{ matrix.os }} ${{ matrix.projects }}
@@ -161,7 +161,7 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+      uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
       with:
         tool: just
 
@@ -198,7 +198,7 @@ jobs:
            dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
-      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+      uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
       if: ${{ success() || failure() }}
       with:
         name: Test - ${{ matrix.queue }} Base/tests/Queue
@@ -251,7 +251,7 @@ jobs:
         dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
     - name: Test Report
-      uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+      uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
       if: ${{ success() || failure() }}
       with:
         name: Test - windows ${{ matrix.projects }}
@@ -328,7 +328,7 @@ jobs:
       uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4  
 
     - name: Setup just
-      uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+      uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
       with:
         tool: just
 
@@ -421,7 +421,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -469,7 +469,7 @@ jobs:
             dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         if: ${{ success() || failure() }}
         with:
           name: Test - ${{ matrix.queue }} x ${{ matrix.log-level }} x ${{ matrix.database }}
@@ -573,7 +573,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
       
@@ -1009,7 +1009,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -1140,7 +1140,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -1255,7 +1255,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -1303,7 +1303,7 @@ jobs:
         run: CA_INSTALLED=${{ matrix.ca }} dotnet test Tests/Connectivity/src/ArmoniK.Core.Tests.Connectivity.csproj --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
 
       - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3.0.0
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
         if: ${{ success() || failure() }}
         with:
           name: Test - Connectivity CA ${{ matrix.ca }}
@@ -1370,7 +1370,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -1513,7 +1513,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -1605,7 +1605,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -1701,7 +1701,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 

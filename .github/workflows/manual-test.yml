@@ -26,7 +26,7 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
       - name: Setup just
-        uses: taiki-e/install-action@94c31af3204a9f15ab40b35ad084410b905bbc73 # v2
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
         with:
           tool: just
 
@@ -54,7 +54,7 @@ jobs:
           filter: ${{ inputs.filter }}
 
       - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
         if: success() || failure()
         with:
           name: Test - ${{ matrix.os }} ${{ matrix.projects }}
@@ -117,7 +117,7 @@ jobs:
           filter: ${{ inputs.filter }}
 
       - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
         if: success() || failure()
         with:
           name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
@@ -166,7 +166,7 @@ jobs:
           filter: ${{ inputs.filter }}
 
       - name: Test Report
-        uses: dorny/test-reporter@a43b3a5f7366b97d083190328d2c652e1a8b6aa2 # v3
+        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
         if: success() || failure()
         with:
           name: Test - windows ${{ matrix.projects }}
