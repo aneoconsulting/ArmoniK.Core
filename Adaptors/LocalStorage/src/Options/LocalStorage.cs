@@ -19,7 +19,7 @@ using JetBrains.Annotations;
 
 namespace ArmoniK.Core.Adapters.LocalStorage.Options;
 
-internal class LocalStorage
+public class LocalStorage
 {
   public const string SettingSection = nameof(LocalStorage);
 

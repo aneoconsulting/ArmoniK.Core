@@ -42,6 +42,7 @@ using Google.Protobuf;
 using Grpc.Core;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
@@ -81,8 +82,9 @@ public class GrpcResultsService : Results.ResultsBase
                             IPushQueueStorage                            pushQueueStorage,
                             FunctionExecutionMetrics<GrpcResultsService> meter,
                             Injection.Options.Submitter                  options,
-                            IUuidGenerator                               uuidGenerator,
-                            ILogger<GrpcResultsService>                  logger)
+                            [FromKeyedServices(UuidServiceKey.Monotonic)]
+                            IUuidGenerator uuidGenerator,
+                            ILogger<GrpcResultsService> logger)
   {
     logger_           = logger;
     uuidGenerator_    = uuidGenerator;

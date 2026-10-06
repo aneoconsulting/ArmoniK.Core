@@ -38,6 +38,7 @@ using ArmoniK.Utils;
 using Grpc.Core;
 
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Task = ArmoniK.Api.gRPC.V1.Tasks.Tasks;
@@ -80,8 +81,9 @@ public class GrpcTasksService : Task.TasksBase
                           FunctionExecutionMetrics<GrpcTasksService> meter,
                           HttpClient                                 httpClient,
                           Injection.Options.Submitter                options,
-                          IUuidGenerator                             uuidGenerator,
-                          ILogger<GrpcTasksService>                  logger)
+                          [FromKeyedServices(UuidServiceKey.Monotonic)]
+                          IUuidGenerator uuidGenerator,
+                          ILogger<GrpcTasksService> logger)
   {
     logger_           = logger;
     uuidGenerator_    = uuidGenerator;

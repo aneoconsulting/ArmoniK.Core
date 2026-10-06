@@ -47,31 +47,29 @@ public class ObjectStorage : IObjectStorage
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for LocalStorage
   /// </summary>
-  /// <param name="path">Path where the objects are stored</param>
-  /// <param name="chunkSize">Size of the chunks when reading</param>
+  /// <param name="options">Options for the local storage</param>
   /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
-  public ObjectStorage(string path,
-                       int    chunkSize,
+  public ObjectStorage(Options.LocalStorage options,
                        [FromKeyedServices(UuidServiceKey.Uniform)]
                        IUuidGenerator uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
-    path_ = path == ""
+    path_ = options.Path == ""
               ? Options.LocalStorage.Default.Path
-              : path;
-    chunkSize_ = chunkSize == 0
+              : options.Path;
+    chunkSize_ = options.ChunkSize == 0
                    ? Options.LocalStorage.Default.ChunkSize
-                   : chunkSize;
+                   : options.ChunkSize;
     uuidGenerator_ = uuidGenerator;
 
 
     logger_ = logger;
 
     logger.LogDebug("Creating Local ObjectStorage at {path}",
-                    path);
+                    path_);
 
-    Directory.CreateDirectory(path);
+    Directory.CreateDirectory(path_);
   }
 
   /// <inheritdoc />

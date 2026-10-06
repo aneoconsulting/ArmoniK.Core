@@ -47,8 +47,11 @@ public class ObjectStorageTests : ObjectStorageTestBase
                        true);
     }
 
-    ObjectStorage = new ObjectStorage(rootPath,
-                                      8,
+    ObjectStorage = new ObjectStorage(new Options.LocalStorage
+                                      {
+                                        ChunkSize = 8,
+                                        Path      = rootPath,
+                                      },
                                       new UuidGeneratorV4(),
                                       NullLogger<ObjectStorage>.Instance);
     RunTests = true;

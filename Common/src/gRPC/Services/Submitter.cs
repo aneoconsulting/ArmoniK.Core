@@ -40,6 +40,7 @@ using Grpc.Core;
 
 using JetBrains.Annotations;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using Output = ArmoniK.Core.Common.Storage.Output;
@@ -89,7 +90,8 @@ public class Submitter : ISubmitter
                    IPartitionTable             partitionTable,
                    Injection.Options.Submitter submitterOptions,
                    ActivitySource              activitySource,
-                   IUuidGenerator              uuidGenerator)
+                   [FromKeyedServices(UuidServiceKey.Monotonic)]
+                   IUuidGenerator uuidGenerator)
   {
     objectStorage_    = objectStorage;
     logger_           = logger;

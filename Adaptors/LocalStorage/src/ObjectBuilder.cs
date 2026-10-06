@@ -46,10 +46,6 @@ public class ObjectBuilder : IDependencyInjectionBuildable
     logger.LogDebug("setup local storage");
 
     serviceCollection.AddUuidGeneratorDefault()
-                     .AddSingletonWithHealthCheck<IObjectStorage>(nameof(IObjectStorage),
-                                                                  sp => new ObjectStorage(storageOptions.Path,
-                                                                                          storageOptions.ChunkSize,
-                                                                                          sp.GetRequiredService<IUuidGenerator>(),
-                                                                                          sp.GetRequiredService<ILogger<ObjectStorage>>()));
+                     .AddSingletonWithHealthCheck<IObjectStorage, ObjectStorage>(nameof(IObjectStorage));
   }
 }
