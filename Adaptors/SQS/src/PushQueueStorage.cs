@@ -28,6 +28,7 @@ using ArmoniK.Core.Adapters.SQS.Extensions;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Caching.Memory;
@@ -42,15 +43,18 @@ internal class PushQueueStorage : IPushQueueStorage
   private readonly AmazonSQSClient           client_;
   private readonly ILogger<PushQueueStorage> logger_;
   private readonly SQS                       options_;
+  private readonly IUuidGenerator            uuidGenerator_;
   private          bool                      isInitialized_;
 
   public PushQueueStorage(AmazonSQSClient           client,
                           SQS                       options,
+                          IUuidGenerator            uuidGenerator,
                           ILogger<PushQueueStorage> logger)
   {
-    client_  = client;
-    options_ = options;
-    logger_  = logger;
+    client_        = client;
+    options_       = options;
+    uuidGenerator_ = uuidGenerator;
+    logger_        = logger;
 
     cache_ = new MemoryCache(new MemoryCacheOptions());
   }
@@ -86,7 +90,8 @@ internal class PushQueueStorage : IPushQueueStorage
                                    async entries =>
                                    {
                                      var (queueUrl, chunk) = entries;
-                                     var remainingEntries = chunk.Select(data => data.ToBatchRequestEntry(options_))
+                                     var remainingEntries = chunk.Select(data => data.ToBatchRequestEntry(options_,
+                                                                                                          uuidGenerator_))
                                                                  .ToList();
                                      var retry = 0;
                                      while (remainingEntries.Any())

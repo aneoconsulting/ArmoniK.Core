@@ -18,6 +18,7 @@
 using System;
 
 using ArmoniK.Core.Base;
+using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -48,6 +49,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
     var natsOptions = configuration.GetSection(Nats.SettingSection)
                                    .Get<Nats>() ?? throw new InvalidOperationException("Options not found");
     Console.WriteLine(natsOptions.Url);
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingleton(natsOptions);
     serviceCollection.AddSingleton<INatsJSContext>(sp =>
                                                    {

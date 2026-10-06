@@ -27,8 +27,10 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -45,6 +47,7 @@ public class ObjectStorage : IObjectStorage
   private readonly string                 objectStorageName_;
   private readonly IDatabaseAsync         redis_;
   private readonly Options.Redis          redisOptions_;
+  private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
   /// <summary>
@@ -52,14 +55,18 @@ public class ObjectStorage : IObjectStorage
   /// </summary>
   /// <param name="redis">Connection to redis database</param>
   /// <param name="redisOptions">Redis object storage options</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
-  public ObjectStorage(IDatabaseAsync         redis,
-                       Options.Redis          redisOptions,
+  public ObjectStorage(IDatabaseAsync redis,
+                       Options.Redis  redisOptions,
+                       [FromKeyedServices(UuidServiceKey.Uniform)]
+                       IUuidGenerator uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
     redis_             = redis;
     redisOptions_      = redisOptions;
     objectStorageName_ = "objectStorageName";
+    uuidGenerator_     = uuidGenerator;
     logger_            = logger;
   }
 
@@ -95,8 +102,8 @@ public class ObjectStorage : IObjectStorage
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
-    var key = Guid.NewGuid()
-                  .ToString();
+    var key = uuidGenerator_.GenerateUuid()
+                            .ToString();
     var  storageNameKey = objectStorageName_ + key;
     long size           = 0;
 

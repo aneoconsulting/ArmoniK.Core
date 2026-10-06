@@ -38,6 +38,7 @@ using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -105,6 +106,7 @@ public static class Program
              .AddAdapter(builder.Configuration,
                          nameof(Components.ObjectStorageAdaptorSettings),
                          logger.GetLogger())
+             .AddUuidGeneratorDefault()
              .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
              .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
              .AddInitializedOption<Common.Injection.Options.Submitter>(builder.Configuration,

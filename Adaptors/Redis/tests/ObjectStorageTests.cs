@@ -22,6 +22,7 @@ using System.IO;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Tests.TestBase;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,6 +75,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
                    },
                  };
 
+    services.AddUuidGeneratorDefault();
     services.AddSingleton<IDatabaseAsync>(_ => ConnectionMultiplexer.Connect(config,
                                                                              TextWriter.Null)
                                                                     .GetDatabase());

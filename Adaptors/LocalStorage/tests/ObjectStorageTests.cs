@@ -19,6 +19,7 @@ using System;
 using System.IO;
 
 using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -46,8 +47,12 @@ public class ObjectStorageTests : ObjectStorageTestBase
                        true);
     }
 
-    ObjectStorage = new ObjectStorage(rootPath,
-                                      8,
+    ObjectStorage = new ObjectStorage(new Options.LocalStorage
+                                      {
+                                        ChunkSize = 8,
+                                        Path      = rootPath,
+                                      },
+                                      new UuidGeneratorV4(),
                                       NullLogger<ObjectStorage>.Instance);
     RunTests = true;
   }

@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Utils.Uuid;
 
 using NUnit.Framework;
 
@@ -33,7 +34,7 @@ public class ObjectStorageTests : ObjectStorageTestBase
 
   protected override void GetObjectStorageInstance()
   {
-    ObjectStorage = new ObjectStorage();
+    ObjectStorage = new ObjectStorage(new UuidGeneratorV4());
     RunTests      = true;
   }
 }

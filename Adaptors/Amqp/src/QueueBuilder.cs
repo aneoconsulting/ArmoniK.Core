@@ -17,6 +17,7 @@
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -63,6 +64,7 @@ public class QueueBuilder : IDependencyInjectionBuildable
     }
 
     serviceCollection.AddSingletonWithHealthCheck<IConnectionAmqp, ConnectionAmqp>(nameof(IConnectionAmqp));
+    serviceCollection.AddUuidGeneratorDefault();
     serviceCollection.AddSingleton<IPushQueueStorage, PushQueueStorage>();
     serviceCollection.AddSingleton<IPullQueueStorage, PullQueueStorage>();
 

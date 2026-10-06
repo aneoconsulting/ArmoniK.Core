@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
@@ -15,28 +15,17 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 
-namespace ArmoniK.Core.Adapters.LocalStorage.Options;
+namespace ArmoniK.Core.Utils.Uuid;
 
-public class LocalStorage
+public static class UuidServiceCollectionExt
 {
-  public const string SettingSection = nameof(LocalStorage);
-
-  internal static readonly LocalStorage Default = new();
-
-  public string Path
+  public static IServiceCollection AddUuidGeneratorDefault(this IServiceCollection services)
   {
-    get;
-    [UsedImplicitly]
-    set;
-  } = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
-                             "ArmoniK");
-
-  public int ChunkSize
-  {
-    get;
-    [UsedImplicitly]
-    init;
-  } = 64 * 1024;
+    services.TryAddSingleton<IUuidGenerator, UuidGeneratorV4>();
+    services.TryAddKeyedSingleton<IUuidGenerator, UuidGeneratorV4>(KeyedService.AnyKey);
+    return services;
+  }
 }

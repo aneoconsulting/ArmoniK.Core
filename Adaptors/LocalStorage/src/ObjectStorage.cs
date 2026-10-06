@@ -28,7 +28,9 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
@@ -39,32 +41,35 @@ public class ObjectStorage : IObjectStorage
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 path_;
+  private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
   /// <summary>
   ///   <see cref="IObjectStorage" /> implementation for LocalStorage
   /// </summary>
-  /// <param name="path">Path where the objects are stored</param>
-  /// <param name="chunkSize">Size of the chunks when reading</param>
+  /// <param name="options">Options for the local storage</param>
+  /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">Logger used to print logs</param>
-  public ObjectStorage(string                 path,
-                       int                    chunkSize,
+  public ObjectStorage(Options.LocalStorage options,
+                       [FromKeyedServices(UuidServiceKey.Uniform)]
+                       IUuidGenerator uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
-    path_ = path == ""
+    path_ = options.Path == ""
               ? Options.LocalStorage.Default.Path
-              : path;
-    chunkSize_ = chunkSize == 0
+              : options.Path;
+    chunkSize_ = options.ChunkSize == 0
                    ? Options.LocalStorage.Default.ChunkSize
-                   : chunkSize;
+                   : options.ChunkSize;
+    uuidGenerator_ = uuidGenerator;
 
 
     logger_ = logger;
 
     logger.LogDebug("Creating Local ObjectStorage at {path}",
-                    path);
+                    path_);
 
-    Directory.CreateDirectory(path);
+    Directory.CreateDirectory(path_);
   }
 
   /// <inheritdoc />
@@ -101,8 +106,8 @@ public class ObjectStorage : IObjectStorage
                                                              CancellationToken                      cancellationToken = default)
   {
     long size = 0;
-    var key = Guid.NewGuid()
-                  .ToString();
+    var key = uuidGenerator_.GenerateUuid()
+                            .ToString();
     var filename = Path.Combine(path_,
                                 key);
 

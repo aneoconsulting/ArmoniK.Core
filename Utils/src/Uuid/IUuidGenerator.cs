@@ -1,4 +1,4 @@
-﻿// This file is part of the ArmoniK project
+// This file is part of the ArmoniK project
 // 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
@@ -15,28 +15,18 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using JetBrains.Annotations;
+using System;
 
-namespace ArmoniK.Core.Adapters.LocalStorage.Options;
+namespace ArmoniK.Core.Utils.Uuid;
 
-public class LocalStorage
+/// <summary>
+///   UUID Generator
+/// </summary>
+public interface IUuidGenerator
 {
-  public const string SettingSection = nameof(LocalStorage);
-
-  internal static readonly LocalStorage Default = new();
-
-  public string Path
-  {
-    get;
-    [UsedImplicitly]
-    set;
-  } = System.IO.Path.Combine(System.IO.Path.GetTempPath(),
-                             "ArmoniK");
-
-  public int ChunkSize
-  {
-    get;
-    [UsedImplicitly]
-    init;
-  } = 64 * 1024;
+  /// <summary>
+  ///   Generate a new UUID
+  /// </summary>
+  /// <returns>The generated UUID</returns>
+  Guid GenerateUuid();
 }

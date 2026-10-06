@@ -36,6 +36,7 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using EphemeralMongo;
 
@@ -170,6 +171,7 @@ public class TestTaskHandlerProvider : IDisposable
            .AddExceptionManager()
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton<HealthCheckRecord>()
+           .AddUuidGeneratorDefault()
            .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
                                                      provider.GetRequiredService<ITaskTable>(),
                                                      provider.GetRequiredService<IResultTable>(),
@@ -192,7 +194,8 @@ public class TestTaskHandlerProvider : IDisposable
                                                      },
                                                      provider.GetRequiredService<ExceptionManager>(),
                                                      provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>(),
-                                                     provider.GetRequiredService<HealthCheckRecord>()))
+                                                     provider.GetRequiredService<HealthCheckRecord>(),
+                                                     provider.GetRequiredService<IUuidGenerator>()))
            .AddSingleton<DataPrefetcher>();
 
     if (taskProcessingChecker is not null)

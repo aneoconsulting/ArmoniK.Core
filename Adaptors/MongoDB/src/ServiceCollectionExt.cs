@@ -27,6 +27,7 @@ using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Utils;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -228,7 +229,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
-      services.AddInitializedOption<TableStorage>(configuration,
+      services.AddUuidGeneratorDefault()
+              .AddInitializedOption<TableStorage>(configuration,
                                                   TableStorage.SettingSection)
               .AddSingleton<ITaskTable, TaskTable>()
               .AddSingleton<ISessionTable, SessionTable>()

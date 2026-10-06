@@ -17,6 +17,7 @@
 
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
@@ -40,7 +41,8 @@ public static class ServiceCollectionExt
 
     if (components["TableStorage"] == "ArmoniK.Adapters.Memory.TableStorage")
     {
-      services.AddTransient<ITaskTable, TaskTable>()
+      services.AddUuidGeneratorDefault()
+              .AddTransient<ITaskTable, TaskTable>()
               .AddTransient<ISessionTable, SessionTable>()
               .AddTransient<IResultTable, ResultTable>();
     }

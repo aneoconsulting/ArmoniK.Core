@@ -15,23 +15,23 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
-
 using Amazon.SQS.Model;
 
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Utils.Uuid;
 
 namespace ArmoniK.Core.Adapters.SQS.Extensions;
 
 internal static class MessageDataExtensions
 {
   public static SendMessageBatchRequestEntry ToBatchRequestEntry(this MessageData messageData,
-                                                                 SQS              sqsOptions)
+                                                                 SQS              sqsOptions,
+                                                                 IUuidGenerator   uuidGenerator)
   {
     var sendMessageBatchRequestEntry = new SendMessageBatchRequestEntry
                                        {
-                                         Id = Guid.NewGuid()
-                                                  .ToString(),
+                                         Id = uuidGenerator.GenerateUuid()
+                                                           .ToString(),
                                          MessageBody = messageData.TaskId,
                                        };
 
