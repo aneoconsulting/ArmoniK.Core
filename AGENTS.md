@@ -13,6 +13,7 @@ ArmoniK.Core is a distributed task processing system. It exposes a gRPC API and 
 ## Repository layout
 
 ```
+Authorization/    Access model: permissions, grants, conditions, decision engine (no storage, no gRPC)
 Common/           Core library: Pollster, gRPC services, storage abstractions, state machines
 Adaptors/         Pluggable backends
   AMQP/           Queue — AMQP 1.0
@@ -61,7 +62,7 @@ just tag=<tag> queue=<q> worker=<w> object=<o> build-deploy   # full build + dep
 just destroy                          # tear down the deployment
 ```
 
-Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|seaweedfs|gcs|local|embed|null), `replicas`, `partitions`, `log_level`.
+Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|seaweedfs|gcs|local|embed|null), `replicas`, `partitions`, `log_level`, `authz` (grants for the mTLS client certificate and the Keycloak role `modelling-team`), `keycloak` (deploy Keycloak and validate tokens).
 
 ## Tests
 
@@ -157,6 +158,7 @@ Pre-commit hooks (`.pre-commit-config.yaml`) enforce: Terraform format, YAML/XML
 
 - **Adapter registration**: all adapters implement `IDependencyInjectionBuildable` and register services via `Build()`. Never bypass DI with `new ConcreteType()`.
 - **Task lifecycle**: driven by a state machine in `Common/src/StateMachines/`. Do not mutate task status outside the state machine.
+- **Authorization**: the decision model lives in `Authorization/src` (pure, tested in `Authorization/tests`); `Common/src/Enforcement` decides every control-plane call in `AuthorizationInterceptor`, registered only when `Authorization:Enabled`. A new RPC needs a rule in `MethodAuthorization` (reflection tests fail otherwise). Handlers read what the decision left with `context.GetSessionAuthorship()` and `context.RestrictListing(...)`. See `.docs/content/1.concepts/3.authentication.md`.
 - **Logging**: Serilog structured logging. Inject `ILogger<T>`; never use `Console.Write*`.
 - **Nullable**: `<Nullable>enable</Nullable>` is set project-wide. All new code must handle nullability correctly.
 - **New adapters**: must include a `/tests/` sibling project with integration tests.
