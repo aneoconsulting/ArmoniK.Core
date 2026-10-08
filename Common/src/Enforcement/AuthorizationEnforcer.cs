@@ -22,7 +22,6 @@ using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
@@ -153,7 +152,7 @@ public class AuthorizationEnforcer
                                 caller,
                                 rule,
                                 engine,
-                                (CreateSessionRequest)request,
+                                request,
                                 context);
           return;
         case RuleKind.Partition:
@@ -227,16 +226,17 @@ public class AuthorizationEnforcer
   private static bool IsRefusal(Exception e)
     => e is SessionNotFoundException or TaskNotFoundException or ResultNotFoundException or PartitionNotFoundException;
 
-  private void DecideSessionCreation(string               service,
-                                     string               method,
-                                     AuthenticatedCaller  caller,
-                                     MethodRule           rule,
-                                     DecisionEngine       engine,
-                                     CreateSessionRequest request,
-                                     ServerCallContext    context)
+  private void DecideSessionCreation(string              service,
+                                     string              method,
+                                     AuthenticatedCaller caller,
+                                     MethodRule          rule,
+                                     DecisionEngine      engine,
+                                     object              request,
+                                     ServerCallContext   context)
   {
-    var partitions = SessionLifeCycleHelper.EffectivePartitions(request.PartitionIds,
-                                                                request.DefaultTaskOption?.PartitionId,
+    var (declared, taskOptions) = rule.Creation!(request);
+    var partitions = SessionLifeCycleHelper.EffectivePartitions(declared,
+                                                                taskOptions,
                                                                 options_.DefaultPartition);
     var creation = engine.DecideSessionCreation(caller.Caller,
                                                 partitions);
@@ -323,11 +323,38 @@ public class AuthorizationEnforcer
                                            RequestTargets      targets,
                                            CancellationToken   cancellationToken)
   {
+    // A legacy filter naming nothing acts on every session: the permission must be held across the cluster
+    if (targets.IsEmpty)
+    {
+      Enforce(service,
+              method,
+              caller,
+              rule,
+              [],
+              rule.Permissions.All(permission => engine.HoldsUnconditionally(caller.Caller,
+                                                                             permission))
+                ? new Decision(DecisionOutcome.Allow,
+                               null,
+                               DenialReason.None,
+                               [])
+                : new Decision(DecisionOutcome.Forbidden,
+                               null,
+                               DenialReason.MissingPermission,
+                               []),
+              () => new SessionNotFoundException("Session not found"));
+      return;
+    }
+
     var sessionIds = new HashSet<string>(StringComparer.Ordinal);
 
     if (targets.SessionId is not null)
     {
       sessionIds.Add(targets.SessionId);
+    }
+
+    if (targets.Sessions is not null)
+    {
+      sessionIds.UnionWith(targets.Sessions);
     }
 
     if (targets.TaskIds.Count != 0)
@@ -387,7 +414,7 @@ public class AuthorizationEnforcer
       sessionIds.UnionWith(found.Select(result => result.SessionId));
     }
 
-    if (targets.SessionId is not null && sessionIds.Count > 1)
+    if (targets.SessionId is not null && targets.Sessions is null && sessionIds.Count > 1)
     {
       Refuse(service,
              method,

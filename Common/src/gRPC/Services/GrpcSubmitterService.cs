@@ -25,6 +25,7 @@ using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
@@ -122,7 +123,11 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
                                                                ServerCallContext    context)
     => await submitter_.CreateSession(request.PartitionIds,
                                       request.DefaultTaskOption.ToTaskOptions(),
-                                      context.CancellationToken)
+                                      context.CancellationToken,
+                                      context.GetSessionAuthorship()
+                                             ?.Owner,
+                                      context.GetSessionAuthorship()
+                                             ?.CreatedUnder)
                        .ConfigureAwait(false);
 
   /// <inheritdoc />
