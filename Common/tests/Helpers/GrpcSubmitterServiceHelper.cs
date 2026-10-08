@@ -22,22 +22,18 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Auth;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Grpc.Core;
 using Grpc.Net.Client;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
@@ -55,8 +51,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
   private          TestServer?         server_;
 
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
-                                    List<MockIdentity>          authIdentities,
-                                    AuthenticatorOptions        authOptions,
                                     LogLevel                    logLevel,
                                     Action<IServiceCollection>? serviceConfigurator  = null,
                                     bool                        validateGrpcRequests = true)
@@ -69,14 +63,11 @@ public class GrpcSubmitterServiceHelper : IDisposable
     builder.Services.AddSingleton(loggerFactory_)
            .AddSingleton(submitter);
     builder.Services.AddSingleton(loggerFactory_.CreateLogger<GrpcSubmitterService>())
-           .AddTransient<IAuthenticationTable, MockAuthenticationTable>(_ => new MockAuthenticationTable(authIdentities))
-           .AddSingleton(new AuthenticationCache())
            .AddSingleton<ITaskTable, SimpleTaskTable>()
            .AddSingleton<IResultTable, SimpleResultTable>()
            .AddSingleton<IObjectStorage, SimpleObjectStorage>()
            .AddSingleton<ISessionTable, SimpleSessionTable>()
            .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
-           .Configure<AuthenticatorOptions>(o => o.CopyFrom(authOptions))
            .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
            .AddHttpClient()
@@ -84,14 +75,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddMetrics()
            .AddSingleton<AgentIdentifier>()
            .AddSingleton<MeterHolder>()
-           .AddScoped(typeof(FunctionExecutionMetrics<>))
-           .AddAuthentication()
-           .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
-                                                           _ =>
-                                                           {
-                                                           });
-    builder.Services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
-           .AddAuthorization();
+           .AddScoped(typeof(FunctionExecutionMetrics<>));
 
     builder.Services.AddSingleton<ExceptionManager>()
            .AddSingleton(new ExceptionManager.Options())
@@ -109,8 +93,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
     builder.WebHost.UseTestServer(options => options.PreserveExecutionContext = true);
     app_ = builder.Build();
     app_.UseRouting();
-    app_.UseAuthentication();
-    app_.UseAuthorization();
     app_.MapGrpcService<GrpcSubmitterService>();
     app_.MapGrpcService<GrpcResultsService>();
     app_.MapGrpcService<GrpcSessionsService>();
@@ -126,8 +108,6 @@ public class GrpcSubmitterServiceHelper : IDisposable
   public GrpcSubmitterServiceHelper(ISubmitter                  submitter,
                                     Action<IServiceCollection>? serviceConfigurator = null)
     : this(submitter,
-           new List<MockIdentity>(),
-           AuthenticatorOptions.DefaultNoAuth,
            LogLevel.Trace,
            serviceConfigurator)
   {

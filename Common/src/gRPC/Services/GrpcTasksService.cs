@@ -27,8 +27,6 @@ using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
@@ -38,7 +36,6 @@ using ArmoniK.Utils;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -48,7 +45,6 @@ using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Task" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Task.TasksBase
 {
   private readonly HttpClient                                 httpClient_;
@@ -161,8 +157,6 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(GetTask))]
   public override async Task<GetTaskResponse> GetTask(GetTaskRequest    request,
                                                       ServerCallContext context)
   {
@@ -178,8 +172,6 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(ListTasks))]
   public override async Task<ListTasksResponse> ListTasks(ListTasksRequest  request,
                                                           ServerCallContext context)
   {
@@ -221,8 +213,6 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(GetResultIds))]
   public override async Task<GetResultIdsResponse> GetResultIds(GetResultIdsRequest request,
                                                                 ServerCallContext   context)
   {
@@ -249,8 +239,6 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(CancelTasks))]
   public override async Task<CancelTasksResponse> CancelTasks(CancelTasksRequest request,
                                                               ServerCallContext  context)
   {
@@ -318,8 +306,6 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(CountTasksByStatus))]
   public override async Task<CountTasksByStatusResponse> CountTasksByStatus(CountTasksByStatusRequest request,
                                                                             ServerCallContext         context)
   {
@@ -343,8 +329,6 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(ListTasksDetailed))]
   public override async Task<ListTasksDetailedResponse> ListTasksDetailed(ListTasksRequest  request,
                                                                           ServerCallContext context)
   {
@@ -386,8 +370,6 @@ public class GrpcTasksService : Task.TasksBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcTasksService),
-                      nameof(SubmitTasks))]
   public override async Task<SubmitTasksResponse> SubmitTasks(SubmitTasksRequest request,
                                                               ServerCallContext  context)
   {

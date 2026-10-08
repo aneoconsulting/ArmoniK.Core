@@ -19,21 +19,17 @@ using System;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Events" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcEventsService : Events.EventsBase
 {
   private readonly ILogger<GrpcEventsService>                  logger_;
@@ -68,8 +64,6 @@ public class GrpcEventsService : Events.EventsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcEventsService),
-                      nameof(GetEvents))]
   public override async Task GetEvents(EventSubscriptionRequest                       request,
                                        IServerStreamWriter<EventSubscriptionResponse> responseStream,
                                        ServerCallContext                              context)
