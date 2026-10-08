@@ -28,6 +28,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.DynamicLoading;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
@@ -121,8 +122,18 @@ public static class Program
              .AddScoped(typeof(FunctionExecutionMetrics<>))
              .ValidateGrpcRequests();
 
+      var authorizationEnabled = builder.Services.AddArmoniKAuthorization(builder.Configuration);
+
       builder.Services.AddHealthChecks();
-      builder.Services.AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>());
+      builder.Services.AddGrpc(options =>
+                               {
+                                 options.Interceptors.Add<ExceptionInterceptor>();
+                                 // After the exception interceptor, so that refusals are reported like other errors
+                                 if (authorizationEnabled)
+                                 {
+                                   options.Interceptors.Add<AuthorizationInterceptor>();
+                                 }
+                               });
 
       var otel = builder.Services.AddOpenTelemetry();
       otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()

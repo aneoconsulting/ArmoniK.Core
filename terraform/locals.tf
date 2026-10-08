@@ -19,13 +19,29 @@ locals {
   database           = one(concat(module.database_mongo, module.database_postgresql))
   object             = one(concat(module.object_redis, module.object_seaweedfs, module.object_gcs, module.object_local, module.object_embed, module.object_null))
   partition_env_vars = { for i in local.partitions : "InitServices__Partitioning__Partitions__${i}" => jsonencode(merge(var.partition_data, { PartitionId = "${var.partition_data.PartitionId}${i}" })) }
+  authorization_env_vars = var.authorization.enabled ? merge(
+    {
+      "Authorization__Enabled"        = "true"
+      "Authorization__ConfigRevision" = tostring(var.authorization.config_revision)
+    },
+    merge(concat([{}], [for i, grant in var.authorization.grants : merge({
+      "Authorization__Grants__${i}__Id"            = grant.id
+      "Authorization__Grants__${i}__Principal"     = grant.principal
+      "Authorization__Grants__${i}__PermissionSet" = grant.permission_set
+    }, grant.condition == null ? {} : { "Authorization__Grants__${i}__Condition" = grant.condition })])...),
+    merge(concat([{}], [for i, set in var.authorization.permission_sets : merge(
+      { "Authorization__PermissionSets__${i}__Name" = set.name },
+      { for j, permission in set.permissions : "Authorization__PermissionSets__${i}__Permissions__${j}" => permission }
+    )])...)
+  ) : {}
   env_maps = concat([
     local.queue.generated_env_vars,
     local.object.generated_env_vars,
     local.database.generated_env_vars,
     local.logging_env_vars,
     var.custom_env_vars,
-    local.partition_env_vars
+    local.partition_env_vars,
+    local.authorization_env_vars
   ], module.tracing[*].generated_env_vars)
   mounts              = merge(local.database.core_mounts, local.object.core_mounts, local.queue.core_mounts)
   environment         = merge(local.env_maps...)
