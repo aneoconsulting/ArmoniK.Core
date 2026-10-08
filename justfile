@@ -397,6 +397,54 @@ runHtcmock: buildHtcmockClient
     -e GrpcClient__Endpoint={{endpoint}} \
     {{HTCMOCK_CLIENT_IMAGE}}
 
+# Run HtcMock through the mTLS ingress with the generated client certificate
+# Runs as the host user because terraform writes the client key with 0600 permissions
+runHtcmockMtls: buildHtcmockClient
+  docker run {{net_arg}} --rm \
+    --user "$(id -u):$(id -g)" \
+    -v {{justfile_directory()}}/terraform/generated/ingress_mtls:/certs:ro \
+    -e HtcMock__NTasks={{ntasks}} \
+    -e HtcMock__TotalCalculationTime={{htcmock_time}} \
+    -e HtcMock__DataSize={{htcmock_datasize}} \
+    -e HtcMock__MemorySize={{htcmock_memsize}} \
+    -e HtcMock__SubTasksLevels={{htcmock_levels}} \
+    -e HtcMock__EnableFastCompute={{htcmock_fast_compute}} \
+    -e HtcMock__EnableUseLowMem={{htcmock_low_mem}} \
+    -e HtcMock__EnableSmallOutput={{htcmock_small_output}} \
+    -e HtcMock__Partition={{partition}} \
+    -e HtcMock__PurgeData={{htcmock_purge_data}} \
+    -e HtcMock__TaskRpcException={{htcmock_task_rpc_exception}} \
+    -e HtcMock__TaskError={{htcmock_task_error}} \
+    -e GrpcClient__Endpoint=https://ingress_mtls:9443 \
+    -e GrpcClient__CaCert=/certs/server/ca.crt \
+    -e GrpcClient__CertPem=/certs/client/client.crt \
+    -e GrpcClient__KeyPem=/certs/client/client.key \
+    {{HTCMOCK_CLIENT_IMAGE}}
+
+# Run HtcMock against an ingress that does not verify client certificates, sending the genuine
+# mTLS client certificate as the X-Forwarded-Client-Cert header: the ingress must drop it
+# Use with tools/expect-refusal.sh on an enforcing deployment
+runHtcmockForgedCert ingress="ingress_tls" scheme="https": buildHtcmockClient
+  #!/usr/bin/env bash
+  set -euo pipefail
+  ca=()
+  port=9080
+  if [ "{{scheme}}" = "https" ]; then
+    ca=(-e "GrpcClient__CaCert=/gen/{{ingress}}/server/ca.crt")
+    port=9443
+  fi
+  docker run {{net_arg}} --rm \
+    --user "$(id -u):$(id -g)" \
+    -v {{justfile_directory()}}/terraform/generated:/gen:ro \
+    -e HtcMock__NTasks={{ntasks}} \
+    -e HtcMock__TotalCalculationTime={{htcmock_time}} \
+    -e HtcMock__SubTasksLevels=1 \
+    -e HtcMock__Partition={{partition}} \
+    -e GrpcClient__Endpoint={{scheme}}://{{ingress}}:$port \
+    "${ca[@]}" \
+    -e GrpcClient__ForgedClientCert=/gen/ingress_mtls/client/client.crt \
+    {{HTCMOCK_CLIENT_IMAGE}}
+
 # Run Bench test client against a running deployment
 # Note: always rebuilds the client image to pick up local changes
 # Override any variable: just ntasks=1000 bench_payload_size=1000 runBench
