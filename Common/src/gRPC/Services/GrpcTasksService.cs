@@ -29,6 +29,7 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -194,9 +195,9 @@ public class GrpcTasksService : Task.TasksBase
                          request.Sort.Field.TaskOptionGenericField.Field);
     }
 
-    var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
-                                                               ? data => true
-                                                               : request.Filters.ToTaskDataFilter(),
+    var (tasks, totalCount) = await taskTable.ListTasksAsync(context.RestrictListing<TaskData>(request.Filters is null
+                                                                 ? data => true
+                                                                 : request.Filters.ToTaskDataFilter()),
                                                              request.Sort is null
                                                                ? data => data.TaskId
                                                                : request.Sort.ToField(),
@@ -328,9 +329,9 @@ public class GrpcTasksService : Task.TasksBase
            {
              Status =
              {
-               (await taskTable_.Secondary.CountTasksAsync(request.Filters is null
-                                                             ? data => true
-                                                             : request.Filters.ToTaskDataFilter(),
+               (await taskTable_.Secondary.CountTasksAsync(context.RestrictListing<TaskData>(request.Filters is null
+                                                               ? data => true
+                                                               : request.Filters.ToTaskDataFilter()),
                                                            context.CancellationToken)
                                 .ConfigureAwait(false)).Select(count => new StatusCount
                                                                         {
@@ -359,9 +360,9 @@ public class GrpcTasksService : Task.TasksBase
                          request.Sort.Field.TaskOptionGenericField.Field);
     }
 
-    var (tasks, totalCount) = await taskTable.ListTasksAsync(request.Filters is null
-                                                               ? data => true
-                                                               : request.Filters.ToTaskDataFilter(),
+    var (tasks, totalCount) = await taskTable.ListTasksAsync(context.RestrictListing<TaskData>(request.Filters is null
+                                                                 ? data => true
+                                                                 : request.Filters.ToTaskDataFilter()),
                                                              request.Sort is null
                                                                ? data => data.TaskId
                                                                : request.Sort.ToField(),
