@@ -39,4 +39,19 @@ public class LocalStorage
     [UsedImplicitly]
     init;
   } = 64 * 1024;
+
+  /// <summary>
+  ///   If larger than 0, specify how many characters of the keys are used as the folder prefix.
+  /// </summary>
+  /// <example>
+  ///   If <see cref="Path" /> is "/tmp/ArmoniK", <see cref="SplitPathAt" /> is 3, and key is
+  ///   "123e4567-e89b-12d3-a456-426614174000":
+  ///   its full path will be "/tmp/ArmoniK/123/e4567-e89b-12d3-a456-426614174000"
+  /// </example>
+  public int SplitPathAt
+  {
+    get;
+    [UsedImplicitly]
+    init;
+  } = 3;
 }
