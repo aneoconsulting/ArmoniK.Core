@@ -134,6 +134,7 @@ internal class ExceptionInterceptorTests
                                                                       typeof(TaskAlreadyExistsException),
                                                                       typeof(WorkerDownException),
                                                                       typeof(QueueInsertionFailedException),
+                                                                      typeof(GrantAlreadyExistsException),
                                                                     };
 
   [Test]
