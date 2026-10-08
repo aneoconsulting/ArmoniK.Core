@@ -18,9 +18,14 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Storage;
+
+using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Enforcement;
 
@@ -32,36 +37,140 @@ public interface IDecisionEngineProvider
   /// <summary>
   ///   The decision engine over the grants in force
   /// </summary>
-  DecisionEngine Engine { get; }
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>The engine</returns>
+  ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default);
 }
 
 /// <summary>
-///   Decision engine over the grants and permission sets of the configuration
+///   Decision engine over the grants and permission sets stored, read again once they are older than
+///   <see cref="AuthorizationOptions.GrantCacheTtl" />
 /// </summary>
-public class ConfiguredDecisionEngineProvider : IDecisionEngineProvider
+public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDisposable
 {
+  private readonly AuthorizationAudit                    audit_;
+  private readonly ILogger<StoredDecisionEngineProvider> logger_;
+  private readonly SemaphoreSlim                         refresh_ = new(1);
+  private readonly IAuthorizationTable                   table_;
+  private readonly TimeProvider                          time_;
+  private readonly TimeSpan                              ttl_;
+  private          (DecisionEngine Engine, DateTimeOffset LoadedAt)? cached_;
+
   /// <summary>
-  ///   Build the engine from the configuration
+  ///   Build the provider
   /// </summary>
-  /// <param name="options">Options of the authorization</param>
-  /// <exception cref="InvalidOperationException">A permission set or a grant of the configuration is refused</exception>
-  public ConfiguredDecisionEngineProvider(AuthorizationOptions options)
+  public StoredDecisionEngineProvider(IAuthorizationTable                   table,
+                                      AuthorizationOptions                  options,
+                                      AuthorizationAudit                    audit,
+                                      TimeProvider                          time,
+                                      ILogger<StoredDecisionEngineProvider> logger)
   {
-    var sets = PermissionSets(options.PermissionSets);
-
-    Engine = DecisionEngine.Build(Grants(options.Grants),
-                                  sets,
-                                  out var rejected);
-
-    if (rejected.Count != 0)
-    {
-      throw new InvalidOperationException($"The configuration holds grants that are refused: {string.Join("; ", rejected.Select(r => r.Error.Message))}");
-    }
+    table_  = table;
+    audit_  = audit;
+    time_   = time;
+    logger_ = logger;
+    ttl_    = options.GrantCacheTtl;
   }
 
   /// <inheritdoc />
-  public DecisionEngine Engine { get; }
+  public void Dispose()
+    => refresh_.Dispose();
 
+  /// <inheritdoc />
+  /// <remarks>
+  ///   When the grants cannot be read, the engine read before is used for at most one more period, then the error is
+  ///   thrown so that requests are refused.
+  /// </remarks>
+  public async ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
+  {
+    if (Fresh(ttl_) is { } engine)
+    {
+      return engine;
+    }
+
+    await refresh_.WaitAsync(cancellationToken)
+                  .ConfigureAwait(false);
+    try
+    {
+      if (Fresh(ttl_) is { } refreshed)
+      {
+        return refreshed;
+      }
+
+      try
+      {
+        var loaded = await LoadAsync(cancellationToken)
+                       .ConfigureAwait(false);
+        cached_ = (loaded, time_.GetUtcNow());
+        return loaded;
+      }
+      catch (Exception e) when (e is not OperationCanceledException && Fresh(2 * ttl_) is not null)
+      {
+        logger_.LogWarning(e,
+                           "Grants could not be read, using the grants read before");
+        return cached_!.Value.Engine;
+      }
+    }
+    finally
+    {
+      refresh_.Release();
+    }
+  }
+
+  private DecisionEngine? Fresh(TimeSpan age)
+    => cached_ is var (engine, loadedAt) && time_.GetUtcNow() - loadedAt < age
+         ? engine
+         : null;
+
+  private async Task<DecisionEngine> LoadAsync(CancellationToken cancellationToken)
+  {
+    var sets = new Dictionary<string, PermissionSet>(StringComparer.Ordinal);
+
+    await foreach (var stored in table_.ListPermissionSetsAsync(cancellationToken)
+                                       .ConfigureAwait(false))
+    {
+      try
+      {
+        sets[stored.Name] = PermissionSet.FromNames(stored.Name,
+                                                    stored.Version,
+                                                    stored.Permissions);
+      }
+      catch (InvalidPermissionSetException e)
+      {
+        // Left out: the grants naming it are refused below
+        audit_.RecordFault($"permission set {stored.Name}",
+                           e.Message);
+      }
+    }
+
+    var grants = await table_.ListGrantsAsync(cancellationToken)
+                             .Select(grant => new GrantDefinition(grant.GrantId,
+                                                                  grant.Principal,
+                                                                  grant.PermissionSet,
+                                                                  grant.Condition))
+                             .ToListAsync(cancellationToken)
+                             .ConfigureAwait(false);
+
+    var engine = DecisionEngine.Build(grants,
+                                      sets,
+                                      out var rejected);
+
+    // A refused grant is left out, never read without its condition
+    foreach (var (grant, error) in rejected)
+    {
+      audit_.RecordFault($"grant {grant.Id}",
+                         error.Message);
+    }
+
+    return engine;
+  }
+}
+
+/// <summary>
+///   Grants and permission sets written by the deployment configuration
+/// </summary>
+public static class AuthorizationConfiguration
+{
   /// <summary>
   ///   The shipped permission sets, redefined or completed by the configuration
   /// </summary>

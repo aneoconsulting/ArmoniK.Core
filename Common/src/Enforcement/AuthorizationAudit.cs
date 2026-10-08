@@ -81,6 +81,34 @@ public class AuthorizationAudit
                                                                                      grant.Condition?.ToString()))
                                                      .ToList()));
 
+  /// <summary>
+  ///   Record a grant or a permission set that cannot be used, and is therefore left out of every decision
+  /// </summary>
+  /// <param name="subject">What cannot be used</param>
+  /// <param name="reason">Why</param>
+  public void RecordFault(string subject,
+                          string reason)
+    => logger_.LogWarning("Authorization Fault on {Subject}: {Reason}",
+                          subject,
+                          reason);
+
+  /// <summary>
+  ///   Record a change to the grants or the permission sets
+  /// </summary>
+  /// <param name="actor">Who made the change, <c>config</c> for the deployment configuration</param>
+  /// <param name="change">What changed: GrantCreated, GrantDeleted, PermissionSetChanged, PermissionSetDeleted</param>
+  /// <param name="subject">Grant or permission set changed</param>
+  /// <param name="details">Content of the grant, or old and new versions and contents of the set</param>
+  public void RecordChange(string actor,
+                           string change,
+                           string subject,
+                           object details)
+    => logger_.LogInformation("Authorization change {Change} of {Subject} by {Actor} {@Details}",
+                              change,
+                              subject,
+                              actor,
+                              details);
+
   private sealed record AuditGrant(string  Id,
                                    string  Principal,
                                    string  PermissionSet,
