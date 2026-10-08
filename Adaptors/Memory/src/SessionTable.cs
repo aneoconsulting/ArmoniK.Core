@@ -65,6 +65,8 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
                                           TaskOptions         defaultOptions,
+                                          string?             owner,
+                                          IEnumerable<string> createdUnder,
                                           CancellationToken   cancellationToken = default)
   {
     var rootSessionId = uuidGenerator_.GenerateUuid()
@@ -74,7 +76,11 @@ public class SessionTable : ISessionTable
                     new SessionData(rootSessionId,
                                     SessionStatus.Running,
                                     partitionIds.AsIList(),
-                                    defaultOptions));
+                                    defaultOptions)
+                    {
+                      Owner        = owner,
+                      CreatedUnder = createdUnder.ToList(),
+                    });
     return Task.FromResult(rootSessionId);
   }
 
