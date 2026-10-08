@@ -17,10 +17,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
@@ -43,6 +45,8 @@ public static class AuthorizationState
   private const string EngineKey     = "ArmoniK.Authorization.Engine";
   private const string AuthorshipKey = "ArmoniK.Authorization.Authorship";
   private const string FilterKey     = "ArmoniK.Authorization.Filter";
+  private const string ResultsKey    = "ArmoniK.Authorization.Results";
+  private const string SessionsKey   = "ArmoniK.Authorization.Sessions";
 
   internal static void Set(ServerCallContext   context,
                            AuthenticatedCaller caller,
@@ -55,6 +59,42 @@ public static class AuthorizationState
   internal static void SetAuthorship(ServerCallContext context,
                                      SessionAuthorship authorship)
     => context.UserState[AuthorshipKey] = authorship;
+
+  internal static void SetResolvedResults(ServerCallContext   context,
+                                          IEnumerable<Result> results)
+    => context.UserState[ResultsKey] = results.ToDictionary(result => result.ResultId);
+
+  internal static void SetResolvedSessions(ServerCallContext        context,
+                                           IEnumerable<SessionData> sessions)
+    => context.UserState[SessionsKey] = sessions.ToDictionary(session => session.SessionId);
+
+  /// <summary>
+  ///   A result read to decide the call, so that a read-only handler does not read it again
+  /// </summary>
+  /// <param name="context">Context of the call</param>
+  /// <param name="resultId">Identifier of the result</param>
+  /// <returns>The result, null when authorization is disabled or did not read it</returns>
+  /// <remarks>Read before the handler runs: a handler changing the result must read it itself.</remarks>
+  public static Result? ResolvedResult(this ServerCallContext context,
+                                       string                 resultId)
+    => context.UserState.TryGetValue(ResultsKey,
+                                     out var results)
+         ? ((Dictionary<string, Result>)results).GetValueOrDefault(resultId)
+         : null;
+
+  /// <summary>
+  ///   A session read to decide the call, so that a read-only handler does not read it again
+  /// </summary>
+  /// <param name="context">Context of the call</param>
+  /// <param name="sessionId">Identifier of the session</param>
+  /// <returns>The session, null when authorization is disabled or did not read it</returns>
+  /// <remarks>Read before the handler runs: a handler changing the session must read it itself.</remarks>
+  public static SessionData? ResolvedSession(this ServerCallContext context,
+                                             string                 sessionId)
+    => context.UserState.TryGetValue(SessionsKey,
+                                     out var sessions)
+         ? ((Dictionary<string, SessionData>)sessions).GetValueOrDefault(sessionId)
+         : null;
 
   internal static void SetListingFilter(ServerCallContext context,
                                         LambdaExpression  filter)
