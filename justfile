@@ -24,6 +24,12 @@ seq          := "true"           # If true, deploy Seq for structured log search
 socket_type  := "unixdomainsocket" # Socket type for PollingAgent↔Worker communication: unixdomainsocket or tcp
 cinit        := "true"           # If true, run a one-shot init container to initialize the database before services start; services self-initialize when false
 authz        := "false"          # If true, authorize requests with the grants of TF_VAR_authorization
+keycloak     := "false"          # If true, deploy Keycloak and validate tokens against it
+kc_user          := "alice"          # Keycloak user; holds the modelling-team role
+kc_password      := "alice"
+kc_client_id     := "armonik-client" # other-client mints tokens for another audience
+kc_client_secret := "armonik-secret"
+kc_token         := ""               # Token presented by runHtcmockTokenRaw
 
 # Shared test parameters
 ntasks    := "100"
@@ -72,12 +78,15 @@ export TF_VAR_enable_seq        := seq
 export TF_VAR_enable_prometheus := prometheus
 export TF_VAR_socket_type       := socket_type
 export TF_VAR_container_init    := cinit
+export TF_VAR_enable_keycloak   := keycloak
 
-# Grants for the generated mTLS client certificate (cn:client): create sessions in the default partition and own them,
-# plus what sharing and delegation confer (access model v0.98, section 9)
+# Grants for the generated mTLS client certificate (cn:client) and the Keycloak role modelling-team: create sessions in
+# the default partition and own them, plus what sharing and delegation confer (access model v0.98, section 9)
 export TF_VAR_authorization := if authz == "true" { '{ enabled = true, grants = [ ' +
   '{ id = "client-create", principal = "cn:client", permission_set = "session-create", condition = "request.partition == \"TestPartition0\"" }, ' +
   '{ id = "client-own", principal = "cn:client", permission_set = "session-own", condition = "session.owner == request.caller && grant.principal in session.createdUnder" }, ' +
+  '{ id = "team-create", principal = "role:modelling-team", permission_set = "session-create", condition = "request.partition == \"TestPartition0\"" }, ' +
+  '{ id = "team-own", principal = "role:modelling-team", permission_set = "session-own", condition = "session.owner == request.caller && grant.principal in session.createdUnder" }, ' +
   '{ id = "share", principal = "*", permission_set = "session-view", condition = "request.caller in session.sharedWith" }, ' +
   '{ id = "delegate", principal = "*", permission_set = "session-own", condition = "request.caller in session.delegatedTo" } ] }'
 } else { '{}' }
@@ -429,6 +438,55 @@ runHtcmockMtls: buildHtcmockClient
     -e GrpcClient__CaCert=/certs/server/ca.crt \
     -e GrpcClient__CertPem=/certs/client/client.crt \
     -e GrpcClient__KeyPem=/certs/client/client.key \
+    {{HTCMOCK_CLIENT_IMAGE}}
+
+# Fetch a token from Keycloak for the user (field: access_token or id_token)
+kcToken field="access_token":
+  #!/usr/bin/env bash
+  set -euo pipefail
+  # 8180 is the exposed_port of the keycloak module
+  curl -sf -X POST "http://localhost:8180/realms/armonik/protocol/openid-connect/token" \
+    -d grant_type=password \
+    --data-urlencode "client_id={{kc_client_id}}" \
+    --data-urlencode "client_secret={{kc_client_secret}}" \
+    --data-urlencode "username={{kc_user}}" \
+    --data-urlencode "password={{kc_password}}" \
+    -d scope=openid \
+    | python3 -c 'import json,sys; print(json.load(sys.stdin)["{{field}}"])'
+
+# Run HtcMock through the TLS ingress with a token fetched from Keycloak
+runHtcmockToken: buildHtcmockClient
+  #!/usr/bin/env bash
+  set -euo pipefail
+  # A nested just starts from the defaults: forward every variable runHtcmockTokenRaw reads
+  TOKEN="$(just kc_client_id={{kc_client_id}} kc_client_secret={{kc_client_secret}} kc_user={{kc_user}} kc_password={{kc_password}} kcToken)"
+  just tag={{tag}} kc_token="$TOKEN" partition={{partition}} ntasks={{ntasks}} \
+       htcmock_time={{htcmock_time}} htcmock_datasize={{htcmock_datasize}} htcmock_memsize={{htcmock_memsize}} \
+       htcmock_levels={{htcmock_levels}} htcmock_fast_compute={{htcmock_fast_compute}} \
+       htcmock_low_mem={{htcmock_low_mem}} htcmock_small_output={{htcmock_small_output}} \
+       htcmock_purge_data={{htcmock_purge_data}} htcmock_task_rpc_exception={{htcmock_task_rpc_exception}} \
+       htcmock_task_error={{htcmock_task_error}} runHtcmockTokenRaw
+
+# Run HtcMock through the TLS ingress with the token in kc_token, valid or not
+runHtcmockTokenRaw: buildHtcmockClient
+  docker run {{net_arg}} --rm \
+    --user "$(id -u):$(id -g)" \
+    -v {{justfile_directory()}}/terraform/generated/ingress_tls:/certs:ro \
+    -e HtcMock__NTasks={{ntasks}} \
+    -e HtcMock__TotalCalculationTime={{htcmock_time}} \
+    -e HtcMock__DataSize={{htcmock_datasize}} \
+    -e HtcMock__MemorySize={{htcmock_memsize}} \
+    -e HtcMock__SubTasksLevels={{htcmock_levels}} \
+    -e HtcMock__EnableFastCompute={{htcmock_fast_compute}} \
+    -e HtcMock__EnableUseLowMem={{htcmock_low_mem}} \
+    -e HtcMock__EnableSmallOutput={{htcmock_small_output}} \
+    -e HtcMock__Partition={{partition}} \
+    -e HtcMock__PurgeData={{htcmock_purge_data}} \
+    -e HtcMock__TaskRpcException={{htcmock_task_rpc_exception}} \
+    -e HtcMock__TaskError={{htcmock_task_error}} \
+    -e GrpcClient__Endpoint=https://ingress_tls:9443 \
+    -e GrpcClient__CaCert=/certs/server/ca.crt \
+    -e GrpcClient__BearerToken={{kc_token}} \
     {{HTCMOCK_CLIENT_IMAGE}}
 
 # Run HtcMock against an ingress that does not verify client certificates, sending the genuine

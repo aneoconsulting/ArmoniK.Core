@@ -168,6 +168,17 @@ variable "log_driver_image" {
   default = "fluent/fluent-bit:latest"
 }
 
+variable "keycloak_image" {
+  type    = string
+  default = "quay.io/keycloak/keycloak:26.0"
+}
+
+variable "enable_keycloak" {
+  description = "Deploy a Keycloak identity provider and validate tokens against it"
+  type        = bool
+  default     = false
+}
+
 variable "seq_image" {
   type    = string
   default = "datalust/seq:latest"
