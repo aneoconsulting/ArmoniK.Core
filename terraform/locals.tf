@@ -34,6 +34,13 @@ locals {
       { for j, permission in set.permissions : "Authorization__PermissionSets__${i}__Permissions__${j}" => permission }
     )])...)
   ) : {}
+  # Keycloak issues a stable `sub`, and is reached over plain HTTP in the network
+  keycloak_env_vars = var.enable_keycloak ? {
+    "Identity__Authority"            = one(module.keycloak[*].authority)
+    "Identity__Audience"             = one(module.keycloak[*].audience)
+    "Identity__SubjectClaim"         = "sub"
+    "Identity__RequireHttpsMetadata" = "false"
+  } : {}
   env_maps = concat([
     local.queue.generated_env_vars,
     local.object.generated_env_vars,
@@ -41,7 +48,8 @@ locals {
     local.logging_env_vars,
     var.custom_env_vars,
     local.partition_env_vars,
-    local.authorization_env_vars
+    local.authorization_env_vars,
+    local.keycloak_env_vars
   ], module.tracing[*].generated_env_vars)
   mounts              = merge(local.database.core_mounts, local.object.core_mounts, local.queue.core_mounts)
   environment         = merge(local.env_maps...)
