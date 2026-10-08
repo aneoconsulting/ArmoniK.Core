@@ -65,6 +65,8 @@ resource "tls_private_key" "ingress_private_key" {
 resource "tls_cert_request" "ingress_cert_request" {
   count           = var.tls ? 1 : 0
   private_key_pem = tls_private_key.ingress_private_key.0.private_key_pem
+  # container name: clients inside the docker network reach the ingress by its name
+  dns_names = ["localhost", var.container.name]
   subject {
     country     = "France"
     common_name = "localhost"
