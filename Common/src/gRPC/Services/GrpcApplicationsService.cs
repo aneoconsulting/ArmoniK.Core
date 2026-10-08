@@ -26,6 +26,7 @@ using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -65,9 +66,9 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
                                                                         ServerCallContext       context)
   {
     using var measure = meter_.CountAndTime();
-    var (applications, totalCount) = await taskTable_.Secondary.ListApplicationsAsync(request.Filters is null
-                                                                                        ? data => true
-                                                                                        : request.Filters.ToApplicationFilter(),
+    var (applications, totalCount) = await taskTable_.Secondary.ListApplicationsAsync(context.RestrictListing<TaskData>(request.Filters is null
+                                                                                          ? data => true
+                                                                                          : request.Filters.ToApplicationFilter()),
                                                                                       request.Sort is null
                                                                                         ? new List<Expression<Func<Application, object?>>>
                                                                                           {

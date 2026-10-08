@@ -24,6 +24,7 @@ using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Auth.Authorization.Permissions;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Meter;
 
 using Grpc.Core;
@@ -61,6 +62,22 @@ public class GrpcAuthService : Authentication.AuthenticationBase
   {
     using var measure = meter_.CountAndTime();
     var       user    = new User();
+
+    if (context.DescribeCaller() is var (caller, description))
+    {
+      if (description.Admitted)
+      {
+        user.Username = caller.Caller.Identity.Value;
+        user.Roles.AddRange(caller.Caller.Roles.Select(role => role.Value)
+                                  .Concat(description.PermissionSets));
+        user.Permissions.AddRange(description.Permissions);
+      }
+
+      return Task.FromResult(new GetCurrentUserResponse
+                             {
+                               User = user,
+                             });
+    }
 
     // No authentication required, anonymous user with all permissions
     if (!requireAuthentication_)

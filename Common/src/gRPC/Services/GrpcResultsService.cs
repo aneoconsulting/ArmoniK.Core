@@ -31,6 +31,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -137,9 +138,9 @@ public class GrpcResultsService : Results.ResultsBase
                         ? resultTable_.Secondary
                         : resultTable_;
 
-    var results = await resultTable.ListResultsAsync(request.Filters is null
-                                                       ? data => true
-                                                       : request.Filters.ToResultFilter(),
+    var results = await resultTable.ListResultsAsync(context.RestrictListing<Result>(request.Filters is null
+                                                         ? data => true
+                                                         : request.Filters.ToResultFilter()),
                                                      request.Sort is null
                                                        ? result => result.ResultId
                                                        : request.Sort.ToField(),

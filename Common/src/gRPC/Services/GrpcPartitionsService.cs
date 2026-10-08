@@ -24,6 +24,7 @@ using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -95,9 +96,9 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
                                                                     ServerCallContext     context)
   {
     using var measure = meter_.CountAndTime();
-    var partitions = await partitionTable_.Secondary.ListPartitionsAsync(request.Filters is null
-                                                                           ? data => true
-                                                                           : request.Filters.ToPartitionFilter(),
+    var partitions = await partitionTable_.Secondary.ListPartitionsAsync(context.RestrictListing<PartitionData>(request.Filters is null
+                                                                             ? data => true
+                                                                             : request.Filters.ToPartitionFilter()),
                                                                          request.Sort is null
                                                                            ? data => data.PartitionId
                                                                            : request.Sort.ToField(),
