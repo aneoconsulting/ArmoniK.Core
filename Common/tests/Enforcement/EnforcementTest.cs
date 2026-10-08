@@ -331,8 +331,6 @@ public class AddArmoniKAuthorizationTest
     var services = new ServiceCollection();
 
     Assert.That(services.AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
-                                                               ("Authenticator:RequireAuthentication", "false"),
-                                                               ("Authenticator:RequireAuthorization", "false"),
                                                                ("Authorization:Grants:0:Id", "admin"),
                                                                ("Authorization:Grants:0:Principal", "role:platform"),
                                                                ("Authorization:Grants:0:PermissionSet", "cluster-admin"))),
@@ -345,8 +343,6 @@ public class AddArmoniKAuthorizationTest
   [TestCase("")]
   public void ARefusedGrantPreventsStarting(string condition)
     => Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
-                                                                                       ("Authenticator:RequireAuthentication", "false"),
-                                                                                       ("Authenticator:RequireAuthorization", "false"),
                                                                                        ("Authorization:Grants:0:Id", "broken"),
                                                                                        ("Authorization:Grants:0:Principal", "role:team"),
                                                                                        ("Authorization:Grants:0:PermissionSet", "session-own"),
@@ -354,17 +350,26 @@ public class AddArmoniKAuthorizationTest
                    Throws.InstanceOf<InvalidOperationException>()
                          .With.Message.Contains("broken"));
 
-  [Test]
-  public void LegacyAuthenticationCannotBeCombined()
-    => Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
-                                                                                       ("Authenticator:RequireAuthentication", "true"))),
-                   Throws.InstanceOf<InvalidOperationException>());
+  [TestCase("Authenticator:RequireAuthentication",
+            "false")]
+  [TestCase("InitServices:Authentication:Users:0",
+            "{}")]
+  [TestCase("Components:AuthenticationStorage",
+            "ArmoniK.Adapters.MongoDB.AuthenticationTable")]
+  public void RemovedAuthenticationSettingsRequireAnExplicitChoice(string key,
+                                                                   string value)
+  {
+    Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration((key, value))),
+                Throws.InstanceOf<InvalidOperationException>()
+                      .With.Message.Contains(key.Split(':')[0]));
+    Assert.That(new ServiceCollection().AddArmoniKAuthorization(Configuration((key, value),
+                                                                              ("Authorization:Enabled", "false"))),
+                Is.False);
+  }
 
   [Test]
   public void AnAuthorityRequiresAnAudience()
     => Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
-                                                                                       ("Authenticator:RequireAuthentication", "false"),
-                                                                                       ("Authenticator:RequireAuthorization", "false"),
                                                                                        ("Identity:Authority", "https://idp.example"))),
                    Throws.InstanceOf<InvalidOperationException>()
                          .With.Message.Contains("Audience"));

@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Adapters.PostgreSQL.Common;
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
@@ -96,8 +95,7 @@ public static class ServiceCollectionExt
 
     var components = configuration.GetSection(Components.SettingSection);
 
-    var usesPostgres = components["TableStorage"]                           == "ArmoniK.Adapters.PostgreSQL.TableStorage" ||
-                       components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.PostgreSQL.AuthenticationTable";
+    var usesPostgres = components["TableStorage"] == "ArmoniK.Adapters.PostgreSQL.TableStorage";
 
     if (components["TableStorage"] == "ArmoniK.Adapters.PostgreSQL.TableStorage")
     {
@@ -135,25 +133,6 @@ public static class ServiceCollectionExt
                                                      ILogger                 logger)
   {
     services.TryAddSingleton(_ => configuration.GetPostgresOptions(logger));
-    return services;
-  }
-
-  /// <summary>
-  ///   Add the storage provider for the client authentication system to the service collection
-  /// </summary>
-  /// <param name="services">Services</param>
-  /// <param name="configuration">Configuration</param>
-  /// <returns>Services</returns>
-  [PublicAPI]
-  public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager    configuration)
-  {
-    var components = configuration.GetSection(Components.SettingSection);
-    if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.PostgreSQL.AuthenticationTable")
-    {
-      services.AddSingleton<IAuthenticationTable, AuthenticationTable>();
-    }
-
     return services;
   }
 }

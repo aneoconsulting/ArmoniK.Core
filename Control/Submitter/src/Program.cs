@@ -26,7 +26,6 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.PostgreSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.DynamicLoading;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC;
@@ -57,7 +56,6 @@ using OpenTelemetry.Trace;
 
 using Serilog;
 
-using ServiceCollectionExt = ArmoniK.Core.Adapters.PostgreSQL.ServiceCollectionExt;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -183,27 +181,10 @@ public static class Program
                          });
       }
 
-      ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
-                                                                   builder.Configuration);
-      Adapters.MongoDB.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
-                                                                                    builder.Configuration);
-      builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
-                                                      out var authCache);
-
       builder.WebHost.UseKestrel(options =>
                                  {
                                    options.ListenAnyIP(1080,
-                                                       listenOptions =>
-                                                       {
-                                                         listenOptions.Protocols = HttpProtocols.Http2;
-                                                         listenOptions.Use(async (context,
-                                                                                  func) =>
-                                                                           {
-                                                                             await func.Invoke()
-                                                                                       .ConfigureAwait(false);
-                                                                             authCache.FlushConnection(context.ConnectionId);
-                                                                           });
-                                                       });
+                                                       listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
                                    options.ListenAnyIP(1081,
                                                        listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
                                  });
@@ -215,13 +196,10 @@ public static class Program
         app.UseDeveloperExceptionPage();
       }
 
-      app.UseAuthentication();
-
       app.UseRouting();
       app.UseGrpcWeb();
       app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Connection.LocalPort == 1081 && context.Request.Path == "/metrics");
 
-      app.UseAuthorization();
       app.UseSerilogRequestLogging();
 
       app.MapGrpcService<GrpcSubmitterService>()
@@ -277,7 +255,6 @@ public static class Program
       var resultTable          = app.Services.GetRequiredService<IResultTable>();
       var partitionTable       = app.Services.GetRequiredService<IPartitionTable>();
       var sessionTable         = app.Services.GetRequiredService<ISessionTable>();
-      var authTable            = app.Services.GetRequiredService<IAuthenticationTable>();
       var taskObjectFactory    = objectStorage.Init(CancellationToken.None);
       var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
 
@@ -289,8 +266,6 @@ public static class Program
                           .ConfigureAwait(false);
       await sessionTable.Init(CancellationToken.None)
                         .ConfigureAwait(false);
-      await authTable.Init(CancellationToken.None)
-                     .ConfigureAwait(false);
 
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);

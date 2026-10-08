@@ -23,7 +23,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.StateMachines;
@@ -41,7 +40,6 @@ using Agent = ArmoniK.Api.gRPC.V1.Agent.Agent;
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Api.gRPC.V1.Agent.Agent" />
-[IgnoreAuthentication]
 public class GrpcAgentService : Agent.AgentBase
 {
   private IAgent? agent_;

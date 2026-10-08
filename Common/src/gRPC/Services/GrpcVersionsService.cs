@@ -19,17 +19,13 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Versions;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Versions" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcVersionsService : Versions.VersionsBase
 {
   /// <summary>
@@ -45,8 +41,6 @@ public class GrpcVersionsService : Versions.VersionsBase
                                                             .ProductVersion ?? "Unknown";
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcVersionsService),
-                      nameof(ListVersions))]
   public override Task<ListVersionsResponse> ListVersions(ListVersionsRequest request,
                                                           ServerCallContext   context)
     => Task.FromResult(new ListVersionsResponse

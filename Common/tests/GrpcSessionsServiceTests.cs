@@ -69,8 +69,7 @@ public class GrpcSessionsServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder => builder.MapGrpcService<GrpcSessionsService>(),
                                                 true);
 
@@ -128,8 +127,7 @@ public class GrpcSessionsServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddSingleton(httpClient)
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcSessionsService>();
@@ -309,8 +307,7 @@ public class GrpcSessionsServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddSingleton(httpClient)
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcSessionsService>();
@@ -421,8 +418,7 @@ public class GrpcSessionsServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcSessionsService>();
