@@ -24,7 +24,9 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Submitter;
+using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Convertors;
@@ -135,6 +137,194 @@ public class SessionTableTestBase
 
   public virtual void GetSessionTableInstance()
   {
+  }
+
+  [Test]
+  public async Task AuthorizationFieldsRoundTrip()
+  {
+    if (RunTests)
+    {
+      var sessionId = await SessionTable!.SetSessionDataAsync(new[]
+                                                              {
+                                                                "part1",
+                                                              },
+                                                              Options,
+                                                              "oid:alice",
+                                                              new[]
+                                                              {
+                                                                "role:team",
+                                                                "*",
+                                                              },
+                                                              CancellationToken.None)
+                                         .ConfigureAwait(false);
+
+      var session = await SessionTable.GetSessionAsync(sessionId,
+                                                       CancellationToken.None)
+                                      .ConfigureAwait(false);
+      var legacy = await SessionTable.GetSessionAsync(rootSessionId1_!,
+                                                      CancellationToken.None)
+                                     .ConfigureAwait(false);
+
+      Assert.That(session.Owner,
+                  Is.EqualTo("oid:alice"));
+      Assert.That(session.CreatedUnder,
+                  Is.EqualTo(new[]
+                             {
+                               "role:team",
+                               "*",
+                             }));
+      Assert.That(session.SharedWith,
+                  Is.Empty);
+      Assert.That(session.DelegatedTo,
+                  Is.Empty);
+      Assert.That(legacy.Owner,
+                  Is.Null);
+      Assert.That(legacy.CreatedUnder,
+                  Is.Empty);
+    }
+  }
+
+  // Each condition form, translated by the decision engine and run by the storage
+  [TestCase("session.owner == request.caller",
+            "owned")]
+  [TestCase("\"role:team\" in session.createdUnder",
+            "owned")]
+  [TestCase("\"role:other\" in session.createdUnder",
+            "owned,shared")]
+  [TestCase("grant.principal in session.createdUnder",
+            "owned")]
+  [TestCase("request.caller in session.sharedWith",
+            "shared")]
+  [TestCase("request.caller in session.delegatedTo",
+            "delegated")]
+  [TestCase("session.owner == request.caller && grant.principal in session.createdUnder",
+            "owned")]
+  [TestCase("session.owner == request.caller && \"role:other\" in session.createdUnder",
+            "owned")]
+  [TestCase("request.caller in session.sharedWith && \"role:team\" in session.createdUnder",
+            "")]
+  [TestCase("request.partition == \"part1\"",
+            "")]
+  public async Task ConditionPredicatesSelectTheSessionsTheyHoldOn(string condition,
+                                                                   string expected)
+  {
+    if (RunTests)
+    {
+      var ids = new Dictionary<string, string>
+                {
+                  ["owned"] = await SessionTable!.SetSessionDataAsync(new[]
+                                                                      {
+                                                                        "part1",
+                                                                      },
+                                                                      Options,
+                                                                      "oid:alice",
+                                                                      new[]
+                                                                      {
+                                                                        "role:team",
+                                                                        "role:other",
+                                                                      },
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false),
+                  ["shared"] = await SessionTable.SetSessionDataAsync(new[]
+                                                                      {
+                                                                        "part1",
+                                                                      },
+                                                                      Options,
+                                                                      "oid:bob",
+                                                                      new[]
+                                                                      {
+                                                                        "role:other",
+                                                                      },
+                                                                      CancellationToken.None)
+                                                 .ConfigureAwait(false),
+                  ["delegated"] = await SessionTable.SetSessionDataAsync(new[]
+                                                                         {
+                                                                           "part1",
+                                                                         },
+                                                                         Options,
+                                                                         "oid:bob",
+                                                                         Array.Empty<string>(),
+                                                                         CancellationToken.None)
+                                                    .ConfigureAwait(false),
+                  ["legacy"] = rootSessionId1_!,
+                };
+
+      await SessionTable.UpdateOneSessionAsync(ids["shared"],
+                                               null,
+                                               new UpdateDefinition<SessionData>().Set(session => session.SharedWith,
+                                                                                       new List<string>
+                                                                                       {
+                                                                                         "oid:alice",
+                                                                                       }))
+                        .ConfigureAwait(false);
+      await SessionTable.UpdateOneSessionAsync(ids["delegated"],
+                                               null,
+                                               new UpdateDefinition<SessionData>().Set(session => session.DelegatedTo,
+                                                                                       new List<string>
+                                                                                       {
+                                                                                         "oid:alice",
+                                                                                       }))
+                        .ConfigureAwait(false);
+
+      var predicate = SessionPredicate.FromCondition(Condition.Parse(condition),
+                                                     SessionDataFields.Fields,
+                                                     "oid:alice",
+                                                     "role:team");
+
+      var found = await SessionTable.FindSessionsAsync(predicate,
+                                                       session => session.SessionId)
+                                    .ToListAsync()
+                                    .ConfigureAwait(false);
+
+      Assert.That(ids.Where(pair => found.Contains(pair.Value))
+                     .Select(pair => pair.Key),
+                  Is.EquivalentTo(expected.Split(',',
+                                                 StringSplitOptions.RemoveEmptyEntries)));
+    }
+  }
+
+  [Test]
+  public async Task CombinedConditionPredicatesRun()
+  {
+    if (RunTests)
+    {
+      var owned = await SessionTable!.SetSessionDataAsync(new[]
+                                                          {
+                                                            "part1",
+                                                          },
+                                                          Options,
+                                                          "oid:alice",
+                                                          new[]
+                                                          {
+                                                            "role:team",
+                                                          },
+                                                          CancellationToken.None)
+                                     .ConfigureAwait(false);
+
+      var any = SessionPredicate.Any(new[]
+                                     {
+                                       SessionPredicate.FromCondition(Condition.Parse("request.caller in session.sharedWith"),
+                                                                      SessionDataFields.Fields,
+                                                                      "oid:alice",
+                                                                      "role:team"),
+                                       SessionPredicate.FromCondition(Condition.Parse("session.owner == request.caller"),
+                                                                      SessionDataFields.Fields,
+                                                                      "oid:alice",
+                                                                      "role:team"),
+                                     });
+      var none = SessionPredicate.Any(Array.Empty<System.Linq.Expressions.Expression<Func<SessionData, bool>>>());
+
+      Assert.That(await SessionTable.FindSessionsAsync(any,
+                                                       session => session.SessionId)
+                                    .ToListAsync()
+                                    .ConfigureAwait(false),
+                  Does.Contain(owned));
+      Assert.That(await SessionTable.FindSessionsAsync(none,
+                                                       session => session.SessionId)
+                                    .ToListAsync()
+                                    .ConfigureAwait(false),
+                  Is.Empty);
+    }
   }
 
   [Test]
