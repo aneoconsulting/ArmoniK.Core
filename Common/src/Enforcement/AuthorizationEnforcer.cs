@@ -186,7 +186,7 @@ public class AuthorizationEnforcer
                                       rule,
                                       engine,
                                       rule.Extract!(request),
-                                      context.CancellationToken)
+                                      context)
             .ConfigureAwait(false);
           return;
         case RuleKind.Unsupported:
@@ -321,8 +321,10 @@ public class AuthorizationEnforcer
                                            MethodRule          rule,
                                            DecisionEngine      engine,
                                            RequestTargets      targets,
-                                           CancellationToken   cancellationToken)
+                                           ServerCallContext   context)
   {
+    var cancellationToken = context.CancellationToken;
+
     // A legacy filter naming nothing acts on every session: the permission must be held across the cluster
     if (targets.IsEmpty)
     {
@@ -390,12 +392,9 @@ public class AuthorizationEnforcer
                            .ToList();
     if (resultIds.Count != 0)
     {
+      // Whole rows, so that handlers do not read them again
       var found = await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
-                                                result => new
-                                                          {
-                                                            result.ResultId,
-                                                            result.SessionId,
-                                                          },
+                                                result => result,
                                                 cancellationToken)
                                     .ToListAsync(cancellationToken)
                                     .ConfigureAwait(false);
@@ -412,6 +411,8 @@ public class AuthorizationEnforcer
       }
 
       sessionIds.UnionWith(found.Select(result => result.SessionId));
+      AuthorizationState.SetResolvedResults(context,
+                                            found);
     }
 
     if (targets.SessionId is not null && targets.Sessions is null && sessionIds.Count > 1)
@@ -441,6 +442,9 @@ public class AuthorizationEnforcer
              "session not found");
       throw new SessionNotFoundException("Session not found");
     }
+
+    AuthorizationState.SetResolvedSessions(context,
+                                           sessions);
 
     var decisions = sessions.SelectMany(session => rule.Permissions.Select(permission => engine.DecideOnSession(caller.Caller,
                                                                                                                 permission,

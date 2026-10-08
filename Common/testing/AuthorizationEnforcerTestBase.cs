@@ -285,6 +285,45 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task WhatTheDecisionReadIsLeftForTheHandler()
+  {
+    if (RunTests)
+    {
+      var resultContext = await Authorize(Alice,
+                                          nameof(GrpcResultsService),
+                                          nameof(GrpcResultsService.GetResult),
+                                          new GetResultRequest
+                                          {
+                                            ResultId = "r-alice",
+                                          })
+                            .ConfigureAwait(false);
+      var sessionContext = await GetSession(Alice,
+                                            aliceSession_)
+                             .ConfigureAwait(false);
+
+      var stored = await ResultTable!.GetResult("r-alice")
+                                     .ConfigureAwait(false);
+
+      Assert.That(resultContext.ResolvedResult("r-alice"),
+                  Is.EqualTo(stored)
+                    .Using<Result>((a,
+                                    b) => a.ResultId == b.ResultId && a.SessionId == b.SessionId && a.Name == b.Name && a.Status == b.Status &&
+                                          a.OpaqueId.SequenceEqual(b.OpaqueId)));
+      Assert.That(resultContext.ResolvedSession(aliceSession_)
+                               ?.Owner,
+                  Is.EqualTo("cn:alice"));
+      Assert.That(sessionContext.ResolvedSession(aliceSession_)
+                                ?.CreatedUnder,
+                  Is.EqualTo(new[]
+                             {
+                               "role:modelling-team",
+                             }));
+      Assert.That(sessionContext.ResolvedResult("r-alice"),
+                  Is.Null);
+    }
+  }
+
+  [Test]
   public async Task SubmittingCannotUseAResultOfAnotherSession()
   {
     if (RunTests)
