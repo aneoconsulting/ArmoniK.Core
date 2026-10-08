@@ -15,48 +15,36 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Auth;
-using ArmoniK.Core.Base.Exceptions;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
-using ArmoniK.Core.Common.Auth.Authorization.Permissions;
+using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Meter;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Authentication" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcAuthService : Authentication.AuthenticationBase
 {
   private readonly FunctionExecutionMetrics<GrpcAuthService> meter_;
-  private readonly bool                                      requireAuthentication_;
-  private readonly bool                                      requireAuthorization_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="GrpcAuthService" /> class.
   /// </summary>
-  /// <param name="options">The options monitor for authenticator configuration.</param>
   /// <param name="meter">The metrics object for function execution.</param>
-  public GrpcAuthService(IOptionsMonitor<AuthenticatorOptions>     options,
-                         FunctionExecutionMetrics<GrpcAuthService> meter)
-  {
-    requireAuthentication_ = options.CurrentValue.RequireAuthentication;
-    requireAuthorization_  = requireAuthentication_ && options.CurrentValue.RequireAuthorization;
-    meter_                 = meter;
-  }
+  public GrpcAuthService(FunctionExecutionMetrics<GrpcAuthService> meter)
+    => meter_ = meter;
 
   /// <inheritdoc />
-  [IgnoreAuthorization]
+  /// <remarks>
+  ///   When authorization is enabled, the caller, its roles followed by the permission sets it holds, and its
+  ///   permissions written <c>permission@cluster</c> or <c>permission@condition</c>; nothing for a caller the cluster
+  ///   holds no grant for. When authorization is disabled, an anonymous caller holding every permission.
+  /// </remarks>
   public override Task<GetCurrentUserResponse> GetCurrentUser(GetCurrentUserRequest request,
                                                               ServerCallContext     context)
   {
@@ -72,47 +60,13 @@ public class GrpcAuthService : Authentication.AuthenticationBase
                                   .Concat(description.PermissionSets));
         user.Permissions.AddRange(description.Permissions);
       }
-
-      return Task.FromResult(new GetCurrentUserResponse
-                             {
-                               User = user,
-                             });
     }
-
-    // No authentication required, anonymous user with all permissions
-    if (!requireAuthentication_)
+    else
     {
       user.Username = "Anonymous";
-      user.Permissions.AddRange(ServicesPermissions.PermissionsLists[ServicesPermissions.All]
-                                                   .Select(p => p.ToString()));
-      return Task.FromResult(new GetCurrentUserResponse
-                             {
-                               User = user,
-                             });
+      user.Permissions.AddRange(Permission.All.Select(permission => permission.Name + "@cluster"));
     }
 
-
-    var principal = context.GetHttpContext()
-                           .User;
-    if (principal.Identity is not ({
-                                     IsAuthenticated   : true,
-                                     AuthenticationType: Authenticator.SchemeName,
-                                   } and UserIdentity userIdentity))
-    {
-      // Authenticated, but not with the required scheme or not authenticated or the identity is not of the right type... something's wrong
-      throw new ArmoniKException("Failed to get the authenticated user's info, something's wrong");
-    }
-
-    // Authentication is required, the user should have been authenticated to access this endpoint so we should have all the necessary information
-    user.Username = userIdentity.UserName;
-    // Do not return roles if authorization is not required
-    user.Roles.AddRange(requireAuthorization_
-                          ? userIdentity.Roles
-                          : Enumerable.Empty<string>());
-    // Return the user's permissions if authorization is required, otherwise they have all permissions
-    user.Permissions.AddRange(((IEnumerable<Permission>)(requireAuthorization_
-                                                           ? userIdentity.Permissions
-                                                           : ServicesPermissions.PermissionsLists[ServicesPermissions.All])).Select(p => p.ToString()));
     return Task.FromResult(new GetCurrentUserResponse
                            {
                              User = user,

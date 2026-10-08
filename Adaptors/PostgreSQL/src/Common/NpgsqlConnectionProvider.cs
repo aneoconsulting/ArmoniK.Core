@@ -303,61 +303,6 @@ ON CONFLICT (partition_id) DO NOTHING";
       await cmd.ExecuteNonQueryAsync(cancellationToken)
                .ConfigureAwait(false);
     }
-
-    foreach (var role in initDatabase_.Roles)
-    {
-      await using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
-INSERT INTO role_data (role_id, role_name, permissions)
-VALUES (@role_id, @role_name, @permissions)
-ON CONFLICT (role_id) DO NOTHING";
-      cmd.Parameters.AddWithValue("role_id",
-                                  role.RoleId);
-      cmd.Parameters.AddWithValue("role_name",
-                                  role.RoleName);
-      cmd.Parameters.AddWithValue("permissions",
-                                  NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                  role.Permissions);
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
-    }
-
-    foreach (var user in initDatabase_.Users)
-    {
-      await using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
-INSERT INTO user_data (user_id, username, roles)
-VALUES (@user_id, @username, @roles)
-ON CONFLICT (user_id) DO NOTHING";
-      cmd.Parameters.AddWithValue("user_id",
-                                  user.UserId);
-      cmd.Parameters.AddWithValue("username",
-                                  user.Username);
-      cmd.Parameters.AddWithValue("roles",
-                                  NpgsqlDbType.Array | NpgsqlDbType.Integer,
-                                  user.Roles);
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
-    }
-
-    foreach (var auth in initDatabase_.Auths)
-    {
-      await using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
-INSERT INTO auth_data (auth_id, user_id, cn, fingerprint)
-VALUES (@auth_id, @user_id, @cn, @fingerprint)
-ON CONFLICT (auth_id) DO NOTHING";
-      cmd.Parameters.AddWithValue("auth_id",
-                                  auth.AuthId);
-      cmd.Parameters.AddWithValue("user_id",
-                                  auth.UserId);
-      cmd.Parameters.AddWithValue("cn",
-                                  auth.Cn);
-      cmd.Parameters.AddWithValue("fingerprint",
-                                  (object?)auth.Fingerprint ?? DBNull.Value);
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
-    }
   }
 
   private static string BuildConnectionString(Options.PostgreSQL options)

@@ -29,8 +29,6 @@ using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
@@ -42,7 +40,6 @@ using Google.Protobuf;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -51,7 +48,6 @@ using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Results" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcResultsService : Results.ResultsBase
 {
   private readonly ILogger<GrpcResultsService>                  logger_;
@@ -99,8 +95,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(GetOwnerTaskId))]
   public override async Task<GetOwnerTaskIdResponse> GetOwnerTaskId(GetOwnerTaskIdRequest request,
                                                                     ServerCallContext     context)
   {
@@ -127,8 +121,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(ListResults))]
   public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
                                                               ServerCallContext  context)
   {
@@ -162,8 +154,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(CreateResultsMetaData))]
   public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                                   ServerCallContext            context)
   {
@@ -208,8 +198,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(CreateResults))]
   public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                                   ServerCallContext    context)
   {
@@ -285,8 +273,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(DeleteResultsData))]
   public override async Task<DeleteResultsDataResponse> DeleteResultsData(DeleteResultsDataRequest request,
                                                                           ServerCallContext        context)
   {
@@ -323,8 +309,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(DownloadResultData))]
   public override async Task DownloadResultData(DownloadResultDataRequest                       request,
                                                 IServerStreamWriter<DownloadResultDataResponse> responseStream,
                                                 ServerCallContext                               context)
@@ -347,8 +331,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(GetServiceConfiguration))]
   public override Task<ResultsServiceConfigurationResponse> GetServiceConfiguration(Empty             request,
                                                                                     ServerCallContext context)
   {
@@ -361,8 +343,6 @@ public class GrpcResultsService : Results.ResultsBase
 
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(UploadResultData))]
   public override async Task<UploadResultDataResponse> UploadResultData(IAsyncStreamReader<UploadResultDataRequest> requestStream,
                                                                         ServerCallContext                           context)
   {
@@ -428,8 +408,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(GetResult))]
   public override async Task<GetResultResponse> GetResult(GetResultRequest  request,
                                                           ServerCallContext context)
   {
@@ -445,8 +423,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(ImportResultsData))]
   public override async Task<ImportResultsDataResponse> ImportResultsData(ImportResultsDataRequest request,
                                                                           ServerCallContext        context)
   {

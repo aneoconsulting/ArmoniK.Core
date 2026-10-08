@@ -64,8 +64,7 @@ public class GrpcTasksServiceTests
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
                                                                   .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                          builder => builder.UseRouting()
-                                                            .UseAuthorization(),
+                                          builder => builder.UseRouting(),
                                           builder => builder.MapGrpcService<GrpcTasksService>(),
                                           true);
 
@@ -118,8 +117,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -229,8 +227,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -290,8 +287,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -372,8 +368,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -487,8 +482,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
