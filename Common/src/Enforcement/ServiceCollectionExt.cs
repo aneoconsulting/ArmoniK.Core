@@ -16,7 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading.Tasks;
+
+using ArmoniK.Core.Authorization;
 
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection.Options;
@@ -25,6 +28,7 @@ using ArmoniK.Core.Utils;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ArmoniK.Core.Common.Enforcement;
@@ -67,9 +71,21 @@ public static class ServiceCollectionExt
       throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.CertificateHeader)} cannot be empty");
     }
 
+    // Refuse to start on a configuration whose grants would be refused
+    var sets = AuthorizationConfiguration.PermissionSets(options.PermissionSets);
+    DecisionEngine.Build(AuthorizationConfiguration.Grants(options.Grants),
+                         sets,
+                         out var rejected);
+    if (rejected.Count != 0)
+    {
+      throw new InvalidOperationException($"The configuration holds grants that are refused: {string.Join("; ", rejected.Select(r => r.Error.Message))}");
+    }
+
+    services.TryAddSingleton(TimeProvider.System);
     services.AddSingleton(options)
             .AddSingleton(identity)
-            .AddSingleton<IDecisionEngineProvider>(new ConfiguredDecisionEngineProvider(options))
+            .AddSingleton<IDecisionEngineProvider, StoredDecisionEngineProvider>()
+            .AddSingleton<AuthorizationReconciler>()
             .AddSingleton<CallerResolver>()
             .AddSingleton<AuthorizationAudit>()
             .AddSingleton<AuthorizationEnforcer>()

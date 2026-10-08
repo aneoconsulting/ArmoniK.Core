@@ -119,13 +119,14 @@ public class AuthorizationEnforcer
                                         "A token or a client certificate is required"));
     }
 
-    var engine = engineProvider_.Engine;
-    AuthorizationState.Set(context,
-                           caller,
-                           engine);
-
     try
     {
+      var engine = await engineProvider_.GetEngineAsync(context.CancellationToken)
+                                        .ConfigureAwait(false);
+      AuthorizationState.Set(context,
+                             caller,
+                             engine);
+
       switch (rule.Kind)
       {
         case RuleKind.Credential:
