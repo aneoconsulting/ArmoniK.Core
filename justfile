@@ -538,6 +538,34 @@ runBench: buildBenchClient
     -e GrpcClient__Endpoint={{endpoint}} \
     {{BENCH_CLIENT_IMAGE}}
 
+# Run the Bench client through the mTLS ingress with the generated client certificate
+runBenchMtls: buildBenchClient
+  docker run {{net_arg}} --rm \
+    --user "$(id -u):$(id -g)" \
+    -v {{justfile_directory()}}/terraform/generated/ingress_mtls:/certs:ro \
+    -e BenchOptions__NTasks={{ntasks}} \
+    -e BenchOptions__TaskDurationMs={{bench_duration_ms}} \
+    -e BenchOptions__PayloadSize={{bench_payload_size}} \
+    -e BenchOptions__ResultSize={{bench_result_size}} \
+    -e BenchOptions__BatchSize={{bench_batch_size}} \
+    -e BenchOptions__Partition={{partition}} \
+    -e BenchOptions__MaxRetries={{bench_max_retries}} \
+    -e BenchOptions__DegreeOfParallelism={{bench_degree_of_parallelism}} \
+    -e BenchOptions__ShowEvents={{bench_show_events}} \
+    -e BenchOptions__PurgeData={{bench_purge_data}} \
+    -e BenchOptions__DownloadResults={{bench_download_results}} \
+    -e BenchOptions__ExitAfterSubmission={{bench_exit_after_submission}} \
+    -e BenchOptions__PauseSessionDuringSubmission={{bench_pause_session}} \
+    -e BenchOptions__MaxDuration={{bench_max_duration}} \
+    -e BenchOptions__TaskPriority={{bench_priority}} \
+    -e BenchOptions__TaskRpcException={{bench_task_rpc_exception}} \
+    -e BenchOptions__TaskError={{bench_task_error}} \
+    -e GrpcClient__Endpoint=https://ingress_mtls:9443 \
+    -e GrpcClient__CaCert=/certs/server/ca.crt \
+    -e GrpcClient__CertPem=/certs/client/client.crt \
+    -e GrpcClient__KeyPem=/certs/client/client.key \
+    {{BENCH_CLIENT_IMAGE}}
+
 # Build Crashing Worker Client
 buildCrashingWorkerClient: (build CRASHINGWORKER_CLIENT_IMAGE  "./Tests/CrashingWorker/Client/src/Dockerfile")
 
