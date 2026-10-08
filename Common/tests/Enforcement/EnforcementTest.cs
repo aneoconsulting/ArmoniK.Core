@@ -145,67 +145,32 @@ public class MethodAuthorizationTest
                                    }));
 }
 
-[TestFixture(TestOf = typeof(ConfiguredDecisionEngineProvider))]
-public class ConfiguredDecisionEngineProviderTest
+[TestFixture(TestOf = typeof(AuthorizationConfiguration))]
+public class AuthorizationConfigurationTest
 {
-  private static AuthorizationOptions Options(params GrantOption[] grants)
-    => new()
-       {
-         Enabled = true,
-         Grants  = grants.ToList(),
-       };
-
-  [Test]
-  public void ValidGrantsAreInForce()
-  {
-    var provider = new ConfiguredDecisionEngineProvider(Options(new GrantOption
-                                                                {
-                                                                  Id            = "own",
-                                                                  Principal     = "role:team",
-                                                                  PermissionSet = "session-own",
-                                                                  Condition     = "session.owner == request.caller && grant.principal in session.createdUnder",
-                                                                }));
-
-    Assert.That(provider.Engine.Grants.Select(grant => grant.Id),
-                Is.EqualTo(new[]
-                           {
-                             "own",
-                           }));
-  }
-
-  [TestCase("session.owner = request.caller")]
-  [TestCase("")]
-  public void ARefusedGrantPreventsStarting(string condition)
-    => Assert.That(() => new ConfiguredDecisionEngineProvider(Options(new GrantOption
-                                                                      {
-                                                                        Id            = "broken",
-                                                                        Principal     = "role:team",
-                                                                        PermissionSet = "session-own",
-                                                                        Condition     = condition,
-                                                                      })),
-                   Throws.InstanceOf<InvalidOperationException>()
-                         .With.Message.Contains("broken"));
-
   [Test]
   public void GrantIdentifiersAreUnique()
-    => Assert.That(() => new ConfiguredDecisionEngineProvider(Options(new GrantOption
-                                                                      {
-                                                                        Id            = "g",
-                                                                        Principal     = "role:a",
-                                                                        PermissionSet = "session-view",
-                                                                      },
-                                                                      new GrantOption
-                                                                      {
-                                                                        Id            = "g",
-                                                                        Principal     = "role:b",
-                                                                        PermissionSet = "session-view",
-                                                                      })),
+    => Assert.That(() => AuthorizationConfiguration.Grants(new[]
+                                                           {
+                                                             new GrantOption
+                                                             {
+                                                               Id            = "g",
+                                                               Principal     = "role:a",
+                                                               PermissionSet = "session-view",
+                                                             },
+                                                             new GrantOption
+                                                             {
+                                                               Id            = "g",
+                                                               Principal     = "role:b",
+                                                               PermissionSet = "session-view",
+                                                             },
+                                                           }),
                    Throws.InstanceOf<InvalidOperationException>());
 
   [Test]
   public void ConfiguredSetsRedefineShippedOnes()
   {
-    var sets = ConfiguredDecisionEngineProvider.PermissionSets(new[]
+    var sets = AuthorizationConfiguration.PermissionSets(new[]
                                                                {
                                                                  new PermissionSetOption
                                                                  {
@@ -247,7 +212,7 @@ public class ConfiguredDecisionEngineProviderTest
             "session:read")]
   public void InvalidSetsPreventStarting(string name,
                                          string permission)
-    => Assert.That(() => ConfiguredDecisionEngineProvider.PermissionSets(new[]
+    => Assert.That(() => AuthorizationConfiguration.PermissionSets(new[]
                                                                          {
                                                                            new PermissionSetOption
                                                                            {
@@ -363,6 +328,19 @@ public class AddArmoniKAuthorizationTest
     Assert.That(services.Any(service => service.ServiceType == typeof(AuthorizationInterceptor)),
                 Is.True);
   }
+
+  [TestCase("session.owner = request.caller")]
+  [TestCase("")]
+  public void ARefusedGrantPreventsStarting(string condition)
+    => Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
+                                                                                       ("Authenticator:RequireAuthentication", "false"),
+                                                                                       ("Authenticator:RequireAuthorization", "false"),
+                                                                                       ("Authorization:Grants:0:Id", "broken"),
+                                                                                       ("Authorization:Grants:0:Principal", "role:team"),
+                                                                                       ("Authorization:Grants:0:PermissionSet", "session-own"),
+                                                                                       ("Authorization:Grants:0:Condition", condition))),
+                   Throws.InstanceOf<InvalidOperationException>()
+                         .With.Message.Contains("broken"));
 
   [Test]
   public void LegacyAuthenticationCannotBeCombined()

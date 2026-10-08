@@ -295,6 +295,21 @@ public static class Program
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
 
+      if (authorizationEnabled)
+      {
+        await app.Services.GetRequiredService<IAuthorizationTable>()
+                 .Init(CancellationToken.None)
+                 .ConfigureAwait(false);
+
+        if (app.Services.GetRequiredService<InitServices>()
+               .InitDatabase)
+        {
+          await app.Services.GetRequiredService<AuthorizationReconciler>()
+                   .ReconcileAsync(CancellationToken.None)
+                   .ConfigureAwait(false);
+        }
+      }
+
       if (app.Services.GetRequiredService<InitServices>()
              .StopAfterInit)
       {
