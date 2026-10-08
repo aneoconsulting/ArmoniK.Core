@@ -44,10 +44,9 @@ public class MethodAuthorizationTest
                                                                  .Select(method => (service, method)));
 
   [Test]
-  public void EveryRpcOfTheModernServicesHasARule()
+  public void EveryRpcHasARule()
   {
     var missing = Rpcs()
-                  .Where(rpc => rpc.Service != typeof(GrpcSubmitterService))
                   .Where(rpc => !MethodAuthorization.Rules.ContainsKey((rpc.Service.Name, rpc.Method.Name)))
                   .Select(rpc => $"{rpc.Service.Name}.{rpc.Method.Name}")
                   .ToList();
@@ -68,11 +67,24 @@ public class MethodAuthorizationTest
   }
 
   [Test]
-  public void AnRpcWithoutRuleIsUnsupported()
+  public void LargeLegacySubmissionsAreUnsupported()
     => Assert.That(MethodAuthorization.For(nameof(GrpcSubmitterService),
-                                           nameof(GrpcSubmitterService.CreateSession))
+                                           nameof(GrpcSubmitterService.CreateLargeTasks))
                                       ?.Kind,
                    Is.EqualTo(RuleKind.Unsupported));
+
+  [Test]
+  public void AnRpcWithoutRuleIsUnsupported()
+    => Assert.That(MethodAuthorization.For(nameof(GrpcSubmitterService),
+                                           "NotAnRpc")
+                                      ?.Kind,
+                   Is.EqualTo(RuleKind.Unsupported));
+
+  [Test]
+  public void SessionCreationsSayWhichPartitionsTheyDeclare()
+    => Assert.That(MethodAuthorization.Rules.Where(pair => pair.Value.Kind == RuleKind.SessionCreation && pair.Value.Creation is null)
+                                      .Select(pair => pair.Key),
+                   Is.Empty);
 
   [Test]
   public void AServiceOutsideTheApiHasNoRule()
