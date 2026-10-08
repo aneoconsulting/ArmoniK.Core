@@ -27,8 +27,14 @@ using ArmoniK.Core.Adapters.PostgreSQL.Common;
 namespace ArmoniK.Core.Adapters.PostgreSQL.Tests;
 
 /// <summary>
-///   Reads and parses the initial migration script so tests can verify column names against it.
+///   Reads and parses the migration scripts so tests can verify column names against them.
 /// </summary>
+/// <remarks>
+///   Every script, in the order DbUp applies them, not just the initial one. Reading only the first was
+///   correct while there was only one; once a second migration added columns by <c>ALTER TABLE</c>, it made
+///   the mapping tests assert against a schema the database no longer had, and they failed on columns that
+///   do exist.
+/// </remarks>
 internal static class MigrationSchemaReader
 {
   private static readonly HashSet<string> TableConstraintKeywords = new(StringComparer.OrdinalIgnoreCase)
@@ -43,13 +49,25 @@ internal static class MigrationSchemaReader
   public static string ReadMigrationScript()
   {
     var assembly = typeof(NpgsqlConnectionProvider).Assembly;
-    var resourceName = assembly.GetManifestResourceNames()
-                               .Single(name => name.EndsWith("0001_InitialSchema.sql",
-                                                             StringComparison.Ordinal));
 
-    using var stream = assembly.GetManifestResourceStream(resourceName)!;
-    using var reader = new StreamReader(stream);
-    return reader.ReadToEnd();
+    // Ordinal sort over the whole resource name reproduces DbUp's ordering, which is why the scripts are
+    // numbered. Concatenated rather than parsed separately so a later ALTER TABLE is applied on top of the
+    // CREATE TABLE that preceded it.
+    var scripts = assembly.GetManifestResourceNames()
+                          .Where(name => name.Contains(".Migrations.Scripts.",
+                                                       StringComparison.Ordinal) && name.EndsWith(".sql",
+                                                                                                  StringComparison.Ordinal))
+                          .OrderBy(name => name,
+                                   StringComparer.Ordinal)
+                          .Select(name =>
+                                  {
+                                    using var stream = assembly.GetManifestResourceStream(name)!;
+                                    using var reader = new StreamReader(stream);
+                                    return reader.ReadToEnd();
+                                  });
+
+    return string.Join('\n',
+                       scripts);
   }
 
   public static Dictionary<string, HashSet<string>> ParseSchema(string sql)
@@ -91,6 +109,22 @@ internal static class MigrationSchemaReader
       AddColumnName(columns,
                     current.ToString());
       tables[tableMatch.Groups[1].Value] = columns;
+    }
+
+    // Columns a later migration adds to a table an earlier one created. Only ADD COLUMN: a test that
+    // silently ignored DROP COLUMN would keep passing for a column the database no longer has, so the day
+    // one appears this must learn about it rather than be left as is.
+    foreach (Match alterMatch in Regex.Matches(sql,
+                                               @"ALTER TABLE\s+(?:IF EXISTS\s+)?(\w+)\s+ADD COLUMN\s+(?:IF NOT EXISTS\s+)?(\w+)",
+                                               RegexOptions.IgnoreCase))
+    {
+      var table = alterMatch.Groups[1].Value;
+
+      if (tables.TryGetValue(table,
+                             out var columns))
+      {
+        columns.Add(alterMatch.Groups[2].Value);
+      }
     }
 
     return tables;

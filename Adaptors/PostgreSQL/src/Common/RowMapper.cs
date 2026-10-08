@@ -404,7 +404,18 @@ public sealed class RowMapper
                                                "duration"),
                            GetStringArray(reader,
                                           "partition_ids"),
-                           options);
+                           options)
+           {
+             Owner = reader.IsDBNull(reader.GetOrdinal("owner"))
+                       ? null
+                       : reader.GetString(reader.GetOrdinal("owner")),
+             CreatedUnder = GetStringArray(reader,
+                                           "created_under"),
+             SharedWith = GetStringArray(reader,
+                                         "shared_with"),
+             DelegatedTo = GetStringArray(reader,
+                                          "delegated_to"),
+           };
   }
 
   /// <summary>

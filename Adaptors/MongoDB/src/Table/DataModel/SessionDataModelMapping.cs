@@ -64,6 +64,15 @@ public class SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                      .SetIsRequired(true);
                                                    cm.MapProperty(nameof(SessionData.Duration))
                                                      .SetIsRequired(true);
+                                                   // Sessions stored before authorization have none of these
+                                                   cm.MapProperty(nameof(SessionData.Owner))
+                                                     .SetDefaultValue((string?)null);
+                                                   cm.MapProperty(nameof(SessionData.CreatedUnder))
+                                                     .SetDefaultValue(() => new List<string>());
+                                                   cm.MapProperty(nameof(SessionData.SharedWith))
+                                                     .SetDefaultValue(() => new List<string>());
+                                                   cm.MapProperty(nameof(SessionData.DelegatedTo))
+                                                     .SetDefaultValue(() => new List<string>());
                                                    cm.SetIgnoreExtraElements(true);
                                                    cm.MapCreator(model => new SessionData(model.SessionId,
                                                                                           model.Status,
@@ -134,6 +143,10 @@ public class SessionDataModelMapping : IMongoDataModelMapping<SessionData>
                                                                options.UseHashed),
          IndexHelper.CreateHashedOrAscendingIndex<SessionData>(model => model.Options.PartitionId,
                                                                options.UseHashed),
+         IndexHelper.CreateAscendingIndex<SessionData>(model => model.Owner),
+         IndexHelper.CreateAscendingIndex<SessionData>(model => model.CreatedUnder),
+         IndexHelper.CreateAscendingIndex<SessionData>(model => model.SharedWith),
+         IndexHelper.CreateAscendingIndex<SessionData>(model => model.DelegatedTo),
        };
 
   /// <inheritdoc />
