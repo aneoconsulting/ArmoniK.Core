@@ -74,6 +74,82 @@ internal class BsonSerializerTest
   }
 
   [Test]
+  public void SessionAuthorizationFieldsRoundTrip()
+  {
+    _ = new SessionDataModelMapping();
+
+    var session = new SessionData("SessionId",
+                                  SessionStatus.Running,
+                                  new[]
+                                  {
+                                    "part1",
+                                  },
+                                  new TaskOptions(new Dictionary<string, string>(),
+                                                  TimeSpan.FromHours(1),
+                                                  2,
+                                                  1,
+                                                  "part1",
+                                                  "",
+                                                  "",
+                                                  "",
+                                                  "",
+                                                  ""))
+                  {
+                    Owner        = "oid:alice",
+                    CreatedUnder = new[]
+                                   {
+                                     "role:team",
+                                   },
+                    SharedWith = new[]
+                                 {
+                                   "oid:bob",
+                                 },
+                    DelegatedTo = new[]
+                                  {
+                                    "oid:carol",
+                                  },
+                  };
+
+    var deserialized = BsonSerializer.Deserialize<SessionData>(session.ToBson());
+
+    Assert.That(deserialized.Owner,
+                Is.EqualTo("oid:alice"));
+    Assert.That(deserialized.CreatedUnder,
+                Is.EqualTo(session.CreatedUnder));
+    Assert.That(deserialized.SharedWith,
+                Is.EqualTo(session.SharedWith));
+    Assert.That(deserialized.DelegatedTo,
+                Is.EqualTo(session.DelegatedTo));
+
+    // A session stored before authorization carries none of these fields
+    var document = session.ToBsonDocument();
+    foreach (var field in new[]
+                          {
+                            nameof(SessionData.Owner),
+                            nameof(SessionData.CreatedUnder),
+                            nameof(SessionData.SharedWith),
+                            nameof(SessionData.DelegatedTo),
+                          })
+    {
+      Assert.That(document.Contains(field),
+                  Is.True,
+                  field);
+      document.Remove(field);
+    }
+
+    var legacy = BsonSerializer.Deserialize<SessionData>(document);
+
+    Assert.That(legacy.Owner,
+                Is.Null);
+    Assert.That(legacy.CreatedUnder,
+                Is.Empty);
+    Assert.That(legacy.SharedWith,
+                Is.Empty);
+    Assert.That(legacy.DelegatedTo,
+                Is.Empty);
+  }
+
+  [Test]
   public void SerializeResultDataModel()
   {
     var rdm = new Result("sessionId",

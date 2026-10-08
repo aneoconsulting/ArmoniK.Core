@@ -48,6 +48,7 @@
 
 
   <ItemGroup>
+    <ProjectReference Include="..\..\Authorization\src\ArmoniK.Core.Authorization.csproj" />
     <ProjectReference Include="..\..\Utils\src\ArmoniK.Core.Utils.csproj" />
   </ItemGroup>
 
