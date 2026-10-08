@@ -315,8 +315,8 @@ public class GrpcResultsService : Results.ResultsBase
   {
     using var measure = meter_.CountAndTime();
 
-    var id = (await resultTable_.GetResult(request.ResultId)
-                                .ConfigureAwait(false)).OpaqueId;
+    var id = (context.ResolvedResult(request.ResultId) ?? await resultTable_.GetResult(request.ResultId)
+                                                                         .ConfigureAwait(false)).OpaqueId;
 
     await foreach (var chunk in objectStorage_.GetValuesAsync(id,
                                                               context.CancellationToken)
@@ -412,9 +412,9 @@ public class GrpcResultsService : Results.ResultsBase
                                                           ServerCallContext context)
   {
     using var measure = meter_.CountAndTime();
-    var result = await resultTable_.GetResult(request.ResultId,
-                                              context.CancellationToken)
-                                   .ConfigureAwait(false);
+    var result = context.ResolvedResult(request.ResultId) ?? await resultTable_.GetResult(request.ResultId,
+                                                                                          context.CancellationToken)
+                                                                               .ConfigureAwait(false);
 
     return new GetResultResponse
            {
