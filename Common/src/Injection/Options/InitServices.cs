@@ -32,11 +32,6 @@ public class InitServices
   public const string SettingSection = nameof(InitServices);
 
   /// <summary>
-  ///   Authentication configurations
-  /// </summary>
-  public Authentication Authentication { get; set; } = new();
-
-  /// <summary>
   ///   Partitioning configurations
   /// </summary>
   public Partitioning Partitioning { get; set; } = new();

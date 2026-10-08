@@ -21,7 +21,6 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
 
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Utils;
 
@@ -48,20 +47,13 @@ public static class ServiceCollectionExt
   public static bool AddArmoniKAuthorization(this IServiceCollection services,
                                              IConfiguration          configuration)
   {
+    ThrowIfLegacyConfiguration(configuration);
+
     var options = configuration.GetInitializedValue<AuthorizationOptions>(AuthorizationOptions.SettingSection);
 
     if (!options.Enabled)
     {
       return false;
-    }
-
-    var legacy = configuration.GetSection(AuthenticatorOptions.SectionName)
-                              .Get<AuthenticatorOptions>() ?? AuthenticatorOptions.Default;
-    if (legacy.RequireAuthentication || legacy.RequireAuthorization)
-    {
-      throw new InvalidOperationException($"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)} cannot be combined with " +
-                                          $"{AuthenticatorOptions.SectionName}:{nameof(AuthenticatorOptions.RequireAuthentication)} or "          +
-                                          $"{nameof(AuthenticatorOptions.RequireAuthorization)}: disable the latter");
     }
 
     var identity = configuration.GetInitializedValue<IdentityOptions>(IdentityOptions.SettingSection);
@@ -98,6 +90,31 @@ public static class ServiceCollectionExt
     }
 
     return true;
+  }
+
+  /// <summary>
+  ///   Refuse to start on a configuration of the removed authentication without an explicit choice about authorization,
+  ///   since removing the former flags alone would leave every request allowed
+  /// </summary>
+  /// <param name="configuration">Configuration of the application</param>
+  /// <exception cref="InvalidOperationException">The configuration of the removed authentication is present</exception>
+  public static void ThrowIfLegacyConfiguration(IConfiguration configuration)
+  {
+    var legacy = new[]
+                 {
+                   "Authenticator",
+                   "InitServices:Authentication",
+                   "Components:AuthenticationStorage",
+                 }.Where(key => configuration.GetSection(key)
+                                             .Exists())
+                  .ToList();
+
+    if (legacy.Count != 0 && configuration[$"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)}"] is null)
+    {
+      throw new InvalidOperationException($"The configuration holds settings of the removed authentication ({string.Join(", ", legacy)}). Set " +
+                                          $"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)} explicitly, true to "          +
+                                          "authorize requests with grants or false to allow every request, and remove these settings");
+    }
   }
 
   private static void AddTokenValidation(IServiceCollection services,

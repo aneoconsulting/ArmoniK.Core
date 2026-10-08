@@ -21,21 +21,17 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Partitions" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcPartitionsService : Partitions.PartitionsBase
 {
   private readonly ILogger<GrpcPartitionsService>                  logger_;
@@ -58,8 +54,6 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcPartitionsService),
-                      nameof(GetPartition))]
   public override async Task<GetPartitionResponse> GetPartition(GetPartitionRequest request,
                                                                 ServerCallContext   context)
   {
@@ -90,8 +84,6 @@ public class GrpcPartitionsService : Partitions.PartitionsBase
 
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcPartitionsService),
-                      nameof(ListPartitions))]
   public override async Task<ListPartitionsResponse> ListPartitions(ListPartitionsRequest request,
                                                                     ServerCallContext     context)
   {
