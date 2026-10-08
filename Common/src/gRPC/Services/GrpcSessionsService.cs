@@ -27,6 +27,7 @@ using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -177,9 +178,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          ? sessionTable_.Secondary
                          : sessionTable_;
 
-    var (sessions, totalCount) = await sessionTable.ListSessionsAsync(request.Filters is null
-                                                                        ? data => true
-                                                                        : request.Filters.ToSessionDataFilter(),
+    var (sessions, totalCount) = await sessionTable.ListSessionsAsync(context.RestrictListing<SessionData>(request.Filters is null
+                                                                          ? data => true
+                                                                          : request.Filters.ToSessionDataFilter()),
                                                                       request.Sort is null
                                                                         ? data => data.SessionId
                                                                         : request.Sort.ToField(),
@@ -207,7 +208,8 @@ public class GrpcSessionsService : Sessions.SessionsBase
   public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                                ServerCallContext    context)
   {
-    using var measure = meter_.CountAndTime();
+    using var measure    = meter_.CountAndTime();
+    var       authorship = context.GetSessionAuthorship();
 
     return new CreateSessionReply
            {
@@ -216,7 +218,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
                                                                     request.PartitionIds,
                                                                     request.DefaultTaskOption.ToTaskOptions(),
                                                                     submitterOptions_.DefaultPartition,
-                                                                    context.CancellationToken)
+                                                                    context.CancellationToken,
+                                                                    authorship?.Owner,
+                                                                    authorship?.CreatedUnder)
                                                      .ConfigureAwait(false),
            };
   }

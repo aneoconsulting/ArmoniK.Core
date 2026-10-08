@@ -23,6 +23,7 @@ grafana      := "true"           # If true, deploy Grafana dashboards
 seq          := "true"           # If true, deploy Seq for structured log search (UI at http://localhost:9080)
 socket_type  := "unixdomainsocket" # Socket type for PollingAgent↔Worker communication: unixdomainsocket or tcp
 cinit        := "true"           # If true, run a one-shot init container to initialize the database before services start; services self-initialize when false
+authz        := "false"          # If true, authorize requests with the grants of TF_VAR_authorization
 
 # Shared test parameters
 ntasks    := "100"
@@ -71,6 +72,15 @@ export TF_VAR_enable_seq        := seq
 export TF_VAR_enable_prometheus := prometheus
 export TF_VAR_socket_type       := socket_type
 export TF_VAR_container_init    := cinit
+
+# Grants for the generated mTLS client certificate (cn:client): create sessions in the default partition and own them,
+# plus what sharing and delegation confer (access model v0.98, section 9)
+export TF_VAR_authorization := if authz == "true" { '{ enabled = true, grants = [ ' +
+  '{ id = "client-create", principal = "cn:client", permission_set = "session-create", condition = "request.partition == \"TestPartition0\"" }, ' +
+  '{ id = "client-own", principal = "cn:client", permission_set = "session-own", condition = "session.owner == request.caller && grant.principal in session.createdUnder" }, ' +
+  '{ id = "share", principal = "*", permission_set = "session-view", condition = "request.caller in session.sharedWith" }, ' +
+  '{ id = "delegate", principal = "*", permission_set = "session-own", condition = "request.caller in session.delegatedTo" } ] }'
+} else { '{}' }
 
 
 # Sets the queue

@@ -296,3 +296,22 @@ variable "windows" {
   type    = bool
   default = false
 }
+
+variable "authorization" {
+  description = "Authorization of requests: grants and permission sets of the access model"
+  type = object({
+    enabled         = optional(bool, false)
+    config_revision = optional(number, 0)
+    permission_sets = optional(list(object({
+      name        = string
+      permissions = list(string)
+    })), [])
+    grants = optional(list(object({
+      id             = string
+      principal      = string
+      permission_set = string
+      condition      = optional(string)
+    })), [])
+  })
+  default = {}
+}
