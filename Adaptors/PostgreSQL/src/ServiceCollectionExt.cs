@@ -106,6 +106,7 @@ public static class ServiceCollectionExt
               .AddSingleton<ISessionTable, SessionTable>()
               .AddSingleton<IResultTable, ResultTable>()
               .AddSingleton<IPartitionTable, PartitionTable>()
+              .AddSingleton<IAuthorizationTable, AuthorizationTable>()
               .AddSingleton<ITaskWatcher, TaskWatcher>()
               .AddSingleton<IResultWatcher, ResultWatcher>();
     }
