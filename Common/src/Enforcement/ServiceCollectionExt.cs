@@ -28,6 +28,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ArmoniK.Core.Common.Enforcement;
@@ -83,7 +84,12 @@ public static class ServiceCollectionExt
             .AddSingleton<AuthorizationEnforcer>()
             .AddSingleton<AuthorizationInterceptor>();
 
-    if (!string.IsNullOrWhiteSpace(identity.Authority))
+    if (!identity.ValidateTokens)
+    {
+      AddUnvalidatedTokens(services,
+                           identity);
+    }
+    else if (!string.IsNullOrWhiteSpace(identity.Authority))
     {
       AddTokenValidation(services,
                          identity);
@@ -134,11 +140,7 @@ public static class ServiceCollectionExt
                                           $"absolute URI, using HTTPS while {nameof(IdentityOptions.RequireHttpsMetadata)} is set");
     }
 
-    if (string.IsNullOrWhiteSpace(identity.SubjectClaim) || string.IsNullOrWhiteSpace(identity.RolesClaim))
-    {
-      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.SubjectClaim)} and " +
-                                          $"{nameof(IdentityOptions.RolesClaim)} cannot be empty");
-    }
+    ThrowIfNoClaims(identity);
 
     services.AddAuthentication()
             .AddJwtBearer(jwt =>
@@ -176,5 +178,43 @@ public static class ServiceCollectionExt
                                            };
                             }
                           });
+  }
+
+  private static void AddUnvalidatedTokens(IServiceCollection services,
+                                           IdentityOptions    identity)
+  {
+    if (!string.IsNullOrWhiteSpace(identity.Authority))
+    {
+      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.Authority)} is set while " +
+                                          $"{nameof(IdentityOptions.ValidateTokens)} is false: tokens would not be validated against it");
+    }
+
+    ThrowIfNoClaims(identity);
+
+    // The proxy writing the tokens is trusted with their claims: neither signature, issuer, audience nor lifetime is checked
+    services.AddAuthentication()
+            .AddJwtBearer(jwt =>
+                          {
+                            jwt.MapInboundClaims = false;
+                            jwt.TokenValidationParameters = new TokenValidationParameters
+                                                            {
+                                                              ValidateIssuer           = false,
+                                                              ValidateAudience         = false,
+                                                              ValidateIssuerSigningKey = false,
+                                                              ValidateLifetime         = false,
+                                                              RequireExpirationTime    = false,
+                                                              RequireSignedTokens      = false,
+                                                              SignatureValidator       = (token, _) => new JsonWebToken(token),
+                                                            };
+                          });
+  }
+
+  private static void ThrowIfNoClaims(IdentityOptions identity)
+  {
+    if (string.IsNullOrWhiteSpace(identity.SubjectClaim) || string.IsNullOrWhiteSpace(identity.RolesClaim))
+    {
+      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.SubjectClaim)} and " +
+                                          $"{nameof(IdentityOptions.RolesClaim)} cannot be empty");
+    }
   }
 }

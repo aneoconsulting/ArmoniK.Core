@@ -47,10 +47,10 @@ public class CallerResolver
     => options_ = options;
 
   /// <summary>
-  ///   Whether tokens are validated, and therefore accepted
+  ///   Whether tokens are accepted: validated against an authority, or taken as they are
   /// </summary>
   public bool AcceptsTokens
-    => !string.IsNullOrWhiteSpace(options_.Authority);
+    => !options_.ValidateTokens || !string.IsNullOrWhiteSpace(options_.Authority);
 
   /// <summary>
   ///   Derive the caller of a request
