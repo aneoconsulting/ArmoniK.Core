@@ -158,18 +158,28 @@ public class ObjectStorage : IObjectStorage
       yield break;
     }
 
-    foreach (var chunkTask in Enumerable.Range(0,
-                                               valuesCount)
-                                        .Select(index => PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index)))
-                                        .ToList())
-    {
-      var chunk = await chunkTask.ConfigureAwait(false);
-      if (!chunk.HasValue)
-      {
-        throw new ObjectDataNotFoundException($"Chunk Key not found in Redis: `{key}`");
-      }
+    await foreach (var chunk in Enumerable.Range(0,
+                                                 valuesCount)
+                                          .ParallelSelect(new ParallelTaskOptions
+                                                          {
+                                                            CancellationToken = cancellationToken,
+                                                          },
+                                                          async index =>
+                                                          {
+                                                            var chunk =
+                                                              await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index))
+                                                                .ConfigureAwait(false);
 
-      yield return chunk!;
+                                                            return (byte[]?)chunk switch
+                                                                   {
+                                                                     null => throw new ObjectDataNotFoundException($"Chunk Key not found in Redis: `{key}_{index}`"),
+                                                                     var bytes => bytes,
+                                                                   };
+                                                          })
+                                          .WithCancellation(cancellationToken)
+                                          .ConfigureAwait(false))
+    {
+      yield return chunk;
     }
   }
 
