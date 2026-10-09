@@ -1,12 +1,12 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
-// 
+//
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU Affero General Public License as published
 // by the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
-// 
+//
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY, without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -109,6 +109,7 @@ public class ObjectStorage : IObjectStorage
     var upload = valueChunks.Index()
                             .ParallelSelect(new ParallelTaskOptions
                                             {
+                                              ParallelismLimit  = redisOptions_.DegreeOfParallelism,
                                               CancellationToken = cancellationToken,
                                               Unordered         = true,
                                             },
@@ -163,7 +164,9 @@ public class ObjectStorage : IObjectStorage
                                     valuesCount)
                              .ParallelSelect(new ParallelTaskOptions
                                              {
+                                               ParallelismLimit  = redisOptions_.DegreeOfParallelism,
                                                CancellationToken = cancellationToken,
+                                               Unordered         = false,
                                              },
                                              async index =>
                                              {
@@ -187,14 +190,26 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
                                    CancellationToken   cancellationToken = default)
-    => await ids.ParallelForEach(id => TryDeleteAsync(id,
+    => await ids.ParallelForEach(new ParallelTaskOptions
+                                 {
+                                   ParallelismLimit  = redisOptions_.DegreeOfParallelism,
+                                   CancellationToken = cancellationToken,
+                                   Unordered         = true,
+                                 },
+                                 id => TryDeleteAsync(id,
                                                       cancellationToken))
                 .ConfigureAwait(false);
 
   /// <inheritdoc />
   public async Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
                                                               CancellationToken   cancellationToken = default)
-    => await ids.ParallelSelect(async id => (id, await ExistsAsync(id,
+    => await ids.ParallelSelect(new ParallelTaskOptions
+                                {
+                                  ParallelismLimit  = redisOptions_.DegreeOfParallelism,
+                                  CancellationToken = cancellationToken,
+                                  Unordered         = true,
+                                },
+                                async id => (id, await ExistsAsync(id,
                                                                    cancellationToken)
                                                    .ConfigureAwait(false)))
                 .ToDictionaryAsync(tuple => tuple.id,
