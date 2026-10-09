@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-// 
+//
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -104,23 +104,36 @@ public class ObjectStorage : IObjectStorage
                             .ToString();
     var  storageNameKey = redisOptions_.KeyPrefix + key;
     long size           = 0;
+    var  count          = 0;
 
-    var idx      = 0;
-    var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
+    await foreach (var chunk in valueChunks.Index()
+                                           .ParallelSelect(new ParallelTaskOptions
+                                                           {
+                                                             CancellationToken = cancellationToken,
+                                                             Unordered         = true,
+                                                           },
+                                                           async indexedChunk =>
+                                                           {
+                                                             var (index, chunk) = indexedChunk;
+
+                                                             var storageNameKeyWithIndex = $"{storageNameKey}_{index}";
+
+                                                             await PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
+                                                                                                               chunk))
+                                                               .ConfigureAwait(false);
+
+                                                             return chunk.Length;
+                                                           })
+                                           .WithCancellation(cancellationToken)
                                            .ConfigureAwait(false))
     {
-      size += chunk.Length;
-      var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
-      taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
-                                                               chunk)));
-      ++idx;
+      size  += chunk;
+      count += 1;
     }
 
-    taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
-                                                             idx)));
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
+    await PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
+                                                      count))
+      .ConfigureAwait(false);
 
     return (Encoding.UTF8.GetBytes(key), size);
   }
