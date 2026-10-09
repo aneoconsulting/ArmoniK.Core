@@ -135,7 +135,7 @@ public class ObjectStorage : IObjectStorage
 
     if (!value.HasValue)
     {
-      throw new ObjectDataNotFoundException("Key not found");
+      throw new ObjectDataNotFoundException($"Header Key not found in Redis: `{key}`");
     }
 
     var valuesCount = int.Parse(value!);
@@ -150,7 +150,13 @@ public class ObjectStorage : IObjectStorage
                                         .Select(index => PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index)))
                                         .ToList())
     {
-      yield return (await chunkTask.ConfigureAwait(false))!;
+      var chunk = await chunkTask.ConfigureAwait(false);
+      if (!chunk.HasValue)
+      {
+        throw new ObjectDataNotFoundException($"Chunk Key not found in Redis: `{key}`");
+      }
+
+      yield return chunk!;
     }
   }
 
