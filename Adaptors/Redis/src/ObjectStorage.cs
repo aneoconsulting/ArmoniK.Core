@@ -1,5 +1,5 @@
 // This file is part of the ArmoniK project
-//
+// 
 // Copyright (C) ANEO, 2021-2026. All rights reserved.
 // 
 // This program is free software: you can redistribute it and/or modify
@@ -106,26 +106,27 @@ public class ObjectStorage : IObjectStorage
     long size           = 0;
     var  count          = 0;
 
-    await foreach (var chunk in valueChunks.Index()
-                                           .ParallelSelect(new ParallelTaskOptions
-                                                           {
-                                                             CancellationToken = cancellationToken,
-                                                             Unordered         = true,
-                                                           },
-                                                           async indexedChunk =>
-                                                           {
-                                                             var (index, chunk) = indexedChunk;
+    var upload = valueChunks.Index()
+                            .ParallelSelect(new ParallelTaskOptions
+                                            {
+                                              CancellationToken = cancellationToken,
+                                              Unordered         = true,
+                                            },
+                                            async indexedChunk =>
+                                            {
+                                              var (index, chunk) = indexedChunk;
 
-                                                             var storageNameKeyWithIndex = $"{storageNameKey}_{index}";
+                                              var storageNameKeyWithIndex = $"{storageNameKey}_{index}";
 
-                                                             await PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
-                                                                                                               chunk))
-                                                               .ConfigureAwait(false);
+                                              await PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
+                                                                                                chunk))
+                                                .ConfigureAwait(false);
 
-                                                             return chunk.Length;
-                                                           })
-                                           .WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
+                                              return chunk.Length;
+                                            });
+
+    await foreach (var chunk in upload.WithCancellation(cancellationToken)
+                                      .ConfigureAwait(false))
     {
       size  += chunk;
       count += 1;
@@ -158,26 +159,26 @@ public class ObjectStorage : IObjectStorage
       yield break;
     }
 
-    await foreach (var chunk in Enumerable.Range(0,
-                                                 valuesCount)
-                                          .ParallelSelect(new ParallelTaskOptions
-                                                          {
-                                                            CancellationToken = cancellationToken,
-                                                          },
-                                                          async index =>
-                                                          {
-                                                            var chunk =
-                                                              await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index))
-                                                                .ConfigureAwait(false);
+    var download = Enumerable.Range(0,
+                                    valuesCount)
+                             .ParallelSelect(new ParallelTaskOptions
+                                             {
+                                               CancellationToken = cancellationToken,
+                                             },
+                                             async index =>
+                                             {
+                                               var chunk = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index))
+                                                             .ConfigureAwait(false);
 
-                                                            return (byte[]?)chunk switch
-                                                                   {
-                                                                     null => throw new ObjectDataNotFoundException($"Chunk Key not found in Redis: `{key}_{index}`"),
-                                                                     var bytes => bytes,
-                                                                   };
-                                                          })
-                                          .WithCancellation(cancellationToken)
-                                          .ConfigureAwait(false))
+                                               return (byte[]?)chunk switch
+                                                      {
+                                                        null      => throw new ObjectDataNotFoundException($"Chunk Key not found in Redis: `{key}_{index}`"),
+                                                        var bytes => bytes,
+                                                      };
+                                             });
+
+    await foreach (var chunk in download.WithCancellation(cancellationToken)
+                                        .ConfigureAwait(false))
     {
       yield return chunk;
     }
