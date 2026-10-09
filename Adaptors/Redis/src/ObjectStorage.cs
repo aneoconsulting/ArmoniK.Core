@@ -106,7 +106,9 @@ public class ObjectStorage : IObjectStorage
     long size           = 0;
     var  count          = 0;
 
-    await using var cleanup = new Deferrer(Cleanup);
+    await using var cleanup = new Deferrer(() => TryDeleteChunksAsync(storageNameKey,
+                                                                      count,
+                                                                      CancellationToken.None));
 
     var upload = valueChunks.Select((chunk, index) =>
                                     {
@@ -148,21 +150,6 @@ public class ObjectStorage : IObjectStorage
     cleanup.Reset();
 
     return (Encoding.UTF8.GetBytes(key), size);
-
-    ValueTask Cleanup()
-    {
-      var keyList = Enumerable.Range(0,
-                                     count)
-                              .Select(index => new RedisKey($"{storageNameKey}_{index}"))
-                              .Concat(new[]
-                                      {
-                                        new RedisKey($"{storageNameKey}_count"),
-                                      })
-                              .ToArray();
-
-      return new ValueTask(PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList),
-                                                  CancellationToken.None));
-    }
   }
 
   /// <inheritdoc />
@@ -294,8 +281,20 @@ public class ObjectStorage : IObjectStorage
     }
 
     var valuesCount = int.Parse(value!);
+    await TryDeleteChunksAsync(storageNameKey,
+                               valuesCount,
+                               cancellationToken)
+      .ConfigureAwait(false);
+    logger_.LogInformation("Deleted data with {resultId}",
+                           key);
+  }
+
+  private async ValueTask TryDeleteChunksAsync(string            storageNameKey,
+                                               int               count,
+                                               CancellationToken cancellationToken = default)
+  {
     var keyList = Enumerable.Range(0,
-                                   valuesCount)
+                                   count)
                             .Select(index => new RedisKey($"{storageNameKey}_{index}"))
                             .Concat(new[]
                                     {
@@ -306,8 +305,6 @@ public class ObjectStorage : IObjectStorage
     await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList),
                                  cancellationToken)
       .ConfigureAwait(false);
-    logger_.LogInformation("Deleted data with {resultId}",
-                           key);
   }
 
   private async Task<T> PerformActionWithRetry<T>(Func<Task<T>>     action,
