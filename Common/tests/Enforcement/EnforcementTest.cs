@@ -26,6 +26,10 @@ using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
 
+using Google.Protobuf;
+
+using Grpc.Core;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -156,6 +160,19 @@ public class MethodAuthorizationTest
                                      Permission.DataDeclare,
                                      Permission.DataProvide,
                                    }));
+
+  [Test]
+  public void AnUploadStartingWithDataIsAnInvalidArgument()
+  {
+    var exception = Assert.Throws<RpcException>(() => MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.UploadResultData))]
+                                                                         .Extract!(new Api.gRPC.V1.Results.UploadResultDataRequest
+                                                                                   {
+                                                                                     DataChunk = ByteString.CopyFromUtf8("data"),
+                                                                                   }));
+
+    Assert.That(exception!.StatusCode,
+                Is.EqualTo(StatusCode.InvalidArgument));
+  }
 }
 
 [TestFixture(TestOf = typeof(AuthorizationConfiguration))]
