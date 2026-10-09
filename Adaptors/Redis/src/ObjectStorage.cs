@@ -293,7 +293,8 @@ public class ObjectStorage : IObjectStorage
       try
       {
         return await action()
-                 .ConfigureAwait(false);
+                     .WaitAsync(cancellationToken)
+                     .ConfigureAwait(false);
       }
       catch (Exception ex) when (ex is RedisTimeoutException or RedisConnectionException)
       {
@@ -311,7 +312,8 @@ public class ObjectStorage : IObjectStorage
                            retryCount,
                            redisOptions_.MaxRetry,
                            retryDelay);
-        await Task.Delay(retryDelay)
+        await Task.Delay(retryDelay,
+                         cancellationToken)
                   .ConfigureAwait(false);
       }
     }
