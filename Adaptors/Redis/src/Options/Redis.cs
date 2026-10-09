@@ -103,7 +103,7 @@ public class Redis
   public bool AllowHostMismatch { get; set; }
 
   /// <summary>
-  ///   The key prefix is for all the objects keys.
+  ///   Prefix for all object keys.
   /// </summary>
   public string KeyPrefix { get; set; } = "objectStorageName";
 
@@ -112,5 +112,5 @@ public class Redis
   ///   Set to <c>0</c> to use the number of logical processors on the machine (
   ///   <see cref="System.Environment.ProcessorCount" />).
   /// </summary>
-  public int DegreeOfParallelism { get; set; } = 0;
+  public int DegreeOfParallelism { get; set; }
 }
