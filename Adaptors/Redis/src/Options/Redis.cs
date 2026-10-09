@@ -101,4 +101,9 @@ public class Redis
   ///   Whether to allow host name mismatches in SSL certificates.
   /// </summary>
   public bool AllowHostMismatch { get; set; }
+
+  /// <summary>
+  ///   The key prefix is for all the objects keys.
+  /// </summary>
+  public string KeyPrefix { get; set; } = "objectStorageName";
 }
