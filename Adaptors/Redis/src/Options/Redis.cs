@@ -106,4 +106,11 @@ public class Redis
   ///   The key prefix is for all the objects keys.
   /// </summary>
   public string KeyPrefix { get; set; } = "objectStorageName";
+
+  /// <summary>
+  ///   Maximum number of concurrent operations when the adapter processes items in parallel.
+  ///   Set to <c>0</c> to use the number of logical processors on the machine (
+  ///   <see cref="System.Environment.ProcessorCount" />).
+  /// </summary>
+  public int DegreeOfParallelism { get; set; } = 0;
 }
