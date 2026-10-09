@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Injection.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 
 using NUnit.Framework;
 
@@ -283,6 +284,42 @@ public class CallerResolverTest
                 Is.EqualTo(CredentialKind.Certificate));
   }
 
+  // Unsigned, or signed with a key the control plane does not know, and without issuer, audience nor lifetime
+  [TestCase("none",
+            "")]
+  [TestCase("RS256",
+            "c2lnbmF0dXJl")]
+  public async Task AnUnvalidatedTokenNamesTheCallerFromItsClaims(string algorithm,
+                                                                  string signature)
+  {
+    var provider = new ServiceCollection().AddLogging();
+    provider.AddArmoniKAuthorization(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+                                                                                      {
+                                                                                        ["Authorization:Enabled"]   = "true",
+                                                                                        ["Identity:ValidateTokens"] = "false",
+                                                                                      })
+                                                               .Build());
+    var services = provider.BuildServiceProvider();
+
+    var token = $"{Base64UrlEncoder.Encode($$"""{"alg":"{{algorithm}}","typ":"JWT"}""")}.{Base64UrlEncoder.Encode("""{"oid":"alice","roles":["team"]}""")}.{signature}";
+    var request = Request(("Authorization", $"Bearer {token}"));
+    request.RequestServices = services;
+
+    var caller = await services.GetRequiredService<CallerResolver>()
+                               .ResolveAsync(request)
+                               .ConfigureAwait(false);
+
+    Assert.That(caller!.Caller.Expansion,
+                Is.EqualTo(new[]
+                           {
+                             "oid:alice",
+                             "role:team",
+                             "*",
+                           }));
+    Assert.That(caller.CredentialKind,
+                Is.EqualTo(CredentialKind.Token));
+  }
+
   [Test]
   public async Task NoCredentialIsNoCaller()
     => Assert.That(await Resolver.ResolveAsync(Request())
@@ -373,4 +410,13 @@ public class AddArmoniKAuthorizationTest
                                                                                        ("Identity:Authority", "https://idp.example"))),
                    Throws.InstanceOf<InvalidOperationException>()
                          .With.Message.Contains("Audience"));
+
+  [Test]
+  public void AnAuthorityIsRefusedWhenTokensAreNotValidated()
+    => Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
+                                                                                       ("Identity:Authority", "https://idp.example"),
+                                                                                       ("Identity:Audience", "armonik"),
+                                                                                       ("Identity:ValidateTokens", "false"))),
+                   Throws.InstanceOf<InvalidOperationException>()
+                         .With.Message.Contains("ValidateTokens"));
 }
