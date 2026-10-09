@@ -30,6 +30,7 @@ using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
 
 using Grpc.Core;
+using Grpc.Reflection;
 
 namespace ArmoniK.Core.Common.Enforcement;
 
@@ -355,16 +356,24 @@ public static class MethodAuthorization
   /// </summary>
   /// <param name="service">Name of the service class</param>
   /// <param name="method">Name of the method</param>
-  /// <returns>The rule, <see cref="RuleKind.Unsupported" /> for a method of these services without rule, null for another service</returns>
+  /// <returns>The rule, null for a service served without authorization, <see cref="RuleKind.Unsupported" /> for any other method without rule</returns>
   public static MethodRule? For(string service,
                                 string method)
     => RulesByMethod.TryGetValue((service, method),
                                  out var rule)
          ? rule
-         : Services.Any(type => type.Name == service)
-           ? new MethodRule(RuleKind.Unsupported,
-                            [])
-           : null;
+         : Unauthorized.Any(type => type.Name == service)
+           ? null
+           : new MethodRule(RuleKind.Unsupported,
+                            []);
+
+  /// <summary>
+  ///   The services outside the API, served without authorization: a service mapped later is unsupported until it gets rules
+  /// </summary>
+  private static IReadOnlyList<Type> Unauthorized { get; } =
+  [
+    typeof(ReflectionServiceImpl),
+  ];
 
   private static MethodRule OnSession<TRequest>(Func<TRequest, string> sessionId,
                                                 params Permission[]    permissions)

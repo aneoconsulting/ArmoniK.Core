@@ -146,7 +146,7 @@ public class AuthorizationInterceptor : Interceptor
   }
 
   /// <summary>
-  ///   The rule of the call, null for a service that is not part of the control plane API, such as reflection
+  ///   The rule of the call, null for a service served without authorization, such as reflection
   /// </summary>
   private static (string Service, string Method, MethodRule Rule)? Rule(ServerCallContext context)
   {
