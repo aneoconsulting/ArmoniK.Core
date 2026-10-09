@@ -120,7 +120,8 @@ public class ObjectStorage : IObjectStorage
                                               var storageNameKeyWithIndex = $"{storageNameKey}_{index}";
 
                                               await PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
-                                                                                                chunk))
+                                                                                                chunk),
+                                                                           cancellationToken)
                                                 .ConfigureAwait(false);
 
                                               return chunk.Length;
@@ -134,7 +135,8 @@ public class ObjectStorage : IObjectStorage
     }
 
     await PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
-                                                      count))
+                                                      count),
+                                 cancellationToken)
       .ConfigureAwait(false);
 
     return (Encoding.UTF8.GetBytes(key), size);
@@ -145,7 +147,8 @@ public class ObjectStorage : IObjectStorage
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var key = Encoding.UTF8.GetString(id);
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"),
+                                             cancellationToken)
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -170,7 +173,8 @@ public class ObjectStorage : IObjectStorage
                                              },
                                              async index =>
                                              {
-                                               var chunk = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index))
+                                               var chunk = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index),
+                                                                                        cancellationToken)
                                                              .ConfigureAwait(false);
 
                                                return (byte[]?)chunk switch
@@ -224,7 +228,8 @@ public class ObjectStorage : IObjectStorage
     var key = Encoding.UTF8.GetString(id);
 
 
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"),
+                                             cancellationToken)
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -240,7 +245,8 @@ public class ObjectStorage : IObjectStorage
 
     foreach (var redisKey in keys)
     {
-      count += await PerformActionWithRetry(() => redis_.StringLengthAsync(redisKey))
+      count += await PerformActionWithRetry(() => redis_.StringLengthAsync(redisKey),
+                                            cancellationToken)
                  .ConfigureAwait(false);
     }
 
@@ -252,7 +258,8 @@ public class ObjectStorage : IObjectStorage
   {
     var key = Encoding.UTF8.GetString(id);
 
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"),
+                                             cancellationToken)
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -270,16 +277,19 @@ public class ObjectStorage : IObjectStorage
                                     })
                             .ToArray();
 
-    await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList))
+    await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList),
+                                 cancellationToken)
       .ConfigureAwait(false);
     logger_.LogInformation("Deleted data with {resultId}",
                            key);
   }
 
-  private async Task<T> PerformActionWithRetry<T>(Func<Task<T>> action)
+  private async Task<T> PerformActionWithRetry<T>(Func<Task<T>>     action,
+                                                  CancellationToken cancellationToken)
   {
     for (var retryCount = 0; retryCount < redisOptions_.MaxRetry; retryCount++)
     {
+      cancellationToken.ThrowIfCancellationRequested();
       try
       {
         return await action()
