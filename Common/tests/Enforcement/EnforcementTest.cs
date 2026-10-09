@@ -98,6 +98,13 @@ public class MethodAuthorizationTest
                    Is.Null);
 
   [Test]
+  public void AnUnknownServiceIsUnsupported()
+    => Assert.That(MethodAuthorization.For("GrpcFooService",
+                                           "Foo")
+                                      ?.Kind,
+                   Is.EqualTo(RuleKind.Unsupported));
+
+  [Test]
   public void RulesDecidedOnAResourceSayHowToFindIt()
     => Assert.That(MethodAuthorization.Rules.Where(pair => pair.Value.Kind is RuleKind.Session or RuleKind.Partition && pair.Value.Extract is null)
                                       .Select(pair => pair.Key),
