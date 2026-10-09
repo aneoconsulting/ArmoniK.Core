@@ -110,7 +110,8 @@ public class ObjectStorage : IObjectStorage
                                                                       count,
                                                                       CancellationToken.None));
 
-    var upload = valueChunks.Select((chunk, index) =>
+    var upload = valueChunks.Where(chunk => !chunk.IsEmpty)
+                            .Select((chunk, index) =>
                                     {
                                       count = index + 1;
                                       return (chunk, index);
@@ -217,28 +218,18 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
                                                         CancellationToken   cancellationToken = default)
-    => ids.ParallelSelect(new ParallelTaskOptions
-                          {
-                            ParallelismLimit  = redisOptions_.DegreeOfParallelism,
-                            CancellationToken = cancellationToken,
-                            Unordered         = true,
-                          },
-                          async id => (id, await ExistsAsync(id,
-                                                             cancellationToken)
-                                             .ConfigureAwait(false)))
-          .ToDictionaryAsync(tuple => tuple.id,
-                             tuple => tuple.Item2,
-                             new ByteArrayComparer(),
+    => ids.ToAsyncEnumerable()
+          .Select(GetSizeAsync)
+          .ToDictionaryAsync(new ByteArrayComparer(),
                              cancellationToken)
           .AndThen(static IDictionary<byte[], long?> (dict) => dict)
           .AsTask();
 
-  private async Task<long?> ExistsAsync(byte[]            id,
-                                        CancellationToken cancellationToken)
+  private async ValueTask<(byte[], long?)> GetSizeAsync(byte[]            id,
+                                                        CancellationToken cancellationToken)
   {
     var key            = Encoding.UTF8.GetString(id);
     var storageNameKey = redisOptions_.KeyPrefix + key;
-
 
     var value = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_count"),
                                              cancellationToken)
@@ -246,23 +237,38 @@ public class ObjectStorage : IObjectStorage
 
     if (!value.HasValue)
     {
-      return null;
+      return (id, null);
     }
 
     var valuesCount = int.Parse(value!);
-    var keys = Enumerable.Range(0,
-                                valuesCount)
-                         .Select(index => new RedisKey($"{storageNameKey}_{index}"));
-    long count = 0;
+    var sizes = Enumerable.Range(0,
+                                 valuesCount)
+                          .ParallelSelect(new ParallelTaskOptions
+                                          {
+                                            ParallelismLimit  = redisOptions_.DegreeOfParallelism,
+                                            CancellationToken = cancellationToken,
+                                            Unordered         = true,
+                                          },
+                                          index =>
+                                          {
+                                            var redisKey = new RedisKey($"{storageNameKey}_{index}");
+                                            return PerformActionWithRetry(() => redis_.StringLengthAsync(redisKey),
+                                                                          cancellationToken);
+                                          });
 
-    foreach (var redisKey in keys)
+    long totalSize = 0;
+    await foreach (var size in sizes.WithCancellation(cancellationToken)
+                                    .ConfigureAwait(false))
     {
-      count += await PerformActionWithRetry(() => redis_.StringLengthAsync(redisKey),
-                                            cancellationToken)
-                 .ConfigureAwait(false);
+      if (size == 0)
+      {
+        return (id, null);
+      }
+
+      totalSize += size;
     }
 
-    return count;
+    return (id, totalSize);
   }
 
   private async Task TryDeleteAsync(byte[]            id,
