@@ -801,6 +801,10 @@ jobs:
         timeout-minutes: 5
         run: MONITOR_PREFIX="monitor/htcmock-token/" tools/monitor.sh just tag=${VERSION} runHtcmockToken
 
+      - name: Let a supervisor cancel a session without downloading its data
+        timeout-minutes: 5
+        run: just tag=${VERSION} runSupervisorScenario
+
       # Each refusal must come from the control plane with the expected status, not from any failure
       - name: Refuse a caller with no credential
         timeout-minutes: 3
