@@ -139,7 +139,7 @@ public class ObjectStorage : IObjectStorage
       size += chunk;
     }
 
-    await PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
+    await PerformActionWithRetry(() => SetObjectAsync($"{storageNameKey}_count",
                                                       count),
                                  cancellationToken)
       .ConfigureAwait(false);
@@ -169,8 +169,9 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var key = Encoding.UTF8.GetString(id);
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"),
+    var key            = Encoding.UTF8.GetString(id);
+    var storageNameKey = redisOptions_.KeyPrefix + key;
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_count"),
                                              cancellationToken)
                   .ConfigureAwait(false);
 
@@ -196,7 +197,7 @@ public class ObjectStorage : IObjectStorage
                                              },
                                              async index =>
                                              {
-                                               var chunk = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index),
+                                               var chunk = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_{index}"),
                                                                                         cancellationToken)
                                                              .ConfigureAwait(false);
 
@@ -248,10 +249,11 @@ public class ObjectStorage : IObjectStorage
   private async Task<long?> ExistsAsync(byte[]            id,
                                         CancellationToken cancellationToken)
   {
-    var key = Encoding.UTF8.GetString(id);
+    var key            = Encoding.UTF8.GetString(id);
+    var storageNameKey = redisOptions_.KeyPrefix + key;
 
 
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"),
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_count"),
                                              cancellationToken)
                   .ConfigureAwait(false);
 
@@ -263,7 +265,7 @@ public class ObjectStorage : IObjectStorage
     var valuesCount = int.Parse(value!);
     var keys = Enumerable.Range(0,
                                 valuesCount)
-                         .Select(index => new RedisKey(redisOptions_.KeyPrefix + key + "_" + index));
+                         .Select(index => new RedisKey($"{storageNameKey}_{index}"));
     long count = 0;
 
     foreach (var redisKey in keys)
@@ -279,9 +281,10 @@ public class ObjectStorage : IObjectStorage
   private async Task TryDeleteAsync(byte[]            id,
                                     CancellationToken cancellationToken = default)
   {
-    var key = Encoding.UTF8.GetString(id);
+    var key            = Encoding.UTF8.GetString(id);
+    var storageNameKey = redisOptions_.KeyPrefix + key;
 
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"),
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_count"),
                                              cancellationToken)
                   .ConfigureAwait(false);
 
@@ -293,10 +296,10 @@ public class ObjectStorage : IObjectStorage
     var valuesCount = int.Parse(value!);
     var keyList = Enumerable.Range(0,
                                    valuesCount)
-                            .Select(index => new RedisKey(redisOptions_.KeyPrefix + key + "_" + index))
+                            .Select(index => new RedisKey($"{storageNameKey}_{index}"))
                             .Concat(new[]
                                     {
-                                      new RedisKey(redisOptions_.KeyPrefix + key + "_count"),
+                                      new RedisKey($"{storageNameKey}_count"),
                                     })
                             .ToArray();
 
