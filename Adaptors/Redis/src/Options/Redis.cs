@@ -101,4 +101,16 @@ public class Redis
   ///   Whether to allow host name mismatches in SSL certificates.
   /// </summary>
   public bool AllowHostMismatch { get; set; }
+
+  /// <summary>
+  ///   Prefix for all object keys.
+  /// </summary>
+  public string KeyPrefix { get; set; } = "objectStorageName";
+
+  /// <summary>
+  ///   Maximum number of concurrent operations when the adapter processes items in parallel.
+  ///   Set to <c>0</c> to use the number of logical processors on the machine (
+  ///   <see cref="System.Environment.ProcessorCount" />).
+  /// </summary>
+  public int DegreeOfParallelism { get; set; }
 }
