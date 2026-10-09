@@ -81,14 +81,16 @@ export TF_VAR_container_init    := cinit
 export TF_VAR_enable_keycloak   := keycloak
 
 # Grants for the generated mTLS client certificate (cn:client) and the Keycloak role modelling-team: create sessions in
-# the default partition and own them, plus what sharing and delegation confer (access model v0.98, section 9)
+# the default partition and own them, plus what sharing and delegation confer (access model v0.98, section 9). The
+# supervisor certificate (OU=supervisors) follows and stops every session, without reading their data
 export TF_VAR_authorization := if authz == "true" { '{ enabled = true, grants = [ ' +
   '{ id = "client-create", principal = "cn:client", permission_set = "session-create", condition = "request.partition == \"TestPartition0\"" }, ' +
   '{ id = "client-own", principal = "cn:client", permission_set = "session-own", condition = "session.owner == request.caller && grant.principal in session.createdUnder" }, ' +
   '{ id = "team-create", principal = "role:modelling-team", permission_set = "session-create", condition = "request.partition == \"TestPartition0\"" }, ' +
   '{ id = "team-own", principal = "role:modelling-team", permission_set = "session-own", condition = "session.owner == request.caller && grant.principal in session.createdUnder" }, ' +
   '{ id = "share", principal = "*", permission_set = "session-view", condition = "request.caller in session.sharedWith" }, ' +
-  '{ id = "delegate", principal = "*", permission_set = "session-own", condition = "request.caller in session.delegatedTo" } ] }'
+  '{ id = "delegate", principal = "*", permission_set = "session-own", condition = "request.caller in session.delegatedTo" }, ' +
+  '{ id = "supervise", principal = "role:supervisors", permission_set = "session-supervise" } ] }'
 } else { '{}' }
 
 
@@ -488,6 +490,102 @@ runHtcmockTokenRaw: buildHtcmockClient
     -e GrpcClient__CaCert=/certs/server/ca.crt \
     -e GrpcClient__BearerToken={{kc_token}} \
     {{HTCMOCK_CLIENT_IMAGE}}
+
+# A supervisor follows and stops the sessions of others without reading their data. The client certificate creates
+# a session and a result; the supervisor certificate (OU=supervisors, granted session-supervise) reads the session, is
+# refused the download with PermissionDenied (it sees the session, so not NotFound) and cancels the session
+runSupervisorScenario:
+  #!/usr/bin/env bash
+  set -euo pipefail
+  certs="{{justfile_directory()}}/terraform/generated/ingress_mtls"
+  partition="TestPartition0"
+  grpcurl="fullstorydev/grpcurl:v1.9.1"
+
+  sessions="armonik.api.grpc.v1.sessions.Sessions"
+  results="armonik.api.grpc.v1.results.Results"
+
+  # The ingress only forwards the ArmoniK API, so the descriptors come from the reflection of the Submitter itself
+  descriptors="$(mktemp -d)"
+  trap 'rm -rf "$descriptors"' EXIT
+  for service in "$sessions" "$results"; do
+    docker run {{net_arg}} --rm --user "$(id -u):$(id -g)" -v "$descriptors:/out" "$grpcurl" \
+      -plaintext -protoset-out "/out/$service.protoset" armonik.control.submitter:1080 describe "$service" >/dev/null
+  done
+
+  # Call METHOD with DATA as the client WHO through the mTLS ingress, printing the answer; fails on any status but OK
+  call() {
+    local who="$1" method="$2" data="$3"
+    docker run {{net_arg}} --rm --user "$(id -u):$(id -g)" -v "$certs:/certs:ro" -v "$descriptors:/descriptors:ro" "$grpcurl" \
+      -protoset "/descriptors/$sessions.protoset" -protoset "/descriptors/$results.protoset" \
+      -cacert /certs/server/ca.crt -cert "/certs/client/$who.crt" -key "/certs/client/$who.key" \
+      -d "$data" ingress_mtls:9443 "$method" 2>&1
+  }
+
+  # Print the value of the field NAME of the answer on stdin, as grpcurl prints it under its proto name; fails with
+  # the answer when it holds no such field
+  field() {
+    local answer value
+    answer="$(cat)"
+    value="$(grep -o "\"$1\": *\"[^\"]*\"" <<<"$answer" | head -1 | sed 's/.*: *"\(.*\)"/\1/' || true)"
+    if [ -z "$value" ]; then
+      echo "FAIL: no $1 in the answer" >&2
+      echo "$answer" >&2
+      exit 1
+    fi
+    echo "$value"
+  }
+
+  # Call as for `call`, requiring success: print the answer, or fail with it
+  expect_success() {
+    local output
+    if ! output="$(call "$@")"; then
+      echo "FAIL: $2 as $1 was refused" >&2
+      echo "$output" >&2
+      exit 1
+    fi
+    echo "$output"
+  }
+
+  expect_refusal() {
+    local expected="$1" output
+    shift
+    if output="$(call "$@")"; then
+      echo "FAIL: $2 as $1 succeeded, expected $expected" >&2
+      echo "$output" >&2
+      exit 1
+    fi
+    if ! grep -q "Code: $expected" <<<"$output"; then
+      echo "FAIL: $2 as $1 failed, but not with $expected" >&2
+      echo "$output" >&2
+      exit 1
+    fi
+    echo "OK: $2 as $1 refused with $expected"
+  }
+
+  answer="$(expect_success client "$sessions/CreateSession" \
+    "{\"defaultTaskOption\": {\"maxDuration\": \"3600s\", \"maxRetries\": 1, \"priority\": 1, \"partitionId\": \"$partition\"}, \"partitionIds\": [\"$partition\"]}")"
+  session="$(field session_id <<<"$answer")"
+  echo "Session created by the client: $session"
+
+  answer="$(expect_success client "$results/CreateResultsMetaData" "{\"sessionId\": \"$session\", \"results\": [{\"name\": \"data\"}]}")"
+  result="$(field result_id <<<"$answer")"
+  echo "Result created by the client: $result"
+
+  expect_success supervisor "$sessions/GetSession" "{\"sessionId\": \"$session\"}" >/dev/null
+  echo "OK: GetSession as supervisor"
+
+  expect_refusal PermissionDenied supervisor "$results/DownloadResultData" "{\"sessionId\": \"$session\", \"resultId\": \"$result\"}"
+
+  expect_success supervisor "$sessions/CancelSession" "{\"sessionId\": \"$session\"}" >/dev/null
+  echo "OK: CancelSession as supervisor"
+
+  answer="$(expect_success client "$sessions/GetSession" "{\"sessionId\": \"$session\"}")"
+  status="$(field status <<<"$answer")"
+  if [ "$status" != "SESSION_STATUS_CANCELLED" ]; then
+    echo "FAIL: the client sees the session $status, expected SESSION_STATUS_CANCELLED" >&2
+    exit 1
+  fi
+  echo "OK: the client sees the session cancelled"
 
 # Run HtcMock against an ingress that does not verify client certificates, sending the genuine
 # mTLS client certificate as the X-Forwarded-Client-Cert header: the ingress must drop it
