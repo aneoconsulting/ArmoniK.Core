@@ -29,6 +29,8 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.gRPC.Services;
 
+using Grpc.Core;
+
 namespace ArmoniK.Core.Common.Enforcement;
 
 /// <summary>
@@ -227,8 +229,7 @@ public static class MethodAuthorization
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.CreateResults))] = OnSession<CreateResultsRequest>(r => r.SessionId,
                                                                                                                Permission.DataDeclare,
                                                                                                                Permission.DataProvide),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.UploadResultData))] = OnRequest<UploadResultDataRequest>(r => RequestTargets.OfResults(r.Id.SessionId,
-                                                                                                                                                   [r.Id.ResultId]),
+    [(nameof(GrpcResultsService), nameof(GrpcResultsService.UploadResultData))] = OnRequest<UploadResultDataRequest>(UploadTargets,
                                                                                                                       Permission.DataProvide),
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.ImportResultsData))] = OnRequest<ImportResultsDataRequest>(r => RequestTargets.OfResults(r.SessionId,
                                                                                                                                                      r.Results.Select(result => result.ResultId)),
@@ -376,6 +377,14 @@ public static class MethodAuthorization
     => new(RuleKind.Session,
            permissions,
            request => extract((TRequest)request));
+
+  /// <summary>The result named by the first message of an upload, which must be its identifier</summary>
+  private static RequestTargets UploadTargets(UploadResultDataRequest request)
+    => request.TypeCase == UploadResultDataRequest.TypeOneofCase.Id
+         ? RequestTargets.OfResults(request.Id.SessionId,
+                                    [request.Id.ResultId])
+         : throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                             "Message should be an Id"));
 
   private static MethodRule Listing(ListingTarget target,
                                     Permission    permission)
