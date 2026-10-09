@@ -44,9 +44,8 @@ namespace ArmoniK.Core.Adapters.Redis;
 public class ObjectStorage : IObjectStorage
 {
   private readonly ILogger<ObjectStorage> logger_;
-  private readonly string                 objectStorageName_;
-  private readonly IDatabaseAsync         redis_;
   private readonly Options.Redis          redisOptions_;
+  private readonly IDatabaseAsync         redis_;
   private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
@@ -63,11 +62,10 @@ public class ObjectStorage : IObjectStorage
                        IUuidGenerator uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
-    redis_             = redis;
-    redisOptions_      = redisOptions;
-    objectStorageName_ = "objectStorageName";
-    uuidGenerator_     = uuidGenerator;
-    logger_            = logger;
+    redis_         = redis;
+    redisOptions_  = redisOptions;
+    uuidGenerator_ = uuidGenerator;
+    logger_        = logger;
   }
 
   /// <inheritdoc />
@@ -104,7 +102,7 @@ public class ObjectStorage : IObjectStorage
   {
     var key = uuidGenerator_.GenerateUuid()
                             .ToString();
-    var  storageNameKey = objectStorageName_ + key;
+    var  storageNameKey = redisOptions_.KeyPrefix + key;
     long size           = 0;
 
     var idx      = 0;
@@ -132,7 +130,7 @@ public class ObjectStorage : IObjectStorage
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     var key = Encoding.UTF8.GetString(id);
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"))
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -149,7 +147,7 @@ public class ObjectStorage : IObjectStorage
 
     foreach (var chunkTask in Enumerable.Range(0,
                                                valuesCount)
-                                        .Select(index => PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_" + index)))
+                                        .Select(index => PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_" + index)))
                                         .ToList())
     {
       yield return (await chunkTask.ConfigureAwait(false))!;
@@ -181,7 +179,7 @@ public class ObjectStorage : IObjectStorage
     var key = Encoding.UTF8.GetString(id);
 
 
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"))
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -192,7 +190,7 @@ public class ObjectStorage : IObjectStorage
     var valuesCount = int.Parse(value!);
     var keys = Enumerable.Range(0,
                                 valuesCount)
-                         .Select(index => new RedisKey(objectStorageName_ + key + "_" + index));
+                         .Select(index => new RedisKey(redisOptions_.KeyPrefix + key + "_" + index));
     long count = 0;
 
     foreach (var redisKey in keys)
@@ -209,7 +207,7 @@ public class ObjectStorage : IObjectStorage
   {
     var key = Encoding.UTF8.GetString(id);
 
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(redisOptions_.KeyPrefix + key + "_count"))
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -220,10 +218,10 @@ public class ObjectStorage : IObjectStorage
     var valuesCount = int.Parse(value!);
     var keyList = Enumerable.Range(0,
                                    valuesCount)
-                            .Select(index => new RedisKey(objectStorageName_ + key + "_" + index))
+                            .Select(index => new RedisKey(redisOptions_.KeyPrefix + key + "_" + index))
                             .Concat(new[]
                                     {
-                                      new RedisKey(objectStorageName_ + key + "_count"),
+                                      new RedisKey(redisOptions_.KeyPrefix + key + "_count"),
                                     })
                             .ToArray();
 
