@@ -415,6 +415,18 @@ public class AuthorizationEnforcer
                                             found);
     }
 
+    // Empty result ids name no session: deciding on none would allow the request
+    if (sessionIds.Count == 0)
+    {
+      Refuse(service,
+             method,
+             caller,
+             rule,
+             targets.ResultIds,
+             "result not found");
+      throw new ResultNotFoundException("Result not found");
+    }
+
     if (targets.SessionId is not null && targets.Sessions is null && sessionIds.Count > 1)
     {
       Refuse(service,
