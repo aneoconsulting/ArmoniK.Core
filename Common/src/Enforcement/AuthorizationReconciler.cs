@@ -128,14 +128,24 @@ public class AuthorizationReconciler
     var setDeletions = storedSets.Values.Where(set => set.Origin == AuthorizationOrigin.Config && !desiredSets.ContainsKey(set.Name))
                                  .ToList();
 
-    var finalSets = storedSets.Values.Where(set => setDeletions.All(deleted => deleted.Name != set.Name))
-                              .Select(set => setChanges.FirstOrDefault(change => change.Name == set.Name) ?? set)
-                              .Concat(setChanges.Where(change => !storedSets.ContainsKey(change.Name)))
-                              .ToDictionary(set => set.Name,
-                                            set => PermissionSet.FromNames(set.Name,
-                                                                           set.Version,
-                                                                           set.Permissions),
-                                            StringComparer.Ordinal);
+    var finalSets = new Dictionary<string, PermissionSet>(StringComparer.Ordinal);
+    foreach (var set in storedSets.Values.Where(set => setDeletions.All(deleted => deleted.Name != set.Name))
+                                  .Select(set => setChanges.FirstOrDefault(change => change.Name == set.Name) ?? set)
+                                  .Concat(setChanges.Where(change => !storedSets.ContainsKey(change.Name))))
+    {
+      try
+      {
+        finalSets[set.Name] = PermissionSet.FromNames(set.Name,
+                                                      set.Version,
+                                                      set.Permissions);
+      }
+      catch (InvalidPermissionSetException e)
+      {
+        // Left out as when deciding: the grants naming it are refused below
+        audit_.RecordFault($"permission set {set.Name}",
+                           e.Message);
+      }
+    }
 
     // What the stored grants become
     var apiGrants = storedGrants.Where(grant => grant.Origin == AuthorizationOrigin.Api)
