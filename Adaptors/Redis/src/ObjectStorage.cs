@@ -106,7 +106,13 @@ public class ObjectStorage : IObjectStorage
     long size           = 0;
     var  count          = 0;
 
-    var upload = valueChunks.Index()
+    await using var cleanup = new Deferrer(Cleanup);
+
+    var upload = valueChunks.Select((chunk, index) =>
+                                    {
+                                      count = index + 1;
+                                      return (chunk, index);
+                                    })
                             .ParallelSelect(new ParallelTaskOptions
                                             {
                                               ParallelismLimit  = redisOptions_.DegreeOfParallelism,
@@ -115,7 +121,7 @@ public class ObjectStorage : IObjectStorage
                                             },
                                             async indexedChunk =>
                                             {
-                                              var (index, chunk) = indexedChunk;
+                                              var (chunk, index) = indexedChunk;
 
                                               var storageNameKeyWithIndex = $"{storageNameKey}_{index}";
 
@@ -130,8 +136,7 @@ public class ObjectStorage : IObjectStorage
     await foreach (var chunk in upload.WithCancellation(cancellationToken)
                                       .ConfigureAwait(false))
     {
-      size  += chunk;
-      count += 1;
+      size += chunk;
     }
 
     await PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
@@ -139,7 +144,25 @@ public class ObjectStorage : IObjectStorage
                                  cancellationToken)
       .ConfigureAwait(false);
 
+    // Disengage cleanup now that upload has been successfully completed
+    cleanup.Reset();
+
     return (Encoding.UTF8.GetBytes(key), size);
+
+    ValueTask Cleanup()
+    {
+      var keyList = Enumerable.Range(0,
+                                     count)
+                              .Select(index => new RedisKey($"{storageNameKey}_{index}"))
+                              .Concat(new[]
+                                      {
+                                        new RedisKey($"{storageNameKey}_count"),
+                                      })
+                              .ToArray();
+
+      return new ValueTask(PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList),
+                                                  CancellationToken.None));
+    }
   }
 
   /// <inheritdoc />
