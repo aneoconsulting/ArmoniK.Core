@@ -334,6 +334,28 @@ public class AuthorizationReconcilerTestBase
   }
 
   [Test]
+  public async Task AStoredSetNamingUnknownPermissionsIsLeftOut()
+  {
+    if (RunTests)
+    {
+      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("legacy",
+                                                                            1,
+                                                                            ["data:gone"],
+                                                                            AuthorizationOrigin.Api))
+                               .ConfigureAwait(false);
+
+      Assert.That(await ReconcileAsync(Options(1,
+                                               [Grant("own", "role:team", "session-own", Ownership)]))
+                    .ConfigureAwait(false),
+                  Is.True);
+      Assert.That(() => ReconcileAsync(Options(2,
+                                               [Grant("old", "role:team", "legacy")])),
+                  Throws.InstanceOf<InvalidOperationException>()
+                        .With.Message.Contains("old"));
+    }
+  }
+
+  [Test]
   public async Task ConcurrentReconciliationsAgree()
   {
     if (RunTests)
