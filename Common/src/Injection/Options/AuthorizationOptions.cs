@@ -133,6 +133,12 @@ public class IdentityOptions
   public bool RequireHttpsMetadata { get; set; } = true;
 
   /// <summary>
+  ///   Whether tokens are validated. When false, the claims of a token are taken as they are, without an authority: only
+  ///   for a Submitter reachable solely through a proxy writing the tokens, since anyone else can write any claims
+  /// </summary>
+  public bool ValidateTokens { get; set; } = true;
+
+  /// <summary>
   ///   Header carrying the client certificate forwarded by the ingress, as URL-escaped PEM
   /// </summary>
   public string CertificateHeader { get; set; } = "X-Forwarded-Client-Cert";
