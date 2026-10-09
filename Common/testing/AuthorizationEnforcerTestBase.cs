@@ -409,6 +409,24 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public void ARequestNamingOnlyEmptyIdsIsAnsweredLikeAMissingResult()
+  {
+    if (RunTests)
+    {
+      Assert.ThrowsAsync<ResultNotFoundException>(() => Authorize(Alice,
+                                                                  nameof(GrpcResultsService),
+                                                                  nameof(GrpcResultsService.DownloadResultData),
+                                                                  new DownloadResultDataRequest
+                                                                  {
+                                                                    SessionId = "",
+                                                                    ResultId  = "",
+                                                                  }));
+      Assert.That(audit_!.Messages.Any(message => message.Contains("Allow")),
+                  Is.False);
+    }
+  }
+
+  [Test]
   public async Task ABatchIsAllowedWhole()
   {
     if (RunTests)
