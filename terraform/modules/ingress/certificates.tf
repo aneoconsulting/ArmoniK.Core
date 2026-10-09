@@ -123,6 +123,37 @@ resource "tls_locally_signed_cert" "ingress_client_certificate" {
   ]
 }
 
+# A second client, whose OU gives it the role supervisors
+resource "tls_private_key" "ingress_supervisor_private_key" {
+  count       = var.mtls ? 1 : 0
+  algorithm   = "RSA"
+  ecdsa_curve = "P384"
+  rsa_bits    = "4096"
+}
+
+resource "tls_cert_request" "ingress_supervisor_cert_request" {
+  count           = var.mtls ? 1 : 0
+  private_key_pem = tls_private_key.ingress_supervisor_private_key.0.private_key_pem
+  subject {
+    country             = "France"
+    common_name         = "supervisor"
+    organizational_unit = "supervisors"
+  }
+}
+
+resource "tls_locally_signed_cert" "ingress_supervisor_certificate" {
+  count                 = var.mtls ? 1 : 0
+  cert_request_pem      = tls_cert_request.ingress_supervisor_cert_request.0.cert_request_pem
+  ca_private_key_pem    = tls_private_key.client_root_ingress.0.private_key_pem
+  ca_cert_pem           = tls_self_signed_cert.client_root_ingress.0.cert_pem
+  validity_period_hours = "168"
+  allowed_uses = [
+    "key_encipherment",
+    "digital_signature",
+    "client_auth",
+  ]
+}
+
 resource "pkcs12_from_pem" "ingress_client_pkcs12" {
   count           = var.mtls ? 1 : 0
   password        = ""
@@ -156,5 +187,19 @@ resource "local_sensitive_file" "ingress_client_p12" {
   count           = var.mtls ? 1 : 0
   content_base64  = pkcs12_from_pem.ingress_client_pkcs12.0.result
   filename        = "${path.root}/generated/${var.container.name}/client/client.p12"
+  file_permission = "0600"
+}
+
+resource "local_sensitive_file" "ingress_supervisor_crt" {
+  count           = var.mtls ? 1 : 0
+  content         = tls_locally_signed_cert.ingress_supervisor_certificate.0.cert_pem
+  filename        = "${path.root}/generated/${var.container.name}/client/supervisor.crt"
+  file_permission = "0600"
+}
+
+resource "local_sensitive_file" "ingress_supervisor_key" {
+  count           = var.mtls ? 1 : 0
+  content         = tls_private_key.ingress_supervisor_private_key.0.private_key_pem
+  filename        = "${path.root}/generated/${var.container.name}/client/supervisor.key"
   file_permission = "0600"
 }
