@@ -48,6 +48,7 @@ public class ObjectStorage : IObjectStorage
 
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
+  private readonly int                    parallelism_;
   private readonly string                 path_;
   private readonly int                    splitPathAt_;
   private readonly IUuidGenerator         uuidGenerator_;
@@ -78,6 +79,7 @@ public class ObjectStorage : IObjectStorage
     splitPathAt_ = options.SplitPathAt <= 0
                      ? int.MaxValue
                      : options.SplitPathAt;
+    parallelism_   = options.DegreeOfParallelism;
     uuidGenerator_ = uuidGenerator;
 
 
@@ -205,28 +207,19 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public Task TryDeleteAsync(IEnumerable<byte[]> ids,
                              CancellationToken   cancellationToken = default)
-  {
-    if (cancellationToken.IsCancellationRequested)
-    {
-      return Task.FromCanceled(cancellationToken);
-    }
-
-    try
-    {
-      foreach (var id in ids)
-      {
-        var key      = Encoding.UTF8.GetString(id);
-        var filename = GetPath(key);
-        File.Delete(filename);
-      }
-    }
-    catch (Exception e)
-    {
-      return Task.FromException(e);
-    }
-
-    return Task.CompletedTask;
-  }
+    => ids.ParallelForEach(new ParallelTaskOptions
+                           {
+                             CancellationToken = cancellationToken,
+                             ParallelismLimit  = parallelism_,
+                             Unordered         = true,
+                           },
+                           id =>
+                           {
+                             var key      = Encoding.UTF8.GetString(id);
+                             var filename = GetPath(key);
+                             File.Delete(filename);
+                             return Task.CompletedTask;
+                           });
 
   /// <inheritdoc />
   public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,

@@ -54,4 +54,9 @@ public class LocalStorage
     [UsedImplicitly]
     init;
   } = 3;
+
+  /// <summary>
+  ///   Number of tasks to be used in parallel execution (deletes, metadata lookups).
+  /// </summary>
+  public int DegreeOfParallelism { get; set; }
 }
