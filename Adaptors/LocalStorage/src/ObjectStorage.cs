@@ -259,7 +259,15 @@ public class ObjectStorage : IObjectStorage
   /// <returns>The size of the backing file, or null if it does not exist.</returns>
   private long? GetSize(byte[] key)
   {
-    var filename = GetPath(Encoding.UTF8.GetString(key));
+    string filename;
+    try
+    {
+      filename = GetPath(Encoding.UTF8.GetString(key));
+    }
+    catch (ArgumentException)
+    {
+      return null;
+    }
 
     try
     {
@@ -312,12 +320,11 @@ public class ObjectStorage : IObjectStorage
   }
 
   /// <summary>
-  ///   Create and open a new for file for the given key.
+  ///   Create and open a new file for the given key.
   /// </summary>
   /// <param name="filename">Path of the object to write.</param>
   /// <returns>The Stream of the opened file.</returns>
   /// <exception cref="ArgumentNullException"><paramref name="filename" /> is null.</exception>
-  /// <exception cref="ArgumentException"><paramref name="filename" /> could not be split.</exception>
   /// <exception cref="IOException">The file could not be created.</exception>
   private static FileStream OpenForWriting(string filename)
   {
@@ -358,7 +365,17 @@ public class ObjectStorage : IObjectStorage
   /// <exception cref="ObjectDataNotFoundException">The object does not exist.</exception>
   private FileStream OpenForReading(string key)
   {
-    var filename = GetPath(key);
+    string filename;
+    try
+    {
+      filename = GetPath(key);
+    }
+    catch (ArgumentException e)
+    {
+      throw new ObjectDataNotFoundException($"The object {key} has not been found in {path_}",
+                                            e);
+    }
+
     try
     {
       return File.Open(filename,
