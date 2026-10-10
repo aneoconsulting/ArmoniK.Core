@@ -21,6 +21,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,6 +40,12 @@ namespace ArmoniK.Core.Adapters.LocalStorage;
 
 public class ObjectStorage : IObjectStorage
 {
+  /// <summary>
+  ///   Regex to check that a key is valid
+  /// </summary>
+  private static readonly Regex IsValidKey = new("^[a-zA-Z0-9_-]+$",
+                                                 RegexOptions.Compiled);
+
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly string                 path_;
@@ -258,6 +265,12 @@ public class ObjectStorage : IObjectStorage
   private string GetPath(string key)
   {
     ArgumentNullException.ThrowIfNull(key);
+
+    if (!IsValidKey.IsMatch(key))
+    {
+      throw new ArgumentException($"The key `{key}` contains invalid character",
+                                  nameof(key));
+    }
 
     // The key is too small to be split
     if (key.Length <= splitPathAt_)
