@@ -130,7 +130,7 @@ public class ObjectStorage : IObjectStorage
     var filename = GetPath(key);
 
     // Write to temporary file, with deletion in case of error
-    await using var fileCleaner = new Deferrer(() => File.Delete(filename));
+    await using var fileCleaner = new Deferrer(() => TryDelete(key));
     await using var file        = OpenForWriting(filename);
 
     await using var enumerator = valueChunks.GetAsyncEnumerator(cancellationToken);
@@ -215,9 +215,7 @@ public class ObjectStorage : IObjectStorage
                            },
                            id =>
                            {
-                             var key      = Encoding.UTF8.GetString(id);
-                             var filename = GetPath(key);
-                             File.Delete(filename);
+                             TryDelete(Encoding.UTF8.GetString(id));
                              return Task.CompletedTask;
                            });
 
@@ -235,6 +233,24 @@ public class ObjectStorage : IObjectStorage
                              cancellationToken)
           .AndThen(static IDictionary<byte[], long?> (dict) => dict)
           .AsTask();
+
+  /// <summary>
+  ///   Delete a given object.
+  /// </summary>
+  /// <param name="key">The key of the object.</param>
+  private void TryDelete(string key)
+  {
+    var filename = GetPath(key);
+
+    try
+    {
+      File.Delete(filename);
+    }
+    catch (DirectoryNotFoundException)
+    {
+      // Ignore non-existent parent directory
+    }
+  }
 
   /// <summary>
   ///   Get the size of the given object.
