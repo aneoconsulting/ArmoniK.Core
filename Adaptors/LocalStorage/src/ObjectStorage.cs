@@ -224,9 +224,17 @@ public class ObjectStorage : IObjectStorage
   /// <inheritdoc />
   public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
                                                         CancellationToken   cancellationToken = default)
-    => Task.FromResult<IDictionary<byte[], long?>>(ids.ToDictionary(id => id,
-                                                                    GetSize,
-                                                                    new ByteArrayComparer()));
+    => ids.ParallelSelect(new ParallelTaskOptions
+                          {
+                            CancellationToken = cancellationToken,
+                            ParallelismLimit  = parallelism_,
+                            Unordered         = true,
+                          },
+                          id => Task.FromResult((id, GetSize(id))))
+          .ToDictionaryAsync(new ByteArrayComparer(),
+                             cancellationToken)
+          .AndThen(static IDictionary<byte[], long?> (dict) => dict)
+          .AsTask();
 
   /// <summary>
   ///   Get the size of the given object.
