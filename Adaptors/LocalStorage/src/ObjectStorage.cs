@@ -307,7 +307,7 @@ public class ObjectStorage : IObjectStorage
     try
     {
       return File.Open(filename,
-                       FileMode.OpenOrCreate,
+                       FileMode.Create,
                        FileAccess.Write,
                        FileShare.ReadWrite | FileShare.Delete);
     }
@@ -327,7 +327,7 @@ public class ObjectStorage : IObjectStorage
       Directory.CreateDirectory(dir);
 
       return File.Open(filename,
-                       FileMode.OpenOrCreate,
+                       FileMode.Create,
                        FileAccess.Write,
                        FileShare.ReadWrite | FileShare.Delete);
     }
