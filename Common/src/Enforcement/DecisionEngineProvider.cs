@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -24,6 +25,7 @@ using System.Threading.Tasks;
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
 
@@ -50,11 +52,10 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
 {
   private readonly AuthorizationAudit                    audit_;
   private readonly ILogger<StoredDecisionEngineProvider> logger_;
-  private readonly SemaphoreSlim                         refresh_ = new(1);
+  private readonly ExecutionSingleizer<DecisionEngine>   reload_;
   private readonly IAuthorizationTable                   table_;
-  private readonly TimeProvider                          time_;
   private readonly TimeSpan                              ttl_;
-  private          (DecisionEngine Engine, DateTimeOffset LoadedAt)? cached_;
+  private          Loaded?                               last_;
 
   /// <summary>
   ///   Build the provider
@@ -62,65 +63,65 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   public StoredDecisionEngineProvider(IAuthorizationTable                   table,
                                       AuthorizationOptions                  options,
                                       AuthorizationAudit                    audit,
-                                      TimeProvider                          time,
                                       ILogger<StoredDecisionEngineProvider> logger)
   {
     table_  = table;
     audit_  = audit;
-    time_   = time;
     logger_ = logger;
     ttl_    = options.GrantCacheTtl;
+    reload_ = new ExecutionSingleizer<DecisionEngine>(ttl_);
   }
 
   /// <inheritdoc />
   public void Dispose()
-    => refresh_.Dispose();
+    => reload_.Dispose();
 
   /// <inheritdoc />
   /// <remarks>
-  ///   When the grants cannot be read, the engine read before is used for at most one more period, then the error is
-  ///   thrown so that requests are refused.
+  ///   The grants are read once per period, by a single read shared by the callers waiting for it; a failed read is not
+  ///   tried again before a period either. Until the engine read last is two periods old, it is served while the grants
+  ///   are read again; past that, callers wait for the read, and are refused when it fails.
   /// </remarks>
   public async ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
   {
-    if (Fresh(ttl_) is { } engine)
+    var stale = last_ is { } last && Stopwatch.GetElapsedTime(last.LoadedAt) < 2 * ttl_
+                  ? last.Engine
+                  : null;
+
+    // Served the stale engine, a caller does not wait for the read, which must not be cancelled with its call
+    var reload = reload_.Call(ReloadAsync,
+                              stale is null
+                                ? cancellationToken
+                                : CancellationToken.None);
+
+    if (reload.IsCompletedSuccessfully)
     {
-      return engine;
+      return reload.Result;
     }
 
-    await refresh_.WaitAsync(cancellationToken)
-                  .ConfigureAwait(false);
+    return stale ?? await reload.ConfigureAwait(false);
+  }
+
+  private async Task<DecisionEngine> ReloadAsync(CancellationToken cancellationToken)
+  {
     try
     {
-      if (Fresh(ttl_) is { } refreshed)
-      {
-        return refreshed;
-      }
-
-      try
-      {
-        var loaded = await LoadAsync(cancellationToken)
-                       .ConfigureAwait(false);
-        cached_ = (loaded, time_.GetUtcNow());
-        return loaded;
-      }
-      catch (Exception e) when (e is not OperationCanceledException && Fresh(2 * ttl_) is not null)
-      {
-        logger_.LogWarning(e,
-                           "Grants could not be read, using the grants read before");
-        return cached_!.Value.Engine;
-      }
+      var loaded = await LoadAsync(cancellationToken)
+                     .ConfigureAwait(false);
+      last_ = new Loaded(loaded,
+                         Stopwatch.GetTimestamp());
+      return loaded;
     }
-    finally
+    catch (Exception e) when (e is not OperationCanceledException)
     {
-      refresh_.Release();
+      logger_.LogWarning(e,
+                         "Grants could not be read");
+      throw;
     }
   }
 
-  private DecisionEngine? Fresh(TimeSpan age)
-    => cached_ is var (engine, loadedAt) && time_.GetUtcNow() - loadedAt < age
-         ? engine
-         : null;
+  private sealed record Loaded(DecisionEngine Engine,
+                               long           LoadedAt);
 
   private async Task<DecisionEngine> LoadAsync(CancellationToken cancellationToken)
   {
