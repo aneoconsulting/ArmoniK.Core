@@ -152,12 +152,17 @@ public sealed record RequestTargets(string?                      SessionId,
 /// <param name="Listing">What the listing returns, for <see cref="RuleKind.Listing" /></param>
 /// <param name="Precondition">Precondition the method carries</param>
 /// <param name="Creation">Partitions declared and partition of the default task options, for <see cref="RuleKind.SessionCreation" /></param>
+/// <param name="ListedSessions">
+///   Sessions the filter of the request confines a listing to, null when it reaches any session, for
+///   <see cref="RuleKind.Listing" />
+/// </param>
 public sealed record MethodRule(RuleKind                                                                   Kind,
                                 IReadOnlyList<Permission>                                                  Permissions,
-                                Func<object, RequestTargets>?                                              Extract      = null,
-                                ListingTarget                                                              Listing      = ListingTarget.Sessions,
-                                Precondition                                                               Precondition = Precondition.None,
-                                Func<object, (IReadOnlyCollection<string> Declared, string? TaskOptions)>? Creation     = null);
+                                Func<object, RequestTargets>?                                              Extract        = null,
+                                ListingTarget                                                              Listing        = ListingTarget.Sessions,
+                                Precondition                                                               Precondition   = Precondition.None,
+                                Func<object, (IReadOnlyCollection<string> Declared, string? TaskOptions)>? Creation       = null,
+                                Func<object, IReadOnlyCollection<string>?>?                                ListedSessions = null);
 
 /// <summary>
 ///   The authorization rule of every method of the control plane
@@ -196,12 +201,15 @@ public static class MethodAuthorization
     // Tasks
     [(nameof(GrpcTasksService), nameof(GrpcTasksService.GetTask))] = OnRequest<GetTaskRequest>(r => RequestTargets.OfTasks([r.TaskId]),
                                                                                                Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasks))] = Listing(ListingTarget.Tasks,
-                                                                               Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasksDetailed))] = Listing(ListingTarget.Tasks,
-                                                                                       Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.CountTasksByStatus))] = Listing(ListingTarget.Tasks,
-                                                                                        Permission.TaskRead),
+    [(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasks))] = Listing<ListTasksRequest>(ListingTarget.Tasks,
+                                                                                                  r => ListedSessions(r.Filters),
+                                                                                                  Permission.TaskRead),
+    [(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasksDetailed))] = Listing<ListTasksRequest>(ListingTarget.Tasks,
+                                                                                                          r => ListedSessions(r.Filters),
+                                                                                                          Permission.TaskRead),
+    [(nameof(GrpcTasksService), nameof(GrpcTasksService.CountTasksByStatus))] = Listing<CountTasksByStatusRequest>(ListingTarget.Tasks,
+                                                                                                                    r => ListedSessions(r.Filters),
+                                                                                                                    Permission.TaskRead),
     [(nameof(GrpcTasksService), nameof(GrpcTasksService.GetResultIds))] = OnRequest<GetResultIdsRequest>(r => RequestTargets.OfTasks(r.TaskId),
                                                                                                           Permission.TaskRead),
     [(nameof(GrpcTasksService), nameof(GrpcTasksService.CancelTasks))] = OnRequest<CancelTasksRequest>(r => RequestTargets.OfTasks(r.TaskIds),
@@ -223,8 +231,9 @@ public static class MethodAuthorization
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.GetOwnerTaskId))] = OnRequest<GetOwnerTaskIdRequest>(r => RequestTargets.OfResults(r.SessionId,
                                                                                                                                                r.ResultId),
                                                                                                                   Permission.DataRead),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))] = Listing(ListingTarget.Results,
-                                                                                     Permission.DataRead),
+    [(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))] = Listing<ListResultsRequest>(ListingTarget.Results,
+                                                                                                    r => ListedSessions(r.Filters),
+                                                                                                    Permission.DataRead),
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.CreateResultsMetaData))] = OnSession<CreateResultsMetaDataRequest>(r => r.SessionId,
                                                                                                                                Permission.DataDeclare),
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.CreateResults))] = OnSession<CreateResultsRequest>(r => r.SessionId,
@@ -400,4 +409,61 @@ public static class MethodAuthorization
     => new(RuleKind.Listing,
            [permission],
            Listing: target);
+
+  private static MethodRule Listing<TRequest>(ListingTarget                              target,
+                                              Func<TRequest, IReadOnlyCollection<string>?> listedSessions,
+                                              Permission                                 permission)
+    => new(RuleKind.Listing,
+           [permission],
+           Listing: target,
+           ListedSessions: request => listedSessions((TRequest)request));
+
+  /// <summary>Sessions a task filter confines a listing to, null when it reaches any session</summary>
+  private static IReadOnlyCollection<string>? ListedSessions(Api.gRPC.V1.Tasks.Filters? filters)
+    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field.FieldCase == TaskField.FieldOneofCase.TaskSummaryField &&
+                                                                             field.Field.TaskSummaryField.Field == TaskSummaryEnumField.SessionId &&
+                                                                             field.ValueConditionCase ==
+                                                                             Api.gRPC.V1.Tasks.FilterField.ValueConditionOneofCase.FilterString &&
+                                                                             field.FilterString.Operator == FilterStringOperator.Equal)
+                                                             .Select(field => field.FilterString.Value)));
+
+  /// <summary>Sessions a result filter confines a listing to, null when it reaches any session</summary>
+  private static IReadOnlyCollection<string>? ListedSessions(Api.gRPC.V1.Results.Filters? filters)
+    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field.FieldCase == ResultField.FieldOneofCase.ResultRawField &&
+                                                                             field.Field.ResultRawField.Field == ResultRawEnumField.SessionId &&
+                                                                             field.ValueConditionCase ==
+                                                                             Api.gRPC.V1.Results.FilterField.ValueConditionOneofCase.FilterString &&
+                                                                             field.FilterString.Operator == FilterStringOperator.Equal)
+                                                             .Select(field => field.FilterString.Value)));
+
+  /// <summary>
+  ///   Sessions a filter confines a listing to: a filter is an OR of branches, each an AND of conditions, so it
+  ///   is confined when every branch requires a session to equal a value
+  /// </summary>
+  /// <remarks>
+  ///   Every row the filter matches is in one of the sessions returned, so reading only those keeps the
+  ///   listing whole. A branch that requires two different sessions matches nothing: keeping one of them
+  ///   still covers it.
+  /// </remarks>
+  /// <param name="branches">For each branch, the values its session must equal</param>
+  /// <returns>The sessions, null when a branch reaches any session or when there is no branch</returns>
+  private static HashSet<string>? ListedSessions(IEnumerable<IEnumerable<string>>? branches)
+  {
+    var sessions = new HashSet<string>(StringComparer.Ordinal);
+    foreach (var branch in branches ?? [])
+    {
+      var session = branch.Take(1)
+                          .ToList();
+      if (session.Count == 0)
+      {
+        return null;
+      }
+
+      sessions.Add(session[0]);
+    }
+
+    return sessions.Count == 0
+             ? null
+             : sessions;
+  }
 }
