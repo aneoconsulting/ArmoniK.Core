@@ -205,7 +205,7 @@ public class AuthorizationEnforcer
     }
     catch (Exception e) when (e is not (RpcException or OperationCanceledException) && !IsRefusal(e))
     {
-      // A fault is told apart in the audit and answered like a refusal of something absent
+      // A fault says nothing of the session: it is answered as unavailable, so that callers retry
       logger_.LogWarning(e,
                          "Authorization of {Service}.{Method} faulted",
                          service,
@@ -218,8 +218,8 @@ public class AuthorizationEnforcer
                     [],
                     [],
                     e.Message);
-      throw new RpcException(new Status(StatusCode.NotFound,
-                                        "Not found"));
+      throw new RpcException(new Status(StatusCode.Unavailable,
+                                        "Authorization could not be decided"));
     }
   }
 
