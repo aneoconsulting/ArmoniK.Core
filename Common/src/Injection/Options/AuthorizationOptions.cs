@@ -41,7 +41,7 @@ public class AuthorizationOptions
   /// <summary>
   ///   How long the grants and permission sets read from storage are kept before being read again
   /// </summary>
-  public TimeSpan GrantCacheTtl { get; set; } = TimeSpan.FromSeconds(5);
+  public TimeSpan GrantCacheTtl { get; set; } = TimeSpan.FromSeconds(10);
 
   /// <summary>
   ///   Revision of the grants of the configuration. A deployment with a lower revision than the one stored does not
