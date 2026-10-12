@@ -36,27 +36,14 @@ namespace ArmoniK.Core.Common.Tests.Enforcement;
 [TestFixture(TestOf = typeof(StoredDecisionEngineProvider))]
 public class StoredDecisionEngineProviderTest
 {
-  private sealed class ManualTime : TimeProvider
-  {
-    public DateTimeOffset Now { get; set; } = new(2026,
-                                                  10,
-                                                  8,
-                                                  12,
-                                                  0,
-                                                  0,
-                                                  TimeSpan.Zero);
+  // The provider measures time with the system clock
+  private static readonly TimeSpan Ttl = TimeSpan.FromMilliseconds(200);
 
-    public override DateTimeOffset GetUtcNow()
-      => Now;
-  }
-
-  private static readonly TimeSpan Ttl = TimeSpan.FromSeconds(5);
-
-  private readonly List<GrantData>     grants_ = new();
-  private          int                 reads_;
+  private readonly List<GrantData>           grants_ = new();
+  private          bool                      fail_;
+  private          TaskCompletionSource?     hold_;
+  private          int                       reads_;
   private          Mock<IAuthorizationTable> table_ = null!;
-  private          ManualTime          time_   = null!;
-  private          bool                fail_;
 
   [SetUp]
   public void SetUp()
@@ -64,7 +51,7 @@ public class StoredDecisionEngineProviderTest
     grants_.Clear();
     reads_ = 0;
     fail_  = false;
-    time_  = new ManualTime();
+    hold_  = null;
     table_ = new Mock<IAuthorizationTable>();
     table_.Setup(table => table.ListPermissionSetsAsync(It.IsAny<CancellationToken>()))
           .Returns(() => new[]
@@ -78,11 +65,26 @@ public class StoredDecisionEngineProviderTest
           .Returns(() =>
                    {
                      Interlocked.Increment(ref reads_);
-                     return fail_
-                              ? throw new InvalidOperationException("storage is down")
-                              : grants_.ToList()
-                                       .ToAsyncEnumerable();
+                     return Read(hold_?.Task);
                    });
+  }
+
+  private async IAsyncEnumerable<GrantData> Read(Task? hold)
+  {
+    if (hold is not null)
+    {
+      await hold.ConfigureAwait(false);
+    }
+
+    if (fail_)
+    {
+      throw new InvalidOperationException("storage is down");
+    }
+
+    foreach (var grant in grants_.ToList())
+    {
+      yield return grant;
+    }
   }
 
   private StoredDecisionEngineProvider Provider()
@@ -92,7 +94,6 @@ public class StoredDecisionEngineProviderTest
              GrantCacheTtl = Ttl,
            },
            new AuthorizationAudit(NullLoggerFactory.Instance),
-           time_,
            NullLogger<StoredDecisionEngineProvider>.Instance);
 
   private void AddGrant(string id)
@@ -103,6 +104,12 @@ public class StoredDecisionEngineProviderTest
                                  AuthorizationOrigin.Config,
                                  DateTime.UtcNow));
 
+  private static IEnumerable<string> Ids(StoredDecisionEngineProvider provider)
+    => provider.GetEngineAsync()
+               .AsTask()
+               .Result.Grants.Select(grant => grant.Id)
+               .ToList();
+
   [Test]
   public async Task AChangeIsSeenOnceTheCacheExpires()
   {
@@ -112,12 +119,8 @@ public class StoredDecisionEngineProviderTest
     var first = await provider.GetEngineAsync()
                               .ConfigureAwait(false);
     AddGrant("b");
-    time_.Now += Ttl - TimeSpan.FromMilliseconds(1);
     var cached = await provider.GetEngineAsync()
                                .ConfigureAwait(false);
-    time_.Now += TimeSpan.FromMilliseconds(1);
-    var refreshed = await provider.GetEngineAsync()
-                                  .ConfigureAwait(false);
 
     Assert.That(first.Grants.Select(grant => grant.Id),
                 Is.EqualTo(new[]
@@ -126,12 +129,14 @@ public class StoredDecisionEngineProviderTest
                            }));
     Assert.That(cached,
                 Is.SameAs(first));
-    Assert.That(refreshed.Grants.Select(grant => grant.Id),
+    Assert.That(() => Ids(provider),
                 Is.EqualTo(new[]
                            {
                              "a",
                              "b",
-                           }));
+                           })
+                  .After(5000,
+                         20));
   }
 
   [Test]
@@ -165,6 +170,36 @@ public class StoredDecisionEngineProviderTest
   }
 
   [Test]
+  public async Task AnExpiredEngineIsServedWhileItIsReadAgain()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    var first = await provider.GetEngineAsync()
+                              .ConfigureAwait(false);
+
+    hold_ = new TaskCompletionSource();
+    AddGrant("b");
+    await Task.Delay(Ttl * 1.25)
+              .ConfigureAwait(false);
+    var during    = provider.GetEngineAsync();
+    var completed = during.IsCompleted;
+    hold_.SetResult();
+
+    Assert.That(completed,
+                Is.True);
+    Assert.That(await during.ConfigureAwait(false),
+                Is.SameAs(first));
+    Assert.That(() => Ids(provider),
+                Is.EqualTo(new[]
+                           {
+                             "a",
+                             "b",
+                           })
+                  .After(5000,
+                         20));
+  }
+
+  [Test]
   public async Task AFailedReadServesTheLastEngineForOneMorePeriodThenFails()
   {
     using var provider = Provider();
@@ -172,16 +207,47 @@ public class StoredDecisionEngineProviderTest
     var first = await provider.GetEngineAsync()
                               .ConfigureAwait(false);
 
-    fail_    =  true;
-    time_.Now += Ttl;
+    fail_ = true;
+    await Task.Delay(Ttl * 1.25)
+              .ConfigureAwait(false);
     Assert.That(await provider.GetEngineAsync()
                               .ConfigureAwait(false),
                 Is.SameAs(first));
 
-    time_.Now += Ttl;
+    await Task.Delay(Ttl)
+              .ConfigureAwait(false);
     Assert.That(() => provider.GetEngineAsync()
                               .AsTask(),
                 Throws.InstanceOf<InvalidOperationException>());
+  }
+
+  [Test]
+  public async Task PastTwoPeriodsCallersShareOneFailedRead()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    await provider.GetEngineAsync()
+                  .ConfigureAwait(false);
+
+    fail_ = true;
+    hold_ = new TaskCompletionSource();
+    await Task.Delay(Ttl * 2.25)
+              .ConfigureAwait(false);
+    var waiting = Enumerable.Range(0,
+                                   20)
+                            .Select(_ => provider.GetEngineAsync()
+                                                 .AsTask())
+                            .ToList();
+    hold_.SetResult();
+
+    foreach (var task in waiting)
+    {
+      Assert.That(() => task,
+                  Throws.InstanceOf<InvalidOperationException>());
+    }
+
+    Assert.That(reads_,
+                Is.EqualTo(2));
   }
 
   [Test]
