@@ -584,6 +584,74 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task AListingNamingASessionResolvesOnlyThatSession()
+  {
+    if (RunTests)
+    {
+      var secondSession = await SessionTable!.SetSessionDataAsync(["part0"],
+                                                                  Options,
+                                                                  "cn:alice",
+                                                                  ["role:modelling-team"])
+                                             .ConfigureAwait(false);
+      await ResultTable!.Create([Result(secondSession, "r-alice-2")])
+                        .ConfigureAwait(false);
+
+      async Task<List<string>> Visible(string session)
+      {
+        var context = await Authorize(Alice,
+                                      nameof(GrpcResultsService),
+                                      nameof(GrpcResultsService.ListResults),
+                                      new ListResultsRequest
+                                      {
+                                        Filters = new Api.gRPC.V1.Results.Filters
+                                                  {
+                                                    Or =
+                                                    {
+                                                      new Api.gRPC.V1.Results.FiltersAnd
+                                                      {
+                                                        And =
+                                                        {
+                                                          new Api.gRPC.V1.Results.FilterField
+                                                          {
+                                                            Field = new ResultField
+                                                                    {
+                                                                      ResultRawField = new ResultRawField
+                                                                                       {
+                                                                                         Field = ResultRawEnumField.SessionId,
+                                                                                       },
+                                                                    },
+                                                            FilterString = new FilterString
+                                                                           {
+                                                                             Value    = session,
+                                                                             Operator = FilterStringOperator.Equal,
+                                                                           },
+                                                          },
+                                                        },
+                                                      },
+                                                    },
+                                                  },
+                                      })
+                        .ConfigureAwait(false);
+        // Without the filter of the request: what the decision left reaches only the session it names
+        return await ResultTable!.GetResults(context.RestrictListing<Result>(_ => true),
+                                             result => result.ResultId)
+                                 .ToListAsync()
+                                 .ConfigureAwait(false);
+      }
+
+      Assert.That(await Visible(aliceSession_)
+                    .ConfigureAwait(false),
+                  Is.EqualTo(new[]
+                             {
+                               "r-alice",
+                             }));
+      Assert.That(await Visible(otherSession_)
+                    .ConfigureAwait(false),
+                  Is.Empty);
+    }
+  }
+
+  [Test]
   public async Task ALegacyFilterNamingNothingRequiresThePermissionAcrossTheCluster()
   {
     if (RunTests)
