@@ -24,6 +24,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -176,6 +177,7 @@ public class AuthorizationEnforcer
                                     caller,
                                     rule,
                                     engine,
+                                    request,
                                     context)
             .ConfigureAwait(false);
           return;
@@ -259,6 +261,7 @@ public class AuthorizationEnforcer
                                          AuthenticatedCaller caller,
                                          MethodRule          rule,
                                          DecisionEngine      engine,
+                                         object              request,
                                          ServerCallContext   context)
   {
     var permission = rule.Permissions.Single();
@@ -294,6 +297,14 @@ public class AuthorizationEnforcer
       }
       else
       {
+        // Tasks and results do not carry the fields of their session, so the sessions are resolved to ids first:
+        // only those the request is confined to, when it names them
+        if (rule.ListedSessions?.Invoke(request) is { } listed)
+        {
+          var named = listed.ToList();
+          sessions = sessions.ExpressionAnd(session => named.Contains(session.SessionId));
+        }
+
         var ids = await sessionTable_.FindSessionsAsync(sessions,
                                                         session => session.SessionId,
                                                         context.CancellationToken)

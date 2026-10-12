@@ -180,6 +180,118 @@ public class MethodAuthorizationTest
     Assert.That(exception!.StatusCode,
                 Is.EqualTo(StatusCode.InvalidArgument));
   }
+
+  private static Api.gRPC.V1.Tasks.FilterField SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField field,
+                                                            string                                 value,
+                                                            Api.gRPC.V1.FilterStringOperator       op = Api.gRPC.V1.FilterStringOperator.Equal)
+    => new()
+       {
+         Field = new Api.gRPC.V1.Tasks.TaskField
+                 {
+                   TaskSummaryField = new Api.gRPC.V1.Tasks.TaskSummaryField
+                                      {
+                                        Field = field,
+                                      },
+                 },
+         FilterString = new Api.gRPC.V1.FilterString
+                        {
+                          Value    = value,
+                          Operator = op,
+                        },
+       };
+
+  private static IReadOnlyCollection<string>? ListedTasks(params Api.gRPC.V1.Tasks.FilterField[][] branches)
+  {
+    var filters = new Api.gRPC.V1.Tasks.Filters();
+    foreach (var branch in branches)
+    {
+      var and = new Api.gRPC.V1.Tasks.FiltersAnd();
+      and.And.AddRange(branch);
+      filters.Or.Add(and);
+    }
+
+    return MethodAuthorization.Rules[(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasks))]
+                              .ListedSessions!(new Api.gRPC.V1.Tasks.ListTasksRequest
+                                               {
+                                                 Filters = filters,
+                                               });
+  }
+
+  [Test]
+  public void AListingWithoutFilterReachesAnySession()
+    => Assert.That(ListedTasks(),
+                   Is.Null);
+
+  [Test]
+  public void AListingRequiringASessionIsConfinedToIt()
+    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.TaskId, "t1"), SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1")]),
+                   Is.EquivalentTo(new[]
+                                   {
+                                     "s1",
+                                   }));
+
+  [Test]
+  public void AListingIsConfinedToTheSessionsOfAllItsBranches()
+    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1")],
+                               [SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s2")]),
+                   Is.EquivalentTo(new[]
+                                   {
+                                     "s1",
+                                     "s2",
+                                   }));
+
+  [Test]
+  public void ABranchWithoutSessionReachesAnySession()
+    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1")],
+                               [SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.TaskId, "t1")]),
+                   Is.Null);
+
+  [Test]
+  public void ASessionOtherThanEqualReachesAnySession()
+    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1", Api.gRPC.V1.FilterStringOperator.NotEqual)]),
+                   Is.Null);
+
+  [Test]
+  public void AResultListingRequiringASessionIsConfinedToIt()
+  {
+    var filters = new Api.gRPC.V1.Results.Filters
+                  {
+                    Or =
+                    {
+                      new Api.gRPC.V1.Results.FiltersAnd
+                      {
+                        And =
+                        {
+                          new Api.gRPC.V1.Results.FilterField
+                          {
+                            Field = new Api.gRPC.V1.Results.ResultField
+                                    {
+                                      ResultRawField = new Api.gRPC.V1.Results.ResultRawField
+                                                       {
+                                                         Field = Api.gRPC.V1.Results.ResultRawEnumField.SessionId,
+                                                       },
+                                    },
+                            FilterString = new Api.gRPC.V1.FilterString
+                                           {
+                                             Value    = "s1",
+                                             Operator = Api.gRPC.V1.FilterStringOperator.Equal,
+                                           },
+                          },
+                        },
+                      },
+                    },
+                  };
+
+    Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))]
+                                   .ListedSessions!(new Api.gRPC.V1.Results.ListResultsRequest
+                                                    {
+                                                      Filters = filters,
+                                                    }),
+                Is.EquivalentTo(new[]
+                                {
+                                  "s1",
+                                }));
+  }
 }
 
 [TestFixture(TestOf = typeof(AuthorizationConfiguration))]
