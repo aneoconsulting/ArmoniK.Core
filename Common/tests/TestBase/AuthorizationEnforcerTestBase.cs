@@ -285,6 +285,39 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public void AFaultIsAnsweredAsUnavailable()
+  {
+    if (RunTests)
+    {
+      var enforcer = new AuthorizationEnforcer(new FailingEngine(),
+                                               new CallerResolver(new IdentityOptions()),
+                                               new AuthorizationAudit(audit_!),
+                                               SessionTable!,
+                                               TaskTable!,
+                                               ResultTable!,
+                                               new Injection.Options.Submitter
+                                               {
+                                                 DefaultPartition = "part0",
+                                               },
+                                               NullLogger<AuthorizationEnforcer>.Instance);
+
+      var exception = Assert.ThrowsAsync<RpcException>(() => enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
+                                                                                     nameof(GrpcSessionsService.GetSession),
+                                                                                     MethodAuthorization.Rules[(nameof(GrpcSessionsService),
+                                                                                                                nameof(GrpcSessionsService.GetSession))],
+                                                                                     new GetSessionRequest
+                                                                                     {
+                                                                                       SessionId = aliceSession_,
+                                                                                     },
+                                                                                     Context(Alice)));
+      Assert.That(exception!.StatusCode,
+                  Is.EqualTo(StatusCode.Unavailable));
+      Assert.That(audit_!.Messages.Any(message => message.Contains("Fault")),
+                  Is.True);
+    }
+  }
+
+  [Test]
   public async Task WhatTheDecisionReadIsLeftForTheHandler()
   {
     if (RunTests)
@@ -604,6 +637,12 @@ public class AuthorizationEnforcerTestBase
 
     public ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
       => ValueTask.FromResult(engine_);
+  }
+
+  private sealed class FailingEngine : IDecisionEngineProvider
+  {
+    public ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
+      => throw new TimeoutException("The database did not answer");
   }
 
   private sealed class RecordingLoggerFactory : ILoggerFactory, ILogger
