@@ -16,12 +16,12 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -41,10 +41,9 @@ namespace ArmoniK.Core.Adapters.LocalStorage;
 public class ObjectStorage : IObjectStorage
 {
   /// <summary>
-  ///   Regex to check that a key is valid
+  ///   Valid key authorized characters
   /// </summary>
-  private static readonly Regex IsValidKey = new("^[a-zA-Z0-9_-]+$",
-                                                 RegexOptions.Compiled);
+  private static readonly SearchValues<char> ValidKeyChars = SearchValues.Create("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-");
 
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
@@ -299,7 +298,7 @@ public class ObjectStorage : IObjectStorage
   {
     ArgumentNullException.ThrowIfNull(key);
 
-    if (!IsValidKey.IsMatch(key))
+    if (key.Length == 0 || key.ContainsAnyExcept(ValidKeyChars))
     {
       throw new ArgumentException($"The key `{key}` contains invalid character",
                                   nameof(key));
