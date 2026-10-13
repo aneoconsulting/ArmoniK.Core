@@ -184,12 +184,23 @@ public class AuthorizationReconciler
       throw new InvalidOperationException($"The authorization configuration is refused: {string.Join("; ", errors)}");
     }
 
+    // Written as one change, so that no replica reads it half written. A change a failed writer left unended is ended
+    // by this one, even with nothing else to write
+    var current = await table_.GetGenerationAsync(cancellationToken)
+                              .ConfigureAwait(false);
+    var changing = !current.Stable || setChanges.Count + grantDeletions.Count + grantCreations.Count + setDeletions.Count != 0;
+    var generation = changing
+                       ? await table_.BeginChangeAsync(cancellationToken)
+                                     .ConfigureAwait(false)
+                       : 0;
+
     foreach (var set in setChanges)
     {
       await table_.SetPermissionSetAsync(set,
                                          cancellationToken)
                   .ConfigureAwait(false);
       audit_.RecordChange(Actor,
+                          generation,
                           "PermissionSetChanged",
                           set.Name,
                           new
@@ -207,6 +218,7 @@ public class AuthorizationReconciler
                                     cancellationToken)
                   .ConfigureAwait(false);
       audit_.RecordChange(Actor,
+                          generation,
                           "GrantDeleted",
                           grant.GrantId,
                           grant);
@@ -225,6 +237,7 @@ public class AuthorizationReconciler
                                     cancellationToken)
                   .ConfigureAwait(false);
       audit_.RecordChange(Actor,
+                          generation,
                           "GrantCreated",
                           grant.Id,
                           data);
@@ -236,12 +249,21 @@ public class AuthorizationReconciler
                                             cancellationToken)
                   .ConfigureAwait(false);
       audit_.RecordChange(Actor,
+                          generation,
                           "PermissionSetDeleted",
                           set.Name,
                           new
                           {
                             OldVersion = set.Version,
                           });
+    }
+
+    // Left unended when a write fails, so that what was written is not read before a later change completes it
+    if (changing)
+    {
+      await table_.EndChangeAsync(generation,
+                                  cancellationToken)
+                  .ConfigureAwait(false);
     }
 
     await table_.SetConfigRevisionAsync(options_.ConfigRevision,
