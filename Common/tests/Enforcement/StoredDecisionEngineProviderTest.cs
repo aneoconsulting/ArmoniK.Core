@@ -40,7 +40,9 @@ public class StoredDecisionEngineProviderTest
   private static readonly TimeSpan Ttl = TimeSpan.FromMilliseconds(200);
 
   private readonly List<GrantData>           grants_ = new();
+  private          bool                      changeWhileReading_;
   private          bool                      fail_;
+  private          AuthorizationGeneration   generation_;
   private          TaskCompletionSource?     hold_;
   private          int                       reads_;
   private          Mock<IAuthorizationTable> table_ = null!;
@@ -49,10 +51,14 @@ public class StoredDecisionEngineProviderTest
   public void SetUp()
   {
     grants_.Clear();
-    reads_ = 0;
-    fail_  = false;
-    hold_  = null;
-    table_ = new Mock<IAuthorizationTable>();
+    reads_              = 0;
+    fail_               = false;
+    hold_               = null;
+    generation_         = default;
+    changeWhileReading_ = false;
+    table_              = new Mock<IAuthorizationTable>();
+    table_.Setup(table => table.GetGenerationAsync(It.IsAny<CancellationToken>()))
+          .Returns(() => Task.FromResult(generation_));
     table_.Setup(table => table.ListPermissionSetsAsync(It.IsAny<CancellationToken>()))
           .Returns(() => new[]
                          {
@@ -79,6 +85,12 @@ public class StoredDecisionEngineProviderTest
     if (fail_)
     {
       throw new InvalidOperationException("storage is down");
+    }
+
+    if (changeWhileReading_)
+    {
+      generation_ = new AuthorizationGeneration(generation_.Begun + 1,
+                                                generation_.Begun + 1);
     }
 
     foreach (var grant in grants_.ToList())
@@ -269,6 +281,89 @@ public class StoredDecisionEngineProviderTest
                 Is.EqualTo(new[]
                            {
                              "a",
+                           }));
+  }
+
+  [Test]
+  public async Task AReadDuringAChangeFails()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    generation_ = new AuthorizationGeneration(1,
+                                              0);
+
+    Assert.That(() => provider.GetEngineAsync()
+                              .AsTask(),
+                Throws.InvalidOperationException);
+
+    generation_ = new AuthorizationGeneration(1,
+                                              1);
+    // The failed read is not tried again before a period
+    await Task.Delay(2 * Ttl)
+              .ConfigureAwait(false);
+
+    Assert.That(Ids(provider),
+                Is.EqualTo(new[]
+                           {
+                             "a",
+                           }));
+  }
+
+  [Test]
+  public void AReadAcrossAChangeFails()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    changeWhileReading_ = true;
+
+    Assert.That(() => provider.GetEngineAsync()
+                              .AsTask(),
+                Throws.InvalidOperationException);
+  }
+
+  [Test]
+  public async Task AChangeUnderWayIsNeverServed()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    await provider.GetEngineAsync()
+                  .ConfigureAwait(false);
+
+    // Half written: b is stored but the change has not ended
+    generation_ = new AuthorizationGeneration(1,
+                                              0);
+    AddGrant("b");
+
+    var until = DateTime.UtcNow + 4 * Ttl;
+    while (DateTime.UtcNow < until)
+    {
+      try
+      {
+        Assert.That(Ids(provider),
+                    Is.EqualTo(new[]
+                               {
+                                 "a",
+                               }));
+      }
+      catch (AggregateException e) when (e.InnerException is InvalidOperationException)
+      {
+        // Past two periods without a read kept, refused rather than served half written
+      }
+
+      await Task.Delay(10)
+                .ConfigureAwait(false);
+    }
+
+    generation_ = new AuthorizationGeneration(1,
+                                              1);
+    await Task.Delay(2 * Ttl)
+              .ConfigureAwait(false);
+
+    Assert.That(Ids(provider),
+                Is.EqualTo(new[]
+                           {
+                             "a",
+                             "b",
                            }));
   }
 }

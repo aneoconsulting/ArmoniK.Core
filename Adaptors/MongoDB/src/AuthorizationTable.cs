@@ -38,8 +38,9 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 /// <inheritdoc />
 public class AuthorizationTable : IAuthorizationTable
 {
-  private const string RevisionId = "revision";
-  private const string LockId     = "lock";
+  private const string RevisionId   = "revision";
+  private const string LockId       = "lock";
+  private const string GenerationId = "generation";
 
   private static readonly TimeSpan LockDuration = TimeSpan.FromMinutes(1);
 
@@ -290,6 +291,51 @@ public class AuthorizationTable : IAuthorizationTable
                        cancellationToken)
                 .ConfigureAwait(false);
     }
+  }
+
+  /// <inheritdoc />
+  public async Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity();
+    var state = await state_.Get()
+                            .Find(data => data.Id == GenerationId)
+                            .FirstOrDefaultAsync(cancellationToken)
+                            .ConfigureAwait(false);
+    return state is null
+             ? default
+             : new AuthorizationGeneration(state.Begun,
+                                           state.Ended);
+  }
+
+  /// <inheritdoc />
+  public async Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity();
+    var state = await state_.Get()
+                            .FindOneAndUpdateAsync<AuthorizationStateData>(data => data.Id == GenerationId,
+                                                                           Builders<AuthorizationStateData>.Update.Inc(data => data.Begun,
+                                                                                                                       1L),
+                                                                           new FindOneAndUpdateOptions<AuthorizationStateData>
+                                                                           {
+                                                                             IsUpsert       = true,
+                                                                             ReturnDocument = ReturnDocument.After,
+                                                                           },
+                                                                           cancellationToken)
+                            .ConfigureAwait(false);
+    return state.Begun;
+  }
+
+  /// <inheritdoc />
+  public async Task EndChangeAsync(long              generation,
+                                   CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity();
+    await state_.Get()
+                .UpdateOneAsync(data => data.Id == GenerationId && data.Begun == generation,
+                                Builders<AuthorizationStateData>.Update.Set(data => data.Ended,
+                                                                            generation),
+                                cancellationToken: cancellationToken)
+                .ConfigureAwait(false);
   }
 
   private static string VersionId(string name,

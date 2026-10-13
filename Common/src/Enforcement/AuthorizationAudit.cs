@@ -96,18 +96,29 @@ public class AuthorizationAudit
   ///   Record a change to the grants or the permission sets
   /// </summary>
   /// <param name="actor">Who made the change, <c>config</c> for the deployment configuration</param>
+  /// <param name="generation">Generation of the grants and permission sets the change belongs to</param>
   /// <param name="change">What changed: GrantCreated, GrantDeleted, PermissionSetChanged, PermissionSetDeleted</param>
   /// <param name="subject">Grant or permission set changed</param>
   /// <param name="details">Content of the grant, or old and new versions and contents of the set</param>
   public void RecordChange(string actor,
+                           long   generation,
                            string change,
                            string subject,
                            object details)
-    => logger_.LogInformation("Authorization change {Change} of {Subject} by {Actor} {@Details}",
+    => logger_.LogInformation("Authorization change {Change} of {Subject} by {Actor} in generation {Generation} {@Details}",
                               change,
                               subject,
                               actor,
+                              generation,
                               details);
+
+  /// <summary>
+  ///   Record the generation of the grants and permission sets a replica decides on from now on
+  /// </summary>
+  /// <param name="generation">The generation</param>
+  public void RecordGeneration(long generation)
+    => logger_.LogInformation("Authorization generation {Generation} in force",
+                              generation);
 
   private sealed record AuditGrant(string  Id,
                                    string  Principal,
