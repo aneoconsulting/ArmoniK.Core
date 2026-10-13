@@ -333,6 +333,8 @@ public class ObjectStorage : IObjectStorage
   {
     try
     {
+      // File is allowed to be shared with others in read/write/delete mode without locking.
+      // ArmoniK ensures that those operation can only happen after the file has been closed.
       return File.Open(filename,
                        FileMode.Create,
                        FileAccess.Write,
@@ -381,6 +383,8 @@ public class ObjectStorage : IObjectStorage
 
     try
     {
+      // File is allowed to be shared with others in read/write/delete mode without locking.
+      // Deleting keep the file alive without a Path and let all the readers to finish their reads.
       return File.Open(filename,
                        FileMode.Open,
                        FileAccess.Read,
