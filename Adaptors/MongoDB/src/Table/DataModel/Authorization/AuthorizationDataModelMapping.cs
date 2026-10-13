@@ -42,16 +42,21 @@ public record PermissionSetVersionData(string              Id,
                                        AuthorizationOrigin Origin);
 
 /// <summary>
-///   State shared by the replicas: the revision of the configuration, and the lock serializing changes
+///   State shared by the replicas: the revision of the configuration, the lock serializing changes, and the
+///   generation of the grants and permission sets
 /// </summary>
 /// <param name="Id">Identifier of the document</param>
 /// <param name="Revision">Revision of the configuration</param>
 /// <param name="Owner">Holder of the lock</param>
 /// <param name="ExpiresAt">When the lock may be taken over</param>
+/// <param name="Begun">Generation of the last change that began</param>
+/// <param name="Ended">Generation of the last change that ended</param>
 public record AuthorizationStateData(string    Id,
                                      int       Revision,
                                      string?   Owner,
-                                     DateTime? ExpiresAt);
+                                     DateTime? ExpiresAt,
+                                     long      Begun = 0,
+                                     long      Ended = 0);
 
 /// <summary>
 ///   Mapping of <see cref="GrantData" />
@@ -200,14 +205,24 @@ public class AuthorizationStateDataModelMapping : IMongoDataModelMapping<Authori
                                                             {
                                                               cm.MapIdProperty(nameof(AuthorizationStateData.Id))
                                                                 .SetIsRequired(true);
-                                                              cm.MapProperty(nameof(AuthorizationStateData.Revision));
-                                                              cm.MapProperty(nameof(AuthorizationStateData.Owner));
-                                                              cm.MapProperty(nameof(AuthorizationStateData.ExpiresAt));
+                                                              // Each document holds only some of them: the generation is created by an upsert of its counters
+                                                              cm.MapProperty(nameof(AuthorizationStateData.Revision))
+                                                                .SetDefaultValue(0);
+                                                              cm.MapProperty(nameof(AuthorizationStateData.Owner))
+                                                                .SetDefaultValue((object?)null);
+                                                              cm.MapProperty(nameof(AuthorizationStateData.ExpiresAt))
+                                                                .SetDefaultValue((object?)null);
+                                                              cm.MapProperty(nameof(AuthorizationStateData.Begun))
+                                                                .SetDefaultValue(0L);
+                                                              cm.MapProperty(nameof(AuthorizationStateData.Ended))
+                                                                .SetDefaultValue(0L);
                                                               cm.SetIgnoreExtraElements(true);
                                                               cm.MapCreator(model => new AuthorizationStateData(model.Id,
                                                                                                                 model.Revision,
                                                                                                                 model.Owner,
-                                                                                                                model.ExpiresAt));
+                                                                                                                model.ExpiresAt,
+                                                                                                                model.Begun,
+                                                                                                                model.Ended));
                                                             });
     }
   }

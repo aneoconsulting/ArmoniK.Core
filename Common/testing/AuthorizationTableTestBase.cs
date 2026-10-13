@@ -257,6 +257,63 @@ public class AuthorizationTableTestBase
   }
 
   [Test]
+  public async Task AChangeIsUnstableUntilItEnds()
+  {
+    if (RunTests)
+    {
+      Assert.That(await AuthorizationTable!.GetGenerationAsync()
+                                           .ConfigureAwait(false),
+                  Is.EqualTo(new AuthorizationGeneration(0,
+                                                         0)));
+
+      var generation = await AuthorizationTable.BeginChangeAsync()
+                                               .ConfigureAwait(false);
+
+      Assert.That(generation,
+                  Is.EqualTo(1));
+      Assert.That((await AuthorizationTable.GetGenerationAsync()
+                                           .ConfigureAwait(false)).Stable,
+                  Is.False);
+
+      await AuthorizationTable.EndChangeAsync(generation)
+                              .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable.GetGenerationAsync()
+                                          .ConfigureAwait(false),
+                  Is.EqualTo(new AuthorizationGeneration(1,
+                                                         1)));
+    }
+  }
+
+  [Test]
+  public async Task AChangeDoesNotEndOneThatBeganAfterIt()
+  {
+    if (RunTests)
+    {
+      var first = await AuthorizationTable!.BeginChangeAsync()
+                                           .ConfigureAwait(false);
+      var second = await AuthorizationTable.BeginChangeAsync()
+                                           .ConfigureAwait(false);
+
+      await AuthorizationTable.EndChangeAsync(first)
+                              .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable.GetGenerationAsync()
+                                          .ConfigureAwait(false),
+                  Is.EqualTo(new AuthorizationGeneration(2,
+                                                         0)));
+
+      await AuthorizationTable.EndChangeAsync(second)
+                              .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable.GetGenerationAsync()
+                                          .ConfigureAwait(false),
+                  Is.EqualTo(new AuthorizationGeneration(2,
+                                                         2)));
+    }
+  }
+
+  [Test]
   public async Task TheLockIsExclusive()
   {
     if (RunTests)

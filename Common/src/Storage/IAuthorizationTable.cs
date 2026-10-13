@@ -66,8 +66,27 @@ public record PermissionSetData(string              Name,
                                 AuthorizationOrigin Origin);
 
 /// <summary>
+///   Generation of the stored grants and permission sets: how many changes began, and the last that ended
+/// </summary>
+/// <param name="Begun">Generation of the last change that began, 0 when none did</param>
+/// <param name="Ended">Generation of the last change that ended</param>
+public readonly record struct AuthorizationGeneration(long Begun,
+                                                      long Ended)
+{
+  /// <summary>Whether no change is under way, or left unfinished by a writer that failed</summary>
+  public bool Stable
+    => Begun == Ended;
+}
+
+/// <summary>
 ///   Storage of the grants and permission sets of the access model
 /// </summary>
+/// <remarks>
+///   A change writes several grants and sets one at a time, and is read whole or not at all: under the lock, a writer
+///   begins it with <see cref="BeginChangeAsync" />, writes, then ends it with <see cref="EndChangeAsync" />. A reader
+///   keeps what it read only when the generation was stable and did not move meanwhile. A writer that fails leaves
+///   the change unended, so that what it wrote is not read before another change completes it.
+/// </remarks>
 public interface IAuthorizationTable : IInitializable
 {
   /// <summary>
@@ -151,4 +170,26 @@ public interface IAuthorizationTable : IInitializable
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>The lock, released when disposed</returns>
   Task<IAsyncDisposable> LockAsync(CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   The generation of the grants and permission sets
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>The generation</returns>
+  Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   Begin a change, under the lock
+  /// </summary>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>The generation of the change</returns>
+  Task<long> BeginChangeAsync(CancellationToken cancellationToken = default);
+
+  /// <summary>
+  ///   End a change, unless another began since
+  /// </summary>
+  /// <param name="generation">Generation of the change</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  Task EndChangeAsync(long              generation,
+                      CancellationToken cancellationToken = default);
 }

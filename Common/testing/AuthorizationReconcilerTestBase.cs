@@ -178,6 +178,56 @@ public class AuthorizationReconcilerTestBase
   }
 
   [Test]
+  public async Task AReconciliationIsOneChange()
+  {
+    if (RunTests)
+    {
+      var options = Options(1,
+                            [Grant("own", "role:team", "session-own", Ownership)]);
+      await ReconcileAsync(options)
+        .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable!.GetGenerationAsync()
+                                           .ConfigureAwait(false),
+                  Is.EqualTo(new AuthorizationGeneration(1,
+                                                         1)));
+
+      // Nothing to write, no change
+      await ReconcileAsync(options)
+        .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable.GetGenerationAsync()
+                                          .ConfigureAwait(false),
+                  Is.EqualTo(new AuthorizationGeneration(1,
+                                                         1)));
+    }
+  }
+
+  [Test]
+  public async Task AChangeLeftUnendedIsEndedByTheNextReconciliation()
+  {
+    if (RunTests)
+    {
+      var options = Options(1,
+                            [Grant("own", "role:team", "session-own", Ownership)]);
+      await ReconcileAsync(options)
+        .ConfigureAwait(false);
+
+      // A writer that failed between its writes
+      await AuthorizationTable!.BeginChangeAsync()
+                               .ConfigureAwait(false);
+
+      await ReconcileAsync(options)
+        .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable.GetGenerationAsync()
+                                          .ConfigureAwait(false),
+                  Is.EqualTo(new AuthorizationGeneration(3,
+                                                         3)));
+    }
+  }
+
+  [Test]
   public async Task AChangedSetGetsANewVersionAndKeepsTheOldOne()
   {
     if (RunTests)

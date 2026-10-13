@@ -33,10 +33,12 @@ namespace ArmoniK.Core.Adapters.Memory;
 /// <inheritdoc />
 public class AuthorizationTable : IAuthorizationTable
 {
-  private readonly ConcurrentDictionary<string, GrantData>                    grants_   = new();
-  private readonly SemaphoreSlim                                             lock_     = new(1);
-  private readonly ConcurrentDictionary<string, PermissionSetData>            sets_     = new();
-  private readonly ConcurrentDictionary<(string, int), PermissionSetData>     versions_ = new();
+  private readonly object                                                     generationLock_ = new();
+  private readonly ConcurrentDictionary<string, GrantData>                    grants_         = new();
+  private readonly SemaphoreSlim                                             lock_           = new(1);
+  private readonly ConcurrentDictionary<string, PermissionSetData>            sets_           = new();
+  private readonly ConcurrentDictionary<(string, int), PermissionSetData>     versions_       = new();
+  private          AuthorizationGeneration                                    generation_;
   private          bool                                                       isInitialized_;
   private          int                                                        revision_;
 
@@ -116,6 +118,46 @@ public class AuthorizationTable : IAuthorizationTable
     await lock_.WaitAsync(cancellationToken)
                .ConfigureAwait(false);
     return new Release(lock_);
+  }
+
+  /// <inheritdoc />
+  public Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default)
+  {
+    lock (generationLock_)
+    {
+      return Task.FromResult(generation_);
+    }
+  }
+
+  /// <inheritdoc />
+  public Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
+  {
+    lock (generationLock_)
+    {
+      generation_ = generation_ with
+                    {
+                      Begun = generation_.Begun + 1,
+                    };
+      return Task.FromResult(generation_.Begun);
+    }
+  }
+
+  /// <inheritdoc />
+  public Task EndChangeAsync(long              generation,
+                             CancellationToken cancellationToken = default)
+  {
+    lock (generationLock_)
+    {
+      if (generation_.Begun == generation)
+      {
+        generation_ = generation_ with
+                      {
+                        Ended = generation,
+                      };
+      }
+    }
+
+    return Task.CompletedTask;
   }
 
   private sealed class Release : IAsyncDisposable
