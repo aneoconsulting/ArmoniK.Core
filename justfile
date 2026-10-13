@@ -48,7 +48,8 @@ bench_duration_ms              := "100"
 bench_payload_size             := "1"
 bench_result_size              := "1"
 bench_batch_size               := "100"
-bench_max_retries              := "1"
+bench_max_retries              := "2"
+bench_download_max_attempts    := "1"
 bench_degree_of_parallelism    := "1"
 bench_show_events              := "false"
 bench_purge_data               := "true"
@@ -409,6 +410,7 @@ runBench: buildBenchClient
     -e BenchOptions__BatchSize={{bench_batch_size}} \
     -e BenchOptions__Partition={{partition}} \
     -e BenchOptions__MaxRetries={{bench_max_retries}} \
+    -e BenchOptions__DownloadMaxAttempts={{bench_download_max_attempts}} \
     -e BenchOptions__DegreeOfParallelism={{bench_degree_of_parallelism}} \
     -e BenchOptions__ShowEvents={{bench_show_events}} \
     -e BenchOptions__PurgeData={{bench_purge_data}} \

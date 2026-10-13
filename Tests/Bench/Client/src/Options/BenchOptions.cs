@@ -88,9 +88,14 @@ public class BenchOptions
   public bool ShowEvents { get; set; }
 
   /// <summary>
-  ///   Maximum number of retries for failures
+  ///   Maximum number of retries for a failed task
   /// </summary>
-  public int MaxRetries { get; set; } = 1;
+  public int MaxRetries { get; set; } = 2;
+
+  /// <summary>
+  ///   Maximum number of attempts to download a result when the service is unavailable
+  /// </summary>
+  public int DownloadMaxAttempts { get; set; } = 1;
 
   /// <summary>
   ///   Number of tasks to be used in parallel execution
