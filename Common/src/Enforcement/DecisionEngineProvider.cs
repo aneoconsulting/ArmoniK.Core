@@ -80,7 +80,8 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   /// <remarks>
   ///   The grants are read once per period, by a single read shared by the callers waiting for it; a failed read is not
   ///   tried again before a period either. Until the engine read last is two periods old, it is served while the grants
-  ///   are read again; past that, callers wait for the read, and are refused when it fails.
+  ///   are read again; past that, callers wait for the read, and are refused when it fails. A read during a change of the
+  ///   grants fails, so that the change is never decided on half written.
   /// </remarks>
   public async ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
   {
@@ -106,9 +107,25 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   {
     try
     {
+      // Kept only when no change was under way, so that a change is never read half written
+      var before = await table_.GetGenerationAsync(cancellationToken)
+                               .ConfigureAwait(false);
       var loaded = await LoadAsync(cancellationToken)
                      .ConfigureAwait(false);
+      var after = await table_.GetGenerationAsync(cancellationToken)
+                              .ConfigureAwait(false);
+      if (!before.Stable || after != before)
+      {
+        throw new InvalidOperationException($"Grants were being changed while they were read, at generation {after.Begun}");
+      }
+
+      if (last_?.Generation != before.Ended)
+      {
+        audit_.RecordGeneration(before.Ended);
+      }
+
       last_ = new Loaded(loaded,
+                         before.Ended,
                          Stopwatch.GetTimestamp());
       return loaded;
     }
@@ -121,6 +138,7 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   }
 
   private sealed record Loaded(DecisionEngine Engine,
+                               long           Generation,
                                long           LoadedAt);
 
   private async Task<DecisionEngine> LoadAsync(CancellationToken cancellationToken)

@@ -265,6 +265,48 @@ ON CONFLICT (id) DO UPDATE SET revision = EXCLUDED.revision",
     }
   }
 
+  /// <inheritdoc />
+  public async Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity();
+    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                          .ConfigureAwait(false);
+    await using var cmd = connection.CreateCommand();
+    cmd.CommandText = "SELECT begun, ended FROM authorization_generation WHERE id = 0";
+
+    await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
+                                      .ConfigureAwait(false);
+    return await reader.ReadAsync(cancellationToken)
+                       .ConfigureAwait(false)
+             ? new AuthorizationGeneration(reader.GetInt64(0),
+                                           reader.GetInt64(1))
+             : default;
+  }
+
+  /// <inheritdoc />
+  public async Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity();
+    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                          .ConfigureAwait(false);
+    await using var cmd = connection.CreateCommand();
+    cmd.CommandText = @"
+INSERT INTO authorization_generation (id, begun, ended) VALUES (0, 1, 0)
+ON CONFLICT (id) DO UPDATE SET begun = authorization_generation.begun + 1
+RETURNING begun";
+
+    return (long)(await cmd.ExecuteScalarAsync(cancellationToken)
+                           .ConfigureAwait(false))!;
+  }
+
+  /// <inheritdoc />
+  public async Task EndChangeAsync(long              generation,
+                                   CancellationToken cancellationToken = default)
+    => await ExecuteAsync("UPDATE authorization_generation SET ended = @generation WHERE id = 0 AND begun = @generation",
+                          ("generation", generation),
+                          cancellationToken)
+         .ConfigureAwait(false);
+
   private async Task<int> ExecuteAsync(string            sql,
                                        (string, object)  parameter,
                                        CancellationToken cancellationToken)
