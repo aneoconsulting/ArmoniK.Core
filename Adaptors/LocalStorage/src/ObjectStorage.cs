@@ -240,7 +240,15 @@ public class ObjectStorage : IObjectStorage
   /// <param name="key">The key of the object.</param>
   private void TryDelete(string key)
   {
-    var filename = GetPath(key);
+    string filename;
+    try
+    {
+      filename = GetPath(key);
+    }
+    catch (ArgumentException)
+    {
+      return;
+    }
 
     try
     {
