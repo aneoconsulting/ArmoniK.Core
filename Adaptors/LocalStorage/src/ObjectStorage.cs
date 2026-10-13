@@ -286,7 +286,7 @@ public class ObjectStorage : IObjectStorage
   /// <param name="key">Key of the object to access.</param>
   /// <returns>The path to the object.</returns>
   /// <exception cref="ArgumentNullException"><paramref name="key" /> is null.</exception>
-  /// <exception cref="ArgumentException"><paramref name="key" /> could not be split.</exception>
+  /// <exception cref="ArgumentException"><paramref name="key" /> has invalid characters.</exception>
   private string GetPath(string key)
   {
     ArgumentNullException.ThrowIfNull(key);
@@ -304,18 +304,13 @@ public class ObjectStorage : IObjectStorage
                           key);
     }
 
-    // If the first character after the split is the low part of a surrogate pair,
-    // either the string was not valid UTF-16, or we split in the middle of the pair,
-    // creating an invalid UTF-16 string. In both cases, the result is not valid UTF-16 string.
-    if (char.IsLowSurrogate(key[splitPathAt_]))
-    {
-      throw new ArgumentException($"The key `{key}` is invalid as it contains a surrogate pair at split location ({splitPathAt_}).",
-                                  nameof(key));
-    }
-
+    // Split cannot make invalid UTF-16 strings as the string has been first validated
+    // to contain only letters, numbers, dashes and underscores.
+    // The prefix folder name is suffixed with `.d` to ensure no filename could have
+    // the same name, because the folder name is larger than SplitPathAt.
     var span = key.AsSpan();
-    return Path.Join(path_.AsSpan(),
-                     span[..splitPathAt_],
+    return Path.Join(path_,
+                     $"{span[..splitPathAt_]}.d",
                      span[splitPathAt_..]);
   }
 
