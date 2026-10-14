@@ -186,6 +186,24 @@ public class MethodAuthorizationTest
                 Is.EqualTo(StatusCode.InvalidArgument));
   }
 
+  [Test]
+  public void ATaskOutputRequestWithoutSessionIsDecidedOnTheTask()
+  {
+    var targets = MethodAuthorization.Rules[(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetTaskOutput))]
+                                     .Extract!(new Api.gRPC.V1.TaskOutputRequest
+                                               {
+                                                 TaskId = "task",
+                                               });
+
+    Assert.That(targets.SessionId,
+                Is.Null);
+    Assert.That(targets.TaskIds,
+                Is.EqualTo(new[]
+                           {
+                             "task",
+                           }));
+  }
+
   private static Api.gRPC.V1.Tasks.FilterField SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField field,
                                                             string                                 value,
                                                             Api.gRPC.V1.FilterStringOperator       op = Api.gRPC.V1.FilterStringOperator.Equal)
