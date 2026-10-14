@@ -115,8 +115,9 @@ public class AuthorizationReconciler
                                              permissions,
                                              AuthorizationOrigin.Config));
       }
-      else if (!stored.Permissions.Order(StringComparer.Ordinal)
-                      .SequenceEqual(permissions) || stored.Origin != AuthorizationOrigin.Config)
+      // A set written by the administration API is never changed
+      else if (stored.Origin == AuthorizationOrigin.Config && !stored.Permissions.Order(StringComparer.Ordinal)
+                                                                     .SequenceEqual(permissions))
       {
         setChanges.Add(new PermissionSetData(set.Name,
                                              stored.Version + 1,
