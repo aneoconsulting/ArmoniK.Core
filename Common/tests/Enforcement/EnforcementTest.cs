@@ -71,10 +71,15 @@ public class MethodAuthorizationTest
                 Is.Empty);
   }
 
-  [Test]
-  public void LargeLegacySubmissionsAreUnsupported()
+  [TestCase(nameof(GrpcSubmitterService.CreateLargeTasks))]
+  [TestCase(nameof(GrpcSubmitterService.CancelTasks))]
+  [TestCase(nameof(GrpcSubmitterService.CountTasks))]
+  [TestCase(nameof(GrpcSubmitterService.ListTasks))]
+  [TestCase(nameof(GrpcSubmitterService.WaitForCompletion))]
+  [TestCase(nameof(GrpcSubmitterService.ListSessions))]
+  public void LegacyMethodsWithoutDecidableTargetsAreUnsupported(string method)
     => Assert.That(MethodAuthorization.For(nameof(GrpcSubmitterService),
-                                           nameof(GrpcSubmitterService.CreateLargeTasks))
+                                           method)
                                       ?.Kind,
                    Is.EqualTo(RuleKind.Unsupported));
 

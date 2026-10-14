@@ -220,7 +220,9 @@ public class AuthorizationEnforcer
                         [],
                         "method not supported while authorization is enabled");
           throw new RpcException(new Status(StatusCode.PermissionDenied,
-                                            "This method is not supported while authorization is enabled"));
+                                            rule.Instead is null
+                                              ? "This method is not supported while authorization is enabled"
+                                              : $"This method is not supported while authorization is enabled: {rule.Instead}"));
       }
     }
     catch (Exception e) when (e is not (RpcException or OperationCanceledException) && !IsRefusal(e))
@@ -354,38 +356,11 @@ public class AuthorizationEnforcer
   {
     var cancellationToken = context.CancellationToken;
 
-    // A legacy filter naming nothing acts on every session: the permission must be held across the cluster
-    if (targets.IsEmpty)
-    {
-      Enforce(service,
-              method,
-              caller,
-              rule,
-              [],
-              rule.Permissions.All(permission => engine.HoldsUnconditionally(caller.Caller,
-                                                                             permission))
-                ? new Decision(DecisionOutcome.Allow,
-                               null,
-                               DenialReason.None,
-                               [])
-                : new Decision(DecisionOutcome.Forbidden,
-                               null,
-                               DenialReason.MissingPermission,
-                               []),
-              () => new SessionNotFoundException("Session not found"));
-      return;
-    }
-
     var sessionIds = new HashSet<string>(StringComparer.Ordinal);
 
     if (targets.SessionId is not null)
     {
       sessionIds.Add(targets.SessionId);
-    }
-
-    if (targets.Sessions is not null)
-    {
-      sessionIds.UnionWith(targets.Sessions);
     }
 
     if (targets.TaskIds.Count != 0)
@@ -472,7 +447,7 @@ public class AuthorizationEnforcer
       throw new ResultNotFoundException("Result not found");
     }
 
-    if (targets.SessionId is not null && targets.Sessions is null && sessionIds.Count > 1)
+    if (targets.SessionId is not null && sessionIds.Count > 1)
     {
       Refuse(service,
              method,
