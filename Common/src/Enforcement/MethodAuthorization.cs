@@ -296,7 +296,9 @@ public static class MethodAuthorization
     [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.WaitForAvailability))] = OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
                                                                                                                                                 [r.ResultId]),
                                                                                                                    Permission.DataRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetTaskOutput))] = OnRequest<TaskOutputRequest>(r => new RequestTargets(r.Session,
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetTaskOutput))] = OnRequest<TaskOutputRequest>(r => new RequestTargets(string.IsNullOrEmpty(r.Session)
+                                                                                                                                             ? null
+                                                                                                                                             : r.Session,
                                                                                                                                             [r.TaskId],
                                                                                                                                             [],
                                                                                                                                             []),
