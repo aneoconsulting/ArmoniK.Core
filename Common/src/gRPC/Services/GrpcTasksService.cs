@@ -395,6 +395,8 @@ public class GrpcTasksService : Task.TasksBase
                                                                                             creation.ExpectedOutputKeys,
                                                                                             creation.DataDependencies))
                                   .ToList();
+    TaskLifeCycleHelper.ValidatePartitions(sessionData,
+                                           creationRequests);
     try
     {
       await TaskLifeCycleHelper.CreateTasks(taskTable_,

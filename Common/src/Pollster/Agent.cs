@@ -277,6 +277,8 @@ public sealed class Agent : IAgent
                                                                            creation.ExpectedOutputKeys,
                                                                            creation.DataDependencies))
                                .AsICollection();
+    TaskLifeCycleHelper.ValidatePartitions(sessionData_,
+                                           createdTasks);
 
     createdTasks_.Add(createdTasks);
     return Task.FromResult(createdTasks);
