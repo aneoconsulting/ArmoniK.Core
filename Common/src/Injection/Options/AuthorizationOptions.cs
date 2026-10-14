@@ -87,7 +87,7 @@ public class GrantOption
   /// <summary>Name of the permission set given</summary>
   public string PermissionSet { get; set; } = "";
 
-  /// <summary>Condition the grant is given under, empty or absent for none</summary>
+  /// <summary>Condition the grant is given under, absent for none; an empty condition is refused</summary>
   public string? Condition { get; set; }
 }
 
