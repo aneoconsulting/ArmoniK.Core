@@ -384,6 +384,34 @@ public class AuthorizationReconcilerTestBase
   }
 
   [Test]
+  public async Task ASetRedefinedByTheApiIsKept()
+  {
+    if (RunTests)
+    {
+      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("session-own",
+                                                                            1,
+                                                                            ["session:read"],
+                                                                            AuthorizationOrigin.Api))
+                               .ConfigureAwait(false);
+
+      await ReconcileAsync(Options(1))
+        .ConfigureAwait(false);
+
+      var set = (await SetsAsync()
+                   .ConfigureAwait(false))["session-own"];
+      Assert.That(set.Origin,
+                  Is.EqualTo(AuthorizationOrigin.Api));
+      Assert.That(set.Version,
+                  Is.EqualTo(1));
+      Assert.That(set.Permissions,
+                  Is.EqualTo(new[]
+                             {
+                               "session:read",
+                             }));
+    }
+  }
+
+  [Test]
   public async Task AStoredSetNamingUnknownPermissionsIsLeftOut()
   {
     if (RunTests)
