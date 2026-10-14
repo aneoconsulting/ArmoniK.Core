@@ -90,34 +90,12 @@ public enum ListingTarget
 /// <param name="ResultIds">Results the request acts on</param>
 /// <param name="ReferencedResultIds">Results the request uses, which must belong to <paramref name="SessionId" /></param>
 /// <param name="Partition">Partition the request acts on</param>
-/// <param name="Sessions">Other sessions the request acts on</param>
-public sealed record RequestTargets(string?                      SessionId,
-                                    IReadOnlyCollection<string>  TaskIds,
-                                    IReadOnlyCollection<string>  ResultIds,
-                                    IReadOnlyCollection<string>  ReferencedResultIds,
-                                    string?                      Partition = null,
-                                    IReadOnlyCollection<string>? Sessions  = null)
+public sealed record RequestTargets(string?                     SessionId,
+                                    IReadOnlyCollection<string> TaskIds,
+                                    IReadOnlyCollection<string> ResultIds,
+                                    IReadOnlyCollection<string> ReferencedResultIds,
+                                    string?                     Partition = null)
 {
-  /// <summary>Whether the request names nothing</summary>
-  public bool IsEmpty
-    => SessionId is null && TaskIds.Count == 0 && ResultIds.Count == 0 && ReferencedResultIds.Count == 0 && (Sessions?.Count ?? 0) == 0;
-
-  /// <summary>A request naming sessions or tasks through a legacy task filter, nothing when it names neither</summary>
-  public static RequestTargets OfTaskFilter(TaskFilter filter)
-    => filter.IdsCase switch
-       {
-         TaskFilter.IdsOneofCase.Session => new RequestTargets(null,
-                                                               [],
-                                                               [],
-                                                               [],
-                                                               Sessions: filter.Session.Ids.ToList()),
-         TaskFilter.IdsOneofCase.Task => OfTasks(filter.Task.Ids),
-         _                            => new RequestTargets(null,
-                                                            [],
-                                                            [],
-                                                            []),
-       };
-
   /// <summary>A request naming one session</summary>
   public static RequestTargets OfSession(string sessionId)
     => new(sessionId,
@@ -159,6 +137,7 @@ public sealed record RequestTargets(string?                      SessionId,
 /// <param name="KeepsResults">
 ///   Whether the handler reads the results the request names, which the decision then reads whole and leaves to it
 /// </param>
+/// <param name="Instead">What to call instead, for <see cref="RuleKind.Unsupported" /></param>
 public sealed record MethodRule(RuleKind                                                                   Kind,
                                 IReadOnlyList<Permission>                                                  Permissions,
                                 Func<object, RequestTargets>?                                              Extract        = null,
@@ -166,7 +145,8 @@ public sealed record MethodRule(RuleKind                                        
                                 Precondition                                                               Precondition   = Precondition.None,
                                 Func<object, (IReadOnlyCollection<string> Declared, string? TaskOptions)>? Creation       = null,
                                 Func<object, IReadOnlyCollection<string>?>?                                ListedSessions = null,
-                                bool                                                                       KeepsResults   = false);
+                                bool                                                                       KeepsResults   = false,
+                                string?                                                                    Instead        = null);
 
 /// <summary>
 ///   The authorization rule of every method of the control plane
@@ -303,24 +283,13 @@ public static class MethodAuthorization
                                                                                                                          Permission.DataDeclare,
                                                                                                                          Permission.DataProvide),
     // Its dependencies arrive within the stream: not supported while authorization is enabled
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CreateLargeTasks))] = new(RuleKind.Unsupported,
-                                                                                           []),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CancelTasks))] = OnRequest<TaskFilter>(RequestTargets.OfTaskFilter,
-                                                                                                        Permission.TaskCancel),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CountTasks))] = OnRequest<TaskFilter>(RequestTargets.OfTaskFilter,
-                                                                                                       Permission.TaskRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListTasks))] = OnRequest<TaskFilter>(RequestTargets.OfTaskFilter,
-                                                                                                      Permission.TaskRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.WaitForCompletion))] = OnRequest<WaitRequest>(r => RequestTargets.OfTaskFilter(r.Filter ??
-                                                                                                                                                       throw new RpcException(new Status(StatusCode.InvalidArgument,
-                                                                                                                                                                                         "Filter is required"))),
-                                                                                                               Permission.TaskRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListSessions))] = OnRequest<SessionFilter>(r => new RequestTargets(null,
-                                                                                                                                    [],
-                                                                                                                                    [],
-                                                                                                                                    [],
-                                                                                                                                    Sessions: r.Sessions.ToList()),
-                                                                                                            Permission.SessionRead),
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CreateLargeTasks))] = Unsupported("submit tasks with Tasks.SubmitTasks"),
+    // Their filters may name no session or several: not supported while authorization is enabled
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CancelTasks))] = Unsupported("cancel tasks with Tasks.CancelTasks"),
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CountTasks))] = Unsupported("count tasks with Tasks.CountTasksByStatus"),
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListTasks))] = Unsupported("list tasks with Tasks.ListTasks"),
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.WaitForCompletion))] = Unsupported("follow tasks with Events.GetEvents"),
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListSessions))] = Unsupported("list sessions with Sessions.ListSessions"),
     [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetResultStream))] = OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
                                                                                                                                                [r.ResultId]),
                                                                                                                   Permission.DataDownload),
@@ -395,6 +364,11 @@ public static class MethodAuthorization
   [
     typeof(ReflectionServiceImpl),
   ];
+
+  private static MethodRule Unsupported(string instead)
+    => new(RuleKind.Unsupported,
+           [],
+           Instead: instead);
 
   private static MethodRule OnSession<TRequest>(Func<TRequest, string> sessionId,
                                                 params Permission[]    permissions)
