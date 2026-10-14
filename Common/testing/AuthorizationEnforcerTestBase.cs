@@ -404,6 +404,29 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task OnlyTheHandlersReadingAResultAreLeftItsRow()
+  {
+    if (RunTests)
+    {
+      var context = await Authorize(Alice,
+                                    nameof(GrpcResultsService),
+                                    nameof(GrpcResultsService.GetOwnerTaskId),
+                                    new GetOwnerTaskIdRequest
+                                    {
+                                      SessionId = aliceSession_,
+                                      ResultId =
+                                      {
+                                        "r-alice",
+                                      },
+                                    })
+                      .ConfigureAwait(false);
+
+      Assert.That(context.ResolvedResult("r-alice"),
+                  Is.Null);
+    }
+  }
+
+  [Test]
   public async Task SubmittingCannotUseAResultOfAnotherSession()
   {
     if (RunTests)
