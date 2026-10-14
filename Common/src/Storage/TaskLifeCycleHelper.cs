@@ -77,12 +77,8 @@ public static class TaskLifeCycleHelper
       cancellationToken.Register(() => logger.LogTrace("CancellationToken from ServerCallContext has been triggered"));
     }
 
-    var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
-    if (!availablePartitionIds.Contains(localOptions.PartitionId))
-    {
-      throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
-                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {localOptions.PartitionId}");
-    }
+    ThrowIfPartitionNotInSession(sessionData,
+                                 localOptions.PartitionId);
 
     if (localOptions.Priority > maxPriority)
     {
@@ -106,6 +102,33 @@ public static class TaskLifeCycleHelper
     }
 
     return localOptions;
+  }
+
+  /// <summary>
+  ///   Validate that the tasks to create run in a partition of their session, once their own options are merged
+  /// </summary>
+  /// <param name="sessionData">Session Metadata</param>
+  /// <param name="requests">Tasks to create</param>
+  /// <exception cref="InvalidOperationException">when the partition of a task is not allowed in the session</exception>
+  public static void ValidatePartitions(SessionData                      sessionData,
+                                        IEnumerable<TaskCreationRequest> requests)
+  {
+    foreach (var request in requests)
+    {
+      ThrowIfPartitionNotInSession(sessionData,
+                                   request.Options.PartitionId);
+    }
+  }
+
+  private static void ThrowIfPartitionNotInSession(SessionData sessionData,
+                                                   string      partitionId)
+  {
+    var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
+    if (!availablePartitionIds.Contains(partitionId))
+    {
+      throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
+                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
+    }
   }
 
   /// <summary>
