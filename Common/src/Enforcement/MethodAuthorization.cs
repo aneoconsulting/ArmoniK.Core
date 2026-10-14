@@ -311,7 +311,9 @@ public static class MethodAuthorization
                                                                                                        Permission.TaskRead),
     [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListTasks))] = OnRequest<TaskFilter>(RequestTargets.OfTaskFilter,
                                                                                                       Permission.TaskRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.WaitForCompletion))] = OnRequest<WaitRequest>(r => RequestTargets.OfTaskFilter(r.Filter),
+    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.WaitForCompletion))] = OnRequest<WaitRequest>(r => RequestTargets.OfTaskFilter(r.Filter ??
+                                                                                                                                                       throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                                                                                                                                                                         "Filter is required"))),
                                                                                                                Permission.TaskRead),
     [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListSessions))] = OnRequest<SessionFilter>(r => new RequestTargets(null,
                                                                                                                                     [],
