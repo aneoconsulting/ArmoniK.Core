@@ -134,14 +134,15 @@ public class TaskTableTests : TaskTableTestBase
                                                                                     ""))))
                       .ConfigureAwait(false);
 
-      using var start = new ManualResetEventSlim();
+      // Released once every call is started, so that they all run concurrently without blocking thread pool threads
+      var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
 
       // One call per dependency (the payload counts as one), each one listing the tasks in a different order
       var removals = dependencies.Append($"payload{round}")
                                  .Select((dependency,
                                           i) => Task.Run(async () =>
                                                          {
-                                                           start.Wait();
+                                                           await start.Task.ConfigureAwait(false);
                                                            return await TaskTable.RemoveRemainingDataDependenciesAsync(taskIds.Skip(i * nTasks / (nDependencies + 1))
                                                                                                                               .Concat(taskIds.Take(i * nTasks /
                                                                                                                                                    (nDependencies + 1)))
@@ -160,7 +161,7 @@ public class TaskTableTests : TaskTableTestBase
       // Row-by-row updates of the same tasks in the reverse order, in a single transaction
       var updates = Task.Run(async () =>
                              {
-                               start.Wait();
+                               await start.Task.ConfigureAwait(false);
                                await TaskTable.BulkUpdateTasks(taskIds.Reverse()
                                                                       .Select(taskId => (taskId, new UpdateDefinition<TaskData>().Set(td => td.StatusMessage,
                                                                                                                                       "touched"))),
@@ -168,7 +169,7 @@ public class TaskTableTests : TaskTableTestBase
                                               .ConfigureAwait(false);
                              });
 
-      start.Set();
+      start.SetResult();
 
       var ready = (await Task.WhenAll(removals)
                              .ConfigureAwait(false)).SelectMany(ids => ids)
