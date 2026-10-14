@@ -159,7 +159,7 @@ Pre-commit hooks (`.pre-commit-config.yaml`) enforce: Terraform format, YAML/XML
 - **Adapter registration**: all adapters implement `IDependencyInjectionBuildable` and register services via `Build()`. Never bypass DI with `new ConcreteType()`.
 - **Task lifecycle**: driven by a state machine in `Common/src/StateMachines/`. Do not mutate task status outside the state machine.
 - **Authorization**: the decision model lives in `Authorization/src` (pure, tested in `Authorization/tests`); `Common/src/Enforcement` decides every control-plane call in `AuthorizationInterceptor`, registered only when `Authorization:Enabled`. A new RPC needs a rule in `MethodAuthorization` (reflection tests fail otherwise). Handlers read what the decision left with `context.GetSessionAuthorship()` and `context.RestrictListing(...)`. See `.docs/content/1.concepts/3.authentication.md`.
-- **Logging**: Serilog structured logging. Inject `ILogger<T>`; never use `Console.Write*`.
+- **Logging**: Serilog structured logging. Inject `ILogger<T>`; never use `Console.Write*`. Exception: a log category published to operators, such as `ArmoniK.Authorization.Audit`, is created from an injected `ILoggerFactory` so that it does not follow the class name.
 - **Nullable**: `<Nullable>enable</Nullable>` is set project-wide. All new code must handle nullability correctly.
 - **New adapters**: must include a `/tests/` sibling project with integration tests.
 
