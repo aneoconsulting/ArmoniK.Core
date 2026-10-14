@@ -223,7 +223,7 @@ ON CONFLICT (name) DO UPDATE SET version = EXCLUDED.version, permissions = EXCLU
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
-    cmd.CommandText = "SELECT revision FROM authorization_config WHERE id = 0";
+    cmd.CommandText = "SELECT revision FROM authorization_state WHERE id = 0";
 
     return await cmd.ExecuteScalarAsync(cancellationToken)
                     .ConfigureAwait(false) is int revision
@@ -235,7 +235,7 @@ ON CONFLICT (name) DO UPDATE SET version = EXCLUDED.version, permissions = EXCLU
   public async Task SetConfigRevisionAsync(int               revision,
                                            CancellationToken cancellationToken = default)
     => await ExecuteAsync(@"
-INSERT INTO authorization_config (id, revision) VALUES (0, @id)
+INSERT INTO authorization_state (id, revision) VALUES (0, @id)
 ON CONFLICT (id) DO UPDATE SET revision = EXCLUDED.revision",
                           ("id", revision),
                           cancellationToken)
@@ -272,7 +272,7 @@ ON CONFLICT (id) DO UPDATE SET revision = EXCLUDED.revision",
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
-    cmd.CommandText = "SELECT begun, ended FROM authorization_generation WHERE id = 0";
+    cmd.CommandText = "SELECT begun, ended FROM authorization_state WHERE id = 0";
 
     await using var reader = await cmd.ExecuteReaderAsync(cancellationToken)
                                       .ConfigureAwait(false);
@@ -291,8 +291,8 @@ ON CONFLICT (id) DO UPDATE SET revision = EXCLUDED.revision",
                                                           .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = @"
-INSERT INTO authorization_generation (id, begun, ended) VALUES (0, 1, 0)
-ON CONFLICT (id) DO UPDATE SET begun = authorization_generation.begun + 1
+INSERT INTO authorization_state (id, begun, ended) VALUES (0, 1, 0)
+ON CONFLICT (id) DO UPDATE SET begun = authorization_state.begun + 1
 RETURNING begun";
 
     return (long)(await cmd.ExecuteScalarAsync(cancellationToken)
@@ -302,7 +302,7 @@ RETURNING begun";
   /// <inheritdoc />
   public async Task EndChangeAsync(long              generation,
                                    CancellationToken cancellationToken = default)
-    => await ExecuteAsync("UPDATE authorization_generation SET ended = @generation WHERE id = 0 AND begun = @generation",
+    => await ExecuteAsync("UPDATE authorization_state SET ended = @generation WHERE id = 0 AND begun = @generation",
                           ("generation", generation),
                           cancellationToken)
          .ConfigureAwait(false);
