@@ -68,19 +68,24 @@ public class StoredDecisionEngineProviderTest
                                                  AuthorizationOrigin.Config),
                          }.ToAsyncEnumerable());
     table_.Setup(table => table.ListGrantsAsync(It.IsAny<CancellationToken>()))
-          .Returns(() =>
+          .Returns((CancellationToken cancellationToken) =>
                    {
                      Interlocked.Increment(ref reads_);
-                     return Read(hold_?.Task);
+                     return Read(hold_?.Task,
+                                 cancellationToken);
                    });
   }
 
-  private async IAsyncEnumerable<GrantData> Read(Task? hold)
+  private async IAsyncEnumerable<GrantData> Read(Task?             hold,
+                                                 CancellationToken cancellationToken)
   {
     if (hold is not null)
     {
-      await hold.ConfigureAwait(false);
+      await hold.WaitAsync(cancellationToken)
+                .ConfigureAwait(false);
     }
+
+    cancellationToken.ThrowIfCancellationRequested();
 
     if (fail_)
     {
@@ -179,6 +184,30 @@ public class StoredDecisionEngineProviderTest
 
     Assert.That(reads_,
                 Is.EqualTo(1));
+  }
+
+  [Test]
+  public async Task ACallerCancellingTheReadDoesNotFailTheCallersAfterIt()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    hold_ = new TaskCompletionSource();
+
+    using var cts = new CancellationTokenSource();
+    var cancelled = provider.GetEngineAsync(cts.Token)
+                            .AsTask();
+    cts.Cancel();
+    // Cancelling, the caller would cancel the read with it; else it waits for the read
+    await Task.WhenAny(cancelled,
+                       Task.Delay(100))
+              .ConfigureAwait(false);
+    hold_.SetResult();
+
+    Assert.That(Ids(provider),
+                Is.EqualTo(new[]
+                           {
+                             "a",
+                           }));
   }
 
   [Test]

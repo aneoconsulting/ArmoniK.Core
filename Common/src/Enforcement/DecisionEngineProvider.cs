@@ -89,11 +89,9 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
                   ? last.Engine
                   : null;
 
-    // Served the stale engine, a caller does not wait for the read, which must not be cancelled with its call
+    // The read is shared and kept for a period, so it is never cancelled with the call of one caller
     var reload = reload_.Call(ReloadAsync,
-                              stale is null
-                                ? cancellationToken
-                                : CancellationToken.None);
+                              CancellationToken.None);
 
     if (reload.IsCompletedSuccessfully)
     {
