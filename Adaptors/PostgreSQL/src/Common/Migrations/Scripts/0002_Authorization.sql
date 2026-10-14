@@ -36,7 +36,18 @@ CREATE TABLE IF NOT EXISTS permission_set_versions (
     PRIMARY KEY (name, version)
 );
 
-CREATE TABLE IF NOT EXISTS authorization_config (
+-- Revision of the configuration last reconciled, and generation of the grants and permission sets: the last change
+-- that began, and the last that ended
+
+CREATE TABLE IF NOT EXISTS authorization_state (
     id       INTEGER PRIMARY KEY,
-    revision INTEGER NOT NULL
+    revision INTEGER NOT NULL DEFAULT 0,
+    begun    BIGINT NOT NULL DEFAULT 0,
+    ended    BIGINT NOT NULL DEFAULT 0
 );
+
+-- The legacy user, role and certificate tables are replaced by the grants of the access model
+
+DROP TABLE IF EXISTS auth_data;
+DROP TABLE IF EXISTS user_data;
+DROP TABLE IF EXISTS role_data;
