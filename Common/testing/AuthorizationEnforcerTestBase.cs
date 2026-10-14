@@ -37,6 +37,7 @@ using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
+using Grpc.AspNetCore.Server;
 using Grpc.Core;
 
 using Microsoft.AspNetCore.Authentication;
@@ -554,6 +555,54 @@ public class AuthorizationEnforcerTestBase
                                                                   }));
       Assert.That(audit_!.Messages.Any(message => message.Contains("Allow")),
                   Is.False);
+    }
+  }
+
+  [Test]
+  public void AStreamRefusedOnItsFirstMessageStaysRefused()
+  {
+    if (RunTests)
+    {
+      var context = Context(Alice);
+      context.GetHttpContext()
+             .SetEndpoint(new Endpoint(null,
+                                       new EndpointMetadataCollection(new GrpcMethodMetadata(typeof(GrpcResultsService),
+                                                                                             new Method<UploadResultDataRequest, UploadResultDataResponse>(MethodType.ClientStreaming,
+                                                                                                                                                           "Results",
+                                                                                                                                                           nameof(GrpcResultsService.UploadResultData),
+                                                                                                                                                           Marshallers.Create(_ => [],
+                                                                                                                                                                              _ => new UploadResultDataRequest()),
+                                                                                                                                                           Marshallers.Create(_ => [],
+                                                                                                                                                                              _ => new UploadResultDataResponse())))),
+                                       "UploadResultData"));
+      var upload = new UploadResultDataRequest
+                   {
+                     Id = new UploadResultDataRequest.Types.ResultIdentifier
+                          {
+                            SessionId = otherSession_,
+                            ResultId  = "r-other",
+                          },
+                   };
+
+      // A handler reading on after the refusal of the first message gets the refusal again, never the next messages
+      Assert.ThrowsAsync<ResultNotFoundException>(() => new AuthorizationInterceptor(enforcer_!).ClientStreamingServerHandler(new TestHelperAsyncStreamReader<UploadResultDataRequest>([upload, upload]),
+                                                                                                                             context,
+                                                                                                                             async (stream,
+                                                                                                                                    _) =>
+                                                                                                                             {
+                                                                                                                               try
+                                                                                                                               {
+                                                                                                                                 await stream.MoveNext(CancellationToken.None)
+                                                                                                                                             .ConfigureAwait(false);
+                                                                                                                               }
+                                                                                                                               catch (ResultNotFoundException)
+                                                                                                                               {
+                                                                                                                               }
+
+                                                                                                                               await stream.MoveNext(CancellationToken.None)
+                                                                                                                                           .ConfigureAwait(false);
+                                                                                                                               return new UploadResultDataResponse();
+                                                                                                                             }));
     }
   }
 

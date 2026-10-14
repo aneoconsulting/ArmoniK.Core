@@ -172,7 +172,7 @@ public class AuthorizationInterceptor : Interceptor
   {
     private readonly Func<T, Task>         decide_;
     private readonly IAsyncStreamReader<T> inner_;
-    private          bool                  decided_;
+    private          Task?                 decision_;
 
     public DecidingReader(IAsyncStreamReader<T> inner,
                           Func<T, Task>         decide)
@@ -186,19 +186,20 @@ public class AuthorizationInterceptor : Interceptor
 
     public async Task<bool> MoveNext(CancellationToken cancellationToken)
     {
-      var moved = await inner_.MoveNext(cancellationToken)
-                              .ConfigureAwait(false);
-
-      if (!decided_)
+      // A refusal is kept, so that a handler reading on after it gets it again instead of the next messages
+      if (decision_ is not null)
       {
-        decided_ = true;
-        if (moved)
-        {
-          await decide_(inner_.Current)
-            .ConfigureAwait(false);
-        }
+        await decision_.ConfigureAwait(false);
+        return await inner_.MoveNext(cancellationToken)
+                           .ConfigureAwait(false);
       }
 
+      var moved = await inner_.MoveNext(cancellationToken)
+                              .ConfigureAwait(false);
+      decision_ = moved
+                    ? decide_(inner_.Current)
+                    : Task.CompletedTask;
+      await decision_.ConfigureAwait(false);
       return moved;
     }
   }
