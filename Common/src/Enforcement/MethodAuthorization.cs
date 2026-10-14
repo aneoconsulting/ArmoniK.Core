@@ -156,13 +156,17 @@ public sealed record RequestTargets(string?                      SessionId,
 ///   Sessions the filter of the request confines a listing to, null when it reaches any session, for
 ///   <see cref="RuleKind.Listing" />
 /// </param>
+/// <param name="KeepsResults">
+///   Whether the handler reads the results the request names, which the decision then reads whole and leaves to it
+/// </param>
 public sealed record MethodRule(RuleKind                                                                   Kind,
                                 IReadOnlyList<Permission>                                                  Permissions,
                                 Func<object, RequestTargets>?                                              Extract        = null,
                                 ListingTarget                                                              Listing        = ListingTarget.Sessions,
                                 Precondition                                                               Precondition   = Precondition.None,
                                 Func<object, (IReadOnlyCollection<string> Declared, string? TaskOptions)>? Creation       = null,
-                                Func<object, IReadOnlyCollection<string>?>?                                ListedSessions = null);
+                                Func<object, IReadOnlyCollection<string>?>?                                ListedSessions = null,
+                                bool                                                                       KeepsResults   = false);
 
 /// <summary>
 ///   The authorization rule of every method of the control plane
@@ -227,7 +231,10 @@ public static class MethodAuthorization
     // Results
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.GetResult))] = OnRequest<GetResultRequest>(r => RequestTargets.OfResults(null,
                                                                                                                                      [r.ResultId]),
-                                                                                                        Permission.DataRead),
+                                                                                                        Permission.DataRead) with
+                                                                                     {
+                                                                                       KeepsResults = true,
+                                                                                     },
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.GetOwnerTaskId))] = OnRequest<GetOwnerTaskIdRequest>(r => RequestTargets.OfResults(r.SessionId,
                                                                                                                                                r.ResultId),
                                                                                                                   Permission.DataRead),
@@ -246,7 +253,10 @@ public static class MethodAuthorization
                                                                                                                         Permission.DataImport),
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.DownloadResultData))] = OnRequest<DownloadResultDataRequest>(r => RequestTargets.OfResults(r.SessionId,
                                                                                                                                                        [r.ResultId]),
-                                                                                                                          Permission.DataDownload),
+                                                                                                                          Permission.DataDownload) with
+                                                                                              {
+                                                                                                KeepsResults = true,
+                                                                                              },
     [(nameof(GrpcResultsService), nameof(GrpcResultsService.DeleteResultsData))] = OnRequest<DeleteResultsDataRequest>(r => RequestTargets.OfResults(r.SessionId,
                                                                                                                                                      r.ResultId),
                                                                                                                         Permission.DataDelete),

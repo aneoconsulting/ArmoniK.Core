@@ -421,12 +421,25 @@ public class AuthorizationEnforcer
                            .ToList();
     if (resultIds.Count != 0)
     {
-      // Whole rows, so that handlers do not read them again
-      var found = await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
-                                                result => result,
-                                                cancellationToken)
-                                    .ToListAsync(cancellationToken)
-                                    .ConfigureAwait(false);
+      // Whole rows only for the handlers reading them, so that they do not read them again
+      var rows = rule.KeepsResults
+                   ? await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
+                                                   result => result,
+                                                   cancellationToken)
+                                       .ToListAsync(cancellationToken)
+                                       .ConfigureAwait(false)
+                   : null;
+      var found = rows?.Select(result => (result.ResultId, result.SessionId))
+                      .ToList() ?? await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
+                                                                 result => new
+                                                                           {
+                                                                             result.ResultId,
+                                                                             result.SessionId,
+                                                                           },
+                                                                 cancellationToken)
+                                                     .Select(result => (result.ResultId, result.SessionId))
+                                                     .ToListAsync(cancellationToken)
+                                                     .ConfigureAwait(false);
       // Results named next to a session must belong to it
       if (found.Count != resultIds.Count || (targets.SessionId is not null && found.Any(result => result.SessionId != targets.SessionId)))
       {
@@ -440,8 +453,11 @@ public class AuthorizationEnforcer
       }
 
       sessionIds.UnionWith(found.Select(result => result.SessionId));
-      AuthorizationState.SetResolvedResults(context,
-                                            found);
+      if (rows is not null)
+      {
+        AuthorizationState.SetResolvedResults(context,
+                                              rows);
+      }
     }
 
     // Empty result ids name no session: deciding on none would allow the request
