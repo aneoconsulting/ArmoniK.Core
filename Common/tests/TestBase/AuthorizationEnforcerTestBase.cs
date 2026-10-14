@@ -27,7 +27,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
-using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Base.DataStructures;
@@ -365,16 +364,31 @@ public class AuthorizationEnforcerTestBase
     }
   }
 
-  [Test]
-  public void AWaitWithoutFilterIsAnInvalidArgument()
+  [TestCase(nameof(GrpcSubmitterService.CreateLargeTasks),
+            "Tasks.SubmitTasks")]
+  [TestCase(nameof(GrpcSubmitterService.CancelTasks),
+            "Tasks.CancelTasks")]
+  [TestCase(nameof(GrpcSubmitterService.CountTasks),
+            "Tasks.CountTasksByStatus")]
+  [TestCase(nameof(GrpcSubmitterService.ListTasks),
+            "Tasks.ListTasks")]
+  [TestCase(nameof(GrpcSubmitterService.WaitForCompletion),
+            "Events.GetEvents")]
+  [TestCase(nameof(GrpcSubmitterService.ListSessions),
+            "Sessions.ListSessions")]
+  public void AnUnsupportedLegacyMethodNamesWhatToUseInstead(string method,
+                                                            string instead)
   {
     if (RunTests)
     {
-      Assert.That(Assert.ThrowsAsync<RpcException>(() => Authorize(Alice,
-                                                                   nameof(GrpcSubmitterService),
-                                                                   nameof(GrpcSubmitterService.WaitForCompletion),
-                                                                   new WaitRequest()))!.StatusCode,
-                  Is.EqualTo(StatusCode.InvalidArgument));
+      var exception = Assert.ThrowsAsync<RpcException>(() => Authorize(Alice,
+                                                                       nameof(GrpcSubmitterService),
+                                                                       method,
+                                                                       new object()));
+      Assert.That(exception!.StatusCode,
+                  Is.EqualTo(StatusCode.PermissionDenied));
+      Assert.That(exception.Status.Detail,
+                  Does.Contain(instead));
     }
   }
 
@@ -732,38 +746,6 @@ public class AuthorizationEnforcerTestBase
       Assert.That(await Visible(otherSession_)
                     .ConfigureAwait(false),
                   Is.Empty);
-    }
-  }
-
-  [Test]
-  public async Task ALegacyFilterNamingNothingRequiresThePermissionAcrossTheCluster()
-  {
-    if (RunTests)
-    {
-      Assert.That(Assert.ThrowsAsync<RpcException>(() => Authorize(Alice,
-                                                                   nameof(GrpcSubmitterService),
-                                                                   nameof(GrpcSubmitterService.ListTasks),
-                                                                   new Api.gRPC.V1.Submitter.TaskFilter()))!.StatusCode,
-                  Is.EqualTo(StatusCode.PermissionDenied));
-      await Authorize(Admin,
-                      nameof(GrpcSubmitterService),
-                      nameof(GrpcSubmitterService.ListTasks),
-                      new Api.gRPC.V1.Submitter.TaskFilter())
-        .ConfigureAwait(false);
-      await Authorize(Alice,
-                      nameof(GrpcSubmitterService),
-                      nameof(GrpcSubmitterService.ListTasks),
-                      new Api.gRPC.V1.Submitter.TaskFilter
-                      {
-                        Session = new Api.gRPC.V1.Submitter.TaskFilter.Types.IdsRequest
-                                  {
-                                    Ids =
-                                    {
-                                      aliceSession_,
-                                    },
-                                  },
-                      })
-        .ConfigureAwait(false);
     }
   }
 
