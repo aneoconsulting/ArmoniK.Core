@@ -104,6 +104,24 @@ public class AuthorizationEnforcer
       throw new RpcException(new Status(StatusCode.Unauthenticated,
                                         e.Message));
     }
+    catch (Exception e) when (e is not OperationCanceledException)
+    {
+      // The credential could not be checked, which says nothing of it: answered as unavailable, so that callers retry
+      logger_.LogWarning(e,
+                         "Authentication of {Service}.{Method} faulted",
+                         service,
+                         method);
+      audit_.Record(service,
+                    method,
+                    null,
+                    "Fault",
+                    rule.Permissions,
+                    [],
+                    [],
+                    e.Message);
+      throw new RpcException(new Status(StatusCode.Unavailable,
+                                        "The credential could not be checked"));
+    }
 
     if (caller is null)
     {
