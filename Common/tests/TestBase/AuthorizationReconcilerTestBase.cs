@@ -228,6 +228,28 @@ public class AuthorizationReconcilerTestBase
   }
 
   [Test]
+  public async Task AnOlderConfigurationCannotEndAChangeLeftUnended()
+  {
+    if (RunTests)
+    {
+      await ReconcileAsync(Options(2,
+                                   [Grant("own", "role:team", "session-own", Ownership)]))
+        .ConfigureAwait(false);
+
+      // A writer that failed between its writes
+      await AuthorizationTable!.BeginChangeAsync()
+                               .ConfigureAwait(false);
+
+      Assert.That(() => ReconcileAsync(Options(1)),
+                  Throws.InstanceOf<InvalidOperationException>()
+                        .With.Message.Contains("revision 2 or later"));
+      Assert.That((await AuthorizationTable.GetGenerationAsync()
+                                           .ConfigureAwait(false)).Stable,
+                  Is.False);
+    }
+  }
+
+  [Test]
   public async Task AChangedSetGetsANewVersionAndKeepsTheOldOne()
   {
     if (RunTests)

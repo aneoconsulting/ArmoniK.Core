@@ -69,7 +69,8 @@ public class AuthorizationReconciler
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>Whether the configuration was applied, false when it is older than the stored one</returns>
   /// <exception cref="InvalidOperationException">
-  ///   The configuration would leave a grant refused; nothing is changed
+  ///   The configuration would leave a grant refused, or is older than the stored one while a change is left unfinished;
+  ///   nothing is changed
   /// </exception>
   public async Task<bool> ReconcileAsync(CancellationToken cancellationToken = default)
   {
@@ -85,6 +86,17 @@ public class AuthorizationReconciler
                                .ConfigureAwait(false);
     if (options_.ConfigRevision < revision)
     {
+      // An older configuration can neither complete a change it does not know nor end it half written: until a later
+      // one is reconciled, every request is refused, so the replica does not start
+      var stored = await table_.GetGenerationAsync(cancellationToken)
+                               .ConfigureAwait(false);
+      if (!stored.Stable)
+      {
+        throw new InvalidOperationException($"Authorization configuration revision {options_.ConfigRevision} is older than the stored revision {revision}, " +
+                                            "and a change of the grants was left unfinished by a writer that failed: every request is refused " +
+                                            $"until a configuration of revision {revision} or later is reconciled");
+      }
+
       logger_.LogWarning("Authorization configuration revision {Revision} is older than the stored revision {Stored}, it is not applied",
                          options_.ConfigRevision,
                          revision);
