@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
@@ -38,7 +39,9 @@ using ArmoniK.Core.Common.Tests.Helpers;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -314,6 +317,50 @@ public class AuthorizationEnforcerTestBase
                   Is.EqualTo(StatusCode.Unavailable));
       Assert.That(audit_!.Messages.Any(message => message.Contains("Fault")),
                   Is.True);
+    }
+  }
+
+  [Test]
+  public void ACredentialThatCannotBeCheckedIsAnsweredAsUnavailable()
+  {
+    if (RunTests)
+    {
+      var enforcer = new AuthorizationEnforcer(new FailingEngine(),
+                                               new CallerResolver(new IdentityOptions
+                                                                  {
+                                                                    ValidateTokens = false,
+                                                                  }),
+                                               new AuthorizationAudit(audit_!),
+                                               SessionTable!,
+                                               TaskTable!,
+                                               ResultTable!,
+                                               new Injection.Options.Submitter
+                                               {
+                                                 DefaultPartition = "part0",
+                                               },
+                                               NullLogger<AuthorizationEnforcer>.Instance);
+      var context = TestServerCallContext.Create();
+      var http = new DefaultHttpContext
+                 {
+                   RequestServices = new ServiceCollection().AddSingleton<IAuthenticationService>(new UnreachableAuthority())
+                                                            .BuildServiceProvider(),
+                 };
+      http.Request.Headers.Authorization = "Bearer token";
+      context.UserState["__HttpContext"] = http;
+
+      var exception = Assert.ThrowsAsync<RpcException>(() => enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
+                                                                                     nameof(GrpcSessionsService.GetSession),
+                                                                                     MethodAuthorization.Rules[(nameof(GrpcSessionsService),
+                                                                                                                nameof(GrpcSessionsService.GetSession))],
+                                                                                     new GetSessionRequest
+                                                                                     {
+                                                                                       SessionId = aliceSession_,
+                                                                                     },
+                                                                                     context));
+      Assert.That(exception!.StatusCode,
+                  Is.EqualTo(StatusCode.Unavailable));
+      Assert.That(audit_!.Messages,
+                  Has.One.Matches<string>(message => message.Contains("Fault") && message.Contains(UnreachableAuthority.Message)));
     }
   }
 
@@ -711,6 +758,36 @@ public class AuthorizationEnforcerTestBase
   {
     public ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
       => throw new TimeoutException("The database did not answer");
+  }
+
+  private sealed class UnreachableAuthority : IAuthenticationService
+  {
+    public const string Message = "IDX20803: Unable to obtain configuration";
+
+    public Task<AuthenticateResult> AuthenticateAsync(HttpContext context,
+                                                      string?     scheme)
+      => throw new InvalidOperationException(Message);
+
+    public Task ChallengeAsync(HttpContext               context,
+                               string?                   scheme,
+                               AuthenticationProperties? properties)
+      => throw new NotSupportedException();
+
+    public Task ForbidAsync(HttpContext               context,
+                            string?                   scheme,
+                            AuthenticationProperties? properties)
+      => throw new NotSupportedException();
+
+    public Task SignInAsync(HttpContext               context,
+                            string?                   scheme,
+                            ClaimsPrincipal           principal,
+                            AuthenticationProperties? properties)
+      => throw new NotSupportedException();
+
+    public Task SignOutAsync(HttpContext               context,
+                             string?                   scheme,
+                             AuthenticationProperties? properties)
+      => throw new NotSupportedException();
   }
 
   private sealed class RecordingLoggerFactory : ILoggerFactory, ILogger
