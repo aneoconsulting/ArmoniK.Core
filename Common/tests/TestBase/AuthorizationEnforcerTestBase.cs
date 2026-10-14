@@ -27,6 +27,7 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
+using ArmoniK.Api.gRPC.V1.Submitter;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Base.DataStructures;
@@ -361,6 +362,19 @@ public class AuthorizationEnforcerTestBase
                   Is.EqualTo(StatusCode.Unavailable));
       Assert.That(audit_!.Messages,
                   Has.One.Matches<string>(message => message.Contains("Fault") && message.Contains(UnreachableAuthority.Message)));
+    }
+  }
+
+  [Test]
+  public void AWaitWithoutFilterIsAnInvalidArgument()
+  {
+    if (RunTests)
+    {
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => Authorize(Alice,
+                                                                   nameof(GrpcSubmitterService),
+                                                                   nameof(GrpcSubmitterService.WaitForCompletion),
+                                                                   new WaitRequest()))!.StatusCode,
+                  Is.EqualTo(StatusCode.InvalidArgument));
     }
   }
 
