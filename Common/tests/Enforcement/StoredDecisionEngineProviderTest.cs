@@ -22,10 +22,15 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Common.Enforcement;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 
 using Moq;
 
@@ -44,6 +49,8 @@ public class StoredDecisionEngineProviderTest
   private          bool                      fail_;
   private          AuthorizationGeneration   generation_;
   private          TaskCompletionSource?     hold_;
+  private          ExceptionManager          exceptionManager_ = null!;
+  private          ApplicationLifetime       lifetime_         = null!;
   private          int                       reads_;
   private          Mock<IAuthorizationTable> table_ = null!;
 
@@ -56,6 +63,16 @@ public class StoredDecisionEngineProviderTest
     hold_               = null;
     generation_         = default;
     changeWhileReading_ = false;
+    lifetime_           = new ApplicationLifetime(NullLogger<ApplicationLifetime>.Instance);
+    // A single error is allowed: a second one marks the control plane as failed
+    exceptionManager_ = new ExceptionManager(lifetime_,
+                                             new OptionsWrapper<ConsoleLifetimeOptions>(new ConsoleLifetimeOptions()),
+                                             new HostingEnvironment(),
+                                             new OptionsWrapper<HostOptions>(new HostOptions()),
+                                             NullLogger<ExceptionManager>.Instance,
+                                             new ExceptionManager.Options(TimeSpan.Zero,
+                                                                          TimeSpan.FromHours(1),
+                                                                          1));
     table_              = new Mock<IAuthorizationTable>();
     table_.Setup(table => table.GetGenerationAsync(It.IsAny<CancellationToken>()))
           .Returns(() => Task.FromResult(generation_));
@@ -74,6 +91,13 @@ public class StoredDecisionEngineProviderTest
                      return Read(hold_?.Task,
                                  cancellationToken);
                    });
+  }
+
+  [TearDown]
+  public void TearDown()
+  {
+    exceptionManager_.Dispose();
+    lifetime_.StopApplication();
   }
 
   private async IAsyncEnumerable<GrantData> Read(Task?             hold,
@@ -111,6 +135,7 @@ public class StoredDecisionEngineProviderTest
              GrantCacheTtl = Ttl,
            },
            new AuthorizationAudit(NullLoggerFactory.Instance),
+           exceptionManager_,
            NullLogger<StoredDecisionEngineProvider>.Instance);
 
   private void AddGrant(string id)
@@ -259,7 +284,7 @@ public class StoredDecisionEngineProviderTest
               .ConfigureAwait(false);
     Assert.That(() => provider.GetEngineAsync()
                               .AsTask(),
-                Throws.InstanceOf<InvalidOperationException>());
+                Throws.InstanceOf<GrantsUnavailableException>());
   }
 
   [Test]
@@ -284,7 +309,7 @@ public class StoredDecisionEngineProviderTest
     foreach (var task in waiting)
     {
       Assert.That(() => task,
-                  Throws.InstanceOf<InvalidOperationException>());
+                  Throws.InstanceOf<GrantsUnavailableException>());
     }
 
     Assert.That(reads_,
@@ -323,7 +348,7 @@ public class StoredDecisionEngineProviderTest
 
     Assert.That(() => provider.GetEngineAsync()
                               .AsTask(),
-                Throws.InvalidOperationException);
+                Throws.InstanceOf<GrantsUnavailableException>());
 
     generation_ = new AuthorizationGeneration(1,
                                               1);
@@ -347,7 +372,7 @@ public class StoredDecisionEngineProviderTest
 
     Assert.That(() => provider.GetEngineAsync()
                               .AsTask(),
-                Throws.InvalidOperationException);
+                Throws.InstanceOf<GrantsUnavailableException>());
   }
 
   [Test]
@@ -374,7 +399,7 @@ public class StoredDecisionEngineProviderTest
                                  "a",
                                }));
       }
-      catch (AggregateException e) when (e.InnerException is InvalidOperationException)
+      catch (AggregateException e) when (e.InnerException is GrantsUnavailableException)
       {
         // Past two periods without a read kept, refused rather than served half written
       }
@@ -394,5 +419,60 @@ public class StoredDecisionEngineProviderTest
                              "a",
                              "b",
                            }));
+  }
+
+  [Test]
+  public async Task AFailedReadIsCountedOnceForAllTheCallersItRefuses()
+  {
+    using var provider = Provider();
+    fail_ = true;
+
+    var refused = Enumerable.Range(0,
+                                   20)
+                            .Select(_ => provider.GetEngineAsync()
+                                                 .AsTask())
+                            .ToList();
+    foreach (var task in refused)
+    {
+      Assert.That(() => task,
+                  Throws.InstanceOf<GrantsUnavailableException>());
+    }
+
+    Assert.That(reads_,
+                Is.EqualTo(1));
+    Assert.That(exceptionManager_.Failed,
+                Is.False);
+
+    // The next read fails too: counted again
+    await Task.Delay(Ttl * 1.25)
+              .ConfigureAwait(false);
+    Assert.That(() => provider.GetEngineAsync()
+                              .AsTask(),
+                Throws.InstanceOf<GrantsUnavailableException>());
+    Assert.That(reads_,
+                Is.EqualTo(2));
+    Assert.That(exceptionManager_.Failed,
+                Is.True);
+  }
+
+  [Test]
+  public async Task AReadDuringAChangeIsNotCounted()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    generation_ = new AuthorizationGeneration(1,
+                                              0);
+
+    for (var read = 0; read < 3; read++)
+    {
+      Assert.That(() => provider.GetEngineAsync()
+                                .AsTask(),
+                  Throws.InstanceOf<GrantsUnavailableException>());
+      await Task.Delay(Ttl * 1.25)
+                .ConfigureAwait(false);
+    }
+
+    Assert.That(exceptionManager_.Failed,
+                Is.False);
   }
 }

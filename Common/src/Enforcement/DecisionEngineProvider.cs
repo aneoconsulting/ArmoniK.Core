@@ -23,8 +23,10 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
@@ -51,6 +53,7 @@ public interface IDecisionEngineProvider
 public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDisposable
 {
   private readonly AuthorizationAudit                    audit_;
+  private readonly ExceptionManager                      exceptionManager_;
   private readonly ILogger<StoredDecisionEngineProvider> logger_;
   private readonly ExecutionSingleizer<DecisionEngine>   reload_;
   private readonly IAuthorizationTable                   table_;
@@ -63,11 +66,13 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   public StoredDecisionEngineProvider(IAuthorizationTable                   table,
                                       AuthorizationOptions                  options,
                                       AuthorizationAudit                    audit,
+                                      ExceptionManager                      exceptionManager,
                                       ILogger<StoredDecisionEngineProvider> logger)
   {
-    table_  = table;
-    audit_  = audit;
-    logger_ = logger;
+    table_            = table;
+    audit_            = audit;
+    exceptionManager_ = exceptionManager;
+    logger_           = logger;
     ttl_    = options.GrantCacheTtl;
     reload_ = new ExecutionSingleizer<DecisionEngine>(ttl_);
   }
@@ -114,7 +119,8 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
                               .ConfigureAwait(false);
       if (!before.Stable || after != before)
       {
-        throw new InvalidOperationException($"Grants were being changed while they were read, at generation {after.Begun}");
+        // A change under way is not a fault of the control plane: not counted toward the errors that stop it
+        throw new GrantsUnavailableException($"Grants were being changed while they were read, at generation {after.Begun}");
       }
 
       if (last_?.Generation != before.Ended)
@@ -127,11 +133,20 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
                          Stopwatch.GetTimestamp());
       return loaded;
     }
-    catch (Exception e) when (e is not OperationCanceledException)
+    catch (GrantsUnavailableException e)
     {
       logger_.LogWarning(e,
                          "Grants could not be read");
       throw;
+    }
+    catch (Exception e) when (e is not OperationCanceledException)
+    {
+      // Counted once for the read, not once for each request refused while it is kept
+      exceptionManager_.RecordError(logger_,
+                                    e,
+                                    "Grants could not be read");
+      throw new GrantsUnavailableException("Grants could not be read",
+                                           e);
     }
   }
 
