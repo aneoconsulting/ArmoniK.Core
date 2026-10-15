@@ -314,6 +314,66 @@ public class AuthorizationTableTestBase
   }
 
   [Test]
+  public async Task TheLatestVersionOfASetOutlivesItsDeletion()
+  {
+    if (RunTests)
+    {
+      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("reader",
+                                                                            1,
+                                                                            ["data:read"],
+                                                                            AuthorizationOrigin.Config))
+                               .ConfigureAwait(false);
+      await AuthorizationTable.SetPermissionSetAsync(new PermissionSetData("reader",
+                                                                           2,
+                                                                           ["data:read", "data:download"],
+                                                                           AuthorizationOrigin.Config))
+                              .ConfigureAwait(false);
+      await AuthorizationTable.DeletePermissionSetAsync("reader")
+                              .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable.GetLatestPermissionSetVersionAsync("reader")
+                                          .ConfigureAwait(false),
+                  Is.EqualTo(2));
+      Assert.That(await AuthorizationTable.GetLatestPermissionSetVersionAsync("never-stored")
+                                          .ConfigureAwait(false),
+                  Is.Zero);
+    }
+  }
+
+  [Test]
+  public async Task AStoredVersionOfASetIsNeverRewritten()
+  {
+    if (RunTests)
+    {
+      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("reader",
+                                                                            1,
+                                                                            ["data:read", "data:download"],
+                                                                            AuthorizationOrigin.Config))
+                               .ConfigureAwait(false);
+
+      // The same content, in another order, is written again without effect
+      await AuthorizationTable.SetPermissionSetAsync(new PermissionSetData("reader",
+                                                                           1,
+                                                                           ["data:download", "data:read"],
+                                                                           AuthorizationOrigin.Config))
+                              .ConfigureAwait(false);
+      Assert.That(() => AuthorizationTable.SetPermissionSetAsync(new PermissionSetData("reader",
+                                                                                       1,
+                                                                                       ["data:delete"],
+                                                                                       AuthorizationOrigin.Config)),
+                  Throws.InstanceOf<PermissionSetVersionAlreadyExistsException>());
+      Assert.That((await AuthorizationTable.GetPermissionSetVersionAsync("reader",
+                                                                         1)
+                                           .ConfigureAwait(false))!.Permissions,
+                  Is.EquivalentTo(new[]
+                                  {
+                                    "data:read",
+                                    "data:download",
+                                  }));
+    }
+  }
+
+  [Test]
   public async Task TheConfigRevisionNeverGoesBack()
   {
     if (RunTests)
