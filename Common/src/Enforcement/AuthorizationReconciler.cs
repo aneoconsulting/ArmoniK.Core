@@ -271,6 +271,11 @@ public class AuthorizationReconciler
                           });
     }
 
+    // Before the change is ended: grants stable under an older revision would let an older configuration write them again
+    await table_.SetConfigRevisionAsync(options_.ConfigRevision,
+                                        cancellationToken)
+                .ConfigureAwait(false);
+
     // Left unended when a write fails, so that what was written is not read before a later change completes it
     if (changing)
     {
@@ -279,9 +284,6 @@ public class AuthorizationReconciler
                   .ConfigureAwait(false);
     }
 
-    await table_.SetConfigRevisionAsync(options_.ConfigRevision,
-                                        cancellationToken)
-                .ConfigureAwait(false);
     return true;
   }
 
