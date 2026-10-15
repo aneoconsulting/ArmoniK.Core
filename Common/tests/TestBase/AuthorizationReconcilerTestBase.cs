@@ -21,10 +21,12 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
@@ -247,6 +249,101 @@ public class AuthorizationReconcilerTestBase
                                            .ConfigureAwait(false)).Stable,
                   Is.False);
     }
+  }
+
+  [Test]
+  public async Task AnOlderConfigurationCannotWriteAgainWhatALaterOneLeftUnended()
+  {
+    if (RunTests)
+    {
+      await ReconcileAsync(Options(1,
+                                   [Grant("own", "role:team", "session-own", Ownership), Grant("revoked", "role:team", "session-view")]))
+        .ConfigureAwait(false);
+
+      // Revision 2 revokes a grant, then fails before it ends its change
+      Assert.That(() => new AuthorizationReconciler(new FailingEnd(AuthorizationTable!),
+                                                    Options(2,
+                                                            [Grant("own", "role:team", "session-own", Ownership)]),
+                                                    new AuthorizationAudit(NullLoggerFactory.Instance),
+                                                    TimeProvider.System,
+                                                    NullLogger<AuthorizationReconciler>.Instance).ReconcileAsync(),
+                  Throws.InstanceOf<TimeoutException>());
+
+      Assert.That(() => ReconcileAsync(Options(1,
+                                               [Grant("own", "role:team", "session-own", Ownership), Grant("revoked", "role:team", "session-view")])),
+                  Throws.InstanceOf<InvalidOperationException>()
+                        .With.Message.Contains("revision 2 or later"));
+      Assert.That((await GrantsAsync()
+                     .ConfigureAwait(false)).Keys,
+                  Is.EquivalentTo(new[]
+                                  {
+                                    "own",
+                                  }));
+    }
+  }
+
+  /// <summary>A table whose changes cannot be ended, as when the writer fails just before</summary>
+  private sealed class FailingEnd(IAuthorizationTable inner) : IAuthorizationTable
+  {
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => inner.Check(tag);
+
+    public Task Init(CancellationToken cancellationToken)
+      => inner.Init(cancellationToken);
+
+    public IAsyncEnumerable<GrantData> ListGrantsAsync(CancellationToken cancellationToken = default)
+      => inner.ListGrantsAsync(cancellationToken);
+
+    public Task CreateGrantAsync(GrantData         grant,
+                                 CancellationToken cancellationToken = default)
+      => inner.CreateGrantAsync(grant,
+                                cancellationToken);
+
+    public Task<bool> DeleteGrantAsync(string            grantId,
+                                       CancellationToken cancellationToken = default)
+      => inner.DeleteGrantAsync(grantId,
+                                cancellationToken);
+
+    public IAsyncEnumerable<PermissionSetData> ListPermissionSetsAsync(CancellationToken cancellationToken = default)
+      => inner.ListPermissionSetsAsync(cancellationToken);
+
+    public Task<PermissionSetData?> GetPermissionSetVersionAsync(string            name,
+                                                                 int               version,
+                                                                 CancellationToken cancellationToken = default)
+      => inner.GetPermissionSetVersionAsync(name,
+                                            version,
+                                            cancellationToken);
+
+    public Task SetPermissionSetAsync(PermissionSetData permissionSet,
+                                      CancellationToken cancellationToken = default)
+      => inner.SetPermissionSetAsync(permissionSet,
+                                     cancellationToken);
+
+    public Task<bool> DeletePermissionSetAsync(string            name,
+                                               CancellationToken cancellationToken = default)
+      => inner.DeletePermissionSetAsync(name,
+                                        cancellationToken);
+
+    public Task<int> GetConfigRevisionAsync(CancellationToken cancellationToken = default)
+      => inner.GetConfigRevisionAsync(cancellationToken);
+
+    public Task SetConfigRevisionAsync(int               revision,
+                                       CancellationToken cancellationToken = default)
+      => inner.SetConfigRevisionAsync(revision,
+                                      cancellationToken);
+
+    public Task<IAsyncDisposable> LockAsync(CancellationToken cancellationToken = default)
+      => inner.LockAsync(cancellationToken);
+
+    public Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default)
+      => inner.GetGenerationAsync(cancellationToken);
+
+    public Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
+      => inner.BeginChangeAsync(cancellationToken);
+
+    public Task EndChangeAsync(long              generation,
+                               CancellationToken cancellationToken = default)
+      => throw new TimeoutException("the storage did not answer");
   }
 
   [Test]
