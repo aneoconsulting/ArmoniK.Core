@@ -226,7 +226,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                             e,
                                                             context,
                                                             StatusCode.InvalidArgument,
-                                                            "Partition is not allowed in the session"),
+                                                            e.Message),
          InvalidSessionTransitionException => ProcessException(ExceptionAction.Warning,
                                                                e,
                                                                context,
