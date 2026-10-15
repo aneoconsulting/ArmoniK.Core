@@ -39,11 +39,14 @@ public static class ListApplicationsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that access the field from the object
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
+  public static Expression<Func<Application, object?>> ToField(this ApplicationField field)
+    => FilterConversion.Convert(() => BuildField(field));
+
   [SuppressMessage("Style",
                    "IDE0066:Convert switch statement to expression",
                    Justification = "Readibility with nested switch")]
-  public static Expression<Func<Application, object?>> ToField(this ApplicationField field)
+  private static Expression<Func<Application, object?>> BuildField(ApplicationField field)
   {
     switch (field.FieldCase)
     {
@@ -71,11 +74,14 @@ public static class ListApplicationsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
+  public static Expression<Func<TaskData, bool>> ToApplicationFilter(this Filters filters)
+    => FilterConversion.Convert(() => BuildApplicationFilter(filters));
+
   [SuppressMessage("Style",
                    "IDE0066:Convert switch statement to expression",
                    Justification = "Readibility with nested switch")]
-  public static Expression<Func<TaskData, bool>> ToApplicationFilter(this Filters filters)
+  private static Expression<Func<TaskData, bool>> BuildApplicationFilter(Filters filters)
   {
     Expression<Func<TaskData, bool>> expr = data => false;
 
