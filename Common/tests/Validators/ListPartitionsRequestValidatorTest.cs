@@ -17,6 +17,7 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Partitions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -155,5 +156,42 @@ public class ListPartitionsRequestValidatorTest
     Assert.That(validator_.Validate(validListPartitionsRequest_)
                           .IsValid,
                 Is.True);
+  }
+
+  [Test]
+  public void ListPartitionsRequestConditionWithoutFieldShouldFail()
+  {
+    validListPartitionsRequest_!.Filters = new Filters
+                   {
+                     Or =
+                     {
+                       new FiltersAnd
+                       {
+                         And =
+                         {
+                           new FilterField
+                           {
+                             FilterString = new FilterString
+                                            {
+                                              Operator = FilterStringOperator.Equal,
+                                              Value    = "x",
+                                            },
+                           },
+                         },
+                       },
+                     },
+                   };
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListPartitionsRequestSortWithoutFieldShouldFail()
+  {
+    validListPartitionsRequest_!.Sort.Field = new PartitionField();
+    Assert.That(validator_.Validate(validListPartitionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 }

@@ -42,6 +42,7 @@ public class ListApplicationsRequestValidator : AbstractValidator<ListApplicatio
     RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new ApplicationFiltersValidator())
       .WithName($"{nameof(ListApplicationsRequest)}.{nameof(ListApplicationsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
@@ -57,6 +58,9 @@ public class ListApplicationsRequestValidator : AbstractValidator<ListApplicatio
                           .NotNull()
                           .NotEmpty()
                           .WithName($"{nameof(ListApplicationsRequest)}.{nameof(ListApplicationsRequest.Sort)}.{nameof(ListApplicationsRequest.Sort.Fields)}");
+                        RuleForEach(request => request.Sort.Fields)
+                          .Must(field => field.FieldCase != ApplicationField.FieldOneofCase.None)
+                          .WithMessage("A sort must name the field it sorts on");
                       });
   }
 }

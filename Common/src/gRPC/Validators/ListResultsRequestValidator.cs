@@ -57,6 +57,8 @@ public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
                         RuleFor(request => request.Sort.Field)
                           .NotNull()
                           .NotEmpty()
+                          .Must(field => field is null || field.FieldCase != ResultField.FieldOneofCase.None)
+                          .WithMessage("A sort must name the field it sorts on")
                           .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}.{nameof(ListResultsRequest.Sort.Field)}");
                       });
   }
