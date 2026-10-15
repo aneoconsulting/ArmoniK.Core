@@ -149,24 +149,11 @@ public class AuthorizationReconciler
     var setDeletions = storedSets.Values.Where(set => set.Origin == AuthorizationOrigin.Config && !desiredSets.ContainsKey(set.Name))
                                  .ToList();
 
-    var finalSets = new Dictionary<string, PermissionSet>(StringComparer.Ordinal);
-    foreach (var set in storedSets.Values.Where(set => setDeletions.All(deleted => deleted.Name != set.Name))
-                                  .Select(set => setChanges.FirstOrDefault(change => change.Name == set.Name) ?? set)
-                                  .Concat(setChanges.Where(change => !storedSets.ContainsKey(change.Name))))
-    {
-      try
-      {
-        finalSets[set.Name] = PermissionSet.FromNames(set.Name,
-                                                      set.Version,
-                                                      set.Permissions);
-      }
-      catch (InvalidPermissionSetException e)
-      {
-        // Left out as when deciding: the grants naming it are refused below
-        audit_.RecordFault($"permission set {set.Name}",
-                           e.Message);
-      }
-    }
+    // An invalid set is left out as when deciding: the grants naming it are refused below
+    var finalSets = AuthorizationConfiguration.StoredPermissionSets(storedSets.Values.Where(set => setDeletions.All(deleted => deleted.Name != set.Name))
+                                                                              .Select(set => setChanges.FirstOrDefault(change => change.Name == set.Name) ?? set)
+                                                                              .Concat(setChanges.Where(change => !storedSets.ContainsKey(change.Name))),
+                                                                    audit_);
 
     // What the stored grants become
     var apiGrants = storedGrants.Where(grant => grant.Origin == AuthorizationOrigin.Api)
@@ -192,17 +179,12 @@ public class AuthorizationReconciler
                                       .ToList();
 
     // Every grant must still be valid with the sets as they will be
-    var errors = desiredGrants.Values.Concat(apiGrants.Select(grant => new GrantDefinition(grant.GrantId,
-                                                                                            grant.Principal,
-                                                                                            grant.PermissionSet,
-                                                                                            grant.Condition)))
-                              .Select(grant => Validate(grant,
-                                                        finalSets))
-                              .OfType<string>()
-                              .ToList();
-    if (errors.Count != 0)
+    DecisionEngine.Build(desiredGrants.Values.Concat(apiGrants.Select(grant => grant.ToDefinition())),
+                         finalSets,
+                         out var rejected);
+    if (rejected.Count != 0)
     {
-      throw new InvalidOperationException($"The authorization configuration is refused: {string.Join("; ", errors)}");
+      throw new InvalidOperationException($"The authorization configuration is refused: {string.Join("; ", rejected.Select(r => r.Error.Message))}");
     }
 
     // Written as one change, so that no replica reads it half written. A change a failed writer left unended is ended
@@ -317,19 +299,4 @@ public class AuthorizationReconciler
   private static bool Same(GrantData       stored,
                            GrantDefinition desired)
     => stored.Principal == desired.Principal && stored.PermissionSet == desired.PermissionSet && stored.Condition == desired.Condition;
-
-  private static string? Validate(GrantDefinition                            grant,
-                                  IReadOnlyDictionary<string, PermissionSet> sets)
-  {
-    try
-    {
-      GrantValidator.Validate(grant,
-                              sets);
-      return null;
-    }
-    catch (InvalidGrantException e)
-    {
-      return e.Message;
-    }
-  }
 }

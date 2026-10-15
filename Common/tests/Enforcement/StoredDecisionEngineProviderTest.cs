@@ -48,6 +48,7 @@ public class StoredDecisionEngineProviderTest
   private          bool                      changeWhileReading_;
   private          bool                      fail_;
   private          AuthorizationGeneration   generation_;
+  private          int                       generationReads_;
   private          TaskCompletionSource?     hold_;
   private          ExceptionManager          exceptionManager_ = null!;
   private          ApplicationLifetime       lifetime_         = null!;
@@ -59,6 +60,7 @@ public class StoredDecisionEngineProviderTest
   {
     grants_.Clear();
     reads_              = 0;
+    generationReads_    = 0;
     fail_               = false;
     hold_               = null;
     generation_         = default;
@@ -75,7 +77,11 @@ public class StoredDecisionEngineProviderTest
                                                                           1));
     table_              = new Mock<IAuthorizationTable>();
     table_.Setup(table => table.GetGenerationAsync(It.IsAny<CancellationToken>()))
-          .Returns(() => Task.FromResult(generation_));
+          .Returns(() =>
+                   {
+                     Interlocked.Increment(ref generationReads_);
+                     return Task.FromResult(generation_);
+                   });
     table_.Setup(table => table.ListPermissionSetsAsync(It.IsAny<CancellationToken>()))
           .Returns(() => new[]
                          {
@@ -139,12 +145,29 @@ public class StoredDecisionEngineProviderTest
            NullLogger<StoredDecisionEngineProvider>.Instance);
 
   private void AddGrant(string id)
-    => grants_.Add(new GrantData(id,
-                                 "role:team",
-                                 "session-view",
-                                 null,
-                                 AuthorizationOrigin.Config,
-                                 DateTime.UtcNow));
+  {
+    grants_.Add(new GrantData(id,
+                              "role:team",
+                              "session-view",
+                              null,
+                              AuthorizationOrigin.Config,
+                              DateTime.UtcNow));
+
+    // As a writer does, unless the grant is written within a change under way
+    if (generation_.Stable)
+    {
+      generation_ = new AuthorizationGeneration(generation_.Begun + 1,
+                                                generation_.Begun + 1);
+    }
+  }
+
+  private void BeginChange()
+    => generation_ = new AuthorizationGeneration(generation_.Begun + 1,
+                                                 generation_.Ended);
+
+  private void EndChange()
+    => generation_ = new AuthorizationGeneration(generation_.Begun,
+                                                 generation_.Begun);
 
   private static IEnumerable<string> Ids(StoredDecisionEngineProvider provider)
     => provider.GetEngineAsync()
@@ -179,6 +202,32 @@ public class StoredDecisionEngineProviderTest
                            })
                   .After(5000,
                          20));
+  }
+
+  [Test]
+  public async Task AnUnchangedGenerationIsNotReadAgain()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    var first = await provider.GetEngineAsync()
+                              .ConfigureAwait(false);
+    var loadReads = generationReads_;
+
+    // Once the cache expired, the generation is read again
+    Assert.That(() =>
+                {
+                  provider.GetEngineAsync();
+                  return generationReads_;
+                },
+                Is.GreaterThan(loadReads)
+                  .After(5000,
+                         20));
+
+    Assert.That(await provider.GetEngineAsync()
+                              .ConfigureAwait(false),
+                Is.SameAs(first));
+    Assert.That(reads_,
+                Is.EqualTo(1));
   }
 
   [Test]
@@ -300,6 +349,7 @@ public class StoredDecisionEngineProviderTest
     var first = await provider.GetEngineAsync()
                               .ConfigureAwait(false);
 
+    AddGrant("b");
     fail_ = true;
     await Task.Delay(Ttl * 1.25)
               .ConfigureAwait(false);
@@ -322,6 +372,7 @@ public class StoredDecisionEngineProviderTest
     await provider.GetEngineAsync()
                   .ConfigureAwait(false);
 
+    AddGrant("b");
     fail_ = true;
     hold_ = new TaskCompletionSource();
     await Task.Delay(Ttl * 2.25)
@@ -370,15 +421,13 @@ public class StoredDecisionEngineProviderTest
   {
     using var provider = Provider();
     AddGrant("a");
-    generation_ = new AuthorizationGeneration(1,
-                                              0);
+    BeginChange();
 
     Assert.That(() => provider.GetEngineAsync()
                               .AsTask(),
                 Throws.InstanceOf<GrantsUnavailableException>());
 
-    generation_ = new AuthorizationGeneration(1,
-                                              1);
+    EndChange();
     // The failed read is not tried again before a period
     await Task.Delay(2 * Ttl)
               .ConfigureAwait(false);
@@ -411,8 +460,7 @@ public class StoredDecisionEngineProviderTest
                   .ConfigureAwait(false);
 
     // Half written: b is stored but the change has not ended
-    generation_ = new AuthorizationGeneration(1,
-                                              0);
+    BeginChange();
     AddGrant("b");
 
     var until = DateTime.UtcNow + 4 * Ttl;
@@ -435,8 +483,7 @@ public class StoredDecisionEngineProviderTest
                 .ConfigureAwait(false);
     }
 
-    generation_ = new AuthorizationGeneration(1,
-                                              1);
+    EndChange();
     await Task.Delay(2 * Ttl)
               .ConfigureAwait(false);
 
