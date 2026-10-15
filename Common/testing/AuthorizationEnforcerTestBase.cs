@@ -46,6 +46,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using Moq;
+
 using NUnit.Framework;
 
 using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
@@ -102,6 +104,11 @@ public class AuthorizationEnforcerTestBase
                                                              Name        = "team-reader",
                                                              Permissions = ["data:read", "data:download"],
                                                            },
+                                                           new PermissionSetOption
+                                                           {
+                                                             Name        = "team-lister",
+                                                             Permissions = ["data:read"],
+                                                           },
                                                          ]);
     var engine = DecisionEngine.Build([
                                         new GrantDefinition("team-create", "role:modelling-team", "session-create", "request.partition == \"part0\""),
@@ -111,6 +118,8 @@ public class AuthorizationEnforcerTestBase
                                         new GrantDefinition("lead-read", "role:lead", "team-reader", "\"role:modelling-team\" in session.createdUnder"),
                                         new GrantDefinition("support", "role:support", "session-supervise", "\"role:modelling-team\" in session.createdUnder"),
                                         new GrantDefinition("platform", "role:platform-team", "cluster-admin", null),
+                                        new GrantDefinition("audit-team", "role:auditor", "team-lister", "\"role:modelling-team\" in session.createdUnder"),
+                                        new GrantDefinition("audit-other", "role:auditor", "team-reader", "\"role:other-team\" in session.createdUnder"),
                                       ],
                                       sets,
                                       out var rejected);
@@ -178,7 +187,7 @@ public class AuthorizationEnforcerTestBase
            DateTime.UtcNow,
            null,
            0,
-           [],
+           System.Text.Encoding.UTF8.GetBytes(id),
            false);
 
   private static TaskData Task(string session,
@@ -214,6 +223,7 @@ public class AuthorizationEnforcerTestBase
   private const string Support  = "CN=support, OU=support";
   private const string Stranger = "CN=stranger";
   private const string Admin    = "CN=admin, OU=platform-team";
+  private const string Auditor  = "CN=auditor, OU=auditor";
 
   private static TestServerCallContext Context(string? subject)
   {
@@ -294,6 +304,94 @@ public class AuthorizationEnforcerTestBase
 
       Assert.That(audit_!.Messages.Count(message => message.Contains("Allow")),
                   Is.EqualTo(1));
+    }
+  }
+
+  private async Task<(bool Alice, bool Other)> DataReferenceShown(string subject)
+  {
+    var context = await Authorize(subject,
+                                  nameof(GrpcResultsService),
+                                  nameof(GrpcResultsService.ListResults),
+                                  new ListResultsRequest())
+                    .ConfigureAwait(false);
+    var shown = await context.DataReferenceShownAsync(SessionTable!,
+                                                      [aliceSession_, otherSession_])
+                             .ConfigureAwait(false);
+    return (shown(aliceSession_), shown(otherSession_));
+  }
+
+  [Test]
+  public async Task TheDataReferenceIsShownOnlyWhereTheCallerMayDownload()
+  {
+    if (RunTests)
+    {
+      // data:read only on the team sessions, data:download too on the other team sessions
+      Assert.That(await DataReferenceShown(Auditor)
+                    .ConfigureAwait(false),
+                  Is.EqualTo((false, true)));
+      Assert.That(await DataReferenceShown(Lead)
+                    .ConfigureAwait(false),
+                  Is.EqualTo((true, false)));
+      Assert.That(await DataReferenceShown(Admin)
+                    .ConfigureAwait(false),
+                  Is.EqualTo((true, true)));
+    }
+  }
+
+  [Test]
+  public async Task AListingOfResultsShowsTheDataReferenceOnlyWhereTheCallerMayDownload()
+  {
+    if (RunTests)
+    {
+      var services = new ServiceCollection().AddMetrics()
+                                            .AddSingleton<Common.Pollster.AgentIdentifier>()
+                                            .AddSingleton<Common.Meter.MeterHolder>()
+                                            .AddSingleton(typeof(Common.Meter.FunctionExecutionMetrics<>))
+                                            .BuildServiceProvider();
+      var service = new GrpcResultsService(ResultTable!,
+                                           TaskTable!,
+                                           SessionTable!,
+                                           Mock.Of<ArmoniK.Core.Base.IObjectStorage>(),
+                                           Mock.Of<ArmoniK.Core.Base.IPushQueueStorage>(),
+                                           services.GetRequiredService<Common.Meter.FunctionExecutionMetrics<GrpcResultsService>>(),
+                                           new Injection.Options.Submitter(),
+                                           Mock.Of<ArmoniK.Core.Utils.Uuid.IUuidGenerator>(),
+                                           NullLogger<GrpcResultsService>.Instance);
+      var request = new ListResultsRequest
+                    {
+                      Filters  = new Api.gRPC.V1.Results.Filters(),
+                      PageSize = 10,
+                    };
+
+      var response = await service.ListResults(request,
+                                               await Authorize(Auditor,
+                                                               nameof(GrpcResultsService),
+                                                               nameof(GrpcResultsService.ListResults),
+                                                               request)
+                                                 .ConfigureAwait(false))
+                                  .ConfigureAwait(false);
+
+      Assert.That(response.Results.ToDictionary(result => result.ResultId,
+                                                result => result.OpaqueId.ToStringUtf8()),
+                  Is.EquivalentTo(new Dictionary<string, string>
+                                  {
+                                    ["r-alice"] = "",
+                                    ["r-other"] = "r-other",
+                                  }));
+    }
+  }
+
+  [Test]
+  public async Task WithoutAuthorizationTheDataReferenceIsShown()
+  {
+    if (RunTests)
+    {
+      var shown = await TestServerCallContext.Create()
+                                             .DataReferenceShownAsync(SessionTable!,
+                                                                      [aliceSession_])
+                                             .ConfigureAwait(false);
+      Assert.That(shown(aliceSession_),
+                  Is.True);
     }
   }
 
