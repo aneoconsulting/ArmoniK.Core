@@ -252,6 +252,40 @@ public class AuthorizationReconcilerTestBase
   }
 
   [Test]
+  public async Task ASetAddedBackAfterItsDeletionGetsTheNextVersion()
+  {
+    if (RunTests)
+    {
+      PermissionSetOption Reader(params string[] permissions)
+        => new()
+           {
+             Name        = "team-reader",
+             Permissions = permissions.ToList(),
+           };
+
+      await ReconcileAsync(Options(1,
+                                   sets: [Reader("data:read")]))
+        .ConfigureAwait(false);
+      await ReconcileAsync(Options(2))
+        .ConfigureAwait(false);
+      await ReconcileAsync(Options(3,
+                                   sets: [Reader("data:read", "data:delete")]))
+        .ConfigureAwait(false);
+
+      Assert.That((await SetsAsync()
+                     .ConfigureAwait(false))["team-reader"].Version,
+                  Is.EqualTo(2));
+      Assert.That((await AuthorizationTable!.GetPermissionSetVersionAsync("team-reader",
+                                                                          1)
+                                            .ConfigureAwait(false))!.Permissions,
+                  Is.EquivalentTo(new[]
+                                  {
+                                    "data:read",
+                                  }));
+    }
+  }
+
+  [Test]
   public async Task AnOlderConfigurationCannotWriteAgainWhatALaterOneLeftUnended()
   {
     if (RunTests)
@@ -401,6 +435,11 @@ public class AuthorizationReconcilerTestBase
       => inner.GetPermissionSetVersionAsync(name,
                                             version,
                                             cancellationToken);
+
+    public Task<int> GetLatestPermissionSetVersionAsync(string            name,
+                                                        CancellationToken cancellationToken = default)
+      => inner.GetLatestPermissionSetVersionAsync(name,
+                                                  cancellationToken);
 
     public Task SetPermissionSetAsync(PermissionSetData permissionSet,
                                       CancellationToken cancellationToken = default)

@@ -171,41 +171,74 @@ VALUES (@grant_id, @principal, @permission_set, @condition, @origin, @creation_d
   }
 
   /// <inheritdoc />
+  public async Task<int> GetLatestPermissionSetVersionAsync(string            name,
+                                                            CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity();
+    await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                          .ConfigureAwait(false);
+    await using var cmd = connection.CreateCommand();
+    cmd.CommandText = "SELECT COALESCE(MAX(version), 0) FROM permission_set_versions WHERE name = @name";
+    cmd.Parameters.AddWithValue("name",
+                                name);
+    return (int)(await cmd.ExecuteScalarAsync(cancellationToken)
+                          .ConfigureAwait(false))!;
+  }
+
+  /// <inheritdoc />
   public async Task SetPermissionSetAsync(PermissionSetData permissionSet,
                                           CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
-    await using var batch = new NpgsqlBatch(connection);
 
-    foreach (var sql in new[]
-                        {
-                          @"
+    // A stored version is never rewritten: written again only with the same content
+    await using (var version = connection.CreateCommand())
+    {
+      version.CommandText = @"
 INSERT INTO permission_set_versions (name, version, permissions, origin)
 VALUES (@name, @version, @permissions, @origin)
-ON CONFLICT (name, version) DO UPDATE SET permissions = EXCLUDED.permissions, origin = EXCLUDED.origin",
-                          @"
-INSERT INTO permission_sets (name, version, permissions, origin)
-VALUES (@name, @version, @permissions, @origin)
-ON CONFLICT (name) DO UPDATE SET version = EXCLUDED.version, permissions = EXCLUDED.permissions, origin = EXCLUDED.origin",
-                        })
-    {
-      var cmd = new NpgsqlBatchCommand(sql);
-      cmd.Parameters.AddWithValue("name",
-                                  permissionSet.Name);
-      cmd.Parameters.AddWithValue("version",
-                                  permissionSet.Version);
-      cmd.Parameters.AddWithValue("permissions",
-                                  NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                  permissionSet.Permissions.ToArray());
-      cmd.Parameters.AddWithValue("origin",
-                                  (int)permissionSet.Origin);
-      batch.BatchCommands.Add(cmd);
+ON CONFLICT (name, version) DO NOTHING";
+      AddParameters(version,
+                    permissionSet);
+      if (await version.ExecuteNonQueryAsync(cancellationToken)
+                       .ConfigureAwait(false) == 0)
+      {
+        var stored = await GetPermissionSetVersionAsync(permissionSet.Name,
+                                                        permissionSet.Version,
+                                                        cancellationToken)
+                       .ConfigureAwait(false);
+        if (stored is null || !stored.SameAs(permissionSet))
+        {
+          throw new PermissionSetVersionAlreadyExistsException($"Permission set {permissionSet.Name}@{permissionSet.Version} is already stored with other permissions");
+        }
+      }
     }
 
-    await batch.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
+    await using var current = connection.CreateCommand();
+    current.CommandText = @"
+INSERT INTO permission_sets (name, version, permissions, origin)
+VALUES (@name, @version, @permissions, @origin)
+ON CONFLICT (name) DO UPDATE SET version = EXCLUDED.version, permissions = EXCLUDED.permissions, origin = EXCLUDED.origin";
+    AddParameters(current,
+                  permissionSet);
+    await current.ExecuteNonQueryAsync(cancellationToken)
+                 .ConfigureAwait(false);
+  }
+
+  private static void AddParameters(NpgsqlCommand     cmd,
+                                    PermissionSetData permissionSet)
+  {
+    cmd.Parameters.AddWithValue("name",
+                                permissionSet.Name);
+    cmd.Parameters.AddWithValue("version",
+                                permissionSet.Version);
+    cmd.Parameters.AddWithValue("permissions",
+                                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                permissionSet.Permissions.ToArray());
+    cmd.Parameters.AddWithValue("origin",
+                                (int)permissionSet.Origin);
   }
 
   /// <inheritdoc />

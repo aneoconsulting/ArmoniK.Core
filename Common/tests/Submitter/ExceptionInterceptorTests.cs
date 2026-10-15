@@ -135,6 +135,7 @@ internal class ExceptionInterceptorTests
                                                                       typeof(WorkerDownException),
                                                                       typeof(QueueInsertionFailedException),
                                                                       typeof(GrantAlreadyExistsException),
+                                                                      typeof(PermissionSetVersionAlreadyExistsException),
                                                                     };
 
   [Test]

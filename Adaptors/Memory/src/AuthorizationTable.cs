@@ -86,11 +86,25 @@ public class AuthorizationTable : IAuthorizationTable
     => Task.FromResult(versions_.GetValueOrDefault((name, version)));
 
   /// <inheritdoc />
+  public Task<int> GetLatestPermissionSetVersionAsync(string            name,
+                                                      CancellationToken cancellationToken = default)
+    => Task.FromResult(versions_.Keys.Where(key => key.Item1 == name)
+                                .Select(key => key.Item2)
+                                .DefaultIfEmpty(0)
+                                .Max());
+
+  /// <inheritdoc />
   public Task SetPermissionSetAsync(PermissionSetData permissionSet,
                                     CancellationToken cancellationToken = default)
   {
-    versions_[(permissionSet.Name, permissionSet.Version)] = permissionSet;
-    sets_[permissionSet.Name]                              = permissionSet;
+    var stored = versions_.GetOrAdd((permissionSet.Name, permissionSet.Version),
+                                    permissionSet);
+    if (!stored.SameAs(permissionSet))
+    {
+      throw new PermissionSetVersionAlreadyExistsException($"Permission set {permissionSet.Name}@{permissionSet.Version} is already stored with other permissions");
+    }
+
+    sets_[permissionSet.Name] = permissionSet;
     return Task.CompletedTask;
   }
 
