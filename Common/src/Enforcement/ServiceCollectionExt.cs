@@ -79,10 +79,10 @@ public static class ServiceCollectionExt
             .AddSingleton(identity)
             .AddSingleton<IDecisionEngineProvider, StoredDecisionEngineProvider>()
             .AddSingleton<AuthorizationReconciler>()
-            .AddSingleton<CallerResolver>()
             .AddSingleton<AuthorizationAudit>()
             .AddSingleton<AuthorizationEnforcer>()
             .AddSingleton<AuthorizationInterceptor>();
+    services.AddSingletonWithHealthCheck<CallerResolver>(nameof(CallerResolver));
 
     if (!identity.ValidateTokens)
     {
@@ -148,6 +148,7 @@ public static class ServiceCollectionExt
                             jwt.Authority            = identity.Authority;
                             jwt.Audience             = identity.Audience;
                             jwt.RequireHttpsMetadata = identity.RequireHttpsMetadata;
+                            jwt.RefreshInterval      = identity.MetadataRefreshInterval;
                             jwt.MapInboundClaims     = false;
                             jwt.TokenValidationParameters = new TokenValidationParameters
                                                             {

@@ -133,6 +133,12 @@ public class IdentityOptions
   public bool RequireHttpsMetadata { get; set; } = true;
 
   /// <summary>
+  ///   Minimum time between two reads of the authority metadata after one failed: the delay before tokens are validated
+  ///   again once an authority that could not be reached is back
+  /// </summary>
+  public TimeSpan MetadataRefreshInterval { get; set; } = TimeSpan.FromSeconds(30);
+
+  /// <summary>
   ///   Whether tokens are validated. When false, the claims of a token are taken as they are, without an authority: only
   ///   for a Submitter reachable solely through a proxy writing the tokens, since anyone else can write any claims
   /// </summary>
