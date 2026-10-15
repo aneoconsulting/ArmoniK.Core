@@ -55,12 +55,7 @@ public static class SessionLifeCycleHelper
                                                  string?              owner             = null,
                                                  IEnumerable<string>? createdUnder      = null)
   {
-    if (!partitionIds.Any())
-    {
-      partitionIds.Add(defaultPartition);
-    }
-
-    if (partitionIds.Count == 1 && string.IsNullOrEmpty(partitionIds.Single()))
+    if (DeclaresNoPartition(partitionIds))
     {
       partitionIds.Clear();
       partitionIds.Add(defaultPartition);
@@ -114,7 +109,7 @@ public static class SessionLifeCycleHelper
   {
     var partitions = partitionIds.ToList();
 
-    if (partitions.Count == 0 || (partitions.Count == 1 && string.IsNullOrEmpty(partitions[0])))
+    if (DeclaresNoPartition(partitions))
     {
       partitions = [defaultPartition];
     }
@@ -126,4 +121,12 @@ public static class SessionLifeCycleHelper
     return partitions.Distinct()
                      .ToList();
   }
+
+  /// <summary>
+  ///   Whether a session creation declares no partition, and is then put in the default one
+  /// </summary>
+  /// <param name="partitionIds">Partitions declared by the request</param>
+  /// <returns>Whether no partition is declared</returns>
+  private static bool DeclaresNoPartition(ICollection<string> partitionIds)
+    => partitionIds.Count == 0 || (partitionIds.Count == 1 && string.IsNullOrEmpty(partitionIds.Single()));
 }

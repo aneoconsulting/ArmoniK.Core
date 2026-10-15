@@ -21,6 +21,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Exceptions;
 
@@ -52,7 +53,18 @@ public record GrantData(string              GrantId,
                         string              PermissionSet,
                         string?             Condition,
                         AuthorizationOrigin Origin,
-                        DateTime            CreationDate);
+                        DateTime            CreationDate)
+{
+  /// <summary>
+  ///   The grant as written, to be validated
+  /// </summary>
+  /// <returns>The grant definition</returns>
+  public GrantDefinition ToDefinition()
+    => new(GrantId,
+           Principal,
+           PermissionSet,
+           Condition);
+}
 
 /// <summary>
 ///   A version of a stored permission set

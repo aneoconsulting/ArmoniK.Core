@@ -15,8 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Globalization;
-using System.Text;
 using System.Threading.Tasks;
 
 using Grpc.AspNetCore.Server;
@@ -99,30 +99,8 @@ public sealed class CallerAuthenticationMiddleware
     response.StatusCode              = StatusCodes.Status200OK;
     response.ContentType             = "application/grpc";
     response.Headers["grpc-status"]  = ((int)status.StatusCode).ToString(CultureInfo.InvariantCulture);
-    response.Headers["grpc-message"] = PercentEncode(status.Detail);
-  }
-
-  /// <summary>
-  ///   Percent-encode a status message as the gRPC protocol requires: UTF-8 bytes outside printable ASCII, and '%'
-  /// </summary>
-  private static string PercentEncode(string message)
-  {
-    var encoded = new StringBuilder(message.Length);
-    foreach (var b in Encoding.UTF8.GetBytes(message))
-    {
-      if (b is < 0x20 or > 0x7E or (byte)'%')
-      {
-        encoded.Append('%')
-               .Append(b.ToString("X2",
-                                  CultureInfo.InvariantCulture));
-      }
-      else
-      {
-        encoded.Append((char)b);
-      }
-    }
-
-    return encoded.ToString();
+    // Percent-encoded as the protocol requires, of UTF-8 bytes: encoding more than required is allowed
+    response.Headers["grpc-message"] = Uri.EscapeDataString(status.Detail);
   }
 }
 

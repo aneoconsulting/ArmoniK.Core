@@ -263,9 +263,8 @@ public class AuthorizationEnforcer
                                               : $"This method is not supported while authorization is enabled: {rule.Instead}"));
       }
     }
-    catch (GrantsUnavailableException e)
+    catch (Exception e) when (e is not (RpcException or OperationCanceledException) && !IsRefusal(e))
     {
-      // Answered as unavailable by the exception interceptor, the failed read being counted where it happened
       audit_.Record(service,
                     method,
                     caller,
@@ -274,23 +273,18 @@ public class AuthorizationEnforcer
                     [],
                     [],
                     e.Message);
-      throw;
-    }
-    catch (Exception e) when (e is not (RpcException or OperationCanceledException) && !IsRefusal(e))
-    {
+
+      if (e is GrantsUnavailableException)
+      {
+        // Answered as unavailable by the exception interceptor, the failed read being counted where it happened
+        throw;
+      }
+
       // A fault says nothing of the session: it is answered as unavailable, so that callers retry
       logger_.LogWarning(e,
                          "Authorization of {Service}.{Method} faulted",
                          service,
                          method);
-      audit_.Record(service,
-                    method,
-                    caller,
-                    "Fault",
-                    rule.Permissions,
-                    [],
-                    [],
-                    e.Message);
       throw new RpcException(new Status(StatusCode.Unavailable,
                                         "Authorization could not be decided"));
     }
@@ -542,10 +536,11 @@ public class AuthorizationEnforcer
     AuthorizationState.SetResolvedSessions(context,
                                            sessions);
 
-    var decisions = sessions.SelectMany(session => rule.Permissions.Select(permission => engine.DecideOnSession(caller.Caller,
-                                                                                                                permission,
-                                                                                                                SessionDataFields.Facts(session),
-                                                                                                                rule.Precondition)))
+    var decisions = sessions.Select(SessionDataFields.Facts)
+                            .SelectMany(facts => rule.Permissions.Select(permission => engine.DecideOnSession(caller.Caller,
+                                                                                                              permission,
+                                                                                                              facts,
+                                                                                                              rule.Precondition)))
                             .ToList();
 
     var refusal = decisions.FirstOrDefault(decision => decision.Outcome == DecisionOutcome.NotFound) ??

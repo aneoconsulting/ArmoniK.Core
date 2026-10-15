@@ -109,21 +109,23 @@ public class GrpcSubmitterService : Api.gRPC.V1.Submitter.Submitter.SubmitterBas
   [Obsolete]
   public override async Task<CreateSessionReply> CreateSession(CreateSessionRequest request,
                                                                ServerCallContext    context)
-    => await submitter_.CreateSession(request.PartitionIds,
-                                      request.DefaultTaskOption.ToTaskOptions(),
-                                      context.CancellationToken,
-                                      context.GetSessionAuthorship()
-                                             ?.Owner,
-                                      context.GetSessionAuthorship()
-                                             ?.CreatedUnder)
-                       .ConfigureAwait(false);
+  {
+    var authorship = context.GetSessionAuthorship();
+    return await submitter_.CreateSession(request.PartitionIds,
+                                          request.DefaultTaskOption.ToTaskOptions(),
+                                          context.CancellationToken,
+                                          authorship?.Owner,
+                                          authorship?.CreatedUnder)
+                           .ConfigureAwait(false);
+  }
 
   /// <inheritdoc />
   [Obsolete]
   public override async Task<CreateTaskReply> CreateSmallTasks(CreateSmallTaskRequest request,
                                                                ServerCallContext      context)
   {
-    var sessionTask = sessionTable_.GetSessionAsync(request.SessionId);
+    var sessionTask = context.GetSessionAsync(sessionTable_,
+                                              request.SessionId);
 
     var requests = await submitter_.CreateTasks(request.SessionId,
                                                 request.SessionId,
