@@ -407,6 +407,19 @@ public class AuthorizationEnforcer
   {
     var cancellationToken = context.CancellationToken;
 
+    // A request naming nothing acts on nothing and reveals nothing, as an empty list of tasks to cancel: allowed,
+    // answered by the handler as without authorization. Ids that are all empty still name something, refused below.
+    if (targets.SessionId is null && targets.TaskIds.Count == 0 && targets.ResultIds.Count == 0 && targets.ReferencedResultIds.Count == 0)
+    {
+      Allow(service,
+            method,
+            caller,
+            rule,
+            [],
+            []);
+      return;
+    }
+
     var sessionIds = new HashSet<string>(StringComparer.Ordinal);
 
     if (targets.SessionId is not null)

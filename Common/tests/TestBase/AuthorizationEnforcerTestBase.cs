@@ -667,6 +667,27 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task ARequestNamingNothingIsAllowed()
+  {
+    if (RunTests)
+    {
+      await Authorize(Alice,
+                      nameof(GrpcTasksService),
+                      nameof(GrpcTasksService.CancelTasks),
+                      new CancelTasksRequest())
+        .ConfigureAwait(false);
+      await Authorize(Stranger,
+                      nameof(GrpcTasksService),
+                      nameof(GrpcTasksService.GetResultIds),
+                      new GetResultIdsRequest())
+        .ConfigureAwait(false);
+
+      Assert.That(audit_!.Messages.Count(message => message.Contains("Allow")),
+                  Is.EqualTo(2));
+    }
+  }
+
+  [Test]
   public void ARequestNamingOnlyEmptyIdsIsAnsweredLikeAMissingResult()
   {
     if (RunTests)
