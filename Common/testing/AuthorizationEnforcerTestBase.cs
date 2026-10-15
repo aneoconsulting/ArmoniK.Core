@@ -270,6 +270,34 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task ACallerAuthenticatedBeforeTheRequestIsNotAuthenticatedAgain()
+  {
+    if (RunTests)
+    {
+      var authenticated = Context(Alice);
+      var caller = await new CallerResolver(new IdentityOptions()).ResolveAsync(authenticated.GetHttpContext())
+                                                                  .ConfigureAwait(false);
+
+      // No credential left in the headers: only the caller kept by the authentication middleware can be used
+      var context = Context(null);
+      context.GetHttpContext()
+             .Items[AuthorizationEnforcer.CallerKey] = caller;
+      await enforcer_!.AuthorizeAsync(nameof(GrpcSessionsService),
+                                      nameof(GrpcSessionsService.GetSession),
+                                      MethodAuthorization.Rules[(nameof(GrpcSessionsService), nameof(GrpcSessionsService.GetSession))],
+                                      new GetSessionRequest
+                                      {
+                                        SessionId = aliceSession_,
+                                      },
+                                      context)
+                      .ConfigureAwait(false);
+
+      Assert.That(audit_!.Messages.Count(message => message.Contains("Allow")),
+                  Is.EqualTo(1));
+    }
+  }
+
+  [Test]
   public async Task ASessionTheCallerCannotSeeIsAnsweredLikeAMissingOne()
   {
     if (RunTests)

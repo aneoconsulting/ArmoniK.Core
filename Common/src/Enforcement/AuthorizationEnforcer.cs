@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Enforcement;
@@ -70,25 +71,33 @@ public class AuthorizationEnforcer
   }
 
   /// <summary>
-  ///   Decide a request, throwing when it is not allowed
+  ///   Key of <see cref="HttpContext.Items" /> where the caller authenticated by <see cref="AuthenticateAsync" /> is kept for
+  ///   <see cref="AuthorizeAsync" />
+  /// </summary>
+  public static readonly object CallerKey = new();
+
+  /// <summary>
+  ///   Authenticate the caller of a request from the headers of the request only
   /// </summary>
   /// <param name="service">Name of the service class</param>
   /// <param name="method">Name of the method</param>
   /// <param name="rule">Rule of the method</param>
-  /// <param name="request">The request, or its first message for a client streaming method</param>
-  /// <param name="context">Context of the call, where the decision leaves what handlers need</param>
-  /// <exception cref="RpcException">The request is not allowed</exception>
-  public async Task AuthorizeAsync(string            service,
-                                   string            method,
-                                   MethodRule        rule,
-                                   object            request,
-                                   ServerCallContext context)
+  /// <param name="http">HTTP context of the request</param>
+  /// <returns>The caller</returns>
+  /// <exception cref="RpcException">
+  ///   <see cref="StatusCode.Unauthenticated" /> without credential or with an invalid one,
+  ///   <see cref="StatusCode.Unavailable" /> when the credential could not be checked
+  /// </exception>
+  public async Task<AuthenticatedCaller> AuthenticateAsync(string      service,
+                                                           string      method,
+                                                           MethodRule  rule,
+                                                           HttpContext http)
   {
     AuthenticatedCaller? caller;
 
     try
     {
-      caller = await callerResolver_.ResolveAsync(context.GetHttpContext())
+      caller = await callerResolver_.ResolveAsync(http)
                                     .ConfigureAwait(false);
     }
     catch (FormatException e)
@@ -136,6 +145,35 @@ public class AuthorizationEnforcer
       throw new RpcException(new Status(StatusCode.Unauthenticated,
                                         "A token or a client certificate is required"));
     }
+
+    return caller;
+  }
+
+  /// <summary>
+  ///   Decide a request, throwing when it is not allowed
+  /// </summary>
+  /// <param name="service">Name of the service class</param>
+  /// <param name="method">Name of the method</param>
+  /// <param name="rule">Rule of the method</param>
+  /// <param name="request">The request, or its first message for a client streaming method</param>
+  /// <param name="context">Context of the call, where the decision leaves what handlers need</param>
+  /// <exception cref="RpcException">The request is not allowed</exception>
+  public async Task AuthorizeAsync(string            service,
+                                   string            method,
+                                   MethodRule        rule,
+                                   object            request,
+                                   ServerCallContext context)
+  {
+    var http = context.GetHttpContext();
+    // Authenticated before the request was read when the request went through the authentication middleware
+    var caller = http.Items.TryGetValue(CallerKey,
+                                        out var authenticated)
+                   ? (AuthenticatedCaller)authenticated!
+                   : await AuthenticateAsync(service,
+                                             method,
+                                             rule,
+                                             http)
+                       .ConfigureAwait(false);
 
     try
     {
