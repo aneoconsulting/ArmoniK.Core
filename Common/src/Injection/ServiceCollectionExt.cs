@@ -205,6 +205,7 @@ public static class ServiceCollectionExt
                .AddValidator<SessionFilterValidator>()
                .AddValidator<ListSessionsRequestValidator>()
                .AddValidator<ListTasksRequestValidator>()
+               .AddValidator<CountTasksByStatusRequestValidator>()
                .AddValidator<ListResultsRequestValidator>()
                .AddValidator<ListApplicationsRequestValidator>()
                .AddValidator<ListPartitionsRequestValidator>()
