@@ -281,13 +281,14 @@ public class AuthorizationEnforcer
         throw;
       }
 
-      // A fault says nothing of the session: it is answered as unavailable, so that callers retry
+      // A fault says nothing of the session: it is answered as unavailable, so that callers retry, without counting
+      // toward the errors that stop the control plane, since the request itself may cause it
       logger_.LogWarning(e,
                          "Authorization of {Service}.{Method} faulted",
                          service,
                          method);
-      throw new RpcException(new Status(StatusCode.Unavailable,
-                                        "Authorization could not be decided"));
+      throw new AuthorizationUnavailableException("Authorization could not be decided",
+                                                  e);
     }
   }
 

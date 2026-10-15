@@ -268,7 +268,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                              StatusCode.Unavailable,
                                                              "Event stream interrupted, subscribe again",
                                                              true),
-         GrantsUnavailableException => ProcessException(ExceptionAction.Warning,
+         GrantsUnavailableException or AuthorizationUnavailableException => ProcessException(ExceptionAction.Warning,
                                                         e,
                                                         context,
                                                         StatusCode.Unavailable,

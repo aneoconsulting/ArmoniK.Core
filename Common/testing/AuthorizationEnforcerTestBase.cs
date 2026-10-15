@@ -471,7 +471,7 @@ public class AuthorizationEnforcerTestBase
                                                },
                                                NullLogger<AuthorizationEnforcer>.Instance);
 
-      var exception = Assert.ThrowsAsync<RpcException>(() => enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
+      Assert.ThrowsAsync<AuthorizationUnavailableException>(() => enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
                                                                                      nameof(GrpcSessionsService.GetSession),
                                                                                      MethodAuthorization.Rules[(nameof(GrpcSessionsService),
                                                                                                                 nameof(GrpcSessionsService.GetSession))],
@@ -480,8 +480,6 @@ public class AuthorizationEnforcerTestBase
                                                                                        SessionId = aliceSession_,
                                                                                      },
                                                                                      Context(Alice)));
-      Assert.That(exception!.StatusCode,
-                  Is.EqualTo(StatusCode.Unavailable));
       Assert.That(audit_!.Messages.Any(message => message.Contains("Fault")),
                   Is.True);
     }
