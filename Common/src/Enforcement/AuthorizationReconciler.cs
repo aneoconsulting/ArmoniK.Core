@@ -126,8 +126,12 @@ public class AuthorizationReconciler
       if (!storedSets.TryGetValue(set.Name,
                                   out var stored))
       {
+        // Numbered after the versions of a set deleted before, kept for the audit records citing them
+        var latest = await table_.GetLatestPermissionSetVersionAsync(set.Name,
+                                                                     cancellationToken)
+                                 .ConfigureAwait(false);
         setChanges.Add(new PermissionSetData(set.Name,
-                                             1,
+                                             latest + 1,
                                              permissions,
                                              AuthorizationOrigin.Config));
       }
