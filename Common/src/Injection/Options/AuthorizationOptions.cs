@@ -39,7 +39,8 @@ public class AuthorizationOptions
   public bool Enabled { get; set; }
 
   /// <summary>
-  ///   How long the grants and permission sets read from storage are kept before being read again
+  ///   How long the grants and permission sets read from storage are kept before being read again; they are still used
+  ///   while being read again, so a revocation applies within twice this delay
   /// </summary>
   public TimeSpan GrantCacheTtl { get; set; } = TimeSpan.FromSeconds(10);
 
