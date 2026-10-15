@@ -231,4 +231,19 @@ public class ListResultsRequestValidatorTest
                           .IsValid,
                 Is.False);
   }
+
+  [Test]
+  public void ListResultsRequestSortByOpaqueIdShouldFail()
+  {
+    validListResultsRequest_!.Sort.Field = new ResultField
+                                           {
+                                             ResultRawField = new ResultRawField
+                                                              {
+                                                                Field = ResultRawEnumField.OpaqueId,
+                                                              },
+                                           };
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
+  }
 }
