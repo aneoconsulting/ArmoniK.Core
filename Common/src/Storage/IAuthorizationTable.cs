@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -63,7 +64,18 @@ public record GrantData(string              GrantId,
 public record PermissionSetData(string              Name,
                                 int                 Version,
                                 IList<string>       Permissions,
-                                AuthorizationOrigin Origin);
+                                AuthorizationOrigin Origin)
+{
+  /// <summary>
+  ///   Whether another stored set is this version of this set, with the same permissions in any order and the same origin
+  /// </summary>
+  /// <param name="other">The other set</param>
+  /// <returns>Whether they are the same</returns>
+  public bool SameAs(PermissionSetData other)
+    => Name == other.Name && Version == other.Version && Origin == other.Origin && Permissions.Order(StringComparer.Ordinal)
+                                                                                              .SequenceEqual(other.Permissions.Order(StringComparer.Ordinal),
+                                                                                                             StringComparer.Ordinal);
+}
 
 /// <summary>
 ///   Generation of the stored grants and permission sets: how many changes began, and the last that ended
@@ -145,10 +157,20 @@ public interface IAuthorizationTable : IInitializable
                                                         CancellationToken cancellationToken = default);
 
   /// <summary>
+  ///   The highest version of a permission set ever stored, the set being deleted since or not
+  /// </summary>
+  /// <param name="name">Name of the set</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>The version, 0 when the set was never stored</returns>
+  Task<int> GetLatestPermissionSetVersionAsync(string            name,
+                                               CancellationToken cancellationToken = default);
+
+  /// <summary>
   ///   Store a new version of a permission set, which becomes its current version. Past versions are kept
   /// </summary>
   /// <param name="permissionSet">The new version</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <exception cref="PermissionSetVersionAlreadyExistsException">This version is already stored with other permissions</exception>
   Task SetPermissionSetAsync(PermissionSetData permissionSet,
                              CancellationToken cancellationToken = default);
 

@@ -180,25 +180,51 @@ public class AuthorizationTable : IAuthorizationTable
   }
 
   /// <inheritdoc />
+  public async Task<int> GetLatestPermissionSetVersionAsync(string            name,
+                                                            CancellationToken cancellationToken = default)
+  {
+    using var activity = activitySource_.StartActivity();
+    var latest = await versions_.Get()
+                                .Find(data => data.Name == name)
+                                .SortByDescending(data => data.Version)
+                                .Limit(1)
+                                .FirstOrDefaultAsync(cancellationToken)
+                                .ConfigureAwait(false);
+    return latest?.Version ?? 0;
+  }
+
+  /// <inheritdoc />
   public async Task SetPermissionSetAsync(PermissionSetData permissionSet,
                                           CancellationToken cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity();
     var id = VersionId(permissionSet.Name,
                        permissionSet.Version);
-    await versions_.Get()
-                   .ReplaceOneAsync(data => data.Id == id,
-                                    new PermissionSetVersionData(id,
-                                                                 permissionSet.Name,
-                                                                 permissionSet.Version,
-                                                                 permissionSet.Permissions,
-                                                                 permissionSet.Origin),
-                                    new ReplaceOptions
-                                    {
-                                      IsUpsert = true,
-                                    },
-                                    cancellationToken)
-                   .ConfigureAwait(false);
+    try
+    {
+      await versions_.Get()
+                     .InsertOneAsync(new PermissionSetVersionData(id,
+                                                                  permissionSet.Name,
+                                                                  permissionSet.Version,
+                                                                  permissionSet.Permissions,
+                                                                  permissionSet.Origin),
+                                     cancellationToken: cancellationToken)
+                     .ConfigureAwait(false);
+    }
+    catch (MongoWriteException e) when (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
+    {
+      // A stored version is never rewritten: written again only with the same content
+      var stored = await GetPermissionSetVersionAsync(permissionSet.Name,
+                                                      permissionSet.Version,
+                                                      cancellationToken)
+                     .ConfigureAwait(false);
+      if (stored is null || !stored.SameAs(permissionSet))
+      {
+        throw new PermissionSetVersionAlreadyExistsException($"Permission set {permissionSet.Name}@{permissionSet.Version} is already stored with other permissions",
+                                                             e);
+      }
+    }
+
     await sets_.Get()
                .ReplaceOneAsync(data => data.Name == permissionSet.Name,
                                 permissionSet,
