@@ -51,6 +51,7 @@ public class CallerResolver : IHealthCheckProvider
   ///   Build the resolver
   /// </summary>
   /// <param name="options">Options of the identification of callers</param>
+  /// <param name="jwt">Options of the token validation, null when tokens are not validated</param>
   public CallerResolver(IdentityOptions                    options,
                         IOptionsMonitor<JwtBearerOptions>? jwt = null)
   {

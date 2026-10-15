@@ -103,15 +103,6 @@ public readonly record struct AuthorizationGeneration(long Begun,
 }
 
 /// <summary>
-///   Storage of the grants and permission sets of the access model
-/// </summary>
-/// <remarks>
-///   A change writes several grants and sets one at a time, and is read whole or not at all: under the lock, a writer
-///   begins it with <see cref="BeginChangeAsync" />, writes, then ends it with <see cref="EndChangeAsync" />. A reader
-///   keeps what it read only when the generation was stable and did not move meanwhile. A writer that fails leaves
-///   the change unended, so that what it wrote is not read before another change completes it.
-/// </remarks>
-/// <summary>
 ///   Lock serializing changes to grants and permission sets across replicas, released when disposed
 /// </summary>
 public interface IAuthorizationLock : IAsyncDisposable
@@ -123,6 +114,15 @@ public interface IAuthorizationLock : IAsyncDisposable
   CancellationToken Lost { get; }
 }
 
+/// <summary>
+///   Storage of the grants and permission sets of the access model
+/// </summary>
+/// <remarks>
+///   A change writes several grants and sets one at a time, and is read whole or not at all: under the lock, a writer
+///   begins it with <see cref="BeginChangeAsync" />, writes, then ends it with <see cref="EndChangeAsync" />. A reader
+///   keeps what it read only when the generation was stable and did not move meanwhile. A writer that fails leaves
+///   the change unended, so that what it wrote is not read before another change completes it.
+/// </remarks>
 public interface IAuthorizationTable : IInitializable
 {
   /// <summary>
