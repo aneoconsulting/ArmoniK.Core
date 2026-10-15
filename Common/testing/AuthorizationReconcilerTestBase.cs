@@ -282,9 +282,97 @@ public class AuthorizationReconcilerTestBase
     }
   }
 
-  /// <summary>A table whose changes cannot be ended, as when the writer fails just before</summary>
-  private sealed class FailingEnd(IAuthorizationTable inner) : IAuthorizationTable
+  /// <summary>Another writer that took the lock over changes the grants while this one changes them</summary>
+  private sealed class TakenOver(IAuthorizationTable inner) : FailingEnd(inner)
   {
+    private bool takenOver_;
+
+    public override async Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
+    {
+      var generation = await Inner.BeginChangeAsync(cancellationToken)
+                                  .ConfigureAwait(false);
+      if (takenOver_)
+      {
+        return generation;
+      }
+
+      takenOver_ = true;
+      var other = await Inner.BeginChangeAsync(cancellationToken)
+                             .ConfigureAwait(false);
+      await Inner.EndChangeAsync(other,
+                                 cancellationToken)
+                 .ConfigureAwait(false);
+      return generation;
+    }
+
+    public override Task EndChangeAsync(long              generation,
+                                        CancellationToken cancellationToken = default)
+      => Inner.EndChangeAsync(generation,
+                              cancellationToken);
+  }
+
+  /// <summary>A lock already lost when the reconciliation starts</summary>
+  private sealed class LostLock(IAuthorizationTable inner) : FailingEnd(inner)
+  {
+    public override async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
+      => new Lost(await Inner.LockAsync(cancellationToken)
+                             .ConfigureAwait(false));
+
+    private sealed class Lost(IAuthorizationLock held) : IAuthorizationLock
+    {
+      CancellationToken IAuthorizationLock.Lost
+        => new(true);
+
+      public ValueTask DisposeAsync()
+        => held.DisposeAsync();
+    }
+  }
+
+  private Task<bool> ReconcileAsync(IAuthorizationTable  table,
+                                    AuthorizationOptions options)
+    => new AuthorizationReconciler(table,
+                                   options,
+                                   new AuthorizationAudit(NullLoggerFactory.Instance),
+                                   TimeProvider.System,
+                                   NullLogger<AuthorizationReconciler>.Instance).ReconcileAsync();
+
+  [Test]
+  public async Task AChangeMixedWithAnotherWriterIsLeftUnended()
+  {
+    if (RunTests)
+    {
+      Assert.That(() => ReconcileAsync(new TakenOver(AuthorizationTable!),
+                                       Options(1,
+                                               [Grant("own", "role:team", "session-own", Ownership)])),
+                  Throws.InstanceOf<InvalidOperationException>()
+                        .With.Message.Contains("lock was lost"));
+      Assert.That((await AuthorizationTable!.GetGenerationAsync()
+                                            .ConfigureAwait(false)).Stable,
+                  Is.False);
+    }
+  }
+
+  [Test]
+  public async Task ALostLockStopsTheReconciliation()
+  {
+    if (RunTests)
+    {
+      Assert.That(() => ReconcileAsync(new LostLock(AuthorizationTable!),
+                                       Options(1,
+                                               [Grant("own", "role:team", "session-own", Ownership)])),
+                  Throws.InstanceOf<OperationCanceledException>());
+      Assert.That(await GrantsAsync()
+                    .ConfigureAwait(false),
+                  Is.Empty);
+    }
+  }
+
+  /// <summary>A table whose changes cannot be ended, as when the writer fails just before</summary>
+  private class FailingEnd(IAuthorizationTable inner) : IAuthorizationTable
+  {
+    protected IAuthorizationTable Inner
+      => inner;
+
     public Task<HealthCheckResult> Check(HealthCheckTag tag)
       => inner.Check(tag);
 
@@ -332,17 +420,17 @@ public class AuthorizationReconcilerTestBase
       => inner.SetConfigRevisionAsync(revision,
                                       cancellationToken);
 
-    public Task<IAsyncDisposable> LockAsync(CancellationToken cancellationToken = default)
+    public virtual Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
       => inner.LockAsync(cancellationToken);
 
     public Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default)
       => inner.GetGenerationAsync(cancellationToken);
 
-    public Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
+    public virtual Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
       => inner.BeginChangeAsync(cancellationToken);
 
-    public Task EndChangeAsync(long              generation,
-                               CancellationToken cancellationToken = default)
+    public virtual Task EndChangeAsync(long              generation,
+                                       CancellationToken cancellationToken = default)
       => throw new TimeoutException("the storage did not answer");
   }
 
