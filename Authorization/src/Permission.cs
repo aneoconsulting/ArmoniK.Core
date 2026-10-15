@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 
 namespace ArmoniK.Core.Authorization;
@@ -41,6 +42,13 @@ public enum PermissionTarget
 /// </summary>
 public sealed class Permission
 {
+  private static readonly Dictionary<string, Permission> ByName;
+
+  // After every initializer, so that the catalogue is built whatever the order the members are written in
+  static Permission()
+    => ByName = All.ToDictionary(permission => permission.Name,
+                                 StringComparer.Ordinal);
+
   private Permission(string           name,
                      PermissionTarget target,
                      bool             putsPartitionInPlay = false,
@@ -70,7 +78,7 @@ public sealed class Permission
   /// <summary>Create a session</summary>
   public static Permission SessionCreate { get; } = new("session:create",
                                                         PermissionTarget.Session,
-                                                        putsPartitionInPlay: true);
+                                                        true);
 
   /// <summary>View and list sessions</summary>
   public static Permission SessionRead { get; } = Visible("session:read");
@@ -135,7 +143,7 @@ public sealed class Permission
   /// <summary>View partitions</summary>
   public static Permission PartitionRead { get; } = new("partition:read",
                                                         PermissionTarget.Partition,
-                                                        putsPartitionInPlay: true);
+                                                        true);
 
   /// <summary>Create a partition</summary>
   public static Permission PartitionCreate { get; } = new("partition:create",
@@ -198,9 +206,6 @@ public sealed class Permission
                                                            PermissionSetManage,
                                                          };
 
-  private static readonly Dictionary<string, Permission> ByName = All.ToDictionary(permission => permission.Name,
-                                                                                    StringComparer.Ordinal);
-
   private static Permission Visible(string name)
     => new(name,
            PermissionTarget.Session,
@@ -212,8 +217,8 @@ public sealed class Permission
   /// <param name="name">Canonical name, compared ordinally</param>
   /// <param name="permission">The permission when found</param>
   /// <returns>Whether the name is in the catalogue</returns>
-  public static bool TryParse(string                                                      name,
-                              [System.Diagnostics.CodeAnalysis.NotNullWhen(true)] out Permission? permission)
+  public static bool TryParse(string                              name,
+                              [NotNullWhen(true)] out Permission? permission)
     => ByName.TryGetValue(name,
                           out permission);
 
