@@ -44,9 +44,8 @@ namespace ArmoniK.Core.Adapters.Redis;
 public class ObjectStorage : IObjectStorage
 {
   private readonly ILogger<ObjectStorage> logger_;
-  private readonly string                 objectStorageName_;
-  private readonly IDatabaseAsync         redis_;
   private readonly Options.Redis          redisOptions_;
+  private readonly IDatabaseAsync         redis_;
   private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
@@ -63,11 +62,10 @@ public class ObjectStorage : IObjectStorage
                        IUuidGenerator uuidGenerator,
                        ILogger<ObjectStorage> logger)
   {
-    redis_             = redis;
-    redisOptions_      = redisOptions;
-    objectStorageName_ = "objectStorageName";
-    uuidGenerator_     = uuidGenerator;
-    logger_            = logger;
+    redis_         = redis;
+    redisOptions_  = redisOptions;
+    uuidGenerator_ = uuidGenerator;
+    logger_        = logger;
   }
 
   /// <inheritdoc />
@@ -104,25 +102,53 @@ public class ObjectStorage : IObjectStorage
   {
     var key = uuidGenerator_.GenerateUuid()
                             .ToString();
-    var  storageNameKey = objectStorageName_ + key;
+    var  storageNameKey = redisOptions_.KeyPrefix + key;
     long size           = 0;
+    var  count          = 0;
 
-    var idx      = 0;
-    var taskList = new List<Task>();
-    await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                           .ConfigureAwait(false))
+    await using var cleanup = new Deferrer(() => TryDeleteChunksAsync(storageNameKey,
+                                                                      count,
+                                                                      CancellationToken.None));
+
+    var upload = valueChunks.Where(chunk => !chunk.IsEmpty)
+                            .Select((chunk, index) =>
+                                    {
+                                      count = index + 1;
+                                      return (chunk, index);
+                                    })
+                            .ParallelSelect(new ParallelTaskOptions
+                                            {
+                                              ParallelismLimit  = redisOptions_.DegreeOfParallelism,
+                                              CancellationToken = cancellationToken,
+                                              Unordered         = true,
+                                            },
+                                            async indexedChunk =>
+                                            {
+                                              var (chunk, index) = indexedChunk;
+
+                                              var storageNameKeyWithIndex = $"{storageNameKey}_{index}";
+
+                                              await PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
+                                                                                                chunk),
+                                                                           cancellationToken)
+                                                .ConfigureAwait(false);
+
+                                              return chunk.Length;
+                                            });
+
+    await foreach (var chunk in upload.WithCancellation(cancellationToken)
+                                      .ConfigureAwait(false))
     {
-      size += chunk.Length;
-      var storageNameKeyWithIndex = $"{storageNameKey}_{idx}";
-      taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKeyWithIndex,
-                                                               chunk)));
-      ++idx;
+      size += chunk;
     }
 
-    taskList.Add(PerformActionWithRetry(() => SetObjectAsync(storageNameKey + "_count",
-                                                             idx)));
-    await taskList.WhenAll()
-                  .ConfigureAwait(false);
+    await PerformActionWithRetry(() => SetObjectAsync($"{storageNameKey}_count",
+                                                      count),
+                                 cancellationToken)
+      .ConfigureAwait(false);
+
+    // Disengage cleanup now that upload has been successfully completed
+    cleanup.Reset();
 
     return (Encoding.UTF8.GetBytes(key), size);
   }
@@ -131,13 +157,15 @@ public class ObjectStorage : IObjectStorage
   public async IAsyncEnumerable<byte[]> GetValuesAsync(byte[]                                     id,
                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
-    var key = Encoding.UTF8.GetString(id);
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+    var key            = Encoding.UTF8.GetString(id);
+    var storageNameKey = redisOptions_.KeyPrefix + key;
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_count"),
+                                             cancellationToken)
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
     {
-      throw new ObjectDataNotFoundException("Key not found");
+      throw new ObjectDataNotFoundException($"Header Key not found in Redis: `{key}`");
     }
 
     var valuesCount = int.Parse(value!);
@@ -147,69 +175,110 @@ public class ObjectStorage : IObjectStorage
       yield break;
     }
 
-    foreach (var chunkTask in Enumerable.Range(0,
-                                               valuesCount)
-                                        .Select(index => PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_" + index)))
-                                        .ToList())
+    var download = Enumerable.Range(0,
+                                    valuesCount)
+                             .ParallelSelect(new ParallelTaskOptions
+                                             {
+                                               ParallelismLimit  = redisOptions_.DegreeOfParallelism,
+                                               CancellationToken = cancellationToken,
+                                               Unordered         = false,
+                                             },
+                                             async index =>
+                                             {
+                                               var chunk = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_{index}"),
+                                                                                        cancellationToken)
+                                                             .ConfigureAwait(false);
+
+                                               return (byte[]?)chunk switch
+                                                      {
+                                                        null      => throw new ObjectDataNotFoundException($"Chunk Key not found in Redis: `{key}_{index}`"),
+                                                        var bytes => bytes,
+                                                      };
+                                             });
+
+    await foreach (var chunk in download.WithCancellation(cancellationToken)
+                                        .ConfigureAwait(false))
     {
-      yield return (await chunkTask.ConfigureAwait(false))!;
+      yield return chunk;
     }
   }
 
   /// <inheritdoc />
-  public async Task TryDeleteAsync(IEnumerable<byte[]> ids,
-                                   CancellationToken   cancellationToken = default)
-    => await ids.ParallelForEach(id => TryDeleteAsync(id,
-                                                      cancellationToken))
-                .ConfigureAwait(false);
+  public Task TryDeleteAsync(IEnumerable<byte[]> ids,
+                             CancellationToken   cancellationToken = default)
+    => ids.ParallelForEach(new ParallelTaskOptions
+                           {
+                             ParallelismLimit  = redisOptions_.DegreeOfParallelism,
+                             CancellationToken = cancellationToken,
+                             Unordered         = true,
+                           },
+                           id => TryDeleteAsync(id,
+                                                cancellationToken));
 
   /// <inheritdoc />
-  public async Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
-                                                              CancellationToken   cancellationToken = default)
-    => await ids.ParallelSelect(async id => (id, await ExistsAsync(id,
-                                                                   cancellationToken)
-                                                   .ConfigureAwait(false)))
-                .ToDictionaryAsync(tuple => tuple.id,
-                                   tuple => tuple.Item2,
-                                   new ByteArrayComparer(),
-                                   cancellationToken)
-                .ConfigureAwait(false);
+  public Task<IDictionary<byte[], long?>> GetSizesAsync(IEnumerable<byte[]> ids,
+                                                        CancellationToken   cancellationToken = default)
+    => ids.ToAsyncEnumerable()
+          .Select(GetSizeAsync)
+          .ToDictionaryAsync(new ByteArrayComparer(),
+                             cancellationToken)
+          .AndThen(static IDictionary<byte[], long?> (dict) => dict)
+          .AsTask();
 
-  private async Task<long?> ExistsAsync(byte[]            id,
-                                        CancellationToken cancellationToken)
+  private async ValueTask<(byte[], long?)> GetSizeAsync(byte[]            id,
+                                                        CancellationToken cancellationToken)
   {
-    var key = Encoding.UTF8.GetString(id);
+    var key            = Encoding.UTF8.GetString(id);
+    var storageNameKey = redisOptions_.KeyPrefix + key;
 
-
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_count"),
+                                             cancellationToken)
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
     {
-      return null;
+      return (id, null);
     }
 
     var valuesCount = int.Parse(value!);
-    var keys = Enumerable.Range(0,
-                                valuesCount)
-                         .Select(index => new RedisKey(objectStorageName_ + key + "_" + index));
-    long count = 0;
+    var sizes = Enumerable.Range(0,
+                                 valuesCount)
+                          .ParallelSelect(new ParallelTaskOptions
+                                          {
+                                            ParallelismLimit  = redisOptions_.DegreeOfParallelism,
+                                            CancellationToken = cancellationToken,
+                                            Unordered         = true,
+                                          },
+                                          index =>
+                                          {
+                                            var redisKey = new RedisKey($"{storageNameKey}_{index}");
+                                            return PerformActionWithRetry(() => redis_.StringLengthAsync(redisKey),
+                                                                          cancellationToken);
+                                          });
 
-    foreach (var redisKey in keys)
+    long totalSize = 0;
+    await foreach (var size in sizes.WithCancellation(cancellationToken)
+                                    .ConfigureAwait(false))
     {
-      count += await PerformActionWithRetry(() => redis_.StringLengthAsync(redisKey))
-                 .ConfigureAwait(false);
+      if (size == 0)
+      {
+        return (id, null);
+      }
+
+      totalSize += size;
     }
 
-    return count;
+    return (id, totalSize);
   }
 
   private async Task TryDeleteAsync(byte[]            id,
                                     CancellationToken cancellationToken = default)
   {
-    var key = Encoding.UTF8.GetString(id);
+    var key            = Encoding.UTF8.GetString(id);
+    var storageNameKey = redisOptions_.KeyPrefix + key;
 
-    var value = await PerformActionWithRetry(() => redis_.StringGetAsync(objectStorageName_ + key + "_count"))
+    var value = await PerformActionWithRetry(() => redis_.StringGetAsync($"{storageNameKey}_count"),
+                                             cancellationToken)
                   .ConfigureAwait(false);
 
     if (!value.HasValue)
@@ -218,29 +287,43 @@ public class ObjectStorage : IObjectStorage
     }
 
     var valuesCount = int.Parse(value!);
-    var keyList = Enumerable.Range(0,
-                                   valuesCount)
-                            .Select(index => new RedisKey(objectStorageName_ + key + "_" + index))
-                            .Concat(new[]
-                                    {
-                                      new RedisKey(objectStorageName_ + key + "_count"),
-                                    })
-                            .ToArray();
-
-    await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList))
+    await TryDeleteChunksAsync(storageNameKey,
+                               valuesCount,
+                               cancellationToken)
       .ConfigureAwait(false);
     logger_.LogInformation("Deleted data with {resultId}",
                            key);
   }
 
-  private async Task<T> PerformActionWithRetry<T>(Func<Task<T>> action)
+  private async ValueTask TryDeleteChunksAsync(string            storageNameKey,
+                                               int               count,
+                                               CancellationToken cancellationToken = default)
+  {
+    var keyList = Enumerable.Range(0,
+                                   count)
+                            .Select(index => new RedisKey($"{storageNameKey}_{index}"))
+                            .Concat(new[]
+                                    {
+                                      new RedisKey($"{storageNameKey}_count"),
+                                    })
+                            .ToArray();
+
+    await PerformActionWithRetry(() => redis_.KeyDeleteAsync(keyList),
+                                 cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  private async Task<T> PerformActionWithRetry<T>(Func<Task<T>>     action,
+                                                  CancellationToken cancellationToken)
   {
     for (var retryCount = 0; retryCount < redisOptions_.MaxRetry; retryCount++)
     {
+      cancellationToken.ThrowIfCancellationRequested();
       try
       {
         return await action()
-                 .ConfigureAwait(false);
+                     .WaitAsync(cancellationToken)
+                     .ConfigureAwait(false);
       }
       catch (Exception ex) when (ex is RedisTimeoutException or RedisConnectionException)
       {
@@ -258,7 +341,8 @@ public class ObjectStorage : IObjectStorage
                            retryCount,
                            redisOptions_.MaxRetry,
                            retryDelay);
-        await Task.Delay(retryDelay)
+        await Task.Delay(retryDelay,
+                         cancellationToken)
                   .ConfigureAwait(false);
       }
     }
