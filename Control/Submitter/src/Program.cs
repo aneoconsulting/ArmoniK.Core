@@ -198,6 +198,11 @@ public static class Program
 
       app.UseRouting();
       app.UseGrpcWeb();
+      // Before the endpoints, so that the request of a caller without valid credentials is never read
+      if (authorizationEnabled)
+      {
+        app.UseCallerAuthentication();
+      }
       app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Connection.LocalPort == 1081 && context.Request.Path == "/metrics");
 
       app.UseSerilogRequestLogging();
