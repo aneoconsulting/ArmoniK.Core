@@ -87,6 +87,18 @@ public readonly record struct AuthorizationGeneration(long Begun,
 ///   keeps what it read only when the generation was stable and did not move meanwhile. A writer that fails leaves
 ///   the change unended, so that what it wrote is not read before another change completes it.
 /// </remarks>
+/// <summary>
+///   Lock serializing changes to grants and permission sets across replicas, released when disposed
+/// </summary>
+public interface IAuthorizationLock : IAsyncDisposable
+{
+  /// <summary>
+  ///   Cancelled when the lock is lost before it is released, such as a lease taken over by another replica: its holder
+  ///   must stop writing
+  /// </summary>
+  CancellationToken Lost { get; }
+}
+
 public interface IAuthorizationTable : IInitializable
 {
   /// <summary>
@@ -157,7 +169,7 @@ public interface IAuthorizationTable : IInitializable
   Task<int> GetConfigRevisionAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
-  ///   Store the revision of the configuration the stored grants come from
+  ///   Store the revision of the configuration the stored grants come from, never lowering the stored one
   /// </summary>
   /// <param name="revision">The revision</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
@@ -169,7 +181,7 @@ public interface IAuthorizationTable : IInitializable
   /// </summary>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>The lock, released when disposed</returns>
-  Task<IAsyncDisposable> LockAsync(CancellationToken cancellationToken = default);
+  Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default);
 
   /// <summary>
   ///   The generation of the grants and permission sets

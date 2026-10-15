@@ -314,6 +314,22 @@ public class AuthorizationTableTestBase
   }
 
   [Test]
+  public async Task TheConfigRevisionNeverGoesBack()
+  {
+    if (RunTests)
+    {
+      await AuthorizationTable!.SetConfigRevisionAsync(5)
+                               .ConfigureAwait(false);
+      await AuthorizationTable.SetConfigRevisionAsync(3)
+                              .ConfigureAwait(false);
+
+      Assert.That(await AuthorizationTable.GetConfigRevisionAsync()
+                                          .ConfigureAwait(false),
+                  Is.EqualTo(5));
+    }
+  }
+
+  [Test]
   public async Task TheLockIsExclusive()
   {
     if (RunTests)

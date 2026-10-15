@@ -31,6 +31,7 @@ using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 namespace ArmoniK.Core.Adapters.MongoDB;
@@ -42,7 +43,6 @@ public class AuthorizationTable : IAuthorizationTable
   private const string LockId       = "lock";
   private const string GenerationId = "generation";
 
-  private static readonly TimeSpan LockDuration = TimeSpan.FromMinutes(1);
 
   private readonly ActivitySource                                                                 activitySource_;
   private readonly MongoCollectionProvider<GrantData, GrantDataModelMapping>                       grants_;
@@ -66,6 +66,11 @@ public class AuthorizationTable : IAuthorizationTable
     state_          = state;
     activitySource_ = activitySource;
   }
+
+  /// <summary>
+  ///   Duration of the lease of the lock, renewed every third of it while the lock is held
+  /// </summary>
+  public TimeSpan LockDuration { get; init; } = TimeSpan.FromMinutes(1);
 
   /// <inheritdoc />
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -234,57 +239,71 @@ public class AuthorizationTable : IAuthorizationTable
   {
     using var activity = activitySource_.StartActivity();
     await state_.Get()
-                .ReplaceOneAsync(data => data.Id == RevisionId,
-                                 new AuthorizationStateData(RevisionId,
-                                                            revision,
-                                                            null,
-                                                            null),
-                                 new ReplaceOptions
-                                 {
-                                   IsUpsert = true,
-                                 },
-                                 cancellationToken)
+                .UpdateOneAsync(data => data.Id == RevisionId,
+                                Builders<AuthorizationStateData>.Update.Max(data => data.Revision,
+                                                                            revision),
+                                new UpdateOptions
+                                {
+                                  IsUpsert = true,
+                                },
+                                cancellationToken)
                 .ConfigureAwait(false);
   }
 
   /// <inheritdoc />
-  public async Task<IAsyncDisposable> LockAsync(CancellationToken cancellationToken = default)
+  public async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
   {
     using var activity   = activitySource_.StartActivity();
     var       collection = state_.Get();
     var       owner      = Guid.NewGuid()
                                .ToString();
 
+    // Taken when expired by the clock of the server, so that the clocks of the replicas do not matter
+    var expired = new BsonDocument
+                  {
+                    {
+                      "_id", LockId
+                    },
+                    {
+                      "$expr", new BsonDocument("$lt",
+                                                new BsonArray
+                                                {
+                                                  "$" + nameof(AuthorizationStateData.ExpiresAt),
+                                                  "$$NOW",
+                                                })
+                    },
+                  };
+
     while (true)
     {
+      // Created expired when absent, then taken: an upsert cannot be conditioned on the clock of the server
       try
       {
-        await collection.InsertOneAsync(new AuthorizationStateData(LockId,
-                                                                   0,
-                                                                   owner,
-                                                                   DateTime.UtcNow + LockDuration),
-                                        cancellationToken: cancellationToken)
+        await collection.UpdateOneAsync(data => data.Id == LockId,
+                                        Builders<AuthorizationStateData>.Update.SetOnInsert(data => data.ExpiresAt,
+                                                                                            DateTime.UnixEpoch),
+                                        new UpdateOptions
+                                        {
+                                          IsUpsert = true,
+                                        },
+                                        cancellationToken)
                         .ConfigureAwait(false);
-        return new Release(collection,
-                           owner);
       }
       catch (MongoWriteException e) when (e.WriteError.Category == ServerErrorCategory.DuplicateKey)
       {
+        // Created at the same time by another replica
       }
 
-      // Take over a lock whose holder did not release it in time
-      var now = DateTime.UtcNow;
-      var taken = await collection.FindOneAndUpdateAsync<AuthorizationStateData>(data => data.Id == LockId && data.ExpiresAt < now,
-                                                                                 Builders<AuthorizationStateData>.Update.Set(data => data.Owner,
-                                                                                                                             owner)
-                                                                                                                 .Set(data => data.ExpiresAt,
-                                                                                                                      now + LockDuration),
-                                                                                 cancellationToken: cancellationToken)
+      var taken = await collection.UpdateOneAsync(expired,
+                                                  Lease.Hold(owner,
+                                                             LockDuration),
+                                                  cancellationToken: cancellationToken)
                                   .ConfigureAwait(false);
-      if (taken is not null)
+      if (taken.MatchedCount == 1)
       {
-        return new Release(collection,
-                           owner);
+        return new Lease(collection,
+                         owner,
+                         LockDuration);
       }
 
       await Task.Delay(TimeSpan.FromMilliseconds(100),
@@ -342,20 +361,105 @@ public class AuthorizationTable : IAuthorizationTable
                                   int    version)
     => $"{name}@{version}";
 
-  private sealed class Release : IAsyncDisposable
+  /// <summary>
+  ///   Lease of the lock, renewed while it is held, and reported lost when another replica took it over or when it could
+  ///   not be renewed before it expired
+  /// </summary>
+  private sealed class Lease : IAuthorizationLock
   {
     private readonly IMongoCollection<AuthorizationStateData> collection_;
+    private readonly TimeSpan                                 duration_;
+    private readonly CancellationTokenSource                  lost_ = new();
     private readonly string                                   owner_;
+    private readonly Task                                     renewal_;
+    private readonly CancellationTokenSource                  stop_ = new();
 
-    public Release(IMongoCollection<AuthorizationStateData> collection,
-                   string                                   owner)
+    public Lease(IMongoCollection<AuthorizationStateData> collection,
+                 string                                   owner,
+                 TimeSpan                                 duration)
     {
       collection_ = collection;
       owner_      = owner;
+      duration_   = duration;
+      renewal_    = Task.Run(RenewAsync);
     }
 
+    public CancellationToken Lost
+      => lost_.Token;
+
     public async ValueTask DisposeAsync()
-      => await collection_.DeleteOneAsync(data => data.Id == LockId && data.Owner == owner_)
-                          .ConfigureAwait(false);
+    {
+      await stop_.CancelAsync()
+                 .ConfigureAwait(false);
+      await renewal_.ConfigureAwait(false);
+      await collection_.DeleteOneAsync(data => data.Id == LockId && data.Owner == owner_)
+                       .ConfigureAwait(false);
+      stop_.Dispose();
+      lost_.Dispose();
+    }
+
+    /// <summary>The update giving the lock to its owner until the clock of the server reaches the end of the lease</summary>
+    public static global::MongoDB.Driver.UpdateDefinition<AuthorizationStateData> Hold(string   owner,
+                                                                TimeSpan duration)
+      => Builders<AuthorizationStateData>.Update.Pipeline(new BsonDocumentStagePipelineDefinition<AuthorizationStateData, AuthorizationStateData>([
+                                                                                                                                                   new BsonDocument("$set",
+                                                                                                                                                                    new BsonDocument
+                                                                                                                                                                    {
+                                                                                                                                                                      {
+                                                                                                                                                                        nameof(AuthorizationStateData.Owner), owner
+                                                                                                                                                                      },
+                                                                                                                                                                      {
+                                                                                                                                                                        nameof(AuthorizationStateData.ExpiresAt),
+                                                                                                                                                                        new BsonDocument("$add",
+                                                                                                                                                                                         new BsonArray
+                                                                                                                                                                                         {
+                                                                                                                                                                                           "$$NOW",
+                                                                                                                                                                                           (long)duration.TotalMilliseconds,
+                                                                                                                                                                                         })
+                                                                                                                                                                      },
+                                                                                                                                                                    }),
+                                                                                                                                                 ]));
+
+    private async Task RenewAsync()
+    {
+      var renewed = Stopwatch.StartNew();
+      while (!stop_.IsCancellationRequested)
+      {
+        try
+        {
+          await Task.Delay(duration_ / 3,
+                           stop_.Token)
+                    .ConfigureAwait(false);
+          var result = await collection_.UpdateOneAsync(data => data.Id == LockId && data.Owner == owner_,
+                                                        Hold(owner_,
+                                                             duration_),
+                                                        cancellationToken: stop_.Token)
+                                        .ConfigureAwait(false);
+          if (result.MatchedCount == 0)
+          {
+            // Taken over by another replica
+            await lost_.CancelAsync()
+                       .ConfigureAwait(false);
+            return;
+          }
+
+          renewed.Restart();
+        }
+        catch (OperationCanceledException) when (stop_.IsCancellationRequested)
+        {
+          return;
+        }
+        catch (Exception) when (renewed.Elapsed < duration_)
+        {
+          // Tried again while the lease still holds
+        }
+        catch (Exception)
+        {
+          await lost_.CancelAsync()
+                     .ConfigureAwait(false);
+          return;
+        }
+      }
+    }
   }
 }
