@@ -263,6 +263,19 @@ public class AuthorizationEnforcer
                                               : $"This method is not supported while authorization is enabled: {rule.Instead}"));
       }
     }
+    catch (GrantsUnavailableException e)
+    {
+      // Answered as unavailable by the exception interceptor, the failed read being counted where it happened
+      audit_.Record(service,
+                    method,
+                    caller,
+                    "Fault",
+                    rule.Permissions,
+                    [],
+                    [],
+                    e.Message);
+      throw;
+    }
     catch (Exception e) when (e is not (RpcException or OperationCanceledException) && !IsRefusal(e))
     {
       // A fault says nothing of the session: it is answered as unavailable, so that callers retry
