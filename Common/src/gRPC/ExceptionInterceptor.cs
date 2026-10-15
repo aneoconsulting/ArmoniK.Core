@@ -261,7 +261,7 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                  context,
                                                  StatusCode.FailedPrecondition,
                                                  "Task is paused"),
-         GrantsUnavailableException => ProcessException(ExceptionAction.Warning,
+         GrantsUnavailableException or AuthorizationUnavailableException => ProcessException(ExceptionAction.Warning,
                                                         e,
                                                         context,
                                                         StatusCode.Unavailable,
