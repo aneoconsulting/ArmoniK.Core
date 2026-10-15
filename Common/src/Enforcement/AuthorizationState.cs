@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.gRPC;
@@ -124,6 +125,58 @@ public static class AuthorizationState
                                      out var authorized)
          ? filter.ExpressionAnd((Expression<Func<T, bool>>)authorized)
          : filter;
+
+  /// <summary>
+  ///   Which of the given sessions may show the data reference of their results, the opaque id: those where the caller
+  ///   holds <c>data:download</c>, since the reference gives the data; all of them when authorization is disabled
+  /// </summary>
+  /// <param name="context">Context of the call</param>
+  /// <param name="sessionTable">Sessions, read for those the decision did not resolve already</param>
+  /// <param name="sessionIds">Sessions of the results returned</param>
+  /// <returns>Whether the results of a session show their data reference</returns>
+  public static async Task<Func<string, bool>> DataReferenceShownAsync(this ServerCallContext context,
+                                                                      ISessionTable          sessionTable,
+                                                                      IEnumerable<string>    sessionIds)
+  {
+    if (!context.UserState.TryGetValue(CallerKey,
+                                       out var stored) || !context.UserState.TryGetValue(EngineKey,
+                                                                                         out var storedEngine))
+    {
+      return _ => true;
+    }
+
+    var caller = ((AuthenticatedCaller)stored).Caller;
+    var engine = (DecisionEngine)storedEngine;
+
+    if (engine.HoldsUnconditionally(caller,
+                                    Permission.DataDownload))
+    {
+      return _ => true;
+    }
+
+    var ids      = sessionIds.ToHashSet();
+    var sessions = ids.Select(context.ResolvedSession)
+                      .OfType<SessionData>()
+                      .ToList();
+    var missing = ids.Except(sessions.Select(session => session.SessionId))
+                     .ToList();
+    if (missing.Count != 0)
+    {
+      sessions.AddRange(await sessionTable.FindSessionsAsync(session => missing.Contains(session.SessionId),
+                                                             session => session,
+                                                             context.CancellationToken)
+                                          .ToListAsync(context.CancellationToken)
+                                          .ConfigureAwait(false));
+    }
+
+    var shown = sessions.Where(session => engine.DecideOnSession(caller,
+                                                                 Permission.DataDownload,
+                                                                 SessionDataFields.Facts(session))
+                                                .Outcome == DecisionOutcome.Allow)
+                        .Select(session => session.SessionId)
+                        .ToHashSet();
+    return shown.Contains;
+  }
 
   /// <summary>
   ///   What the caller holds, when authorization is enabled
