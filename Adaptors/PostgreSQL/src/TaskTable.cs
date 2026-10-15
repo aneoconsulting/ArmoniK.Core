@@ -28,6 +28,7 @@ using ArmoniK.Core.Adapters.PostgreSQL.Common;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -45,15 +46,18 @@ public class TaskTable : ITaskTable
 {
   private readonly ActivitySource           activitySource_;
   private readonly NpgsqlConnectionProvider connectionProvider_;
+  private readonly Options.PostgreSQL       options_;
 
   /// <summary>
   ///   Creates a new TaskTable
   /// </summary>
   public TaskTable(NpgsqlConnectionProvider connectionProvider,
+                   Options.PostgreSQL       options,
                    ActivitySource           activitySource,
                    ILogger<TaskTable>       logger)
   {
     connectionProvider_ = connectionProvider;
+    options_            = options;
     activitySource_     = activitySource;
     Logger              = logger;
   }
@@ -653,6 +657,38 @@ LIMIT @limit OFFSET @offset",
                                                                            ICollection<string> dependenciesToRemove,
                                                                            CancellationToken   cancellationToken)
   {
+    // Npgsql only writes arrays or IList<T> as array parameters, and callers pass other collections
+    // (dictionary keys from the Agent), so convert once here rather than once per task.
+    var dependencies = dependenciesToRemove.ToArray();
+
+    // One transaction per task, run in parallel. A transaction that locks several tasks deadlocks (40P01)
+    // with the other transactions that update several tasks in another order (FinalizeTaskCreation,
+    // BulkUpdateTasks...): sorting the locks here cannot prevent it, since those updates do not lock in
+    // the same order. A transaction that holds at most one task lock cannot be part of a deadlock: it only
+    // waits before getting its lock, never while holding it.
+    var readyTasks = new List<TaskData>();
+    await foreach (var task in taskIds.ParallelSelect(new ParallelTaskOptions(true,
+                                                                              options_.DegreeOfParallelism,
+                                                                              cancellationToken),
+                                                      taskId => FetchReadyTaskAfterDependencyRemoval(taskId,
+                                                                                                     dependencies,
+                                                                                                     cancellationToken))
+                                      .WithCancellation(cancellationToken)
+                                      .ConfigureAwait(false))
+    {
+      if (task is not null)
+      {
+        readyTasks.Add(task);
+      }
+    }
+
+    return readyTasks;
+  }
+
+  private async Task<TaskData?> FetchReadyTaskAfterDependencyRemoval(string            taskId,
+                                                                     string[]          dependencies,
+                                                                     CancellationToken cancellationToken)
+  {
     await using var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
                                                           .ConfigureAwait(false);
 
@@ -661,9 +697,8 @@ LIMIT @limit OFFSET @offset",
     // one round trip.
     await using var batch = new NpgsqlBatch(connection);
 
-    // Acquire row-level locks on the affected tasks in a deterministic order (ORDER BY task_id)
-    // BEFORE deleting their remaining dependencies. Without this lock, two concurrent transactions
-    // that each delete a different dep for the same aggregation task can both run their
+    // Lock the task BEFORE deleting its remaining dependencies. Without this lock, two concurrent
+    // transactions that each delete a different dep for the same aggregation task can both run their
     // NOT EXISTS check while the other's deletion is uncommitted (READ COMMITTED sees only
     // committed data per statement). Both then report the task as NOT ready even though after
     // both commits the task has no remaining deps — permanently stranding it in Pending status.
@@ -676,66 +711,57 @@ LIMIT @limit OFFSET @offset",
     // into one statement leaves a single snapshot predating that commit and reinstates the race.
     var lockCmd = new NpgsqlBatchCommand(@"
 SELECT task_id FROM tasks
-WHERE task_id = ANY(@task_ids)
+WHERE task_id = @task_id
   AND status IN (@status_creating, @status_pending)
-ORDER BY task_id
 FOR UPDATE");
-    lockCmd.Parameters.AddWithValue("task_ids",
-                                    NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                    taskIds.ToArray());
+    lockCmd.Parameters.AddWithValue("task_id",
+                                    taskId);
     lockCmd.Parameters.AddWithValue("status_creating",
                                     (int)TaskStatus.Creating);
     lockCmd.Parameters.AddWithValue("status_pending",
                                     (int)TaskStatus.Pending);
     batch.BatchCommands.Add(lockCmd);
 
-    var deleteCmd = new NpgsqlBatchCommand("DELETE FROM task_remaining_dependencies WHERE task_id = ANY(@task_ids) AND result_id = ANY(@dep_ids)");
-    deleteCmd.Parameters.AddWithValue("task_ids",
-                                      NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                      taskIds.ToArray());
+    var deleteCmd = new NpgsqlBatchCommand("DELETE FROM task_remaining_dependencies WHERE task_id = @task_id AND result_id = ANY(@dep_ids)");
+    deleteCmd.Parameters.AddWithValue("task_id",
+                                      taskId);
     deleteCmd.Parameters.AddWithValue("dep_ids",
                                       NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                      dependenciesToRemove.ToArray());
+                                      dependencies);
     batch.BatchCommands.Add(deleteCmd);
 
     var readyCmd = new NpgsqlBatchCommand(@"
 SELECT t.* FROM tasks t
-WHERE t.task_id = ANY(@ready_task_ids)
+WHERE t.task_id = @task_id
   AND t.status IN (@status_creating, @status_pending)
   AND NOT EXISTS (
     SELECT 1 FROM task_remaining_dependencies d WHERE d.task_id = t.task_id
   )");
-    readyCmd.Parameters.AddWithValue("ready_task_ids",
-                                     NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                     taskIds.ToArray());
+    readyCmd.Parameters.AddWithValue("task_id",
+                                     taskId);
     readyCmd.Parameters.AddWithValue("status_creating",
                                      (int)TaskStatus.Creating);
     readyCmd.Parameters.AddWithValue("status_pending",
                                      (int)TaskStatus.Pending);
     batch.BatchCommands.Add(readyCmd);
 
-    var result = new List<TaskData>();
-    await using (var reader = await batch.ExecuteReaderAsync(cancellationToken)
-                                         .ConfigureAwait(false))
+    await using var reader = await batch.ExecuteReaderAsync(cancellationToken)
+                                        .ConfigureAwait(false);
+
+    // Two result sets, not three: the DELETE returns no rows so it contributes none. Drain the
+    // lock command's row, then read the task if it is ready.
+    while (await reader.ReadAsync(cancellationToken)
+                       .ConfigureAwait(false))
     {
-      // Two result sets, not three: the DELETE returns no rows so it contributes none. Drain the
-      // lock command's rows, then advance to the ready tasks.
-      while (await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false))
-      {
-      }
-
-      await reader.NextResultAsync(cancellationToken)
-                  .ConfigureAwait(false);
-
-      while (await reader.ReadAsync(cancellationToken)
-                         .ConfigureAwait(false))
-      {
-        result.Add(RowMapper.FullRow.MapToTaskData(reader));
-      }
     }
 
-    return result;
+    await reader.NextResultAsync(cancellationToken)
+                .ConfigureAwait(false);
+
+    return await reader.ReadAsync(cancellationToken)
+                       .ConfigureAwait(false)
+             ? RowMapper.FullRow.MapToTaskData(reader)
+             : null;
   }
 
   private static async Task<Dictionary<string, Dictionary<string, bool>>> LoadRemainingDependenciesBatch(NpgsqlConnection   connection,

@@ -15,15 +15,21 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using NUnit.Framework;
+
+using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.PostgreSQL.Tests;
 
@@ -64,6 +70,115 @@ public class TaskTableTests : TaskTableTestBase
 
       Assert.That(result.RemainingDataDependencies,
                   Is.Empty);
+    }
+  }
+
+  /// <summary>
+  ///   Several agents complete, at the same time, the results awaited by the same tasks, while another
+  ///   agent updates these tasks one statement per task, in the opposite order (as BulkUpdateTasks does).
+  ///   Dependency removal must neither deadlock with these updates (40P01) nor forget a task: every task
+  ///   whose dependencies are all removed must be reported ready by at least one call.
+  /// </summary>
+  [Test]
+  [Repeat(3)]
+  public async Task ConcurrentDependencyRemovalShouldNotDeadlockNorForgetTasks()
+  {
+    if (!RunTests)
+    {
+      return;
+    }
+
+    const int nTasks        = 50;
+    const int nDependencies = 4;
+    const int nRounds       = 10;
+
+    var options = new TaskOptions(new Dictionary<string, string>(),
+                                  TimeSpan.MaxValue,
+                                  5,
+                                  1,
+                                  "part1",
+                                  "applicationName",
+                                  "applicationVersion",
+                                  "applicationNamespace",
+                                  "applicationService",
+                                  "engineType");
+
+    for (var round = 0; round < nRounds; round++)
+    {
+      var dependencies = Enumerable.Range(0,
+                                          nDependencies)
+                                   .Select(i => $"dependency{round}-{i}")
+                                   .ToArray();
+      var taskIds = Enumerable.Range(0,
+                                     nTasks)
+                              .Select(_ => Guid.NewGuid()
+                                               .ToString())
+                              .ToArray();
+
+      await TaskTable!.CreateTasks(taskIds.Select(taskId => new TaskData("SessionConcurrent",
+                                                                         taskId,
+                                                                         "",
+                                                                         "",
+                                                                         $"payload{round}",
+                                                                         "CreatedBy",
+                                                                         Array.Empty<string>(),
+                                                                         dependencies,
+                                                                         new[]
+                                                                         {
+                                                                           $"output-{taskId}",
+                                                                         },
+                                                                         Array.Empty<string>(),
+                                                                         TaskStatus.Pending,
+                                                                         options,
+                                                                         new Output(OutputStatus.Error,
+                                                                                    ""))))
+                      .ConfigureAwait(false);
+
+      // Released once every call is started, so that they all run concurrently without blocking thread pool threads
+      var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+
+      // One call per dependency (the payload counts as one), each one listing the tasks in a different order
+      var removals = dependencies.Append($"payload{round}")
+                                 .Select((dependency,
+                                          i) => Task.Run(async () =>
+                                                         {
+                                                           await start.Task.ConfigureAwait(false);
+                                                           return await TaskTable.RemoveRemainingDataDependenciesAsync(taskIds.Skip(i * nTasks / (nDependencies + 1))
+                                                                                                                              .Concat(taskIds.Take(i * nTasks /
+                                                                                                                                                   (nDependencies + 1)))
+                                                                                                                              .ToArray(),
+                                                                                                                       new[]
+                                                                                                                       {
+                                                                                                                         dependency,
+                                                                                                                       },
+                                                                                                                       td => td.TaskId,
+                                                                                                                       CancellationToken.None)
+                                                                                 .ToListAsync(CancellationToken.None)
+                                                                                 .ConfigureAwait(false);
+                                                         }))
+                                 .ToList();
+
+      // Row-by-row updates of the same tasks in the reverse order, in a single transaction
+      var updates = Task.Run(async () =>
+                             {
+                               await start.Task.ConfigureAwait(false);
+                               await TaskTable.BulkUpdateTasks(taskIds.Reverse()
+                                                                      .Select(taskId => (taskId, new UpdateDefinition<TaskData>().Set(td => td.StatusMessage,
+                                                                                                                                      "touched"))),
+                                                               CancellationToken.None)
+                                              .ConfigureAwait(false);
+                             });
+
+      start.SetResult();
+
+      var ready = (await Task.WhenAll(removals)
+                             .ConfigureAwait(false)).SelectMany(ids => ids)
+                                                    .ToHashSet();
+      await updates.ConfigureAwait(false);
+
+      Assert.That(ready,
+                  Is.EquivalentTo(taskIds),
+                  $"round {round}");
     }
   }
 }

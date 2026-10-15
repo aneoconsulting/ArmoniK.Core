@@ -94,4 +94,10 @@ public class PostgreSQL
   ///   Number of attempts to initialize the database when it is not reachable yet
   /// </summary>
   public int MaxRetries { get; set; } = 5;
+
+  /// <summary>
+  ///   Number of transactions run in parallel by operations split into several transactions, such as the
+  ///   removal of data dependencies (one transaction per task). 0 uses the number of threads.
+  /// </summary>
+  public int DegreeOfParallelism { get; set; }
 }
