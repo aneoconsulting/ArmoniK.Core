@@ -79,8 +79,12 @@ public class AuthorizationReconciler
                                                   .ToDictionary(grant => grant.Id,
                                                                 StringComparer.Ordinal);
 
-    await using var _ = await table_.LockAsync(cancellationToken)
-                                    .ConfigureAwait(false);
+    await using var held = await table_.LockAsync(cancellationToken)
+                                       .ConfigureAwait(false);
+    // A lock lost while reconciling stops the writes that follow
+    using var whileHeld = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,
+                                                                          held.Lost);
+    cancellationToken = whileHeld.Token;
 
     var revision = await table_.GetConfigRevisionAsync(cancellationToken)
                                .ConfigureAwait(false);
@@ -202,6 +206,7 @@ public class AuthorizationReconciler
     var current = await table_.GetGenerationAsync(cancellationToken)
                               .ConfigureAwait(false);
     var changing = !current.Stable || setChanges.Count + grantDeletions.Count + grantCreations.Count + setDeletions.Count != 0;
+    cancellationToken.ThrowIfCancellationRequested();
     var generation = changing
                        ? await table_.BeginChangeAsync(cancellationToken)
                                      .ConfigureAwait(false)
@@ -209,6 +214,7 @@ public class AuthorizationReconciler
 
     foreach (var set in setChanges)
     {
+      cancellationToken.ThrowIfCancellationRequested();
       await table_.SetPermissionSetAsync(set,
                                          cancellationToken)
                   .ConfigureAwait(false);
@@ -227,6 +233,7 @@ public class AuthorizationReconciler
 
     foreach (var grant in grantDeletions)
     {
+      cancellationToken.ThrowIfCancellationRequested();
       await table_.DeleteGrantAsync(grant.GrantId,
                                     cancellationToken)
                   .ConfigureAwait(false);
@@ -246,6 +253,7 @@ public class AuthorizationReconciler
                                AuthorizationOrigin.Config,
                                time_.GetUtcNow()
                                     .UtcDateTime);
+      cancellationToken.ThrowIfCancellationRequested();
       await table_.CreateGrantAsync(data,
                                     cancellationToken)
                   .ConfigureAwait(false);
@@ -258,6 +266,7 @@ public class AuthorizationReconciler
 
     foreach (var set in setDeletions)
     {
+      cancellationToken.ThrowIfCancellationRequested();
       await table_.DeletePermissionSetAsync(set.Name,
                                             cancellationToken)
                   .ConfigureAwait(false);
@@ -272,6 +281,7 @@ public class AuthorizationReconciler
     }
 
     // Before the change is ended: grants stable under an older revision would let an older configuration write them again
+    cancellationToken.ThrowIfCancellationRequested();
     await table_.SetConfigRevisionAsync(options_.ConfigRevision,
                                         cancellationToken)
                 .ConfigureAwait(false);
@@ -279,9 +289,22 @@ public class AuthorizationReconciler
     // Left unended when a write fails, so that what was written is not read before a later change completes it
     if (changing)
     {
+      cancellationToken.ThrowIfCancellationRequested();
       await table_.EndChangeAsync(generation,
                                   cancellationToken)
                   .ConfigureAwait(false);
+
+      // Another writer changed the grants meanwhile, so the lock was lost and what was written here may mix with its
+      // change: a change is left unended, so that none of it is served until a reconciliation completes it
+      var ended = await table_.GetGenerationAsync(cancellationToken)
+                              .ConfigureAwait(false);
+      if (ended.Ended != generation)
+      {
+        await table_.BeginChangeAsync(cancellationToken)
+                    .ConfigureAwait(false);
+        throw new InvalidOperationException($"The grants were changed by another writer during the change of generation {generation}: " +
+                                            "the lock was lost, and the grants are refused until a reconciliation completes them");
+      }
     }
 
     return true;

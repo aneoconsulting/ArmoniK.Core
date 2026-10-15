@@ -236,13 +236,13 @@ ON CONFLICT (name) DO UPDATE SET version = EXCLUDED.version, permissions = EXCLU
                                            CancellationToken cancellationToken = default)
     => await ExecuteAsync(@"
 INSERT INTO authorization_state (id, revision) VALUES (0, @id)
-ON CONFLICT (id) DO UPDATE SET revision = EXCLUDED.revision",
+ON CONFLICT (id) DO UPDATE SET revision = GREATEST(authorization_state.revision, EXCLUDED.revision)",
                           ("id", revision),
                           cancellationToken)
          .ConfigureAwait(false);
 
   /// <inheritdoc />
-  public async Task<IAsyncDisposable> LockAsync(CancellationToken cancellationToken = default)
+  public async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
   {
     // The advisory lock is held by the session, so the connection is kept until the lock is released
     var connection = await connectionProvider_.GetConnectionAsync(cancellationToken)
@@ -345,12 +345,16 @@ RETURNING begun";
     }
   }
 
-  private sealed class Release : IAsyncDisposable
+  private sealed class Release : IAuthorizationLock
   {
     private readonly NpgsqlConnection connection_;
 
     public Release(NpgsqlConnection connection)
       => connection_ = connection;
+
+    // Not reported: the advisory lock lasts as long as the connection holding it
+    public CancellationToken Lost
+      => CancellationToken.None;
 
     public async ValueTask DisposeAsync()
     {
