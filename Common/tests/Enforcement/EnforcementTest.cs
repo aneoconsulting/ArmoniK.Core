@@ -275,6 +275,52 @@ public class MethodAuthorizationTest
                    Is.Null);
 
   [Test]
+  public void AConditionWithoutFieldReachesAnySession()
+    => Assert.That(ListedTasks([
+                     new Api.gRPC.V1.Tasks.FilterField
+                     {
+                       FilterString = new Api.gRPC.V1.FilterString
+                                      {
+                                        Value    = "s1",
+                                        Operator = Api.gRPC.V1.FilterStringOperator.Equal,
+                                      },
+                     },
+                   ]),
+                   Is.Null);
+
+  [Test]
+  public void AResultConditionWithoutFieldReachesAnySession()
+  {
+    var filters = new Api.gRPC.V1.Results.Filters
+                  {
+                    Or =
+                    {
+                      new Api.gRPC.V1.Results.FiltersAnd
+                      {
+                        And =
+                        {
+                          new Api.gRPC.V1.Results.FilterField
+                          {
+                            FilterString = new Api.gRPC.V1.FilterString
+                                           {
+                                             Value    = "s1",
+                                             Operator = Api.gRPC.V1.FilterStringOperator.Equal,
+                                           },
+                          },
+                        },
+                      },
+                    },
+                  };
+
+    Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))]
+                                   .ListedSessions!(new Api.gRPC.V1.Results.ListResultsRequest
+                                                    {
+                                                      Filters = filters,
+                                                    }),
+                Is.Null);
+  }
+
+  [Test]
   public void AResultListingRequiringASessionIsConfinedToIt()
   {
     var filters = new Api.gRPC.V1.Results.Filters
