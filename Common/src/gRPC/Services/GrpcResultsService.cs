@@ -141,13 +141,17 @@ public class GrpcResultsService : Results.ResultsBase
                                                      request.PageSize,
                                                      context.CancellationToken)
                                    .ConfigureAwait(false);
+    var page = results.results.ToList();
+    var shown = await context.DataReferenceShownAsync(sessionTable_,
+                                                      page.Select(result => result.SessionId))
+                             .ConfigureAwait(false);
     return new ListResultsResponse
            {
              PageSize = request.PageSize,
              Page     = request.Page,
              Results =
              {
-               results.results.Select(result => result.ToGrpcResultRaw()),
+               page.Select(result => result.ToGrpcResultRaw(shown(result.SessionId))),
              },
              Total = results.totalCount,
            };
@@ -416,9 +420,13 @@ public class GrpcResultsService : Results.ResultsBase
                                                                                           context.CancellationToken)
                                                                                .ConfigureAwait(false);
 
+    var shown = await context.DataReferenceShownAsync(sessionTable_,
+                                                      [result.SessionId])
+                             .ConfigureAwait(false);
+
     return new GetResultResponse
            {
-             Result = result.ToGrpcResultRaw(),
+             Result = result.ToGrpcResultRaw(shown(result.SessionId)),
            };
   }
 
