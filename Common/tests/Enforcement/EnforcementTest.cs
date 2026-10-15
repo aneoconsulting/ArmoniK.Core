@@ -19,9 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
@@ -30,9 +32,15 @@ using Google.Protobuf;
 
 using Grpc.Core;
 
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.JsonWebTokens;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 using NUnit.Framework;
@@ -524,6 +532,122 @@ public class CallerResolverTest
     Assert.That(caller.CredentialKind,
                 Is.EqualTo(CredentialKind.Token));
   }
+
+  private const string Issuer = "https://authority.test";
+
+  /// <summary>Services validating tokens against an authority, its metadata read from <paramref name="metadata" /> when given</summary>
+  private static IServiceProvider Validating(OpenIdConnectConfiguration? metadata)
+  {
+    var services = new ServiceCollection().AddLogging();
+    services.AddArmoniKAuthorization(new ConfigurationBuilder().AddInMemoryCollection(new Dictionary<string, string?>
+                                                                                      {
+                                                                                        ["Authorization:Enabled"] = "true",
+                                                                                        // Nothing listens there: the metadata cannot be read
+                                                                                        ["Identity:Authority"] = "https://127.0.0.1:1/realm",
+                                                                                        ["Identity:Audience"]  = "armonik",
+                                                                                      })
+                                                               .Build());
+    if (metadata is not null)
+    {
+      services.PostConfigure<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme,
+                                               jwt => jwt.ConfigurationManager = new StaticConfigurationManager<OpenIdConnectConfiguration>(metadata));
+    }
+
+    return services.BuildServiceProvider();
+  }
+
+  private static OpenIdConnectConfiguration Metadata(SecurityKey key)
+  {
+    var metadata = new OpenIdConnectConfiguration
+                   {
+                     Issuer = Issuer,
+                   };
+    metadata.SigningKeys.Add(key);
+    return metadata;
+  }
+
+  private static string Token(SecurityKey key)
+    => new JsonWebTokenHandler().CreateToken(new SecurityTokenDescriptor
+                                             {
+                                               Issuer   = Issuer,
+                                               Audience = "armonik",
+                                               Expires  = DateTime.UtcNow.AddMinutes(5),
+                                               Claims = new Dictionary<string, object>
+                                                        {
+                                                          ["oid"] = "alice",
+                                                        },
+                                               SigningCredentials = new SigningCredentials(key,
+                                                                                           SecurityAlgorithms.RsaSha256),
+                                             });
+
+  private static Task<AuthenticatedCaller?> ResolveToken(IServiceProvider services,
+                                                         string           token)
+  {
+    var request = Request(("Authorization", $"Bearer {token}"));
+    request.RequestServices = services;
+    return services.GetRequiredService<CallerResolver>()
+                   .ResolveAsync(request);
+  }
+
+  [Test]
+  public void ATokenIsNotAnsweredAsInvalidWhileTheMetadataOfTheAuthorityCannotBeRead()
+  {
+    // Any exception but a FormatException is answered as unavailable
+    var exception = Assert.CatchAsync(() => ResolveToken(Validating(null),
+                                                         Token(new RsaSecurityKey(RSA.Create(2048)))));
+
+    Assert.That(exception,
+                Is.Not.InstanceOf<FormatException>());
+  }
+
+  [Test]
+  public async Task ATokenSignedByTheAuthorityNamesTheCaller()
+  {
+    var key = new RsaSecurityKey(RSA.Create(2048));
+
+    var caller = await ResolveToken(Validating(Metadata(key)),
+                                    Token(key))
+                   .ConfigureAwait(false);
+
+    Assert.That(caller!.Caller.Identity.Value,
+                Is.EqualTo("oid:alice"));
+  }
+
+  [Test]
+  public void ATokenNotSignedByTheAuthorityIsInvalid()
+    => Assert.That(() => ResolveToken(Validating(Metadata(new RsaSecurityKey(RSA.Create(2048)))),
+                                      Token(new RsaSecurityKey(RSA.Create(2048)))),
+                   Throws.InstanceOf<FormatException>());
+
+  [Test]
+  public async Task TheControlPlaneIsReadyOnceTheMetadataOfTheAuthorityIsRead()
+  {
+    var unreachable = Validating(null)
+      .GetRequiredService<CallerResolver>();
+    var reachable = Validating(Metadata(new RsaSecurityKey(RSA.Create(2048))))
+      .GetRequiredService<CallerResolver>();
+
+    Assert.That((await unreachable.Check(HealthCheckTag.Readiness)
+                                  .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Unhealthy));
+    Assert.That((await unreachable.Check(HealthCheckTag.Liveness)
+                                  .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await unreachable.Check(HealthCheckTag.Startup)
+                                  .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+    Assert.That((await reachable.Check(HealthCheckTag.Readiness)
+                                .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+  }
+
+  [Test]
+  public void TheMetadataIsReadAgainSoonAfterAFailure()
+    => Assert.That(Validating(null)
+                   .GetRequiredService<IOptionsMonitor<JwtBearerOptions>>()
+                   .Get(JwtBearerDefaults.AuthenticationScheme)
+                   .RefreshInterval,
+                   Is.EqualTo(TimeSpan.FromSeconds(30)));
 
   [Test]
   public async Task NoCredentialIsNoCaller()

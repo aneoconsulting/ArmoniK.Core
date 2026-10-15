@@ -18,14 +18,21 @@
 using System;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Injection.Options;
 
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace ArmoniK.Core.Common.Enforcement;
 
@@ -33,18 +40,57 @@ namespace ArmoniK.Core.Common.Enforcement;
 ///   Derives the caller of a request from the credential presented: a token or a client certificate forwarded by the
 ///   ingress, never both
 /// </summary>
-public class CallerResolver
+public class CallerResolver : IHealthCheckProvider
 {
   private const string BearerPrefix = "Bearer ";
 
-  private readonly IdentityOptions options_;
+  private readonly IOptionsMonitor<JwtBearerOptions>? jwt_;
+  private readonly IdentityOptions                    options_;
 
   /// <summary>
   ///   Build the resolver
   /// </summary>
   /// <param name="options">Options of the identification of callers</param>
-  public CallerResolver(IdentityOptions options)
-    => options_ = options;
+  public CallerResolver(IdentityOptions                    options,
+                        IOptionsMonitor<JwtBearerOptions>? jwt = null)
+  {
+    options_ = options;
+    jwt_     = jwt;
+  }
+
+  /// <summary>
+  ///   The metadata of the authority tokens are validated against, null when tokens are not validated against one
+  /// </summary>
+  private IConfigurationManager<OpenIdConnectConfiguration>? Metadata
+    => options_.ValidateTokens && !string.IsNullOrWhiteSpace(options_.Authority)
+         ? jwt_?.Get(JwtBearerDefaults.AuthenticationScheme)
+               .ConfigurationManager
+         : null;
+
+  /// <inheritdoc />
+  /// <remarks>
+  ///   Ready once the metadata of the authority was read: before, no token can be validated. Started and alive while
+  ///   the authority cannot be reached, since a restart would not reach it either.
+  /// </remarks>
+  public async Task<HealthCheckResult> Check(HealthCheckTag tag)
+  {
+    if (tag != HealthCheckTag.Readiness || Metadata is not { } metadata)
+    {
+      return HealthCheckResult.Healthy();
+    }
+
+    try
+    {
+      await metadata.GetConfigurationAsync(CancellationToken.None)
+                    .ConfigureAwait(false);
+      return HealthCheckResult.Healthy();
+    }
+    catch (Exception e)
+    {
+      return HealthCheckResult.Unhealthy("The metadata of the token authority could not be read",
+                                         e);
+    }
+  }
 
   /// <summary>
   ///   Whether tokens are accepted: validated against an authority, or taken as they are
@@ -77,6 +123,14 @@ public class CallerResolver
       if (!AcceptsTokens)
       {
         throw new FormatException("Tokens are not accepted by this deployment");
+      }
+
+      // Read first: the token handler answers a token it cannot check, without the keys of the authority, as invalid,
+      // while it says nothing of the caller. Throws when the metadata cannot be read, answered as unavailable.
+      if (Metadata is { } metadata)
+      {
+        await metadata.GetConfigurationAsync(context.RequestAborted)
+                      .ConfigureAwait(false);
       }
 
       var result = await context.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme)
