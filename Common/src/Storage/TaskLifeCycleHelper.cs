@@ -54,7 +54,7 @@ public static class TaskLifeCycleHelper
   /// <returns>
   ///   Merged task options
   /// </returns>
-  /// <exception cref="InvalidOperationException">when partition in incoming tasks options is not allowed in the session</exception>
+  /// <exception cref="PartitionNotInSessionException">when partition in incoming tasks options is not allowed in the session</exception>
   public static TaskOptions ValidateSession(SessionData       sessionData,
                                             TaskOptions?      submissionOptions,
                                             string            parentTaskId,
@@ -109,7 +109,7 @@ public static class TaskLifeCycleHelper
   /// </summary>
   /// <param name="sessionData">Session Metadata</param>
   /// <param name="requests">Tasks to create</param>
-  /// <exception cref="InvalidOperationException">when the partition of a task is not allowed in the session</exception>
+  /// <exception cref="PartitionNotInSessionException">when the partition of a task is not allowed in the session</exception>
   public static void ValidatePartitions(SessionData                      sessionData,
                                         IEnumerable<TaskCreationRequest> requests)
   {
@@ -126,7 +126,7 @@ public static class TaskLifeCycleHelper
     var availablePartitionIds = sessionData.PartitionIds ?? Array.Empty<string>();
     if (!availablePartitionIds.Contains(partitionId))
     {
-      throw new InvalidOperationException($"The session {sessionData.SessionId} is assigned to the partitions " +
+      throw new PartitionNotInSessionException($"The session {sessionData.SessionId} is assigned to the partitions " +
                                           $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
     }
   }

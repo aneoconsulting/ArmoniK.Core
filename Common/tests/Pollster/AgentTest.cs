@@ -749,7 +749,7 @@ public class AgentTest
   {
     using var holder = new AgentHolder();
 
-    Assert.ThrowsAsync<InvalidOperationException>(() => holder.Agent.SubmitTasks(new TaskSubmissionRequest[]
+    Assert.ThrowsAsync<PartitionNotInSessionException>(() => holder.Agent.SubmitTasks(new TaskSubmissionRequest[]
                                                                                  {
                                                                                    new("payload",
                                                                                        new TaskOptions(Options)

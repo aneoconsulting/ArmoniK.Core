@@ -294,7 +294,9 @@ public class GrpcTasksServiceTests
                                              },
                                            },
                                          }),
-                Throws.InstanceOf<RpcException>());
+                Throws.InstanceOf<RpcException>()
+                      .With.Property(nameof(RpcException.StatusCode))
+                      .EqualTo(StatusCode.InvalidArgument));
   }
 
   [Test]
