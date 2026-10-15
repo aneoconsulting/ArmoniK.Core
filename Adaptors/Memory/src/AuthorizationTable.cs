@@ -108,12 +108,13 @@ public class AuthorizationTable : IAuthorizationTable
   public Task SetConfigRevisionAsync(int               revision,
                                      CancellationToken cancellationToken = default)
   {
-    revision_ = revision;
+    revision_ = Math.Max(revision_,
+                         revision);
     return Task.CompletedTask;
   }
 
   /// <inheritdoc />
-  public async Task<IAsyncDisposable> LockAsync(CancellationToken cancellationToken = default)
+  public async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
   {
     await lock_.WaitAsync(cancellationToken)
                .ConfigureAwait(false);
@@ -160,12 +161,16 @@ public class AuthorizationTable : IAuthorizationTable
     return Task.CompletedTask;
   }
 
-  private sealed class Release : IAsyncDisposable
+  private sealed class Release : IAuthorizationLock
   {
     private SemaphoreSlim? semaphore_;
 
     public Release(SemaphoreSlim semaphore)
       => semaphore_ = semaphore;
+
+    // Held until released
+    public CancellationToken Lost
+      => CancellationToken.None;
 
     public ValueTask DisposeAsync()
     {
