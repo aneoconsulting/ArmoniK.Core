@@ -54,14 +54,14 @@ public class AuthorizationAudit
   /// <param name="targets">Sessions, partitions or resources the decision was taken on</param>
   /// <param name="grants">Grants that conferred the required permissions, on an allow</param>
   /// <param name="reason">Why the request was refused, or why the decision faulted</param>
-  public void Record(string                    service,
-                     string                    method,
-                     AuthenticatedCaller?      caller,
-                     string                    outcome,
-                     IEnumerable<Permission>   required,
-                     IEnumerable<string>       targets,
-                     IEnumerable<Grant>        grants,
-                     string?                   reason = null)
+  public void Record(string                  service,
+                     string                  method,
+                     AuthenticatedCaller?    caller,
+                     string                  outcome,
+                     IEnumerable<Permission> required,
+                     IEnumerable<string>     targets,
+                     IEnumerable<Grant>      grants,
+                     string?                 reason = null)
     => logger_.LogInformation("Authorization {Outcome} for {Caller} on {Service}.{Method} requiring {RequiredPermissions} on {Targets}: {Reason} {@Details}",
                               outcome,
                               caller?.Caller.Identity.Value ?? "",
@@ -126,7 +126,7 @@ public class AuthorizationAudit
                                    int     PermissionSetVersion,
                                    string? Condition);
 
-  private sealed record AuditDetails(string                     CredentialKind,
-                                     IReadOnlyList<string>      Roles,
-                                     IReadOnlyList<AuditGrant>  Grants);
+  private sealed record AuditDetails(string                    CredentialKind,
+                                     IReadOnlyList<string>     Roles,
+                                     IReadOnlyList<AuditGrant> Grants);
 }

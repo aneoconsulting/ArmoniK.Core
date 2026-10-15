@@ -86,7 +86,9 @@ public abstract record Term
          : "\"?\"";
 }
 
-/// <summary><c>session.owner == request.caller</c></summary>
+/// <summary>
+///   <c>session.owner == request.caller</c>
+/// </summary>
 public sealed record OwnerIsCaller : Term
 {
   /// <inheritdoc />
@@ -106,7 +108,9 @@ public sealed record OwnerIsCaller : Term
     => "session.owner == request.caller";
 }
 
-/// <summary><c>"P" in session.createdUnder</c></summary>
+/// <summary>
+///   <c>"P" in session.createdUnder</c>
+/// </summary>
 /// <param name="Principal">The principal written in the grant</param>
 public sealed record LiteralInCreatedUnder(string Principal) : Term
 {
@@ -119,14 +123,16 @@ public sealed record LiteralInCreatedUnder(string Principal) : Term
                             RequestFacts  request,
                             string        grantPrincipal)
     => session is not null && session.CreatedUnder.Contains(Principal,
-                                                           StringComparer.Ordinal);
+                                                            StringComparer.Ordinal);
 
   /// <inheritdoc />
   public override string Render(bool withLiterals)
     => $"{Quote(Principal, withLiterals)} in session.createdUnder";
 }
 
-/// <summary><c>grant.principal in session.createdUnder</c></summary>
+/// <summary>
+///   <c>grant.principal in session.createdUnder</c>
+/// </summary>
 public sealed record GrantPrincipalInCreatedUnder : Term
 {
   /// <inheritdoc />
@@ -138,14 +144,16 @@ public sealed record GrantPrincipalInCreatedUnder : Term
                             RequestFacts  request,
                             string        grantPrincipal)
     => session is not null && session.CreatedUnder.Contains(grantPrincipal,
-                                                           StringComparer.Ordinal);
+                                                            StringComparer.Ordinal);
 
   /// <inheritdoc />
   public override string Render(bool withLiterals)
     => "grant.principal in session.createdUnder";
 }
 
-/// <summary><c>request.caller in session.sharedWith</c></summary>
+/// <summary>
+///   <c>request.caller in session.sharedWith</c>
+/// </summary>
 public sealed record CallerInSharedWith : Term
 {
   /// <inheritdoc />
@@ -157,14 +165,16 @@ public sealed record CallerInSharedWith : Term
                             RequestFacts  request,
                             string        grantPrincipal)
     => session is not null && session.SharedWith.Contains(request.Caller,
-                                                         StringComparer.Ordinal);
+                                                          StringComparer.Ordinal);
 
   /// <inheritdoc />
   public override string Render(bool withLiterals)
     => "request.caller in session.sharedWith";
 }
 
-/// <summary><c>request.caller in session.delegatedTo</c></summary>
+/// <summary>
+///   <c>request.caller in session.delegatedTo</c>
+/// </summary>
 public sealed record CallerInDelegatedTo : Term
 {
   /// <inheritdoc />
@@ -176,14 +186,16 @@ public sealed record CallerInDelegatedTo : Term
                             RequestFacts  request,
                             string        grantPrincipal)
     => session is not null && session.DelegatedTo.Contains(request.Caller,
-                                                          StringComparer.Ordinal);
+                                                           StringComparer.Ordinal);
 
   /// <inheritdoc />
   public override string Render(bool withLiterals)
     => "request.caller in session.delegatedTo";
 }
 
-/// <summary><c>request.partition == "Q"</c></summary>
+/// <summary>
+///   <c>request.partition == "Q"</c>
+/// </summary>
 /// <param name="Partition">The partition written in the grant</param>
 public sealed record PartitionIs(string Partition) : Term
 {

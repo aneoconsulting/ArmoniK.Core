@@ -26,7 +26,7 @@ namespace ArmoniK.Core.Authorization.Tests;
 [TestFixture(TestOf = typeof(Condition))]
 public class ConditionTests
 {
-  private sealed record StoredSession(string?       Owner,
+  private sealed record StoredSession(string?      Owner,
                                       List<string> CreatedUnder,
                                       List<string> SharedWith,
                                       List<string> DelegatedTo);
@@ -240,7 +240,9 @@ public class ConditionTests
   {
     for (var mask = 0; mask < 32; mask++)
     {
-      var owner        = (mask & 1) != 0 ? Caller : "oid:bob";
+      var owner = (mask & 1) != 0
+                    ? Caller
+                    : "oid:bob";
       var createdUnder = new List<string>();
       if ((mask & 2) != 0)
       {
@@ -299,7 +301,7 @@ public class ConditionTests
              }
            : Enumerable.Range(start,
                               TermTexts.Length - start)
-                       .SelectMany(i => Combinations(i + 1,
+                       .SelectMany(i => Combinations(i    + 1,
                                                      size - 1)
                                      .Select(rest => rest.Prepend(i)));
 

@@ -255,8 +255,8 @@ public class CertificateIdentityTests
   [Test]
   public void ACommonNameOnlyInsideAMultiValuedRdnIsRejected()
     => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(SubjectWithMultiValuedRdn(null,
-                                                                                                                       ("2.5.4.5", "123"),
-                                                                                                                       ("2.5.4.3", "J.Smith")))));
+                                                                                                                      ("2.5.4.5", "123"),
+                                                                                                                      ("2.5.4.3", "J.Smith")))));
 
   [TestCase("OU=platform, O=ANEO")]
   [TestCase("CN=alice, CN=bob")]

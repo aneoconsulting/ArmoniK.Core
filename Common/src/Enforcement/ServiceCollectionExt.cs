@@ -20,7 +20,6 @@ using System.Linq;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
-
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Utils;
 
@@ -107,18 +106,18 @@ public static class ServiceCollectionExt
   public static void ThrowIfLegacyConfiguration(IConfiguration configuration)
   {
     var legacy = new[]
-                 {
-                   "Authenticator",
-                   "InitServices:Authentication",
-                   "Components:AuthenticationStorage",
-                 }.Where(key => configuration.GetSection(key)
-                                             .Exists())
-                  .ToList();
+      {
+        "Authenticator",
+        "InitServices:Authentication",
+        "Components:AuthenticationStorage",
+      }.Where(key => configuration.GetSection(key)
+                                  .Exists())
+       .ToList();
 
     if (legacy.Count != 0 && configuration[$"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)}"] is null)
     {
       throw new InvalidOperationException($"The configuration holds settings of the removed authentication ({string.Join(", ", legacy)}). Set " +
-                                          $"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)} explicitly, true to "          +
+                                          $"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)} explicitly, true to "  +
                                           "authorize requests with grants or false to allow every request, and remove these settings");
     }
   }
@@ -205,7 +204,8 @@ public static class ServiceCollectionExt
                                                               ValidateLifetime         = false,
                                                               RequireExpirationTime    = false,
                                                               RequireSignedTokens      = false,
-                                                              SignatureValidator       = (token, _) => new JsonWebToken(token),
+                                                              SignatureValidator = (token,
+                                                                                    _) => new JsonWebToken(token),
                                                             };
                           });
   }

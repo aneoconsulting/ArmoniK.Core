@@ -80,6 +80,17 @@ public record SessionData(string        SessionId,
   {
   }
 
+
+  /// <summary>
+  ///   Creates a copy of a <see cref="SessionData" /> and modify it according to given updates
+  /// </summary>
+  /// <param name="original">The object that will be copied</param>
+  /// <param name="updates">A collection of field selector and their new values</param>
+  public SessionData(SessionData                   original,
+                     UpdateDefinition<SessionData> updates)
+    : this(original)
+    => updates.ApplyTo(this);
+
   /// <summary>
   ///   Principal recorded as owner of the session, null when the session was created without authorization
   /// </summary>
@@ -99,15 +110,4 @@ public record SessionData(string        SessionId,
   ///   Principals the session is delegated to
   /// </summary>
   public IList<string> DelegatedTo { get; init; } = Array.Empty<string>();
-
-
-  /// <summary>
-  ///   Creates a copy of a <see cref="SessionData" /> and modify it according to given updates
-  /// </summary>
-  /// <param name="original">The object that will be copied</param>
-  /// <param name="updates">A collection of field selector and their new values</param>
-  public SessionData(SessionData                   original,
-                     UpdateDefinition<SessionData> updates)
-    : this(original)
-    => updates.ApplyTo(this);
 }

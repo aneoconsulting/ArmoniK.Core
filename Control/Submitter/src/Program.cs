@@ -41,7 +41,6 @@ using ArmoniK.Core.Utils;
 using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -55,7 +54,6 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 using Serilog;
-
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -203,6 +201,7 @@ public static class Program
       {
         app.UseCallerAuthentication();
       }
+
       app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Connection.LocalPort == 1081 && context.Request.Path == "/metrics");
 
       app.UseSerilogRequestLogging();
