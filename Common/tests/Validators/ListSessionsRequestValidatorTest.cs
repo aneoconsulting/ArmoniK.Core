@@ -17,6 +17,7 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -155,5 +156,42 @@ public class ListSessionsRequestValidatorTest
     Assert.That(validator_.Validate(validListSessionsRequest_)
                           .IsValid,
                 Is.True);
+  }
+
+  [Test]
+  public void ListSessionsRequestConditionWithoutFieldShouldFail()
+  {
+    validListSessionsRequest_!.Filters = new Filters
+                   {
+                     Or =
+                     {
+                       new FiltersAnd
+                       {
+                         And =
+                         {
+                           new FilterField
+                           {
+                             FilterString = new FilterString
+                                            {
+                                              Operator = FilterStringOperator.Equal,
+                                              Value    = "x",
+                                            },
+                           },
+                         },
+                       },
+                     },
+                   };
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListSessionsRequestSortWithoutFieldShouldFail()
+  {
+    validListSessionsRequest_!.Sort.Field = new SessionField();
+    Assert.That(validator_.Validate(validListSessionsRequest_)
+                          .IsValid,
+                Is.False);
   }
 }

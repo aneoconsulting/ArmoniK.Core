@@ -231,4 +231,13 @@ public class ListTasksRequestValidatorTest
                           .IsValid,
                 Is.False);
   }
+
+  [Test]
+  public void ListTasksRequestSortWithoutFieldShouldFail()
+  {
+    validListTasksRequest_!.Sort.Field = new TaskField();
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
+  }
 }
