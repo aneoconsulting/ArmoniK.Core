@@ -369,8 +369,8 @@ public class GrpcResultsService : Results.ResultsBase
     }
 
     var id = current.Id;
-    var sessionTask = sessionTable_.GetSessionAsync(id.SessionId,
-                                                    context.CancellationToken);
+    var sessionTask = context.GetSessionAsync(sessionTable_,
+                                              id.SessionId);
 
 
     var (opaqueId, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
@@ -442,9 +442,9 @@ public class GrpcResultsService : Results.ResultsBase
       return new ImportResultsDataResponse();
     }
 
-    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                          context.CancellationToken)
-                                         .ConfigureAwait(false);
+    var sessionData = await context.GetSessionAsync(sessionTable_,
+                                                    request.SessionId)
+                                   .ConfigureAwait(false);
 
     var resultIds = request.Results.Select(id => id.ResultId)
                            .ToHashSet();

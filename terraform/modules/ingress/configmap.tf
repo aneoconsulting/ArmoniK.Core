@@ -45,15 +45,11 @@ server {
 
     location ~* ^/armonik\. {
 %{if var.mtls~}
-        grpc_set_header X-Certificate-Client-CN $ssl_client_s_dn_cn;
-        grpc_set_header X-Certificate-Client-Fingerprint $ssl_client_fingerprint;
         # Full client certificate (URL-escaped PEM), nginx exposes no variable for the organizational units
         grpc_set_header X-Forwarded-Client-Cert $ssl_client_escaped_cert;
 %{else~}
-        # No client certificate is verified on this listener: drop any identity header sent by the client
+        # No client certificate is verified on this listener: drop the identity header sent by the client
         # (proxy_hide_header only applies to response headers)
-        grpc_set_header X-Certificate-Client-CN "";
-        grpc_set_header X-Certificate-Client-Fingerprint "";
         grpc_set_header X-Forwarded-Client-Cert "";
 %{endif~}
         # Through a variable so that the resolver above is used
