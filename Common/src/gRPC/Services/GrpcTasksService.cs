@@ -375,9 +375,9 @@ public class GrpcTasksService : Task.TasksBase
   {
     using var measure = meter_.CountAndTime();
 
-    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                          context.CancellationToken)
-                                         .ConfigureAwait(false);
+    var sessionData = await context.GetSessionAsync(sessionTable_,
+                                                    request.SessionId)
+                                   .ConfigureAwait(false);
 
 
     var submissionOptions = TaskLifeCycleHelper.ValidateSession(sessionData,

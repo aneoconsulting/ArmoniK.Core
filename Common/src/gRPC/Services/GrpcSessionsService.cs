@@ -152,9 +152,9 @@ public class GrpcSessionsService : Sessions.SessionsBase
 
     return new GetSessionResponse
            {
-             Session = (context.ResolvedSession(request.SessionId) ?? await sessionTable_.GetSessionAsync(request.SessionId,
-                                                                                                          context.CancellationToken)
-                                                                                         .ConfigureAwait(false)).ToGrpcSessionRaw(),
+             Session = (await context.GetSessionAsync(sessionTable_,
+                                                      request.SessionId)
+                                     .ConfigureAwait(false)).ToGrpcSessionRaw(),
            };
   }
 

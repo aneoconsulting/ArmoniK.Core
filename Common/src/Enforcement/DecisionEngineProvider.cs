@@ -83,10 +83,10 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
 
   /// <inheritdoc />
   /// <remarks>
-  ///   The grants are read once per period, by a single read shared by the callers waiting for it; a failed read is not
-  ///   tried again before a period either. Until the engine read last is two periods old, it is served while the grants
-  ///   are read again; past that, callers wait for the read, and are refused when it fails. A read during a change of the
-  ///   grants fails, so that the change is never decided on half written.
+  ///   The generation is read once per period, and the grants only when it moved, by a single read shared by the callers
+  ///   waiting for it; a failed read is not tried again before a period either. Until the engine read last is two periods
+  ///   old, it is served while the grants are read again; past that, callers wait for the read, and are refused when it
+  ///   fails. A read during a change of the grants fails, so that the change is never decided on half written.
   /// </remarks>
   public async ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
   {
@@ -115,6 +115,17 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
       // Kept only when no change was under way, so that a change is never read half written
       var before = await table_.GetGenerationAsync(cancellationToken)
                                .ConfigureAwait(false);
+
+      // Every change moves the generation, so the engine read last is still the one in force
+      if (before.Stable && last_?.Generation == before.Ended)
+      {
+        last_ = last_ with
+                {
+                  LoadedAt = Stopwatch.GetTimestamp(),
+                };
+        return last_.Engine;
+      }
+
       var loaded = await LoadAsync(cancellationToken)
                      .ConfigureAwait(false);
       var after = await table_.GetGenerationAsync(cancellationToken)
@@ -158,30 +169,13 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
 
   private async Task<DecisionEngine> LoadAsync(CancellationToken cancellationToken)
   {
-    var sets = new Dictionary<string, PermissionSet>(StringComparer.Ordinal);
-
-    await foreach (var stored in table_.ListPermissionSetsAsync(cancellationToken)
-                                       .ConfigureAwait(false))
-    {
-      try
-      {
-        sets[stored.Name] = PermissionSet.FromNames(stored.Name,
-                                                    stored.Version,
-                                                    stored.Permissions);
-      }
-      catch (InvalidPermissionSetException e)
-      {
-        // Left out: the grants naming it are refused below
-        audit_.RecordFault($"permission set {stored.Name}",
-                           e.Message);
-      }
-    }
+    var sets = AuthorizationConfiguration.StoredPermissionSets(await table_.ListPermissionSetsAsync(cancellationToken)
+                                                                           .ToListAsync(cancellationToken)
+                                                                           .ConfigureAwait(false),
+                                                               audit_);
 
     var grants = await table_.ListGrantsAsync(cancellationToken)
-                             .Select(grant => new GrantDefinition(grant.GrantId,
-                                                                  grant.Principal,
-                                                                  grant.PermissionSet,
-                                                                  grant.Condition))
+                             .Select(grant => grant.ToDefinition())
                              .ToListAsync(cancellationToken)
                              .ConfigureAwait(false);
 
@@ -205,6 +199,36 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
 /// </summary>
 public static class AuthorizationConfiguration
 {
+  /// <summary>
+  ///   The stored permission sets that are valid; the others are recorded as faults and left out, so that the grants
+  ///   naming them are refused
+  /// </summary>
+  /// <param name="stored">Permission sets as stored</param>
+  /// <param name="audit">Audit recording the sets left out</param>
+  /// <returns>The valid permission sets, by name</returns>
+  internal static Dictionary<string, PermissionSet> StoredPermissionSets(IEnumerable<PermissionSetData> stored,
+                                                                         AuthorizationAudit             audit)
+  {
+    var sets = new Dictionary<string, PermissionSet>(StringComparer.Ordinal);
+
+    foreach (var set in stored)
+    {
+      try
+      {
+        sets[set.Name] = PermissionSet.FromNames(set.Name,
+                                                 set.Version,
+                                                 set.Permissions);
+      }
+      catch (InvalidPermissionSetException e)
+      {
+        audit.RecordFault($"permission set {set.Name}",
+                          e.Message);
+      }
+    }
+
+    return sets;
+  }
+
   /// <summary>
   ///   The shipped permission sets, redefined or completed by the configuration
   /// </summary>

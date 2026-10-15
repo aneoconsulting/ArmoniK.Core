@@ -97,6 +97,22 @@ public static class AuthorizationState
          ? ((Dictionary<string, SessionData>)sessions).GetValueOrDefault(sessionId)
          : null;
 
+  /// <summary>
+  ///   The session read to decide the call, or read from the table when the decision did not read it
+  /// </summary>
+  /// <param name="context">Context of the call</param>
+  /// <param name="sessionTable">Table read when the decision did not read the session</param>
+  /// <param name="sessionId">Identifier of the session</param>
+  /// <returns>The session</returns>
+  /// <remarks>Read before the handler runs: a handler changing the session must read it itself.</remarks>
+  public static Task<SessionData> GetSessionAsync(this ServerCallContext context,
+                                                  ISessionTable          sessionTable,
+                                                  string                 sessionId)
+    => context.ResolvedSession(sessionId) is { } session
+         ? Task.FromResult(session)
+         : sessionTable.GetSessionAsync(sessionId,
+                                        context.CancellationToken);
+
   internal static void SetListingFilter(ServerCallContext context,
                                         LambdaExpression  filter)
     => context.UserState[FilterKey] = filter;
