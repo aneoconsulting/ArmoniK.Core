@@ -29,7 +29,7 @@ public class AuthorizationTableTests : AuthorizationTableTestBase
 
   public override void GetAuthorizationTableInstance()
   {
-    AuthorizationTable = new global::ArmoniK.Core.Adapters.Memory.AuthorizationTable();
+    AuthorizationTable = new AuthorizationTable();
     RunTests           = true;
   }
 }
