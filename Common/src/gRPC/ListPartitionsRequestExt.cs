@@ -38,13 +38,13 @@ public static class ListPartitionsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that access the field from the object
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<PartitionData, object?>> ToField(this ListPartitionsRequest.Types.Sort sort)
-    => sort.Field.FieldCase switch
+    => FilterConversion.Convert(() => sort.Field.FieldCase switch
        {
          PartitionField.FieldOneofCase.PartitionRawField => sort.Field.PartitionRawField.Field.ToField(),
          _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
-       };
+       });
 
   /// <summary>
   ///   Converts gRPC message into the associated <see cref="PartitionData" /> field
@@ -69,8 +69,11 @@ public static class ListPartitionsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<PartitionData, bool>> ToPartitionFilter(this Filters filters)
+    => FilterConversion.Convert(() => BuildPartitionFilter(filters));
+
+  private static Expression<Func<PartitionData, bool>> BuildPartitionFilter(Filters filters)
   {
     Expression<Func<PartitionData, bool>> expr = data => false;
 
