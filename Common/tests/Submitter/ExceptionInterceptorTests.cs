@@ -189,6 +189,26 @@ internal class ExceptionInterceptorTests
   }
 
   [Test]
+  public void AnInvalidFilterIsAnsweredInvalidWithoutCountingTowardTheErrors()
+  {
+    using var exceptionManager = BuildExceptionManager(0);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                               TestServerCallContext.Create(),
+                                                                                                               (_,
+                                                                                                                _) => throw new
+                                                                                                                        InvalidFilterException("The filters or the sort of the request are invalid"))
+                                                                           .ConfigureAwait(false));
+
+    Assert.That(rpc!.StatusCode,
+                Is.EqualTo(StatusCode.InvalidArgument));
+    Assert.That(exceptionManager.Failed,
+                Is.False);
+  }
+
+  [Test]
   public void UnreadableGrantsAreAnsweredUnavailableWithoutCountingTowardTheErrors()
   {
     using var exceptionManager = BuildExceptionManager(0);
