@@ -17,6 +17,7 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -155,5 +156,79 @@ public class ListResultsRequestValidatorTest
     Assert.That(validator_.Validate(validListResultsRequest_)
                           .IsValid,
                 Is.True);
+  }
+
+  private static Filters OneCondition(FilterField condition)
+    => new()
+       {
+         Or =
+         {
+           new FiltersAnd
+           {
+             And =
+             {
+               condition,
+             },
+           },
+         },
+       };
+
+  private static FilterField SessionCondition()
+    => new()
+       {
+         Field = new ResultField
+                 {
+                   ResultRawField = new ResultRawField
+                                    {
+                                      Field = ResultRawEnumField.SessionId,
+                                    },
+                 },
+         FilterString = new FilterString
+                        {
+                          Value    = "session",
+                          Operator = FilterStringOperator.Equal,
+                        },
+       };
+
+  [Test]
+  public void ListResultsRequestWithACompleteConditionShouldBeValid()
+  {
+    validListResultsRequest_!.Filters = OneCondition(SessionCondition());
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.True);
+  }
+
+  [Test]
+  public void ListResultsRequestConditionWithoutFieldShouldFail()
+  {
+    var condition = SessionCondition();
+    condition.Field                   = null;
+    validListResultsRequest_!.Filters = OneCondition(condition);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListResultsRequestConditionWithEmptyFieldShouldFail()
+  {
+    var condition = SessionCondition();
+    condition.Field                   = new ResultField();
+    validListResultsRequest_!.Filters = OneCondition(condition);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListResultsRequestConditionWithoutValueConditionShouldFail()
+  {
+    var condition = SessionCondition();
+    condition.ClearValueCondition();
+    validListResultsRequest_!.Filters = OneCondition(condition);
+    Assert.That(validator_.Validate(validListResultsRequest_)
+                          .IsValid,
+                Is.False);
   }
 }

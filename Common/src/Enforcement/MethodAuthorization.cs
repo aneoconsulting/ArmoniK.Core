@@ -408,7 +408,7 @@ public static class MethodAuthorization
 
   /// <summary>Sessions a task filter confines a listing to, null when it reaches any session</summary>
   private static IReadOnlyCollection<string>? ListedSessions(Api.gRPC.V1.Tasks.Filters? filters)
-    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field.FieldCase == TaskField.FieldOneofCase.TaskSummaryField &&
+    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field?.FieldCase == TaskField.FieldOneofCase.TaskSummaryField &&
                                                                              field.Field.TaskSummaryField.Field == TaskSummaryEnumField.SessionId &&
                                                                              field.ValueConditionCase ==
                                                                              Api.gRPC.V1.Tasks.FilterField.ValueConditionOneofCase.FilterString &&
@@ -417,7 +417,7 @@ public static class MethodAuthorization
 
   /// <summary>Sessions a result filter confines a listing to, null when it reaches any session</summary>
   private static IReadOnlyCollection<string>? ListedSessions(Api.gRPC.V1.Results.Filters? filters)
-    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field.FieldCase == ResultField.FieldOneofCase.ResultRawField &&
+    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field?.FieldCase == ResultField.FieldOneofCase.ResultRawField &&
                                                                              field.Field.ResultRawField.Field == ResultRawEnumField.SessionId &&
                                                                              field.ValueConditionCase ==
                                                                              Api.gRPC.V1.Results.FilterField.ValueConditionOneofCase.FilterString &&

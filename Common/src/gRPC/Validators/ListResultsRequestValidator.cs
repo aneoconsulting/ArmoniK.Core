@@ -42,6 +42,7 @@ public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
     RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new ResultFiltersValidator())
       .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()

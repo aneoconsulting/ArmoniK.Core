@@ -42,6 +42,7 @@ public class ListTasksRequestValidator : AbstractValidator<ListTasksRequest>
     RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new TaskFiltersValidator())
       .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
