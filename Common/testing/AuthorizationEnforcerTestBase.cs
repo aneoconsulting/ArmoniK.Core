@@ -21,6 +21,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,13 +30,16 @@ using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Authorization;
-using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Utils.Uuid;
 
 using Grpc.AspNetCore.Server;
 using Grpc.Core;
@@ -51,6 +55,9 @@ using Moq;
 using NUnit.Framework;
 
 using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
+using FilterField = ArmoniK.Api.gRPC.V1.Results.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Results.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Results.FiltersAnd;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Core.Common.Storage.Result;
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
@@ -93,33 +100,66 @@ public class AuthorizationEnforcerTestBase
                                                            ["role:other-team"])
                                       .ConfigureAwait(false);
 
-    await ResultTable.Create([Result(aliceSession_, "r-alice"), Result(otherSession_, "r-other")])
+    await ResultTable.Create([
+                       Result(aliceSession_,
+                              "r-alice"),
+                       Result(otherSession_,
+                              "r-other"),
+                     ])
                      .ConfigureAwait(false);
-    await TaskTable.CreateTasks([Task(aliceSession_, "t-alice"), Task(otherSession_, "t-other")])
+    await TaskTable.CreateTasks([
+                     Task(aliceSession_,
+                          "t-alice"),
+                     Task(otherSession_,
+                          "t-other"),
+                   ])
                    .ConfigureAwait(false);
 
     var sets = AuthorizationConfiguration.PermissionSets([
-                                                           new PermissionSetOption
-                                                           {
-                                                             Name        = "team-reader",
-                                                             Permissions = ["data:read", "data:download"],
-                                                           },
-                                                           new PermissionSetOption
-                                                           {
-                                                             Name        = "team-lister",
-                                                             Permissions = ["data:read"],
-                                                           },
-                                                         ]);
+      new PermissionSetOption
+      {
+        Name        = "team-reader",
+        Permissions = ["data:read", "data:download"],
+      },
+      new PermissionSetOption
+      {
+        Name        = "team-lister",
+        Permissions = ["data:read"],
+      },
+    ]);
     var engine = DecisionEngine.Build([
-                                        new GrantDefinition("team-create", "role:modelling-team", "session-create", "request.partition == \"part0\""),
-                                        new GrantDefinition("team-own", "role:modelling-team", "session-own",
+                                        new GrantDefinition("team-create",
+                                                            "role:modelling-team",
+                                                            "session-create",
+                                                            "request.partition == \"part0\""),
+                                        new GrantDefinition("team-own",
+                                                            "role:modelling-team",
+                                                            "session-own",
                                                             "session.owner == request.caller && grant.principal in session.createdUnder"),
-                                        new GrantDefinition("lead-supervise", "role:lead", "session-supervise", "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("lead-read", "role:lead", "team-reader", "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("support", "role:support", "session-supervise", "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("platform", "role:platform-team", "cluster-admin", null),
-                                        new GrantDefinition("audit-team", "role:auditor", "team-lister", "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("audit-other", "role:auditor", "team-reader", "\"role:other-team\" in session.createdUnder"),
+                                        new GrantDefinition("lead-supervise",
+                                                            "role:lead",
+                                                            "session-supervise",
+                                                            "\"role:modelling-team\" in session.createdUnder"),
+                                        new GrantDefinition("lead-read",
+                                                            "role:lead",
+                                                            "team-reader",
+                                                            "\"role:modelling-team\" in session.createdUnder"),
+                                        new GrantDefinition("support",
+                                                            "role:support",
+                                                            "session-supervise",
+                                                            "\"role:modelling-team\" in session.createdUnder"),
+                                        new GrantDefinition("platform",
+                                                            "role:platform-team",
+                                                            "cluster-admin",
+                                                            null),
+                                        new GrantDefinition("audit-team",
+                                                            "role:auditor",
+                                                            "team-lister",
+                                                            "\"role:modelling-team\" in session.createdUnder"),
+                                        new GrantDefinition("audit-other",
+                                                            "role:auditor",
+                                                            "team-reader",
+                                                            "\"role:other-team\" in session.createdUnder"),
                                       ],
                                       sets,
                                       out var rejected);
@@ -187,7 +227,7 @@ public class AuthorizationEnforcerTestBase
            DateTime.UtcNow,
            null,
            0,
-           System.Text.Encoding.UTF8.GetBytes(id),
+           Encoding.UTF8.GetBytes(id),
            false);
 
   private static TaskData Task(string session,
@@ -214,7 +254,7 @@ public class AuthorizationEnforcerTestBase
                                                    key,
                                                    HashAlgorithmName.SHA256,
                                                    RSASignaturePadding.Pkcs1).CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1),
-                                                                                              DateTimeOffset.UtcNow.AddDays(1));
+                                                                                               DateTimeOffset.UtcNow.AddDays(1));
     return Uri.EscapeDataString(certificate.ExportCertificatePem());
   }
 
@@ -344,22 +384,22 @@ public class AuthorizationEnforcerTestBase
     if (RunTests)
     {
       var services = new ServiceCollection().AddMetrics()
-                                            .AddSingleton<Common.Pollster.AgentIdentifier>()
-                                            .AddSingleton<Common.Meter.MeterHolder>()
-                                            .AddSingleton(typeof(Common.Meter.FunctionExecutionMetrics<>))
+                                            .AddSingleton<AgentIdentifier>()
+                                            .AddSingleton<MeterHolder>()
+                                            .AddSingleton(typeof(FunctionExecutionMetrics<>))
                                             .BuildServiceProvider();
       var service = new GrpcResultsService(ResultTable!,
                                            TaskTable!,
                                            SessionTable!,
-                                           Mock.Of<ArmoniK.Core.Base.IObjectStorage>(),
-                                           Mock.Of<ArmoniK.Core.Base.IPushQueueStorage>(),
-                                           services.GetRequiredService<Common.Meter.FunctionExecutionMetrics<GrpcResultsService>>(),
+                                           Mock.Of<IObjectStorage>(),
+                                           Mock.Of<IPushQueueStorage>(),
+                                           services.GetRequiredService<FunctionExecutionMetrics<GrpcResultsService>>(),
                                            new Injection.Options.Submitter(),
-                                           Mock.Of<ArmoniK.Core.Utils.Uuid.IUuidGenerator>(),
+                                           Mock.Of<IUuidGenerator>(),
                                            NullLogger<GrpcResultsService>.Instance);
       var request = new ListResultsRequest
                     {
-                      Filters  = new Api.gRPC.V1.Results.Filters(),
+                      Filters  = new Filters(),
                       PageSize = 10,
                     };
 
@@ -504,7 +544,7 @@ public class AuthorizationEnforcerTestBase
   [TestCase(nameof(GrpcSubmitterService.ListSessions),
             "Sessions.ListSessions")]
   public void AnUnsupportedLegacyMethodNamesWhatToUseInstead(string method,
-                                                            string instead)
+                                                             string instead)
   {
     if (RunTests)
     {
@@ -714,13 +754,24 @@ public class AuthorizationEnforcerTestBase
       context.GetHttpContext()
              .SetEndpoint(new Endpoint(null,
                                        new EndpointMetadataCollection(new GrpcMethodMetadata(typeof(GrpcResultsService),
-                                                                                             new Method<UploadResultDataRequest, UploadResultDataResponse>(MethodType.ClientStreaming,
+                                                                                             new Method<UploadResultDataRequest, UploadResultDataResponse>(MethodType
+                                                                                                                                                             .ClientStreaming,
                                                                                                                                                            "Results",
-                                                                                                                                                           nameof(GrpcResultsService.UploadResultData),
-                                                                                                                                                           Marshallers.Create(_ => [],
-                                                                                                                                                                              _ => new UploadResultDataRequest()),
-                                                                                                                                                           Marshallers.Create(_ => [],
-                                                                                                                                                                              _ => new UploadResultDataResponse())))),
+                                                                                                                                                           nameof(
+                                                                                                                                                             GrpcResultsService
+                                                                                                                                                               .UploadResultData),
+                                                                                                                                                           Marshallers
+                                                                                                                                                             .Create(_ =>
+                                                                                                                                                                     [
+                                                                                                                                                                     ],
+                                                                                                                                                                     _ => new
+                                                                                                                                                                       UploadResultDataRequest()),
+                                                                                                                                                           Marshallers
+                                                                                                                                                             .Create(_ =>
+                                                                                                                                                                     [
+                                                                                                                                                                     ],
+                                                                                                                                                                     _ => new
+                                                                                                                                                                       UploadResultDataResponse())))),
                                        "UploadResultData"));
       var upload = new UploadResultDataRequest
                    {
@@ -732,24 +783,25 @@ public class AuthorizationEnforcerTestBase
                    };
 
       // A handler reading on after the refusal of the first message gets the refusal again, never the next messages
-      Assert.ThrowsAsync<ResultNotFoundException>(() => new AuthorizationInterceptor(enforcer_!).ClientStreamingServerHandler(new TestHelperAsyncStreamReader<UploadResultDataRequest>([upload, upload]),
-                                                                                                                             context,
-                                                                                                                             async (stream,
-                                                                                                                                    _) =>
-                                                                                                                             {
-                                                                                                                               try
-                                                                                                                               {
-                                                                                                                                 await stream.MoveNext(CancellationToken.None)
-                                                                                                                                             .ConfigureAwait(false);
-                                                                                                                               }
-                                                                                                                               catch (ResultNotFoundException)
-                                                                                                                               {
-                                                                                                                               }
+      Assert.ThrowsAsync<ResultNotFoundException>(() => new AuthorizationInterceptor(enforcer_!)
+                                                    .ClientStreamingServerHandler(new TestHelperAsyncStreamReader<UploadResultDataRequest>([upload, upload]),
+                                                                                  context,
+                                                                                  async (stream,
+                                                                                         _) =>
+                                                                                  {
+                                                                                    try
+                                                                                    {
+                                                                                      await stream.MoveNext(CancellationToken.None)
+                                                                                                  .ConfigureAwait(false);
+                                                                                    }
+                                                                                    catch (ResultNotFoundException)
+                                                                                    {
+                                                                                    }
 
-                                                                                                                               await stream.MoveNext(CancellationToken.None)
-                                                                                                                                           .ConfigureAwait(false);
-                                                                                                                               return new UploadResultDataResponse();
-                                                                                                                             }));
+                                                                                    await stream.MoveNext(CancellationToken.None)
+                                                                                                .ConfigureAwait(false);
+                                                                                    return new UploadResultDataResponse();
+                                                                                  }));
     }
   }
 
@@ -887,7 +939,10 @@ public class AuthorizationEnforcerTestBase
                                                                   "cn:alice",
                                                                   ["role:modelling-team"])
                                              .ConfigureAwait(false);
-      await ResultTable!.Create([Result(secondSession, "r-alice-2")])
+      await ResultTable!.Create([
+                          Result(secondSession,
+                                 "r-alice-2"),
+                        ])
                         .ConfigureAwait(false);
 
       async Task<List<string>> Visible(string session)
@@ -897,15 +952,15 @@ public class AuthorizationEnforcerTestBase
                                       nameof(GrpcResultsService.ListResults),
                                       new ListResultsRequest
                                       {
-                                        Filters = new Api.gRPC.V1.Results.Filters
+                                        Filters = new Filters
                                                   {
                                                     Or =
                                                     {
-                                                      new Api.gRPC.V1.Results.FiltersAnd
+                                                      new FiltersAnd
                                                       {
                                                         And =
                                                         {
-                                                          new Api.gRPC.V1.Results.FilterField
+                                                          new FilterField
                                                           {
                                                             Field = new ResultField
                                                                     {
@@ -1009,21 +1064,10 @@ public class AuthorizationEnforcerTestBase
   {
     public List<string> Messages { get; } = new();
 
-    public void Dispose()
-    {
-    }
-
-    public ILogger CreateLogger(string categoryName)
-      => this;
-
-    public void AddProvider(ILoggerProvider provider)
-    {
-    }
-
-    public void Log<TState>(LogLevel                        logLevel,
-                            EventId                         eventId,
-                            TState                          state,
-                            Exception?                      exception,
+    public void Log<TState>(LogLevel                         logLevel,
+                            EventId                          eventId,
+                            TState                           state,
+                            Exception?                       exception,
                             Func<TState, Exception?, string> formatter)
     {
       lock (Messages)
@@ -1039,5 +1083,16 @@ public class AuthorizationEnforcerTestBase
     public IDisposable? BeginScope<TState>(TState state)
       where TState : notnull
       => null;
+
+    public void Dispose()
+    {
+    }
+
+    public ILogger CreateLogger(string categoryName)
+      => this;
+
+    public void AddProvider(ILoggerProvider provider)
+    {
+    }
   }
 }

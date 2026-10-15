@@ -127,7 +127,7 @@ public static class TaskLifeCycleHelper
     if (!availablePartitionIds.Contains(partitionId))
     {
       throw new PartitionNotInSessionException($"The session {sessionData.SessionId} is assigned to the partitions " +
-                                          $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
+                                               $"[{string.Join(", ", availablePartitionIds)}], but TaskRequest is assigned to partition {partitionId}");
     }
   }
 

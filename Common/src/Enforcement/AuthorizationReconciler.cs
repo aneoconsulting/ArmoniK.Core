@@ -97,7 +97,7 @@ public class AuthorizationReconciler
       if (!stored.Stable)
       {
         throw new InvalidOperationException($"Authorization configuration revision {options_.ConfigRevision} is older than the stored revision {revision}, " +
-                                            "and a change of the grants was left unfinished by a writer that failed: every request is refused " +
+                                            "and a change of the grants was left unfinished by a writer that failed: every request is refused "              +
                                             $"until a configuration of revision {revision} or later is reconciled");
       }
 
@@ -170,12 +170,12 @@ public class AuthorizationReconciler
                                    .ToDictionary(grant => grant.GrantId,
                                                  StringComparer.Ordinal);
     var grantDeletions = configGrants.Values.Where(grant => !desiredGrants.TryGetValue(grant.GrantId,
-                                                                                         out var desired) || !Same(grant,
-                                                                                                                    desired))
+                                                                                       out var desired) || !Same(grant,
+                                                                                                                 desired))
                                      .ToList();
     var grantCreations = desiredGrants.Values.Where(desired => !configGrants.TryGetValue(desired.Id,
                                                                                          out var stored) || !Same(stored,
-                                                                                                                   desired))
+                                                                                                                  desired))
                                       .ToList();
 
     // Every grant must still be valid with the sets as they will be

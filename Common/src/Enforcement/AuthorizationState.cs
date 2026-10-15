@@ -108,7 +108,9 @@ public static class AuthorizationState
   public static Task<SessionData> GetSessionAsync(this ServerCallContext context,
                                                   ISessionTable          sessionTable,
                                                   string                 sessionId)
-    => context.ResolvedSession(sessionId) is { } session
+    => context.ResolvedSession(sessionId) is
+       {
+       } session
          ? Task.FromResult(session)
          : sessionTable.GetSessionAsync(sessionId,
                                         context.CancellationToken);
@@ -136,7 +138,7 @@ public static class AuthorizationState
   /// <typeparam name="T">Type listed</typeparam>
   /// <returns>The filter, restricted when authorization is enabled</returns>
   public static Expression<Func<T, bool>> RestrictListing<T>(this ServerCallContext    context,
-                                                            Expression<Func<T, bool>> filter)
+                                                             Expression<Func<T, bool>> filter)
     => context.UserState.TryGetValue(FilterKey,
                                      out var authorized)
          ? filter.ExpressionAnd((Expression<Func<T, bool>>)authorized)
@@ -151,8 +153,8 @@ public static class AuthorizationState
   /// <param name="sessionIds">Sessions of the results returned</param>
   /// <returns>Whether the results of a session show their data reference</returns>
   public static async Task<Func<string, bool>> DataReferenceShownAsync(this ServerCallContext context,
-                                                                      ISessionTable          sessionTable,
-                                                                      IEnumerable<string>    sessionIds)
+                                                                       ISessionTable          sessionTable,
+                                                                       IEnumerable<string>    sessionIds)
   {
     if (!context.UserState.TryGetValue(CallerKey,
                                        out var stored) || !context.UserState.TryGetValue(EngineKey,
@@ -170,7 +172,7 @@ public static class AuthorizationState
       return _ => true;
     }
 
-    var ids      = sessionIds.ToHashSet();
+    var ids = sessionIds.ToHashSet();
     var sessions = ids.Select(context.ResolvedSession)
                       .OfType<SessionData>()
                       .ToList();
@@ -202,7 +204,7 @@ public static class AuthorizationState
   public static (AuthenticatedCaller Caller, CallerDescription Description)? DescribeCaller(this ServerCallContext context)
     => context.UserState.TryGetValue(CallerKey,
                                      out var caller) && context.UserState.TryGetValue(EngineKey,
-                                                                                       out var engine)
+                                                                                      out var engine)
          ? ((AuthenticatedCaller)caller, ((DecisionEngine)engine).Describe(((AuthenticatedCaller)caller).Caller))
          : null;
 }

@@ -104,8 +104,8 @@ public static class SessionLifeCycleHelper
   /// <param name="defaultPartition">Default partition of the deployment</param>
   /// <returns>The partitions, without duplicates</returns>
   public static IReadOnlyList<string> EffectivePartitions(IEnumerable<string> partitionIds,
-                                                         string?             taskOptionsPartition,
-                                                         string              defaultPartition)
+                                                          string?             taskOptionsPartition,
+                                                          string              defaultPartition)
   {
     var partitions = partitionIds.ToList();
 

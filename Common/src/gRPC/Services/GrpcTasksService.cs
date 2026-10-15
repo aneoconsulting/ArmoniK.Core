@@ -188,8 +188,8 @@ public class GrpcTasksService : Task.TasksBase
     }
 
     var (tasks, totalCount) = await taskTable.ListTasksAsync(context.RestrictListing<TaskData>(request.Filters is null
-                                                                 ? data => true
-                                                                 : request.Filters.ToTaskDataFilter()),
+                                                                                                 ? data => true
+                                                                                                 : request.Filters.ToTaskDataFilter()),
                                                              request.Sort is null
                                                                ? data => data.TaskId
                                                                : request.Sort.ToField(),
@@ -316,8 +316,8 @@ public class GrpcTasksService : Task.TasksBase
              Status =
              {
                (await taskTable_.Secondary.CountTasksAsync(context.RestrictListing<TaskData>(request.Filters is null
-                                                               ? data => true
-                                                               : request.Filters.ToTaskDataFilter()),
+                                                                                               ? data => true
+                                                                                               : request.Filters.ToTaskDataFilter()),
                                                            context.CancellationToken)
                                 .ConfigureAwait(false)).Select(count => new StatusCount
                                                                         {
@@ -345,8 +345,8 @@ public class GrpcTasksService : Task.TasksBase
     }
 
     var (tasks, totalCount) = await taskTable.ListTasksAsync(context.RestrictListing<TaskData>(request.Filters is null
-                                                                 ? data => true
-                                                                 : request.Filters.ToTaskDataFilter()),
+                                                                                                 ? data => true
+                                                                                                 : request.Filters.ToTaskDataFilter()),
                                                              request.Sort is null
                                                                ? data => data.TaskId
                                                                : request.Sort.ToField(),

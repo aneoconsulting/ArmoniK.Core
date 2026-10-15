@@ -41,20 +41,6 @@ namespace ArmoniK.Core.Common.Tests.Enforcement;
 [TestFixture(TestOf = typeof(StoredDecisionEngineProvider))]
 public class StoredDecisionEngineProviderTest
 {
-  // The provider measures time with the system clock
-  private static readonly TimeSpan Ttl = TimeSpan.FromMilliseconds(200);
-
-  private readonly List<GrantData>           grants_ = new();
-  private          bool                      changeWhileReading_;
-  private          bool                      fail_;
-  private          AuthorizationGeneration   generation_;
-  private          int                       generationReads_;
-  private          TaskCompletionSource?     hold_;
-  private          ExceptionManager          exceptionManager_ = null!;
-  private          ApplicationLifetime       lifetime_         = null!;
-  private          int                       reads_;
-  private          Mock<IAuthorizationTable> table_ = null!;
-
   [SetUp]
   public void SetUp()
   {
@@ -75,7 +61,7 @@ public class StoredDecisionEngineProviderTest
                                              new ExceptionManager.Options(TimeSpan.Zero,
                                                                           TimeSpan.FromHours(1),
                                                                           1));
-    table_              = new Mock<IAuthorizationTable>();
+    table_ = new Mock<IAuthorizationTable>();
     table_.Setup(table => table.GetGenerationAsync(It.IsAny<CancellationToken>()))
           .Returns(() =>
                    {
@@ -105,6 +91,20 @@ public class StoredDecisionEngineProviderTest
     exceptionManager_.Dispose();
     lifetime_.StopApplication();
   }
+
+  // The provider measures time with the system clock
+  private static readonly TimeSpan Ttl = TimeSpan.FromMilliseconds(200);
+
+  private readonly List<GrantData>           grants_ = new();
+  private          bool                      changeWhileReading_;
+  private          bool                      fail_;
+  private          AuthorizationGeneration   generation_;
+  private          int                       generationReads_;
+  private          TaskCompletionSource?     hold_;
+  private          ExceptionManager          exceptionManager_ = null!;
+  private          ApplicationLifetime       lifetime_         = null!;
+  private          int                       reads_;
+  private          Mock<IAuthorizationTable> table_ = null!;
 
   private async IAsyncEnumerable<GrantData> Read(Task?             hold,
                                                  CancellationToken cancellationToken)

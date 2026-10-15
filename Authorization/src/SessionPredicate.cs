@@ -47,9 +47,8 @@ public sealed record SessionFields<TSession>(Expression<Func<TSession, string?>>
 public static class SessionPredicate
 {
   private static readonly MethodInfo EnumerableContains = typeof(Enumerable).GetMethods(BindingFlags.Public | BindingFlags.Static)
-                                                                            .Single(method => method.Name == nameof(Enumerable.Contains) &&
-                                                                                              method.GetParameters()
-                                                                                                    .Length == 2)
+                                                                            .Single(method => method.Name == nameof(Enumerable.Contains) && method.GetParameters()
+                                                                                                                                                  .Length == 2)
                                                                             .MakeGenericMethod(typeof(string));
 
   /// <summary>
@@ -128,8 +127,8 @@ public static class SessionPredicate
        };
 
   private static MethodCallExpression Contains<TSession>(Expression<Func<TSession, IEnumerable<string>>> selector,
-                                               ParameterExpression                             parameter,
-                                               string                                          value)
+                                                         ParameterExpression                             parameter,
+                                                         string                                          value)
     => Expression.Call(EnumerableContains,
                        Select(selector,
                               parameter),

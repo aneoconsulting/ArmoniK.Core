@@ -227,20 +227,6 @@ ON CONFLICT (name) DO UPDATE SET version = EXCLUDED.version, permissions = EXCLU
                  .ConfigureAwait(false);
   }
 
-  private static void AddParameters(NpgsqlCommand     cmd,
-                                    PermissionSetData permissionSet)
-  {
-    cmd.Parameters.AddWithValue("name",
-                                permissionSet.Name);
-    cmd.Parameters.AddWithValue("version",
-                                permissionSet.Version);
-    cmd.Parameters.AddWithValue("permissions",
-                                NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                permissionSet.Permissions.ToArray());
-    cmd.Parameters.AddWithValue("origin",
-                                (int)permissionSet.Origin);
-  }
-
   /// <inheritdoc />
   public async Task<bool> DeletePermissionSetAsync(string            name,
                                                    CancellationToken cancellationToken = default)
@@ -339,6 +325,20 @@ RETURNING begun";
                           ("generation", generation),
                           cancellationToken)
          .ConfigureAwait(false);
+
+  private static void AddParameters(NpgsqlCommand     cmd,
+                                    PermissionSetData permissionSet)
+  {
+    cmd.Parameters.AddWithValue("name",
+                                permissionSet.Name);
+    cmd.Parameters.AddWithValue("version",
+                                permissionSet.Version);
+    cmd.Parameters.AddWithValue("permissions",
+                                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                permissionSet.Permissions.ToArray());
+    cmd.Parameters.AddWithValue("origin",
+                                (int)permissionSet.Origin);
+  }
 
   private async Task<int> ExecuteAsync(string            sql,
                                        (string, object)  parameter,

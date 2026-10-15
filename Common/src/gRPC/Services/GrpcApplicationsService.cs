@@ -23,8 +23,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.SortDirection;
-using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Enforcement;
+using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -61,8 +61,8 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   {
     using var measure = meter_.CountAndTime();
     var (applications, totalCount) = await taskTable_.Secondary.ListApplicationsAsync(context.RestrictListing<TaskData>(request.Filters is null
-                                                                                          ? data => true
-                                                                                          : request.Filters.ToApplicationFilter()),
+                                                                                                                          ? data => true
+                                                                                                                          : request.Filters.ToApplicationFilter()),
                                                                                       request.Sort is null
                                                                                         ? new List<Expression<Func<Application, object?>>>
                                                                                           {

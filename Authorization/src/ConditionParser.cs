@@ -116,12 +116,12 @@ internal static class ConditionParser
 
     return (left.Kind, left.Text, op.Kind, right.Kind, right.Text) switch
            {
-             (TokenKind.Identifier, SessionOwner, TokenKind.Equal, TokenKind.Identifier, RequestCaller)      => new OwnerIsCaller(),
-             (TokenKind.String, var p, TokenKind.In, TokenKind.Identifier, SessionCreatedUnder)              => new LiteralInCreatedUnder(p),
+             (TokenKind.Identifier, SessionOwner, TokenKind.Equal, TokenKind.Identifier, RequestCaller) => new OwnerIsCaller(),
+             (TokenKind.String, var p, TokenKind.In, TokenKind.Identifier, SessionCreatedUnder) => new LiteralInCreatedUnder(p),
              (TokenKind.Identifier, GrantPrincipal, TokenKind.In, TokenKind.Identifier, SessionCreatedUnder) => new GrantPrincipalInCreatedUnder(),
-             (TokenKind.Identifier, RequestCaller, TokenKind.In, TokenKind.Identifier, SessionSharedWith)    => new CallerInSharedWith(),
-             (TokenKind.Identifier, RequestCaller, TokenKind.In, TokenKind.Identifier, SessionDelegatedTo)   => new CallerInDelegatedTo(),
-             (TokenKind.Identifier, RequestPartition, TokenKind.Equal, TokenKind.String, var q)              => new PartitionIs(q),
+             (TokenKind.Identifier, RequestCaller, TokenKind.In, TokenKind.Identifier, SessionSharedWith) => new CallerInSharedWith(),
+             (TokenKind.Identifier, RequestCaller, TokenKind.In, TokenKind.Identifier, SessionDelegatedTo) => new CallerInDelegatedTo(),
+             (TokenKind.Identifier, RequestPartition, TokenKind.Equal, TokenKind.String, var q) => new PartitionIs(q),
              _ => throw new InvalidConditionException($"'{Display(left)} {op.Text} {Display(right)}' is not a supported form; supported forms are: {SupportedForms}"),
            };
   }
@@ -133,7 +133,8 @@ internal static class ConditionParser
          TokenKind.Identifier => AttributeIsList.TryGetValue(token.Text,
                                                              out var isList)
                                    ? isList
-                                   : throw new InvalidConditionException($"Unknown attribute '{token.Text}'; known attributes are: {string.Join(", ", AttributeIsList.Keys)}"),
+                                   : throw new
+                                       InvalidConditionException($"Unknown attribute '{token.Text}'; known attributes are: {string.Join(", ", AttributeIsList.Keys)}"),
          _ => throw new InvalidConditionException($"Expected an attribute or a quoted value, found '{token.Text}'"),
        };
 

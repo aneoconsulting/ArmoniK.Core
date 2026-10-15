@@ -169,8 +169,8 @@ public class GrpcSessionsService : Sessions.SessionsBase
                          : sessionTable_;
 
     var (sessions, totalCount) = await sessionTable.ListSessionsAsync(context.RestrictListing<SessionData>(request.Filters is null
-                                                                          ? data => true
-                                                                          : request.Filters.ToSessionDataFilter()),
+                                                                                                             ? data => true
+                                                                                                             : request.Filters.ToSessionDataFilter()),
                                                                       request.Sort is null
                                                                         ? data => data.SessionId
                                                                         : request.Sort.ToField(),

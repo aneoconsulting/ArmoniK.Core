@@ -33,14 +33,14 @@ namespace ArmoniK.Core.Adapters.Memory;
 /// <inheritdoc />
 public class AuthorizationTable : IAuthorizationTable
 {
-  private readonly object                                                     generationLock_ = new();
-  private readonly ConcurrentDictionary<string, GrantData>                    grants_         = new();
-  private readonly SemaphoreSlim                                             lock_           = new(1);
-  private readonly ConcurrentDictionary<string, PermissionSetData>            sets_           = new();
-  private readonly ConcurrentDictionary<(string, int), PermissionSetData>     versions_       = new();
-  private          AuthorizationGeneration                                    generation_;
-  private          bool                                                       isInitialized_;
-  private          int                                                        revision_;
+  private readonly object                                                 generationLock_ = new();
+  private readonly ConcurrentDictionary<string, GrantData>                grants_         = new();
+  private readonly SemaphoreSlim                                          lock_           = new(1);
+  private readonly ConcurrentDictionary<string, PermissionSetData>        sets_           = new();
+  private readonly ConcurrentDictionary<(string, int), PermissionSetData> versions_       = new();
+  private          AuthorizationGeneration                                generation_;
+  private          bool                                                   isInitialized_;
+  private          int                                                    revision_;
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
