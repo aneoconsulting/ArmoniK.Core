@@ -103,7 +103,9 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
       return reload.Result;
     }
 
-    return stale ?? await reload.ConfigureAwait(false);
+    // A caller waiting for the read stops waiting with its call, while the read goes on for the others
+    return stale ?? await reload.WaitAsync(cancellationToken)
+                                .ConfigureAwait(false);
   }
 
   private async Task<DecisionEngine> ReloadAsync(CancellationToken cancellationToken)

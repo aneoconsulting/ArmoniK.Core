@@ -236,6 +236,33 @@ public class StoredDecisionEngineProviderTest
   }
 
   [Test]
+  public async Task ACallerWaitingForTheReadStopsWithItsCall()
+  {
+    using var provider = Provider();
+    AddGrant("a");
+    hold_ = new TaskCompletionSource();
+
+    using var cts = new CancellationTokenSource();
+    var waiting = provider.GetEngineAsync(cts.Token)
+                          .AsTask();
+    await cts.CancelAsync()
+             .ConfigureAwait(false);
+
+    // Stopped while the read is still held
+    Assert.That(() => waiting.WaitAsync(TimeSpan.FromSeconds(1)),
+                Throws.InstanceOf<OperationCanceledException>());
+
+    hold_.SetResult();
+    Assert.That(Ids(provider),
+                Is.EqualTo(new[]
+                           {
+                             "a",
+                           }));
+    Assert.That(reads_,
+                Is.EqualTo(1));
+  }
+
+  [Test]
   public async Task AnExpiredEngineIsServedWhileItIsReadAgain()
   {
     using var provider = Provider();
