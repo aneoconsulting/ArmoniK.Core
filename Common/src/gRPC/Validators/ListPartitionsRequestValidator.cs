@@ -42,6 +42,7 @@ public class ListPartitionsRequestValidator : AbstractValidator<ListPartitionsRe
     RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new PartitionFiltersValidator())
       .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
@@ -56,6 +57,8 @@ public class ListPartitionsRequestValidator : AbstractValidator<ListPartitionsRe
                         RuleFor(request => request.Sort.Field)
                           .NotNull()
                           .NotEmpty()
+                          .Must(field => field is null || field.FieldCase != PartitionField.FieldOneofCase.None)
+                          .WithMessage("A sort must name the field it sorts on")
                           .WithName($"{nameof(ListPartitionsRequest)}.{nameof(ListPartitionsRequest.Sort)}.{nameof(ListPartitionsRequest.Sort.Field)}");
                       });
   }
