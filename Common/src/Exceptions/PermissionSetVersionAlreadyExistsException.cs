@@ -50,7 +50,7 @@ public class PermissionSetVersionAlreadyExistsException : ArmoniKException
   /// <param name="message">The version and its stored content</param>
   /// <param name="innerException">The cause</param>
   public PermissionSetVersionAlreadyExistsException(string    message,
-                                    Exception innerException)
+                                                    Exception innerException)
     : base(message,
            innerException)
   {

@@ -22,7 +22,6 @@ using ArmoniK.Api.gRPC.V1.Versions;
 
 using Grpc.Core;
 
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Versions" />

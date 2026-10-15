@@ -94,7 +94,7 @@ public class AuthorizationInterceptor : Interceptor
          .ConfigureAwait(false);
 
   private async Task<IAsyncStreamReader<TRequest>> DecidingStreamAsync<TRequest>(IAsyncStreamReader<TRequest> requestStream,
-                                                                                ServerCallContext            context)
+                                                                                 ServerCallContext            context)
   {
     var call = Rule(context);
 
@@ -153,7 +153,7 @@ public class AuthorizationInterceptor : Interceptor
     var metadata = context.GetHttpContext()
                           .GetEndpoint()
                           ?.Metadata.GetMetadata<GrpcMethodMetadata>() ?? throw new RpcException(new Status(StatusCode.Internal,
-                                                                                                             "The call carries no gRPC endpoint metadata, so it cannot be authorized"));
+                                                                                                            "The call carries no gRPC endpoint metadata, so it cannot be authorized"));
 
     var service = metadata.ServiceType.Name;
     var method  = metadata.Method.Name;

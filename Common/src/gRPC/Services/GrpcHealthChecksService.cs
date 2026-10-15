@@ -28,7 +28,6 @@ using ArmoniK.Utils;
 
 using Grpc.Core;
 
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="HealthChecksService" />

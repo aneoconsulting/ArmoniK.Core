@@ -124,7 +124,7 @@ internal class StaticInitTests
                                                                             },
                                                      };
 
-  private const string PartitionPath   = $"{InitServices.SettingSection}:{Partitioning.SettingSection}:{nameof(Partitioning.Partitions)}";
+  private const string PartitionPath = $"{InitServices.SettingSection}:{Partitioning.SettingSection}:{nameof(Partitioning.Partitions)}";
 
   private ServiceProvider?      provider_;
   private ConfigurationManager? configuration_;

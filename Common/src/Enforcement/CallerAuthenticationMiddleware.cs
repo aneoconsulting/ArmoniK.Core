@@ -96,9 +96,9 @@ public sealed class CallerAuthenticationMiddleware
   private static void Refuse(HttpResponse response,
                              Status       status)
   {
-    response.StatusCode              = StatusCodes.Status200OK;
-    response.ContentType             = "application/grpc";
-    response.Headers["grpc-status"]  = ((int)status.StatusCode).ToString(CultureInfo.InvariantCulture);
+    response.StatusCode             = StatusCodes.Status200OK;
+    response.ContentType            = "application/grpc";
+    response.Headers["grpc-status"] = ((int)status.StatusCode).ToString(CultureInfo.InvariantCulture);
     // Percent-encoded as the protocol requires, of UTF-8 bytes: encoding more than required is allowed
     response.Headers["grpc-message"] = Uri.EscapeDataString(status.Detail);
   }

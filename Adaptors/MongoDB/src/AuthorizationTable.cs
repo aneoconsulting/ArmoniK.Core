@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -44,21 +43,21 @@ public class AuthorizationTable : IAuthorizationTable
   private const string GenerationId = "generation";
 
 
-  private readonly ActivitySource                                                                 activitySource_;
-  private readonly MongoCollectionProvider<GrantData, GrantDataModelMapping>                       grants_;
-  private readonly MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>       sets_;
-  private readonly MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping> state_;
+  private readonly ActivitySource                                                                          activitySource_;
+  private readonly MongoCollectionProvider<GrantData, GrantDataModelMapping>                               grants_;
+  private readonly MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>               sets_;
+  private readonly MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping>     state_;
   private readonly MongoCollectionProvider<PermissionSetVersionData, PermissionSetVersionDataModelMapping> versions_;
-  private          bool                                                                           isInitialized_;
+  private          bool                                                                                    isInitialized_;
 
   /// <summary>
   ///   Creates a new AuthorizationTable
   /// </summary>
-  public AuthorizationTable(MongoCollectionProvider<GrantData, GrantDataModelMapping>                             grants,
-                            MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>             sets,
+  public AuthorizationTable(MongoCollectionProvider<GrantData, GrantDataModelMapping>                               grants,
+                            MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>               sets,
                             MongoCollectionProvider<PermissionSetVersionData, PermissionSetVersionDataModelMapping> versions,
                             MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping>     state,
-                            ActivitySource                                                                         activitySource)
+                            ActivitySource                                                                          activitySource)
   {
     grants_         = grants;
     sets_           = sets;
@@ -281,8 +280,8 @@ public class AuthorizationTable : IAuthorizationTable
   {
     using var activity   = activitySource_.StartActivity();
     var       collection = state_.Get();
-    var       owner      = Guid.NewGuid()
-                               .ToString();
+    var owner = Guid.NewGuid()
+                    .ToString();
 
     // Taken when expired by the clock of the server, so that the clocks of the replicas do not matter
     var expired = new BsonDocument
@@ -426,25 +425,36 @@ public class AuthorizationTable : IAuthorizationTable
 
     /// <summary>The update giving the lock to its owner until the clock of the server reaches the end of the lease</summary>
     public static global::MongoDB.Driver.UpdateDefinition<AuthorizationStateData> Hold(string   owner,
-                                                                TimeSpan duration)
+                                                                                       TimeSpan duration)
       => Builders<AuthorizationStateData>.Update.Pipeline(new BsonDocumentStagePipelineDefinition<AuthorizationStateData, AuthorizationStateData>([
-                                                                                                                                                   new BsonDocument("$set",
-                                                                                                                                                                    new BsonDocument
-                                                                                                                                                                    {
-                                                                                                                                                                      {
-                                                                                                                                                                        nameof(AuthorizationStateData.Owner), owner
-                                                                                                                                                                      },
-                                                                                                                                                                      {
-                                                                                                                                                                        nameof(AuthorizationStateData.ExpiresAt),
-                                                                                                                                                                        new BsonDocument("$add",
-                                                                                                                                                                                         new BsonArray
-                                                                                                                                                                                         {
-                                                                                                                                                                                           "$$NOW",
-                                                                                                                                                                                           (long)duration.TotalMilliseconds,
-                                                                                                                                                                                         })
-                                                                                                                                                                      },
-                                                                                                                                                                    }),
-                                                                                                                                                 ]));
+        new
+          BsonDocument("$set",
+                       new
+                       BsonDocument
+                       {
+                         {
+                           nameof
+                           (AuthorizationStateData
+                              .Owner),
+                           owner
+                         },
+                         {
+                           nameof
+                           (AuthorizationStateData
+                              .ExpiresAt),
+                           new
+                             BsonDocument("$add",
+                                          new
+                                          BsonArray
+                                          {
+                                            "$$NOW",
+                                            (long)
+                                            duration
+                                              .TotalMilliseconds,
+                                          })
+                         },
+                       }),
+      ]));
 
     private async Task RenewAsync()
     {

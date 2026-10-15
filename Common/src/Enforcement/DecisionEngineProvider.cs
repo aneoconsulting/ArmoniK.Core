@@ -73,13 +73,9 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
     audit_            = audit;
     exceptionManager_ = exceptionManager;
     logger_           = logger;
-    ttl_    = options.GrantCacheTtl;
-    reload_ = new ExecutionSingleizer<DecisionEngine>(ttl_);
+    ttl_              = options.GrantCacheTtl;
+    reload_           = new ExecutionSingleizer<DecisionEngine>(ttl_);
   }
-
-  /// <inheritdoc />
-  public void Dispose()
-    => reload_.Dispose();
 
   /// <inheritdoc />
   /// <remarks>
@@ -90,7 +86,9 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   /// </remarks>
   public async ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
   {
-    var stale = last_ is { } last && Stopwatch.GetElapsedTime(last.LoadedAt) < 2 * ttl_
+    var stale = last_ is
+                {
+                } last && Stopwatch.GetElapsedTime(last.LoadedAt) < 2 * ttl_
                   ? last.Engine
                   : null;
 
@@ -107,6 +105,10 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
     return stale ?? await reload.WaitAsync(cancellationToken)
                                 .ConfigureAwait(false);
   }
+
+  /// <inheritdoc />
+  public void Dispose()
+    => reload_.Dispose();
 
   private async Task<DecisionEngine> ReloadAsync(CancellationToken cancellationToken)
   {
@@ -163,10 +165,6 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
     }
   }
 
-  private sealed record Loaded(DecisionEngine Engine,
-                               long           Generation,
-                               long           LoadedAt);
-
   private async Task<DecisionEngine> LoadAsync(CancellationToken cancellationToken)
   {
     var sets = AuthorizationConfiguration.StoredPermissionSets(await table_.ListPermissionSetsAsync(cancellationToken)
@@ -192,6 +190,10 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
 
     return engine;
   }
+
+  private sealed record Loaded(DecisionEngine Engine,
+                               long           Generation,
+                               long           LoadedAt);
 }
 
 /// <summary>

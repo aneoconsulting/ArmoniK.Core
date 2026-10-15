@@ -40,14 +40,14 @@ public static class ResultExt
                                           bool        withOpaqueId = true)
     => new()
        {
-         SessionId      = result.SessionId,
-         Status         = result.Status.ToGrpcStatus(),
-         CreatedAt      = Timestamp.FromDateTime(result.CreationDate),
-         Name           = result.Name,
-         CreatedBy      = result.CreatedBy,
-         OwnerTaskId    = result.OwnerTaskId,
-         ResultId       = result.ResultId,
-         Size           = result.Size,
+         SessionId   = result.SessionId,
+         Status      = result.Status.ToGrpcStatus(),
+         CreatedAt   = Timestamp.FromDateTime(result.CreationDate),
+         Name        = result.Name,
+         CreatedBy   = result.CreatedBy,
+         OwnerTaskId = result.OwnerTaskId,
+         ResultId    = result.ResultId,
+         Size        = result.Size,
          OpaqueId = withOpaqueId
                       ? ByteString.CopyFrom(result.OpaqueId)
                       : ByteString.Empty,

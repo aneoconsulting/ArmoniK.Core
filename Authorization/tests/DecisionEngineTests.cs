@@ -47,9 +47,9 @@ public class DecisionEngineTests
                                                                     session => session.DelegatedTo);
 
   private static readonly DecisionEngine Engine = DecisionEngine.Build(GrantValidatorTests.WorkedExample.Append(new GrantDefinition("prod",
-                                                                                                                                     "role:research-users",
-                                                                                                                                     "session-create",
-                                                                                                                                     "request.partition == \"prod\"")),
+                                                                                                                                    "role:research-users",
+                                                                                                                                    "session-create",
+                                                                                                                                    "request.partition == \"prod\"")),
                                                                        GrantValidatorTests.Sets,
                                                                        out _);
 
@@ -113,10 +113,10 @@ public class DecisionEngineTests
                                                            [],
                                                            []);
 
-  private static Decision Decide(Caller       caller,
-                                 Permission   required,
+  private static Decision Decide(Caller        caller,
+                                 Permission    required,
                                  StoredSession session,
-                                 Precondition precondition = Precondition.None)
+                                 Precondition  precondition = Precondition.None)
     => Engine.DecideOnSession(caller,
                               required,
                               session.Facts,
@@ -314,7 +314,7 @@ public class DecisionEngineTests
     Assert.That(Decide(Carol,
                        Permission.DataDownload,
                        AliceSession)
-                  .AllowingGrants.Select(grant => grant.Id),
+                .AllowingGrants.Select(grant => grant.Id),
                 Is.EqualTo(new[]
                            {
                              "share",
@@ -596,7 +596,7 @@ public class DecisionEngineTests
                     Is.EquivalentTo(sessions.Where(session => Decide(caller,
                                                                      permission,
                                                                      session)
-                                                                .IsAllowed)
+                                                     .IsAllowed)
                                             .Select(session => session.Id)),
                     $"{caller.Identity} {permission}");
       }

@@ -104,7 +104,7 @@ public sealed record Principal
   /// <param name="value">The identifier</param>
   /// <param name="principal">The principal when valid</param>
   /// <returns>Whether the identifier carries a known prefix followed by a non-empty name without control characters</returns>
-  public static bool TryParse(string?                             value,
+  public static bool TryParse(string?                            value,
                               [NotNullWhen(true)] out Principal? principal)
   {
     principal = null;
@@ -166,7 +166,8 @@ public sealed record Principal
     => TryParse(value,
                 out var principal)
          ? principal
-         : throw new FormatException($"'{value}' is not a principal: expected '{DirectoryPrefix}', '{CertificatePrefix}' or '{RolePrefix}' followed by a name, or '{EveryoneValue}'");
+         : throw new
+             FormatException($"'{value}' is not a principal: expected '{DirectoryPrefix}', '{CertificatePrefix}' or '{RolePrefix}' followed by a name, or '{EveryoneValue}'");
 
   /// <inheritdoc />
   public override string ToString()

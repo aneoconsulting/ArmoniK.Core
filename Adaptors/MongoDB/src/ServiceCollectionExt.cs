@@ -29,7 +29,6 @@ using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;

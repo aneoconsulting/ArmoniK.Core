@@ -32,6 +32,10 @@ using ArmoniK.Core.Common.gRPC.Services;
 using Grpc.Core;
 using Grpc.Reflection;
 
+using CreateSessionRequest = ArmoniK.Api.gRPC.V1.Sessions.CreateSessionRequest;
+using FilterField = ArmoniK.Api.gRPC.V1.Tasks.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Tasks.Filters;
+
 namespace ArmoniK.Core.Common.Enforcement;
 
 /// <summary>
@@ -126,10 +130,15 @@ public sealed record RequestTargets(string?                     SessionId,
 /// </summary>
 /// <param name="Kind">How the method is authorized</param>
 /// <param name="Permissions">Permissions the method requires, all of them</param>
-/// <param name="Extract">What the request names, for <see cref="RuleKind.Session" /> and <see cref="RuleKind.Partition" /></param>
+/// <param name="Extract">
+///   What the request names, for <see cref="RuleKind.Session" /> and <see cref="RuleKind.Partition" />
+/// </param>
 /// <param name="Listing">What the listing returns, for <see cref="RuleKind.Listing" /></param>
 /// <param name="Precondition">Precondition the method carries</param>
-/// <param name="Creation">Partitions declared and partition of the default task options, for <see cref="RuleKind.SessionCreation" /></param>
+/// <param name="Creation">
+///   Partitions declared and partition of the default task options, for
+///   <see cref="RuleKind.SessionCreation" />
+/// </param>
 /// <param name="ListedSessions">
 ///   Sessions the filter of the request confines a listing to, null when it reaches any session, for
 ///   <see cref="RuleKind.Listing" />
@@ -154,171 +163,296 @@ public sealed record MethodRule(RuleKind                                        
 public static class MethodAuthorization
 {
   private static readonly Dictionary<(string Service, string Method), MethodRule> RulesByMethod = new()
-  {
-    // Sessions
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.CreateSession))] = new(RuleKind.SessionCreation,
-                                                                                      [Permission.SessionCreate],
-                                                                                      Creation: request =>
-                                                                                                {
-                                                                                                  var r = (Api.gRPC.V1.Sessions.CreateSessionRequest)request;
-                                                                                                  return (r.PartitionIds, r.DefaultTaskOption?.PartitionId);
-                                                                                                }),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.GetSession))] = OnSession<GetSessionRequest>(r => r.SessionId,
-                                                                                                           Permission.SessionRead),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.ListSessions))] = Listing(ListingTarget.Sessions,
-                                                                                        Permission.SessionRead),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.CancelSession))] = OnSession<CancelSessionRequest>(r => r.SessionId,
-                                                                                                                 Permission.SessionCancel),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.PauseSession))] = OnSession<PauseSessionRequest>(r => r.SessionId,
-                                                                                                               Permission.SessionPause),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.ResumeSession))] = OnSession<ResumeSessionRequest>(r => r.SessionId,
-                                                                                                                 Permission.SessionResume),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.CloseSession))] = OnSession<CloseSessionRequest>(r => r.SessionId,
-                                                                                                               Permission.SessionClose),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.PurgeSession))] = OnSession<PurgeSessionRequest>(r => r.SessionId,
-                                                                                                               Permission.SessionPurge),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.DeleteSession))] = OnSession<DeleteSessionRequest>(r => r.SessionId,
-                                                                                                                 Permission.SessionDelete),
-    [(nameof(GrpcSessionsService), nameof(GrpcSessionsService.StopSubmission))] = OnSession<StopSubmissionRequest>(r => r.SessionId,
-                                                                                                                   Permission.SessionStopSubmission),
-
-    // Tasks
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.GetTask))] = OnRequest<GetTaskRequest>(r => RequestTargets.OfTasks([r.TaskId]),
-                                                                                               Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasks))] = Listing<ListTasksRequest>(ListingTarget.Tasks,
-                                                                                                  r => ListedSessions(r.Filters),
-                                                                                                  Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasksDetailed))] = Listing<ListTasksRequest>(ListingTarget.Tasks,
-                                                                                                          r => ListedSessions(r.Filters),
-                                                                                                          Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.CountTasksByStatus))] = Listing<CountTasksByStatusRequest>(ListingTarget.Tasks,
-                                                                                                                    r => ListedSessions(r.Filters),
-                                                                                                                    Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.GetResultIds))] = OnRequest<GetResultIdsRequest>(r => RequestTargets.OfTasks(r.TaskId),
-                                                                                                          Permission.TaskRead),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.CancelTasks))] = OnRequest<CancelTasksRequest>(r => RequestTargets.OfTasks(r.TaskIds),
-                                                                                                        Permission.TaskCancel),
-    [(nameof(GrpcTasksService), nameof(GrpcTasksService.SubmitTasks))] = OnRequest<SubmitTasksRequest>(r => new RequestTargets(r.SessionId,
-                                                                                                                                [],
-                                                                                                                                [],
-                                                                                                                                r.TaskCreations
-                                                                                                                                 .SelectMany(creation => creation.DataDependencies
-                                                                                                                                                                 .Concat(creation.ExpectedOutputKeys)
-                                                                                                                                                                 .Append(creation.PayloadId))
-                                                                                                                                 .ToList()),
-                                                                                                        Permission.TaskSubmit),
-
-    // Results
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.GetResult))] = OnRequest<GetResultRequest>(r => RequestTargets.OfResults(null,
-                                                                                                                                     [r.ResultId]),
-                                                                                                        Permission.DataRead) with
-                                                                                     {
-                                                                                       KeepsResults = true,
-                                                                                     },
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.GetOwnerTaskId))] = OnRequest<GetOwnerTaskIdRequest>(r => RequestTargets.OfResults(r.SessionId,
-                                                                                                                                               r.ResultId),
-                                                                                                                  Permission.DataRead),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))] = Listing<ListResultsRequest>(ListingTarget.Results,
-                                                                                                    r => ListedSessions(r.Filters),
-                                                                                                    Permission.DataRead),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.CreateResultsMetaData))] = OnSession<CreateResultsMetaDataRequest>(r => r.SessionId,
-                                                                                                                               Permission.DataDeclare),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.CreateResults))] = OnSession<CreateResultsRequest>(r => r.SessionId,
-                                                                                                               Permission.DataDeclare,
-                                                                                                               Permission.DataProvide),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.UploadResultData))] = OnRequest<UploadResultDataRequest>(UploadTargets,
-                                                                                                                      Permission.DataProvide),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.ImportResultsData))] = OnRequest<ImportResultsDataRequest>(r => RequestTargets.OfResults(r.SessionId,
-                                                                                                                                                     r.Results.Select(result => result.ResultId)),
-                                                                                                                        Permission.DataImport),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.DownloadResultData))] = OnRequest<DownloadResultDataRequest>(r => RequestTargets.OfResults(r.SessionId,
-                                                                                                                                                       [r.ResultId]),
-                                                                                                                          Permission.DataDownload) with
-                                                                                              {
-                                                                                                KeepsResults = true,
-                                                                                              },
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.DeleteResultsData))] = OnRequest<DeleteResultsDataRequest>(r => RequestTargets.OfResults(r.SessionId,
-                                                                                                                                                     r.ResultId),
-                                                                                                                        Permission.DataDelete),
-    [(nameof(GrpcResultsService), nameof(GrpcResultsService.GetServiceConfiguration))] = new(RuleKind.Admission,
-                                                                                              []),
-
-    // Events
-    [(nameof(GrpcEventsService), nameof(GrpcEventsService.GetEvents))] = OnSession<EventSubscriptionRequest>(r => r.SessionId,
-                                                                                                             Permission.EventWatch),
-
-    // Partitions
-    [(nameof(GrpcPartitionsService), nameof(GrpcPartitionsService.GetPartition))] = new(RuleKind.Partition,
-                                                                                         [Permission.PartitionRead],
-                                                                                         request => new RequestTargets(null,
-                                                                                                                       [],
-                                                                                                                       [],
-                                                                                                                       [],
-                                                                                                                       ((GetPartitionRequest)request).Id)),
-    [(nameof(GrpcPartitionsService), nameof(GrpcPartitionsService.ListPartitions))] = Listing(ListingTarget.Partitions,
-                                                                                              Permission.PartitionRead),
-
-    // Applications
-    [(nameof(GrpcApplicationsService), nameof(GrpcApplicationsService.ListApplications))] = Listing(ListingTarget.Applications,
-                                                                                                    Permission.TaskRead),
-
-    // Legacy submitter
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CreateSession))] = new(RuleKind.SessionCreation,
-                                                                                        [Permission.SessionCreate],
-                                                                                        Creation: request =>
                                                                                                   {
-                                                                                                    var r = (Api.gRPC.V1.Submitter.CreateSessionRequest)request;
-                                                                                                    return (r.PartitionIds, r.DefaultTaskOption?.PartitionId);
-                                                                                                  }),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CancelSession))] = OnSession<Session>(r => r.Id,
-                                                                                                      Permission.SessionCancel),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CreateSmallTasks))] = OnRequest<CreateSmallTaskRequest>(r => new RequestTargets(r.SessionId,
-                                                                                                                                                 [],
-                                                                                                                                                 [],
-                                                                                                                                                 r.TaskRequests
-                                                                                                                                                  .SelectMany(task => task.DataDependencies
-                                                                                                                                                                          .Concat(task.ExpectedOutputKeys))
-                                                                                                                                                  .ToList()),
-                                                                                                                         Permission.TaskSubmit,
-                                                                                                                         Permission.DataDeclare,
-                                                                                                                         Permission.DataProvide),
-    // Its dependencies arrive within the stream: not supported while authorization is enabled
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CreateLargeTasks))] = Unsupported("submit tasks with Tasks.SubmitTasks"),
-    // Their filters may name no session or several: not supported while authorization is enabled
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CancelTasks))] = Unsupported("cancel tasks with Tasks.CancelTasks"),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.CountTasks))] = Unsupported("count tasks with Tasks.CountTasksByStatus"),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListTasks))] = Unsupported("list tasks with Tasks.ListTasks"),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.WaitForCompletion))] = Unsupported("follow tasks with Events.GetEvents"),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.ListSessions))] = Unsupported("list sessions with Sessions.ListSessions"),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetResultStream))] = OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
-                                                                                                                                               [r.ResultId]),
-                                                                                                                  Permission.DataDownload),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.WaitForAvailability))] = OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
-                                                                                                                                                [r.ResultId]),
-                                                                                                                   Permission.DataRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetTaskOutput))] = OnRequest<TaskOutputRequest>(r => new RequestTargets(string.IsNullOrEmpty(r.Session)
-                                                                                                                                             ? null
-                                                                                                                                             : r.Session,
-                                                                                                                                            [r.TaskId],
-                                                                                                                                            [],
-                                                                                                                                            []),
-                                                                                                                    Permission.TaskRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.GetTaskStatus))] = OnRequest<GetTaskStatusRequest>(r => RequestTargets.OfTasks(r.TaskIds),
-                                                                                                                    Permission.TaskRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.GetResultStatus))] = OnRequest<GetResultStatusRequest>(r => RequestTargets.OfResults(r.SessionId,
-                                                                                                                                                      r.ResultIds),
-                                                                                                                        Permission.DataRead),
-    [(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.GetServiceConfiguration))] = new(RuleKind.Admission,
-                                                                                                  []),
+                                                                                                    // Sessions
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.CreateSession))] =
+                                                                                                      new MethodRule(RuleKind.SessionCreation,
+                                                                                                                     [Permission.SessionCreate],
+                                                                                                                     Creation: request =>
+                                                                                                                               {
+                                                                                                                                 var r = (CreateSessionRequest)request;
+                                                                                                                                 return (r.PartitionIds,
+                                                                                                                                         r.DefaultTaskOption
+                                                                                                                                          ?.PartitionId);
+                                                                                                                               }),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.GetSession))] =
+                                                                                                      OnSession<GetSessionRequest>(r => r.SessionId,
+                                                                                                                                   Permission.SessionRead),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.ListSessions))] =
+                                                                                                      Listing(ListingTarget.Sessions,
+                                                                                                              Permission.SessionRead),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.CancelSession))] =
+                                                                                                      OnSession<CancelSessionRequest>(r => r.SessionId,
+                                                                                                                                      Permission.SessionCancel),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.PauseSession))] =
+                                                                                                      OnSession<PauseSessionRequest>(r => r.SessionId,
+                                                                                                                                     Permission.SessionPause),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.ResumeSession))] =
+                                                                                                      OnSession<ResumeSessionRequest>(r => r.SessionId,
+                                                                                                                                      Permission.SessionResume),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.CloseSession))] =
+                                                                                                      OnSession<CloseSessionRequest>(r => r.SessionId,
+                                                                                                                                     Permission.SessionClose),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.PurgeSession))] =
+                                                                                                      OnSession<PurgeSessionRequest>(r => r.SessionId,
+                                                                                                                                     Permission.SessionPurge),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.DeleteSession))] =
+                                                                                                      OnSession<DeleteSessionRequest>(r => r.SessionId,
+                                                                                                                                      Permission.SessionDelete),
+                                                                                                    [(nameof(GrpcSessionsService),
+                                                                                                      nameof(GrpcSessionsService.StopSubmission))] =
+                                                                                                      OnSession<StopSubmissionRequest>(r => r.SessionId,
+                                                                                                                                       Permission.SessionStopSubmission),
 
-    // Without resource
-    [(nameof(GrpcAuthService), nameof(GrpcAuthService.GetCurrentUser))] = new(RuleKind.Credential,
-                                                                               []),
-    [(nameof(GrpcVersionsService), nameof(GrpcVersionsService.ListVersions))] = new(RuleKind.Credential,
-                                                                                     []),
-    [(nameof(GrpcHealthChecksService), nameof(GrpcHealthChecksService.CheckHealth))] = new(RuleKind.Admission,
-                                                                                            []),
-  };
+                                                                                                    // Tasks
+                                                                                                    [(nameof(GrpcTasksService), nameof(GrpcTasksService.GetTask))] =
+                                                                                                      OnRequest<GetTaskRequest>(r => RequestTargets.OfTasks([r.TaskId]),
+                                                                                                                                Permission.TaskRead),
+                                                                                                    [(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasks))] =
+                                                                                                      Listing<ListTasksRequest>(ListingTarget.Tasks,
+                                                                                                                                r => ListedSessions(r.Filters),
+                                                                                                                                Permission.TaskRead),
+                                                                                                    [(nameof(GrpcTasksService),
+                                                                                                      nameof(GrpcTasksService.ListTasksDetailed))] =
+                                                                                                      Listing<ListTasksRequest>(ListingTarget.Tasks,
+                                                                                                                                r => ListedSessions(r.Filters),
+                                                                                                                                Permission.TaskRead),
+                                                                                                    [(nameof(GrpcTasksService),
+                                                                                                      nameof(GrpcTasksService.CountTasksByStatus))] =
+                                                                                                      Listing<CountTasksByStatusRequest>(ListingTarget.Tasks,
+                                                                                                                                         r => ListedSessions(r.Filters),
+                                                                                                                                         Permission.TaskRead),
+                                                                                                    [(nameof(GrpcTasksService), nameof(GrpcTasksService.GetResultIds))] =
+                                                                                                      OnRequest<GetResultIdsRequest>(r => RequestTargets
+                                                                                                                                       .OfTasks(r.TaskId),
+                                                                                                                                     Permission.TaskRead),
+                                                                                                    [(nameof(GrpcTasksService), nameof(GrpcTasksService.CancelTasks))] =
+                                                                                                      OnRequest<CancelTasksRequest>(r => RequestTargets
+                                                                                                                                      .OfTasks(r.TaskIds),
+                                                                                                                                    Permission.TaskCancel),
+                                                                                                    [(nameof(GrpcTasksService), nameof(GrpcTasksService.SubmitTasks))] =
+                                                                                                      OnRequest<SubmitTasksRequest>(r => new RequestTargets(r.SessionId,
+                                                                                                                                                            [],
+                                                                                                                                                            [],
+                                                                                                                                                            r.TaskCreations
+                                                                                                                                                             .SelectMany(creation
+                                                                                                                                                                           => creation
+                                                                                                                                                                              .DataDependencies
+                                                                                                                                                                              .Concat(creation
+                                                                                                                                                                                        .ExpectedOutputKeys)
+                                                                                                                                                                              .Append(creation
+                                                                                                                                                                                        .PayloadId))
+                                                                                                                                                             .ToList()),
+                                                                                                                                    Permission.TaskSubmit),
+
+                                                                                                    // Results
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.GetResult))] =
+                                                                                                      OnRequest<GetResultRequest>(r => RequestTargets.OfResults(null,
+                                                                                                                                  [
+                                                                                                                                    r.ResultId,
+                                                                                                                                  ]),
+                                                                                                                                  Permission.DataRead) with
+                                                                                                      {
+                                                                                                        KeepsResults = true,
+                                                                                                      },
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.GetOwnerTaskId))] =
+                                                                                                      OnRequest<GetOwnerTaskIdRequest>(r => RequestTargets
+                                                                                                                                         .OfResults(r.SessionId,
+                                                                                                                                                    r.ResultId),
+                                                                                                                                       Permission.DataRead),
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.ListResults))] =
+                                                                                                      Listing<ListResultsRequest>(ListingTarget.Results,
+                                                                                                                                  r => ListedSessions(r.Filters),
+                                                                                                                                  Permission.DataRead),
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.CreateResultsMetaData))] =
+                                                                                                      OnSession<CreateResultsMetaDataRequest>(r => r.SessionId,
+                                                                                                                                              Permission.DataDeclare),
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.CreateResults))] =
+                                                                                                      OnSession<CreateResultsRequest>(r => r.SessionId,
+                                                                                                                                      Permission.DataDeclare,
+                                                                                                                                      Permission.DataProvide),
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.UploadResultData))] =
+                                                                                                      OnRequest<UploadResultDataRequest>(UploadTargets,
+                                                                                                                                         Permission.DataProvide),
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.ImportResultsData))] =
+                                                                                                      OnRequest<ImportResultsDataRequest>(r => RequestTargets
+                                                                                                                                            .OfResults(r.SessionId,
+                                                                                                                                                       r.Results
+                                                                                                                                                        .Select(result
+                                                                                                                                                                  => result
+                                                                                                                                                                    .ResultId)),
+                                                                                                                                          Permission.DataImport),
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.DownloadResultData))] =
+                                                                                                      OnRequest<DownloadResultDataRequest>(r => RequestTargets
+                                                                                                                                             .OfResults(r.SessionId,
+                                                                                                                                                        [r.ResultId]),
+                                                                                                                                           Permission.DataDownload) with
+                                                                                                      {
+                                                                                                        KeepsResults = true,
+                                                                                                      },
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.DeleteResultsData))] =
+                                                                                                      OnRequest<DeleteResultsDataRequest>(r => RequestTargets
+                                                                                                                                            .OfResults(r.SessionId,
+                                                                                                                                                       r.ResultId),
+                                                                                                                                          Permission.DataDelete),
+                                                                                                    [(nameof(GrpcResultsService),
+                                                                                                      nameof(GrpcResultsService.GetServiceConfiguration))] =
+                                                                                                      new MethodRule(RuleKind.Admission,
+                                                                                                                     []),
+
+                                                                                                    // Events
+                                                                                                    [(nameof(GrpcEventsService), nameof(GrpcEventsService.GetEvents))] =
+                                                                                                      OnSession<EventSubscriptionRequest>(r => r.SessionId,
+                                                                                                                                          Permission.EventWatch),
+
+                                                                                                    // Partitions
+                                                                                                    [(nameof(GrpcPartitionsService),
+                                                                                                      nameof(GrpcPartitionsService.GetPartition))] =
+                                                                                                      new MethodRule(RuleKind.Partition,
+                                                                                                                     [Permission.PartitionRead],
+                                                                                                                     request => new RequestTargets(null,
+                                                                                                                                                   [],
+                                                                                                                                                   [],
+                                                                                                                                                   [],
+                                                                                                                                                   ((GetPartitionRequest)
+                                                                                                                                                     request).Id)),
+                                                                                                    [(nameof(GrpcPartitionsService),
+                                                                                                      nameof(GrpcPartitionsService.ListPartitions))] =
+                                                                                                      Listing(ListingTarget.Partitions,
+                                                                                                              Permission.PartitionRead),
+
+                                                                                                    // Applications
+                                                                                                    [(nameof(GrpcApplicationsService),
+                                                                                                      nameof(GrpcApplicationsService.ListApplications))] =
+                                                                                                      Listing(ListingTarget.Applications,
+                                                                                                              Permission.TaskRead),
+
+                                                                                                    // Legacy submitter
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.CreateSession))] =
+                                                                                                      new MethodRule(RuleKind.SessionCreation,
+                                                                                                                     [Permission.SessionCreate],
+                                                                                                                     Creation: request =>
+                                                                                                                               {
+                                                                                                                                 var r =
+                                                                                                                                   (Api.gRPC.V1.Submitter.
+                                                                                                                                     CreateSessionRequest)request;
+                                                                                                                                 return (r.PartitionIds,
+                                                                                                                                         r.DefaultTaskOption
+                                                                                                                                          ?.PartitionId);
+                                                                                                                               }),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.CancelSession))] =
+                                                                                                      OnSession<Session>(r => r.Id,
+                                                                                                                         Permission.SessionCancel),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.CreateSmallTasks))] =
+                                                                                                      OnRequest<CreateSmallTaskRequest>(r => new
+                                                                                                                                          RequestTargets(r.SessionId,
+                                                                                                                                                         [],
+                                                                                                                                                         [],
+                                                                                                                                                         r.TaskRequests
+                                                                                                                                                          .SelectMany(task
+                                                                                                                                                                        => task
+                                                                                                                                                                           .DataDependencies
+                                                                                                                                                                           .Concat(task
+                                                                                                                                                                                     .ExpectedOutputKeys))
+                                                                                                                                                          .ToList()),
+                                                                                                                                        Permission.TaskSubmit,
+                                                                                                                                        Permission.DataDeclare,
+                                                                                                                                        Permission.DataProvide),
+                                                                                                    // Its dependencies arrive within the stream: not supported while authorization is enabled
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.CreateLargeTasks))] =
+                                                                                                      Unsupported("submit tasks with Tasks.SubmitTasks"),
+                                                                                                    // Their filters may name no session or several: not supported while authorization is enabled
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.CancelTasks))] =
+                                                                                                      Unsupported("cancel tasks with Tasks.CancelTasks"),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.CountTasks))] =
+                                                                                                      Unsupported("count tasks with Tasks.CountTasksByStatus"),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.ListTasks))] =
+                                                                                                      Unsupported("list tasks with Tasks.ListTasks"),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.WaitForCompletion))] =
+                                                                                                      Unsupported("follow tasks with Events.GetEvents"),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.ListSessions))] =
+                                                                                                      Unsupported("list sessions with Sessions.ListSessions"),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.TryGetResultStream))] =
+                                                                                                      OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
+                                                                                                                               [
+                                                                                                                                 r.ResultId,
+                                                                                                                               ]),
+                                                                                                                               Permission.DataDownload),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.WaitForAvailability))] =
+                                                                                                      OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
+                                                                                                                               [
+                                                                                                                                 r.ResultId,
+                                                                                                                               ]),
+                                                                                                                               Permission.DataRead),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.TryGetTaskOutput))] =
+                                                                                                      OnRequest<TaskOutputRequest>(r => new
+                                                                                                                                     RequestTargets(string
+                                                                                                                                                      .IsNullOrEmpty(r.Session)
+                                                                                                                                                      ? null
+                                                                                                                                                      : r.Session,
+                                                                                                                                                    [r.TaskId],
+                                                                                                                                                    [],
+                                                                                                                                                    []),
+                                                                                                                                   Permission.TaskRead),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.GetTaskStatus))] =
+                                                                                                      OnRequest<GetTaskStatusRequest>(r => RequestTargets
+                                                                                                                                        .OfTasks(r.TaskIds),
+                                                                                                                                      Permission.TaskRead),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.GetResultStatus))] =
+                                                                                                      OnRequest<GetResultStatusRequest>(r => RequestTargets
+                                                                                                                                          .OfResults(r.SessionId,
+                                                                                                                                                     r.ResultIds),
+                                                                                                                                        Permission.DataRead),
+                                                                                                    [(nameof(GrpcSubmitterService),
+                                                                                                      nameof(GrpcSubmitterService.GetServiceConfiguration))] =
+                                                                                                      new MethodRule(RuleKind.Admission,
+                                                                                                                     []),
+
+                                                                                                    // Without resource
+                                                                                                    [(nameof(GrpcAuthService), nameof(GrpcAuthService.GetCurrentUser))] =
+                                                                                                      new MethodRule(RuleKind.Credential,
+                                                                                                                     []),
+                                                                                                    [(nameof(GrpcVersionsService),
+                                                                                                      nameof(GrpcVersionsService.ListVersions))] =
+                                                                                                      new MethodRule(RuleKind.Credential,
+                                                                                                                     []),
+                                                                                                    [(nameof(GrpcHealthChecksService),
+                                                                                                      nameof(GrpcHealthChecksService.CheckHealth))] =
+                                                                                                      new MethodRule(RuleKind.Admission,
+                                                                                                                     []),
+                                                                                                  };
 
   /// <summary>
   ///   Every rule, by service and method
@@ -331,24 +465,24 @@ public static class MethodAuthorization
   /// </summary>
   public static IReadOnlyList<Type> Services { get; } =
   [
-    typeof(GrpcSessionsService),
-    typeof(GrpcTasksService),
-    typeof(GrpcResultsService),
-    typeof(GrpcEventsService),
-    typeof(GrpcPartitionsService),
-    typeof(GrpcApplicationsService),
-    typeof(GrpcAuthService),
-    typeof(GrpcVersionsService),
-    typeof(GrpcHealthChecksService),
-    typeof(GrpcSubmitterService),
+    typeof(GrpcSessionsService), typeof(GrpcTasksService), typeof(GrpcResultsService), typeof(GrpcEventsService), typeof(GrpcPartitionsService),
+    typeof(GrpcApplicationsService), typeof(GrpcAuthService), typeof(GrpcVersionsService), typeof(GrpcHealthChecksService), typeof(GrpcSubmitterService),
   ];
+
+  /// <summary>
+  ///   The services outside the API, served without authorization: a service mapped later is unsupported until it gets rules
+  /// </summary>
+  private static IReadOnlyList<Type> Unauthorized { get; } = [typeof(ReflectionServiceImpl)];
 
   /// <summary>
   ///   The rule of a method
   /// </summary>
   /// <param name="service">Name of the service class</param>
   /// <param name="method">Name of the method</param>
-  /// <returns>The rule, null for a service served without authorization, <see cref="RuleKind.Unsupported" /> for any other method without rule</returns>
+  /// <returns>
+  ///   The rule, null for a service served without authorization, <see cref="RuleKind.Unsupported" /> for any other
+  ///   method without rule
+  /// </returns>
   public static MethodRule? For(string service,
                                 string method)
     => RulesByMethod.TryGetValue((service, method),
@@ -358,14 +492,6 @@ public static class MethodAuthorization
            ? null
            : new MethodRule(RuleKind.Unsupported,
                             []);
-
-  /// <summary>
-  ///   The services outside the API, served without authorization: a service mapped later is unsupported until it gets rules
-  /// </summary>
-  private static IReadOnlyList<Type> Unauthorized { get; } =
-  [
-    typeof(ReflectionServiceImpl),
-  ];
 
   private static MethodRule Unsupported(string instead)
     => new(RuleKind.Unsupported,
@@ -398,31 +524,30 @@ public static class MethodAuthorization
            [permission],
            Listing: target);
 
-  private static MethodRule Listing<TRequest>(ListingTarget                              target,
+  private static MethodRule Listing<TRequest>(ListingTarget                                target,
                                               Func<TRequest, IReadOnlyCollection<string>?> listedSessions,
-                                              Permission                                 permission)
+                                              Permission                                   permission)
     => new(RuleKind.Listing,
            [permission],
            Listing: target,
            ListedSessions: request => listedSessions((TRequest)request));
 
   /// <summary>Sessions a task filter confines a listing to, null when it reaches any session</summary>
-  private static IReadOnlyCollection<string>? ListedSessions(Api.gRPC.V1.Tasks.Filters? filters)
-    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field?.FieldCase == TaskField.FieldOneofCase.TaskSummaryField &&
-                                                                             field.Field.TaskSummaryField.Field == TaskSummaryEnumField.SessionId &&
-                                                                             field.ValueConditionCase ==
-                                                                             Api.gRPC.V1.Tasks.FilterField.ValueConditionOneofCase.FilterString &&
-                                                                             field.FilterString.Operator == FilterStringOperator.Equal)
-                                                             .Select(field => field.FilterString.Value)));
+  private static IReadOnlyCollection<string>? ListedSessions(Filters? filters)
+    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field?.FieldCase             == TaskField.FieldOneofCase.TaskSummaryField        &&
+                                                                             field.Field.TaskSummaryField.Field == TaskSummaryEnumField.SessionId                   &&
+                                                                             field.ValueConditionCase           == FilterField.ValueConditionOneofCase.FilterString &&
+                                                                             field.FilterString.Operator        == FilterStringOperator.Equal)
+                                                         .Select(field => field.FilterString.Value)));
 
   /// <summary>Sessions a result filter confines a listing to, null when it reaches any session</summary>
   private static IReadOnlyCollection<string>? ListedSessions(Api.gRPC.V1.Results.Filters? filters)
-    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field?.FieldCase == ResultField.FieldOneofCase.ResultRawField &&
-                                                                             field.Field.ResultRawField.Field == ResultRawEnumField.SessionId &&
-                                                                             field.ValueConditionCase ==
-                                                                             Api.gRPC.V1.Results.FilterField.ValueConditionOneofCase.FilterString &&
-                                                                             field.FilterString.Operator == FilterStringOperator.Equal)
-                                                             .Select(field => field.FilterString.Value)));
+    => ListedSessions(filters?.Or.Select(branch => branch.And.Where(field => field.Field?.FieldCase           == ResultField.FieldOneofCase.ResultRawField &&
+                                                                             field.Field.ResultRawField.Field == ResultRawEnumField.SessionId              &&
+                                                                             field.ValueConditionCase == Api.gRPC.V1.Results.FilterField.ValueConditionOneofCase
+                                                                                                            .FilterString && field.FilterString.Operator ==
+                                                                             FilterStringOperator.Equal)
+                                                         .Select(field => field.FilterString.Value)));
 
   /// <summary>
   ///   Sessions a filter confines a listing to: a filter is an OR of branches, each an AND of conditions, so it

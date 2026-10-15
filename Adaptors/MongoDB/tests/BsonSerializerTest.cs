@@ -93,7 +93,7 @@ internal class BsonSerializerTest
                                                   "",
                                                   ""))
                   {
-                    Owner        = "oid:alice",
+                    Owner = "oid:alice",
                     CreatedUnder = new[]
                                    {
                                      "role:team",

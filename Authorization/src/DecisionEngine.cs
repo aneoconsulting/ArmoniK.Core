@@ -43,8 +43,8 @@ public sealed record Caller
     }
 
     Identity = identity;
-    Roles    = roles.Distinct()
-                    .ToList();
+    Roles = roles.Distinct()
+                 .ToList();
 
     if (Roles.Any(role => role.Kind != PrincipalKind.Role))
     {
@@ -73,7 +73,7 @@ public sealed record Caller
 /// </summary>
 /// <param name="Unrestricted">Whether every partition may be listed</param>
 /// <param name="Partitions">Partitions that may be listed when not unrestricted</param>
-public sealed record PartitionFilter(bool                Unrestricted,
+public sealed record PartitionFilter(bool                 Unrestricted,
                                      IReadOnlySet<string> Partitions);
 
 /// <summary>
@@ -128,8 +128,8 @@ public sealed class DecisionEngine
   /// <remarks>
   ///   A refused grant is left out rather than read with a missing condition, which would give it the whole cluster.
   /// </remarks>
-  public static DecisionEngine Build(IEnumerable<GrantDefinition>                                   definitions,
-                                     IReadOnlyDictionary<string, PermissionSet>                     permissionSets,
+  public static DecisionEngine Build(IEnumerable<GrantDefinition>                                            definitions,
+                                     IReadOnlyDictionary<string, PermissionSet>                              permissionSets,
                                      out IReadOnlyList<(GrantDefinition Grant, InvalidGrantException Error)> rejected)
   {
     var grants  = new List<Grant>();
@@ -213,7 +213,7 @@ public sealed class DecisionEngine
                                   SessionFacts session,
                                   Precondition precondition = Precondition.None)
   {
-    var held    = Held(caller);
+    var held = Held(caller);
     var request = new RequestFacts(caller.Identity.Value,
                                    null);
     var surviving = held.Where(grant => Holds(grant,
@@ -278,8 +278,8 @@ public sealed class DecisionEngine
       var request = new RequestFacts(caller.Identity.Value,
                                      partition);
       var pass = held.Where(grant => grant.PermissionSet.Permissions.Contains(required) && Holds(grant,
-                                                                                                null,
-                                                                                                request))
+                                                                                                 null,
+                                                                                                 request))
                      .ToList();
 
       if (pass.Count == 0)
@@ -344,8 +344,8 @@ public sealed class DecisionEngine
                         Partition = null,
                       };
     var allowing = held.Where(grant => grant.PermissionSet.Permissions.Contains(required) && Holds(grant,
-                                                                                                  null,
-                                                                                                  request))
+                                                                                                   null,
+                                                                                                   request))
                        .ToList();
 
     return allowing.Count == 0
@@ -427,7 +427,7 @@ public sealed class DecisionEngine
                                    []);
     }
 
-    var held         = Held(caller);
+    var held = Held(caller);
     var withLiterals = HoldsUnconditionally(caller,
                                             Permission.GrantRead);
 
@@ -439,7 +439,8 @@ public sealed class DecisionEngine
                                      .ToList(),
                                  held.SelectMany(grant => grant.PermissionSet.Permissions.Select(permission => permission.Name + "@" + (grant.Condition is null
                                                                                                                                           ? "cluster"
-                                                                                                                                          : grant.Condition.Render(withLiterals))))
+                                                                                                                                          : grant.Condition
+                                                                                                                                                 .Render(withLiterals))))
                                      .Distinct(StringComparer.Ordinal)
                                      .OrderBy(entry => entry,
                                               StringComparer.Ordinal)

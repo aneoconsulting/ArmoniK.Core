@@ -70,8 +70,8 @@ public class AuthorizationReconcilerTestBase
 
   private const string Ownership = "session.owner == request.caller && grant.principal in session.createdUnder";
 
-  private static AuthorizationOptions Options(int                          revision,
-                                              IEnumerable<GrantOption>?   grants = null,
+  private static AuthorizationOptions Options(int                               revision,
+                                              IEnumerable<GrantOption>?         grants = null,
                                               IEnumerable<PermissionSetOption>? sets   = null)
     => new()
        {
@@ -116,7 +116,12 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       Assert.That(await ReconcileAsync(Options(1,
-                                               [Grant("own", "role:team", "session-own", Ownership)],
+                                               [
+                                                 Grant("own",
+                                                       "role:team",
+                                                       "session-own",
+                                                       Ownership),
+                                               ],
                                                [
                                                  new PermissionSetOption
                                                  {
@@ -161,7 +166,12 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       var options = Options(1,
-                            [Grant("own", "role:team", "session-own", Ownership)]);
+      [
+        Grant("own",
+              "role:team",
+              "session-own",
+              Ownership),
+      ]);
       await ReconcileAsync(options)
         .ConfigureAwait(false);
       var grants = await GrantsAsync()
@@ -185,7 +195,12 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       var options = Options(1,
-                            [Grant("own", "role:team", "session-own", Ownership)]);
+      [
+        Grant("own",
+              "role:team",
+              "session-own",
+              Ownership),
+      ]);
       await ReconcileAsync(options)
         .ConfigureAwait(false);
 
@@ -211,7 +226,12 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       var options = Options(1,
-                            [Grant("own", "role:team", "session-own", Ownership)]);
+      [
+        Grant("own",
+              "role:team",
+              "session-own",
+              Ownership),
+      ]);
       await ReconcileAsync(options)
         .ConfigureAwait(false);
 
@@ -235,7 +255,12 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       await ReconcileAsync(Options(2,
-                                   [Grant("own", "role:team", "session-own", Ownership)]))
+        [
+          Grant("own",
+                "role:team",
+                "session-own",
+                Ownership),
+        ]))
         .ConfigureAwait(false);
 
       // A writer that failed between its writes
@@ -269,7 +294,11 @@ public class AuthorizationReconcilerTestBase
       await ReconcileAsync(Options(2))
         .ConfigureAwait(false);
       await ReconcileAsync(Options(3,
-                                   sets: [Reader("data:read", "data:delete")]))
+                                   sets:
+                                   [
+                                     Reader("data:read",
+                                            "data:delete"),
+                                   ]))
         .ConfigureAwait(false);
 
       Assert.That((await SetsAsync()
@@ -291,20 +320,41 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       await ReconcileAsync(Options(1,
-                                   [Grant("own", "role:team", "session-own", Ownership), Grant("revoked", "role:team", "session-view")]))
+        [
+          Grant("own",
+                "role:team",
+                "session-own",
+                Ownership),
+          Grant("revoked",
+                "role:team",
+                "session-view"),
+        ]))
         .ConfigureAwait(false);
 
       // Revision 2 revokes a grant, then fails before it ends its change
       Assert.That(() => new AuthorizationReconciler(new FailingEnd(AuthorizationTable!),
                                                     Options(2,
-                                                            [Grant("own", "role:team", "session-own", Ownership)]),
+                                                    [
+                                                      Grant("own",
+                                                            "role:team",
+                                                            "session-own",
+                                                            Ownership),
+                                                    ]),
                                                     new AuthorizationAudit(NullLoggerFactory.Instance),
                                                     TimeProvider.System,
                                                     NullLogger<AuthorizationReconciler>.Instance).ReconcileAsync(),
                   Throws.InstanceOf<TimeoutException>());
 
       Assert.That(() => ReconcileAsync(Options(1,
-                                               [Grant("own", "role:team", "session-own", Ownership), Grant("revoked", "role:team", "session-view")])),
+                  [
+                    Grant("own",
+                          "role:team",
+                          "session-own",
+                          Ownership),
+                    Grant("revoked",
+                          "role:team",
+                          "session-view"),
+                  ])),
                   Throws.InstanceOf<InvalidOperationException>()
                         .With.Message.Contains("revision 2 or later"));
       Assert.That((await GrantsAsync()
@@ -377,7 +427,12 @@ public class AuthorizationReconcilerTestBase
     {
       Assert.That(() => ReconcileAsync(new TakenOver(AuthorizationTable!),
                                        Options(1,
-                                               [Grant("own", "role:team", "session-own", Ownership)])),
+                                       [
+                                         Grant("own",
+                                               "role:team",
+                                               "session-own",
+                                               Ownership),
+                                       ])),
                   Throws.InstanceOf<InvalidOperationException>()
                         .With.Message.Contains("lock was lost"));
       Assert.That((await AuthorizationTable!.GetGenerationAsync()
@@ -393,7 +448,12 @@ public class AuthorizationReconcilerTestBase
     {
       Assert.That(() => ReconcileAsync(new LostLock(AuthorizationTable!),
                                        Options(1,
-                                               [Grant("own", "role:team", "session-own", Ownership)])),
+                                       [
+                                         Grant("own",
+                                               "role:team",
+                                               "session-own",
+                                               Ownership),
+                                       ])),
                   Throws.InstanceOf<OperationCanceledException>());
       Assert.That(await GrantsAsync()
                     .ConfigureAwait(false),
@@ -522,14 +582,24 @@ public class AuthorizationReconcilerTestBase
                                                                DateTime.UtcNow))
                                .ConfigureAwait(false);
       await ReconcileAsync(Options(1,
-                                   [
-                                     Grant("own", "role:team", "session-own", Ownership),
-                                     Grant("view", "role:team", "session-view"),
-                                   ]))
+        [
+          Grant("own",
+                "role:team",
+                "session-own",
+                Ownership),
+          Grant("view",
+                "role:team",
+                "session-view"),
+        ]))
         .ConfigureAwait(false);
 
       await ReconcileAsync(Options(2,
-                                   [Grant("own", "role:team", "session-own", "session.owner == request.caller")]))
+        [
+          Grant("own",
+                "role:team",
+                "session-own",
+                "session.owner == request.caller"),
+        ]))
         .ConfigureAwait(false);
 
       var grants = await GrantsAsync()
@@ -552,14 +622,24 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       await ReconcileAsync(Options(2,
-                                   [Grant("own", "role:team", "session-own", Ownership)]))
+        [
+          Grant("own",
+                "role:team",
+                "session-own",
+                Ownership),
+        ]))
         .ConfigureAwait(false);
 
       Assert.That(await ReconcileAsync(Options(1,
-                                               [
-                                                 Grant("own", "role:team", "session-own", Ownership),
-                                                 Grant("revoked", "role:team", "cluster-admin"),
-                                               ]))
+                    [
+                      Grant("own",
+                            "role:team",
+                            "session-own",
+                            Ownership),
+                      Grant("revoked",
+                            "role:team",
+                            "cluster-admin"),
+                    ]))
                     .ConfigureAwait(false),
                   Is.False);
       Assert.That((await GrantsAsync()
@@ -577,14 +657,25 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       await ReconcileAsync(Options(1,
-                                   [Grant("own", "role:team", "session-own", Ownership)]))
+        [
+          Grant("own",
+                "role:team",
+                "session-own",
+                Ownership),
+        ]))
         .ConfigureAwait(false);
 
       Assert.That(() => ReconcileAsync(Options(2,
-                                               [
-                                                 Grant("own2", "role:team", "session-own", Ownership),
-                                                 Grant("broken", "role:team", "session-create", "session.owner == request.caller"),
-                                               ])),
+                  [
+                    Grant("own2",
+                          "role:team",
+                          "session-own",
+                          Ownership),
+                    Grant("broken",
+                          "role:team",
+                          "session-create",
+                          "session.owner == request.caller"),
+                  ])),
                   Throws.InstanceOf<InvalidOperationException>()
                         .With.Message.Contains("broken"));
       Assert.That((await GrantsAsync()
@@ -669,11 +760,20 @@ public class AuthorizationReconcilerTestBase
                                .ConfigureAwait(false);
 
       Assert.That(await ReconcileAsync(Options(1,
-                                               [Grant("own", "role:team", "session-own", Ownership)]))
+                    [
+                      Grant("own",
+                            "role:team",
+                            "session-own",
+                            Ownership),
+                    ]))
                     .ConfigureAwait(false),
                   Is.True);
       Assert.That(() => ReconcileAsync(Options(2,
-                                               [Grant("old", "role:team", "legacy")])),
+                  [
+                    Grant("old",
+                          "role:team",
+                          "legacy"),
+                  ])),
                   Throws.InstanceOf<InvalidOperationException>()
                         .With.Message.Contains("old"));
     }
@@ -685,10 +785,16 @@ public class AuthorizationReconcilerTestBase
     if (RunTests)
     {
       var options = Options(1,
-                            [
-                              Grant("own", "role:team", "session-own", Ownership),
-                              Grant("create", "role:team", "session-create", "request.partition == \"q\""),
-                            ]);
+      [
+        Grant("own",
+              "role:team",
+              "session-own",
+              Ownership),
+        Grant("create",
+              "role:team",
+              "session-create",
+              "request.partition == \"q\""),
+      ]);
 
       await Task.WhenAll(Enumerable.Range(0,
                                           5)

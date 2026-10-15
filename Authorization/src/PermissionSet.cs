@@ -95,7 +95,8 @@ public sealed class PermissionSet
 
     if (unknown.Count != 0)
     {
-      throw new InvalidPermissionSetException($"Permission set '{name}' names permissions that are not in the catalogue: {string.Join(", ", unknown.Select(u => $"'{u}'"))}");
+      throw new
+        InvalidPermissionSetException($"Permission set '{name}' names permissions that are not in the catalogue: {string.Join(", ", unknown.Select(u => $"'{u}'"))}");
     }
 
     return new PermissionSet(name,
