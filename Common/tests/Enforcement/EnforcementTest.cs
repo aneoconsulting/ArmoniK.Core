@@ -20,8 +20,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Results;
+using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Enforcement;
@@ -44,6 +48,10 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 
 using NUnit.Framework;
+
+using FilterField = ArmoniK.Api.gRPC.V1.Tasks.FilterField;
+using Filters = ArmoniK.Api.gRPC.V1.Tasks.Filters;
+using FiltersAnd = ArmoniK.Api.gRPC.V1.Tasks.FiltersAnd;
 
 namespace ArmoniK.Core.Common.Tests.Enforcement;
 
@@ -133,12 +141,12 @@ public class MethodAuthorizationTest
   public void SubmissionIsDecidedOnTheSessionAndChecksTheResultsItUses()
   {
     var rule = MethodAuthorization.Rules[(nameof(GrpcTasksService), nameof(GrpcTasksService.SubmitTasks))];
-    var targets = rule.Extract!(new Api.gRPC.V1.Tasks.SubmitTasksRequest
+    var targets = rule.Extract!(new SubmitTasksRequest
                                 {
                                   SessionId = "s",
                                   TaskCreations =
                                   {
-                                    new Api.gRPC.V1.Tasks.SubmitTasksRequest.Types.TaskCreation
+                                    new SubmitTasksRequest.Types.TaskCreation
                                     {
                                       PayloadId = "payload",
                                       DataDependencies =
@@ -173,8 +181,7 @@ public class MethodAuthorizationTest
 
   [Test]
   public void CreatingResultsWithTheirDataRequiresDeclaringAndProviding()
-    => Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.CreateResults))]
-                                      .Permissions,
+    => Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.CreateResults))].Permissions,
                    Is.EquivalentTo(new[]
                                    {
                                      Permission.DataDeclare,
@@ -184,11 +191,12 @@ public class MethodAuthorizationTest
   [Test]
   public void AnUploadStartingWithDataIsAnInvalidArgument()
   {
-    var exception = Assert.Throws<RpcException>(() => MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.UploadResultData))]
-                                                                         .Extract!(new Api.gRPC.V1.Results.UploadResultDataRequest
-                                                                                   {
-                                                                                     DataChunk = ByteString.CopyFromUtf8("data"),
-                                                                                   }));
+    var exception =
+      Assert.Throws<RpcException>(() => MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.UploadResultData))]
+                                                           .Extract!(new UploadResultDataRequest
+                                                                     {
+                                                                       DataChunk = ByteString.CopyFromUtf8("data"),
+                                                                     }));
 
     Assert.That(exception!.StatusCode,
                 Is.EqualTo(StatusCode.InvalidArgument));
@@ -197,11 +205,10 @@ public class MethodAuthorizationTest
   [Test]
   public void ATaskOutputRequestWithoutSessionIsDecidedOnTheTask()
   {
-    var targets = MethodAuthorization.Rules[(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetTaskOutput))]
-                                     .Extract!(new Api.gRPC.V1.TaskOutputRequest
-                                               {
-                                                 TaskId = "task",
-                                               });
+    var targets = MethodAuthorization.Rules[(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetTaskOutput))].Extract!(new TaskOutputRequest
+                                                                                                                                    {
+                                                                                                                                      TaskId = "task",
+                                                                                                                                    });
 
     Assert.That(targets.SessionId,
                 Is.Null);
@@ -212,40 +219,39 @@ public class MethodAuthorizationTest
                            }));
   }
 
-  private static Api.gRPC.V1.Tasks.FilterField SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField field,
-                                                            string                                 value,
-                                                            Api.gRPC.V1.FilterStringOperator       op = Api.gRPC.V1.FilterStringOperator.Equal)
+  private static FilterField SummaryField(TaskSummaryEnumField field,
+                                          string               value,
+                                          FilterStringOperator op = FilterStringOperator.Equal)
     => new()
        {
-         Field = new Api.gRPC.V1.Tasks.TaskField
+         Field = new TaskField
                  {
-                   TaskSummaryField = new Api.gRPC.V1.Tasks.TaskSummaryField
+                   TaskSummaryField = new TaskSummaryField
                                       {
                                         Field = field,
                                       },
                  },
-         FilterString = new Api.gRPC.V1.FilterString
+         FilterString = new FilterString
                         {
                           Value    = value,
                           Operator = op,
                         },
        };
 
-  private static IReadOnlyCollection<string>? ListedTasks(params Api.gRPC.V1.Tasks.FilterField[][] branches)
+  private static IReadOnlyCollection<string>? ListedTasks(params FilterField[][] branches)
   {
-    var filters = new Api.gRPC.V1.Tasks.Filters();
+    var filters = new Filters();
     foreach (var branch in branches)
     {
-      var and = new Api.gRPC.V1.Tasks.FiltersAnd();
+      var and = new FiltersAnd();
       and.And.AddRange(branch);
       filters.Or.Add(and);
     }
 
-    return MethodAuthorization.Rules[(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasks))]
-                              .ListedSessions!(new Api.gRPC.V1.Tasks.ListTasksRequest
-                                               {
-                                                 Filters = filters,
-                                               });
+    return MethodAuthorization.Rules[(nameof(GrpcTasksService), nameof(GrpcTasksService.ListTasks))].ListedSessions!(new ListTasksRequest
+                                                                                                                     {
+                                                                                                                       Filters = filters,
+                                                                                                                     });
   }
 
   [Test]
@@ -255,7 +261,12 @@ public class MethodAuthorizationTest
 
   [Test]
   public void AListingRequiringASessionIsConfinedToIt()
-    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.TaskId, "t1"), SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1")]),
+    => Assert.That(ListedTasks([
+                     SummaryField(TaskSummaryEnumField.TaskId,
+                                  "t1"),
+                     SummaryField(TaskSummaryEnumField.SessionId,
+                                  "s1"),
+                   ]),
                    Is.EquivalentTo(new[]
                                    {
                                      "s1",
@@ -263,8 +274,14 @@ public class MethodAuthorizationTest
 
   [Test]
   public void AListingIsConfinedToTheSessionsOfAllItsBranches()
-    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1")],
-                               [SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s2")]),
+    => Assert.That(ListedTasks([
+                                 SummaryField(TaskSummaryEnumField.SessionId,
+                                              "s1"),
+                               ],
+                               [
+                                 SummaryField(TaskSummaryEnumField.SessionId,
+                                              "s2"),
+                               ]),
                    Is.EquivalentTo(new[]
                                    {
                                      "s1",
@@ -273,24 +290,34 @@ public class MethodAuthorizationTest
 
   [Test]
   public void ABranchWithoutSessionReachesAnySession()
-    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1")],
-                               [SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.TaskId, "t1")]),
+    => Assert.That(ListedTasks([
+                                 SummaryField(TaskSummaryEnumField.SessionId,
+                                              "s1"),
+                               ],
+                               [
+                                 SummaryField(TaskSummaryEnumField.TaskId,
+                                              "t1"),
+                               ]),
                    Is.Null);
 
   [Test]
   public void ASessionOtherThanEqualReachesAnySession()
-    => Assert.That(ListedTasks([SummaryField(Api.gRPC.V1.Tasks.TaskSummaryEnumField.SessionId, "s1", Api.gRPC.V1.FilterStringOperator.NotEqual)]),
+    => Assert.That(ListedTasks([
+                     SummaryField(TaskSummaryEnumField.SessionId,
+                                  "s1",
+                                  FilterStringOperator.NotEqual),
+                   ]),
                    Is.Null);
 
   [Test]
   public void AConditionWithoutFieldReachesAnySession()
     => Assert.That(ListedTasks([
-                     new Api.gRPC.V1.Tasks.FilterField
+                     new FilterField
                      {
-                       FilterString = new Api.gRPC.V1.FilterString
+                       FilterString = new FilterString
                                       {
                                         Value    = "s1",
-                                        Operator = Api.gRPC.V1.FilterStringOperator.Equal,
+                                        Operator = FilterStringOperator.Equal,
                                       },
                      },
                    ]),
@@ -309,10 +336,10 @@ public class MethodAuthorizationTest
                         {
                           new Api.gRPC.V1.Results.FilterField
                           {
-                            FilterString = new Api.gRPC.V1.FilterString
+                            FilterString = new FilterString
                                            {
                                              Value    = "s1",
-                                             Operator = Api.gRPC.V1.FilterStringOperator.Equal,
+                                             Operator = FilterStringOperator.Equal,
                                            },
                           },
                         },
@@ -320,11 +347,10 @@ public class MethodAuthorizationTest
                     },
                   };
 
-    Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))]
-                                   .ListedSessions!(new Api.gRPC.V1.Results.ListResultsRequest
-                                                    {
-                                                      Filters = filters,
-                                                    }),
+    Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))].ListedSessions!(new ListResultsRequest
+                                                                                                                                {
+                                                                                                                                  Filters = filters,
+                                                                                                                                }),
                 Is.Null);
   }
 
@@ -341,17 +367,17 @@ public class MethodAuthorizationTest
                         {
                           new Api.gRPC.V1.Results.FilterField
                           {
-                            Field = new Api.gRPC.V1.Results.ResultField
+                            Field = new ResultField
                                     {
-                                      ResultRawField = new Api.gRPC.V1.Results.ResultRawField
+                                      ResultRawField = new ResultRawField
                                                        {
-                                                         Field = Api.gRPC.V1.Results.ResultRawEnumField.SessionId,
+                                                         Field = ResultRawEnumField.SessionId,
                                                        },
                                     },
-                            FilterString = new Api.gRPC.V1.FilterString
+                            FilterString = new FilterString
                                            {
                                              Value    = "s1",
-                                             Operator = Api.gRPC.V1.FilterStringOperator.Equal,
+                                             Operator = FilterStringOperator.Equal,
                                            },
                           },
                         },
@@ -359,11 +385,10 @@ public class MethodAuthorizationTest
                     },
                   };
 
-    Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))]
-                                   .ListedSessions!(new Api.gRPC.V1.Results.ListResultsRequest
-                                                    {
-                                                      Filters = filters,
-                                                    }),
+    Assert.That(MethodAuthorization.Rules[(nameof(GrpcResultsService), nameof(GrpcResultsService.ListResults))].ListedSessions!(new ListResultsRequest
+                                                                                                                                {
+                                                                                                                                  Filters = filters,
+                                                                                                                                }),
                 Is.EquivalentTo(new[]
                                 {
                                   "s1",
@@ -397,34 +422,32 @@ public class AuthorizationConfigurationTest
   public void ConfiguredSetsRedefineShippedOnes()
   {
     var sets = AuthorizationConfiguration.PermissionSets(new[]
-                                                               {
-                                                                 new PermissionSetOption
-                                                                 {
-                                                                   Name = "session-view",
-                                                                   Permissions =
-                                                                   {
-                                                                     "session:read",
-                                                                   },
-                                                                 },
-                                                                 new PermissionSetOption
-                                                                 {
-                                                                   Name = "team-reader",
-                                                                   Permissions =
-                                                                   {
-                                                                     "data:read",
-                                                                     "data:download",
-                                                                   },
-                                                                 },
-                                                               });
+                                                         {
+                                                           new PermissionSetOption
+                                                           {
+                                                             Name = "session-view",
+                                                             Permissions =
+                                                             {
+                                                               "session:read",
+                                                             },
+                                                           },
+                                                           new PermissionSetOption
+                                                           {
+                                                             Name = "team-reader",
+                                                             Permissions =
+                                                             {
+                                                               "data:read",
+                                                               "data:download",
+                                                             },
+                                                           },
+                                                         });
 
-    Assert.That(sets["session-view"]
-                  .Permissions,
+    Assert.That(sets["session-view"].Permissions,
                 Is.EquivalentTo(new[]
                                 {
                                   Permission.SessionRead,
                                 }));
-    Assert.That(sets["team-reader"]
-                  .Permissions,
+    Assert.That(sets["team-reader"].Permissions,
                 Has.Count.EqualTo(2));
     Assert.That(sets["session-own"],
                 Is.SameAs(ShippedPermissionSets.SessionOwn));
@@ -439,16 +462,16 @@ public class AuthorizationConfigurationTest
   public void InvalidSetsPreventStarting(string name,
                                          string permission)
     => Assert.That(() => AuthorizationConfiguration.PermissionSets(new[]
-                                                                         {
-                                                                           new PermissionSetOption
-                                                                           {
-                                                                             Name = name,
-                                                                             Permissions =
-                                                                             {
-                                                                               permission,
-                                                                             },
-                                                                           },
-                                                                         }),
+                                                                   {
+                                                                     new PermissionSetOption
+                                                                     {
+                                                                       Name = name,
+                                                                       Permissions =
+                                                                       {
+                                                                         permission,
+                                                                       },
+                                                                     },
+                                                                   }),
                    Throws.InstanceOf<InvalidOperationException>());
 }
 
@@ -470,13 +493,12 @@ public class CallerResolverTest
 
   private static string Certificate(string subject)
   {
-    using var key = System.Security.Cryptography.RSA.Create(2048);
-    using var certificate = new System.Security.Cryptography.X509Certificates.CertificateRequest(subject,
-                                                                                               key,
-                                                                                               System.Security.Cryptography.HashAlgorithmName.SHA256,
-                                                                                               System.Security.Cryptography.RSASignaturePadding.Pkcs1)
-                              .CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1),
-                                                DateTimeOffset.UtcNow.AddDays(1));
+    using var key = RSA.Create(2048);
+    using var certificate = new CertificateRequest(subject,
+                                                   key,
+                                                   HashAlgorithmName.SHA256,
+                                                   RSASignaturePadding.Pkcs1).CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1),
+                                                                                               DateTimeOffset.UtcNow.AddDays(1));
     return Uri.EscapeDataString(certificate.ExportCertificatePem());
   }
 
@@ -535,7 +557,10 @@ public class CallerResolverTest
 
   private const string Issuer = "https://authority.test";
 
-  /// <summary>Services validating tokens against an authority, its metadata read from <paramref name="metadata" /> when given</summary>
+  /// <summary>
+  ///   Services validating tokens against an authority, its metadata read from <paramref name="metadata" /> when
+  ///   given
+  /// </summary>
   private static IServiceProvider Validating(OpenIdConnectConfiguration? metadata)
   {
     var services = new ServiceCollection().AddLogging();
@@ -672,7 +697,7 @@ public class CallerResolverTest
                    Throws.InstanceOf<FormatException>());
 }
 
-[TestFixture(TestOf = typeof(Common.Enforcement.ServiceCollectionExt))]
+[TestFixture(TestOf = typeof(ServiceCollectionExt))]
 public class AddArmoniKAuthorizationTest
 {
   private static IConfiguration Configuration(params (string Key, string Value)[] values)

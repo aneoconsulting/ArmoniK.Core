@@ -67,6 +67,12 @@ public class CallerResolver : IHealthCheckProvider
                .ConfigurationManager
          : null;
 
+  /// <summary>
+  ///   Whether tokens are accepted: validated against an authority, or taken as they are
+  /// </summary>
+  public bool AcceptsTokens
+    => !options_.ValidateTokens || !string.IsNullOrWhiteSpace(options_.Authority);
+
   /// <inheritdoc />
   /// <remarks>
   ///   Ready once the metadata of the authority was read: before, no token can be validated. Started and alive while
@@ -74,7 +80,9 @@ public class CallerResolver : IHealthCheckProvider
   /// </remarks>
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
   {
-    if (tag != HealthCheckTag.Readiness || Metadata is not { } metadata)
+    if (tag != HealthCheckTag.Readiness || Metadata is not
+        {
+        } metadata)
     {
       return HealthCheckResult.Healthy();
     }
@@ -93,12 +101,6 @@ public class CallerResolver : IHealthCheckProvider
   }
 
   /// <summary>
-  ///   Whether tokens are accepted: validated against an authority, or taken as they are
-  /// </summary>
-  public bool AcceptsTokens
-    => !options_.ValidateTokens || !string.IsNullOrWhiteSpace(options_.Authority);
-
-  /// <summary>
   ///   Derive the caller of a request
   /// </summary>
   /// <param name="context">The request</param>
@@ -107,8 +109,8 @@ public class CallerResolver : IHealthCheckProvider
   public async Task<AuthenticatedCaller?> ResolveAsync(HttpContext context)
   {
     var authorization = context.Request.Headers.Authorization.ToString();
-    var hasToken      = authorization.StartsWith(BearerPrefix,
-                                                 StringComparison.OrdinalIgnoreCase);
+    var hasToken = authorization.StartsWith(BearerPrefix,
+                                            StringComparison.OrdinalIgnoreCase);
     var certificate = context.Request.Headers[options_.CertificateHeader]
                              .ToString();
     var hasCertificate = !string.IsNullOrEmpty(certificate);
@@ -127,7 +129,9 @@ public class CallerResolver : IHealthCheckProvider
 
       // Read first: the token handler answers a token it cannot check, without the keys of the authority, as invalid,
       // while it says nothing of the caller. Throws when the metadata cannot be read, answered as unavailable.
-      if (Metadata is { } metadata)
+      if (Metadata is
+          {
+          } metadata)
       {
         await metadata.GetConfigurationAsync(context.RequestAborted)
                       .ConfigureAwait(false);

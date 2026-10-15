@@ -19,12 +19,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
@@ -39,11 +39,18 @@ namespace ArmoniK.Core.Common.Enforcement;
 /// </summary>
 public class AuthorizationEnforcer
 {
+  /// <summary>
+  ///   Key of <see cref="HttpContext.Items" /> where the caller authenticated by <see cref="AuthenticateAsync" /> is kept
+  ///   for
+  ///   <see cref="AuthorizeAsync" />
+  /// </summary>
+  public static readonly object CallerKey = new();
+
   private readonly AuthorizationAudit             audit_;
   private readonly CallerResolver                 callerResolver_;
   private readonly IDecisionEngineProvider        engineProvider_;
   private readonly ILogger<AuthorizationEnforcer> logger_;
-  private readonly Injection.Options.Submitter    options_;
+  private readonly Submitter                      options_;
   private readonly IResultTable                   resultTable_;
   private readonly ISessionTable                  sessionTable_;
   private readonly ITaskTable                     taskTable_;
@@ -57,7 +64,7 @@ public class AuthorizationEnforcer
                                ISessionTable                  sessionTable,
                                ITaskTable                     taskTable,
                                IResultTable                   resultTable,
-                               Injection.Options.Submitter    options,
+                               Submitter                      options,
                                ILogger<AuthorizationEnforcer> logger)
   {
     engineProvider_ = engineProvider;
@@ -69,12 +76,6 @@ public class AuthorizationEnforcer
     options_        = options;
     logger_         = logger;
   }
-
-  /// <summary>
-  ///   Key of <see cref="HttpContext.Items" /> where the caller authenticated by <see cref="AuthenticateAsync" /> is kept for
-  ///   <see cref="AuthorizeAsync" />
-  /// </summary>
-  public static readonly object CallerKey = new();
 
   /// <summary>
   ///   Authenticate the caller of a request from the headers of the request only
@@ -338,7 +339,7 @@ public class AuthorizationEnforcer
                                          permission);
       var ids = partitions.Partitions.ToList();
       filter = partitions.Unrestricted
-                 ? (Expression<Func<PartitionData, bool>>)(_ => true)
+                 ? _ => true
                  : (Expression<Func<PartitionData, bool>>)(partition => ids.Contains(partition.PartitionId));
     }
     else if (engine.HoldsUnconditionally(caller.Caller,
@@ -364,7 +365,9 @@ public class AuthorizationEnforcer
       {
         // Tasks and results do not carry the fields of their session, so the sessions are resolved to ids first:
         // only those the request is confined to, when it names them
-        if (rule.ListedSessions?.Invoke(request) is { } listed)
+        if (rule.ListedSessions?.Invoke(request) is
+            {
+            } listed)
         {
           var named = listed.ToList();
           sessions = sessions.ExpressionAnd(session => named.Contains(session.SessionId));

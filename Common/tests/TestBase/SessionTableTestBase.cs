@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -312,7 +313,7 @@ public class SessionTableTestBase
                                                                       "oid:alice",
                                                                       "role:team"),
                                      });
-      var none = SessionPredicate.Any(Array.Empty<System.Linq.Expressions.Expression<Func<SessionData, bool>>>());
+      var none = SessionPredicate.Any(Array.Empty<Expression<Func<SessionData, bool>>>());
 
       Assert.That(await SessionTable.FindSessionsAsync(any,
                                                        session => session.SessionId)
