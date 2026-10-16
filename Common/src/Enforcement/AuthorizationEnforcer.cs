@@ -165,16 +165,15 @@ public class AuthorizationEnforcer
                                    object            request,
                                    ServerCallContext context)
   {
-    var http = context.GetHttpContext();
-    // Authenticated before the request was read when the request went through the authentication middleware
-    var caller = http.Items.TryGetValue(CallerKey,
-                                        out var authenticated)
-                   ? (AuthenticatedCaller)authenticated!
-                   : await AuthenticateAsync(service,
-                                             method,
-                                             rule,
-                                             http)
-                       .ConfigureAwait(false);
+    // Authenticated before the request was read, by the authentication middleware: without it, the request of a
+    // caller without valid credentials would have been read, so the request is not decided
+    if (!context.GetHttpContext()
+                .Items.TryGetValue(CallerKey,
+                                   out var authenticated) || authenticated is not AuthenticatedCaller caller)
+    {
+      throw new InvalidOperationException($"{service}.{method} reached authorization without being authenticated: " +
+                                          $"{nameof(CallerAuthenticationMiddlewareExt.UseCallerAuthentication)} must run after routing");
+    }
 
     try
     {
