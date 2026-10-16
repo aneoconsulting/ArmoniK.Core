@@ -270,7 +270,10 @@ public static class MethodAuthorization
                                                                                                       OnRequest<GetOwnerTaskIdRequest>(r => RequestTargets
                                                                                                                                          .OfResults(r.SessionId,
                                                                                                                                                     r.ResultId),
-                                                                                                                                       Permission.DataRead),
+                                                                                                                                       Permission.DataRead) with
+                                                                                                      {
+                                                                                                        KeepsResults = true,
+                                                                                                      },
                                                                                                     [(nameof(GrpcResultsService),
                                                                                                       nameof(GrpcResultsService.ListResults))] =
                                                                                                       Listing<ListResultsRequest>(ListingTarget.Results,
