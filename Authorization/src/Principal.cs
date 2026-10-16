@@ -17,6 +17,7 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 
 namespace ArmoniK.Core.Authorization;
@@ -99,6 +100,14 @@ public sealed record Principal
     => Parse(RolePrefix + role);
 
   /// <summary>
+  ///   Whether a character is invisible, such as a zero width space or a change of writing direction
+  /// </summary>
+  /// <param name="c">The character</param>
+  /// <returns>Whether it is a format character</returns>
+  internal static bool IsFormat(char c)
+    => char.GetUnicodeCategory(c) == UnicodeCategory.Format;
+
+  /// <summary>
   ///   Parse a prefixed identifier
   /// </summary>
   /// <param name="value">The identifier</param>
@@ -146,7 +155,9 @@ public sealed record Principal
       return false;
     }
 
-    if (name.Length == 0 || name.Any(char.IsControl))
+    // Spaces around the name would never match a credential, and invisible characters would make the grant read
+    // otherwise than it applies
+    if (name.Length == 0 || name.Any(char.IsControl) || name.Any(IsFormat) || char.IsWhiteSpace(name[0]) || char.IsWhiteSpace(name[^1]))
     {
       return false;
     }
