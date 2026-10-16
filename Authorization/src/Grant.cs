@@ -166,10 +166,10 @@ public static class GrantValidator
                         $"every permission of '{set.Name}' is administrative, and no condition bears on grants or permission sets");
     }
 
-    if (condition.ReadsSession && permissions.All(permission => permission.Target == PermissionTarget.Partition))
+    if (condition.ReadsSession && permissions.All(permission => permission.Target != PermissionTarget.Session))
     {
       throw Unreachable(definition,
-                        $"every permission of '{set.Name}' acts on a partition, and the condition selects sessions");
+                        $"no permission of '{set.Name}' acts on a session, and the condition selects sessions");
     }
 
     if (condition.ReadsPartition && !permissions.Any(permission => permission.PutsPartitionInPlay))
