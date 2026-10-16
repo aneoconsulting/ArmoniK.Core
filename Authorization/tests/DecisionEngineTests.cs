@@ -438,6 +438,38 @@ public class DecisionEngineTests
   }
 
   [Test]
+  public void AGrantStoredWithAMissingFieldIsRefusedAlone()
+  {
+    var engine = DecisionEngine.Build(new[]
+                                      {
+                                        new GrantDefinition("broken",
+                                                            "role:team",
+                                                            null!,
+                                                            null),
+                                        new GrantDefinition("open",
+                                                            "role:team",
+                                                            "session-create",
+                                                            null),
+                                      },
+                                      GrantValidatorTests.Sets,
+                                      out var rejected);
+
+    Assert.That(rejected.Select(refusal => refusal.Grant.Id),
+                Is.EqualTo(new[]
+                           {
+                             "broken",
+                           }));
+    Assert.That(engine.DecideSessionCreation(new Caller(Principal.Parse("oid:x"),
+                                                        new[]
+                                                        {
+                                                          Principal.Parse("role:team"),
+                                                        }),
+                                             ["research"])
+                      .Decision.IsAllowed,
+                Is.True);
+  }
+
+  [Test]
   public void ClusterAdminIsAllowedEverythingWhateverTheOtherSets()
   {
     foreach (var permission in Permission.All.Where(p => p.Target == PermissionTarget.Session && p != Permission.SessionCreate))

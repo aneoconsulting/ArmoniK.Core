@@ -146,6 +146,14 @@ public sealed class DecisionEngine
       {
         refused.Add((definition, e));
       }
+      catch (Exception e)
+      {
+        // A grant as stored may hold what no validation expects, such as a missing field: it is refused alone, rather
+        // than leaving every request undecided
+        refused.Add((definition, new InvalidGrantException(InvalidGrantKind.Malformed,
+                                                           $"Grant '{definition.Id}' is refused: {e.Message}",
+                                                           e)));
+      }
     }
 
     rejected = refused;
