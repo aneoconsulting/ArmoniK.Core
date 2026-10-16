@@ -1079,6 +1079,41 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task ApplicationsAreListedOverTheTasksTheCallerMayRead()
+  {
+    if (RunTests)
+    {
+      async Task<List<string>> Listed(string subject)
+      {
+        var context = await Authorize(subject,
+                                      nameof(GrpcApplicationsService),
+                                      nameof(GrpcApplicationsService.ListApplications),
+                                      new Api.gRPC.V1.Applications.ListApplicationsRequest())
+                        .ConfigureAwait(false);
+        return await TaskTable!.FindTasksAsync(context.RestrictListing<TaskData>(_ => true),
+                                               task => task.TaskId)
+                               .ToListAsync()
+                               .ConfigureAwait(false);
+      }
+
+      // Under a condition, then across the cluster
+      Assert.That(await Listed(Lead)
+                    .ConfigureAwait(false),
+                  Is.EqualTo(new[]
+                             {
+                               "t-alice",
+                             }));
+      Assert.That(await Listed(Admin)
+                    .ConfigureAwait(false),
+                  Is.EquivalentTo(new[]
+                                  {
+                                    "t-alice",
+                                    "t-other",
+                                  }));
+    }
+  }
+
+  [Test]
   public async Task ListingsReturnWhatTheCallerHoldsThePermissionOn()
   {
     if (RunTests)
