@@ -286,7 +286,6 @@ public class AuthorizationReconciler
                                               "the lock was lost, and the grants are refused until a reconciliation completes them");
         }
       }
-
     }
     catch (Exception) when (changing)
     {

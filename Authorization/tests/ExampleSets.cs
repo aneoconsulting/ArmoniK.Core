@@ -87,8 +87,8 @@ internal static class ExampleSets
 
   /// <summary>Every permission</summary>
   public static PermissionSet ClusterAdmin { get; } = PermissionSet.FromNames("cluster-admin",
-                                                                       1,
-                                                                       [PermissionSet.Everything]);
+                                                                              1,
+                                                                              [PermissionSet.Everything]);
 
   /// <summary>All the example sets</summary>
   public static IReadOnlyList<PermissionSet> All { get; } = new[]

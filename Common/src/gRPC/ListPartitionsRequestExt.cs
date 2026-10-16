@@ -41,10 +41,10 @@ public static class ListPartitionsRequestExt
   /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<PartitionData, object?>> ToField(this ListPartitionsRequest.Types.Sort sort)
     => FilterConversion.Convert(() => sort.Field.FieldCase switch
-       {
-         PartitionField.FieldOneofCase.PartitionRawField => sort.Field.PartitionRawField.Field.ToField(),
-         _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
-       });
+                                      {
+                                        PartitionField.FieldOneofCase.PartitionRawField => sort.Field.PartitionRawField.Field.ToField(),
+                                        _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
+                                      });
 
   /// <summary>
   ///   Converts gRPC message into the associated <see cref="PartitionData" /> field

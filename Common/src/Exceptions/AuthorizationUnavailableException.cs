@@ -51,7 +51,7 @@ public class AuthorizationUnavailableException : ArmoniKException
   /// <param name="message">Why the request could not be decided</param>
   /// <param name="innerException">The failure</param>
   public AuthorizationUnavailableException(string    message,
-                                    Exception innerException)
+                                           Exception innerException)
     : base(message,
            innerException)
   {

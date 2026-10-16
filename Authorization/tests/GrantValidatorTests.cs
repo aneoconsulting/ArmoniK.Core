@@ -28,50 +28,50 @@ public class GrantValidatorTests
   private const string Ownership = "session.owner == request.caller && grant.principal in session.createdUnder";
 
   internal static readonly IReadOnlyDictionary<string, PermissionSet> Sets = ExampleSets.All.Concat(new[]
-                                                                                                              {
-                                                                                                                PermissionSet.FromNames("team-reader",
-                                                                                                                                        1,
-                                                                                                                                        new[]
-                                                                                                                                        {
-                                                                                                                                          "data:read",
-                                                                                                                                          "data:download",
-                                                                                                                                        }),
-                                                                                                                PermissionSet.FromNames("compliance-reader",
-                                                                                                                                        1,
-                                                                                                                                        new[]
-                                                                                                                                        {
-                                                                                                                                          "session:read",
-                                                                                                                                          "task:read",
-                                                                                                                                          "data:read",
-                                                                                                                                          "partition:read",
-                                                                                                                                        }),
-                                                                                                                PermissionSet.FromNames("partition-admin",
-                                                                                                                                        1,
-                                                                                                                                        new[]
-                                                                                                                                        {
-                                                                                                                                          "partition:create",
-                                                                                                                                          "partition:delete",
-                                                                                                                                          "partition:modify",
-                                                                                                                                        }),
-                                                                                                                PermissionSet.FromNames("empty",
-                                                                                                                                        1,
-                                                                                                                                        []),
-                                                                                                                PermissionSet.FromNames("partition-steward",
-                                                                                                                                        1,
-                                                                                                                                        new[]
-                                                                                                                                        {
-                                                                                                                                          "partition:read",
-                                                                                                                                          "partition:modify",
-                                                                                                                                        }),
-                                                                                                                PermissionSet.FromNames("partition-and-access",
-                                                                                                                                        1,
-                                                                                                                                        new[]
-                                                                                                                                        {
-                                                                                                                                          "partition:modify",
-                                                                                                                                          "grant:read",
-                                                                                                                                        }),
-                                                                                                              })
-                                                                                                  .ToDictionary(set => set.Name);
+                                                                                                    {
+                                                                                                      PermissionSet.FromNames("team-reader",
+                                                                                                                              1,
+                                                                                                                              new[]
+                                                                                                                              {
+                                                                                                                                "data:read",
+                                                                                                                                "data:download",
+                                                                                                                              }),
+                                                                                                      PermissionSet.FromNames("compliance-reader",
+                                                                                                                              1,
+                                                                                                                              new[]
+                                                                                                                              {
+                                                                                                                                "session:read",
+                                                                                                                                "task:read",
+                                                                                                                                "data:read",
+                                                                                                                                "partition:read",
+                                                                                                                              }),
+                                                                                                      PermissionSet.FromNames("partition-admin",
+                                                                                                                              1,
+                                                                                                                              new[]
+                                                                                                                              {
+                                                                                                                                "partition:create",
+                                                                                                                                "partition:delete",
+                                                                                                                                "partition:modify",
+                                                                                                                              }),
+                                                                                                      PermissionSet.FromNames("empty",
+                                                                                                                              1,
+                                                                                                                              []),
+                                                                                                      PermissionSet.FromNames("partition-steward",
+                                                                                                                              1,
+                                                                                                                              new[]
+                                                                                                                              {
+                                                                                                                                "partition:read",
+                                                                                                                                "partition:modify",
+                                                                                                                              }),
+                                                                                                      PermissionSet.FromNames("partition-and-access",
+                                                                                                                              1,
+                                                                                                                              new[]
+                                                                                                                              {
+                                                                                                                                "partition:modify",
+                                                                                                                                "grant:read",
+                                                                                                                              }),
+                                                                                                    })
+                                                                                        .ToDictionary(set => set.Name);
 
   // Access model v0.98, section 9
   internal static readonly GrantDefinition[] WorkedExample =

@@ -47,8 +47,8 @@ public class AuthorizationTable : IAuthorizationTable
   private static readonly TimeSpan LockRetryDelay = TimeSpan.FromMilliseconds(100);
 
   private readonly ActivitySource                                                                          activitySource_;
-  private readonly ILogger<AuthorizationTable>                                                             logger_;
   private readonly MongoCollectionProvider<GrantData, GrantDataModelMapping>                               grants_;
+  private readonly ILogger<AuthorizationTable>                                                             logger_;
   private readonly MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>               sets_;
   private readonly MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping>     state_;
   private readonly MongoCollectionProvider<PermissionSetVersionData, PermissionSetVersionDataModelMapping> versions_;

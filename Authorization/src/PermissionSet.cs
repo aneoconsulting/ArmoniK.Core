@@ -64,8 +64,8 @@ public sealed class PermissionSet
     Version     = version;
     Permissions = permissions;
     Names = (names ?? permissions.Select(permission => permission.Name)).Distinct()
-                                                                         .Order(StringComparer.Ordinal)
-                                                                         .ToList();
+                                                                        .Order(StringComparer.Ordinal)
+                                                                        .ToList();
   }
 
   /// <summary>Name of the set</summary>

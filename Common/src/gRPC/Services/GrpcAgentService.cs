@@ -382,14 +382,14 @@ public class GrpcAgentService : Agent.AgentBase
       try
       {
         createdTasks = await agent_.SubmitTasks(request.TaskCreations.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
-                                                                                                                      creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                                      creation.ExpectedOutputKeys.AsICollection(),
-                                                                                                                      creation.DataDependencies.AsICollection())),
-                                               request.TaskOptions.ToNullableTaskOptions(),
-                                               request.SessionId,
-                                               request.CommunicationToken,
-                                               context.CancellationToken)
-                                  .ConfigureAwait(false);
+                                                                                                                       creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                                       creation.ExpectedOutputKeys.AsICollection(),
+                                                                                                                       creation.DataDependencies.AsICollection())),
+                                                request.TaskOptions.ToNullableTaskOptions(),
+                                                request.SessionId,
+                                                request.CommunicationToken,
+                                                context.CancellationToken)
+                                   .ConfigureAwait(false);
       }
       catch (PartitionNotInSessionException e)
       {
