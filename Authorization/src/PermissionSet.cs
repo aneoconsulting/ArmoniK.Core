@@ -155,12 +155,6 @@ public sealed class PermissionSet
                              names);
   }
 
-  /// <summary>Whether two sets hold the same permissions</summary>
-  /// <param name="other">The other set</param>
-  /// <returns>Whether the contents are equal, whatever the names and versions</returns>
-  public bool SameContentAs(PermissionSet other)
-    => Permissions.SetEquals(other.Permissions);
-
   /// <inheritdoc />
   public override string ToString()
     => $"{Name}@{Version}";
