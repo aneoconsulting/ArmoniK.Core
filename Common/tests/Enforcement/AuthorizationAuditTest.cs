@@ -16,7 +16,9 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 
+using ArmoniK.Core.Authorization;
 using ArmoniK.Core.Common.Enforcement;
 
 using Microsoft.Extensions.Logging;
@@ -55,5 +57,40 @@ public class AuthorizationAuditTest
                              It.IsAny<Exception?>(),
                              It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                   Times.Once);
+  }
+
+  [Test]
+  public void NothingIsBuiltWhenTheAuditIsFilteredOut()
+  {
+    var logger = new Mock<ILogger>();
+    logger.Setup(l => l.IsEnabled(It.IsAny<LogLevel>()))
+          .Returns(false);
+    var factory = new Mock<ILoggerFactory>();
+    factory.Setup(f => f.CreateLogger(It.IsAny<string>()))
+           .Returns(logger.Object);
+
+    // Enumerating the targets would mean the details are built
+    Assert.That(() => new AuthorizationAudit(factory.Object).Record("Sessions",
+                                                                    "GetSession",
+                                                                    null,
+                                                                    "NotFound",
+                                                                    [Permission.SessionRead],
+                                                                    NotToBeRead(),
+                                                                    []),
+                Throws.Nothing);
+    logger.Verify(l => l.Log(It.IsAny<LogLevel>(),
+                             It.IsAny<EventId>(),
+                             It.IsAny<It.IsAnyType>(),
+                             It.IsAny<Exception?>(),
+                             It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+                  Times.Never);
+  }
+
+  private static IEnumerable<string> NotToBeRead()
+  {
+    throw new InvalidOperationException("The audit details were built");
+#pragma warning disable CS0162 // Unreachable code: an iterator, which throws only when enumerated
+    yield break;
+#pragma warning restore CS0162
   }
 }
