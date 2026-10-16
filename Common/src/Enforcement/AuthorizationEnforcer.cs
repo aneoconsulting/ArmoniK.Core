@@ -446,6 +446,21 @@ public class AuthorizationEnforcer
       return;
     }
 
+    async Task<List<SessionData>> ReadSessionsAsync(List<string> ids)
+      => await sessionTable_.FindSessionsAsync(session => ids.Contains(session.SessionId),
+                                               session => session,
+                                               cancellationToken)
+                            .ToListAsync(cancellationToken)
+                            .ConfigureAwait(false);
+
+    // The session named by the request is the only one decided on: it is read while the tasks and results are looked up
+    var namedSessionRead = targets.SessionId is null
+                             ? null
+                             : ReadSessionsAsync([targets.SessionId]);
+    // A refusal of the lookups leaves the read unawaited: its fault is observed here
+    _ = namedSessionRead?.ContinueWith(read => read.Exception,
+                                       TaskContinuationOptions.OnlyOnFaulted | TaskContinuationOptions.ExecuteSynchronously);
+
     var sessionIds = new HashSet<string>(StringComparer.Ordinal);
 
     if (targets.SessionId is not null)
@@ -550,11 +565,7 @@ public class AuthorizationEnforcer
     }
 
     var decidedSessionIds = sessionIds.ToList();
-    var sessions = await sessionTable_.FindSessionsAsync(session => decidedSessionIds.Contains(session.SessionId),
-                                                         session => session,
-                                                         cancellationToken)
-                                      .ToListAsync(cancellationToken)
-                                      .ConfigureAwait(false);
+    var sessions = await (namedSessionRead ?? ReadSessionsAsync(decidedSessionIds)).ConfigureAwait(false);
     if (sessions.Count != decidedSessionIds.Count)
     {
       Refuse(service,
