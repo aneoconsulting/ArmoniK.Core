@@ -193,99 +193,120 @@ public class AuthorizationReconciler
                                      .ConfigureAwait(false)
                        : 0;
 
-    foreach (var set in setChanges)
+    try
     {
-      cancellationToken.ThrowIfCancellationRequested();
-      await table_.SetPermissionSetAsync(set,
-                                         cancellationToken)
-                  .ConfigureAwait(false);
-      audit_.RecordChange(Actor,
-                          generation,
-                          "PermissionSetChanged",
-                          set.Name,
-                          new
-                          {
-                            OldVersion = storedSets.GetValueOrDefault(set.Name)
-                                                   ?.Version,
-                            NewVersion = set.Version,
-                            set.Permissions,
-                          });
-    }
-
-    foreach (var grant in grantDeletions)
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-      await table_.DeleteGrantAsync(grant.GrantId,
-                                    cancellationToken)
-                  .ConfigureAwait(false);
-      audit_.RecordChange(Actor,
-                          generation,
-                          "GrantDeleted",
-                          grant.GrantId,
-                          grant);
-    }
-
-    foreach (var grant in grantCreations)
-    {
-      var data = new GrantData(grant.Id,
-                               grant.Principal,
-                               grant.PermissionSet,
-                               grant.Condition,
-                               AuthorizationOrigin.Config,
-                               time_.GetUtcNow()
-                                    .UtcDateTime);
-      cancellationToken.ThrowIfCancellationRequested();
-      await table_.CreateGrantAsync(data,
-                                    cancellationToken)
-                  .ConfigureAwait(false);
-      audit_.RecordChange(Actor,
-                          generation,
-                          "GrantCreated",
-                          grant.Id,
-                          data);
-    }
-
-    foreach (var set in setDeletions)
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-      await table_.DeletePermissionSetAsync(set.Name,
-                                            cancellationToken)
-                  .ConfigureAwait(false);
-      audit_.RecordChange(Actor,
-                          generation,
-                          "PermissionSetDeleted",
-                          set.Name,
-                          new
-                          {
-                            OldVersion = set.Version,
-                          });
-    }
-
-    // Before the change is ended: grants stable under an older revision would let an older configuration write them again
-    cancellationToken.ThrowIfCancellationRequested();
-    await table_.SetConfigRevisionAsync(options_.ConfigRevision,
-                                        cancellationToken)
-                .ConfigureAwait(false);
-
-    // Left unended when a write fails, so that what was written is not read before a later change completes it
-    if (changing)
-    {
-      cancellationToken.ThrowIfCancellationRequested();
-      await table_.EndChangeAsync(generation,
-                                  cancellationToken)
-                  .ConfigureAwait(false);
-
-      // Another writer changed the grants meanwhile, so the lock was lost and what was written here may mix with its
-      // change: a change is left unended, so that none of it is served until a reconciliation completes it
-      var ended = await table_.GetGenerationAsync(cancellationToken)
-                              .ConfigureAwait(false);
-      if (ended.Ended != generation)
+      foreach (var set in setChanges)
       {
-        await table_.BeginChangeAsync(cancellationToken)
+        cancellationToken.ThrowIfCancellationRequested();
+        await table_.SetPermissionSetAsync(set,
+                                           cancellationToken)
                     .ConfigureAwait(false);
-        throw new InvalidOperationException($"The grants were changed by another writer during the change of generation {generation}: " +
-                                            "the lock was lost, and the grants are refused until a reconciliation completes them");
+        audit_.RecordChange(Actor,
+                            generation,
+                            "PermissionSetChanged",
+                            set.Name,
+                            new
+                            {
+                              OldVersion = storedSets.GetValueOrDefault(set.Name)
+                                                     ?.Version,
+                              NewVersion = set.Version,
+                              set.Permissions,
+                            });
       }
+
+      foreach (var grant in grantDeletions)
+      {
+        cancellationToken.ThrowIfCancellationRequested();
+        await table_.DeleteGrantAsync(grant.GrantId,
+                                      cancellationToken)
+                    .ConfigureAwait(false);
+        audit_.RecordChange(Actor,
+                            generation,
+                            "GrantDeleted",
+                            grant.GrantId,
+                            grant);
+      }
+
+      foreach (var grant in grantCreations)
+      {
+        var data = new GrantData(grant.Id,
+                                 grant.Principal,
+                                 grant.PermissionSet,
+                                 grant.Condition,
+                                 AuthorizationOrigin.Config,
+                                 time_.GetUtcNow()
+                                      .UtcDateTime);
+        cancellationToken.ThrowIfCancellationRequested();
+        await table_.CreateGrantAsync(data,
+                                      cancellationToken)
+                    .ConfigureAwait(false);
+        audit_.RecordChange(Actor,
+                            generation,
+                            "GrantCreated",
+                            grant.Id,
+                            data);
+      }
+
+      foreach (var set in setDeletions)
+      {
+        cancellationToken.ThrowIfCancellationRequested();
+        await table_.DeletePermissionSetAsync(set.Name,
+                                              cancellationToken)
+                    .ConfigureAwait(false);
+        audit_.RecordChange(Actor,
+                            generation,
+                            "PermissionSetDeleted",
+                            set.Name,
+                            new
+                            {
+                              OldVersion = set.Version,
+                            });
+      }
+
+      // Before the change is ended: grants stable under an older revision would let an older configuration write them again
+      cancellationToken.ThrowIfCancellationRequested();
+      await table_.SetConfigRevisionAsync(options_.ConfigRevision,
+                                          cancellationToken)
+                  .ConfigureAwait(false);
+
+      // Left unended when a write fails, so that what was written is not read before a later change completes it
+      if (changing)
+      {
+        cancellationToken.ThrowIfCancellationRequested();
+        await table_.EndChangeAsync(generation,
+                                    cancellationToken)
+                    .ConfigureAwait(false);
+
+        // Another writer changed the grants meanwhile, so the lock was lost and what was written here may mix with its
+        // change: a change is left unended, so that none of it is served until a reconciliation completes it
+        var ended = await table_.GetGenerationAsync(cancellationToken)
+                                .ConfigureAwait(false);
+        if (ended.Ended != generation)
+        {
+          throw new InvalidOperationException($"The grants were changed by another writer during the change of generation {generation}: " +
+                                              "the lock was lost, and the grants are refused until a reconciliation completes them");
+        }
+      }
+
+    }
+    catch (Exception) when (changing)
+    {
+      // A writer stopped after it began writing, such as one whose lock was lost meanwhile: a write may have landed after
+      // another writer ended its change. A change is begun again, whatever the cancellation, so that none of it is served
+      // until a reconciliation completes it
+      try
+      {
+        await table_.BeginChangeAsync(CancellationToken.None)
+                    .ConfigureAwait(false);
+      }
+      catch (Exception again)
+      {
+        logger_.LogError(again,
+                         "The change of generation {Generation} failed and could not be left unended: the grants may be served mixed",
+                         generation);
+      }
+
+      throw;
     }
 
     return true;
