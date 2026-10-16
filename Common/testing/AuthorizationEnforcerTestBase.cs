@@ -621,8 +621,8 @@ public class AuthorizationEnforcerTestBase
     {
       var context = await Authorize(Alice,
                                     nameof(GrpcResultsService),
-                                    nameof(GrpcResultsService.GetOwnerTaskId),
-                                    new GetOwnerTaskIdRequest
+                                    nameof(GrpcResultsService.DeleteResultsData),
+                                    new DeleteResultsDataRequest
                                     {
                                       SessionId = aliceSession_,
                                       ResultId =
@@ -635,6 +635,82 @@ public class AuthorizationEnforcerTestBase
       Assert.That(context.ResolvedResult("r-alice"),
                   Is.Null);
     }
+  }
+
+  [Test]
+  public async Task TheOwnerTasksAreAnsweredFromTheResultsTheDecisionRead()
+  {
+    if (RunTests)
+    {
+      var request = new GetOwnerTaskIdRequest
+                    {
+                      SessionId = aliceSession_,
+                      ResultId =
+                      {
+                        "r-alice",
+                      },
+                    };
+      var context = await Authorize(Alice,
+                                    nameof(GrpcResultsService),
+                                    nameof(GrpcResultsService.GetOwnerTaskId),
+                                    request)
+                      .ConfigureAwait(false);
+
+      // Any read of the result table fails the call
+      var response = await ResultsService(Mock.Of<IResultTable>(MockBehavior.Strict))
+                             .GetOwnerTaskId(request,
+                                             context)
+                             .ConfigureAwait(false);
+
+      Assert.That(response.ResultTask.Select(map => map.ResultId),
+                  Is.EqualTo(new[]
+                             {
+                               "r-alice",
+                             }));
+    }
+  }
+
+  [Test]
+  public async Task WithoutAuthorizationTheOwnerTasksAreRead()
+  {
+    if (RunTests)
+    {
+      var response = await ResultsService(ResultTable!)
+                             .GetOwnerTaskId(new GetOwnerTaskIdRequest
+                                             {
+                                               SessionId = aliceSession_,
+                                               ResultId =
+                                               {
+                                                 "r-alice",
+                                               },
+                                             },
+                                             TestServerCallContext.Create())
+                             .ConfigureAwait(false);
+
+      Assert.That(response.ResultTask.Select(map => map.ResultId),
+                  Is.EqualTo(new[]
+                             {
+                               "r-alice",
+                             }));
+    }
+  }
+
+  private GrpcResultsService ResultsService(IResultTable resultTable)
+  {
+    var services = new ServiceCollection().AddMetrics()
+                                          .AddSingleton<AgentIdentifier>()
+                                          .AddSingleton<MeterHolder>()
+                                          .AddSingleton(typeof(FunctionExecutionMetrics<>))
+                                          .BuildServiceProvider();
+    return new GrpcResultsService(resultTable,
+                                  TaskTable!,
+                                  SessionTable!,
+                                  Mock.Of<IObjectStorage>(),
+                                  Mock.Of<IPushQueueStorage>(),
+                                  services.GetRequiredService<FunctionExecutionMetrics<GrpcResultsService>>(),
+                                  new Injection.Options.Submitter(),
+                                  Mock.Of<IUuidGenerator>(),
+                                  NullLogger<GrpcResultsService>.Instance);
   }
 
   [Test]

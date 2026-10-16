@@ -101,21 +101,29 @@ public class GrpcResultsService : Results.ResultsBase
     using var measure = meter_.CountAndTime();
     using var _       = logger_.LogFunction();
 
+    // The results read to decide the call, when authorization read them all
+    var resolved = request.ResultId.Distinct()
+                          .Select(context.ResolvedResult)
+                          .ToList();
+    var results = resolved.Count != 0 && resolved.All(result => result is not null)
+                    ? resolved.Select(result => result!)
+                              .ToList()
+                    : await resultTable_.GetResults(request.SessionId,
+                                                    request.ResultId,
+                                                    context.CancellationToken)
+                                        .ToListAsync(context.CancellationToken)
+                                        .ConfigureAwait(false);
+
     return new GetOwnerTaskIdResponse
            {
              SessionId = request.SessionId,
              ResultTask =
              {
-               await resultTable_.GetResults(request.SessionId,
-                                             request.ResultId,
-                                             context.CancellationToken)
-                                 .Select(result => new GetOwnerTaskIdResponse.Types.MapResultTask
-                                                   {
-                                                     TaskId   = result.OwnerTaskId,
-                                                     ResultId = result.Name,
-                                                   })
-                                 .ToListAsync(context.CancellationToken)
-                                 .ConfigureAwait(false),
+               results.Select(result => new GetOwnerTaskIdResponse.Types.MapResultTask
+                                        {
+                                          TaskId   = result.OwnerTaskId,
+                                          ResultId = result.Name,
+                                        }),
              },
            };
   }
