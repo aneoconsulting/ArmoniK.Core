@@ -199,10 +199,8 @@ public sealed class DecisionEngine
   /// <returns>The decision</returns>
   public Decision DecideAdmission(Caller caller)
     => Admitted(caller)
-         ? Decision.Allow(null,
-                          [])
+         ? Decision.Allow([])
          : Decision.Deny(DecisionOutcome.NotFound,
-                         null,
                          DenialReason.NotAdmitted);
 
   /// <summary>
@@ -232,7 +230,6 @@ public sealed class DecisionEngine
     if (!surviving.Any(grant => grant.PermissionSet.Permissions.Any(permission => permission.MakesSessionVisible)))
     {
       return Decision.Deny(DecisionOutcome.NotFound,
-                           required,
                            DenialReason.NotVisible);
     }
 
@@ -242,7 +239,6 @@ public sealed class DecisionEngine
         !held.Any(grant => grant.Condition is null && grant.PermissionSet.Permissions.Contains(required)))
     {
       return Decision.Deny(DecisionOutcome.Forbidden,
-                           required,
                            DenialReason.PreconditionFailed);
     }
 
@@ -251,10 +247,8 @@ public sealed class DecisionEngine
 
     return allowing.Count == 0
              ? Decision.Deny(DecisionOutcome.Forbidden,
-                             required,
                              DenialReason.MissingPermission)
-             : Decision.Allow(required,
-                              allowing);
+             : Decision.Allow(allowing);
   }
 
   /// <summary>
@@ -295,7 +289,6 @@ public sealed class DecisionEngine
         return new SessionCreationDecision(Decision.Deny(Admitted(caller)
                                                            ? DecisionOutcome.Forbidden
                                                            : DecisionOutcome.NotFound,
-                                                         required,
                                                          DenialReason.PartitionNotCovered,
                                                          partition),
                                            []);
@@ -305,8 +298,7 @@ public sealed class DecisionEngine
       createdUnder.AddRange(pass.Select(grant => grant.Principal.Value));
     }
 
-    return new SessionCreationDecision(Decision.Allow(required,
-                                                      allowing.DistinctBy(grant => grant.Id)
+    return new SessionCreationDecision(Decision.Allow(allowing.DistinctBy(grant => grant.Id)
                                                               .OrderBy(grant => grant.Id,
                                                                        StringComparer.Ordinal)
                                                               .ToList()),
@@ -340,7 +332,6 @@ public sealed class DecisionEngine
                                 grant.PermissionSet.Permissions.Contains(Permission.PartitionRead)))
     {
       return Decision.Deny(DecisionOutcome.NotFound,
-                           required,
                            DenialReason.NotVisible);
     }
 
@@ -358,10 +349,8 @@ public sealed class DecisionEngine
 
     return allowing.Count == 0
              ? Decision.Deny(DecisionOutcome.Forbidden,
-                             required,
                              DenialReason.MissingPermission)
-             : Decision.Allow(required,
-                              allowing);
+             : Decision.Allow(allowing);
   }
 
   /// <summary>

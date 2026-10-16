@@ -74,12 +74,10 @@ public enum Precondition
 ///   The answer to a request
 /// </summary>
 /// <param name="Outcome">Whether the request is allowed</param>
-/// <param name="Required">The permission the operation requires, null for an operation requiring only admission</param>
 /// <param name="Reason">Why the request was refused, <see cref="DenialReason.None" /> when allowed</param>
 /// <param name="AllowingGrants">Every grant that conferred the required permission, empty when refused</param>
 /// <param name="Detail">Partition that was not covered, when relevant</param>
 public sealed record Decision(DecisionOutcome      Outcome,
-                              Permission?          Required,
                               DenialReason         Reason,
                               IReadOnlyList<Grant> AllowingGrants,
                               string?              Detail = null)
@@ -88,19 +86,15 @@ public sealed record Decision(DecisionOutcome      Outcome,
   public bool IsAllowed
     => Outcome == DecisionOutcome.Allow;
 
-  internal static Decision Allow(Permission?          required,
-                                 IReadOnlyList<Grant> grants)
+  internal static Decision Allow(IReadOnlyList<Grant> grants)
     => new(DecisionOutcome.Allow,
-           required,
            DenialReason.None,
            grants);
 
   internal static Decision Deny(DecisionOutcome outcome,
-                                Permission?     required,
                                 DenialReason    reason,
                                 string?         detail = null)
     => new(outcome,
-           required,
            reason,
            [],
            detail);
