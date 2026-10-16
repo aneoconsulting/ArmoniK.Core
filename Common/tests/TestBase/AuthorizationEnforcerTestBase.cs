@@ -276,12 +276,31 @@ public class AuthorizationEnforcerTestBase
     return context;
   }
 
+  // As the authentication middleware does, before the request is read and decided
+  private static async Task Authenticate(AuthorizationEnforcer enforcer,
+                                         string                service,
+                                         string                method,
+                                         ServerCallContext     context)
+  {
+    var http = context.GetHttpContext();
+    http.Items[AuthorizationEnforcer.CallerKey] = await enforcer.AuthenticateAsync(service,
+                                                                                   method,
+                                                                                   MethodAuthorization.Rules[(service, method)],
+                                                                                   http)
+                                                                .ConfigureAwait(false);
+  }
+
   private async Task<ServerCallContext> Authorize(string? subject,
                                                   string  service,
                                                   string  method,
                                                   object  request)
   {
     var context = Context(subject);
+    await Authenticate(enforcer_!,
+                       service,
+                       method,
+                       context)
+      .ConfigureAwait(false);
     await enforcer_!.AuthorizeAsync(service,
                                     method,
                                     MethodAuthorization.Rules[(service, method)],
@@ -453,7 +472,7 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
-  public void AFaultIsAnsweredAsUnavailable()
+  public async Task AFaultIsAnsweredAsUnavailable()
   {
     if (RunTests)
     {
@@ -469,6 +488,12 @@ public class AuthorizationEnforcerTestBase
                                                },
                                                NullLogger<AuthorizationEnforcer>.Instance);
 
+      var context = Context(Alice);
+      await Authenticate(enforcer,
+                         nameof(GrpcSessionsService),
+                         nameof(GrpcSessionsService.GetSession),
+                         context)
+        .ConfigureAwait(false);
       Assert.ThrowsAsync<AuthorizationUnavailableException>(() => enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
                                                                                      nameof(GrpcSessionsService.GetSession),
                                                                                      MethodAuthorization.Rules[(nameof(GrpcSessionsService),
@@ -477,7 +502,7 @@ public class AuthorizationEnforcerTestBase
                                                                                      {
                                                                                        SessionId = aliceSession_,
                                                                                      },
-                                                                                     Context(Alice)));
+                                                                                     context));
       Assert.That(audit_!.Messages.Any(message => message.Contains("Fault")),
                   Is.True);
     }
@@ -511,15 +536,10 @@ public class AuthorizationEnforcerTestBase
       http.Request.Headers.Authorization = "Bearer token";
       context.UserState["__HttpContext"] = http;
 
-      var exception = Assert.ThrowsAsync<RpcException>(() => enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
-                                                                                     nameof(GrpcSessionsService.GetSession),
-                                                                                     MethodAuthorization.Rules[(nameof(GrpcSessionsService),
-                                                                                                                nameof(GrpcSessionsService.GetSession))],
-                                                                                     new GetSessionRequest
-                                                                                     {
-                                                                                       SessionId = aliceSession_,
-                                                                                     },
-                                                                                     context));
+      var exception = Assert.ThrowsAsync<RpcException>(() => Authenticate(enforcer,
+                                                                          nameof(GrpcSessionsService),
+                                                                          nameof(GrpcSessionsService.GetSession),
+                                                                          context));
       Assert.That(exception!.StatusCode,
                   Is.EqualTo(StatusCode.Unavailable));
       Assert.That(audit_!.Messages,
@@ -802,7 +822,7 @@ public class AuthorizationEnforcerTestBase
   }
 
   // A call of Results.UploadResultData by Alice, as routed
-  private static TestServerCallContext UploadContext()
+  private async Task<TestServerCallContext> UploadContext()
   {
     var context = Context(Alice);
     context.GetHttpContext()
@@ -827,19 +847,26 @@ public class AuthorizationEnforcerTestBase
                                                                                                                                                                    _ => new
                                                                                                                                                                      UploadResultDataResponse())))),
                                      "UploadResultData"));
+    await Authenticate(enforcer_!,
+                       nameof(GrpcResultsService),
+                       nameof(GrpcResultsService.UploadResultData),
+                       context)
+      .ConfigureAwait(false);
     return context;
   }
 
   [Test]
-  public void AnEmptyStreamIsRefused()
+  public async Task AnEmptyStreamIsRefused()
   {
     if (RunTests)
     {
       var handled = false;
+      var context = await UploadContext()
+                      .ConfigureAwait(false);
 
       Assert.That(Assert.ThrowsAsync<RpcException>(() => new AuthorizationInterceptor(enforcer_!)
                                                      .ClientStreamingServerHandler(new TestHelperAsyncStreamReader<UploadResultDataRequest>([]),
-                                                                                   UploadContext(),
+                                                                                   context,
                                                                                    async (stream,
                                                                                           _) =>
                                                                                    {
@@ -855,11 +882,12 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
-  public void AStreamRefusedOnItsFirstMessageStaysRefused()
+  public async Task AStreamRefusedOnItsFirstMessageStaysRefused()
   {
     if (RunTests)
     {
-      var context = UploadContext();
+      var context = await UploadContext()
+                      .ConfigureAwait(false);
       var upload = new UploadResultDataRequest
                    {
                      Id = new UploadResultDataRequest.Types.ResultIdentifier
@@ -1007,6 +1035,11 @@ public class AuthorizationEnforcerTestBase
       async Task<ServerCallContext> Create(string optionsPartition)
       {
         var context = Context("CN=gpu, OU=gpu-team");
+        await Authenticate(enforcer,
+                           nameof(GrpcSessionsService),
+                           nameof(GrpcSessionsService.CreateSession),
+                           context)
+          .ConfigureAwait(false);
         await enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
                                       nameof(GrpcSessionsService.CreateSession),
                                       MethodAuthorization.Rules[(nameof(GrpcSessionsService), nameof(GrpcSessionsService.CreateSession))],
@@ -1156,6 +1189,26 @@ public class AuthorizationEnforcerTestBase
       Assert.That(await Visible(otherSession_)
                     .ConfigureAwait(false),
                   Is.Empty);
+    }
+  }
+
+  [Test]
+  public void ARequestNotAuthenticatedByTheMiddlewareIsNotDecided()
+  {
+    if (RunTests)
+    {
+      // Credentials in the headers are not enough: without the middleware, the request would have been read before
+      // its caller was authenticated
+      Assert.That(() => enforcer_!.AuthorizeAsync(nameof(GrpcSessionsService),
+                                                  nameof(GrpcSessionsService.GetSession),
+                                                  MethodAuthorization.Rules[(nameof(GrpcSessionsService), nameof(GrpcSessionsService.GetSession))],
+                                                  new GetSessionRequest
+                                                  {
+                                                    SessionId = aliceSession_,
+                                                  },
+                                                  Context(Alice)),
+                  Throws.InstanceOf<InvalidOperationException>()
+                        .With.Message.Contains("UseCallerAuthentication"));
     }
   }
 
