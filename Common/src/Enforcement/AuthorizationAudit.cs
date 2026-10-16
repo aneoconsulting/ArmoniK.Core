@@ -62,24 +62,32 @@ public class AuthorizationAudit
                      IEnumerable<string>     targets,
                      IEnumerable<Grant>      grants,
                      string?                 reason = null)
-    => logger_.LogInformation("Authorization {Outcome} for {Caller} on {Service}.{Method} requiring {RequiredPermissions} on {Targets}: {Reason} {@Details}",
-                              outcome,
-                              caller?.Caller.Identity.Value ?? "",
-                              service,
-                              method,
-                              required.Select(permission => permission.Name)
-                                      .ToList(),
-                              targets.ToList(),
-                              reason ?? "",
-                              new AuditDetails(caller?.CredentialKind.ToString() ?? "",
-                                               caller?.Caller.Roles.Select(role => role.Value)
-                                                     .ToList() ?? [],
-                                               grants.Select(grant => new AuditGrant(grant.Id,
-                                                                                     grant.Principal.Value,
-                                                                                     grant.PermissionSet.Name,
-                                                                                     grant.PermissionSet.Version,
-                                                                                     grant.Condition?.ToString()))
-                                                     .ToList()));
+  {
+    // The details are built only when the audit is written: its category may be filtered out
+    if (!logger_.IsEnabled(LogLevel.Information))
+    {
+      return;
+    }
+
+    logger_.LogInformation("Authorization {Outcome} for {Caller} on {Service}.{Method} requiring {RequiredPermissions} on {Targets}: {Reason} {@Details}",
+                           outcome,
+                           caller?.Caller.Identity.Value ?? "",
+                           service,
+                           method,
+                           required.Select(permission => permission.Name)
+                                   .ToList(),
+                           targets.ToList(),
+                           reason ?? "",
+                           new AuditDetails(caller?.CredentialKind.ToString() ?? "",
+                                            caller?.Caller.Roles.Select(role => role.Value)
+                                                  .ToList() ?? [],
+                                            grants.Select(grant => new AuditGrant(grant.Id,
+                                                                                  grant.Principal.Value,
+                                                                                  grant.PermissionSet.Name,
+                                                                                  grant.PermissionSet.Version,
+                                                                                  grant.Condition?.ToString()))
+                                                  .ToList()));
+  }
 
   /// <summary>
   ///   Record a grant or a permission set that cannot be used, and is therefore left out of every decision
