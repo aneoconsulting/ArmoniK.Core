@@ -7,12 +7,6 @@ map $http_upgrade $connection_upgrade {
     '' close;
 }
 
-%{if var.mtls~}
-    map $ssl_client_s_dn $ssl_client_s_dn_cn {
-        default "";
-        ~CN=(?<CN>[^,/]+) $CN;
-    }
-%{endif~}
 server {
 %{if var.tls~}
     listen 8443 ssl http2;
@@ -45,8 +39,9 @@ server {
 
     location ~* ^/armonik\. {
 %{if var.mtls~}
-        # Full client certificate (URL-escaped PEM), nginx exposes no variable for the organizational units
-        grpc_set_header X-Forwarded-Client-Cert $ssl_client_escaped_cert;
+        # Client certificate in the Envoy XFCC format, replacing any header sent by the client. No Hash:
+        # $ssl_client_fingerprint is SHA-1 where Envoy writes SHA-256
+        grpc_set_header X-Forwarded-Client-Cert "Cert=\"$ssl_client_escaped_cert\"";
 %{else~}
         # No client certificate is verified on this listener: drop the identity header sent by the client
         # (proxy_hide_header only applies to response headers)

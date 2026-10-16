@@ -145,7 +145,8 @@ public class IdentityOptions
   public bool ValidateTokens { get; set; } = true;
 
   /// <summary>
-  ///   Header carrying the client certificate forwarded by the ingress, as URL-escaped PEM
+  ///   Header carrying the client certificate forwarded by the ingress, in the Envoy <c>X-Forwarded-Client-Cert</c>
+  ///   format (text or JSON) with a single element carrying <c>Cert</c>
   /// </summary>
   public string CertificateHeader { get; set; } = "X-Forwarded-Client-Cert";
 }

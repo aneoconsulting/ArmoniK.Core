@@ -16,8 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Security.Cryptography;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -153,23 +151,10 @@ public class CallerResolver : IHealthCheckProvider
 
     if (hasCertificate)
     {
-      using var x509 = ParseCertificate(certificate);
+      using var x509 = ForwardedClientCertificate.Parse(certificate);
       return CertificateIdentity.FromCertificate(x509);
     }
 
     return null;
-  }
-
-  private static X509Certificate2 ParseCertificate(string escapedPem)
-  {
-    try
-    {
-      return X509Certificate2.CreateFromPem(Uri.UnescapeDataString(escapedPem));
-    }
-    catch (Exception e) when (e is CryptographicException or ArgumentException or UriFormatException)
-    {
-      throw new FormatException("The forwarded client certificate is not URL-escaped PEM",
-                                e);
-    }
   }
 }
