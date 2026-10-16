@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using Npgsql;
 
@@ -42,18 +43,27 @@ public class AuthorizationTable : IAuthorizationTable
   // Key of the advisory lock serializing changes to grants and permission sets
   private const long LockKey = 0x41726d6f6e694b; // "ArmoniK"
 
-  private readonly ActivitySource           activitySource_;
-  private readonly NpgsqlConnectionProvider connectionProvider_;
-  private          bool                     isInitialized_;
+  // Delay between two attempts to take the lock while another replica holds it
+  private static readonly TimeSpan LockRetryDelay = TimeSpan.FromMilliseconds(100);
+
+  // Delay between two checks that the connection holding the lock is still open
+  private static readonly TimeSpan LockCheckDelay = TimeSpan.FromSeconds(5);
+
+  private readonly ActivitySource              activitySource_;
+  private readonly NpgsqlConnectionProvider    connectionProvider_;
+  private readonly ILogger<AuthorizationTable> logger_;
+  private          bool                        isInitialized_;
 
   /// <summary>
   ///   Creates a new AuthorizationTable
   /// </summary>
-  public AuthorizationTable(NpgsqlConnectionProvider connectionProvider,
-                            ActivitySource           activitySource)
+  public AuthorizationTable(NpgsqlConnectionProvider    connectionProvider,
+                            ActivitySource              activitySource,
+                            ILogger<AuthorizationTable> logger)
   {
     connectionProvider_ = connectionProvider;
     activitySource_     = activitySource;
+    logger_             = logger;
   }
 
   /// <inheritdoc />
@@ -268,13 +278,25 @@ ON CONFLICT (id) DO UPDATE SET revision = GREATEST(authorization_state.revision,
                                               .ConfigureAwait(false);
     try
     {
-      await using var cmd = connection.CreateCommand();
-      cmd.CommandText = "SELECT pg_advisory_lock(@key)";
-      cmd.Parameters.AddWithValue("key",
-                                  LockKey);
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
-      return new Release(connection);
+      // Tried again rather than waited for: a wait would end with the timeout of the command, while the holder may
+      // take longer
+      while (true)
+      {
+        await using var cmd = connection.CreateCommand();
+        cmd.CommandText = "SELECT pg_try_advisory_lock(@key)";
+        cmd.Parameters.AddWithValue("key",
+                                    LockKey);
+        if ((bool)(await cmd.ExecuteScalarAsync(cancellationToken)
+                            .ConfigureAwait(false))!)
+        {
+          return new Release(connection,
+                             logger_);
+        }
+
+        await Task.Delay(LockRetryDelay,
+                         cancellationToken)
+                  .ConfigureAwait(false);
+      }
     }
     catch
     {
@@ -378,32 +400,89 @@ RETURNING begun";
     }
   }
 
+  /// <summary>
+  ///   Advisory lock, held as long as the connection that took it: the connection is checked while the lock is held, and
+  ///   the lock reported lost when the connection is, since the server then releases it
+  /// </summary>
   private sealed class Release : IAuthorizationLock
   {
-    private readonly NpgsqlConnection connection_;
+    private readonly Task                    check_;
+    private readonly NpgsqlConnection        connection_;
+    private readonly ILogger                 logger_;
+    private readonly CancellationTokenSource lost_ = new();
+    private readonly CancellationTokenSource stop_ = new();
 
-    public Release(NpgsqlConnection connection)
-      => connection_ = connection;
+    public Release(NpgsqlConnection connection,
+                   ILogger          logger)
+    {
+      connection_ = connection;
+      logger_     = logger;
+      check_      = Task.Run(CheckAsync);
+    }
 
-    // Not reported: the advisory lock lasts as long as the connection holding it
     public CancellationToken Lost
-      => CancellationToken.None;
+      => lost_.Token;
 
     public async ValueTask DisposeAsync()
     {
+      await stop_.CancelAsync()
+                 .ConfigureAwait(false);
+      await check_.ConfigureAwait(false);
+
       try
       {
-        await using var cmd = connection_.CreateCommand();
-        cmd.CommandText = "SELECT pg_advisory_unlock(@key)";
-        cmd.Parameters.AddWithValue("key",
-                                    LockKey);
-        await cmd.ExecuteNonQueryAsync()
-                 .ConfigureAwait(false);
+        if (!lost_.IsCancellationRequested)
+        {
+          await using var cmd = connection_.CreateCommand();
+          cmd.CommandText = "SELECT pg_advisory_unlock(@key)";
+          cmd.Parameters.AddWithValue("key",
+                                      LockKey);
+          await cmd.ExecuteNonQueryAsync()
+                   .ConfigureAwait(false);
+        }
+      }
+      catch (Exception e)
+      {
+        // Closing the connection below releases the lock as well: the work done under it is not failed for that
+        logger_.LogWarning(e,
+                           "The authorization lock could not be released, it is released with its connection");
       }
       finally
       {
         await connection_.DisposeAsync()
                          .ConfigureAwait(false);
+        lost_.Dispose();
+        stop_.Dispose();
+      }
+    }
+
+    private async Task CheckAsync()
+    {
+      while (!stop_.IsCancellationRequested)
+      {
+        try
+        {
+          await Task.Delay(LockCheckDelay,
+                           stop_.Token)
+                    .ConfigureAwait(false);
+          await using var cmd = connection_.CreateCommand();
+          cmd.CommandText = "SELECT 1";
+          await cmd.ExecuteScalarAsync(stop_.Token)
+                   .ConfigureAwait(false);
+        }
+        catch (OperationCanceledException) when (stop_.IsCancellationRequested)
+        {
+          return;
+        }
+        catch (Exception e)
+        {
+          // The server releases the lock of a session that ended
+          logger_.LogWarning(e,
+                             "The connection holding the authorization lock was lost, and the lock with it");
+          await lost_.CancelAsync()
+                     .ConfigureAwait(false);
+          return;
+        }
       }
     }
   }
