@@ -188,7 +188,11 @@ public class GrantValidatorTests
   [TestCase("team")]
   [TestCase("ou:supervisors")]
   [TestCase("oid:")]
-  public void APrincipalWithoutPrefixIsRefused(string principal)
+  [TestCase("role:team ")]
+  [TestCase("role: team")]
+  [TestCase("role:te\u200Bam")]
+  [TestCase("role:te\u202Emaet")]
+  public void AnInvalidPrincipalIsRefused(string principal)
     => AssertRefused(principal,
                      "session-view",
                      null,
@@ -200,6 +204,13 @@ public class GrantValidatorTests
                      "session-supervise",
                      "\"modelling-team\" in session.createdUnder",
                      InvalidGrantKind.MissingPrefix);
+
+  [Test]
+  public void APrincipalWithSpacesInsideItsNameIsAccepted()
+    => Assert.That(() => Validate("cn:Jean Dupont",
+                                  "session-view",
+                                  null),
+                   Throws.Nothing);
 
   [Test]
   public void TheEveryoneLiteralIsAccepted()

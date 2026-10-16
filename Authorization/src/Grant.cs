@@ -75,7 +75,7 @@ public static class GrantValidator
     {
       throw Refuse(definition,
                    InvalidGrantKind.MissingPrefix,
-                   $"'{definition.Principal}' is not a principal: expected '{Principal.DirectoryPrefix}', '{Principal.CertificatePrefix}' or '{Principal.RolePrefix}' followed by a name, or '{Principal.EveryoneValue}'");
+                   $"'{definition.Principal}' is not a principal: expected '{Principal.DirectoryPrefix}', '{Principal.CertificatePrefix}' or '{Principal.RolePrefix}' followed by a name without surrounding spaces nor invisible characters, or '{Principal.EveryoneValue}'");
     }
 
     foreach (var literal in condition?.Terms.OfType<LiteralInCreatedUnder>() ?? Enumerable.Empty<LiteralInCreatedUnder>())
