@@ -24,10 +24,14 @@ namespace ArmoniK.Core.Authorization;
 /// <summary>
 ///   A named group of permissions, granted as a whole
 /// </summary>
+/// <remarks>
+///   Every set is defined by the configuration, none is shipped with ArmoniK: versions running the same configuration
+///   store the same sets, whatever their catalogue
+/// </remarks>
 public sealed class PermissionSet
 {
-  /// <summary>Name of the break-glass set holding every permission</summary>
-  public const string ClusterAdminName = "cluster-admin";
+  /// <summary>Name standing for every permission of the catalogue, expanded when the set is read</summary>
+  public const string Everything = "*";
 
   /// <summary>
   ///   Build a permission set
@@ -35,11 +39,20 @@ public sealed class PermissionSet
   /// <param name="name">Name of the set</param>
   /// <param name="version">Version of the content of the set</param>
   /// <param name="permissions">Permissions of the set</param>
-  /// <param name="immutable">Whether the set can be edited or deleted</param>
   public PermissionSet(string                  name,
                        int                     version,
-                       IEnumerable<Permission> permissions,
-                       bool                    immutable = false)
+                       IEnumerable<Permission> permissions)
+    : this(name,
+           version,
+           permissions.ToHashSet(),
+           null)
+  {
+  }
+
+  private PermissionSet(string               name,
+                        int                  version,
+                        HashSet<Permission>  permissions,
+                        IEnumerable<string>? names)
   {
     if (string.IsNullOrWhiteSpace(name))
     {
@@ -49,8 +62,10 @@ public sealed class PermissionSet
 
     Name        = name;
     Version     = version;
-    Permissions = permissions.ToHashSet();
-    Immutable   = immutable;
+    Permissions = permissions;
+    Names = (names ?? permissions.Select(permission => permission.Name)).Distinct()
+                                                                         .Order(StringComparer.Ordinal)
+                                                                         .ToList();
   }
 
   /// <summary>Name of the set</summary>
@@ -62,36 +77,28 @@ public sealed class PermissionSet
   /// <summary>Permissions of the set</summary>
   public IReadOnlySet<Permission> Permissions { get; }
 
-  /// <summary>Whether the set can be edited or deleted</summary>
-  public bool Immutable { get; }
+  /// <summary>
+  ///   Names the set was defined with, in ordinal order: <see cref="Everything" /> is kept as such, so that the set is
+  ///   stored the same by every version, whatever its catalogue
+  /// </summary>
+  public IReadOnlyList<string> Names { get; }
 
   /// <summary>
   ///   Build a permission set from permission names
   /// </summary>
   /// <param name="name">Name of the set</param>
   /// <param name="version">Version of the content of the set</param>
-  /// <param name="permissions">Canonical names of the permissions</param>
+  /// <param name="permissions">Canonical names of the permissions, or <see cref="Everything" /></param>
   /// <returns>The permission set</returns>
   /// <exception cref="InvalidPermissionSetException">A name is not in the catalogue</exception>
   public static PermissionSet FromNames(string              name,
                                         int                 version,
                                         IEnumerable<string> permissions)
   {
-    var parsed  = new List<Permission>();
-    var unknown = new List<string>();
-
-    foreach (var permission in permissions)
-    {
-      if (Permission.TryParse(permission,
-                              out var p))
-      {
-        parsed.Add(p);
-      }
-      else
-      {
-        unknown.Add(permission);
-      }
-    }
+    var set = FromNames(name,
+                        version,
+                        permissions,
+                        out var unknown);
 
     if (unknown.Count != 0)
     {
@@ -99,9 +106,53 @@ public sealed class PermissionSet
         InvalidPermissionSetException($"Permission set '{name}' names permissions that are not in the catalogue: {string.Join(", ", unknown.Select(u => $"'{u}'"))}");
     }
 
+    return set;
+  }
+
+  /// <summary>
+  ///   Build a permission set from permission names, leaving out the names that are not in the catalogue
+  /// </summary>
+  /// <remarks>
+  ///   For a set as stored: written by a later version, it may name permissions this one does not know, which it could
+  ///   not enforce anyway. Leaving them out only withholds them, while leaving the whole set out would refuse every grant
+  ///   naming it.
+  /// </remarks>
+  /// <param name="name">Name of the set</param>
+  /// <param name="version">Version of the content of the set</param>
+  /// <param name="permissions">Canonical names of the permissions, or <see cref="Everything" /></param>
+  /// <param name="unknown">Names left out</param>
+  /// <returns>The permission set</returns>
+  public static PermissionSet FromNames(string                    name,
+                                        int                       version,
+                                        IEnumerable<string>       permissions,
+                                        out IReadOnlyList<string> unknown)
+  {
+    var names   = permissions.ToList();
+    var parsed  = new HashSet<Permission>();
+    var missing = new List<string>();
+
+    foreach (var permission in names)
+    {
+      if (permission == Everything)
+      {
+        parsed.UnionWith(Permission.All);
+      }
+      else if (Permission.TryParse(permission,
+                                   out var p))
+      {
+        parsed.Add(p);
+      }
+      else
+      {
+        missing.Add(permission);
+      }
+    }
+
+    unknown = missing;
     return new PermissionSet(name,
                              version,
-                             parsed);
+                             parsed,
+                             names);
   }
 
   /// <summary>Whether two sets hold the same permissions</summary>
@@ -113,98 +164,4 @@ public sealed class PermissionSet
   /// <inheritdoc />
   public override string ToString()
     => $"{Name}@{Version}";
-}
-
-/// <summary>
-///   Permission sets shipped with ArmoniK, as starting points that an organization may redefine, except
-///   <see cref="ClusterAdmin" />
-/// </summary>
-public static class ShippedPermissionSets
-{
-  /// <summary>The whole of a session, its tasks and its data included, read only</summary>
-  public static PermissionSet SessionView { get; } = new("session-view",
-                                                         1,
-                                                         SessionViewPermissions);
-
-  /// <summary>Creating a session, which is what a partition condition gates</summary>
-  public static PermissionSet SessionCreate { get; } = new("session-create",
-                                                           1,
-                                                           new[]
-                                                           {
-                                                             Permission.SessionCreate,
-                                                             Permission.PartitionRead,
-                                                           });
-
-  /// <summary>Everything an owner does with their own work, except <c>data:import</c></summary>
-  public static PermissionSet SessionOwn { get; } = new("session-own",
-                                                        1,
-                                                        SessionViewPermissions.Concat(new[]
-                                                                                      {
-                                                                                        Permission.TaskSubmit,
-                                                                                        Permission.SessionShare,
-                                                                                        Permission.SessionDelegate,
-                                                                                        Permission.SessionTransfer,
-                                                                                        Permission.SessionPause,
-                                                                                        Permission.SessionResume,
-                                                                                        Permission.SessionStopSubmission,
-                                                                                        Permission.SessionCancel,
-                                                                                        Permission.SessionClose,
-                                                                                        Permission.SessionPurge,
-                                                                                        Permission.SessionDelete,
-                                                                                        Permission.TaskCancel,
-                                                                                        Permission.DataDeclare,
-                                                                                        Permission.DataProvide,
-                                                                                        Permission.DataDelete,
-                                                                                      }));
-
-  /// <summary>Following and stopping work, without any data permission</summary>
-  public static PermissionSet SessionSupervise { get; } = new("session-supervise",
-                                                              1,
-                                                              new[]
-                                                              {
-                                                                Permission.SessionRead,
-                                                                Permission.SessionPause,
-                                                                Permission.SessionResume,
-                                                                Permission.SessionStopSubmission,
-                                                                Permission.SessionCancel,
-                                                                Permission.TaskRead,
-                                                                Permission.TaskCancel,
-                                                              });
-
-  /// <summary>Administration of access</summary>
-  public static PermissionSet AccessAdmin { get; } = new("access-admin",
-                                                         1,
-                                                         new[]
-                                                         {
-                                                           Permission.GrantRead,
-                                                           Permission.GrantManage,
-                                                           Permission.PermissionSetManage,
-                                                         });
-
-  /// <summary>Every permission. Immutable and non-deletable</summary>
-  public static PermissionSet ClusterAdmin { get; } = new(PermissionSet.ClusterAdminName,
-                                                          1,
-                                                          Permission.All,
-                                                          true);
-
-  /// <summary>All shipped sets</summary>
-  public static IReadOnlyList<PermissionSet> All { get; } = new[]
-                                                            {
-                                                              SessionView,
-                                                              SessionCreate,
-                                                              SessionOwn,
-                                                              SessionSupervise,
-                                                              AccessAdmin,
-                                                              ClusterAdmin,
-                                                            };
-
-  private static Permission[] SessionViewPermissions
-    => new[]
-       {
-         Permission.SessionRead,
-         Permission.TaskRead,
-         Permission.DataRead,
-         Permission.DataDownload,
-         Permission.EventWatch,
-       };
 }

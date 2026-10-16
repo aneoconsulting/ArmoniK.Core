@@ -27,7 +27,7 @@ public class GrantValidatorTests
 {
   private const string Ownership = "session.owner == request.caller && grant.principal in session.createdUnder";
 
-  internal static readonly IReadOnlyDictionary<string, PermissionSet> Sets = ShippedPermissionSets.All.Concat(new[]
+  internal static readonly IReadOnlyDictionary<string, PermissionSet> Sets = ExampleSets.All.Concat(new[]
                                                                                                               {
                                                                                                                 PermissionSet.FromNames("team-reader",
                                                                                                                                         1,
@@ -142,7 +142,7 @@ public class GrantValidatorTests
     Assert.That(grant.Principal,
                 Is.EqualTo(Principal.Parse("role:modelling-team")));
     Assert.That(grant.PermissionSet,
-                Is.SameAs(ShippedPermissionSets.SessionOwn));
+                Is.SameAs(ExampleSets.SessionOwn));
     Assert.That(grant.Condition!.ToString(),
                 Is.EqualTo(Ownership));
   }

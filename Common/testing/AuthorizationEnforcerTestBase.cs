@@ -115,18 +115,16 @@ public class AuthorizationEnforcerTestBase
                    ])
                    .ConfigureAwait(false);
 
-    var sets = AuthorizationConfiguration.PermissionSets([
-      new PermissionSetOption
-      {
-        Name        = "team-reader",
-        Permissions = ["data:read", "data:download"],
-      },
-      new PermissionSetOption
-      {
-        Name        = "team-lister",
-        Permissions = ["data:read"],
-      },
-    ]);
+    var sets = AuthorizationConfiguration.PermissionSets(ExamplePermissionSets.With(new PermissionSetOption
+                                                                                    {
+                                                                                      Name        = "team-reader",
+                                                                                      Permissions = ["data:read", "data:download"],
+                                                                                    },
+                                                                                    new PermissionSetOption
+                                                                                    {
+                                                                                      Name        = "team-lister",
+                                                                                      Permissions = ["data:read"],
+                                                                                    }));
     var engine = DecisionEngine.Build([
                                         new GrantDefinition("team-create",
                                                             "role:modelling-team",
@@ -936,7 +934,7 @@ public class AuthorizationEnforcerTestBase
                                                               "session-create",
                                                               "request.partition == \"part0\""),
                                         ],
-                                        AuthorizationConfiguration.PermissionSets([]),
+                                        AuthorizationConfiguration.PermissionSets(ExamplePermissionSets.Options),
                                         out var rejected);
       Assert.That(rejected,
                   Is.Empty);

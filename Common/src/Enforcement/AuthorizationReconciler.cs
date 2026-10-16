@@ -120,9 +120,8 @@ public class AuthorizationReconciler
     var setChanges = new List<PermissionSetData>();
     foreach (var set in desiredSets.Values)
     {
-      var permissions = set.Permissions.Select(permission => permission.Name)
-                           .Order(StringComparer.Ordinal)
-                           .ToList();
+      // As defined, Everything kept as such: versions running the same configuration store the same set
+      var permissions = set.Names.ToList();
       // Unchanged, or written by the administration API, which is never changed
       if (storedSets.TryGetValue(set.Name,
                                  out var stored) && (stored.Origin != AuthorizationOrigin.Config || stored.Permissions.Order(StringComparer.Ordinal)

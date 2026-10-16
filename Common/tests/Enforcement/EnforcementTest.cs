@@ -419,7 +419,7 @@ public class AuthorizationConfigurationTest
                    Throws.InstanceOf<InvalidOperationException>());
 
   [Test]
-  public void ConfiguredSetsRedefineShippedOnes()
+  public void OnlyTheConfiguredSetsExist()
   {
     var sets = AuthorizationConfiguration.PermissionSets(new[]
                                                          {
@@ -433,28 +433,29 @@ public class AuthorizationConfigurationTest
                                                            },
                                                            new PermissionSetOption
                                                            {
-                                                             Name = "team-reader",
+                                                             Name = "cluster-admin",
                                                              Permissions =
                                                              {
-                                                               "data:read",
-                                                               "data:download",
+                                                               "*",
                                                              },
                                                            },
                                                          });
 
+    Assert.That(sets.Keys,
+                Is.EquivalentTo(new[]
+                                {
+                                  "session-view",
+                                  "cluster-admin",
+                                }));
     Assert.That(sets["session-view"].Permissions,
                 Is.EquivalentTo(new[]
                                 {
                                   Permission.SessionRead,
                                 }));
-    Assert.That(sets["team-reader"].Permissions,
-                Has.Count.EqualTo(2));
-    Assert.That(sets["session-own"],
-                Is.SameAs(ShippedPermissionSets.SessionOwn));
+    Assert.That(sets["cluster-admin"].Permissions,
+                Is.EquivalentTo(Permission.All));
   }
 
-  [TestCase("cluster-admin",
-            "session:read")]
   [TestCase("custom",
             "session:control")]
   [TestCase("",
@@ -724,7 +725,9 @@ public class AddArmoniKAuthorizationTest
     Assert.That(services.AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
                                                                ("Authorization:Grants:0:Id", "admin"),
                                                                ("Authorization:Grants:0:Principal", "role:platform"),
-                                                               ("Authorization:Grants:0:PermissionSet", "cluster-admin"))),
+                                                               ("Authorization:Grants:0:PermissionSet", "cluster-admin"),
+                                                               ("Authorization:PermissionSets:0:Name", "cluster-admin"),
+                                                               ("Authorization:PermissionSets:0:Permissions:0", "*"))),
                 Is.True);
     Assert.That(services.Any(service => service.ServiceType == typeof(AuthorizationInterceptor)),
                 Is.True);
@@ -737,6 +740,8 @@ public class AddArmoniKAuthorizationTest
                                                                                        ("Authorization:Grants:0:Id", "broken"),
                                                                                        ("Authorization:Grants:0:Principal", "role:team"),
                                                                                        ("Authorization:Grants:0:PermissionSet", "session-own"),
+                                                                                       ("Authorization:PermissionSets:0:Name", "session-own"),
+                                                                                       ("Authorization:PermissionSets:0:Permissions:0", "session:read"),
                                                                                        ("Authorization:Grants:0:Condition", condition))),
                    Throws.InstanceOf<InvalidOperationException>()
                          .With.Message.Contains("broken"));

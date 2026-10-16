@@ -109,7 +109,7 @@ public class CatalogueTests
                                      Permission.PermissionSetManage,
                                    }));
 
-  // Access model v0.98, section 5
+  // Access model v0.98, section 5: the sets are written in the configuration, none is shipped
   [TestCase("session-view",
             "session:read,task:read,data:read,data:download,event:watch")]
   [TestCase("session-create",
@@ -120,29 +120,49 @@ public class CatalogueTests
             "session:read,session:pause,session:resume,session:stop-submission,session:cancel,task:read,task:cancel")]
   [TestCase("access-admin",
             "grant:read,grant:manage,permission-set:manage")]
-  public void ShippedSetsHoldWhatTheAccessModelSays(string name,
+  public void ExampleSetsHoldWhatTheAccessModelSays(string name,
                                                     string permissions)
-  {
-    var set = ShippedPermissionSets.All.Single(s => s.Name == name);
+    => Assert.That(ExampleSets.All.Single(s => s.Name == name)
+                              .Permissions.Select(permission => permission.Name),
+                   Is.EquivalentTo(permissions.Split(',')));
 
-    Assert.That(set.Permissions.Select(permission => permission.Name),
-                Is.EquivalentTo(permissions.Split(',')));
-    Assert.That(set.Immutable,
-                Is.False);
+  [Test]
+  public void EverythingIsTheWholeCatalogueAndIsKeptAsWritten()
+  {
+    var set = PermissionSet.FromNames("cluster-admin",
+                                      1,
+                                      [PermissionSet.Everything]);
+
+    Assert.That(set.Permissions,
+                Is.EquivalentTo(Permission.All));
+    // Stored as written, so that versions with other catalogues store the same set
+    Assert.That(set.Names,
+                Is.EqualTo(new[]
+                           {
+                             PermissionSet.Everything,
+                           }));
   }
 
   [Test]
-  public void SessionOwnDoesNotImportData()
-    => Assert.That(ShippedPermissionSets.SessionOwn.Permissions,
-                   Does.Not.Contain(Permission.DataImport));
-
-  [Test]
-  public void ClusterAdminHoldsEverythingAndIsImmutable()
+  public void ASetAsStoredLeavesOutOnlyThePermissionsNotInTheCatalogue()
   {
-    Assert.That(ShippedPermissionSets.ClusterAdmin.Permissions,
-                Is.EquivalentTo(Permission.All));
-    Assert.That(ShippedPermissionSets.ClusterAdmin.Immutable,
-                Is.True);
+    var set = PermissionSet.FromNames("written-by-a-later-version",
+                                      2,
+                                      ["session:read", "session:archive"],
+                                      out var unknown);
+
+    Assert.That(set.Permissions,
+                Is.EquivalentTo(new[]
+                                {
+                                  Permission.SessionRead,
+                                }));
+    Assert.That(unknown,
+                Is.EqualTo(new[]
+                           {
+                             "session:archive",
+                           }));
+    Assert.That(set.Names,
+                Does.Contain("session:archive"));
   }
 
   [Test]

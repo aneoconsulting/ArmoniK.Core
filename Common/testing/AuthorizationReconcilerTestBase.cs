@@ -25,6 +25,7 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -78,7 +79,10 @@ public class AuthorizationReconcilerTestBase
          Enabled        = true,
          ConfigRevision = revision,
          Grants         = (grants ?? []).ToList(),
-         PermissionSets = (sets   ?? []).ToList(),
+         // The sets of the access model, as the deployment defines them, some redefined by the test
+         PermissionSets = ExamplePermissionSets.Options.Where(set => (sets ?? []).All(redefined => redefined.Name != set.Name))
+                                               .Concat(sets ?? [])
+                                               .ToList(),
        };
 
   private static GrantOption Grant(string  id,
@@ -794,33 +798,44 @@ public class AuthorizationReconcilerTestBase
   }
 
   [Test]
-  public async Task AStoredSetNamingUnknownPermissionsIsLeftOut()
+  public async Task AStoredSetKeepsThePermissionsOfTheCatalogueOnly()
   {
     if (RunTests)
     {
-      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("legacy",
+      // Written by a later version, naming a permission this one does not know
+      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("later",
                                                                             1,
-                                                                            ["data:gone"],
+                                                                            ["session:read", "session:archive"],
                                                                             AuthorizationOrigin.Api))
                                .ConfigureAwait(false);
 
+      // The set is kept without the unknown permission: the grant naming it is accepted
       Assert.That(await ReconcileAsync(Options(1,
                     [
-                      Grant("own",
+                      Grant("reader",
                             "role:team",
-                            "session-own",
-                            Ownership),
+                            "later"),
                     ]))
                     .ConfigureAwait(false),
                   Is.True);
-      Assert.That(() => ReconcileAsync(Options(2,
-                  [
-                    Grant("old",
-                          "role:team",
-                          "legacy"),
-                  ])),
-                  Throws.InstanceOf<InvalidOperationException>()
-                        .With.Message.Contains("old"));
+    }
+  }
+
+  [Test]
+  public async Task EverythingIsStoredAsWritten()
+  {
+    if (RunTests)
+    {
+      await ReconcileAsync(Options(1))
+        .ConfigureAwait(false);
+
+      // Not expanded, so that versions with other catalogues store the same set and never rewrite each other's
+      Assert.That((await SetsAsync()
+                     .ConfigureAwait(false))["cluster-admin"].Permissions,
+                  Is.EqualTo(new[]
+                             {
+                               "*",
+                             }));
     }
   }
 

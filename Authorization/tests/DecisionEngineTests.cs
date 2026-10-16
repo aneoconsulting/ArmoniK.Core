@@ -195,7 +195,7 @@ public class DecisionEngineTests
   [Test]
   public void TheOwnerDoesEverythingSessionOwnHolds()
   {
-    foreach (var permission in ShippedPermissionSets.SessionOwn.Permissions)
+    foreach (var permission in ExampleSets.SessionOwn.Permissions)
     {
       Assert.That(Decide(Alice,
                          permission,
