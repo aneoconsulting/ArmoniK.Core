@@ -367,12 +367,12 @@ public class AuthorizationEnforcer
       // Held across the cluster: nothing to resolve, which also spares reading every visible session
       filter = rule.Listing switch
                {
-                 ListingTarget.Sessions                               => (Expression<Func<SessionData, bool>>)(_ => true),
-                 ListingTarget.Results                                => (Expression<Func<Result, bool>>)(_ => true),
+                 ListingTarget.Sessions                            => (Expression<Func<SessionData, bool>>)(_ => true),
+                 ListingTarget.Results                             => (Expression<Func<Result, bool>>)(_ => true),
                  ListingTarget.Tasks or ListingTarget.Applications => (Expression<Func<TaskData, bool>>)(_ => true),
-                 _                                                    => throw new ArgumentOutOfRangeException(nameof(rule),
-                                                                                                               rule.Listing,
-                                                                                                               "Unknown listing target"),
+                 _ => throw new ArgumentOutOfRangeException(nameof(rule),
+                                                            rule.Listing,
+                                                            "Unknown listing target"),
                };
     }
     else
@@ -404,11 +404,11 @@ public class AuthorizationEnforcer
         // Applications are aggregated over tasks
         filter = rule.Listing switch
                  {
-                   ListingTarget.Results                                => (Expression<Func<Result, bool>>)(result => ids.Contains(result.SessionId)),
+                   ListingTarget.Results                             => (Expression<Func<Result, bool>>)(result => ids.Contains(result.SessionId)),
                    ListingTarget.Tasks or ListingTarget.Applications => (Expression<Func<TaskData, bool>>)(task => ids.Contains(task.SessionId)),
-                   _                                                    => throw new ArgumentOutOfRangeException(nameof(rule),
-                                                                                                                 rule.Listing,
-                                                                                                                 "Unknown listing target"),
+                   _ => throw new ArgumentOutOfRangeException(nameof(rule),
+                                                              rule.Listing,
+                                                              "Unknown listing target"),
                  };
       }
     }
@@ -565,7 +565,7 @@ public class AuthorizationEnforcer
     }
 
     var decidedSessionIds = sessionIds.ToList();
-    var sessions = await (namedSessionRead ?? ReadSessionsAsync(decidedSessionIds)).ConfigureAwait(false);
+    var sessions          = await (namedSessionRead ?? ReadSessionsAsync(decidedSessionIds)).ConfigureAwait(false);
     if (sessions.Count != decidedSessionIds.Count)
     {
       Refuse(service,
