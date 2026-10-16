@@ -408,11 +408,13 @@ public static class MethodAuthorization
                                                                                                                                Permission.DataDownload),
                                                                                                     [(nameof(GrpcSubmitterService),
                                                                                                       nameof(GrpcSubmitterService.WaitForAvailability))] =
+                                                                                                      // The error of the task producing an aborted result is answered
                                                                                                       OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
                                                                                                                                [
                                                                                                                                  r.ResultId,
                                                                                                                                ]),
-                                                                                                                               Permission.DataRead),
+                                                                                                                               Permission.DataRead,
+                                                                                                                               Permission.TaskRead),
                                                                                                     [(nameof(GrpcSubmitterService),
                                                                                                       nameof(GrpcSubmitterService.TryGetTaskOutput))] =
                                                                                                       OnRequest<TaskOutputRequest>(r => new

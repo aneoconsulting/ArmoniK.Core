@@ -685,6 +685,29 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task WaitingForAResultNeedsToReadTheTaskProducingIt()
+  {
+    if (RunTests)
+    {
+      Task<ServerCallContext> Wait(string subject)
+        => Authorize(subject,
+                     nameof(GrpcSubmitterService),
+                     nameof(GrpcSubmitterService.WaitForAvailability),
+                     new Api.gRPC.V1.ResultRequest
+                     {
+                       Session  = aliceSession_,
+                       ResultId = "r-alice",
+                     });
+
+      // The answer carries the error of the task producing an aborted result: data:read alone is not enough
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => Wait(Auditor))!.StatusCode,
+                  Is.EqualTo(StatusCode.PermissionDenied));
+      await Wait(Lead)
+        .ConfigureAwait(false);
+    }
+  }
+
+  [Test]
   public async Task AResultIsDecidedOnItsOwnSession()
   {
     if (RunTests)
