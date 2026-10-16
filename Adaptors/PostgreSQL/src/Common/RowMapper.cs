@@ -476,6 +476,35 @@ public sealed class RowMapper
                              podConfig);
   }
 
+  /// <summary>
+  ///   Map a data reader row to a GrantData record
+  /// </summary>
+  /// <param name="reader">The data reader</param>
+  /// <returns>The GrantData record</returns>
+  public static GrantData MapToGrantData(NpgsqlDataReader reader)
+    => new(reader.GetString(reader.GetOrdinal("grant_id")),
+           reader.GetString(reader.GetOrdinal("principal")),
+           reader.GetString(reader.GetOrdinal("permission_set")),
+           reader.IsDBNull(reader.GetOrdinal("condition"))
+             ? null
+             : reader.GetString(reader.GetOrdinal("condition")),
+           (AuthorizationOrigin)reader.GetInt32(reader.GetOrdinal("origin")),
+           GetUtcDateTime(reader,
+                          reader.GetOrdinal("creation_date")));
+
+  /// <summary>
+  ///   Map a data reader row to a PermissionSetData record, from the current sets or from their past versions, which
+  ///   have the same columns
+  /// </summary>
+  /// <param name="reader">The data reader</param>
+  /// <returns>The PermissionSetData record</returns>
+  public static PermissionSetData MapToPermissionSetData(NpgsqlDataReader reader)
+    => new(reader.GetString(reader.GetOrdinal("name")),
+           reader.GetInt32(reader.GetOrdinal("version")),
+           GetStringArray(reader,
+                          "permissions"),
+           (AuthorizationOrigin)reader.GetInt32(reader.GetOrdinal("origin")));
+
   private static IList<string> GetStringArray(NpgsqlDataReader reader,
                                               string           columnName)
   {
