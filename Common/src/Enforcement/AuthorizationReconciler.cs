@@ -165,12 +165,10 @@ public class AuthorizationReconciler
                                    .ToDictionary(grant => grant.GrantId,
                                                  StringComparer.Ordinal);
     var grantDeletions = configGrants.Values.Where(grant => !desiredGrants.TryGetValue(grant.GrantId,
-                                                                                       out var desired) || !Same(grant,
-                                                                                                                 desired))
+                                                                                       out var desired) || grant.ToDefinition() != desired)
                                      .ToList();
     var grantCreations = desiredGrants.Values.Where(desired => !configGrants.TryGetValue(desired.Id,
-                                                                                         out var stored) || !Same(stored,
-                                                                                                                  desired))
+                                                                                         out var stored) || stored.ToDefinition() != desired)
                                       .ToList();
 
     // Every grant must still be valid with the sets as they will be
@@ -312,8 +310,4 @@ public class AuthorizationReconciler
 
     return true;
   }
-
-  private static bool Same(GrantData       stored,
-                           GrantDefinition desired)
-    => stored.Principal == desired.Principal && stored.PermissionSet == desired.PermissionSet && stored.Condition == desired.Condition;
 }
