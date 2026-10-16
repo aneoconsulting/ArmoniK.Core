@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -125,58 +126,61 @@ public class AuthorizationEnforcerTestBase
                                                                                       Name        = "team-lister",
                                                                                       Permissions = ["data:read"],
                                                                                     }));
-    var engine = DecisionEngine.Build([
-                                        new GrantDefinition("team-create",
-                                                            "role:modelling-team",
-                                                            "session-create",
-                                                            "request.partition == \"part0\""),
-                                        new GrantDefinition("team-own",
-                                                            "role:modelling-team",
-                                                            "session-own",
-                                                            "session.owner == request.caller && grant.principal in session.createdUnder"),
-                                        new GrantDefinition("lead-supervise",
-                                                            "role:lead",
-                                                            "session-supervise",
-                                                            "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("lead-read",
-                                                            "role:lead",
-                                                            "team-reader",
-                                                            "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("support",
-                                                            "role:support",
-                                                            "session-supervise",
-                                                            "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("platform",
-                                                            "role:platform-team",
-                                                            "cluster-admin",
-                                                            null),
-                                        new GrantDefinition("audit-team",
-                                                            "role:auditor",
-                                                            "team-lister",
-                                                            "\"role:modelling-team\" in session.createdUnder"),
-                                        new GrantDefinition("audit-other",
-                                                            "role:auditor",
-                                                            "team-reader",
-                                                            "\"role:other-team\" in session.createdUnder"),
-                                      ],
-                                      sets,
-                                      out var rejected);
+    engine_ = DecisionEngine.Build([
+                                     new GrantDefinition("team-create",
+                                                         "role:modelling-team",
+                                                         "session-create",
+                                                         "request.partition == \"part0\""),
+                                     new GrantDefinition("team-own",
+                                                         "role:modelling-team",
+                                                         "session-own",
+                                                         "session.owner == request.caller && grant.principal in session.createdUnder"),
+                                     new GrantDefinition("lead-supervise",
+                                                         "role:lead",
+                                                         "session-supervise",
+                                                         "\"role:modelling-team\" in session.createdUnder"),
+                                     new GrantDefinition("lead-read",
+                                                         "role:lead",
+                                                         "team-reader",
+                                                         "\"role:modelling-team\" in session.createdUnder"),
+                                     new GrantDefinition("support",
+                                                         "role:support",
+                                                         "session-supervise",
+                                                         "\"role:modelling-team\" in session.createdUnder"),
+                                     new GrantDefinition("platform",
+                                                         "role:platform-team",
+                                                         "cluster-admin",
+                                                         null),
+                                     new GrantDefinition("audit-team",
+                                                         "role:auditor",
+                                                         "team-lister",
+                                                         "\"role:modelling-team\" in session.createdUnder"),
+                                     new GrantDefinition("audit-other",
+                                                         "role:auditor",
+                                                         "team-reader",
+                                                         "\"role:other-team\" in session.createdUnder"),
+                                   ],
+                                   sets,
+                                   out var rejected);
     Assert.That(rejected,
                 Is.Empty);
 
-    audit_ = new RecordingLoggerFactory();
-    enforcer_ = new AuthorizationEnforcer(new FixedEngine(engine),
-                                          new CallerResolver(new IdentityOptions()),
-                                          new AuthorizationAudit(audit_),
-                                          SessionTable,
-                                          TaskTable,
-                                          ResultTable,
-                                          new Injection.Options.Submitter
-                                          {
-                                            DefaultPartition = "part0",
-                                          },
-                                          NullLogger<AuthorizationEnforcer>.Instance);
+    audit_    = new RecordingLoggerFactory();
+    enforcer_ = Enforcer(SessionTable);
   }
+
+  private AuthorizationEnforcer Enforcer(ISessionTable sessionTable)
+    => new(new FixedEngine(engine_!),
+           new CallerResolver(new IdentityOptions()),
+           new AuthorizationAudit(audit_!),
+           sessionTable,
+           TaskTable!,
+           ResultTable!,
+           new Injection.Options.Submitter
+           {
+             DefaultPartition = "part0",
+           },
+           NullLogger<AuthorizationEnforcer>.Instance);
 
   [TearDown]
   public virtual void TearDown()
@@ -209,6 +213,7 @@ public class AuthorizationEnforcerTestBase
 
   private string                  aliceSession_ = "";
   private RecordingLoggerFactory? audit_;
+  private DecisionEngine?         engine_;
   private AuthorizationEnforcer?  enforcer_;
   private string                  otherSession_ = "";
 
@@ -777,6 +782,43 @@ public class AuthorizationEnforcerTestBase
       var missingTask = Assert.ThrowsAsync<TaskNotFoundException>(() => Output("missing"));
       Assert.That(otherTask!.Message,
                   Is.EqualTo(missingTask!.Message));
+    }
+  }
+
+  [Test]
+  public async Task TheNamedSessionIsReadWhileTheTasksAreLookedUp()
+  {
+    if (RunTests)
+    {
+      var sessionTable = new Mock<ISessionTable>();
+      sessionTable.Setup(table => table.FindSessionsAsync(It.IsAny<Expression<Func<SessionData, bool>>>(),
+                                                          It.IsAny<Expression<Func<SessionData, SessionData>>>(),
+                                                          It.IsAny<CancellationToken>()))
+                  .Returns(AsyncEnumerable.Empty<SessionData>());
+      var enforcer = Enforcer(sessionTable.Object);
+      var context  = Context(Alice);
+      await Authenticate(enforcer,
+                         nameof(GrpcSubmitterService),
+                         nameof(GrpcSubmitterService.TryGetTaskOutput),
+                         context)
+        .ConfigureAwait(false);
+
+      // The task lookup refuses the request: the session was read already
+      Assert.ThrowsAsync<TaskNotFoundException>(() => enforcer.AuthorizeAsync(nameof(GrpcSubmitterService),
+                                                                              nameof(GrpcSubmitterService.TryGetTaskOutput),
+                                                                              MethodAuthorization.Rules[(nameof(GrpcSubmitterService),
+                                                                                                         nameof(GrpcSubmitterService
+                                                                                                                  .TryGetTaskOutput))],
+                                                                              new Api.gRPC.V1.TaskOutputRequest
+                                                                              {
+                                                                                Session = aliceSession_,
+                                                                                TaskId  = "missing",
+                                                                              },
+                                                                              context));
+      sessionTable.Verify(table => table.FindSessionsAsync(It.IsAny<Expression<Func<SessionData, bool>>>(),
+                                                           It.IsAny<Expression<Func<SessionData, SessionData>>>(),
+                                                           It.IsAny<CancellationToken>()),
+                          Times.Once);
     }
   }
 
