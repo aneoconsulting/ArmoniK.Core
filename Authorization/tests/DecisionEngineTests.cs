@@ -470,6 +470,45 @@ public class DecisionEngineTests
   }
 
   [Test]
+  public void ListedPartitionsAgreeWithTheDecisionOnAPartition()
+  {
+    var engine = DecisionEngine.Build(new[]
+                                      {
+                                        new GrantDefinition("steward",
+                                                            "role:ops",
+                                                            "partition-steward",
+                                                            "request.partition == \"research\""),
+                                      },
+                                      GrantValidatorTests.Sets,
+                                      out var rejected);
+    Assert.That(rejected,
+                Is.Empty);
+    var caller = new Caller(Principal.Parse("oid:x"),
+                            new[]
+                            {
+                              Principal.Parse("role:ops"),
+                            });
+
+    // partition:read puts the partition in play, partition:modify does not
+    foreach (var permission in new[]
+                               {
+                                 Permission.PartitionRead,
+                                 Permission.PartitionModify,
+                               })
+    {
+      var allowed = engine.DecideOnPartition(caller,
+                                             permission,
+                                             "research")
+                          .IsAllowed;
+      Assert.That(engine.Partitions(caller,
+                                    permission)
+                        .Partitions.Contains("research"),
+                  Is.EqualTo(allowed),
+                  permission.Name);
+    }
+  }
+
+  [Test]
   public void ClusterAdminIsAllowedEverythingWhateverTheOtherSets()
   {
     foreach (var permission in Permission.All.Where(p => p.Target == PermissionTarget.Session && p != Permission.SessionCreate))

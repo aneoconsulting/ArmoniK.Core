@@ -411,6 +411,14 @@ public sealed class DecisionEngine
                                  new HashSet<string>());
     }
 
+    // A permission that puts no partition in play is only reached by grants that do not read the partition, as when
+    // deciding on a partition
+    if (!permission.PutsPartitionInPlay)
+    {
+      return new PartitionFilter(false,
+                                 new HashSet<string>());
+    }
+
     return new PartitionFilter(false,
                                grants.Where(grant => !grant.Condition!.ReadsSession)
                                      .SelectMany(grant => grant.Condition!.Terms.OfType<PartitionIs>())
