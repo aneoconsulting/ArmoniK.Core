@@ -78,7 +78,7 @@ internal class Program
 
     if (!string.IsNullOrEmpty(forgedCertificate))
     {
-      extraHeaders.Add(("X-Forwarded-Client-Cert", Uri.EscapeDataString(File.ReadAllText(forgedCertificate))));
+      extraHeaders.Add(("X-Forwarded-Client-Cert", $"Cert=\"{Uri.EscapeDataString(File.ReadAllText(forgedCertificate))}\""));
     }
 
     if (extraHeaders.Count != 0)

@@ -500,7 +500,7 @@ public class CallerResolverTest
                                                    HashAlgorithmName.SHA256,
                                                    RSASignaturePadding.Pkcs1).CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1),
                                                                                                DateTimeOffset.UtcNow.AddDays(1));
-    return Uri.EscapeDataString(certificate.ExportCertificatePem());
+    return $"Cert=\"{Uri.EscapeDataString(certificate.ExportCertificatePem())}\"";
   }
 
   [Test]
