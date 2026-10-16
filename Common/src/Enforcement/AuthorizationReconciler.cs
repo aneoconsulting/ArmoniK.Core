@@ -195,6 +195,13 @@ public class AuthorizationReconciler
 
     try
     {
+      // Before anything is written: a change of this revision left unfinished must not be completed by an older
+      // configuration, which would write again what this one revoked
+      cancellationToken.ThrowIfCancellationRequested();
+      await table_.SetConfigRevisionAsync(options_.ConfigRevision,
+                                          cancellationToken)
+                  .ConfigureAwait(false);
+
       foreach (var set in setChanges)
       {
         cancellationToken.ThrowIfCancellationRequested();
@@ -262,12 +269,6 @@ public class AuthorizationReconciler
                               OldVersion = set.Version,
                             });
       }
-
-      // Before the change is ended: grants stable under an older revision would let an older configuration write them again
-      cancellationToken.ThrowIfCancellationRequested();
-      await table_.SetConfigRevisionAsync(options_.ConfigRevision,
-                                          cancellationToken)
-                  .ConfigureAwait(false);
 
       // Left unended when a write fails, so that what was written is not read before a later change completes it
       if (changing)
