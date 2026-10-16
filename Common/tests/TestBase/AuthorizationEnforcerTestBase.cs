@@ -922,6 +922,78 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task ASessionIsDecidedOnItsDeclaredPartitionsAndUsesNoOther()
+  {
+    if (RunTests)
+    {
+      var engine = DecisionEngine.Build([
+                                          new GrantDefinition("gpu-create",
+                                                              "role:gpu-team",
+                                                              "session-create",
+                                                              "request.partition == \"gpu\""),
+                                          new GrantDefinition("everyone-create",
+                                                              "*",
+                                                              "session-create",
+                                                              "request.partition == \"part0\""),
+                                        ],
+                                        AuthorizationConfiguration.PermissionSets([]),
+                                        out var rejected);
+      Assert.That(rejected,
+                  Is.Empty);
+      var enforcer = new AuthorizationEnforcer(new FixedEngine(engine),
+                                               new CallerResolver(new IdentityOptions()),
+                                               new AuthorizationAudit(audit_!),
+                                               SessionTable!,
+                                               TaskTable!,
+                                               ResultTable!,
+                                               new Injection.Options.Submitter
+                                               {
+                                                 DefaultPartition = "part0",
+                                               },
+                                               NullLogger<AuthorizationEnforcer>.Instance);
+
+      async Task<ServerCallContext> Create(string optionsPartition)
+      {
+        var context = Context("CN=gpu, OU=gpu-team");
+        await enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
+                                      nameof(GrpcSessionsService.CreateSession),
+                                      MethodAuthorization.Rules[(nameof(GrpcSessionsService), nameof(GrpcSessionsService.CreateSession))],
+                                      new CreateSessionRequest
+                                      {
+                                        PartitionIds =
+                                        {
+                                          "gpu",
+                                        },
+                                        DefaultTaskOption = new Api.gRPC.V1.TaskOptions
+                                                            {
+                                                              PartitionId = optionsPartition,
+                                                            },
+                                      },
+                                      context)
+                      .ConfigureAwait(false);
+        return context;
+      }
+
+      // Created under the grants of its declared partition only: the grant for everyone on the default partition is
+      // not recorded, so that it does not open the session to every caller
+      var created = await Create("gpu")
+                      .ConfigureAwait(false);
+      Assert.That(created.GetSessionAuthorship()
+                         .CreatedUnder,
+                  Is.EqualTo(new[]
+                             {
+                               "role:gpu-team",
+                             }));
+
+      // Default task options in a partition that is not declared, explicitly or by default, are refused
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => Create(""))!.StatusCode,
+                  Is.EqualTo(StatusCode.InvalidArgument));
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => Create("part0"))!.StatusCode,
+                  Is.EqualTo(StatusCode.InvalidArgument));
+    }
+  }
+
+  [Test]
   public async Task ListingsReturnWhatTheCallerHoldsThePermissionOn()
   {
     if (RunTests)
