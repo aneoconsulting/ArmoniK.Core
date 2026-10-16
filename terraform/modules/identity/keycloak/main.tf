@@ -83,7 +83,8 @@ locals {
         ]
       },
       # Mints tokens for another audience. It carries no role of armonik-client, since Keycloak adds a client to
-      # the audience of every token carrying its roles
+      # the audience of every token carrying its roles. Its tokens name itself as audience, so that they are refused
+      # for an audience that is not the control plane's, not for carrying none
       {
         clientId                  = "other-client"
         enabled                   = true
@@ -95,6 +96,18 @@ locals {
         fullScopeAllowed          = false
         defaultClientScopes       = []
         attributes                = { "use.refresh.tokens" = "false" }
+
+        protocolMappers = [
+          {
+            name           = "audience"
+            protocol       = "openid-connect"
+            protocolMapper = "oidc-audience-mapper"
+            config = {
+              "included.client.audience" = "other-client"
+              "access.token.claim"       = "true"
+            }
+          },
+        ]
       },
     ]
   })
