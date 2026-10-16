@@ -415,6 +415,61 @@ public class AuthorizationReconcilerTestBase
     }
   }
 
+  [Test]
+  public async Task AnOlderConfigurationCannotCompleteALaterOneThatFailedWhileWriting()
+  {
+    if (RunTests)
+    {
+      await ReconcileAsync(Options(1,
+        [
+          Grant("own",
+                "role:team",
+                "session-own",
+                Ownership),
+          Grant("revoked",
+                "role:team",
+                "session-view"),
+        ]))
+        .ConfigureAwait(false);
+
+      // Revision 2 revokes a grant, and fails while writing
+      Assert.That(() => ReconcileAsync(new FailingWrite(AuthorizationTable!),
+                                       Options(2,
+                                       [
+                                         Grant("own",
+                                               "role:team",
+                                               "session-own",
+                                               Ownership),
+                                       ])),
+                  Throws.InstanceOf<TimeoutException>());
+
+      // Revision 1 does not complete the change of revision 2 with what revision 2 revoked
+      Assert.That(() => ReconcileAsync(Options(1,
+                  [
+                    Grant("own",
+                          "role:team",
+                          "session-own",
+                          Ownership),
+                    Grant("revoked",
+                          "role:team",
+                          "session-view"),
+                  ])),
+                  Throws.InstanceOf<InvalidOperationException>()
+                        .With.Message.Contains("revision 2 or later"));
+      Assert.That((await AuthorizationTable!.GetGenerationAsync()
+                                            .ConfigureAwait(false)).Stable,
+                  Is.False);
+    }
+  }
+
+  /// <summary>A writer failing on its first write</summary>
+  private sealed class FailingWrite(IAuthorizationTable inner) : FailingEnd(inner)
+  {
+    public override Task<bool> DeleteGrantAsync(string            grantId,
+                                                CancellationToken cancellationToken = default)
+      => throw new TimeoutException("the storage did not answer");
+  }
+
   /// <summary>Another writer that took the lock over changes the grants while this one changes them</summary>
   private sealed class TakenOver(IAuthorizationTable inner) : FailingEnd(inner)
   {
@@ -589,7 +644,7 @@ public class AuthorizationReconcilerTestBase
       => inner.CreateGrantAsync(grant,
                                 cancellationToken);
 
-    public Task<bool> DeleteGrantAsync(string            grantId,
+    public virtual Task<bool> DeleteGrantAsync(string            grantId,
                                        CancellationToken cancellationToken = default)
       => inner.DeleteGrantAsync(grantId,
                                 cancellationToken);
