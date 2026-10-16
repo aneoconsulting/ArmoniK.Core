@@ -56,6 +56,13 @@ public class GrantValidatorTests
                                                                                                                 PermissionSet.FromNames("empty",
                                                                                                                                         1,
                                                                                                                                         []),
+                                                                                                                PermissionSet.FromNames("partition-steward",
+                                                                                                                                        1,
+                                                                                                                                        new[]
+                                                                                                                                        {
+                                                                                                                                          "partition:read",
+                                                                                                                                          "partition:modify",
+                                                                                                                                        }),
                                                                                                                 PermissionSet.FromNames("partition-and-access",
                                                                                                                                         1,
                                                                                                                                         new[]
