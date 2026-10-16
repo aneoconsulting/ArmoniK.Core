@@ -27,14 +27,7 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 /// </summary>
 internal static class ExamplePermissionSets
 {
-  private static readonly string[] SessionView =
-  [
-    "session:read",
-    "task:read",
-    "data:read",
-    "data:download",
-    "event:watch",
-  ];
+  private static readonly string[] SessionView = ["session:read", "task:read", "data:read", "data:download", "event:watch"];
 
   /// <summary>The sets, as configuration options</summary>
   public static List<PermissionSetOption> Options
@@ -47,22 +40,9 @@ internal static class ExamplePermissionSets
           "partition:read"),
       Set("session-own",
           SessionView.Concat([
-                               "task:submit",
-                               "session:share",
-                               "session:delegate",
-                               "session:transfer",
-                               "session:pause",
-                               "session:resume",
-                               "session:stop-submission",
-                               "session:cancel",
-                               "session:close",
-                               "session:purge",
-                               "session:delete",
-                               "task:cancel",
-                               "data:declare",
-                               "data:provide",
-                               "data:delete",
-                             ])
+                       "task:submit", "session:share", "session:delegate", "session:transfer", "session:pause", "session:resume", "session:stop-submission",
+                       "session:cancel", "session:close", "session:purge", "session:delete", "task:cancel", "data:declare", "data:provide", "data:delete",
+                     ])
                      .ToArray()),
       Set("session-supervise",
           "session:read",

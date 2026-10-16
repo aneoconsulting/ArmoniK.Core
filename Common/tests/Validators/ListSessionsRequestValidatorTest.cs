@@ -162,25 +162,25 @@ public class ListSessionsRequestValidatorTest
   public void ListSessionsRequestConditionWithoutFieldShouldFail()
   {
     validListSessionsRequest_!.Filters = new Filters
-                   {
-                     Or =
-                     {
-                       new FiltersAnd
-                       {
-                         And =
-                         {
-                           new FilterField
-                           {
-                             FilterString = new FilterString
-                                            {
-                                              Operator = FilterStringOperator.Equal,
-                                              Value    = "x",
-                                            },
-                           },
-                         },
-                       },
-                     },
-                   };
+                                         {
+                                           Or =
+                                           {
+                                             new FiltersAnd
+                                             {
+                                               And =
+                                               {
+                                                 new FilterField
+                                                 {
+                                                   FilterString = new FilterString
+                                                                  {
+                                                                    Operator = FilterStringOperator.Equal,
+                                                                    Value    = "x",
+                                                                  },
+                                                 },
+                                               },
+                                             },
+                                           },
+                                         };
     Assert.That(validator_.Validate(validListSessionsRequest_)
                           .IsValid,
                 Is.False);
