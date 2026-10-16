@@ -486,16 +486,17 @@ public class AuthorizationEnforcer
                            .ToList();
     if (resultIds.Count != 0)
     {
+      Expression<Func<Result, bool>> namedResults = result => resultIds.Contains(result.ResultId);
       // Whole rows only for the handlers reading them, so that they do not read them again
       var rows = rule.KeepsResults
-                   ? await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
+                   ? await resultTable_.GetResults(namedResults,
                                                    result => result,
                                                    cancellationToken)
                                        .ToListAsync(cancellationToken)
                                        .ConfigureAwait(false)
                    : null;
       var found = rows?.Select(result => (result.ResultId, result.SessionId))
-                      .ToList() ?? await resultTable_.GetResults(result => resultIds.Contains(result.ResultId),
+                      .ToList() ?? await resultTable_.GetResults(namedResults,
                                                                  result => new
                                                                            {
                                                                              result.ResultId,
@@ -548,19 +549,19 @@ public class AuthorizationEnforcer
       throw NotFound(targets);
     }
 
-    var ids2 = sessionIds.ToList();
-    var sessions = await sessionTable_.FindSessionsAsync(session => ids2.Contains(session.SessionId),
+    var decidedSessionIds = sessionIds.ToList();
+    var sessions = await sessionTable_.FindSessionsAsync(session => decidedSessionIds.Contains(session.SessionId),
                                                          session => session,
                                                          cancellationToken)
                                       .ToListAsync(cancellationToken)
                                       .ConfigureAwait(false);
-    if (sessions.Count != ids2.Count)
+    if (sessions.Count != decidedSessionIds.Count)
     {
       Refuse(service,
              method,
              caller,
              rule,
-             ids2,
+             decidedSessionIds,
              "session not found");
       throw NotFound(targets);
     }
@@ -584,7 +585,7 @@ public class AuthorizationEnforcer
              method,
              caller,
              rule,
-             ids2,
+             decidedSessionIds,
              refusal.Reason.ToString(),
              refusal.Outcome);
       if (refusal.Outcome == DecisionOutcome.NotFound)
@@ -600,7 +601,7 @@ public class AuthorizationEnforcer
           method,
           caller,
           rule,
-          ids2,
+          decidedSessionIds,
           decisions.SelectMany(decision => decision.AllowingGrants)
                    .DistinctBy(grant => grant.Id));
   }
