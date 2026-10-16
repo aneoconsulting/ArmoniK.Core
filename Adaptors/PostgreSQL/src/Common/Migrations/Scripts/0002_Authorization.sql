@@ -46,8 +46,6 @@ CREATE TABLE IF NOT EXISTS authorization_state (
     ended    BIGINT NOT NULL DEFAULT 0
 );
 
--- The legacy user, role and certificate tables are replaced by the grants of the access model
-
-DROP TABLE IF EXISTS auth_data;
-DROP TABLE IF EXISTS user_data;
-DROP TABLE IF EXISTS role_data;
+-- The legacy user, role and certificate tables are replaced by the grants of the access model. They are left in
+-- place, no longer read, so that replicas of the previous version keep working during an upgrade and the previous
+-- version can be deployed again: drop them by hand once the upgrade is complete.
