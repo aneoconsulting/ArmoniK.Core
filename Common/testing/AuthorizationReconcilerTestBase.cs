@@ -461,6 +461,65 @@ public class AuthorizationReconcilerTestBase
     }
   }
 
+  [Test]
+  public async Task AWriterLosingItsLockAfterAnotherEndedItsChangeLeavesTheGrantsUnended()
+  {
+    if (RunTests)
+    {
+      Assert.That(() => ReconcileAsync(new LostWhileWriting(AuthorizationTable!),
+                                       Options(1,
+                                       [
+                                         Grant("own",
+                                               "role:team",
+                                               "session-own",
+                                               Ownership),
+                                       ])),
+                  Throws.InstanceOf<OperationCanceledException>());
+      // Its writes may land after the change of the other writer: none of them is served until a reconciliation
+      Assert.That((await AuthorizationTable!.GetGenerationAsync()
+                                            .ConfigureAwait(false)).Stable,
+                  Is.False);
+    }
+  }
+
+  // The lock is lost once the change began, while another replica, which took it over, began and ended its own change
+  private sealed class LostWhileWriting(IAuthorizationTable inner) : FailingEnd(inner)
+  {
+    private readonly CancellationTokenSource lost_ = new();
+
+    public override async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
+      => new Held(await Inner.LockAsync(cancellationToken)
+                             .ConfigureAwait(false),
+                  lost_.Token);
+
+    public override async Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
+    {
+      var generation = await Inner.BeginChangeAsync(cancellationToken)
+                                  .ConfigureAwait(false);
+      if (!lost_.IsCancellationRequested)
+      {
+        await Inner.EndChangeAsync(await Inner.BeginChangeAsync(cancellationToken)
+                                              .ConfigureAwait(false),
+                                   cancellationToken)
+                   .ConfigureAwait(false);
+        await lost_.CancelAsync()
+                   .ConfigureAwait(false);
+      }
+
+      return generation;
+    }
+
+    private sealed class Held(IAuthorizationLock held,
+                              CancellationToken  lost) : IAuthorizationLock
+    {
+      CancellationToken IAuthorizationLock.Lost
+        => lost;
+
+      public ValueTask DisposeAsync()
+        => held.DisposeAsync();
+    }
+  }
+
   private Task<bool> ReconcileAsync(IAuthorizationTable  table,
                                     AuthorizationOptions options)
     => new AuthorizationReconciler(table,
