@@ -364,11 +364,15 @@ public class AuthorizationEnforcer
     else if (engine.HoldsUnconditionally(caller.Caller,
                                          permission))
     {
+      // Held across the cluster: nothing to resolve, which also spares reading every visible session
       filter = rule.Listing switch
                {
-                 ListingTarget.Sessions => (Expression<Func<SessionData, bool>>)(_ => true),
-                 ListingTarget.Results  => (Expression<Func<Result, bool>>)(_ => true),
-                 _                      => (Expression<Func<TaskData, bool>>)(_ => true),
+                 ListingTarget.Sessions                               => (Expression<Func<SessionData, bool>>)(_ => true),
+                 ListingTarget.Results                                => (Expression<Func<Result, bool>>)(_ => true),
+                 ListingTarget.Tasks or ListingTarget.Applications => (Expression<Func<TaskData, bool>>)(_ => true),
+                 _                                                    => throw new ArgumentOutOfRangeException(nameof(rule),
+                                                                                                               rule.Listing,
+                                                                                                               "Unknown listing target"),
                };
     }
     else
@@ -397,9 +401,15 @@ public class AuthorizationEnforcer
                                                         context.CancellationToken)
                                      .ToListAsync(context.CancellationToken)
                                      .ConfigureAwait(false);
-        filter = rule.Listing == ListingTarget.Results
-                   ? (Expression<Func<Result, bool>>)(result => ids.Contains(result.SessionId))
-                   : (Expression<Func<TaskData, bool>>)(task => ids.Contains(task.SessionId));
+        // Applications are aggregated over tasks
+        filter = rule.Listing switch
+                 {
+                   ListingTarget.Results                                => (Expression<Func<Result, bool>>)(result => ids.Contains(result.SessionId)),
+                   ListingTarget.Tasks or ListingTarget.Applications => (Expression<Func<TaskData, bool>>)(task => ids.Contains(task.SessionId)),
+                   _                                                    => throw new ArgumentOutOfRangeException(nameof(rule),
+                                                                                                                 rule.Listing,
+                                                                                                                 "Unknown listing target"),
+                 };
       }
     }
 
