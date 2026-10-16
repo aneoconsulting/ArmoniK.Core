@@ -47,9 +47,4 @@ public class Components
   ///   Represents which object storage is used to store data for tasks
   /// </summary>
   public AdapterSettings ObjectStorageAdaptorSettings { get; set; } = new();
-
-  /// <summary>
-  ///   Represents which database is used for authentication
-  /// </summary>
-  public string? AuthenticationStorage { get; set; }
 }

@@ -21,8 +21,6 @@ using System.Security.Authentication;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
@@ -31,7 +29,6 @@ using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -224,8 +221,7 @@ public static class ServiceCollectionExt
 
     var components = configuration.GetSection(Components.SettingSection);
 
-    var usesMongo = components["TableStorage"]                           == "ArmoniK.Adapters.MongoDB.TableStorage" ||
-                    components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable";
+    var usesMongo = components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage";
 
     if (components["TableStorage"] == "ArmoniK.Adapters.MongoDB.TableStorage")
     {
@@ -236,6 +232,7 @@ public static class ServiceCollectionExt
               .AddSingleton<ISessionTable, SessionTable>()
               .AddSingleton<IResultTable, ResultTable>()
               .AddSingleton<IPartitionTable, PartitionTable>()
+              .AddSingleton<IAuthorizationTable, AuthorizationTable>()
               .AddSingleton<ITaskWatcher, TaskWatcher>()
               .AddSingleton<IResultWatcher, ResultWatcher>();
     }
@@ -278,51 +275,6 @@ public static class ServiceCollectionExt
     services.AddSingleton(provider => CreateMongoClient(provider,
                                                         logger));
 
-    return services;
-  }
-
-  /// <summary>
-  ///   Add the storage provider for the client authentication system to the service collection
-  /// </summary>
-  /// <param name="services">Services</param>
-  /// <param name="configuration">Configuration</param>
-  /// <returns>Services</returns>
-  [PublicAPI]
-  public static IServiceCollection AddClientSubmitterAuthenticationStorage(this IServiceCollection services,
-                                                                           ConfigurationManager    configuration)
-  {
-    var components = configuration.GetSection(Components.SettingSection);
-    if (components[nameof(Components.AuthenticationStorage)] == "ArmoniK.Adapters.MongoDB.AuthenticationTable")
-    {
-      services.TryAddSingleton(typeof(MongoCollectionProvider<,>));
-      services.AddSingleton<IAuthenticationTable, AuthenticationTable>();
-    }
-
-    return services;
-  }
-
-  /// <summary>
-  ///   Add the authentication service to the service collection
-  /// </summary>
-  /// <param name="services">Services</param>
-  /// <param name="configuration">Configuration</param>
-  /// <param name="authCache">Created authentication cache</param>
-  /// <returns>Services</returns>
-  [PublicAPI]
-  public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager    configuration,
-                                                                  out AuthenticationCache authCache)
-  {
-    authCache = new AuthenticationCache();
-    services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName))
-            .AddSingleton(authCache)
-            .AddAuthentication()
-            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
-                                                            _ =>
-                                                            {
-                                                            });
-    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
-            .AddAuthorization();
     return services;
   }
 }

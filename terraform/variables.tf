@@ -168,6 +168,17 @@ variable "log_driver_image" {
   default = "fluent/fluent-bit:latest"
 }
 
+variable "keycloak_image" {
+  type    = string
+  default = "quay.io/keycloak/keycloak:26.0"
+}
+
+variable "enable_keycloak" {
+  description = "Deploy a Keycloak identity provider and validate tokens against it"
+  type        = bool
+  default     = false
+}
+
 variable "seq_image" {
   type    = string
   default = "datalust/seq:latest"
@@ -295,4 +306,23 @@ variable "container_init" {
 variable "windows" {
   type    = bool
   default = false
+}
+
+variable "authorization" {
+  description = "Authorization of requests: grants and permission sets of the access model"
+  type = object({
+    enabled         = optional(bool, false)
+    config_revision = optional(number, 0)
+    permission_sets = optional(list(object({
+      name        = string
+      permissions = list(string)
+    })), [])
+    grants = optional(list(object({
+      id             = string
+      principal      = string
+      permission_set = string
+      condition      = optional(string)
+    })), [])
+  })
+  default = {}
 }

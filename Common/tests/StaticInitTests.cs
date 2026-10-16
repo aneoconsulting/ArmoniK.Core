@@ -41,24 +41,6 @@ internal class StaticInitTests
     Dictionary<string, string?> baseConfig = new()
                                              {
                                                {
-                                                 $"{CertificatePath}:0", Cert1.ToJson()
-                                               },
-                                               {
-                                                 $"{CertificatePath}:1", Cert2.ToJson()
-                                               },
-                                               {
-                                                 $"{UserPath}:0", User1.ToJson()
-                                               },
-                                               {
-                                                 $"{UserPath}:1", User2.ToJson()
-                                               },
-                                               {
-                                                 $"{RolePath}:0", Role1.ToJson()
-                                               },
-                                               {
-                                                 $"{RolePath}:1", Role2.ToJson()
-                                               },
-                                               {
                                                  $"{PartitionPath}:0", PartitionData1.ToJson()
                                                },
                                                {
@@ -66,15 +48,6 @@ internal class StaticInitTests
                                                },
                                              };
 
-    Environment.SetEnvironmentVariable(CertificatePath.Replace(":",
-                                                               "__") + "__2",
-                                       Cert3.ToJson());
-    Environment.SetEnvironmentVariable(UserPath.Replace(":",
-                                                        "__") + "__2",
-                                       User3.ToJson());
-    Environment.SetEnvironmentVariable(RolePath.Replace(":",
-                                                        "__") + "__2",
-                                       Role3.ToJson());
     Environment.SetEnvironmentVariable(PartitionPath.Replace(":",
                                                              "__") + "__2",
                                        PartitionData3.ToJson());
@@ -91,83 +64,6 @@ internal class StaticInitTests
 
     logger_ = new LoggerInit(configuration_).GetLogger();
   }
-
-  private static readonly Certificate Cert1 = new()
-                                              {
-                                                Fingerprint = "Fingerprint1",
-                                                Cn          = "CN1",
-                                                User        = "User1",
-                                              };
-
-  private static readonly Certificate Cert2 = new()
-                                              {
-                                                Fingerprint = "Fingerprint2",
-                                                Cn          = "CN2",
-                                                User        = "User2",
-                                              };
-
-  private static readonly Certificate Cert3 = new()
-                                              {
-                                                Fingerprint = "Fingerprint3",
-                                                Cn          = "CN3",
-                                                User        = "User3",
-                                              };
-
-  private static readonly User User1 = new()
-                                       {
-                                         Name = "User1",
-                                         Roles = new List<string>
-                                                 {
-                                                   "Role1",
-                                                 },
-                                       };
-
-  private static readonly User User2 = new()
-                                       {
-                                         Name = "User2",
-                                         Roles = new List<string>
-                                                 {
-                                                   "Role1",
-                                                   "Role2",
-                                                 },
-                                       };
-
-  private static readonly User User3 = new()
-                                       {
-                                         Name = "User3",
-                                         Roles = new List<string>
-                                                 {
-                                                   "Role3",
-                                                 },
-                                       };
-
-  private static readonly Role Role1 = new()
-                                       {
-                                         Name = "Role1",
-                                         Permissions = new List<string>
-                                                       {
-                                                         "Perm1",
-                                                       },
-                                       };
-
-  private static readonly Role Role2 = new()
-                                       {
-                                         Name = "Role2",
-                                         Permissions = new List<string>
-                                                       {
-                                                         "Perm1",
-                                                         "Perm2",
-                                                       },
-                                       };
-
-  private static readonly Role Role3 = new()
-                                       {
-                                         Name = "Role3",
-                                         Permissions = new List<string>
-                                                       {
-                                                         "Perm3",
-                                                       },
-                                       };
 
   private static readonly Partition PartitionData1 = new()
                                                      {
@@ -228,10 +124,7 @@ internal class StaticInitTests
                                                                             },
                                                      };
 
-  private const string CertificatePath = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.UserCertificates)}";
-  private const string UserPath        = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.Users)}";
-  private const string RolePath        = $"{InitServices.SettingSection}:{Authentication.SettingSection}:{nameof(Authentication.Roles)}";
-  private const string PartitionPath   = $"{InitServices.SettingSection}:{Partitioning.SettingSection}:{nameof(Partitioning.Partitions)}";
+  private const string PartitionPath = $"{InitServices.SettingSection}:{Partitioning.SettingSection}:{nameof(Partitioning.Partitions)}";
 
   private ServiceProvider?      provider_;
   private ConfigurationManager? configuration_;
@@ -258,30 +151,6 @@ internal class StaticInitTests
     logger_!.LogInformation("{@init}",
                             init);
 
-    Assert.That(init.Authentication.UserCertificates.Select(Certificate.FromJson),
-                Is.EqualTo(new List<Certificate>
-                           {
-                             Cert1,
-                             Cert2,
-                             Cert3,
-                           }));
-
-    Assert.That(init.Authentication.Users.Select(User.FromJson),
-                Is.EqualTo(new List<User>
-                           {
-                             User1,
-                             User2,
-                             User3,
-                           }));
-
-    Assert.That(init.Authentication.Roles.Select(Role.FromJson),
-                Is.EqualTo(new List<Role>
-                           {
-                             Role1,
-                             Role2,
-                             Role3,
-                           }));
-
     Assert.That(init.Partitioning.Partitions.Select(Partition.FromJson),
                 Is.EqualTo(new List<Partition>
                            {
@@ -291,30 +160,8 @@ internal class StaticInitTests
                            }));
 
     var initDb = provider_!.GetRequiredService<InitDatabase>();
-    Assert.That(initDb.Users.Count,
-                Is.EqualTo(3));
-    Assert.That(initDb.Auths.Count,
-                Is.EqualTo(3));
-    Assert.That(initDb.Roles.Count,
-                Is.EqualTo(3));
     Assert.That(initDb.Partitions.Count,
                 Is.EqualTo(3));
-  }
-
-  [Test]
-  public void NoFingerprintShouldSucceed()
-  {
-    var cert = Certificate.FromJson("{\"User\": \"User1\", \"Cn\": \"CN1\"}");
-    Assert.That(cert.Fingerprint,
-                Is.Null);
-  }
-
-  [Test]
-  public void NullFingerprintShouldSucceed()
-  {
-    var cert = Certificate.FromJson("{\"User\": \"User1\", \"Cn\": \"CN1\", \"Fingerprint\": null}");
-    Assert.That(cert.Fingerprint,
-                Is.Null);
   }
 
   [Test]

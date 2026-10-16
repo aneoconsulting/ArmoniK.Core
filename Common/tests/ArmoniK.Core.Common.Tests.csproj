@@ -19,6 +19,8 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="EphemeralMongo" Version="3.2.0" />
+    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.76.0" />
+    <PackageReference Include="Grpc.Net.Client.Web" Version="2.76.0" />
     <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="8.0.32" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="NUnit" Version="4.4.0" />

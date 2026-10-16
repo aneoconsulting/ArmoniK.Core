@@ -1281,6 +1281,8 @@ public class TaskHandlerTest
 
     public Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
                                             TaskOptions         defaultOptions,
+                                            string?             owner,
+                                            IEnumerable<string> createdUnder,
                                             CancellationToken   cancellationToken = default)
     {
       sessionData_ = new SessionData(Guid.NewGuid()

@@ -45,6 +45,8 @@ public class RowMapperTests
     ("MapToSessionData", "sessions"),
     ("MapToResult", "results"),
     ("MapToPartitionData", "partitions"),
+    ("MapToGrantData", "grants"),
+    ("MapToPermissionSetData", "permission_sets"),
   };
 
   // A method's body is bounded by the start of the next class member, so a slice can never pick up

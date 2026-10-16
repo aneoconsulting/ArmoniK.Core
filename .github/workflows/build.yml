@@ -47,6 +47,7 @@ jobs:
     strategy:
       matrix:
         projects:
+          - Authorization/tests
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/PostgreSQL/tests
@@ -220,6 +221,7 @@ jobs:
       matrix:
         projects:
           - Adaptors/Redis/tests
+          - Authorization/tests
           - Common/tests
           - Adaptors/MongoDB/tests
           - Adaptors/PostgreSQL/tests
@@ -739,6 +741,126 @@ jobs:
         run: |
           bash tools/export_mongodb.sh
           tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-${{ matrix.target.queue }}-${{ matrix.target.object }}-${{ matrix.target.log-level }}-${{ matrix.target.socket_type }}-${{ matrix.target.cinit }}-${{ matrix.target.database || 'mongo' }}-database.tar.gz"
+
+  testHtcMockAuthz:
+    needs:
+      - versionning
+      - images
+    env:
+      VERSION: ${{ needs.versionning.outputs.version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Queue and object storage are not on the authorization path
+        database: [mongo, postgresql]
+    name: HtcMock authz ${{ matrix.database }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          repository: ${{ env.REPOSITORY }}
+          ref: ${{ env.REFERENCE }}
+
+      - name: Setup just
+        uses: taiki-e/install-action@861a07ce7084f55488e375df125cdc99bba60eb7 # v2
+        with:
+          tool: just
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@dfe3c3f87815947d99a8997f908cb6525fc44e9e # v4
+        with:
+          terraform_version: latest
+
+      - name: Use GCR cache
+        run: |
+          cat <<EOF | sudo tee /etc/docker/daemon.json
+          {
+            "registry-mirrors": ["https://mirror.gcr.io"]
+          }
+          EOF
+          sudo systemctl restart docker
+
+      - name: Build images
+        if: ${{ env.REPOSITORY != github.repository }}
+        run: |
+          tools/retry.sh -w 60 -r 2 -- just tag=${VERSION} worker=htcmock build-all
+          tools/retry.sh -w 60 -r 2 -- just tag=${VERSION} buildHtcmockClient
+
+      - name: Deploy Core with authorization and Keycloak
+        run: |
+          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
+            just tag=${VERSION} database=${{ matrix.database }} worker=htcmock authz=true keycloak=true deploy
+
+      - name: Run HtcMock with a client certificate
+        timeout-minutes: 5
+        run: MONITOR_PREFIX="monitor/htcmock-mtls/" tools/monitor.sh just tag=${VERSION} runHtcmockMtls
+
+      # alice holds nothing of her own: her permissions come from the modelling-team role
+      - name: Run HtcMock with a Keycloak token
+        timeout-minutes: 5
+        run: MONITOR_PREFIX="monitor/htcmock-token/" tools/monitor.sh just tag=${VERSION} runHtcmockToken
+
+      - name: Let a supervisor cancel a session without downloading its data
+        timeout-minutes: 5
+        run: just tag=${VERSION} runSupervisorScenario
+
+      # Each refusal must come from the control plane with the expected status, not from any failure
+      - name: Refuse a caller with no credential
+        timeout-minutes: 3
+        run: tools/expect-refusal.sh Unauthenticated just tag=${VERSION} runHtcmock
+
+      - name: Refuse a partition the caller holds no grant on
+        timeout-minutes: 3
+        run: tools/expect-refusal.sh PermissionDenied just tag=${VERSION} partition=TestPartition1 runHtcmockMtls
+
+      - name: Refuse a certificate header on the TLS ingress
+        timeout-minutes: 3
+        run: tools/expect-refusal.sh Unauthenticated just tag=${VERSION} runHtcmockForgedCert ingress_tls https
+
+      - name: Refuse a certificate header on the plain ingress
+        timeout-minutes: 3
+        run: tools/expect-refusal.sh Unauthenticated just tag=${VERSION} runHtcmockForgedCert ingress http
+
+      - name: Refuse a token for another audience
+        timeout-minutes: 3
+        run: |
+          TOKEN="$(just tag=${VERSION} kc_client_id=other-client kc_client_secret=other-secret kcToken)"
+          tools/expect-refusal.sh Unauthenticated just tag=${VERSION} kc_token="$TOKEN" runHtcmockTokenRaw
+
+      # Changes a character in the middle of the signature: the last one may carry no significant bit
+      - name: Refuse a tampered token
+        timeout-minutes: 3
+        run: |
+          TOKEN="$(just tag=${VERSION} kcToken)"
+          SIG="${TOKEN##*.}"
+          if [ "${SIG:10:1}" = "A" ]; then REPLACEMENT=B; else REPLACEMENT=A; fi
+          tools/expect-refusal.sh Unauthenticated just tag=${VERSION} \
+            kc_token="${TOKEN%.*}.${SIG:0:10}${REPLACEMENT}${SIG:11}" runHtcmockTokenRaw
+
+      # Authenticated but holding no grant: the cluster looks empty
+      - name: Refuse a caller holding no grant
+        timeout-minutes: 3
+        run: |
+          TOKEN="$(just tag=${VERSION} kc_user=nobody kc_password=nobody kcToken)"
+          tools/expect-refusal.sh NotFound just tag=${VERSION} kc_token="$TOKEN" runHtcmockTokenRaw
+
+      - name: Show audit records
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json - | grep -a "ArmoniK.Authorization.Audit" || true
+
+      - name: Show logs
+        if: ${{ always() }}
+        run: docker cp fluentd:/armonik-logs.json -
+
+      - name: Collect docker container logs
+        if: ${{ always() }}
+        uses: jwalton/gh-docker-logs@2741064ab9d7af54b0b1ffb6076cf64c16f0220e # v2
+        with:
+          dest: './container-logs'
+      - name: Show docker container logs
+        if: ${{ always() }}
+        run: find ./container-logs -type f -name "*.log" -exec echo "===== {} =====" \; -exec cat "{}" \;
 
   testWindowsDocker:
     needs:
@@ -1854,6 +1976,7 @@ jobs:
       - testsQueueProtos
       - testsWinOnly
       - testHtcMockDC
+      - testHtcMockAuthz
       - testHtcMockBinary
       - testBenchBinary
       - defaultPartitionMock
