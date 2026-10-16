@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -44,6 +45,7 @@ public class AuthorizationTable : IAuthorizationTable
 
 
   private readonly ActivitySource                                                                          activitySource_;
+  private readonly ILogger<AuthorizationTable>                                                             logger_;
   private readonly MongoCollectionProvider<GrantData, GrantDataModelMapping>                               grants_;
   private readonly MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>               sets_;
   private readonly MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping>     state_;
@@ -57,8 +59,10 @@ public class AuthorizationTable : IAuthorizationTable
                             MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>               sets,
                             MongoCollectionProvider<PermissionSetVersionData, PermissionSetVersionDataModelMapping> versions,
                             MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping>     state,
-                            ActivitySource                                                                          activitySource)
+                            ActivitySource                                                                          activitySource,
+                            ILogger<AuthorizationTable>                                                             logger)
   {
+    logger_         = logger;
     grants_         = grants;
     sets_           = sets;
     versions_       = versions;
@@ -328,7 +332,8 @@ public class AuthorizationTable : IAuthorizationTable
       {
         return new Lease(collection,
                          owner,
-                         LockDuration);
+                         LockDuration,
+                         logger_);
       }
 
       await Task.Delay(TimeSpan.FromMilliseconds(100),
@@ -394,6 +399,7 @@ public class AuthorizationTable : IAuthorizationTable
   {
     private readonly IMongoCollection<AuthorizationStateData> collection_;
     private readonly TimeSpan                                 duration_;
+    private readonly ILogger                                  logger_;
     private readonly CancellationTokenSource                  lost_ = new();
     private readonly string                                   owner_;
     private readonly Task                                     renewal_;
@@ -401,11 +407,13 @@ public class AuthorizationTable : IAuthorizationTable
 
     public Lease(IMongoCollection<AuthorizationStateData> collection,
                  string                                   owner,
-                 TimeSpan                                 duration)
+                 TimeSpan                                 duration,
+                 ILogger                                  logger)
     {
       collection_ = collection;
       owner_      = owner;
       duration_   = duration;
+      logger_     = logger;
       renewal_    = Task.Run(RenewAsync);
     }
 
@@ -417,10 +425,22 @@ public class AuthorizationTable : IAuthorizationTable
       await stop_.CancelAsync()
                  .ConfigureAwait(false);
       await renewal_.ConfigureAwait(false);
-      await collection_.DeleteOneAsync(data => data.Id == LockId && data.Owner == owner_)
-                       .ConfigureAwait(false);
-      stop_.Dispose();
-      lost_.Dispose();
+      try
+      {
+        await collection_.DeleteOneAsync(data => data.Id == LockId && data.Owner == owner_)
+                         .ConfigureAwait(false);
+      }
+      catch (Exception e)
+      {
+        // The lease expires anyway: the work done under it is not failed for that
+        logger_.LogWarning(e,
+                           "The authorization lock could not be released, it is released when its lease expires");
+      }
+      finally
+      {
+        stop_.Dispose();
+        lost_.Dispose();
+      }
     }
 
     /// <summary>The update giving the lock to its owner until the clock of the server reaches the end of the lease</summary>

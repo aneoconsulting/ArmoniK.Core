@@ -26,6 +26,7 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using MongoDB.Driver;
 
@@ -58,7 +59,8 @@ public class AuthorizationTableTests : AuthorizationTableTestBase
                                   services.GetRequiredService<MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>>(),
                                   services.GetRequiredService<MongoCollectionProvider<PermissionSetVersionData, PermissionSetVersionDataModelMapping>>(),
                                   services.GetRequiredService<MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping>>(),
-                                  services.GetRequiredService<ActivitySource>())
+                                  services.GetRequiredService<ActivitySource>(),
+                                  NullLogger<AuthorizationTable>.Instance)
            {
              LockDuration = lockDuration,
            };
