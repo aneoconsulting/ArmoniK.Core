@@ -196,9 +196,11 @@ public class AuthorizationInterceptor : Interceptor
 
       var moved = await inner_.MoveNext(cancellationToken)
                               .ConfigureAwait(false);
+      // A stream without message names nothing to decide on: it is refused, so that no handler runs undecided
       decision_ = moved
                     ? decide_(inner_.Current)
-                    : Task.CompletedTask;
+                    : Task.FromException(new RpcException(new Status(StatusCode.InvalidArgument,
+                                                                     "The request stream is empty")));
       await decision_.ConfigureAwait(false);
       return moved;
     }
