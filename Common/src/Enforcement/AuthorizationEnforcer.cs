@@ -446,7 +446,7 @@ public class AuthorizationEnforcer
                rule,
                ids,
                "task not found");
-        throw new TaskNotFoundException("Task not found");
+        throw NotFound(targets);
       }
 
       sessionIds.UnionWith(found.Select(task => task.SessionId));
@@ -486,7 +486,7 @@ public class AuthorizationEnforcer
                rule,
                resultIds,
                "result not found or in another session");
-        throw new ResultNotFoundException("Result not found");
+        throw NotFound(targets);
       }
 
       sessionIds.UnionWith(found.Select(result => result.SessionId));
@@ -506,7 +506,7 @@ public class AuthorizationEnforcer
              rule,
              targets.ResultIds,
              "result not found");
-      throw new ResultNotFoundException("Result not found");
+      throw NotFound(targets);
     }
 
     if (targets.SessionId is not null && sessionIds.Count > 1)
@@ -517,7 +517,7 @@ public class AuthorizationEnforcer
              rule,
              sessionIds,
              "ids of another session");
-      throw new SessionNotFoundException("Session not found");
+      throw NotFound(targets);
     }
 
     var ids2 = sessionIds.ToList();
@@ -534,7 +534,7 @@ public class AuthorizationEnforcer
              rule,
              ids2,
              "session not found");
-      throw new SessionNotFoundException("Session not found");
+      throw NotFound(targets);
     }
 
     AuthorizationState.SetResolvedSessions(context,
@@ -561,11 +561,7 @@ public class AuthorizationEnforcer
              refusal.Outcome);
       if (refusal.Outcome == DecisionOutcome.NotFound)
       {
-        throw targets.TaskIds.Count != 0
-                ? new TaskNotFoundException("Task not found")
-                : targets.ResultIds.Count != 0
-                  ? new ResultNotFoundException("Result not found")
-                  : new SessionNotFoundException("Session not found");
+        throw NotFound(targets);
       }
 
       throw new RpcException(new Status(StatusCode.PermissionDenied,
@@ -580,6 +576,19 @@ public class AuthorizationEnforcer
           decisions.SelectMany(decision => decision.AllowingGrants)
                    .DistinctBy(grant => grant.Id));
   }
+
+  /// <summary>
+  ///   The refusal of a request naming what does not exist or what the caller may not see, chosen from the shape of the
+  ///   request alone: chosen from the check that failed, it would tell an existing resource from a missing one
+  /// </summary>
+  /// <param name="targets">What the request names</param>
+  /// <returns>The exception answered as not found</returns>
+  private static Exception NotFound(RequestTargets targets)
+    => targets.TaskIds.Count != 0
+         ? new TaskNotFoundException("Task not found")
+         : targets.ResultIds.Count != 0 || targets.ReferencedResultIds.Count != 0
+           ? new ResultNotFoundException("Result not found")
+           : new SessionNotFoundException("Session not found");
 
   private void Enforce(string              service,
                        string              method,
