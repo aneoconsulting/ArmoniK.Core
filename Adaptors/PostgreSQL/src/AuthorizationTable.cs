@@ -95,15 +95,7 @@ public class AuthorizationTable : IAuthorizationTable
     while (await reader.ReadAsync(cancellationToken)
                        .ConfigureAwait(false))
     {
-      yield return new GrantData(reader.GetString(reader.GetOrdinal("grant_id")),
-                                 reader.GetString(reader.GetOrdinal("principal")),
-                                 reader.GetString(reader.GetOrdinal("permission_set")),
-                                 reader.IsDBNull(reader.GetOrdinal("condition"))
-                                   ? null
-                                   : reader.GetString(reader.GetOrdinal("condition")),
-                                 (AuthorizationOrigin)reader.GetInt32(reader.GetOrdinal("origin")),
-                                 DateTime.SpecifyKind(reader.GetDateTime(reader.GetOrdinal("creation_date")),
-                                                      DateTimeKind.Utc));
+      yield return RowMapper.MapToGrantData(reader);
     }
   }
 
@@ -393,10 +385,7 @@ RETURNING begun";
     while (await reader.ReadAsync(cancellationToken)
                        .ConfigureAwait(false))
     {
-      yield return new PermissionSetData(reader.GetString(reader.GetOrdinal("name")),
-                                         reader.GetInt32(reader.GetOrdinal("version")),
-                                         reader.GetFieldValue<string[]>(reader.GetOrdinal("permissions")),
-                                         (AuthorizationOrigin)reader.GetInt32(reader.GetOrdinal("origin")));
+      yield return RowMapper.MapToPermissionSetData(reader);
     }
   }
 
