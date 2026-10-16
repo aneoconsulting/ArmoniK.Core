@@ -801,34 +801,65 @@ public class AuthorizationEnforcerTestBase
     }
   }
 
+  // A call of Results.UploadResultData by Alice, as routed
+  private static TestServerCallContext UploadContext()
+  {
+    var context = Context(Alice);
+    context.GetHttpContext()
+           .SetEndpoint(new Endpoint(null,
+                                     new EndpointMetadataCollection(new GrpcMethodMetadata(typeof(GrpcResultsService),
+                                                                                           new Method<UploadResultDataRequest, UploadResultDataResponse>(MethodType
+                                                                                                                                                           .ClientStreaming,
+                                                                                                                                                         "Results",
+                                                                                                                                                         nameof(
+                                                                                                                                                           GrpcResultsService
+                                                                                                                                                             .UploadResultData),
+                                                                                                                                                         Marshallers
+                                                                                                                                                           .Create(_ =>
+                                                                                                                                                                   [
+                                                                                                                                                                   ],
+                                                                                                                                                                   _ => new
+                                                                                                                                                                     UploadResultDataRequest()),
+                                                                                                                                                         Marshallers
+                                                                                                                                                           .Create(_ =>
+                                                                                                                                                                   [
+                                                                                                                                                                   ],
+                                                                                                                                                                   _ => new
+                                                                                                                                                                     UploadResultDataResponse())))),
+                                     "UploadResultData"));
+    return context;
+  }
+
+  [Test]
+  public void AnEmptyStreamIsRefused()
+  {
+    if (RunTests)
+    {
+      var handled = false;
+
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => new AuthorizationInterceptor(enforcer_!)
+                                                     .ClientStreamingServerHandler(new TestHelperAsyncStreamReader<UploadResultDataRequest>([]),
+                                                                                   UploadContext(),
+                                                                                   async (stream,
+                                                                                          _) =>
+                                                                                   {
+                                                                                     await stream.MoveNext(CancellationToken.None)
+                                                                                                 .ConfigureAwait(false);
+                                                                                     handled = true;
+                                                                                     return new UploadResultDataResponse();
+                                                                                   }))!.StatusCode,
+                  Is.EqualTo(StatusCode.InvalidArgument));
+      Assert.That(handled,
+                  Is.False);
+    }
+  }
+
   [Test]
   public void AStreamRefusedOnItsFirstMessageStaysRefused()
   {
     if (RunTests)
     {
-      var context = Context(Alice);
-      context.GetHttpContext()
-             .SetEndpoint(new Endpoint(null,
-                                       new EndpointMetadataCollection(new GrpcMethodMetadata(typeof(GrpcResultsService),
-                                                                                             new Method<UploadResultDataRequest, UploadResultDataResponse>(MethodType
-                                                                                                                                                             .ClientStreaming,
-                                                                                                                                                           "Results",
-                                                                                                                                                           nameof(
-                                                                                                                                                             GrpcResultsService
-                                                                                                                                                               .UploadResultData),
-                                                                                                                                                           Marshallers
-                                                                                                                                                             .Create(_ =>
-                                                                                                                                                                     [
-                                                                                                                                                                     ],
-                                                                                                                                                                     _ => new
-                                                                                                                                                                       UploadResultDataRequest()),
-                                                                                                                                                           Marshallers
-                                                                                                                                                             .Create(_ =>
-                                                                                                                                                                     [
-                                                                                                                                                                     ],
-                                                                                                                                                                     _ => new
-                                                                                                                                                                       UploadResultDataResponse())))),
-                                       "UploadResultData"));
+      var context = UploadContext();
       var upload = new UploadResultDataRequest
                    {
                      Id = new UploadResultDataRequest.Types.ResultIdentifier
