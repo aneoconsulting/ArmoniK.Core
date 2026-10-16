@@ -56,6 +56,13 @@ public class GrantValidatorTests
                                                                                                                 PermissionSet.FromNames("empty",
                                                                                                                                         1,
                                                                                                                                         []),
+                                                                                                                PermissionSet.FromNames("partition-and-access",
+                                                                                                                                        1,
+                                                                                                                                        new[]
+                                                                                                                                        {
+                                                                                                                                          "partition:modify",
+                                                                                                                                          "grant:read",
+                                                                                                                                        }),
                                                                                                               })
                                                                                                   .ToDictionary(set => set.Name);
 
@@ -206,6 +213,13 @@ public class GrantValidatorTests
                                null),
                 Throws.Nothing);
   }
+
+  [Test]
+  public void PartitionAndAdministrativePermissionsUnderASessionConditionAreUnreachable()
+    => AssertRefused("role:ops",
+                     "partition-and-access",
+                     "session.owner == request.caller",
+                     InvalidGrantKind.Unreachable);
 
   [Test]
   public void APartitionConditionWithoutPermissionPuttingOneInPlayIsUnreachable()
