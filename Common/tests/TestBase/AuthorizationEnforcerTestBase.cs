@@ -259,7 +259,7 @@ public class AuthorizationEnforcerTestBase
                                                    HashAlgorithmName.SHA256,
                                                    RSASignaturePadding.Pkcs1).CreateSelfSigned(DateTimeOffset.UtcNow.AddDays(-1),
                                                                                                DateTimeOffset.UtcNow.AddDays(1));
-    return Uri.EscapeDataString(certificate.ExportCertificatePem());
+    return $"Cert=\"{Uri.EscapeDataString(certificate.ExportCertificatePem())}\"";
   }
 
   private const string Alice    = "CN=alice, OU=modelling-team";

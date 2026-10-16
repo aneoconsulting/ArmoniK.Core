@@ -139,7 +139,7 @@ public class CallerAuthenticationMiddlewareTest
     return new Metadata
            {
              {
-               "X-Forwarded-Client-Cert", Uri.EscapeDataString(certificate.ExportCertificatePem())
+               "X-Forwarded-Client-Cert", $"Cert=\"{Uri.EscapeDataString(certificate.ExportCertificatePem())}\""
              },
            };
   }
@@ -204,7 +204,7 @@ public class CallerAuthenticationMiddlewareTest
     Assert.That(exception!.StatusCode,
                 Is.EqualTo(StatusCode.Unauthenticated));
     Assert.That(exception.Status.Detail,
-                Is.EqualTo("The forwarded client certificate is not URL-escaped PEM"));
+                Is.EqualTo("The forwarded client certificate header has a malformed pair at position 0"));
     Assert.That(service_!.Calls,
                 Is.Zero);
   }
