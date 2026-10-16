@@ -202,12 +202,12 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
 public static class AuthorizationConfiguration
 {
   /// <summary>
-  ///   The stored permission sets that are valid; the others are recorded as faults and left out, so that the grants
-  ///   naming them are refused
+  ///   The stored permission sets, without the permissions this version does not know: recorded as faults, they are left
+  ///   out of their set, which a later version may have written
   /// </summary>
   /// <param name="stored">Permission sets as stored</param>
-  /// <param name="audit">Audit recording the sets left out</param>
-  /// <returns>The valid permission sets, by name</returns>
+  /// <param name="audit">Audit recording the permissions left out</param>
+  /// <returns>The permission sets, by name</returns>
   internal static Dictionary<string, PermissionSet> StoredPermissionSets(IEnumerable<PermissionSetData> stored,
                                                                          AuthorizationAudit             audit)
   {
@@ -215,16 +215,14 @@ public static class AuthorizationConfiguration
 
     foreach (var set in stored)
     {
-      try
-      {
-        sets[set.Name] = PermissionSet.FromNames(set.Name,
-                                                 set.Version,
-                                                 set.Permissions);
-      }
-      catch (InvalidPermissionSetException e)
+      sets[set.Name] = PermissionSet.FromNames(set.Name,
+                                               set.Version,
+                                               set.Permissions,
+                                               out var unknown);
+      if (unknown.Count != 0)
       {
         audit.RecordFault($"permission set {set.Name}",
-                          e.Message);
+                          $"permissions that are not in the catalogue are left out: {string.Join(", ", unknown)}");
       }
     }
 
@@ -232,16 +230,14 @@ public static class AuthorizationConfiguration
   }
 
   /// <summary>
-  ///   The shipped permission sets, redefined or completed by the configuration
+  ///   The permission sets of the configuration: none is shipped with ArmoniK
   /// </summary>
   /// <param name="configured">Permission sets of the configuration</param>
   /// <returns>The permission sets, by name</returns>
   /// <exception cref="InvalidOperationException">A permission set of the configuration is refused</exception>
   public static IReadOnlyDictionary<string, PermissionSet> PermissionSets(IEnumerable<PermissionSetOption> configured)
   {
-    var sets = ShippedPermissionSets.All.ToDictionary(set => set.Name,
-                                                      StringComparer.Ordinal);
-    var seen = new HashSet<string>(StringComparer.Ordinal);
+    var sets = new Dictionary<string, PermissionSet>(StringComparer.Ordinal);
 
     foreach (var option in configured)
     {
@@ -250,12 +246,7 @@ public static class AuthorizationConfiguration
         throw new InvalidOperationException("A permission set of the configuration has no name");
       }
 
-      if (option.Name == PermissionSet.ClusterAdminName)
-      {
-        throw new InvalidOperationException($"Permission set '{PermissionSet.ClusterAdminName}' cannot be redefined");
-      }
-
-      if (!seen.Add(option.Name))
+      if (sets.ContainsKey(option.Name))
       {
         throw new InvalidOperationException($"Permission set '{option.Name}' is defined twice in the configuration");
       }

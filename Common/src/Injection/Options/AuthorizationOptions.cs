@@ -45,14 +45,13 @@ public class AuthorizationOptions
   public TimeSpan GrantCacheTtl { get; set; } = TimeSpan.FromSeconds(10);
 
   /// <summary>
-  ///   Revision of the grants of the configuration. A deployment with a lower revision than the one stored does not
-  ///   change the stored grants
+  ///   Revision of the grants and permission sets of the configuration. A deployment with a lower revision than the one
+  ///   stored does not change the stored grants and sets
   /// </summary>
   public int ConfigRevision { get; set; }
 
   /// <summary>
-  ///   Permission sets defined by the deployment, in addition to the shipped ones or redefining them, except
-  ///   cluster-admin
+  ///   Permission sets defined by the deployment, the only ones: none is shipped with ArmoniK
   /// </summary>
   public List<PermissionSetOption> PermissionSets { get; set; } = new();
 
@@ -70,7 +69,7 @@ public class PermissionSetOption
   /// <summary>Name of the set</summary>
   public string Name { get; set; } = "";
 
-  /// <summary>Permissions of the set, for instance <c>session:read</c></summary>
+  /// <summary>Permissions of the set, for instance <c>session:read</c>, or <c>*</c> for every permission</summary>
   public List<string> Permissions { get; set; } = new();
 }
 
