@@ -178,6 +178,13 @@ internal static class ConditionParser
           throw new InvalidConditionException($"The quoted value \"{value}\" contains a backslash or a control character");
         }
 
+        // Spaces around the value would never match, and invisible characters would make the condition read otherwise
+        // than it applies
+        if (value.Any(Principal.IsFormat) || char.IsWhiteSpace(value[0]) || char.IsWhiteSpace(value[^1]))
+        {
+          throw new InvalidConditionException($"The quoted value \"{value}\" starts or ends with a space, or contains an invisible character");
+        }
+
         tokens.Add(new Token(TokenKind.String,
                              value));
         i = end + 1;

@@ -113,6 +113,12 @@ public class ConditionTests
             "backslash")]
   [TestCase("request.partition == \"a\tb\"",
             "control character")]
+  [TestCase("request.partition == \" q\"",
+            "invisible character")]
+  [TestCase("request.partition == \"q \"",
+            "invisible character")]
+  [TestCase("request.partition == \"q\u200Bq\"",
+            "invisible character")]
   [TestCase("request.partition == 'q'",
             "Unexpected '''")]
   [TestCase("request.partition in session.createdUnder",
