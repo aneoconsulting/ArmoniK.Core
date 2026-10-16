@@ -315,6 +315,51 @@ public class AuthorizationReconcilerTestBase
   }
 
   [Test]
+  public async Task AVersionAFailedChangeLeftBehindDoesNotBlockTheNextChange()
+  {
+    if (RunTests)
+    {
+      PermissionSetOption Reader(params string[] permissions)
+        => new()
+           {
+             Name        = "team-reader",
+             Permissions = permissions.ToList(),
+           };
+
+      await ReconcileAsync(Options(1,
+                                   sets: [Reader("data:read")]))
+        .ConfigureAwait(false);
+
+      // A change wrote version 2 and failed before making it current
+      var current = (await SetsAsync()
+                       .ConfigureAwait(false))["team-reader"];
+      await AuthorizationTable!.SetPermissionSetAsync(current with
+                                                      {
+                                                        Version = 2,
+                                                        Permissions = ["data:read", "data:delete"],
+                                                      })
+                               .ConfigureAwait(false);
+      await AuthorizationTable.SetPermissionSetAsync(current)
+                              .ConfigureAwait(false);
+
+      await ReconcileAsync(Options(2,
+                                   sets: [Reader("data:read", "data:download")]))
+        .ConfigureAwait(false);
+
+      var stored = (await SetsAsync()
+                      .ConfigureAwait(false))["team-reader"];
+      Assert.That(stored.Version,
+                  Is.EqualTo(3));
+      Assert.That(stored.Permissions,
+                  Is.EquivalentTo(new[]
+                                  {
+                                    "data:read",
+                                    "data:download",
+                                  }));
+    }
+  }
+
+  [Test]
   public async Task AnOlderConfigurationCannotWriteAgainWhatALaterOneLeftUnended()
   {
     if (RunTests)
