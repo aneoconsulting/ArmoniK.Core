@@ -650,6 +650,43 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public void AnInvisibleTargetIsAnsweredLikeAMissingOneWhateverTheRequest()
+  {
+    if (RunTests)
+    {
+      Task<ServerCallContext> Download(string session)
+        => Authorize(Alice,
+                     nameof(GrpcResultsService),
+                     nameof(GrpcResultsService.DownloadResultData),
+                     new DownloadResultDataRequest
+                     {
+                       SessionId = session,
+                       ResultId  = "",
+                     });
+
+      var invisibleSession = Assert.ThrowsAsync<ResultNotFoundException>(() => Download(otherSession_));
+      var missingSession   = Assert.ThrowsAsync<ResultNotFoundException>(() => Download("missing"));
+      Assert.That(invisibleSession!.Message,
+                  Is.EqualTo(missingSession!.Message));
+
+      Task<ServerCallContext> Output(string task)
+        => Authorize(Alice,
+                     nameof(GrpcSubmitterService),
+                     nameof(GrpcSubmitterService.TryGetTaskOutput),
+                     new Api.gRPC.V1.TaskOutputRequest
+                     {
+                       Session = aliceSession_,
+                       TaskId  = task,
+                     });
+
+      var otherTask   = Assert.ThrowsAsync<TaskNotFoundException>(() => Output("t-other"));
+      var missingTask = Assert.ThrowsAsync<TaskNotFoundException>(() => Output("missing"));
+      Assert.That(otherTask!.Message,
+                  Is.EqualTo(missingTask!.Message));
+    }
+  }
+
+  [Test]
   public async Task AResultIsDecidedOnItsOwnSession()
   {
     if (RunTests)
