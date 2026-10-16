@@ -80,10 +80,15 @@ export TF_VAR_socket_type       := socket_type
 export TF_VAR_container_init    := cinit
 export TF_VAR_enable_keycloak   := keycloak
 
-# Grants for the generated mTLS client certificate (cn:client) and the Keycloak role modelling-team: create sessions in
-# the default partition and own them, plus what sharing and delegation confer (access model v0.98, section 9). The
-# supervisor certificate (OU=supervisors) follows and stops every session, without reading their data
-export TF_VAR_authorization := if authz == "true" { '{ enabled = true, grants = [ ' +
+# Permission sets of the access model (none is shipped) and grants for the generated mTLS client certificate (cn:client)
+# and the Keycloak role modelling-team: create sessions in the default partition and own them, plus what sharing and
+# delegation confer (access model v0.98, section 9). The supervisor certificate (OU=supervisors) follows and stops
+# every session, without reading their data
+export TF_VAR_authorization := if authz == "true" { '{ enabled = true, permission_sets = [ ' +
+  '{ name = "session-create", permissions = [ "session:create", "partition:read" ] }, ' +
+  '{ name = "session-view", permissions = [ "session:read", "task:read", "data:read", "data:download", "event:watch" ] }, ' +
+  '{ name = "session-own", permissions = [ "session:read", "task:read", "data:read", "data:download", "event:watch", "task:submit", "session:share", "session:delegate", "session:transfer", "session:pause", "session:resume", "session:stop-submission", "session:cancel", "session:close", "session:purge", "session:delete", "task:cancel", "data:declare", "data:provide", "data:delete" ] }, ' +
+  '{ name = "session-supervise", permissions = [ "session:read", "session:pause", "session:resume", "session:stop-submission", "session:cancel", "task:read", "task:cancel" ] } ], grants = [ ' +
   '{ id = "client-create", principal = "cn:client", permission_set = "session-create", condition = "request.partition == \"TestPartition0\"" }, ' +
   '{ id = "client-own", principal = "cn:client", permission_set = "session-own", condition = "session.owner == request.caller && grant.principal in session.createdUnder" }, ' +
   '{ id = "team-create", principal = "role:modelling-team", permission_set = "session-create", condition = "request.partition == \"TestPartition0\"" }, ' +
