@@ -123,27 +123,23 @@ public class AuthorizationReconciler
       var permissions = set.Permissions.Select(permission => permission.Name)
                            .Order(StringComparer.Ordinal)
                            .ToList();
-      if (!storedSets.TryGetValue(set.Name,
-                                  out var stored))
+      // Unchanged, or written by the administration API, which is never changed
+      if (storedSets.TryGetValue(set.Name,
+                                 out var stored) && (stored.Origin != AuthorizationOrigin.Config || stored.Permissions.Order(StringComparer.Ordinal)
+                                                                                                          .SequenceEqual(permissions)))
       {
-        // Numbered after the versions of a set deleted before, kept for the audit records citing them
-        var latest = await table_.GetLatestPermissionSetVersionAsync(set.Name,
-                                                                     cancellationToken)
-                                 .ConfigureAwait(false);
-        setChanges.Add(new PermissionSetData(set.Name,
-                                             latest + 1,
-                                             permissions,
-                                             AuthorizationOrigin.Config));
+        continue;
       }
-      // A set written by the administration API is never changed
-      else if (stored.Origin == AuthorizationOrigin.Config && !stored.Permissions.Order(StringComparer.Ordinal)
-                                                                     .SequenceEqual(permissions))
-      {
-        setChanges.Add(new PermissionSetData(set.Name,
-                                             stored.Version + 1,
-                                             permissions,
-                                             AuthorizationOrigin.Config));
-      }
+
+      // Numbered after every stored version: those of a set deleted before, kept for the audit records citing them, and
+      // one a failed change wrote without making it current, which must not block the next change
+      var latest = await table_.GetLatestPermissionSetVersionAsync(set.Name,
+                                                                   cancellationToken)
+                               .ConfigureAwait(false);
+      setChanges.Add(new PermissionSetData(set.Name,
+                                           latest + 1,
+                                           permissions,
+                                           AuthorizationOrigin.Config));
     }
 
     var setDeletions = storedSets.Values.Where(set => set.Origin == AuthorizationOrigin.Config && !desiredSets.ContainsKey(set.Name))
