@@ -96,31 +96,38 @@ public static class SessionLifeCycleHelper
   }
 
   /// <summary>
-  ///   The partitions a session creation puts in play: the declared partitions, the default one when none is declared,
-  ///   and the partition of the default task options
+  ///   The partitions a session creation puts in play: the declared partitions, the default one when none is declared
   /// </summary>
+  /// <remarks>
+  ///   The partition of the default task options is not one of them: it must be one of these, see
+  ///   <see cref="TaskOptionsPartition" />, so that a session never uses a partition its creation was not decided on
+  /// </remarks>
   /// <param name="partitionIds">Partitions declared by the request</param>
-  /// <param name="taskOptionsPartition">Partition of the default task options of the request</param>
   /// <param name="defaultPartition">Default partition of the deployment</param>
   /// <returns>The partitions, without duplicates</returns>
   public static IReadOnlyList<string> EffectivePartitions(IEnumerable<string> partitionIds,
-                                                          string?             taskOptionsPartition,
                                                           string              defaultPartition)
   {
     var partitions = partitionIds.ToList();
 
-    if (DeclaresNoPartition(partitions))
-    {
-      partitions = [defaultPartition];
-    }
-
-    partitions.Add(string.IsNullOrEmpty(taskOptionsPartition)
-                     ? defaultPartition
-                     : taskOptionsPartition);
-
-    return partitions.Distinct()
-                     .ToList();
+    return DeclaresNoPartition(partitions)
+             ? [defaultPartition]
+             : partitions.Distinct()
+                         .ToList();
   }
+
+  /// <summary>
+  ///   The partition of the default task options of a session creation: the one requested, the default one when none is
+  ///   requested
+  /// </summary>
+  /// <param name="taskOptionsPartition">Partition of the default task options of the request</param>
+  /// <param name="defaultPartition">Default partition of the deployment</param>
+  /// <returns>The partition</returns>
+  public static string TaskOptionsPartition(string? taskOptionsPartition,
+                                            string  defaultPartition)
+    => string.IsNullOrEmpty(taskOptionsPartition)
+         ? defaultPartition
+         : taskOptionsPartition;
 
   /// <summary>
   ///   Whether a session creation declares no partition, and is then put in the default one
