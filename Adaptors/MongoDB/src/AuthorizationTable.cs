@@ -43,6 +43,8 @@ public class AuthorizationTable : IAuthorizationTable
   private const string LockId       = "lock";
   private const string GenerationId = "generation";
 
+  // Delay between two attempts to take the lock while another replica holds it
+  private static readonly TimeSpan LockRetryDelay = TimeSpan.FromMilliseconds(100);
 
   private readonly ActivitySource                                                                          activitySource_;
   private readonly ILogger<AuthorizationTable>                                                             logger_;
@@ -336,7 +338,7 @@ public class AuthorizationTable : IAuthorizationTable
                          logger_);
       }
 
-      await Task.Delay(TimeSpan.FromMilliseconds(100),
+      await Task.Delay(LockRetryDelay,
                        cancellationToken)
                 .ConfigureAwait(false);
     }
