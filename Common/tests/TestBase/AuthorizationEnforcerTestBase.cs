@@ -27,6 +27,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -169,6 +170,15 @@ public class AuthorizationEnforcerTestBase
     enforcer_ = Enforcer(SessionTable);
   }
 
+  [TearDown]
+  public virtual void TearDown()
+  {
+    SessionTable = null;
+    TaskTable    = null;
+    ResultTable  = null;
+    RunTests     = false;
+  }
+
   private AuthorizationEnforcer Enforcer(ISessionTable sessionTable)
     => new(new FixedEngine(engine_!),
            new CallerResolver(new IdentityOptions()),
@@ -181,15 +191,6 @@ public class AuthorizationEnforcerTestBase
              DefaultPartition = "part0",
            },
            NullLogger<AuthorizationEnforcer>.Instance);
-
-  [TearDown]
-  public virtual void TearDown()
-  {
-    SessionTable = null;
-    TaskTable    = null;
-    ResultTable  = null;
-    RunTests     = false;
-  }
 
   protected ISessionTable? SessionTable;
   protected ITaskTable?    TaskTable;
@@ -500,14 +501,14 @@ public class AuthorizationEnforcerTestBase
                          context)
         .ConfigureAwait(false);
       Assert.ThrowsAsync<AuthorizationUnavailableException>(() => enforcer.AuthorizeAsync(nameof(GrpcSessionsService),
-                                                                                     nameof(GrpcSessionsService.GetSession),
-                                                                                     MethodAuthorization.Rules[(nameof(GrpcSessionsService),
-                                                                                                                nameof(GrpcSessionsService.GetSession))],
-                                                                                     new GetSessionRequest
-                                                                                     {
-                                                                                       SessionId = aliceSession_,
-                                                                                     },
-                                                                                     context));
+                                                                                          nameof(GrpcSessionsService.GetSession),
+                                                                                          MethodAuthorization.Rules[(nameof(GrpcSessionsService),
+                                                                                                                     nameof(GrpcSessionsService.GetSession))],
+                                                                                          new GetSessionRequest
+                                                                                          {
+                                                                                            SessionId = aliceSession_,
+                                                                                          },
+                                                                                          context));
       Assert.That(audit_!.Messages.Any(message => message.Contains("Fault")),
                   Is.True);
     }
@@ -663,9 +664,9 @@ public class AuthorizationEnforcerTestBase
 
       // Any read of the result table fails the call
       var response = await ResultsService(Mock.Of<IResultTable>(MockBehavior.Strict))
-                             .GetOwnerTaskId(request,
-                                             context)
-                             .ConfigureAwait(false);
+                           .GetOwnerTaskId(request,
+                                           context)
+                           .ConfigureAwait(false);
 
       Assert.That(response.ResultTask.Select(map => map.ResultId),
                   Is.EqualTo(new[]
@@ -681,16 +682,16 @@ public class AuthorizationEnforcerTestBase
     if (RunTests)
     {
       var response = await ResultsService(ResultTable!)
-                             .GetOwnerTaskId(new GetOwnerTaskIdRequest
+                           .GetOwnerTaskId(new GetOwnerTaskIdRequest
+                                           {
+                                             SessionId = aliceSession_,
+                                             ResultId =
                                              {
-                                               SessionId = aliceSession_,
-                                               ResultId =
-                                               {
-                                                 "r-alice",
-                                               },
+                                               "r-alice",
                                              },
-                                             TestServerCallContext.Create())
-                             .ConfigureAwait(false);
+                                           },
+                                           TestServerCallContext.Create())
+                           .ConfigureAwait(false);
 
       Assert.That(response.ResultTask.Select(map => map.ResultId),
                   Is.EqualTo(new[]
@@ -772,7 +773,7 @@ public class AuthorizationEnforcerTestBase
         => Authorize(Alice,
                      nameof(GrpcSubmitterService),
                      nameof(GrpcSubmitterService.TryGetTaskOutput),
-                     new Api.gRPC.V1.TaskOutputRequest
+                     new TaskOutputRequest
                      {
                        Session = aliceSession_,
                        TaskId  = task,
@@ -807,9 +808,8 @@ public class AuthorizationEnforcerTestBase
       Assert.ThrowsAsync<TaskNotFoundException>(() => enforcer.AuthorizeAsync(nameof(GrpcSubmitterService),
                                                                               nameof(GrpcSubmitterService.TryGetTaskOutput),
                                                                               MethodAuthorization.Rules[(nameof(GrpcSubmitterService),
-                                                                                                         nameof(GrpcSubmitterService
-                                                                                                                  .TryGetTaskOutput))],
-                                                                              new Api.gRPC.V1.TaskOutputRequest
+                                                                                                         nameof(GrpcSubmitterService.TryGetTaskOutput))],
+                                                                              new TaskOutputRequest
                                                                               {
                                                                                 Session = aliceSession_,
                                                                                 TaskId  = "missing",
@@ -831,7 +831,7 @@ public class AuthorizationEnforcerTestBase
         => Authorize(subject,
                      nameof(GrpcSubmitterService),
                      nameof(GrpcSubmitterService.WaitForAvailability),
-                     new Api.gRPC.V1.ResultRequest
+                     new ResultRequest
                      {
                        Session  = aliceSession_,
                        ResultId = "r-alice",
@@ -1206,7 +1206,7 @@ public class AuthorizationEnforcerTestBase
         var context = await Authorize(subject,
                                       nameof(GrpcApplicationsService),
                                       nameof(GrpcApplicationsService.ListApplications),
-                                      new Api.gRPC.V1.Applications.ListApplicationsRequest())
+                                      new ListApplicationsRequest())
                         .ConfigureAwait(false);
         return await TaskTable!.FindTasksAsync(context.RestrictListing<TaskData>(_ => true),
                                                task => task.TaskId)

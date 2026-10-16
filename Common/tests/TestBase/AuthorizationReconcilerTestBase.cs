@@ -347,7 +347,11 @@ public class AuthorizationReconcilerTestBase
                               .ConfigureAwait(false);
 
       await ReconcileAsync(Options(2,
-                                   sets: [Reader("data:read", "data:download")]))
+                                   sets:
+                                   [
+                                     Reader("data:read",
+                                            "data:download"),
+                                   ]))
         .ConfigureAwait(false);
 
       var stored = (await SetsAsync()
@@ -645,7 +649,7 @@ public class AuthorizationReconcilerTestBase
                                 cancellationToken);
 
     public virtual Task<bool> DeleteGrantAsync(string            grantId,
-                                       CancellationToken cancellationToken = default)
+                                               CancellationToken cancellationToken = default)
       => inner.DeleteGrantAsync(grantId,
                                 cancellationToken);
 

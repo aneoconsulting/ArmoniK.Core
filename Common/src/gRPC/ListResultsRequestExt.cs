@@ -42,11 +42,11 @@ public static class ListResultsRequestExt
   /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<Result, object?>> ToField(this ListResultsRequest.Types.Sort sort)
     => FilterConversion.Convert(() => sort.Field.FieldCase switch
-       {
-         ResultField.FieldOneofCase.ResultRawField => sort.Field.ResultRawField.Field.ToField(),
-         ResultField.FieldOneofCase.None           => throw new ArgumentOutOfRangeException(nameof(sort)),
-         _                                         => throw new ArgumentOutOfRangeException(nameof(sort)),
-       });
+                                      {
+                                        ResultField.FieldOneofCase.ResultRawField => sort.Field.ResultRawField.Field.ToField(),
+                                        ResultField.FieldOneofCase.None           => throw new ArgumentOutOfRangeException(nameof(sort)),
+                                        _                                         => throw new ArgumentOutOfRangeException(nameof(sort)),
+                                      });
 
   /// <summary>
   ///   Converts gRPC message into the associated <see cref="Result" /> field
