@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Formats.Asn1;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -129,6 +130,9 @@ public class CallerAuthenticationMiddlewareTest
   }
 
   private static Metadata Certificate(string subject)
+    => Certificate(new X500DistinguishedName(subject));
+
+  private static Metadata Certificate(X500DistinguishedName subject)
   {
     using var key = RSA.Create(2048);
     using var certificate = new CertificateRequest(subject,
@@ -234,5 +238,32 @@ public class CallerAuthenticationMiddlewareTest
                 Is.EqualTo(1));
     Assert.That(service_.Caller,
                 Is.InstanceOf<AuthenticatedCaller>());
+  }
+
+  [Test]
+  public void ACertificateWhoseSubjectCannotBeDecodedIsUnauthenticated()
+  {
+    // CN as a PrintableString holding '_', which is not a PrintableString character
+    var writer = new AsnWriter(AsnEncodingRules.DER);
+    using (writer.PushSequence())
+    using (writer.PushSetOf())
+    using (writer.PushSequence())
+    {
+      writer.WriteObjectIdentifier("2.5.4.3");
+      // PrintableString tag, length, value
+      writer.WriteEncodedValue([0x13, 0x03, (byte)'a', (byte)'_', (byte)'b']);
+    }
+
+    var exception = Assert.ThrowsAsync<RpcException>(async () => await Client()
+                                                                       .CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest(),
+                                                                                                   Certificate(new X500DistinguishedName(writer.Encode())))
+                                                                       .ConfigureAwait(false));
+
+    Assert.That(exception!.StatusCode,
+                Is.EqualTo(StatusCode.Unauthenticated));
+    Assert.That(exception.Status.Detail,
+                Does.StartWith("The client certificate subject cannot be decoded"));
+    Assert.That(service_!.Calls,
+                Is.Zero);
   }
 }

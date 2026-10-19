@@ -213,6 +213,10 @@ public class CertificateIdentityTests
                                                            string value)
     => (oid, UniversalTagNumber.UTF8String, Encoding.UTF8.GetBytes(value));
 
+  private static (string, UniversalTagNumber, byte[]) Printable(string oid,
+                                                                string value)
+    => (oid, UniversalTagNumber.PrintableString, Encoding.ASCII.GetBytes(value));
+
   // A string type .NET does not decode
   private static (string, UniversalTagNumber, byte[]) Universal(string oid,
                                                                 string value)
@@ -342,4 +346,20 @@ public class CertificateIdentityTests
                                                                               [Utf8(Ou, "")])))
                                       .Caller.Roles,
                    Is.Empty);
+
+  [TestCase(Cn)]
+  [TestCase(Ou)]
+  public void ASubjectThatCannotBeDecodedIsRejectedAsInvalid(string oid)
+  {
+    // '_' is not a PrintableString character: .NET refuses to decode the value
+    var subject = oid == Cn
+                    ? RawSubject([Printable(Cn, "a_b")])
+                    : RawSubject([Utf8(Cn, "alice")],
+                                 [Printable(Ou, "a_b")]);
+
+    var exception = Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(subject)));
+
+    Assert.That(exception!.InnerException,
+                Is.InstanceOf<CryptographicException>());
+  }
 }
