@@ -406,11 +406,13 @@ public static class MethodAuthorization
                                                                                                       Unsupported("list sessions with Sessions.ListSessions"),
                                                                                                     [(nameof(GrpcSubmitterService),
                                                                                                       nameof(GrpcSubmitterService.TryGetResultStream))] =
+                                                                                                      // The error and status of the task producing a result not completed are answered
                                                                                                       OnRequest<ResultRequest>(r => RequestTargets.OfResults(r.Session,
                                                                                                                                [
                                                                                                                                  r.ResultId,
                                                                                                                                ]),
-                                                                                                                               Permission.DataDownload),
+                                                                                                                               Permission.DataDownload,
+                                                                                                                               Permission.TaskRead),
                                                                                                     [(nameof(GrpcSubmitterService),
                                                                                                       nameof(GrpcSubmitterService.WaitForAvailability))] =
                                                                                                       // The error of the task producing an aborted result is answered
