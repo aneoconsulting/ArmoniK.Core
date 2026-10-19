@@ -465,9 +465,10 @@ kcToken field="access_token":
 runHtcmockToken: buildHtcmockClient
   #!/usr/bin/env bash
   set -euo pipefail
-  # A nested just starts from the defaults: forward every variable runHtcmockTokenRaw reads
+  # A nested just starts from the defaults: forward every variable runHtcmockTokenRaw and buildHtcmockClient read
   TOKEN="$(just kc_client_id={{kc_client_id}} kc_client_secret={{kc_client_secret}} kc_user={{kc_user}} kc_password={{kc_password}} kcToken)"
-  just tag={{tag}} kc_token="$TOKEN" partition={{partition}} ntasks={{ntasks}} \
+  just tag={{tag}} kc_token="$TOKEN" network="{{network}}" platform="{{platform}}" push={{push}} load={{load}} \
+       partition={{partition}} ntasks={{ntasks}} \
        htcmock_time={{htcmock_time}} htcmock_datasize={{htcmock_datasize}} htcmock_memsize={{htcmock_memsize}} \
        htcmock_levels={{htcmock_levels}} htcmock_fast_compute={{htcmock_fast_compute}} \
        htcmock_low_mem={{htcmock_low_mem}} htcmock_small_output={{htcmock_small_output}} \
