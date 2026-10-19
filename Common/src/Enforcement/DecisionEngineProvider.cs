@@ -55,9 +55,9 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   private readonly AuthorizationAudit                    audit_;
   private readonly ExceptionManager                      exceptionManager_;
   private readonly ILogger<StoredDecisionEngineProvider> logger_;
+  private readonly TimeSpan                              maxStaleness_;
   private readonly ExecutionSingleizer<DecisionEngine>   reload_;
   private readonly IAuthorizationTable                   table_;
-  private readonly TimeSpan                              ttl_;
   private          Loaded?                               last_;
 
   /// <summary>
@@ -73,8 +73,13 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
     audit_            = audit;
     exceptionManager_ = exceptionManager;
     logger_           = logger;
-    ttl_              = options.GrantCacheTtl;
-    reload_           = new ExecutionSingleizer<DecisionEngine>(ttl_);
+    // Checked at startup as well: twice a larger delay may overflow, and nothing is cached at zero or below
+    ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.GrantCacheTtl,
+                                                       TimeSpan.Zero);
+    ArgumentOutOfRangeException.ThrowIfGreaterThan(options.GrantCacheTtl,
+                                                   AuthorizationOptions.MaxGrantCacheTtl);
+    maxStaleness_ = 2 * options.GrantCacheTtl;
+    reload_       = new ExecutionSingleizer<DecisionEngine>(options.GrantCacheTtl);
   }
 
   /// <inheritdoc />
@@ -88,7 +93,7 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   {
     var stale = last_ is
                 {
-                } last && Stopwatch.GetElapsedTime(last.LoadedAt) < 2 * ttl_
+                } last && Stopwatch.GetElapsedTime(last.LoadedAt) < maxStaleness_
                   ? last.Engine
                   : null;
 

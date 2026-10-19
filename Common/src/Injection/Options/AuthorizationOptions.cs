@@ -40,9 +40,15 @@ public class AuthorizationOptions
 
   /// <summary>
   ///   How long the grants and permission sets read from storage are kept before being read again; they are still used
-  ///   while being read again, so a revocation applies within twice this delay
+  ///   while being read again, so a revocation applies within twice this delay. Above zero and at most
+  ///   <see cref="MaxGrantCacheTtl" />
   /// </summary>
   public TimeSpan GrantCacheTtl { get; set; } = TimeSpan.FromSeconds(10);
+
+  /// <summary>
+  ///   Longest <see cref="GrantCacheTtl" /> accepted: a revocation applies within twice this delay
+  /// </summary>
+  public static readonly TimeSpan MaxGrantCacheTtl = TimeSpan.FromDays(14);
 
   /// <summary>
   ///   Revision of the grants and permission sets of the configuration. A deployment with a lower revision than the one

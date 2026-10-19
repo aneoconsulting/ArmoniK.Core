@@ -56,6 +56,13 @@ public static class ServiceCollectionExt
       return false;
     }
 
+    // Past the maximum, twice the delay a revocation waits for is no longer a delay; at zero or below, nothing is cached
+    if (options.GrantCacheTtl <= TimeSpan.Zero || options.GrantCacheTtl > AuthorizationOptions.MaxGrantCacheTtl)
+    {
+      throw new InvalidOperationException($"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.GrantCacheTtl)} " +
+                                          $"'{options.GrantCacheTtl}' must be greater than zero and at most {AuthorizationOptions.MaxGrantCacheTtl}");
+    }
+
     var identity = configuration.GetInitializedValue<IdentityOptions>(IdentityOptions.SettingSection);
 
     if (string.IsNullOrWhiteSpace(identity.CertificateHeader))
