@@ -421,7 +421,7 @@ public class AuthorizationTable : IAuthorizationTable
       duration_   = duration;
       logger_     = logger;
       Extend(asked);
-      renewal_    = Task.Run(RenewAsync);
+      renewal_ = Task.Run(RenewAsync);
     }
 
     public CancellationToken Lost
