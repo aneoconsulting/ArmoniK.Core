@@ -778,4 +778,22 @@ public class AddArmoniKAuthorizationTest
                                                                                        ("Identity:ValidateTokens", "false"))),
                    Throws.InstanceOf<InvalidOperationException>()
                          .With.Message.Contains("ValidateTokens"));
+
+  [TestCase("00:00:00")]
+  [TestCase("00:00:00.5")]
+  public void AMetadataRefreshIntervalUnderOneSecondPreventsStarting(string interval)
+    => Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
+                                                                                       ("Identity:Authority", "https://idp.example"),
+                                                                                       ("Identity:Audience", "armonik"),
+                                                                                       ("Identity:MetadataRefreshInterval", interval))),
+                   Throws.InstanceOf<InvalidOperationException>()
+                         .With.Message.Contains("MetadataRefreshInterval"));
+
+  [Test]
+  public void AMetadataRefreshIntervalOfOneSecondIsAccepted()
+    => Assert.That(new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
+                                                                                 ("Identity:Authority", "https://idp.example"),
+                                                                                 ("Identity:Audience", "armonik"),
+                                                                                 ("Identity:MetadataRefreshInterval", "00:00:01"))),
+                   Is.True);
 }
