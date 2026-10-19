@@ -139,6 +139,13 @@ public static class ServiceCollectionExt
                                           $"absolute URI, using HTTPS while {nameof(IdentityOptions.RequireHttpsMetadata)} is set");
     }
 
+    // JwtBearer only checks the interval when it first reads the metadata, which would refuse every token instead of starting
+    if (identity.MetadataRefreshInterval < BaseConfigurationManager.MinimumRefreshInterval)
+    {
+      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.MetadataRefreshInterval)} " +
+                                          $"'{identity.MetadataRefreshInterval}' must be at least {BaseConfigurationManager.MinimumRefreshInterval}");
+    }
+
     ThrowIfNoClaims(identity);
 
     services.AddAuthentication()
