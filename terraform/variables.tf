@@ -271,6 +271,11 @@ variable "ingress" {
           mtls = true
       } }
   ) })
+  # Without TLS, nginx has no client certificate to verify and forwards an empty one as if it were present
+  validation {
+    condition     = alltrue([for name, config in var.ingress.configs : config.tls || !config.mtls])
+    error_message = "An ingress config with mtls = true must also set tls = true: ${join(", ", [for name, config in var.ingress.configs : name if config.mtls && !config.tls])}"
+  }
   default = {}
 }
 
