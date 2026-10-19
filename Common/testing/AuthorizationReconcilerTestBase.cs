@@ -116,6 +116,29 @@ public class AuthorizationReconcilerTestBase
                                 .ToDictionaryAsync(set => set.Name)
                                 .ConfigureAwait(false);
 
+  // Whether a change that fails under the lock of the table leaves nothing written
+  private async Task<bool> AtomicAsync()
+  {
+    await using var held = await AuthorizationTable!.LockAsync()
+                                                    .ConfigureAwait(false);
+    return held.Atomic;
+  }
+
+  // A failed change of a table whose lock is atomic left the stored state as it was
+  private async Task AssertNothingWrittenAsync(int             revision,
+                                               params string[] grants)
+  {
+    Assert.That(await AuthorizationTable!.GetConfigRevisionAsync()
+                                         .ConfigureAwait(false),
+                Is.EqualTo(revision));
+    Assert.That((await AuthorizationTable.GetGenerationAsync()
+                                         .ConfigureAwait(false)).Stable,
+                Is.True);
+    Assert.That((await GrantsAsync()
+                   .ConfigureAwait(false)).Keys,
+                Is.EquivalentTo(grants));
+  }
+
   [Test]
   public async Task TheConfigurationIsStored()
   {
@@ -400,6 +423,17 @@ public class AuthorizationReconcilerTestBase
                                                     NullLogger<AuthorizationReconciler>.Instance).ReconcileAsync(),
                   Throws.InstanceOf<TimeoutException>());
 
+      // Nothing of revision 2 is kept, so there is nothing left for revision 1 to complete
+      if (await AtomicAsync()
+            .ConfigureAwait(false))
+      {
+        await AssertNothingWrittenAsync(1,
+                                        "own",
+                                        "revoked")
+          .ConfigureAwait(false);
+        return;
+      }
+
       Assert.That(() => ReconcileAsync(Options(1,
                   [
                     Grant("own",
@@ -448,6 +482,16 @@ public class AuthorizationReconcilerTestBase
                                                Ownership),
                                        ])),
                   Throws.InstanceOf<TimeoutException>());
+
+      if (await AtomicAsync()
+            .ConfigureAwait(false))
+      {
+        await AssertNothingWrittenAsync(1,
+                                        "own",
+                                        "revoked")
+          .ConfigureAwait(false);
+        return;
+      }
 
       // Revision 1 does not complete the change of revision 2 with what revision 2 revoked
       Assert.That(() => ReconcileAsync(Options(1,
@@ -508,18 +552,8 @@ public class AuthorizationReconcilerTestBase
   /// <summary>A lock already lost when the reconciliation starts</summary>
   private sealed class LostLock(IAuthorizationTable inner) : FailingEnd(inner)
   {
-    public override async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
-      => new Lost(await Inner.LockAsync(cancellationToken)
-                             .ConfigureAwait(false));
-
-    private sealed class Lost(IAuthorizationLock held) : IAuthorizationLock
-    {
-      CancellationToken IAuthorizationLock.Lost
-        => new(true);
-
-      public ValueTask DisposeAsync()
-        => held.DisposeAsync();
-    }
+    protected override CancellationToken Lost(IAuthorizationLock held)
+      => new(true);
   }
 
   [Test]
@@ -536,6 +570,14 @@ public class AuthorizationReconcilerTestBase
                                                Ownership),
                                        ])),
                   Throws.InstanceOf<OperationCanceledException>());
+      if (await AtomicAsync()
+            .ConfigureAwait(false))
+      {
+        await AssertNothingWrittenAsync(0)
+          .ConfigureAwait(false);
+        return;
+      }
+
       // Its writes may land after the change of the other writer: none of them is served until a reconciliation
       Assert.That((await AuthorizationTable!.GetGenerationAsync()
                                             .ConfigureAwait(false)).Stable,
@@ -548,10 +590,8 @@ public class AuthorizationReconcilerTestBase
   {
     private readonly CancellationTokenSource lost_ = new();
 
-    public override async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
-      => new Held(await Inner.LockAsync(cancellationToken)
-                             .ConfigureAwait(false),
-                  lost_.Token);
+    protected override CancellationToken Lost(IAuthorizationLock held)
+      => lost_.Token;
 
     public override async Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
     {
@@ -569,23 +609,14 @@ public class AuthorizationReconcilerTestBase
 
       return generation;
     }
-
-    private sealed class Held(IAuthorizationLock held,
-                              CancellationToken  lost) : IAuthorizationLock
-    {
-      CancellationToken IAuthorizationLock.Lost
-        => lost;
-
-      public ValueTask DisposeAsync()
-        => held.DisposeAsync();
-    }
   }
 
   private Task<bool> ReconcileAsync(IAuthorizationTable  table,
-                                    AuthorizationOptions options)
+                                    AuthorizationOptions options,
+                                    ILoggerFactory?      audit = null)
     => new AuthorizationReconciler(table,
                                    options,
-                                   new AuthorizationAudit(NullLoggerFactory.Instance),
+                                   new AuthorizationAudit(audit ?? NullLoggerFactory.Instance),
                                    TimeProvider.System,
                                    NullLogger<AuthorizationReconciler>.Instance).ReconcileAsync();
 
@@ -594,6 +625,20 @@ public class AuthorizationReconcilerTestBase
   {
     if (RunTests)
     {
+      var changes = new List<string>();
+      using var audit = LoggerFactory.Create(builder => builder.AddProvider(new ForwardingLoggerProvider((_,
+                                                                                                          _,
+                                                                                                          _,
+                                                                                                          message,
+                                                                                                          _,
+                                                                                                          _) =>
+                                                                                                         {
+                                                                                                           if (message.Contains("Authorization change"))
+                                                                                                           {
+                                                                                                             changes.Add(message);
+                                                                                                           }
+                                                                                                         })));
+
       Assert.That(() => ReconcileAsync(new TakenOver(AuthorizationTable!),
                                        Options(1,
                                        [
@@ -601,9 +646,21 @@ public class AuthorizationReconcilerTestBase
                                                "role:team",
                                                "session-own",
                                                Ownership),
-                                       ])),
+                                       ]),
+                                       audit),
                   Throws.InstanceOf<InvalidOperationException>()
                         .With.Message.Contains("lock was lost"));
+      if (await AtomicAsync()
+            .ConfigureAwait(false))
+      {
+        // Discarded with the other change, and not recorded as made
+        await AssertNothingWrittenAsync(0)
+          .ConfigureAwait(false);
+        Assert.That(changes,
+                    Is.Empty);
+        return;
+      }
+
       Assert.That((await AuthorizationTable!.GetGenerationAsync()
                                             .ConfigureAwait(false)).Stable,
                   Is.False);
@@ -633,73 +690,106 @@ public class AuthorizationReconcilerTestBase
   /// <summary>A table whose changes cannot be ended, as when the writer fails just before</summary>
   private class FailingEnd(IAuthorizationTable inner) : IAuthorizationTable
   {
+    // The table the lock gives while it is held, written through as the reconciler would
+    private IAuthorizationTable? bound_;
+
     protected IAuthorizationTable Inner
-      => inner;
+      => bound_ ?? inner;
 
     public Task<HealthCheckResult> Check(HealthCheckTag tag)
-      => inner.Check(tag);
+      => Inner.Check(tag);
 
     public Task Init(CancellationToken cancellationToken)
-      => inner.Init(cancellationToken);
+      => Inner.Init(cancellationToken);
 
     public IAsyncEnumerable<GrantData> ListGrantsAsync(CancellationToken cancellationToken = default)
-      => inner.ListGrantsAsync(cancellationToken);
+      => Inner.ListGrantsAsync(cancellationToken);
 
     public Task CreateGrantAsync(GrantData         grant,
                                  CancellationToken cancellationToken = default)
-      => inner.CreateGrantAsync(grant,
+      => Inner.CreateGrantAsync(grant,
                                 cancellationToken);
 
     public virtual Task<bool> DeleteGrantAsync(string            grantId,
                                                CancellationToken cancellationToken = default)
-      => inner.DeleteGrantAsync(grantId,
+      => Inner.DeleteGrantAsync(grantId,
                                 cancellationToken);
 
     public IAsyncEnumerable<PermissionSetData> ListPermissionSetsAsync(CancellationToken cancellationToken = default)
-      => inner.ListPermissionSetsAsync(cancellationToken);
+      => Inner.ListPermissionSetsAsync(cancellationToken);
 
     public Task<PermissionSetData?> GetPermissionSetVersionAsync(string            name,
                                                                  int               version,
                                                                  CancellationToken cancellationToken = default)
-      => inner.GetPermissionSetVersionAsync(name,
+      => Inner.GetPermissionSetVersionAsync(name,
                                             version,
                                             cancellationToken);
 
     public Task<int> GetLatestPermissionSetVersionAsync(string            name,
                                                         CancellationToken cancellationToken = default)
-      => inner.GetLatestPermissionSetVersionAsync(name,
+      => Inner.GetLatestPermissionSetVersionAsync(name,
                                                   cancellationToken);
 
     public Task SetPermissionSetAsync(PermissionSetData permissionSet,
                                       CancellationToken cancellationToken = default)
-      => inner.SetPermissionSetAsync(permissionSet,
+      => Inner.SetPermissionSetAsync(permissionSet,
                                      cancellationToken);
 
     public Task<bool> DeletePermissionSetAsync(string            name,
                                                CancellationToken cancellationToken = default)
-      => inner.DeletePermissionSetAsync(name,
+      => Inner.DeletePermissionSetAsync(name,
                                         cancellationToken);
 
     public Task<int> GetConfigRevisionAsync(CancellationToken cancellationToken = default)
-      => inner.GetConfigRevisionAsync(cancellationToken);
+      => Inner.GetConfigRevisionAsync(cancellationToken);
 
     public Task SetConfigRevisionAsync(int               revision,
                                        CancellationToken cancellationToken = default)
-      => inner.SetConfigRevisionAsync(revision,
+      => Inner.SetConfigRevisionAsync(revision,
                                       cancellationToken);
 
-    public virtual Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
-      => inner.LockAsync(cancellationToken);
+    public async Task<IAuthorizationLock> LockAsync(CancellationToken cancellationToken = default)
+    {
+      var held = await inner.LockAsync(cancellationToken)
+                            .ConfigureAwait(false);
+      bound_ = held.Table;
+      return new Bound(this,
+                       held);
+    }
+
+    // When the lock is lost
+    protected virtual CancellationToken Lost(IAuthorizationLock held)
+      => held.Lost;
 
     public Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default)
-      => inner.GetGenerationAsync(cancellationToken);
+      => Inner.GetGenerationAsync(cancellationToken);
 
     public virtual Task<long> BeginChangeAsync(CancellationToken cancellationToken = default)
-      => inner.BeginChangeAsync(cancellationToken);
+      => Inner.BeginChangeAsync(cancellationToken);
 
     public virtual Task EndChangeAsync(long              generation,
                                        CancellationToken cancellationToken = default)
       => throw new TimeoutException("the storage did not answer");
+  
+    // The lock, whose table is this one
+    private sealed class Bound(FailingEnd         table,
+                               IAuthorizationLock held) : IAuthorizationLock
+    {
+      public CancellationToken Lost
+        => table.Lost(held);
+
+      public bool Atomic
+        => held.Atomic;
+
+      public Task CommitAsync(CancellationToken cancellationToken = default)
+        => held.CommitAsync(cancellationToken);
+
+      public ValueTask DisposeAsync()
+      {
+        table.bound_ = null;
+        return held.DisposeAsync();
+      }
+    }
   }
 
   [Test]

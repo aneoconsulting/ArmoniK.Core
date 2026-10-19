@@ -85,14 +85,16 @@ public class AuthorizationReconciler
     using var whileHeld = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken,
                                                                           held.Lost);
     cancellationToken = whileHeld.Token;
+    // Read and written through the lock: a store whose lock is a transaction writes in it
+    var store = held.Table ?? table_;
 
-    var revision = await table_.GetConfigRevisionAsync(cancellationToken)
+    var revision = await store.GetConfigRevisionAsync(cancellationToken)
                                .ConfigureAwait(false);
     if (options_.ConfigRevision < revision)
     {
       // An older configuration can neither complete a change it does not know nor end it half written: until a later
       // one is reconciled, every request is refused, so the replica does not start
-      var stored = await table_.GetGenerationAsync(cancellationToken)
+      var stored = await store.GetGenerationAsync(cancellationToken)
                                .ConfigureAwait(false);
       if (!stored.Stable)
       {
@@ -107,12 +109,12 @@ public class AuthorizationReconciler
       return false;
     }
 
-    var storedSets = await table_.ListPermissionSetsAsync(cancellationToken)
+    var storedSets = await store.ListPermissionSetsAsync(cancellationToken)
                                  .ToDictionaryAsync(set => set.Name,
                                                     StringComparer.Ordinal,
                                                     cancellationToken)
                                  .ConfigureAwait(false);
-    var storedGrants = await table_.ListGrantsAsync(cancellationToken)
+    var storedGrants = await store.ListGrantsAsync(cancellationToken)
                                    .ToListAsync(cancellationToken)
                                    .ConfigureAwait(false);
 
@@ -134,7 +136,7 @@ public class AuthorizationReconciler
 
       // Numbered after every stored version: those of a set deleted before, kept for the audit records citing them, and
       // one a failed change wrote without making it current, which must not block the next change
-      var latest = await table_.GetLatestPermissionSetVersionAsync(set.Name,
+      var latest = await store.GetLatestPermissionSetVersionAsync(set.Name,
                                                                    cancellationToken)
                                .ConfigureAwait(false);
       setChanges.Add(new PermissionSetData(set.Name,
@@ -205,31 +207,54 @@ public class AuthorizationReconciler
 
     // Written as one change, so that no replica reads it half written. A change a failed writer left unended is ended
     // by this one, even with nothing else to write
-    var current = await table_.GetGenerationAsync(cancellationToken)
+    var current = await store.GetGenerationAsync(cancellationToken)
                               .ConfigureAwait(false);
     var changing = !current.Stable || setChanges.Count + grantDeletions.Count + grantCreations.Count + setDeletions.Count != 0;
     cancellationToken.ThrowIfCancellationRequested();
     var generation = changing
-                       ? await table_.BeginChangeAsync(cancellationToken)
+                       ? await store.BeginChangeAsync(cancellationToken)
                                      .ConfigureAwait(false)
                        : 0;
+
+    // Recorded once kept: what a store whose lock is a transaction discards was never changed
+    var records = new List<(string Actor, long Generation, string Change, string Subject, object Details)>();
+
+    void Record(string actor,
+                long   generation,
+                string change,
+                string subject,
+                object details)
+    {
+      if (held.Atomic)
+      {
+        records.Add((actor, generation, change, subject, details));
+      }
+      else
+      {
+        audit_.RecordChange(actor,
+                            generation,
+                            change,
+                            subject,
+                            details);
+      }
+    }
 
     try
     {
       // Before anything is written: a change of this revision left unfinished must not be completed by an older
       // configuration, which would write again what this one revoked
       cancellationToken.ThrowIfCancellationRequested();
-      await table_.SetConfigRevisionAsync(options_.ConfigRevision,
+      await store.SetConfigRevisionAsync(options_.ConfigRevision,
                                           cancellationToken)
                   .ConfigureAwait(false);
 
       foreach (var set in setChanges)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        await table_.SetPermissionSetAsync(set,
+        await store.SetPermissionSetAsync(set,
                                            cancellationToken)
                     .ConfigureAwait(false);
-        audit_.RecordChange(Actor,
+        Record(Actor,
                             generation,
                             "PermissionSetChanged",
                             set.Name,
@@ -245,10 +270,10 @@ public class AuthorizationReconciler
       foreach (var grant in grantDeletions)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        await table_.DeleteGrantAsync(grant.GrantId,
+        await store.DeleteGrantAsync(grant.GrantId,
                                       cancellationToken)
                     .ConfigureAwait(false);
-        audit_.RecordChange(Actor,
+        Record(Actor,
                             generation,
                             "GrantDeleted",
                             grant.GrantId,
@@ -265,10 +290,10 @@ public class AuthorizationReconciler
                                  time_.GetUtcNow()
                                       .UtcDateTime);
         cancellationToken.ThrowIfCancellationRequested();
-        await table_.CreateGrantAsync(data,
+        await store.CreateGrantAsync(data,
                                       cancellationToken)
                     .ConfigureAwait(false);
-        audit_.RecordChange(Actor,
+        Record(Actor,
                             generation,
                             "GrantCreated",
                             grant.Id,
@@ -278,10 +303,10 @@ public class AuthorizationReconciler
       foreach (var set in setDeletions)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        await table_.DeletePermissionSetAsync(set.Name,
+        await store.DeletePermissionSetAsync(set.Name,
                                               cancellationToken)
                     .ConfigureAwait(false);
-        audit_.RecordChange(Actor,
+        Record(Actor,
                             generation,
                             "PermissionSetDeleted",
                             set.Name,
@@ -291,17 +316,18 @@ public class AuthorizationReconciler
                             });
       }
 
-      // Left unended when a write fails, so that what was written is not read before a later change completes it
+      // Left unended when a write fails, so that what was written is not read before a later change completes it. A store
+      // whose lock is a transaction discards it all instead
       if (changing)
       {
         cancellationToken.ThrowIfCancellationRequested();
-        await table_.EndChangeAsync(generation,
+        await store.EndChangeAsync(generation,
                                     cancellationToken)
                     .ConfigureAwait(false);
 
         // Another writer changed the grants meanwhile, so the lock was lost and what was written here may mix with its
         // change: a change is left unended, so that none of it is served until a reconciliation completes it
-        var ended = await table_.GetGenerationAsync(cancellationToken)
+        var ended = await store.GetGenerationAsync(cancellationToken)
                                 .ConfigureAwait(false);
         if (ended.Ended != generation)
         {
@@ -309,15 +335,20 @@ public class AuthorizationReconciler
                                               "the lock was lost, and the grants are refused until a reconciliation completes them");
         }
       }
+
+      await held.CommitAsync(cancellationToken)
+                .ConfigureAwait(false);
     }
-    catch (Exception) when (changing)
+    // Nothing is left written by a store whose lock is a transaction: no change is begun again, which would refuse every
+    // request until the next reconciliation
+    catch (Exception) when (changing && !held.Atomic)
     {
       // A writer stopped after it began writing, such as one whose lock was lost meanwhile: a write may have landed after
       // another writer ended its change. A change is begun again, whatever the cancellation, so that none of it is served
       // until a reconciliation completes it
       try
       {
-        await table_.BeginChangeAsync(CancellationToken.None)
+        await store.BeginChangeAsync(CancellationToken.None)
                     .ConfigureAwait(false);
       }
       catch (Exception again)
@@ -328,6 +359,15 @@ public class AuthorizationReconciler
       }
 
       throw;
+    }
+
+    foreach (var record in records)
+    {
+      audit_.RecordChange(record.Actor,
+                          record.Generation,
+                          record.Change,
+                          record.Subject,
+                          record.Details);
     }
 
     return true;
