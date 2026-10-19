@@ -361,9 +361,9 @@ public class CertificateIdentityTests
   public void ACommonNameWithAnInvisibleCharacterIsRejected()
     // A tag character outside the BMP, which a check on UTF-16 units let through
     => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([
-                                                                                                         Utf8(Cn,
-                                                                                                              "alice\U000E0020"),
-                                                                                                       ]))));
+      Utf8(Cn,
+           "alice\U000E0020"),
+    ]))));
 
   [Test]
   public void AUnitThatCannotBeDecodedIsRejected()

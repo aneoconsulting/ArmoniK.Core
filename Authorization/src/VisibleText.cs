@@ -35,23 +35,8 @@ internal static class VisibleText
   // 18.0.0, adjacent lines merged. It adds invisible characters that are not Cf, such as variation selectors or fillers
   private static readonly (int First, int Last)[] DefaultIgnorable =
   [
-    (0x00AD, 0x00AD),
-    (0x034F, 0x034F),
-    (0x061C, 0x061C),
-    (0x115F, 0x1160),
-    (0x17B4, 0x17B5),
-    (0x180B, 0x180F),
-    (0x200B, 0x200F),
-    (0x202A, 0x202E),
-    (0x2060, 0x206F),
-    (0x3164, 0x3164),
-    (0xFE00, 0xFE0F),
-    (0xFEFF, 0xFEFF),
-    (0xFFA0, 0xFFA0),
-    (0xFFF0, 0xFFF8),
-    (0x1BCA0, 0x1BCA3),
-    (0x1D173, 0x1D17A),
-    (0xE0000, 0xE0FFF),
+    (0x00AD, 0x00AD), (0x034F, 0x034F), (0x061C, 0x061C), (0x115F, 0x1160), (0x17B4, 0x17B5), (0x180B, 0x180F), (0x200B, 0x200F), (0x202A, 0x202E), (0x2060, 0x206F),
+    (0x3164, 0x3164), (0xFE00, 0xFE0F), (0xFEFF, 0xFEFF), (0xFFA0, 0xFFA0), (0xFFF0, 0xFFF8), (0x1BCA0, 0x1BCA3), (0x1D173, 0x1D17A), (0xE0000, 0xE0FFF),
   ];
 
   /// <summary>
@@ -92,7 +77,9 @@ internal static class VisibleText
         return $"contains U+{(int)text[0]:X4}, a lone surrogate";
       }
 
-      if (Describe(rune) is { } kind)
+      if (Describe(rune) is
+          {
+          } kind)
       {
         return $"contains U+{rune.Value:X4}, {kind}";
       }
@@ -106,11 +93,11 @@ internal static class VisibleText
   private static string? Describe(Rune rune)
     => Rune.GetUnicodeCategory(rune) switch
        {
-         UnicodeCategory.Control                                          => "a control character",
-         UnicodeCategory.Format                                           => "an invisible character",
-         UnicodeCategory.PrivateUse                                       => "a private use character",
+         UnicodeCategory.Control    => "a control character",
+         UnicodeCategory.Format     => "an invisible character",
+         UnicodeCategory.PrivateUse => "a private use character",
          // Follows the Unicode tables of the .NET runtime: a newer character is refused until the runtime knows it
-         UnicodeCategory.OtherNotAssigned                                 => "an unassigned character",
+         UnicodeCategory.OtherNotAssigned                                    => "an unassigned character",
          UnicodeCategory.LineSeparator or UnicodeCategory.ParagraphSeparator => "a line or paragraph separator",
          _ when Array.Exists(DefaultIgnorable,
                              range => rune.Value >= range.First && rune.Value <= range.Last) => "an invisible character",
