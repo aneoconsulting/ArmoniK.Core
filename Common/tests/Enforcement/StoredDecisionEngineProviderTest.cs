@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -135,10 +136,13 @@ public class StoredDecisionEngineProviderTest
   }
 
   private StoredDecisionEngineProvider Provider()
+    => Provider(Ttl);
+
+  private StoredDecisionEngineProvider Provider(TimeSpan ttl)
     => new(table_.Object,
            new AuthorizationOptions
            {
-             GrantCacheTtl = Ttl,
+             GrantCacheTtl = ttl,
            },
            new AuthorizationAudit(NullLoggerFactory.Instance),
            exceptionManager_,
@@ -527,6 +531,31 @@ public class StoredDecisionEngineProviderTest
                 Is.EqualTo(2));
     Assert.That(exceptionManager_.Failed,
                 Is.True);
+  }
+
+  [TestCase("00:00:00")]
+  [TestCase("-00:00:00.001")]
+  [TestCase("14.00:00:00.001")]
+  [TestCase("10675199.02:48:05.4775807")]
+  public void ATtlOutOfRangeIsRefused(string ttl)
+    => Assert.That(() => Provider(TimeSpan.Parse(ttl,
+                                                  CultureInfo.InvariantCulture)),
+                   Throws.InstanceOf<ArgumentOutOfRangeException>());
+
+  [Test]
+  public async Task TheLongestTtlServesTheEngineReadLast()
+  {
+    using var provider = Provider(AuthorizationOptions.MaxGrantCacheTtl);
+    AddGrant("a");
+    var first = await provider.GetEngineAsync()
+                              .ConfigureAwait(false);
+
+    // Neither twice the delay nor the expiry of the shared read overflows
+    Assert.That(await provider.GetEngineAsync()
+                              .ConfigureAwait(false),
+                Is.SameAs(first));
+    Assert.That(reads_,
+                Is.EqualTo(1));
   }
 
   [Test]
