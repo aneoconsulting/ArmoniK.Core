@@ -34,6 +34,17 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Tests;
 
 public class AuthorizationTableTests : AuthorizationTableTestBase
 {
+  // Key of the advisory lock the table takes
+  private const long LockKey = 0x41726d6f6e694b;
+
+  private static readonly DateTime Date = new(2026,
+                                              1,
+                                              1,
+                                              0,
+                                              0,
+                                              0,
+                                              DateTimeKind.Utc);
+
   private PostgresDatabaseProvider? tableProvider_;
 
   public override void TearDown()
@@ -49,17 +60,6 @@ public class AuthorizationTableTests : AuthorizationTableTestBase
                                        .GetRequiredService<IAuthorizationTable>();
     RunTests = true;
   }
-
-  // Key of the advisory lock the table takes
-  private const long LockKey = 0x41726d6f6e694b;
-
-  private static readonly DateTime Date = new(2026,
-                                              1,
-                                              1,
-                                              0,
-                                              0,
-                                              0,
-                                              DateTimeKind.Utc);
 
   private static GrantData Grant(string id)
     => new(id,

@@ -46,11 +46,12 @@ public class AuthorizationTable : IAuthorizationTable
   // Delay between two attempts to take the lock while another replica holds it
   private static readonly TimeSpan LockRetryDelay = TimeSpan.FromMilliseconds(100);
 
-  private readonly ActivitySource              activitySource_;
+  private readonly ActivitySource activitySource_;
+
+  // Connection of the transaction holding the lock, for the table given by the lock; null for the pool
+  private readonly NpgsqlConnection?           bound_;
   private readonly NpgsqlConnectionProvider    connectionProvider_;
   private readonly ILogger<AuthorizationTable> logger_;
-  // Connection of the transaction holding the lock, for the table given by the lock; null for the pool
-  private readonly NpgsqlConnection? bound_;
   private          bool                        isInitialized_;
 
   /// <summary>
@@ -75,27 +76,6 @@ public class AuthorizationTable : IAuthorizationTable
     bound_              = bound;
   }
 
-  // A connection of the pool, or the one of the transaction holding the lock, left open when disposed
-  private async ValueTask<Connection> OpenAsync(CancellationToken cancellationToken)
-    => bound_ is not null
-         ? new Connection(bound_,
-                          false)
-         : new Connection(await connectionProvider_.GetConnectionAsync(cancellationToken)
-                                                   .ConfigureAwait(false),
-                          true);
-
-  private readonly record struct Connection(NpgsqlConnection Inner,
-                                            bool             Owned) : IAsyncDisposable
-  {
-    public NpgsqlCommand CreateCommand()
-      => Inner.CreateCommand();
-
-    public ValueTask DisposeAsync()
-      => Owned
-           ? Inner.DisposeAsync()
-           : ValueTask.CompletedTask;
-  }
-
   /// <inheritdoc />
   public async Task<HealthCheckResult> Check(HealthCheckTag tag)
     => isInitialized_
@@ -116,7 +96,7 @@ public class AuthorizationTable : IAuthorizationTable
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = "SELECT * FROM grants";
 
@@ -135,7 +115,7 @@ public class AuthorizationTable : IAuthorizationTable
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = @"
 INSERT INTO grants (grant_id, principal, permission_set, condition, origin, creation_date)
@@ -208,7 +188,7 @@ VALUES (@grant_id, @principal, @permission_set, @condition, @origin, @creation_d
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = "SELECT COALESCE(MAX(version), 0) FROM permission_set_versions WHERE name = @name";
     cmd.Parameters.AddWithValue("name",
@@ -223,7 +203,7 @@ VALUES (@grant_id, @principal, @permission_set, @condition, @origin, @creation_d
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
 
     // A stored version is never rewritten: written again only with the same content
     await using (var version = connection.CreateCommand())
@@ -272,7 +252,7 @@ ON CONFLICT (name) DO UPDATE SET version = EXCLUDED.version, permissions = EXCLU
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = "SELECT revision FROM authorization_state WHERE id = 0";
 
@@ -341,7 +321,7 @@ ON CONFLICT (id) DO UPDATE SET revision = GREATEST(authorization_state.revision,
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = "SELECT begun, ended FROM authorization_state WHERE id = 0";
 
@@ -359,7 +339,7 @@ ON CONFLICT (id) DO UPDATE SET revision = GREATEST(authorization_state.revision,
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = @"
 INSERT INTO authorization_state (id, begun, ended) VALUES (0, 1, 0)
@@ -377,6 +357,15 @@ RETURNING begun";
                           ("generation", generation),
                           cancellationToken)
          .ConfigureAwait(false);
+
+  // A connection of the pool, or the one of the transaction holding the lock, left open when disposed
+  private async ValueTask<Connection> OpenAsync(CancellationToken cancellationToken)
+    => bound_ is not null
+         ? new Connection(bound_,
+                          false)
+         : new Connection(await connectionProvider_.GetConnectionAsync(cancellationToken)
+                                                   .ConfigureAwait(false),
+                          true);
 
   private static void AddParameters(NpgsqlCommand     cmd,
                                     PermissionSetData permissionSet)
@@ -398,7 +387,7 @@ RETURNING begun";
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = sql;
     cmd.Parameters.AddWithValue(parameter.Item1,
@@ -413,7 +402,7 @@ RETURNING begun";
   {
     using var activity = activitySource_.StartActivity();
     await using var connection = await OpenAsync(cancellationToken)
-                                                          .ConfigureAwait(false);
+                                   .ConfigureAwait(false);
     await using var cmd = connection.CreateCommand();
     cmd.CommandText = sql;
     parameters?.Invoke(cmd);
@@ -427,12 +416,24 @@ RETURNING begun";
     }
   }
 
+  private readonly record struct Connection(NpgsqlConnection Inner,
+                                            bool             Owned) : IAsyncDisposable
+  {
+    public ValueTask DisposeAsync()
+      => Owned
+           ? Inner.DisposeAsync()
+           : ValueTask.CompletedTask;
+
+    public NpgsqlCommand CreateCommand()
+      => Inner.CreateCommand();
+  }
+
   /// <summary>
   ///   Advisory lock held by a transaction, in which the table it gives writes
   /// </summary>
-  private sealed class Release(AuthorizationTable    table,
-                               NpgsqlConnection      connection,
-                               NpgsqlTransaction     transaction) : IAuthorizationLock
+  private sealed class Release(AuthorizationTable table,
+                               NpgsqlConnection   connection,
+                               NpgsqlTransaction  transaction) : IAuthorizationLock
   {
     // Never reported lost: a lost lock fails the writes done under it and their commit, and discards them
     public CancellationToken Lost
