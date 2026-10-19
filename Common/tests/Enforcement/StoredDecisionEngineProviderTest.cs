@@ -26,10 +26,12 @@ using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Hosting.Internal;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
@@ -46,6 +48,28 @@ public class StoredDecisionEngineProviderTest
   public void SetUp()
   {
     grants_.Clear();
+    sets_.Clear();
+    sets_.Add(new PermissionSetData("session-view",
+                                    3,
+                                    ["session:read"],
+                                    AuthorizationOrigin.Config));
+    faults_.Clear();
+    // Only the faults are kept, to count them
+    auditLogs_ = LoggerFactory.Create(builder => builder.AddProvider(new ForwardingLoggerProvider((_,
+                                                                                                   _,
+                                                                                                   _,
+                                                                                                   message,
+                                                                                                   _,
+                                                                                                   _) =>
+                                                                                                  {
+                                                                                                    if (message.Contains("Fault"))
+                                                                                                    {
+                                                                                                      lock (faults_)
+                                                                                                      {
+                                                                                                        faults_.Add(message);
+                                                                                                      }
+                                                                                                    }
+                                                                                                  })));
     reads_              = 0;
     generationReads_    = 0;
     fail_               = false;
@@ -70,13 +94,8 @@ public class StoredDecisionEngineProviderTest
                      return Task.FromResult(generation_);
                    });
     table_.Setup(table => table.ListPermissionSetsAsync(It.IsAny<CancellationToken>()))
-          .Returns(() => new[]
-                         {
-                           new PermissionSetData("session-view",
-                                                 3,
-                                                 ["session:read"],
-                                                 AuthorizationOrigin.Config),
-                         }.ToAsyncEnumerable());
+          .Returns(() => sets_.ToList()
+                              .ToAsyncEnumerable());
     table_.Setup(table => table.ListGrantsAsync(It.IsAny<CancellationToken>()))
           .Returns((CancellationToken cancellationToken) =>
                    {
@@ -89,6 +108,7 @@ public class StoredDecisionEngineProviderTest
   [TearDown]
   public void TearDown()
   {
+    auditLogs_.Dispose();
     exceptionManager_.Dispose();
     lifetime_.StopApplication();
   }
@@ -96,12 +116,15 @@ public class StoredDecisionEngineProviderTest
   // The provider measures time with the system clock
   private static readonly TimeSpan Ttl = TimeSpan.FromMilliseconds(200);
 
+  private readonly List<string>              faults_ = new();
   private readonly List<GrantData>           grants_ = new();
+  private readonly List<PermissionSetData>   sets_   = new();
   private          bool                      changeWhileReading_;
   private          bool                      fail_;
   private          AuthorizationGeneration   generation_;
   private          int                       generationReads_;
   private          TaskCompletionSource?     hold_;
+  private          ILoggerFactory            auditLogs_        = null!;
   private          ExceptionManager          exceptionManager_ = null!;
   private          ApplicationLifetime       lifetime_         = null!;
   private          int                       reads_;
@@ -144,7 +167,7 @@ public class StoredDecisionEngineProviderTest
            {
              GrantCacheTtl = ttl,
            },
-           new AuthorizationAudit(NullLoggerFactory.Instance),
+           new AuthorizationAudit(auditLogs_),
            exceptionManager_,
            NullLogger<StoredDecisionEngineProvider>.Instance);
 
@@ -531,6 +554,50 @@ public class StoredDecisionEngineProviderTest
                 Is.EqualTo(2));
     Assert.That(exceptionManager_.Failed,
                 Is.True);
+  }
+
+  private static IEnumerable<TestCaseData> MalformedSets()
+  {
+    yield return new TestCaseData(new PermissionSetData("ops",
+                                                        1,
+                                                        ["session:read", null!],
+                                                        AuthorizationOrigin.Api)).SetArgDisplayNames("NullPermission");
+    yield return new TestCaseData(new PermissionSetData("ops",
+                                                        1,
+                                                        null!,
+                                                        AuthorizationOrigin.Api)).SetArgDisplayNames("NoPermissionList");
+    yield return new TestCaseData(new PermissionSetData("  ",
+                                                        1,
+                                                        ["session:read"],
+                                                        AuthorizationOrigin.Api)).SetArgDisplayNames("BlankName");
+  }
+
+  [TestCaseSource(nameof(MalformedSets))]
+  public async Task AMalformedStoredSetIsLeftOutAlone(PermissionSetData malformed)
+  {
+    using var provider = Provider();
+    sets_.Add(malformed);
+    AddGrant("a");
+    grants_.Add(new GrantData("b",
+                              "role:team",
+                              malformed.Name,
+                              null,
+                              AuthorizationOrigin.Api,
+                              DateTime.UtcNow));
+
+    var engine = await provider.GetEngineAsync()
+                               .ConfigureAwait(false);
+
+    // The grants over the other sets are kept, the one naming it is refused as for a missing set
+    Assert.That(engine.Grants.Select(grant => grant.Id),
+                Is.EqualTo(new[]
+                           {
+                             "a",
+                           }));
+    Assert.That(faults_,
+                Has.One.Contains("Fault on permission set"));
+    Assert.That(faults_,
+                Has.One.Contains("Fault on grant b"));
   }
 
   [TestCase("00:00:00")]

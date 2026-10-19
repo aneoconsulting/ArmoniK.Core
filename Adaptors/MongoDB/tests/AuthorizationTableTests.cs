@@ -16,18 +16,23 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Authorization;
+using ArmoniK.Core.Common.Enforcement;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 
+using MongoDB.Bson;
 using MongoDB.Driver;
 
 using NUnit.Framework;
@@ -111,5 +116,122 @@ public class AuthorizationTableTests : AuthorizationTableTestBase
     Assert.That(() => held.Lost.IsCancellationRequested,
                 Is.True.After(5000,
                               50));
+  }
+
+  [Test]
+  public async Task IncompleteDocumentsAreReadAndRefusedAlone()
+  {
+    var services = tableProvider_!.GetServiceProvider();
+    var grants = services.GetRequiredService<MongoCollectionProvider<GrantData, GrantDataModelMapping>>()
+                         .Get();
+    var sets = services.GetRequiredService<MongoCollectionProvider<PermissionSetData, PermissionSetDataModelMapping>>()
+                       .Get();
+
+    // Written by hand or by a faulty writer: no creation date, no origin, no permission list
+    await grants.Database.GetCollection<BsonDocument>(grants.CollectionNamespace.CollectionName)
+                .InsertManyAsync([
+                                   new BsonDocument
+                                   {
+                                     {
+                                       "_id", "undated"
+                                     },
+                                     {
+                                       "Principal", "role:ops"
+                                     },
+                                     {
+                                       "PermissionSet", "ops"
+                                     },
+                                     {
+                                       "Origin", (int)AuthorizationOrigin.Api
+                                     },
+                                   },
+                                   new BsonDocument
+                                   {
+                                     {
+                                       "_id", "unowned"
+                                     },
+                                     {
+                                       "Principal", "role:ops"
+                                     },
+                                     {
+                                       "PermissionSet", "viewer"
+                                     },
+                                     {
+                                       "CreationDate", DateTime.UtcNow
+                                     },
+                                   },
+                                 ])
+                .ConfigureAwait(false);
+    await sets.Database.GetCollection<BsonDocument>(sets.CollectionNamespace.CollectionName)
+              .InsertOneAsync(new BsonDocument
+                              {
+                                {
+                                  "_id", "ops"
+                                },
+                                {
+                                  "Version", 1
+                                },
+                                {
+                                  "Origin", (int)AuthorizationOrigin.Api
+                                },
+                              })
+              .ConfigureAwait(false);
+
+    var listed = await AuthorizationTable!.ListGrantsAsync()
+                                          .ToDictionaryAsync(grant => grant.GrantId)
+                                          .ConfigureAwait(false);
+    Assert.That(listed.Keys,
+                Is.EquivalentTo(new[]
+                                {
+                                  "undated",
+                                  "unowned",
+                                }));
+    // Never deleted nor rewritten by the reconciliation
+    Assert.That(listed["unowned"].Origin,
+                Is.EqualTo(AuthorizationOrigin.Api));
+    Assert.That((await AuthorizationTable.ListPermissionSetsAsync()
+                                         .SingleAsync()
+                                         .ConfigureAwait(false)).Permissions,
+                Is.Null);
+
+    // The grant naming the incomplete set is refused alone: the configuration is applied
+    Assert.That(await new AuthorizationReconciler(AuthorizationTable,
+                                                  new AuthorizationOptions
+                                                  {
+                                                    Enabled        = true,
+                                                    ConfigRevision = 1,
+                                                    PermissionSets =
+                                                    [
+                                                      new PermissionSetOption
+                                                      {
+                                                        Name        = "viewer",
+                                                        Permissions = ["session:read"],
+                                                      },
+                                                    ],
+                                                    Grants =
+                                                    [
+                                                      new GrantOption
+                                                      {
+                                                        Id            = "reader",
+                                                        Principal     = "role:team",
+                                                        PermissionSet = "viewer",
+                                                      },
+                                                    ],
+                                                  },
+                                                  new AuthorizationAudit(NullLoggerFactory.Instance),
+                                                  TimeProvider.System,
+                                                  NullLogger<AuthorizationReconciler>.Instance).ReconcileAsync()
+                                                                                               .ConfigureAwait(false),
+                Is.True);
+    Assert.That(await AuthorizationTable.ListGrantsAsync()
+                                        .Select(grant => grant.GrantId)
+                                        .ToListAsync()
+                                        .ConfigureAwait(false),
+                Is.EquivalentTo(new[]
+                                {
+                                  "undated",
+                                  "unowned",
+                                  "reader",
+                                }));
   }
 }
