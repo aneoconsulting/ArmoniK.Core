@@ -84,7 +84,8 @@ locals {
       },
       # Mints tokens for another audience. It carries no role of armonik-client, since Keycloak adds a client to
       # the audience of every token carrying its roles. Its tokens name itself as audience, so that they are refused
-      # for an audience that is not the control plane's, not for carrying none
+      # for an audience that is not the control plane's, not for carrying none. The `basic` scope gives them a `sub`
+      # (Keycloak 25+), so that the audience is the only reason left to refuse them
       {
         clientId                  = "other-client"
         enabled                   = true
@@ -94,7 +95,7 @@ locals {
         directAccessGrantsEnabled = true
         standardFlowEnabled       = false
         fullScopeAllowed          = false
-        defaultClientScopes       = []
+        defaultClientScopes       = ["basic"]
         attributes                = { "use.refresh.tokens" = "false" }
 
         protocolMappers = [
