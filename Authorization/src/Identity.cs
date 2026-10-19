@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Formats.Asn1;
 using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
@@ -104,35 +105,79 @@ public static class CertificateIdentity
   /// </summary>
   /// <param name="certificate">The client certificate</param>
   /// <returns>The caller, named <c>cn:</c> with roles named <c>role:</c></returns>
-  /// <exception cref="FormatException">The subject does not carry exactly one common name</exception>
+  /// <exception cref="FormatException">
+  ///   The subject does not carry exactly one common name, or carries a common name or an organizational unit whose value
+  ///   type cannot be decoded
+  /// </exception>
   public static AuthenticatedCaller FromCertificate(X509Certificate2 certificate)
+    => FromSubject(certificate.SubjectName);
+
+  /// <summary>
+  ///   Read the distinguished name structurally rather than by splitting the subject on commas, which an escaped comma
+  ///   would defeat. Multi-valued RDNs carry no role: their attributes jointly name one principal.
+  /// </summary>
+  private static AuthenticatedCaller FromSubject(X500DistinguishedName subject)
   {
-    var commonNames = AttributeValues(certificate.SubjectName,
-                                      CommonNameOid);
+    var rdns = subject.EnumerateRelativeDistinguishedNames()
+                      .ToList();
+
+    // Counted on the raw attributes, so that a common name the decoder would drop still makes the subject ambiguous
+    var commonNames = rdns.SelectMany(rdn => AttributeTypes(rdn)
+                                             .Where(oid => oid == CommonNameOid)
+                                             .Select(_ => rdn))
+                          .ToList();
 
     if (commonNames.Count != 1)
     {
-      throw new FormatException($"The client certificate subject carries {commonNames.Count} common names, exactly one is required: '{certificate.Subject}'");
+      throw new FormatException($"The client certificate subject carries {commonNames.Count} common names, exactly one is required: '{subject.Name}'");
     }
 
-    return new AuthenticatedCaller(new Caller(Principal.FromCertificate(commonNames[0]),
-                                              AttributeValues(certificate.SubjectName,
-                                                              OrganizationalUnitOid)
-                                                .Select(Principal.FromRole)),
+    if (commonNames[0].HasMultipleElements)
+    {
+      throw new FormatException($"The client certificate common name shares its RDN with other attributes: '{subject.Name}'");
+    }
+
+    var commonName = Value(commonNames[0],
+                           "common name");
+
+    if (commonName.Length == 0)
+    {
+      throw new FormatException("The client certificate common name is empty");
+    }
+
+    return new AuthenticatedCaller(new Caller(Principal.FromCertificate(commonName),
+                                              rdns.Where(rdn => !rdn.HasMultipleElements && rdn.GetSingleElementType()
+                                                                                                .Value == OrganizationalUnitOid)
+                                                  .Select(rdn => Value(rdn,
+                                                                       "organizational unit"))
+                                                  .Where(value => value.Length != 0)
+                                                  .Select(Principal.FromRole)),
                                    CredentialKind.Certificate);
   }
 
   /// <summary>
-  ///   Read the distinguished name structurally rather than by splitting the subject on commas, which an escaped comma
-  ///   would defeat. Multi-valued RDNs are skipped: their attributes jointly name one principal.
+  ///   The value of a single-valued RDN, refused rather than dropped when its string type is one .NET does not decode
   /// </summary>
-  private static List<string> AttributeValues(X500DistinguishedName name,
-                                              string                oid)
-    => name.EnumerateRelativeDistinguishedNames()
-           .Where(rdn => !rdn.HasMultipleElements && rdn.GetSingleElementType()
-                                                        .Value == oid)
-           .Select(rdn => rdn.GetSingleElementValue())
-           .OfType<string>()
-           .Where(value => value.Length != 0)
-           .ToList();
+  private static string Value(X500RelativeDistinguishedName rdn,
+                              string                        attribute)
+    => rdn.GetSingleElementValue() ?? throw new FormatException($"The client certificate {attribute} has a value type that cannot be decoded");
+
+  /// <summary>
+  ///   The attribute types of an RDN, read from its encoding: <c>SET OF SEQUENCE { type OID, value ANY }</c>
+  /// </summary>
+  private static List<string> AttributeTypes(X500RelativeDistinguishedName rdn)
+  {
+    var reader = new AsnReader(rdn.RawData,
+                               AsnEncodingRules.DER);
+    var set   = reader.ReadSetOf();
+    var types = new List<string>();
+
+    while (set.HasData)
+    {
+      var attribute = set.ReadSequence();
+      types.Add(attribute.ReadObjectIdentifier());
+    }
+
+    return types;
+  }
 }
