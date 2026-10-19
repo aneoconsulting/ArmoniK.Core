@@ -236,9 +236,11 @@ public static class MethodAuthorization
                                                                                                                                        .OfTasks(r.TaskId),
                                                                                                                                      Permission.TaskRead),
                                                                                                     [(nameof(GrpcTasksService), nameof(GrpcTasksService.CancelTasks))] =
+                                                                                                      // The summaries of the tasks are answered, their errors included
                                                                                                       OnRequest<CancelTasksRequest>(r => RequestTargets
                                                                                                                                       .OfTasks(r.TaskIds),
-                                                                                                                                    Permission.TaskCancel),
+                                                                                                                                    Permission.TaskCancel,
+                                                                                                                                    Permission.TaskRead),
                                                                                                     [(nameof(GrpcTasksService), nameof(GrpcTasksService.SubmitTasks))] =
                                                                                                       OnRequest<SubmitTasksRequest>(r => new RequestTargets(r.SessionId,
                                                                                                                                                             [],

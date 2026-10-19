@@ -126,6 +126,11 @@ public class AuthorizationEnforcerTestBase
                                                                                     {
                                                                                       Name        = "team-lister",
                                                                                       Permissions = ["data:read"],
+                                                                                    },
+                                                                                    new PermissionSetOption
+                                                                                    {
+                                                                                      Name        = "team-canceller",
+                                                                                      Permissions = ["task:cancel"],
                                                                                     }));
     engine_ = DecisionEngine.Build([
                                      new GrantDefinition("team-create",
@@ -160,6 +165,10 @@ public class AuthorizationEnforcerTestBase
                                                          "role:auditor",
                                                          "team-reader",
                                                          "\"role:other-team\" in session.createdUnder"),
+                                     new GrantDefinition("cancel-team",
+                                                         "role:canceller",
+                                                         "team-canceller",
+                                                         "\"role:modelling-team\" in session.createdUnder"),
                                    ],
                                    sets,
                                    out var rejected);
@@ -262,12 +271,13 @@ public class AuthorizationEnforcerTestBase
     return $"Cert=\"{Uri.EscapeDataString(certificate.ExportCertificatePem())}\"";
   }
 
-  private const string Alice    = "CN=alice, OU=modelling-team";
-  private const string Lead     = "CN=lead, OU=lead";
-  private const string Support  = "CN=support, OU=support";
-  private const string Stranger = "CN=stranger";
-  private const string Admin    = "CN=admin, OU=platform-team";
-  private const string Auditor  = "CN=auditor, OU=auditor";
+  private const string Alice     = "CN=alice, OU=modelling-team";
+  private const string Lead      = "CN=lead, OU=lead";
+  private const string Support   = "CN=support, OU=support";
+  private const string Stranger  = "CN=stranger";
+  private const string Admin     = "CN=admin, OU=platform-team";
+  private const string Auditor   = "CN=auditor, OU=auditor";
+  private const string Canceller = "CN=canceller, OU=canceller";
 
   private static TestServerCallContext Context(string? subject)
   {
@@ -841,6 +851,31 @@ public class AuthorizationEnforcerTestBase
       Assert.That(Assert.ThrowsAsync<RpcException>(() => Wait(Auditor))!.StatusCode,
                   Is.EqualTo(StatusCode.PermissionDenied));
       await Wait(Lead)
+        .ConfigureAwait(false);
+    }
+  }
+
+  [Test]
+  public async Task CancellingTasksNeedsToReadThem()
+  {
+    if (RunTests)
+    {
+      Task<ServerCallContext> Cancel(string subject)
+        => Authorize(subject,
+                     nameof(GrpcTasksService),
+                     nameof(GrpcTasksService.CancelTasks),
+                     new CancelTasksRequest
+                     {
+                       TaskIds =
+                       {
+                         "t-alice",
+                       },
+                     });
+
+      // The answer carries the summaries of the tasks, their errors included: task:cancel alone is not enough
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => Cancel(Canceller))!.StatusCode,
+                  Is.EqualTo(StatusCode.PermissionDenied));
+      await Cancel(Lead)
         .ConfigureAwait(false);
     }
   }
