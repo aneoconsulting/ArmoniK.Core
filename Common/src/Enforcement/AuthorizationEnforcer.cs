@@ -306,11 +306,15 @@ public class AuthorizationEnforcer
     var partitions = SessionLifeCycleHelper.EffectivePartitions(declared,
                                                                 options_.DefaultPartition);
 
+    var creation = engine.DecideSessionCreation(caller.Caller,
+                                                partitions);
+
     // Only the declared partitions are decided on: the default task options must use one of them, or the session would
-    // run tasks in a partition its creation was not decided on
+    // run tasks in a partition its creation was not decided on. Checked once the creation is allowed, so that a caller
+    // refused learns nothing of the partitions, the default one included
     var optionsPartition = SessionLifeCycleHelper.TaskOptionsPartition(taskOptions,
                                                                        options_.DefaultPartition);
-    if (!partitions.Contains(optionsPartition))
+    if (creation.Decision.IsAllowed && !partitions.Contains(optionsPartition))
     {
       audit_.Record(service,
                     method,
@@ -324,9 +328,6 @@ public class AuthorizationEnforcer
                                         $"The partition {optionsPartition} of the default task options is not one of the partitions of the session: " +
                                         $"[{string.Join(", ", partitions)}]"));
     }
-
-    var creation = engine.DecideSessionCreation(caller.Caller,
-                                                partitions);
 
     Enforce(service,
             method,
