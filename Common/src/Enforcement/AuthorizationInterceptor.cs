@@ -113,6 +113,10 @@ public class AuthorizationInterceptor : Interceptor
                                                                             method,
                                                                             rule,
                                                                             first!,
+                                                                            context),
+                                          () => enforcer_.RefuseEmptyStream(service,
+                                                                            method,
+                                                                            rule,
                                                                             context));
     }
 
@@ -171,14 +175,17 @@ public class AuthorizationInterceptor : Interceptor
   private sealed class DecidingReader<T> : IAsyncStreamReader<T>
   {
     private readonly Func<T, Task>         decide_;
+    private readonly Func<Exception>       empty_;
     private readonly IAsyncStreamReader<T> inner_;
     private          Task?                 decision_;
 
     public DecidingReader(IAsyncStreamReader<T> inner,
-                          Func<T, Task>         decide)
+                          Func<T, Task>         decide,
+                          Func<Exception>       empty)
     {
       inner_  = inner;
       decide_ = decide;
+      empty_  = empty;
     }
 
     public T Current
@@ -199,8 +206,7 @@ public class AuthorizationInterceptor : Interceptor
       // A stream without message names nothing to decide on: it is refused, so that no handler runs undecided
       decision_ = moved
                     ? decide_(inner_.Current)
-                    : Task.FromException(new RpcException(new Status(StatusCode.InvalidArgument,
-                                                                     "The request stream is empty")));
+                    : Task.FromException(empty_());
       await decision_.ConfigureAwait(false);
       return moved;
     }

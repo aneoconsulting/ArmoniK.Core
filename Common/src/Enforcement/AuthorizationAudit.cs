@@ -49,7 +49,7 @@ public class AuthorizationAudit
   /// <param name="service">Service called</param>
   /// <param name="method">Method called</param>
   /// <param name="caller">The caller, null when the request carries no valid credential</param>
-  /// <param name="outcome">Outcome: Allow, Forbidden, NotFound, Unauthenticated or Fault</param>
+  /// <param name="outcome">Outcome: Allow, Forbidden, NotFound, Invalid, Unauthenticated or Fault</param>
   /// <param name="required">Permissions the operation requires</param>
   /// <param name="targets">Sessions, partitions or resources the decision was taken on</param>
   /// <param name="grants">Grants that conferred the required permissions, on an allow</param>

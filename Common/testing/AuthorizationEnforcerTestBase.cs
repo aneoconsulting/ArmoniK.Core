@@ -43,6 +43,8 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils.Uuid;
 
+using Google.Protobuf;
+
 using Grpc.AspNetCore.Server;
 using Grpc.Core;
 
@@ -1055,6 +1057,47 @@ public class AuthorizationEnforcerTestBase
                   Is.EqualTo(StatusCode.InvalidArgument));
       Assert.That(handled,
                   Is.False);
+      // Refused for an authenticated caller, so recorded as any other decision
+      Assert.That(audit_!.Messages,
+                  Has.One.StartsWith("Authorization Invalid")
+                     .And.Contains("UploadResultData")
+                     .And.Contains("empty"));
+    }
+  }
+
+  [Test]
+  public async Task AnUploadStartingWithDataIsRefusedAndRecorded()
+  {
+    if (RunTests)
+    {
+      var handled = false;
+      var context = await UploadContext()
+                      .ConfigureAwait(false);
+
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => new AuthorizationInterceptor(enforcer_!)
+                                                     .ClientStreamingServerHandler(new TestHelperAsyncStreamReader<UploadResultDataRequest>([
+                                                                                                                                              new UploadResultDataRequest
+                                                                                                                                              {
+                                                                                                                                                DataChunk =
+                                                                                                                                                  ByteString.CopyFromUtf8("data"),
+                                                                                                                                              },
+                                                                                                                                            ]),
+                                                                                   context,
+                                                                                   async (stream,
+                                                                                          _) =>
+                                                                                   {
+                                                                                     await stream.MoveNext(CancellationToken.None)
+                                                                                                 .ConfigureAwait(false);
+                                                                                     handled = true;
+                                                                                     return new UploadResultDataResponse();
+                                                                                   }))!.StatusCode,
+                  Is.EqualTo(StatusCode.InvalidArgument));
+      Assert.That(handled,
+                  Is.False);
+      Assert.That(audit_!.Messages,
+                  Has.One.StartsWith("Authorization Invalid")
+                     .And.Contains("UploadResultData")
+                     .And.Contains("Message should be an Id"));
     }
   }
 
