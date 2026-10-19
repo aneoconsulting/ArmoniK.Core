@@ -1120,6 +1120,31 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public void ACallerRefusedACreationLearnsNothingOfTheDefaultPartition()
+  {
+    if (RunTests)
+    {
+      // The default task options name no partition, so they use the default one, which is not declared: a caller allowed
+      // on the declared partition is told so, a caller refused is not
+      var refused = Assert.CatchAsync(() => Authorize(Stranger,
+                                                      nameof(GrpcSessionsService),
+                                                      nameof(GrpcSessionsService.CreateSession),
+                                                      new CreateSessionRequest
+                                                      {
+                                                        PartitionIds =
+                                                        {
+                                                          "gpu",
+                                                        },
+                                                        DefaultTaskOption = new Api.gRPC.V1.TaskOptions(),
+                                                      }));
+      Assert.That(refused,
+                  Is.InstanceOf<PartitionNotFoundException>());
+      Assert.That(refused!.Message,
+                  Does.Not.Contain("part0"));
+    }
+  }
+
+  [Test]
   public async Task ASessionIsDecidedOnItsDeclaredPartitionsAndUsesNoOther()
   {
     if (RunTests)
