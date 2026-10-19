@@ -76,12 +76,6 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 [TestFixture]
 public class AuthorizationEnforcerTestBase
 {
-  /// <summary>Callers authenticate with the client certificates forwarded by the ingress</summary>
-  private static readonly AuthorizationOptions XfccOnly = new()
-                                                          {
-                                                            Authentication = CallerAuthentication.Xfcc,
-                                                          };
-
   [SetUp]
   public async Task SetUp()
   {
@@ -195,6 +189,12 @@ public class AuthorizationEnforcerTestBase
     ResultTable  = null;
     RunTests     = false;
   }
+
+  /// <summary>Callers authenticate with the client certificates forwarded by the ingress</summary>
+  private static readonly AuthorizationOptions XfccOnly = new()
+                                                          {
+                                                            Authentication = CallerAuthentication.Xfcc,
+                                                          };
 
   private AuthorizationEnforcer Enforcer(ISessionTable sessionTable)
     => new(new FixedEngine(engine_!),
@@ -369,7 +369,7 @@ public class AuthorizationEnforcerTestBase
       var authenticated = Context(Alice);
       var caller = await new CallerResolver(XfccOnly,
                                             new IdentityOptions()).ResolveAsync(authenticated.GetHttpContext())
-                                            .ConfigureAwait(false);
+                                                                  .ConfigureAwait(false);
 
       // No credential left in the headers: only the caller kept by the authentication middleware can be used
       var context = Context(null);

@@ -119,7 +119,7 @@ public static class Program
              .ValidateGrpcRequests();
 
       var authorizationEnabled = builder.Services.AddArmoniKAuthorization(builder.Configuration,
-                                                                                 logger.GetLogger());
+                                                                          logger.GetLogger());
 
       builder.Services.AddHealthChecks();
       builder.Services.AddGrpc(options =>
