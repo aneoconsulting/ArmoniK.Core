@@ -78,7 +78,8 @@ export TF_VAR_enable_seq        := seq
 export TF_VAR_enable_prometheus := prometheus
 export TF_VAR_socket_type       := socket_type
 export TF_VAR_container_init    := cinit
-export TF_VAR_enable_keycloak   := keycloak
+# Tokens are only read when requests are authorized: Keycloak alone would leave every request allowed, tokens unchecked
+export TF_VAR_enable_keycloak   := if keycloak == "true" { if authz == "true" { "true" } else { error("keycloak=true requires authz=true: tokens are only validated when requests are authorized") } } else { keycloak }
 
 # Permission sets of the access model (none is shipped) and grants for the generated mTLS client certificate (cn:client)
 # and the Keycloak role modelling-team: create sessions in the default partition and own them, plus what sharing and
