@@ -112,6 +112,27 @@ public interface IAuthorizationLock : IAsyncDisposable
   ///   must stop writing
   /// </summary>
   CancellationToken Lost { get; }
+
+  /// <summary>
+  ///   The table to read and write through while the lock is held, null for the table that gave the lock. A store whose
+  ///   lock is a transaction gives a table writing in it: its writes are kept only when <see cref="CommitAsync" /> is called
+  ///   while the lock is still held, and are discarded otherwise
+  /// </summary>
+  IAuthorizationTable? Table
+    => null;
+
+  /// <summary>
+  ///   Whether a change that fails under the lock leaves nothing written, so that it needs no change begun again
+  /// </summary>
+  bool Atomic
+    => false;
+
+  /// <summary>
+  ///   Keep what was written through <see cref="Table" />
+  /// </summary>
+  /// <exception cref="Exception">The lock was lost meanwhile: nothing written through <see cref="Table" /> is kept</exception>
+  Task CommitAsync(CancellationToken cancellationToken = default)
+    => Task.CompletedTask;
 }
 
 /// <summary>
