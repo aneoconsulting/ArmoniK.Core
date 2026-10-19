@@ -325,6 +325,8 @@ public class AuthorizationTable : IAuthorizationTable
         // Created at the same time by another replica
       }
 
+      // The lease starts on the server after it was asked for: its end is reckoned from here
+      var asked = Stopwatch.GetTimestamp();
       var taken = await collection.UpdateOneAsync(expired,
                                                   Lease.Hold(owner,
                                                              LockDuration),
@@ -335,6 +337,7 @@ public class AuthorizationTable : IAuthorizationTable
         return new Lease(collection,
                          owner,
                          LockDuration,
+                         asked,
                          logger_);
       }
 
@@ -394,8 +397,8 @@ public class AuthorizationTable : IAuthorizationTable
     => $"{name}@{version}";
 
   /// <summary>
-  ///   Lease of the lock, renewed while it is held, and reported lost when another replica took it over or when it could
-  ///   not be renewed before it expired
+  ///   Lease of the lock, renewed while it is held, and reported lost when another replica took it over or when it was not
+  ///   renewed a third of the lease before it can expire
   /// </summary>
   private sealed class Lease : IAuthorizationLock
   {
@@ -410,12 +413,14 @@ public class AuthorizationTable : IAuthorizationTable
     public Lease(IMongoCollection<AuthorizationStateData> collection,
                  string                                   owner,
                  TimeSpan                                 duration,
+                 long                                     asked,
                  ILogger                                  logger)
     {
       collection_ = collection;
       owner_      = owner;
       duration_   = duration;
       logger_     = logger;
+      Extend(asked);
       renewal_    = Task.Run(RenewAsync);
     }
 
@@ -478,16 +483,31 @@ public class AuthorizationTable : IAuthorizationTable
                        }),
       ]));
 
+    // Reported lost a third of the lease before it can end on the server, reckoned from when it was asked for: a write
+    // started before is given that third to land, before another replica can take the lock over
+    private void Extend(long asked)
+    {
+      var left = duration_ * 2 / 3 - Stopwatch.GetElapsedTime(asked);
+      if (left <= TimeSpan.Zero)
+      {
+        lost_.Cancel();
+      }
+      else
+      {
+        lost_.CancelAfter(left);
+      }
+    }
+
     private async Task RenewAsync()
     {
-      var renewed = Stopwatch.StartNew();
-      while (!stop_.IsCancellationRequested)
+      while (!stop_.IsCancellationRequested && !lost_.IsCancellationRequested)
       {
         try
         {
           await Task.Delay(duration_ / 3,
                            stop_.Token)
                     .ConfigureAwait(false);
+          var asked = Stopwatch.GetTimestamp();
           var result = await collection_.UpdateOneAsync(data => data.Id == LockId && data.Owner == owner_,
                                                         Hold(owner_,
                                                              duration_),
@@ -501,21 +521,17 @@ public class AuthorizationTable : IAuthorizationTable
             return;
           }
 
-          renewed.Restart();
+          Extend(asked);
         }
         catch (OperationCanceledException) when (stop_.IsCancellationRequested)
         {
           return;
         }
-        catch (Exception) when (renewed.Elapsed < duration_)
+        catch (Exception e)
         {
-          // Tried again while the lease still holds
-        }
-        catch (Exception)
-        {
-          await lost_.CancelAsync()
-                     .ConfigureAwait(false);
-          return;
+          // Tried again until the lease is reported lost by its deadline
+          logger_.LogWarning(e,
+                             "The lease of the authorization lock could not be renewed");
         }
       }
     }
