@@ -21,6 +21,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Text;
 
 using NUnit.Framework;
 
@@ -175,6 +176,53 @@ public class CertificateIdentityTests
     return new X500DistinguishedName(writer.Encode());
   }
 
+  // A subject written attribute by attribute, each RDN a list of (type, string tag, content), so that value types the
+  // .NET writers check or never produce can be used
+  private static X500DistinguishedName RawSubject(params (string Oid, UniversalTagNumber Tag, byte[] Content)[][] rdns)
+  {
+    var writer = new AsnWriter(AsnEncodingRules.DER);
+
+    using (writer.PushSequence())
+    {
+      foreach (var rdn in rdns)
+      {
+        using (writer.PushSetOf())
+        {
+          foreach (var (oid, tag, content) in rdn)
+          {
+            using (writer.PushSequence())
+            {
+              writer.WriteObjectIdentifier(oid);
+              // Short-form length: contents here are under 128 bytes
+              writer.WriteEncodedValue(new[]
+                                       {
+                                         (byte)tag,
+                                         (byte)content.Length,
+                                       }.Concat(content)
+                                        .ToArray());
+            }
+          }
+        }
+      }
+    }
+
+    return new X500DistinguishedName(writer.Encode());
+  }
+
+  private static (string, UniversalTagNumber, byte[]) Utf8(string oid,
+                                                           string value)
+    => (oid, UniversalTagNumber.UTF8String, Encoding.UTF8.GetBytes(value));
+
+  // A string type .NET does not decode
+  private static (string, UniversalTagNumber, byte[]) Universal(string oid,
+                                                                string value)
+    => (oid, UniversalTagNumber.UniversalString, new UTF32Encoding(true,
+                                                                   false).GetBytes(value));
+
+  private const string Cn  = "2.5.4.3";
+  private const string Ou  = "2.5.4.11";
+  private const string Uid = "0.9.2342.19200300.100.1.1";
+
   [Test]
   public void TheCommonNameIsTheCallerAndUnitsAreRoles()
   {
@@ -262,4 +310,36 @@ public class CertificateIdentityTests
   [TestCase("CN=alice, CN=bob")]
   public void ASubjectWithoutExactlyOneCommonNameIsRejected(string subject)
     => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(subject)));
+
+  [Test]
+  public void ACommonNameInsideAMultiValuedRdnCountsAsASecondOne()
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "admin"), Utf8(Uid, "7")],
+                                                                                                       [Utf8(Cn, "alice")]))));
+
+  [Test]
+  public void ACommonNameThatCannotBeDecodedCountsAsASecondOne()
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "admin")],
+                                                                                                       [Universal(Cn, "alice")]))));
+
+  [Test]
+  public void AnEmptyCommonNameCountsAsASecondOne()
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "")],
+                                                                                                       [Utf8(Cn, "alice")]))));
+
+  [Test]
+  public void ASoleCommonNameThatCannotBeDecodedIsRejected()
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Universal(Cn, "alice")]))));
+
+  [Test]
+  public void AUnitThatCannotBeDecodedIsRejected()
+    // Rather than silently dropping a role the issuer meant to give
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "alice")],
+                                                                                                       [Universal(Ou, "platform")]))));
+
+  [Test]
+  public void AnEmptyUnitIsNoRole()
+    => Assert.That(CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "alice")],
+                                                                              [Utf8(Ou, "")])))
+                                      .Caller.Roles,
+                   Is.Empty);
 }
