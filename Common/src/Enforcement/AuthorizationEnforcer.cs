@@ -165,15 +165,9 @@ public class AuthorizationEnforcer
                                    object            request,
                                    ServerCallContext context)
   {
-    // Authenticated before the request was read, by the authentication middleware: without it, the request of a
-    // caller without valid credentials would have been read, so the request is not decided
-    if (!context.GetHttpContext()
-                .Items.TryGetValue(CallerKey,
-                                   out var authenticated) || authenticated is not AuthenticatedCaller caller)
-    {
-      throw new InvalidOperationException($"{service}.{method} reached authorization without being authenticated: " +
-                                          $"{nameof(CallerAuthenticationMiddlewareExt.UseCallerAuthentication)} must run after routing");
-    }
+    var caller = Authenticated(service,
+                               method,
+                               context);
 
     try
     {
@@ -214,8 +208,12 @@ public class AuthorizationEnforcer
           return;
         case RuleKind.Partition:
         {
-          var partition = rule.Extract!(request)
-                              .Partition ?? "";
+          var partition = Extract(service,
+                                  method,
+                                  caller,
+                                  rule,
+                                  request)
+                            .Partition ?? "";
           Enforce(service,
                   method,
                   caller,
@@ -243,7 +241,11 @@ public class AuthorizationEnforcer
                                       caller,
                                       rule,
                                       engine,
-                                      rule.Extract!(request),
+                                      Extract(service,
+                                              method,
+                                              caller,
+                                              rule,
+                                              request),
                                       context)
             .ConfigureAwait(false);
           return;
@@ -291,6 +293,70 @@ public class AuthorizationEnforcer
     }
   }
 
+  /// <summary>
+  ///   Refuse a request stream without any message, which names nothing to decide on
+  /// </summary>
+  /// <param name="service">Name of the service class</param>
+  /// <param name="method">Name of the method</param>
+  /// <param name="rule">Rule of the method</param>
+  /// <param name="context">Context of the call</param>
+  /// <returns>The refusal to throw</returns>
+  public RpcException RefuseEmptyStream(string            service,
+                                        string            method,
+                                        MethodRule        rule,
+                                        ServerCallContext context)
+  {
+    Invalid(service,
+            method,
+            Authenticated(service,
+                          method,
+                          context),
+            rule,
+            [],
+            "empty request stream");
+    return new RpcException(new Status(StatusCode.InvalidArgument,
+                                       "The request stream is empty"));
+  }
+
+  /// <summary>
+  ///   The caller, authenticated before the request was read by the authentication middleware: without it, the request
+  ///   of a caller without valid credentials would have been read, so the request is not decided
+  /// </summary>
+  private static AuthenticatedCaller Authenticated(string            service,
+                                                   string            method,
+                                                   ServerCallContext context)
+    => context.GetHttpContext()
+              .Items.TryGetValue(CallerKey,
+                                 out var authenticated) && authenticated is AuthenticatedCaller caller
+         ? caller
+         : throw new InvalidOperationException($"{service}.{method} reached authorization without being authenticated: " +
+                                               $"{nameof(CallerAuthenticationMiddlewareExt.UseCallerAuthentication)} must run after routing");
+
+  /// <summary>
+  ///   What the request names, a request too malformed to name it being refused as invalid and recorded as such
+  /// </summary>
+  private RequestTargets Extract(string              service,
+                                 string              method,
+                                 AuthenticatedCaller caller,
+                                 MethodRule          rule,
+                                 object              request)
+  {
+    try
+    {
+      return rule.Extract!(request);
+    }
+    catch (RpcException e) when (e.StatusCode == StatusCode.InvalidArgument)
+    {
+      Invalid(service,
+              method,
+              caller,
+              rule,
+              [],
+              e.Status.Detail);
+      throw;
+    }
+  }
+
   private static bool IsRefusal(Exception e)
     => e is SessionNotFoundException or TaskNotFoundException or ResultNotFoundException or PartitionNotFoundException;
 
@@ -316,14 +382,12 @@ public class AuthorizationEnforcer
                                                                        options_.DefaultPartition);
     if (creation.Decision.IsAllowed && !partitions.Contains(optionsPartition))
     {
-      audit_.Record(service,
-                    method,
-                    caller,
-                    "Invalid",
-                    rule.Permissions,
-                    partitions,
-                    [],
-                    "partition of the default task options not declared");
+      Invalid(service,
+              method,
+              caller,
+              rule,
+              partitions,
+              "partition of the default task options not declared");
       throw new RpcException(new Status(StatusCode.InvalidArgument,
                                         $"The partition {optionsPartition} of the default task options is not one of the partitions of the session: " +
                                         $"[{string.Join(", ", partitions)}]"));
@@ -679,6 +743,21 @@ public class AuthorizationEnforcer
                      rule.Permissions,
                      targets,
                      grants);
+
+  private void Invalid(string              service,
+                       string              method,
+                       AuthenticatedCaller caller,
+                       MethodRule          rule,
+                       IEnumerable<string> targets,
+                       string              reason)
+    => audit_.Record(service,
+                     method,
+                     caller,
+                     "Invalid",
+                     rule.Permissions,
+                     targets,
+                     [],
+                     reason);
 
   private void Refuse(string              service,
                       string              method,
