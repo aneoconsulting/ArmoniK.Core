@@ -118,6 +118,70 @@ public class AuthorizationTableTests : AuthorizationTableTestBase
   }
 
   [Test]
+  public async Task ALeaseThatCannotBeRenewedIsReportedLostBeforeItEnds()
+  {
+    var table = Table(TimeSpan.FromSeconds(6));
+    await table.Init(CancellationToken.None)
+               .ConfigureAwait(false);
+    var state = tableProvider_!.GetServiceProvider()
+                               .GetRequiredService<MongoCollectionProvider<AuthorizationStateData, AuthorizationStateDataModelMapping>>()
+                               .Get();
+
+    await using var held = await table.LockAsync()
+                                      .ConfigureAwait(false);
+    // Every renewal is refused, while no other replica takes the lock
+    await state.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+                                                       {
+                                                         {
+                                                           "collMod", state.CollectionNamespace.CollectionName
+                                                         },
+                                                         {
+                                                           "validator", new BsonDocument("Owner",
+                                                                                         "nobody")
+                                                         },
+                                                       })
+               .ConfigureAwait(false);
+    try
+    {
+      Assert.That(() => held.Lost.IsCancellationRequested,
+                  Is.True.After(10000,
+                                20));
+
+      // Reported lost while the lease still holds on the server, so that no write starts once another replica can take
+      // the lock over
+      Assert.That(await state.CountDocumentsAsync(new BsonDocument
+                                                  {
+                                                    {
+                                                      "_id", "lock"
+                                                    },
+                                                    {
+                                                      "$expr", new BsonDocument("$gt",
+                                                                                new BsonArray
+                                                                                {
+                                                                                  "$" + nameof(AuthorizationStateData.ExpiresAt),
+                                                                                  "$$NOW",
+                                                                                })
+                                                    },
+                                                  })
+                             .ConfigureAwait(false),
+                  Is.EqualTo(1));
+    }
+    finally
+    {
+      await state.Database.RunCommandAsync<BsonDocument>(new BsonDocument
+                                                         {
+                                                           {
+                                                             "collMod", state.CollectionNamespace.CollectionName
+                                                           },
+                                                           {
+                                                             "validator", new BsonDocument()
+                                                           },
+                                                         })
+                 .ConfigureAwait(false);
+    }
+  }
+
+  [Test]
   public async Task IncompleteDocumentsAreReadAndRefusedAlone()
   {
     var services = tableProvider_!.GetServiceProvider();
