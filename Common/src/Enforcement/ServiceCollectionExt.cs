@@ -27,6 +27,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Tokens;
 
@@ -38,20 +39,65 @@ namespace ArmoniK.Core.Common.Enforcement;
 public static class ServiceCollectionExt
 {
   /// <summary>
-  ///   Register the authorization of requests when it is enabled
+  ///   Every method a caller can authenticate with
+  /// </summary>
+  private const CallerAuthentication AllMethods = CallerAuthentication.Xfcc | CallerAuthentication.Token;
+
+  private static readonly string AuthenticationKey = $"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Authentication)}";
+
+  /// <summary>
+  ///   Settings of <see cref="IdentityOptions" /> read only with <see cref="CallerAuthentication.Token" />
+  /// </summary>
+  private static readonly string[] TokenSettings =
+  [
+    nameof(IdentityOptions.Authority),
+    nameof(IdentityOptions.Audience),
+    nameof(IdentityOptions.TenantId),
+    nameof(IdentityOptions.SubjectClaim),
+    nameof(IdentityOptions.RolesClaim),
+    nameof(IdentityOptions.RequireHttpsMetadata),
+    nameof(IdentityOptions.MetadataRefreshInterval),
+    nameof(IdentityOptions.ValidateTokens),
+  ];
+
+  /// <summary>
+  ///   Settings of <see cref="IdentityOptions" /> read only with <see cref="CallerAuthentication.Xfcc" />
+  /// </summary>
+  private static readonly string[] CertificateSettings =
+  [
+    nameof(IdentityOptions.CertificateHeader),
+  ];
+
+  /// <summary>
+  ///   Register the authorization of requests when a method of authentication is selected
   /// </summary>
   /// <param name="services">Collection of services</param>
   /// <param name="configuration">Configuration of the application</param>
+  /// <param name="logger">Logger warning about the settings of methods that are not selected</param>
   /// <returns>Whether authorization is enabled, in which case <see cref="AuthorizationInterceptor" /> must be added to gRPC</returns>
   /// <exception cref="InvalidOperationException">The configuration is invalid</exception>
   public static bool AddArmoniKAuthorization(this IServiceCollection services,
-                                             IConfiguration          configuration)
+                                             IConfiguration          configuration,
+                                             ILogger                 logger)
   {
     ThrowIfLegacyConfiguration(configuration);
 
     var options = configuration.GetInitializedValue<AuthorizationOptions>(AuthorizationOptions.SettingSection);
 
-    if (!options.Enabled)
+    // The binder takes any number, such as 4 or -1, as a value of the enumeration
+    if ((options.Authentication & ~AllMethods) != 0)
+    {
+      throw new InvalidOperationException($"{AuthenticationKey} '{configuration[AuthenticationKey]}' holds an unknown method: " +
+                                          $"use {CallerAuthentication.None}, {CallerAuthentication.Xfcc}, {CallerAuthentication.Token} " +
+                                          $"or {CallerAuthentication.Xfcc},{CallerAuthentication.Token}");
+    }
+
+    // Only warned about, so that authorization can be disabled without removing the settings of the methods
+    WarnUnusedSettings(configuration,
+                       options.Authentication,
+                       logger);
+
+    if (options.Authentication == CallerAuthentication.None)
     {
       return false;
     }
@@ -65,9 +111,17 @@ public static class ServiceCollectionExt
 
     var identity = configuration.GetInitializedValue<IdentityOptions>(IdentityOptions.SettingSection);
 
-    if (string.IsNullOrWhiteSpace(identity.CertificateHeader))
+    if (options.Authentication.HasFlag(CallerAuthentication.Xfcc) && string.IsNullOrWhiteSpace(identity.CertificateHeader))
     {
-      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.CertificateHeader)} cannot be empty");
+      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.CertificateHeader)} cannot be empty " +
+                                          $"when {AuthenticationKey} holds {CallerAuthentication.Xfcc}");
+    }
+
+    if (options.Authentication.HasFlag(CallerAuthentication.Token) && identity.ValidateTokens && string.IsNullOrWhiteSpace(identity.Authority))
+    {
+      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.Authority)} is required when " +
+                                          $"{AuthenticationKey} holds {CallerAuthentication.Token}, unless {nameof(IdentityOptions.ValidateTokens)} " +
+                                          "is false and the tokens are written by a trusted proxy");
     }
 
     // Refuse to start on a configuration whose grants would be refused
@@ -90,28 +144,73 @@ public static class ServiceCollectionExt
             .AddSingleton<AuthorizationInterceptor>();
     services.AddSingletonWithHealthCheck<CallerResolver>(nameof(CallerResolver));
 
-    if (!identity.ValidateTokens)
+    if (!options.Authentication.HasFlag(CallerAuthentication.Token))
     {
-      AddUnvalidatedTokens(services,
-                           identity);
+      return true;
     }
-    else if (!string.IsNullOrWhiteSpace(identity.Authority))
+
+    if (identity.ValidateTokens)
     {
       AddTokenValidation(services,
                          identity);
+    }
+    else
+    {
+      AddUnvalidatedTokens(services,
+                           identity);
     }
 
     return true;
   }
 
   /// <summary>
+  ///   Warn about the identity settings written for a method that is not selected, which are ignored
+  /// </summary>
+  private static void WarnUnusedSettings(IConfiguration       configuration,
+                                         CallerAuthentication authentication,
+                                         ILogger              logger)
+  {
+    foreach (var (method, settings) in new[]
+                                       {
+                                         (CallerAuthentication.Token, TokenSettings),
+                                         (CallerAuthentication.Xfcc, CertificateSettings),
+                                       })
+    {
+      if (authentication.HasFlag(method))
+      {
+        continue;
+      }
+
+      foreach (var setting in settings.Select(setting => $"{IdentityOptions.SettingSection}:{setting}")
+                                      .Where(key => configuration[key] is not null))
+      {
+        logger.LogWarning("{Setting} is ignored: {Method} is not selected in {AuthenticationSetting} ({Authentication})",
+                          setting,
+                          method,
+                          AuthenticationKey,
+                          authentication);
+      }
+    }
+  }
+
+  /// <summary>
   ///   Refuse to start on a configuration of the removed authentication without an explicit choice about authorization,
-  ///   since removing the former flags alone would leave every request allowed
+  ///   since removing the former flags alone would leave every request allowed, and on the removed
+  ///   <c>Authorization:Enabled</c>
   /// </summary>
   /// <param name="configuration">Configuration of the application</param>
   /// <exception cref="InvalidOperationException">The configuration of the removed authentication is present</exception>
   public static void ThrowIfLegacyConfiguration(IConfiguration configuration)
   {
+    // Ignoring it would allow every request of a deployment that enabled authorization
+    if (configuration[$"{AuthorizationOptions.SettingSection}:Enabled"] is not null)
+    {
+      throw new InvalidOperationException($"{AuthorizationOptions.SettingSection}:Enabled is replaced by {AuthenticationKey}, the methods callers " +
+                                          $"authenticate with: {CallerAuthentication.Xfcc} for client certificates forwarded by the ingress, "     +
+                                          $"{CallerAuthentication.Token} for tokens, {CallerAuthentication.Xfcc},{CallerAuthentication.Token} for " +
+                                          $"both, or {CallerAuthentication.None} to allow every request. Remove {AuthorizationOptions.SettingSection}:Enabled");
+    }
+
     var legacy = new[]
       {
         "Authenticator",
@@ -121,11 +220,12 @@ public static class ServiceCollectionExt
                                   .Exists())
        .ToList();
 
-    if (legacy.Count != 0 && configuration[$"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)}"] is null)
+    if (legacy.Count != 0 && configuration[AuthenticationKey] is null)
     {
       throw new InvalidOperationException($"The configuration holds settings of the removed authentication ({string.Join(", ", legacy)}). Set " +
-                                          $"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Enabled)} explicitly, true to "  +
-                                          "authorize requests with grants or false to allow every request, and remove these settings");
+                                          $"{AuthenticationKey} explicitly, to {CallerAuthentication.Xfcc}, {CallerAuthentication.Token} or "      +
+                                          $"{CallerAuthentication.Xfcc},{CallerAuthentication.Token} to authorize requests with grants, or to "    +
+                                          $"{CallerAuthentication.None} to allow every request, and remove these settings");
     }
   }
 
