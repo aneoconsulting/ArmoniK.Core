@@ -71,15 +71,20 @@ public class GrantDataModelMapping : IMongoDataModelMapping<GrantData>
                                                {
                                                  cm.MapIdProperty(nameof(GrantData.GrantId))
                                                    .SetIsRequired(true);
+                                                 // Not required, so that an incomplete document does not fail the whole read: a
+                                                 // missing field is read as its default, and the grant is refused alone when deciding.
+                                                 // The creator is only chosen when every field has a value or a default
                                                  cm.MapProperty(nameof(GrantData.Principal))
-                                                   .SetIsRequired(true);
+                                                   .SetDefaultValue((object?)null);
                                                  cm.MapProperty(nameof(GrantData.PermissionSet))
-                                                   .SetIsRequired(true);
-                                                 cm.MapProperty(nameof(GrantData.Condition));
+                                                   .SetDefaultValue((object?)null);
+                                                 cm.MapProperty(nameof(GrantData.Condition))
+                                                   .SetDefaultValue((object?)null);
+                                                 // Api when missing: such a grant is never deleted nor rewritten by the reconciliation
                                                  cm.MapProperty(nameof(GrantData.Origin))
-                                                   .SetIsRequired(true);
+                                                   .SetDefaultValue(AuthorizationOrigin.Api);
                                                  cm.MapProperty(nameof(GrantData.CreationDate))
-                                                   .SetIsRequired(true);
+                                                   .SetDefaultValue(default(DateTime));
                                                  cm.SetIgnoreExtraElements(true);
                                                  cm.MapCreator(model => new GrantData(model.GrantId,
                                                                                       model.Principal,
@@ -118,12 +123,16 @@ public class PermissionSetDataModelMapping : IMongoDataModelMapping<PermissionSe
                                                        {
                                                          cm.MapIdProperty(nameof(PermissionSetData.Name))
                                                            .SetIsRequired(true);
+                                                         // Not required, so that an incomplete document does not fail the whole read:
+                                                         // the set is left out alone when deciding. The creator is only chosen when
+                                                         // every field has a value or a default
                                                          cm.MapProperty(nameof(PermissionSetData.Version))
-                                                           .SetIsRequired(true);
+                                                           .SetDefaultValue(0);
                                                          cm.MapProperty(nameof(PermissionSetData.Permissions))
-                                                           .SetIsRequired(true);
+                                                           .SetDefaultValue((object?)null);
+                                                         // Api when missing: such a set is never deleted nor rewritten by the reconciliation
                                                          cm.MapProperty(nameof(PermissionSetData.Origin))
-                                                           .SetIsRequired(true);
+                                                           .SetDefaultValue(AuthorizationOrigin.Api);
                                                          cm.SetIgnoreExtraElements(true);
                                                          cm.MapCreator(model => new PermissionSetData(model.Name,
                                                                                                       model.Version,

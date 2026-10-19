@@ -28,6 +28,7 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
@@ -97,10 +98,11 @@ public class AuthorizationReconcilerTestBase
          Condition     = condition,
        };
 
-  private Task<bool> ReconcileAsync(AuthorizationOptions options)
+  private Task<bool> ReconcileAsync(AuthorizationOptions options,
+                                    ILoggerFactory?      audit = null)
     => new AuthorizationReconciler(AuthorizationTable!,
                                    options,
-                                   new AuthorizationAudit(NullLoggerFactory.Instance),
+                                   new AuthorizationAudit(audit ?? NullLoggerFactory.Instance),
                                    TimeProvider.System,
                                    NullLogger<AuthorizationReconciler>.Instance).ReconcileAsync();
 
@@ -936,6 +938,140 @@ public class AuthorizationReconcilerTestBase
                     ]))
                     .ConfigureAwait(false),
                   Is.True);
+    }
+  }
+
+  [Test]
+  public async Task AMalformedSetOfTheApiDoesNotBlockTheConfiguration()
+  {
+    if (RunTests)
+    {
+      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("ops",
+                                                                            1,
+                                                                            ["session:read", null!],
+                                                                            AuthorizationOrigin.Api))
+                               .ConfigureAwait(false);
+      await AuthorizationTable.CreateGrantAsync(new GrantData("api",
+                                                              "role:ops",
+                                                              "ops",
+                                                              null,
+                                                              AuthorizationOrigin.Api,
+                                                              DateTime.UtcNow))
+                              .ConfigureAwait(false);
+
+      var faults = new List<string>();
+      using var audit = LoggerFactory.Create(builder => builder.AddProvider(new ForwardingLoggerProvider((_,
+                                                                                                         _,
+                                                                                                         _,
+                                                                                                         message,
+                                                                                                         _,
+                                                                                                         _) =>
+                                                                                                        {
+                                                                                                          if (message.Contains("Fault"))
+                                                                                                          {
+                                                                                                            faults.Add(message);
+                                                                                                          }
+                                                                                                        })));
+
+      // The grant of the API was already refused: it stays refused, and the configuration is applied
+      Assert.That(await ReconcileAsync(Options(1,
+                                               [
+                                                 Grant("own",
+                                                       "role:team",
+                                                       "session-own",
+                                                       Ownership),
+                                               ]),
+                                       audit)
+                    .ConfigureAwait(false),
+                  Is.True);
+      Assert.That((await GrantsAsync()
+                     .ConfigureAwait(false)).Keys,
+                  Is.EquivalentTo(new[]
+                                  {
+                                    "api",
+                                    "own",
+                                  }));
+      // Recorded once, though the sets are checked as stored and as they become
+      Assert.That(faults,
+                  Has.One.Contains("Fault on permission set ops"));
+    }
+  }
+
+  [Test]
+  public async Task AGrantOfTheConfigurationNamingAMalformedSetIsRefused()
+  {
+    if (RunTests)
+    {
+      await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("ops",
+                                                                            1,
+                                                                            ["session:read", null!],
+                                                                            AuthorizationOrigin.Api))
+                               .ConfigureAwait(false);
+
+      Assert.That(() => ReconcileAsync(Options(1,
+                                               [
+                                                 Grant("reader",
+                                                       "role:team",
+                                                       "ops"),
+                                               ])),
+                  Throws.InstanceOf<InvalidOperationException>()
+                        .With.Message.Contains("reader"));
+    }
+  }
+
+  private static IEnumerable<TestCaseData> MalformedPermissions()
+  {
+    yield return new TestCaseData(new List<string>
+                                  {
+                                    "data:read",
+                                    null!,
+                                  }).SetArgDisplayNames("NullPermission");
+    yield return new TestCaseData(null).SetArgDisplayNames("NoPermissionList");
+  }
+
+  [TestCaseSource(nameof(MalformedPermissions))]
+  public async Task AMalformedSetOfTheConfigurationStillConfiguredIsRewritten(List<string>? permissions)
+  {
+    if (RunTests)
+    {
+      try
+      {
+        await AuthorizationTable!.SetPermissionSetAsync(new PermissionSetData("team-reader",
+                                                                              1,
+                                                                              permissions!,
+                                                                              AuthorizationOrigin.Config))
+                                 .ConfigureAwait(false);
+      }
+      catch (ArgumentNullException)
+      {
+        Assert.Ignore("This storage cannot hold a set without a permission list");
+      }
+
+      Assert.That(await ReconcileAsync(Options(1,
+                                               [
+                                                 Grant("reader",
+                                                       "role:team",
+                                                       "team-reader"),
+                                               ],
+                                               [
+                                                 new PermissionSetOption
+                                                 {
+                                                   Name        = "team-reader",
+                                                   Permissions = ["data:read"],
+                                                 },
+                                               ]))
+                    .ConfigureAwait(false),
+                  Is.True);
+
+      var set = (await SetsAsync()
+                   .ConfigureAwait(false))["team-reader"];
+      Assert.That(set.Version,
+                  Is.EqualTo(2));
+      Assert.That(set.Permissions,
+                  Is.EqualTo(new[]
+                             {
+                               "data:read",
+                             }));
     }
   }
 
