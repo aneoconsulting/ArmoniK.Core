@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Formats.Asn1;
 using System.Linq;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 
 namespace ArmoniK.Core.Authorization;
@@ -106,11 +107,22 @@ public static class CertificateIdentity
   /// <param name="certificate">The client certificate</param>
   /// <returns>The caller, named <c>cn:</c> with roles named <c>role:</c></returns>
   /// <exception cref="FormatException">
-  ///   The subject does not carry exactly one common name, or carries a common name or an organizational unit whose value
-  ///   type cannot be decoded
+  ///   The subject cannot be decoded, does not carry exactly one common name, or carries a common name or an
+  ///   organizational unit whose value cannot be decoded
   /// </exception>
   public static AuthenticatedCaller FromCertificate(X509Certificate2 certificate)
-    => FromSubject(certificate.SubjectName);
+  {
+    try
+    {
+      return FromSubject(certificate.SubjectName);
+    }
+    catch (Exception e) when (e is CryptographicException or AsnContentException)
+    {
+      // An unreadable subject is an invalid credential, not a fault of the control plane
+      throw new FormatException($"The client certificate subject cannot be decoded: {e.Message}",
+                                e);
+    }
+  }
 
   /// <summary>
   ///   Read the distinguished name structurally rather than by splitting the subject on commas, which an escaped comma
