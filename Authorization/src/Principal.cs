@@ -17,8 +17,6 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
 
 namespace ArmoniK.Core.Authorization;
 
@@ -100,19 +98,11 @@ public sealed record Principal
     => Parse(RolePrefix + role);
 
   /// <summary>
-  ///   Whether a character is invisible, such as a zero width space or a change of writing direction
-  /// </summary>
-  /// <param name="c">The character</param>
-  /// <returns>Whether it is a format character</returns>
-  internal static bool IsFormat(char c)
-    => char.GetUnicodeCategory(c) == UnicodeCategory.Format;
-
-  /// <summary>
   ///   Parse a prefixed identifier
   /// </summary>
   /// <param name="value">The identifier</param>
   /// <param name="principal">The principal when valid</param>
-  /// <returns>Whether the identifier carries a known prefix followed by a non-empty name without control characters</returns>
+  /// <returns>Whether the identifier carries a known prefix followed by a name that reads as it compares</returns>
   public static bool TryParse(string?                            value,
                               [NotNullWhen(true)] out Principal? principal)
   {
@@ -129,35 +119,12 @@ public sealed record Principal
       return true;
     }
 
-    PrincipalKind kind;
-    string        name;
-
-    if (value.StartsWith(DirectoryPrefix,
-                         StringComparison.Ordinal))
-    {
-      kind = PrincipalKind.DirectoryIdentity;
-      name = value[DirectoryPrefix.Length..];
-    }
-    else if (value.StartsWith(CertificatePrefix,
-                              StringComparison.Ordinal))
-    {
-      kind = PrincipalKind.CertificateIdentity;
-      name = value[CertificatePrefix.Length..];
-    }
-    else if (value.StartsWith(RolePrefix,
-                              StringComparison.Ordinal))
-    {
-      kind = PrincipalKind.Role;
-      name = value[RolePrefix.Length..];
-    }
-    else
-    {
-      return false;
-    }
-
     // Spaces around the name would never match a credential, and invisible characters would make the grant read
     // otherwise than it applies
-    if (name.Length == 0 || name.Any(char.IsControl) || name.Any(IsFormat) || char.IsWhiteSpace(name[0]) || char.IsWhiteSpace(name[^1]))
+    if (!TrySplit(value,
+                  out var kind,
+                  out _,
+                  out var name) || !VisibleText.IsValid(name))
     {
       return false;
     }
@@ -177,8 +144,55 @@ public sealed record Principal
     => TryParse(value,
                 out var principal)
          ? principal
-         : throw new
-             FormatException($"'{value}' is not a principal: expected '{DirectoryPrefix}', '{CertificatePrefix}' or '{RolePrefix}' followed by a name, or '{EveryoneValue}'");
+         : throw new FormatException(Explain(value));
+
+  /// <summary>
+  ///   Why an identifier is not a principal
+  /// </summary>
+  /// <param name="value">The identifier, refused by <see cref="TryParse" /></param>
+  /// <returns>A sentence naming the offending character when the prefix is known</returns>
+  internal static string Explain(string? value)
+    => value is not null && TrySplit(value,
+                                      out _,
+                                      out var prefix,
+                                      out var name) && VisibleText.FindProblem(name) is { } problem
+         ? $"'{value}' is not a principal: the name after '{prefix}' {problem}"
+         : $"'{value}' is not a principal: expected '{DirectoryPrefix}', '{CertificatePrefix}' or '{RolePrefix}' followed by a name without surrounding spaces nor invisible characters, or '{EveryoneValue}'";
+
+  private static bool TrySplit(string                         value,
+                               out PrincipalKind              kind,
+                               [NotNullWhen(true)] out string? prefix,
+                               [NotNullWhen(true)] out string? name)
+  {
+    if (value.StartsWith(DirectoryPrefix,
+                         StringComparison.Ordinal))
+    {
+      kind   = PrincipalKind.DirectoryIdentity;
+      prefix = DirectoryPrefix;
+    }
+    else if (value.StartsWith(CertificatePrefix,
+                              StringComparison.Ordinal))
+    {
+      kind   = PrincipalKind.CertificateIdentity;
+      prefix = CertificatePrefix;
+    }
+    else if (value.StartsWith(RolePrefix,
+                              StringComparison.Ordinal))
+    {
+      kind   = PrincipalKind.Role;
+      prefix = RolePrefix;
+    }
+    else
+    {
+      kind   = default;
+      prefix = null;
+      name   = null;
+      return false;
+    }
+
+    name = value[prefix.Length..];
+    return true;
+  }
 
   /// <inheritdoc />
   public override string ToString()

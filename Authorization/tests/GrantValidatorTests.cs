@@ -198,6 +198,72 @@ public class GrantValidatorTests
                      null,
                      InvalidGrantKind.MissingPrefix);
 
+  // Names a check on UTF-16 units let through: characters outside the BMP, and invisible ones that are not Cf
+  internal static readonly (string Name, string Text)[] InvisibleNames =
+  [
+    ("tag space U+E0020", "admin\U000E0020"),
+    ("language tag U+E0001", "admin\U000E0001"),
+    ("musical begin beam U+1D173", "admin\U0001D173"),
+    ("variation selector-16 U+FE0F", "admin\uFE0F"),
+    ("combining grapheme joiner U+034F", "te\u034Fam"),
+    ("variation selector-17 U+E0100", "admin\U000E0100"),
+    ("hangul filler U+3164", "a\u3164b"),
+    ("lone surrogate U+D800", "a\uD800b"),
+    ("private use U+E000", "a\uE000"),
+    ("line separator U+2028", "a\u2028b"),
+    ("unassigned U+0378", "a\u0378"),
+    ("egyptian hieroglyph joiner U+13430", "a\U00013430"),
+  ];
+
+  // Names that read as they compare, whatever their script or normalization form
+  internal static readonly (string Name, string Text)[] VisibleNames =
+  [
+    ("ascii", "modelling-team"),
+    ("accent NFC", "\u00E9quipe"),
+    ("accent NFD", "e\u0301quipe"),
+    ("hangul", "\uD55C\uAD6D"),
+    ("emoji", "team\U0001F680"),
+    ("space inside", "a b"),
+    ("no-break space inside", "a\u00A0b"),
+  ];
+
+  private static IEnumerable<TestCaseData> WithPrefixes((string Name, string Text)[] names)
+    => from prefix in new[]
+                      {
+                        Principal.RolePrefix,
+                        Principal.CertificatePrefix,
+                      }
+       from name in names
+       select new TestCaseData(prefix + name.Text).SetArgDisplayNames(prefix + name.Name);
+
+  private static IEnumerable<TestCaseData> InvisiblePrincipals()
+    => WithPrefixes(InvisibleNames);
+
+  private static IEnumerable<TestCaseData> VisiblePrincipals()
+    => WithPrefixes(VisibleNames);
+
+  [TestCaseSource(nameof(InvisiblePrincipals))]
+  public void APrincipalWithAnInvisibleCharacterIsRefused(string principal)
+    => AssertRefused(principal,
+                     "session-view",
+                     null,
+                     InvalidGrantKind.MissingPrefix);
+
+  [TestCaseSource(nameof(VisiblePrincipals))]
+  public void APrincipalThatReadsAsItComparesIsAccepted(string principal)
+    => Assert.That(() => Validate(principal,
+                                  "session-view",
+                                  null),
+                   Throws.Nothing);
+
+  [Test]
+  public void TheRefusalNamesTheInvisibleCharacter()
+    => Assert.That(() => Validate("role:admin\U000E0020",
+                                  "session-view",
+                                  null),
+                   Throws.InstanceOf<InvalidGrantException>()
+                         .With.Message.Contains("U+E0020"));
+
   [Test]
   public void ALiteralWithoutPrefixIsRefused()
     => AssertRefused("role:lead",

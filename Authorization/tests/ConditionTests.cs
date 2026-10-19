@@ -114,9 +114,9 @@ public class ConditionTests
   [TestCase("request.partition == \"a\tb\"",
             "control character")]
   [TestCase("request.partition == \" q\"",
-            "invisible character")]
+            "starts or ends with a space")]
   [TestCase("request.partition == \"q \"",
-            "invisible character")]
+            "starts or ends with a space")]
   [TestCase("request.partition == \"q\u200Bq\"",
             "invisible character")]
   [TestCase("request.partition == 'q'",
@@ -128,6 +128,22 @@ public class ConditionTests
     => Assert.That(() => Condition.Parse(text),
                    Throws.InstanceOf<InvalidConditionException>()
                          .With.Message.Contains(message));
+
+  private static IEnumerable<TestCaseData> InvisibleLiterals()
+    => GrantValidatorTests.InvisibleNames.Select(name => new TestCaseData($"request.partition == \"{name.Text}\"").SetArgDisplayNames(name.Name));
+
+  private static IEnumerable<TestCaseData> VisibleLiterals()
+    => GrantValidatorTests.VisibleNames.Select(name => new TestCaseData($"\"role:{name.Text}\" in session.createdUnder").SetArgDisplayNames(name.Name));
+
+  [TestCaseSource(nameof(InvisibleLiterals))]
+  public void ALiteralWithAnInvisibleCharacterIsRefused(string text)
+    => Assert.That(() => Condition.Parse(text),
+                   Throws.InstanceOf<InvalidConditionException>());
+
+  [TestCaseSource(nameof(VisibleLiterals))]
+  public void ALiteralThatReadsAsItComparesIsAccepted(string text)
+    => Assert.That(() => Condition.Parse(text),
+                   Throws.Nothing);
 
   [Test]
   public void RenderingWithoutLiteralsHidesThem()

@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System.Collections.Generic;
-using System.Linq;
 
 namespace ArmoniK.Core.Authorization;
 
@@ -173,16 +172,16 @@ internal static class ConditionParser
           throw new InvalidConditionException("A quoted value cannot be empty");
         }
 
-        if (value.Any(ch => ch == '\\' || char.IsControl(ch)))
+        if (value.Contains('\\'))
         {
-          throw new InvalidConditionException($"The quoted value \"{value}\" contains a backslash or a control character");
+          throw new InvalidConditionException($"The quoted value \"{value}\" contains a backslash");
         }
 
         // Spaces around the value would never match, and invisible characters would make the condition read otherwise
         // than it applies
-        if (value.Any(Principal.IsFormat) || char.IsWhiteSpace(value[0]) || char.IsWhiteSpace(value[^1]))
+        if (VisibleText.FindProblem(value) is { } problem)
         {
-          throw new InvalidConditionException($"The quoted value \"{value}\" starts or ends with a space, or contains an invisible character");
+          throw new InvalidConditionException($"The quoted value \"{value}\" {problem}");
         }
 
         tokens.Add(new Token(TokenKind.String,
