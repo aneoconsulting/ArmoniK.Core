@@ -100,6 +100,15 @@ public class ForwardedClientCertificateTest
     => AssertIsClient($"Subject=\"CN=a,OU=b;c=\\\"d\\\"\";Cert=\"{Escaped(client_)}\"");
 
   [Test]
+  public void TextQuotedValuesMayEndWithAnEscapedBackslash()
+    => AssertIsClient($"Subject=\"CN=svc\\\\\";Cert=\"{Escaped(client_)}\"");
+
+  [TestCase("By=https://ingress.example/id?x=1")]
+  [TestCase("URI=urn:example:user=alice")]
+  public void TextUnquotedValuesMayHoldAnEqualSign(string field)
+    => AssertIsClient($"{field};Hash={Hash(client_)};Cert=\"{Escaped(client_)}\"");
+
+  [Test]
   public void JsonWithTheFieldsOfEnvoyIsRead()
     => AssertIsClient(Json(new[]
                            {
