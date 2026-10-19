@@ -856,6 +856,30 @@ public class AuthorizationEnforcerTestBase
   }
 
   [Test]
+  public async Task DownloadingAResultWithTheLegacySubmitterNeedsToReadTheTaskProducingIt()
+  {
+    if (RunTests)
+    {
+      Task<ServerCallContext> Download(string subject)
+        => Authorize(subject,
+                     nameof(GrpcSubmitterService),
+                     nameof(GrpcSubmitterService.TryGetResultStream),
+                     new ResultRequest
+                     {
+                       Session  = otherSession_,
+                       ResultId = "r-other",
+                     });
+
+      // The answer carries the error and status of the task producing a result not completed: data:download, which the
+      // auditor holds on this session, is not enough
+      Assert.That(Assert.ThrowsAsync<RpcException>(() => Download(Auditor))!.StatusCode,
+                  Is.EqualTo(StatusCode.PermissionDenied));
+      await Download(Admin)
+        .ConfigureAwait(false);
+    }
+  }
+
+  [Test]
   public async Task CancellingTasksNeedsToReadThem()
   {
     if (RunTests)

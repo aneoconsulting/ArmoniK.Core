@@ -198,6 +198,15 @@ public class MethodAuthorizationTest
                                    }));
 
   [Test]
+  public void DownloadingAResultWithTheLegacySubmitterRequiresReadingItsTask()
+    => Assert.That(MethodAuthorization.Rules[(nameof(GrpcSubmitterService), nameof(GrpcSubmitterService.TryGetResultStream))].Permissions,
+                   Is.EquivalentTo(new[]
+                                   {
+                                     Permission.DataDownload,
+                                     Permission.TaskRead,
+                                   }));
+
+  [Test]
   public void AnUploadStartingWithDataIsAnInvalidArgument()
   {
     var exception =
