@@ -159,7 +159,7 @@ public static class CertificateIdentity
 
     return new AuthenticatedCaller(new Caller(Principal.FromCertificate(commonName),
                                               rdns.Where(rdn => !rdn.HasMultipleElements && rdn.GetSingleElementType()
-                                                                                                .Value == OrganizationalUnitOid)
+                                                                                               .Value == OrganizationalUnitOid)
                                                   .Select(rdn => Value(rdn,
                                                                        "organizational unit"))
                                                   .Where(value => value.Length != 0)

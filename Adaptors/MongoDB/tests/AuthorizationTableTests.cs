@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -130,37 +129,37 @@ public class AuthorizationTableTests : AuthorizationTableTestBase
     // Written by hand or by a faulty writer: no creation date, no origin, no permission list
     await grants.Database.GetCollection<BsonDocument>(grants.CollectionNamespace.CollectionName)
                 .InsertManyAsync([
-                                   new BsonDocument
-                                   {
-                                     {
-                                       "_id", "undated"
-                                     },
-                                     {
-                                       "Principal", "role:ops"
-                                     },
-                                     {
-                                       "PermissionSet", "ops"
-                                     },
-                                     {
-                                       "Origin", (int)AuthorizationOrigin.Api
-                                     },
-                                   },
-                                   new BsonDocument
-                                   {
-                                     {
-                                       "_id", "unowned"
-                                     },
-                                     {
-                                       "Principal", "role:ops"
-                                     },
-                                     {
-                                       "PermissionSet", "viewer"
-                                     },
-                                     {
-                                       "CreationDate", DateTime.UtcNow
-                                     },
-                                   },
-                                 ])
+                  new BsonDocument
+                  {
+                    {
+                      "_id", "undated"
+                    },
+                    {
+                      "Principal", "role:ops"
+                    },
+                    {
+                      "PermissionSet", "ops"
+                    },
+                    {
+                      "Origin", (int)AuthorizationOrigin.Api
+                    },
+                  },
+                  new BsonDocument
+                  {
+                    {
+                      "_id", "unowned"
+                    },
+                    {
+                      "Principal", "role:ops"
+                    },
+                    {
+                      "PermissionSet", "viewer"
+                    },
+                    {
+                      "CreationDate", DateTime.UtcNow
+                    },
+                  },
+                ])
                 .ConfigureAwait(false);
     await sets.Database.GetCollection<BsonDocument>(sets.CollectionNamespace.CollectionName)
               .InsertOneAsync(new BsonDocument

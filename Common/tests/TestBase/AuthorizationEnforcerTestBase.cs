@@ -1076,12 +1076,12 @@ public class AuthorizationEnforcerTestBase
 
       Assert.That(Assert.ThrowsAsync<RpcException>(() => new AuthorizationInterceptor(enforcer_!)
                                                      .ClientStreamingServerHandler(new TestHelperAsyncStreamReader<UploadResultDataRequest>([
-                                                                                                                                              new UploadResultDataRequest
-                                                                                                                                              {
-                                                                                                                                                DataChunk =
-                                                                                                                                                  ByteString.CopyFromUtf8("data"),
-                                                                                                                                              },
-                                                                                                                                            ]),
+                                                                                     new UploadResultDataRequest
+                                                                                     {
+                                                                                       DataChunk = ByteString
+                                                                                         .CopyFromUtf8("data"),
+                                                                                     },
+                                                                                   ]),
                                                                                    context,
                                                                                    async (stream,
                                                                                           _) =>

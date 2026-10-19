@@ -195,11 +195,11 @@ public class CertificateIdentityTests
               writer.WriteObjectIdentifier(oid);
               // Short-form length: contents here are under 128 bytes
               writer.WriteEncodedValue(new[]
-                                       {
-                                         (byte)tag,
-                                         (byte)content.Length,
-                                       }.Concat(content)
-                                        .ToArray());
+                                         {
+                                           (byte)tag,
+                                           (byte)content.Length,
+                                         }.Concat(content)
+                                          .ToArray());
             }
           }
         }
@@ -317,33 +317,68 @@ public class CertificateIdentityTests
 
   [Test]
   public void ACommonNameInsideAMultiValuedRdnCountsAsASecondOne()
-    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "admin"), Utf8(Uid, "7")],
-                                                                                                       [Utf8(Cn, "alice")]))));
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([
+                                                                                                         Utf8(Cn,
+                                                                                                              "admin"),
+                                                                                                         Utf8(Uid,
+                                                                                                              "7"),
+                                                                                                       ],
+                                                                                                       [
+                                                                                                         Utf8(Cn,
+                                                                                                              "alice"),
+                                                                                                       ]))));
 
   [Test]
   public void ACommonNameThatCannotBeDecodedCountsAsASecondOne()
-    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "admin")],
-                                                                                                       [Universal(Cn, "alice")]))));
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([
+                                                                                                         Utf8(Cn,
+                                                                                                              "admin"),
+                                                                                                       ],
+                                                                                                       [
+                                                                                                         Universal(Cn,
+                                                                                                                   "alice"),
+                                                                                                       ]))));
 
   [Test]
   public void AnEmptyCommonNameCountsAsASecondOne()
-    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "")],
-                                                                                                       [Utf8(Cn, "alice")]))));
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([
+                                                                                                         Utf8(Cn,
+                                                                                                              ""),
+                                                                                                       ],
+                                                                                                       [
+                                                                                                         Utf8(Cn,
+                                                                                                              "alice"),
+                                                                                                       ]))));
 
   [Test]
   public void ASoleCommonNameThatCannotBeDecodedIsRejected()
-    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Universal(Cn, "alice")]))));
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([
+      Universal(Cn,
+                "alice"),
+    ]))));
 
   [Test]
   public void AUnitThatCannotBeDecodedIsRejected()
     // Rather than silently dropping a role the issuer meant to give
-    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "alice")],
-                                                                                                       [Universal(Ou, "platform")]))));
+    => Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(RawSubject([
+                                                                                                         Utf8(Cn,
+                                                                                                              "alice"),
+                                                                                                       ],
+                                                                                                       [
+                                                                                                         Universal(Ou,
+                                                                                                                   "platform"),
+                                                                                                       ]))));
 
   [Test]
   public void AnEmptyUnitIsNoRole()
-    => Assert.That(CertificateIdentity.FromCertificate(Certificate(RawSubject([Utf8(Cn, "alice")],
-                                                                              [Utf8(Ou, "")])))
+    => Assert.That(CertificateIdentity.FromCertificate(Certificate(RawSubject([
+                                                                                Utf8(Cn,
+                                                                                     "alice"),
+                                                                              ],
+                                                                              [
+                                                                                Utf8(Ou,
+                                                                                     ""),
+                                                                              ])))
                                       .Caller.Roles,
                    Is.Empty);
 
@@ -353,9 +388,18 @@ public class CertificateIdentityTests
   {
     // '_' is not a PrintableString character: .NET refuses to decode the value
     var subject = oid == Cn
-                    ? RawSubject([Printable(Cn, "a_b")])
-                    : RawSubject([Utf8(Cn, "alice")],
-                                 [Printable(Ou, "a_b")]);
+                    ? RawSubject([
+                      Printable(Cn,
+                                "a_b"),
+                    ])
+                    : RawSubject([
+                                   Utf8(Cn,
+                                        "alice"),
+                                 ],
+                                 [
+                                   Printable(Ou,
+                                             "a_b"),
+                                 ]);
 
     var exception = Assert.Throws<FormatException>(() => CertificateIdentity.FromCertificate(Certificate(subject)));
 
