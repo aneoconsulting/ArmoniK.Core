@@ -118,7 +118,8 @@ public static class Program
              .AddScoped(typeof(FunctionExecutionMetrics<>))
              .ValidateGrpcRequests();
 
-      var authorizationEnabled = builder.Services.AddArmoniKAuthorization(builder.Configuration);
+      var authorizationEnabled = builder.Services.AddArmoniKAuthorization(builder.Configuration,
+                                                                                 logger.GetLogger());
 
       builder.Services.AddHealthChecks();
       builder.Services.AddGrpc(options =>

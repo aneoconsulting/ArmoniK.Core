@@ -261,7 +261,7 @@ public class AuthorizationTableTests : AuthorizationTableTestBase
     Assert.That(await new AuthorizationReconciler(AuthorizationTable,
                                                   new AuthorizationOptions
                                                   {
-                                                    Enabled        = true,
+                                                    Authentication = CallerAuthentication.Xfcc,
                                                     ConfigRevision = 1,
                                                     PermissionSets =
                                                     [

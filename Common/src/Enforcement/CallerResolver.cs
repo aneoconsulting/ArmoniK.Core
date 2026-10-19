@@ -36,41 +36,56 @@ namespace ArmoniK.Core.Common.Enforcement;
 
 /// <summary>
 ///   Derives the caller of a request from the credential presented: a token or a client certificate forwarded by the
-///   ingress, never both
+///   ingress, never both. Only the credentials of the selected methods are read: the others are ignored
 /// </summary>
 public class CallerResolver : IHealthCheckProvider
 {
   private const string BearerPrefix = "Bearer ";
 
+  private readonly CallerAuthentication               authentication_;
   private readonly IOptionsMonitor<JwtBearerOptions>? jwt_;
   private readonly IdentityOptions                    options_;
 
   /// <summary>
   ///   Build the resolver
   /// </summary>
+  /// <param name="authorization">Options of the authorization, selecting the methods callers authenticate with</param>
   /// <param name="options">Options of the identification of callers</param>
   /// <param name="jwt">Options of the token validation, null when tokens are not validated</param>
-  public CallerResolver(IdentityOptions                    options,
+  public CallerResolver(AuthorizationOptions               authorization,
+                        IdentityOptions                    options,
                         IOptionsMonitor<JwtBearerOptions>? jwt = null)
   {
-    options_ = options;
-    jwt_     = jwt;
+    authentication_ = authorization.Authentication;
+    options_        = options;
+    jwt_            = jwt;
   }
+
+  private bool AcceptsTokens
+    => authentication_.HasFlag(CallerAuthentication.Token);
+
+  private bool AcceptsCertificates
+    => authentication_.HasFlag(CallerAuthentication.Xfcc);
+
+  /// <summary>
+  ///   What a request without credential is answered, naming the selected methods only
+  /// </summary>
+  public string MissingCredential
+    => authentication_ switch
+       {
+         CallerAuthentication.Xfcc  => "A client certificate is required",
+         CallerAuthentication.Token => "A token is required",
+         _                          => "A token or a client certificate is required",
+       };
 
   /// <summary>
   ///   The metadata of the authority tokens are validated against, null when tokens are not validated against one
   /// </summary>
   private IConfigurationManager<OpenIdConnectConfiguration>? Metadata
-    => options_.ValidateTokens && !string.IsNullOrWhiteSpace(options_.Authority)
+    => AcceptsTokens && options_.ValidateTokens && !string.IsNullOrWhiteSpace(options_.Authority)
          ? jwt_?.Get(JwtBearerDefaults.AuthenticationScheme)
                .ConfigurationManager
          : null;
-
-  /// <summary>
-  ///   Whether tokens are accepted: validated against an authority, or taken as they are
-  /// </summary>
-  public bool AcceptsTokens
-    => !options_.ValidateTokens || !string.IsNullOrWhiteSpace(options_.Authority);
 
   /// <inheritdoc />
   /// <remarks>
@@ -103,15 +118,20 @@ public class CallerResolver : IHealthCheckProvider
   ///   Derive the caller of a request
   /// </summary>
   /// <param name="context">The request</param>
-  /// <returns>The caller, null when the request carries no credential</returns>
-  /// <exception cref="FormatException">The credential is invalid, or a token and a certificate were both presented</exception>
+  /// <returns>The caller, null when the request carries no credential of a selected method</returns>
+  /// <exception cref="FormatException">
+  ///   The credential is invalid, or a token and a certificate were both presented while both methods are selected
+  /// </exception>
   public async Task<AuthenticatedCaller?> ResolveAsync(HttpContext context)
   {
-    var authorization = context.Request.Headers.Authorization.ToString();
-    var hasToken = authorization.StartsWith(BearerPrefix,
-                                            StringComparison.OrdinalIgnoreCase);
-    var certificate = context.Request.Headers[options_.CertificateHeader]
-                             .ToString();
+    // A header of a method not selected is not read: a proxy may add one, such as its own certificate to token callers
+    var hasToken = AcceptsTokens && context.Request.Headers.Authorization.ToString()
+                                           .StartsWith(BearerPrefix,
+                                                       StringComparison.OrdinalIgnoreCase);
+    var certificate = AcceptsCertificates
+                        ? context.Request.Headers[options_.CertificateHeader]
+                                 .ToString()
+                        : "";
     var hasCertificate = !string.IsNullOrEmpty(certificate);
 
     if (hasToken && hasCertificate)
@@ -121,11 +141,6 @@ public class CallerResolver : IHealthCheckProvider
 
     if (hasToken)
     {
-      if (!AcceptsTokens)
-      {
-        throw new FormatException("Tokens are not accepted by this deployment");
-      }
-
       // Read first: the token handler answers a token it cannot check, without the keys of the authority, as invalid,
       // while it says nothing of the caller. Throws when the metadata cannot be read, answered as unavailable.
       if (Metadata is

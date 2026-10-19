@@ -39,9 +39,10 @@ public class AuthorizationOptions
   public static readonly TimeSpan MaxGrantCacheTtl = TimeSpan.FromDays(14);
 
   /// <summary>
-  ///   Whether requests are authorized. When false, every request is allowed
+  ///   How callers prove who they are, several methods being written <c>Xfcc,Token</c>. With
+  ///   <see cref="CallerAuthentication.None" />, requests are not authorized: every request is allowed
   /// </summary>
-  public bool Enabled { get; set; }
+  public CallerAuthentication Authentication { get; set; }
 
   /// <summary>
   ///   How long the grants and permission sets read from storage are kept before being read again; they are still used
@@ -65,6 +66,27 @@ public class AuthorizationOptions
   ///   Grants written by the deployment
   /// </summary>
   public List<GrantOption> Grants { get; set; } = new();
+}
+
+/// <summary>
+///   Methods by which callers prove who they are. A credential of a method not selected is ignored
+/// </summary>
+[Flags]
+public enum CallerAuthentication
+{
+  /// <summary>Requests are not authorized: every request is allowed</summary>
+  None = 0,
+
+  /// <summary>
+  ///   Client certificate verified by the ingress and forwarded in <see cref="IdentityOptions.CertificateHeader" />
+  /// </summary>
+  Xfcc = 1 << 0,
+
+  /// <summary>
+  ///   Bearer token, validated against <see cref="IdentityOptions.Authority" />, or written by a trusted proxy when
+  ///   <see cref="IdentityOptions.ValidateTokens" /> is false
+  /// </summary>
+  Token = 1 << 1,
 }
 
 /// <summary>
