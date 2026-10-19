@@ -826,7 +826,8 @@ jobs:
         timeout-minutes: 3
         run: |
           TOKEN="$(just tag=${VERSION} kc_client_id=other-client kc_client_secret=other-secret kcToken)"
-          tools/expect-refusal.sh Unauthenticated just tag=${VERSION} kc_token="$TOKEN" runHtcmockTokenRaw
+          tools/expect-refusal.sh --detail IDX10214 Unauthenticated \
+            just tag=${VERSION} kc_token="$TOKEN" runHtcmockTokenRaw
 
       # Changes a character in the middle of the signature: the last one may carry no significant bit
       - name: Refuse a tampered token
