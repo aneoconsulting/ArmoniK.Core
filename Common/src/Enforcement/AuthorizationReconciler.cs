@@ -122,10 +122,12 @@ public class AuthorizationReconciler
     {
       // As defined, Everything kept as such: versions running the same configuration store the same set
       var permissions = set.Names.ToList();
-      // Unchanged, or written by the administration API, which is never changed
+      // Unchanged, or written by the administration API, which is never changed. A malformed set of the configuration
+      // is written again, which heals it
       if (storedSets.TryGetValue(set.Name,
-                                 out var stored) && (stored.Origin != AuthorizationOrigin.Config || stored.Permissions.Order(StringComparer.Ordinal)
-                                                                                                          .SequenceEqual(permissions)))
+                                 out var stored) && (stored.Origin != AuthorizationOrigin.Config || (stored.Permissions is not null &&
+                                                                                                     stored.Permissions.Order(StringComparer.Ordinal)
+                                                                                                           .SequenceEqual(permissions))))
       {
         continue;
       }
@@ -144,11 +146,23 @@ public class AuthorizationReconciler
     var setDeletions = storedSets.Values.Where(set => set.Origin == AuthorizationOrigin.Config && !desiredSets.ContainsKey(set.Name))
                                  .ToList();
 
-    // An invalid set is left out as when deciding: the grants naming it are refused below
-    var finalSets = AuthorizationConfiguration.StoredPermissionSets(storedSets.Values.Where(set => setDeletions.All(deleted => deleted.Name != set.Name))
-                                                                              .Select(set => setChanges.FirstOrDefault(change => change.Name == set.Name) ?? set)
-                                                                              .Concat(setChanges.Where(change => !storedSets.ContainsKey(change.Name))),
-                                                                    audit_);
+    // An invalid set is left out as when deciding: the grants naming it are refused below. Parsed once, so that its
+    // faults are recorded once
+    var currentSets = AuthorizationConfiguration.StoredPermissionSets(storedSets.Values,
+                                                                      audit_);
+    var finalSets = new Dictionary<string, PermissionSet>(currentSets,
+                                                          StringComparer.Ordinal);
+    foreach (var set in setDeletions)
+    {
+      finalSets.Remove(set.Name);
+    }
+
+    foreach (var set in setChanges)
+    {
+      finalSets[set.Name] = PermissionSet.FromNames(set.Name,
+                                                    set.Version,
+                                                    set.Permissions);
+    }
 
     // What the stored grants become
     var apiGrants = storedGrants.Where(grant => grant.Origin == AuthorizationOrigin.Api)
@@ -171,8 +185,17 @@ public class AuthorizationReconciler
                                                                                          out var stored) || stored.ToDefinition() != desired)
                                       .ToList();
 
+    // A grant of the administration API already refused with the stored sets, such as one naming a malformed set, does
+    // not block the configuration, which does not own it: it stays refused, recorded as a fault when deciding
+    DecisionEngine.Build(apiGrants.Select(grant => grant.ToDefinition()),
+                         currentSets,
+                         out var refusedBefore);
+    var alreadyRefused = refusedBefore.Select(refused => refused.Grant.Id)
+                                      .ToHashSet(StringComparer.Ordinal);
+
     // Every grant must still be valid with the sets as they will be
-    DecisionEngine.Build(desiredGrants.Values.Concat(apiGrants.Select(grant => grant.ToDefinition())),
+    DecisionEngine.Build(desiredGrants.Values.Concat(apiGrants.Where(grant => !alreadyRefused.Contains(grant.GrantId))
+                                                              .Select(grant => grant.ToDefinition())),
                          finalSets,
                          out var rejected);
     if (rejected.Count != 0)

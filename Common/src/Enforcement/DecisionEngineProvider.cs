@@ -208,7 +208,8 @@ public static class AuthorizationConfiguration
 {
   /// <summary>
   ///   The stored permission sets, without the permissions this version does not know: recorded as faults, they are left
-  ///   out of their set, which a later version may have written
+  ///   out of their set, which a later version may have written. A malformed set is left out, recorded as a fault, so that
+  ///   the grants naming it are refused as for a missing set
   /// </summary>
   /// <param name="stored">Permission sets as stored</param>
   /// <param name="audit">Audit recording the permissions left out</param>
@@ -220,6 +221,15 @@ public static class AuthorizationConfiguration
 
     foreach (var set in stored)
     {
+      // A set as stored may hold what no validation expects: it is refused alone, as a grant is, rather than leaving
+      // every request undecided
+      if (string.IsNullOrWhiteSpace(set.Name) || set.Permissions is null || set.Permissions.Any(permission => permission is null))
+      {
+        audit.RecordFault($"permission set {set.Name}",
+                          "the stored set has no name, no permission list or a null permission: it is left out");
+        continue;
+      }
+
       sets[set.Name] = PermissionSet.FromNames(set.Name,
                                                set.Version,
                                                set.Permissions,
