@@ -217,15 +217,25 @@ public class GrpcAgentService : Agent.AgentBase
                                   context.CancellationToken)
                 .ConfigureAwait(false);
 
-    var submittedTasks = await agent_.SubmitTasks(createdTasks.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
-                                                                                                                creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                                creation.ExpectedOutputKeys,
-                                                                                                                creation.DataDependencies)),
-                                                  taskOptions.ToNullableTaskOptions(),
-                                                  agent_.SessionId,
-                                                  agent_.Token,
-                                                  context.CancellationToken)
-                                     .ConfigureAwait(false);
+    ICollection<TaskCreationRequest> submittedTasks;
+    try
+    {
+      submittedTasks = await agent_.SubmitTasks(createdTasks.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
+                                                                                                              creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                              creation.ExpectedOutputKeys,
+                                                                                                              creation.DataDependencies)),
+                                                taskOptions.ToNullableTaskOptions(),
+                                                agent_.SessionId,
+                                                agent_.Token,
+                                                context.CancellationToken)
+                                   .ConfigureAwait(false);
+    }
+    catch (PartitionNotInSessionException e)
+    {
+      // An error of the worker, answered as such rather than as an unknown failure, as in SubmitTasks
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        e.Message));
+    }
 
     return new CreateTaskReply
            {
