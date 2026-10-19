@@ -606,7 +606,7 @@ public class StoredDecisionEngineProviderTest
   [TestCase("10675199.02:48:05.4775807")]
   public void ATtlOutOfRangeIsRefused(string ttl)
     => Assert.That(() => Provider(TimeSpan.Parse(ttl,
-                                                  CultureInfo.InvariantCulture)),
+                                                 CultureInfo.InvariantCulture)),
                    Throws.InstanceOf<ArgumentOutOfRangeException>());
 
   [Test]

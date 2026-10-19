@@ -961,26 +961,26 @@ public class AuthorizationReconcilerTestBase
 
       var faults = new List<string>();
       using var audit = LoggerFactory.Create(builder => builder.AddProvider(new ForwardingLoggerProvider((_,
-                                                                                                         _,
-                                                                                                         _,
-                                                                                                         message,
-                                                                                                         _,
-                                                                                                         _) =>
-                                                                                                        {
-                                                                                                          if (message.Contains("Fault"))
-                                                                                                          {
-                                                                                                            faults.Add(message);
-                                                                                                          }
-                                                                                                        })));
+                                                                                                          _,
+                                                                                                          _,
+                                                                                                          message,
+                                                                                                          _,
+                                                                                                          _) =>
+                                                                                                         {
+                                                                                                           if (message.Contains("Fault"))
+                                                                                                           {
+                                                                                                             faults.Add(message);
+                                                                                                           }
+                                                                                                         })));
 
       // The grant of the API was already refused: it stays refused, and the configuration is applied
       Assert.That(await ReconcileAsync(Options(1,
-                                               [
-                                                 Grant("own",
-                                                       "role:team",
-                                                       "session-own",
-                                                       Ownership),
-                                               ]),
+                                       [
+                                         Grant("own",
+                                               "role:team",
+                                               "session-own",
+                                               Ownership),
+                                       ]),
                                        audit)
                     .ConfigureAwait(false),
                   Is.True);
@@ -1009,11 +1009,11 @@ public class AuthorizationReconcilerTestBase
                                .ConfigureAwait(false);
 
       Assert.That(() => ReconcileAsync(Options(1,
-                                               [
-                                                 Grant("reader",
-                                                       "role:team",
-                                                       "ops"),
-                                               ])),
+                  [
+                    Grant("reader",
+                          "role:team",
+                          "ops"),
+                  ])),
                   Throws.InstanceOf<InvalidOperationException>()
                         .With.Message.Contains("reader"));
     }
