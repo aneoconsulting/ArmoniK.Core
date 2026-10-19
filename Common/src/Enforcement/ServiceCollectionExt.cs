@@ -50,23 +50,15 @@ public static class ServiceCollectionExt
   /// </summary>
   private static readonly string[] TokenSettings =
   [
-    nameof(IdentityOptions.Authority),
-    nameof(IdentityOptions.Audience),
-    nameof(IdentityOptions.TenantId),
-    nameof(IdentityOptions.SubjectClaim),
-    nameof(IdentityOptions.RolesClaim),
-    nameof(IdentityOptions.RequireHttpsMetadata),
-    nameof(IdentityOptions.MetadataRefreshInterval),
+    nameof(IdentityOptions.Authority), nameof(IdentityOptions.Audience), nameof(IdentityOptions.TenantId), nameof(IdentityOptions.SubjectClaim),
+    nameof(IdentityOptions.RolesClaim), nameof(IdentityOptions.RequireHttpsMetadata), nameof(IdentityOptions.MetadataRefreshInterval),
     nameof(IdentityOptions.ValidateTokens),
   ];
 
   /// <summary>
   ///   Settings of <see cref="IdentityOptions" /> read only with <see cref="CallerAuthentication.Xfcc" />
   /// </summary>
-  private static readonly string[] CertificateSettings =
-  [
-    nameof(IdentityOptions.CertificateHeader),
-  ];
+  private static readonly string[] CertificateSettings = [nameof(IdentityOptions.CertificateHeader)];
 
   /// <summary>
   ///   Register the authorization of requests when a method of authentication is selected
@@ -87,7 +79,7 @@ public static class ServiceCollectionExt
     // The binder takes any number, such as 4 or -1, as a value of the enumeration
     if ((options.Authentication & ~AllMethods) != 0)
     {
-      throw new InvalidOperationException($"{AuthenticationKey} '{configuration[AuthenticationKey]}' holds an unknown method: " +
+      throw new InvalidOperationException($"{AuthenticationKey} '{configuration[AuthenticationKey]}' holds an unknown method: "          +
                                           $"use {CallerAuthentication.None}, {CallerAuthentication.Xfcc}, {CallerAuthentication.Token} " +
                                           $"or {CallerAuthentication.Xfcc},{CallerAuthentication.Token}");
     }
@@ -119,7 +111,7 @@ public static class ServiceCollectionExt
 
     if (options.Authentication.HasFlag(CallerAuthentication.Token) && identity.ValidateTokens && string.IsNullOrWhiteSpace(identity.Authority))
     {
-      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.Authority)} is required when " +
+      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.Authority)} is required when "                   +
                                           $"{AuthenticationKey} holds {CallerAuthentication.Token}, unless {nameof(IdentityOptions.ValidateTokens)} " +
                                           "is false and the tokens are written by a trusted proxy");
     }
@@ -206,7 +198,7 @@ public static class ServiceCollectionExt
     if (configuration[$"{AuthorizationOptions.SettingSection}:Enabled"] is not null)
     {
       throw new InvalidOperationException($"{AuthorizationOptions.SettingSection}:Enabled is replaced by {AuthenticationKey}, the methods callers " +
-                                          $"authenticate with: {CallerAuthentication.Xfcc} for client certificates forwarded by the ingress, "     +
+                                          $"authenticate with: {CallerAuthentication.Xfcc} for client certificates forwarded by the ingress, "      +
                                           $"{CallerAuthentication.Token} for tokens, {CallerAuthentication.Xfcc},{CallerAuthentication.Token} for " +
                                           $"both, or {CallerAuthentication.None} to allow every request. Remove {AuthorizationOptions.SettingSection}:Enabled");
     }
@@ -223,8 +215,8 @@ public static class ServiceCollectionExt
     if (legacy.Count != 0 && configuration[AuthenticationKey] is null)
     {
       throw new InvalidOperationException($"The configuration holds settings of the removed authentication ({string.Join(", ", legacy)}). Set " +
-                                          $"{AuthenticationKey} explicitly, to {CallerAuthentication.Xfcc}, {CallerAuthentication.Token} or "      +
-                                          $"{CallerAuthentication.Xfcc},{CallerAuthentication.Token} to authorize requests with grants, or to "    +
+                                          $"{AuthenticationKey} explicitly, to {CallerAuthentication.Xfcc}, {CallerAuthentication.Token} or "   +
+                                          $"{CallerAuthentication.Xfcc},{CallerAuthentication.Token} to authorize requests with grants, or to " +
                                           $"{CallerAuthentication.None} to allow every request, and remove these settings");
     }
   }

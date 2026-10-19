@@ -51,6 +51,11 @@ public class CallerAuthenticationMiddlewareTest
   public Task SetUp()
     => Start(CallerAuthentication.Xfcc);
 
+  [TearDown]
+  public async Task TearDown()
+    => await app_!.DisposeAsync()
+                  .ConfigureAwait(false);
+
   private async Task Start(CallerAuthentication authentication)
   {
     service_ = new RecordingResults();
@@ -85,11 +90,6 @@ public class CallerAuthenticationMiddlewareTest
     await app_.StartAsync()
               .ConfigureAwait(false);
   }
-
-  [TearDown]
-  public async Task TearDown()
-    => await app_!.DisposeAsync()
-                  .ConfigureAwait(false);
 
   private WebApplication?   app_;
   private RecordingResults? service_;
