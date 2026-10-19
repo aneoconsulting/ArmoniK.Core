@@ -757,10 +757,6 @@ public class AuthorizationReconcilerTestBase
                        held);
     }
 
-    // When the lock is lost
-    protected virtual CancellationToken Lost(IAuthorizationLock held)
-      => held.Lost;
-
     public Task<AuthorizationGeneration> GetGenerationAsync(CancellationToken cancellationToken = default)
       => Inner.GetGenerationAsync(cancellationToken);
 
@@ -770,7 +766,11 @@ public class AuthorizationReconcilerTestBase
     public virtual Task EndChangeAsync(long              generation,
                                        CancellationToken cancellationToken = default)
       => throw new TimeoutException("the storage did not answer");
-  
+
+    // When the lock is lost
+    protected virtual CancellationToken Lost(IAuthorizationLock held)
+      => held.Lost;
+
     // The lock, whose table is this one
     private sealed class Bound(FailingEnd         table,
                                IAuthorizationLock held) : IAuthorizationLock
