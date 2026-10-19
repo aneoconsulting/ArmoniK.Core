@@ -11,13 +11,25 @@ set -uo pipefail
 
 usage() {
   cat <<EOF
-USAGE $0 STATUS CMD...
-Run CMD and require that it fails, with the gRPC status STATUS in its output.
+USAGE $0 [--detail TEXT] STATUS CMD...
+Run CMD and require that it fails, with the gRPC status STATUS in its output,
+and with TEXT in the detail of that status when given.
 
 Example:
   $0 Unauthenticated just runHtcmock
+  $0 --detail IDX10214 Unauthenticated just runHtcmockTokenRaw
 EOF
 }
+
+detail=""
+if [ "${1:-}" = "--detail" ]; then
+  if [ $# -lt 2 ] || [ -z "$2" ]; then
+    usage
+    exit 2
+  fi
+  detail="$2"
+  shift 2
+fi
 
 case "${1:-}" in
   '' | -h | --help)
@@ -56,4 +68,10 @@ if ! grep -q "StatusCode=\"$expected\"" "$log"; then
   exit 1
 fi
 
-echo "OK: refused with $expected"
+# The status alone does not say why: a token may be refused for another reason than the one under test
+if [ -n "$detail" ] && ! grep "StatusCode=\"$expected\"" "$log" | grep -qF -- "$detail"; then
+  echo "FAIL: refused with $expected, but not for '$detail'" >&2
+  exit 1
+fi
+
+echo "OK: refused with $expected${detail:+ ($detail)}"
