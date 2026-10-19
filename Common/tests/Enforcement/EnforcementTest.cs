@@ -189,6 +189,15 @@ public class MethodAuthorizationTest
                                    }));
 
   [Test]
+  public void CancellingTasksRequiresReadingThem()
+    => Assert.That(MethodAuthorization.Rules[(nameof(GrpcTasksService), nameof(GrpcTasksService.CancelTasks))].Permissions,
+                   Is.EquivalentTo(new[]
+                                   {
+                                     Permission.TaskCancel,
+                                     Permission.TaskRead,
+                                   }));
+
+  [Test]
   public void AnUploadStartingWithDataIsAnInvalidArgument()
   {
     var exception =
