@@ -34,6 +34,11 @@ public class AuthorizationOptions
   public const string SettingSection = "Authorization";
 
   /// <summary>
+  ///   Longest <see cref="GrantCacheTtl" /> accepted: a revocation applies within twice this delay
+  /// </summary>
+  public static readonly TimeSpan MaxGrantCacheTtl = TimeSpan.FromDays(14);
+
+  /// <summary>
   ///   Whether requests are authorized. When false, every request is allowed
   /// </summary>
   public bool Enabled { get; set; }
@@ -44,11 +49,6 @@ public class AuthorizationOptions
   ///   <see cref="MaxGrantCacheTtl" />
   /// </summary>
   public TimeSpan GrantCacheTtl { get; set; } = TimeSpan.FromSeconds(10);
-
-  /// <summary>
-  ///   Longest <see cref="GrantCacheTtl" /> accepted: a revocation applies within twice this delay
-  /// </summary>
-  public static readonly TimeSpan MaxGrantCacheTtl = TimeSpan.FromDays(14);
 
   /// <summary>
   ///   Revision of the grants and permission sets of the configuration. A deployment with a lower revision than the one
