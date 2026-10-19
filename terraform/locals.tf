@@ -18,9 +18,12 @@ locals {
   database           = one(concat(module.database_mongo, module.database_postgresql))
   object             = one(concat(module.object_redis, module.object_seaweedfs, module.object_gcs, module.object_local, module.object_embed, module.object_null))
   partition_env_vars = { for i in local.partitions : "InitServices__Partitioning__Partitions__${i}" => jsonencode(merge(var.partition_data, { PartitionId = "${var.partition_data.PartitionId}${i}" })) }
-  authorization_env_vars = var.authorization.enabled ? merge(
+  # Keycloak issues tokens: they are read whenever requests are authorized, never when authorization is disabled
+  authentication_methods = [for method in split(",", replace(var.authorization.authentication, " ", "")) : method if method != "None"]
+  authentication         = join(",", distinct(concat(local.authentication_methods, length(local.authentication_methods) != 0 && var.enable_keycloak ? ["Token"] : [])))
+  authorization_env_vars = local.authentication != "" ? merge(
     {
-      "Authorization__Enabled"        = "true"
+      "Authorization__Authentication" = local.authentication
       "Authorization__ConfigRevision" = tostring(var.authorization.config_revision)
     },
     merge(concat([{}], [for i, grant in var.authorization.grants : merge({

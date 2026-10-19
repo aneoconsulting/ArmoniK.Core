@@ -62,7 +62,7 @@ just tag=<tag> queue=<q> worker=<w> object=<o> build-deploy   # full build + dep
 just destroy                          # tear down the deployment
 ```
 
-Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|seaweedfs|gcs|local|embed|null), `replicas`, `partitions`, `log_level`, `authz` (grants for the mTLS client certificate and the Keycloak role `modelling-team`), `keycloak` (deploy Keycloak and validate tokens).
+Justfile variables: `tag` (default `0.0.0.0-local`), `queue` (activemq|rabbitmq|artemis|pubsub|nats|sqs), `worker` (htcmock|stream|bench|crashingworker), `object` (redis|seaweedfs|gcs|local|embed|null), `replicas`, `partitions`, `log_level`, `authz` (`Authorization__Authentication=Xfcc`, grants for the mTLS client certificate and the Keycloak role `modelling-team`), `keycloak` (deploy Keycloak and validate tokens: `Xfcc,Token`, requires `authz`).
 
 ## Tests
 

@@ -23,8 +23,8 @@ grafana      := "true"           # If true, deploy Grafana dashboards
 seq          := "true"           # If true, deploy Seq for structured log search (UI at http://localhost:9080)
 socket_type  := "unixdomainsocket" # Socket type for PollingAgent↔Worker communication: unixdomainsocket or tcp
 cinit        := "true"           # If true, run a one-shot init container to initialize the database before services start; services self-initialize when false
-authz        := "false"          # If true, authorize requests with the grants of TF_VAR_authorization
-keycloak     := "false"          # If true, deploy Keycloak and validate tokens against it
+authz        := "false"          # If true, authorize requests of client certificates (Xfcc) with the grants of TF_VAR_authorization
+keycloak     := "false"          # If true, deploy Keycloak and also authenticate its tokens (Xfcc,Token); requires authz
 kc_user          := "alice"          # Keycloak user; holds the modelling-team role
 kc_password      := "alice"
 kc_client_id     := "armonik-client" # other-client mints tokens for another audience
@@ -81,11 +81,14 @@ export TF_VAR_container_init    := cinit
 # Tokens are only read when requests are authorized: Keycloak alone would leave every request allowed, tokens unchecked
 export TF_VAR_enable_keycloak   := if keycloak == "true" { if authz == "true" { "true" } else { error("keycloak=true requires authz=true: tokens are only validated when requests are authorized") } } else { keycloak }
 
+# Callers authenticate with the generated mTLS client certificates (Xfcc), and with Keycloak tokens when it is deployed
+authentication := if keycloak == "true" { "Xfcc,Token" } else { "Xfcc" }
+
 # Permission sets of the access model (none is shipped) and grants for the generated mTLS client certificate (cn:client)
 # and the Keycloak role modelling-team: create sessions in the default partition and own them, plus what sharing and
 # delegation confer (access model v0.98, section 9). The supervisor certificate (OU=supervisors) follows and stops
 # every session, without reading their data
-export TF_VAR_authorization := if authz == "true" { '{ enabled = true, permission_sets = [ ' +
+export TF_VAR_authorization := if authz == "true" { '{ authentication = "' + authentication + '", permission_sets = [ ' +
   '{ name = "session-create", permissions = [ "session:create", "partition:read" ] }, ' +
   '{ name = "session-view", permissions = [ "session:read", "task:read", "data:read", "data:download", "event:watch" ] }, ' +
   '{ name = "session-own", permissions = [ "session:read", "task:read", "data:read", "data:download", "event:watch", "task:submit", "session:share", "session:delegate", "session:transfer", "session:pause", "session:resume", "session:stop-submission", "session:cancel", "session:close", "session:purge", "session:delete", "task:cancel", "data:declare", "data:provide", "data:delete" ] }, ' +

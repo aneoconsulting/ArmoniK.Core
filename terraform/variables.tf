@@ -314,9 +314,9 @@ variable "windows" {
 }
 
 variable "authorization" {
-  description = "Authorization of requests: grants and permission sets of the access model"
+  description = "Authorization of requests: methods callers authenticate with (None, Xfcc, Token or Xfcc,Token; None allows every request), grants and permission sets of the access model"
   type = object({
-    enabled         = optional(bool, false)
+    authentication  = optional(string, "None")
     config_revision = optional(number, 0)
     permission_sets = optional(list(object({
       name        = string
@@ -329,5 +329,9 @@ variable "authorization" {
       condition      = optional(string)
     })), [])
   })
+  validation {
+    condition     = contains(["None", "Xfcc", "Token", "Xfcc,Token", "Token,Xfcc"], replace(var.authorization.authentication, " ", ""))
+    error_message = "authorization.authentication must be None, Xfcc, Token or Xfcc,Token, not '${var.authorization.authentication}'"
+  }
   default = {}
 }
