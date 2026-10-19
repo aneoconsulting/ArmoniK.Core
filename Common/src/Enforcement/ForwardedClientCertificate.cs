@@ -165,10 +165,11 @@ public static class ForwardedClientCertificate
           break;
         }
 
-        if (c == '\\' && position + 1 < value.Length && value[position + 1] == '"')
+        // Envoy writes Subject and Issuer as RFC 2253 names, in which a backslash and a quote are escaped by a backslash
+        if (c == '\\' && position + 1 < value.Length && value[position + 1] is '"' or '\\')
         {
           position++;
-          c = '"';
+          c = value[position];
         }
 
         builder.Append(c);
@@ -185,7 +186,8 @@ public static class ForwardedClientCertificate
 
     while (position < value.Length && value[position] is not (';' or ','))
     {
-      if (value[position] is '=' or '"')
+      // The key ends at the first '=', so one in the value is unambiguous: Envoy writes By and URI unquoted
+      if (value[position] == '"')
       {
         throw new FormatException($"The forwarded client certificate header has an unquoted value with '{value[position]}' at position {position}");
       }
