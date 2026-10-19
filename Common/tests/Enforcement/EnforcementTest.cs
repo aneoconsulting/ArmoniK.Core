@@ -814,4 +814,21 @@ public class AddArmoniKAuthorizationTest
                                                                                  ("Identity:Audience", "armonik"),
                                                                                  ("Identity:MetadataRefreshInterval", "00:00:01"))),
                    Is.True);
+
+  [TestCase("00:00:00")]
+  [TestCase("-00:00:00.001")]
+  [TestCase("14.00:00:00.001")]
+  [TestCase("10675199.02:48:05.4775807")]
+  public void AGrantCacheTtlOutOfRangePreventsStarting(string ttl)
+    => Assert.That(() => new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
+                                                                                       ("Authorization:GrantCacheTtl", ttl))),
+                   Throws.InstanceOf<InvalidOperationException>()
+                         .With.Message.Contains("GrantCacheTtl"));
+
+  [TestCase("00:00:00.001")]
+  [TestCase("14.00:00:00")]
+  public void AGrantCacheTtlInRangeIsAccepted(string ttl)
+    => Assert.That(new ServiceCollection().AddArmoniKAuthorization(Configuration(("Authorization:Enabled", "true"),
+                                                                                 ("Authorization:GrantCacheTtl", ttl))),
+                   Is.True);
 }
