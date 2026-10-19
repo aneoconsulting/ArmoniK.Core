@@ -153,16 +153,18 @@ public sealed record Principal
   /// <returns>A sentence naming the offending character when the prefix is known</returns>
   internal static string Explain(string? value)
     => value is not null && TrySplit(value,
-                                      out _,
-                                      out var prefix,
-                                      out var name) && VisibleText.FindProblem(name) is { } problem
+                                     out _,
+                                     out var prefix,
+                                     out var name) && VisibleText.FindProblem(name) is
+       {
+       } problem
          ? $"'{value}' is not a principal: the name after '{prefix}' {problem}"
          : $"'{value}' is not a principal: expected '{DirectoryPrefix}', '{CertificatePrefix}' or '{RolePrefix}' followed by a name without surrounding spaces nor invisible characters, or '{EveryoneValue}'";
 
-  private static bool TrySplit(string                         value,
-                               out PrincipalKind              kind,
-                               [NotNullWhen(true)] out string? prefix,
-                               [NotNullWhen(true)] out string? name)
+  private static bool TrySplit(string                                value,
+                               out                     PrincipalKind kind,
+                               [NotNullWhen(true)] out string?       prefix,
+                               [NotNullWhen(true)] out string?       name)
   {
     if (value.StartsWith(DirectoryPrefix,
                          StringComparison.Ordinal))

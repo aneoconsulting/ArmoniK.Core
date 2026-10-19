@@ -179,7 +179,9 @@ internal static class ConditionParser
 
         // Spaces around the value would never match, and invisible characters would make the condition read otherwise
         // than it applies
-        if (VisibleText.FindProblem(value) is { } problem)
+        if (VisibleText.FindProblem(value) is
+            {
+            } problem)
         {
           throw new InvalidConditionException($"The quoted value \"{value}\" {problem}");
         }
