@@ -144,7 +144,7 @@ public class AuthorizationEnforcer
                     [],
                     "no credential");
       throw new RpcException(new Status(StatusCode.Unauthenticated,
-                                        "A token or a client certificate is required"));
+                                        callerResolver_.MissingCredential));
     }
 
     return caller;

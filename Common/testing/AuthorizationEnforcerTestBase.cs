@@ -76,6 +76,12 @@ namespace ArmoniK.Core.Common.Tests.TestBase;
 [TestFixture]
 public class AuthorizationEnforcerTestBase
 {
+  /// <summary>Callers authenticate with the client certificates forwarded by the ingress</summary>
+  private static readonly AuthorizationOptions XfccOnly = new()
+                                                          {
+                                                            Authentication = CallerAuthentication.Xfcc,
+                                                          };
+
   [SetUp]
   public async Task SetUp()
   {
@@ -192,7 +198,8 @@ public class AuthorizationEnforcerTestBase
 
   private AuthorizationEnforcer Enforcer(ISessionTable sessionTable)
     => new(new FixedEngine(engine_!),
-           new CallerResolver(new IdentityOptions()),
+           new CallerResolver(XfccOnly,
+                              new IdentityOptions()),
            new AuthorizationAudit(audit_!),
            sessionTable,
            TaskTable!,
@@ -360,8 +367,9 @@ public class AuthorizationEnforcerTestBase
     if (RunTests)
     {
       var authenticated = Context(Alice);
-      var caller = await new CallerResolver(new IdentityOptions()).ResolveAsync(authenticated.GetHttpContext())
-                                                                  .ConfigureAwait(false);
+      var caller = await new CallerResolver(XfccOnly,
+                                            new IdentityOptions()).ResolveAsync(authenticated.GetHttpContext())
+                                            .ConfigureAwait(false);
 
       // No credential left in the headers: only the caller kept by the authentication middleware can be used
       var context = Context(null);
@@ -495,7 +503,8 @@ public class AuthorizationEnforcerTestBase
     if (RunTests)
     {
       var enforcer = new AuthorizationEnforcer(new FailingEngine(),
-                                               new CallerResolver(new IdentityOptions()),
+                                               new CallerResolver(XfccOnly,
+                                                                  new IdentityOptions()),
                                                new AuthorizationAudit(audit_!),
                                                SessionTable!,
                                                TaskTable!,
@@ -532,7 +541,11 @@ public class AuthorizationEnforcerTestBase
     if (RunTests)
     {
       var enforcer = new AuthorizationEnforcer(new FailingEngine(),
-                                               new CallerResolver(new IdentityOptions
+                                               new CallerResolver(new AuthorizationOptions
+                                                                  {
+                                                                    Authentication = CallerAuthentication.Token,
+                                                                  },
+                                                                  new IdentityOptions
                                                                   {
                                                                     ValidateTokens = false,
                                                                   }),
@@ -1266,7 +1279,8 @@ public class AuthorizationEnforcerTestBase
       Assert.That(rejected,
                   Is.Empty);
       var enforcer = new AuthorizationEnforcer(new FixedEngine(engine),
-                                               new CallerResolver(new IdentityOptions()),
+                                               new CallerResolver(XfccOnly,
+                                                                  new IdentityOptions()),
                                                new AuthorizationAudit(audit_!),
                                                SessionTable!,
                                                TaskTable!,

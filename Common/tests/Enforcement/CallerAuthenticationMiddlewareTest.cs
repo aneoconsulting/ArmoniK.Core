@@ -48,7 +48,10 @@ namespace ArmoniK.Core.Common.Tests.Enforcement;
 public class CallerAuthenticationMiddlewareTest
 {
   [SetUp]
-  public async Task SetUp()
+  public Task SetUp()
+    => Start(CallerAuthentication.Xfcc);
+
+  private async Task Start(CallerAuthentication authentication)
   {
     service_ = new RecordingResults();
 
@@ -56,7 +59,14 @@ public class CallerAuthenticationMiddlewareTest
     builder.Services.AddGrpc();
     builder.Services.AddSingleton(service_)
            .AddSingleton(new AuthorizationEnforcer(Mock.Of<IDecisionEngineProvider>(),
-                                                   new CallerResolver(new IdentityOptions()),
+                                                   new CallerResolver(new AuthorizationOptions
+                                                                      {
+                                                                        Authentication = authentication,
+                                                                      },
+                                                                      new IdentityOptions
+                                                                      {
+                                                                        ValidateTokens = false,
+                                                                      }),
                                                    new AuthorizationAudit(NullLoggerFactory.Instance),
                                                    Mock.Of<ISessionTable>(),
                                                    Mock.Of<ITaskTable>(),
@@ -158,7 +168,7 @@ public class CallerAuthenticationMiddlewareTest
     Assert.That(exception!.StatusCode,
                 Is.EqualTo(StatusCode.Unauthenticated));
     Assert.That(exception.Status.Detail,
-                Is.EqualTo("A token or a client certificate is required"));
+                Is.EqualTo("A client certificate is required"));
     Assert.That(service_!.Calls,
                 Is.Zero);
   }
@@ -190,6 +200,58 @@ public class CallerAuthenticationMiddlewareTest
                 Is.EqualTo(StatusCode.Unauthenticated));
     Assert.That(service_!.Calls,
                 Is.Zero);
+  }
+
+  // A proxy in front of the control plane may add its own certificate to the requests of token callers
+  [Test]
+  public async Task ACertificateIsNoCredentialWhenOnlyTokensAreSelected()
+  {
+    await app_!.DisposeAsync()
+               .ConfigureAwait(false);
+    await Start(CallerAuthentication.Token)
+      .ConfigureAwait(false);
+
+    var exception = Assert.ThrowsAsync<RpcException>(async () => await Client()
+                                                                       .CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest(),
+                                                                                                   Certificate("CN=alice, OU=modelling-team"))
+                                                                       .ConfigureAwait(false));
+
+    Assert.That(exception!.StatusCode,
+                Is.EqualTo(StatusCode.Unauthenticated));
+    Assert.That(exception.Status.Detail,
+                Is.EqualTo("A token is required"));
+    Assert.That(service_!.Calls,
+                Is.Zero);
+  }
+
+  [Test]
+  public async Task ATokenIsIgnoredWhenOnlyCertificatesAreSelected()
+  {
+    var headers = Certificate("CN=alice, OU=modelling-team");
+    headers.Add("Authorization",
+                "Bearer x");
+
+    await Client()
+          .CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest(),
+                                      headers)
+          .ConfigureAwait(false);
+
+    var exception = Assert.ThrowsAsync<RpcException>(async () => await Client()
+                                                                       .CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest(),
+                                                                                                   new Metadata
+                                                                                                   {
+                                                                                                     {
+                                                                                                       "Authorization", "Bearer x"
+                                                                                                     },
+                                                                                                   })
+                                                                       .ConfigureAwait(false));
+
+    Assert.That(service_!.Calls,
+                Is.EqualTo(1));
+    Assert.That(exception!.StatusCode,
+                Is.EqualTo(StatusCode.Unauthenticated));
+    Assert.That(exception.Status.Detail,
+                Is.EqualTo("A client certificate is required"));
   }
 
   [Test]

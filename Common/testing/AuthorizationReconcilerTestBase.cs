@@ -77,7 +77,7 @@ public class AuthorizationReconcilerTestBase
                                               IEnumerable<PermissionSetOption>? sets   = null)
     => new()
        {
-         Enabled        = true,
+         Authentication = CallerAuthentication.Xfcc,
          ConfigRevision = revision,
          Grants         = (grants ?? []).ToList(),
          // The sets of the access model, as the deployment defines them, some redefined by the test
