@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -49,6 +50,9 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Common;
 internal sealed class WalBroadcaster<T> : IDisposable
   where T : class
 {
+  // Not disposed on purpose, see Dispose.
+  [SuppressMessage("Usage",
+                   "CA2213: Disposable fields must be disposed")]
   private readonly SemaphoreSlim lock_ = new(1,
                                              1);
 
@@ -57,8 +61,13 @@ internal sealed class WalBroadcaster<T> : IDisposable
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
   private readonly IUuidGenerator                                                uuidGenerator_;
   private          Task?                                                         broadcastLoop_;
-  private          CancellationTokenSource?                                      loopCts_;
-  private          TaskCompletionSource?                                         slotReady_;
+
+  // True from the start of a loop until its finally block has completed its subscribers'
+  // channels. Read and written under lock_ only, so a subscriber can never register on a
+  // loop that has already completed (or is completing) its channels.
+  private bool                     loopAlive_;
+  private CancellationTokenSource? loopCts_;
+  private TaskCompletionSource?    slotReady_;
 
   internal WalBroadcaster(NpgsqlConnectionProvider                                      provider,
                           Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse,
@@ -73,10 +82,11 @@ internal sealed class WalBroadcaster<T> : IDisposable
   {
     loopCts_?.Cancel();
     loopCts_?.Dispose();
-    lock_.Dispose();
-    // Concurrent StopIfIdle / EnsureStartedAndRegister callers handle ObjectDisposedException
-    // from lock_.WaitAsync() and loopCts_.Cancel() gracefully — see ReleaseLockSafe and
-    // the try/catch in StopIfIdle.
+    // lock_ is deliberately not disposed: the loop's finally block takes it to complete the
+    // subscribers' channels, and a SemaphoreSlim disposed while a WaitAsync is pending never
+    // completes that wait. lock_ holds no unmanaged resource since AvailableWaitHandle is
+    // never used. Concurrent StopIfIdle callers handle ObjectDisposedException from
+    // loopCts_.Cancel() gracefully.
   }
 
   /// <summary>
@@ -181,7 +191,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
                  .ConfigureAwait(false);
       try
       {
-        var loopHealthy = broadcastLoop_ is not null && !broadcastLoop_.IsCompleted && loopCts_?.IsCancellationRequested != true;
+        // loopAlive_ rather than broadcastLoop_.IsCompleted: a failed loop is not completed yet
+        // while it disposes its replication connection, but it will not deliver any more events.
+        var loopHealthy = loopAlive_ && loopCts_?.IsCancellationRequested != true;
 
         if (loopHealthy)
         {
@@ -192,7 +204,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
         if (broadcastLoop_ is not null && !broadcastLoop_.IsCompleted)
         {
-          // Cancellation was requested but the loop isn't done yet. Capture it to await
+          // The loop was cancelled or has failed, but isn't done yet. Capture it to await
           // OUTSIDE the lock so we don't block other subscribers from making progress.
           oldLoop = broadcastLoop_;
         }
@@ -201,6 +213,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
           // Loop has finished (or was never started) — safe to start the new one.
           slotReady_       = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
           loopCts_         = new CancellationTokenSource();
+          loopAlive_       = true;
           broadcastLoop_   = RunLoop(loopCts_.Token);
           subscribers_[id] = channel;
           return slotReady_!;
@@ -208,7 +221,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
       }
       finally
       {
-        ReleaseLockSafe();
+        lock_.Release();
       }
 
       // Old loop is still shutting down — wait for it without holding the lock, then retry.
@@ -219,25 +232,8 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
   private async Task StopIfIdle()
   {
-    // lock_.WaitAsync() with no cancellation token throws ObjectDisposedException if the
-    // broadcaster has been disposed. Catch it so ReadChannel.finally exits cleanly.
-    bool acquired;
-    try
-    {
-      await lock_.WaitAsync()
-                 .ConfigureAwait(false);
-      acquired = true;
-    }
-    catch (ObjectDisposedException)
-    {
-      return;
-    }
-
-    if (!acquired)
-    {
-      return;
-    }
-
+    await lock_.WaitAsync()
+               .ConfigureAwait(false);
     try
     {
       if (subscribers_.IsEmpty)
@@ -253,21 +249,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
     finally
     {
-      ReleaseLockSafe();
-    }
-  }
-
-  // SemaphoreSlim.Release() throws ObjectDisposedException when Dispose() has already
-  // run and another thread is simultaneously in the Release path. Swallow it here: the
-  // semaphore is being torn down and the lock invariant no longer needs to hold.
-  private void ReleaseLockSafe()
-  {
-    try
-    {
       lock_.Release();
-    }
-    catch (ObjectDisposedException)
-    {
     }
   }
 
@@ -333,9 +315,24 @@ internal sealed class WalBroadcaster<T> : IDisposable
       // be unresolved.  Unblock any SubscribeAsync caller waiting on tcs.Task so it can
       // clean up and retry rather than hanging until its cancellation token fires.
       slotReady_?.TrySetCanceled(CancellationToken.None);
-      foreach (var (_, ch) in subscribers_)
+
+      // Mark the loop as dead and complete the channels while holding the lock, so that no
+      // subscriber can register between the two: EnsureStartedAndRegister would otherwise
+      // see a loop that is not completed yet, register a channel that this enumeration
+      // might miss, and that subscriber would wait forever for events.
+      await lock_.WaitAsync(CancellationToken.None)
+                 .ConfigureAwait(false);
+      try
       {
-        ch.Writer.TryComplete(loopException);
+        loopAlive_ = false;
+        foreach (var (_, ch) in subscribers_)
+        {
+          ch.Writer.TryComplete(loopException);
+        }
+      }
+      finally
+      {
+        lock_.Release();
       }
     }
   }
