@@ -94,23 +94,23 @@ public class TaskWatcherTests : TaskWatcherTestBase
                 Is.False);
 
     // A new subscription must start a new replication connection and receive events.
-    var secondStream = await TaskWatcher.GetNewTasks(data => data.SessionId == "SessionId",
-                                                     cts.Token)
-                                        .ConfigureAwait(false);
+    var secondStream = await TaskWatcher!.GetNewTasks(data => data.SessionId == "SessionId",
+                                                      cts.Token)
+                                         .ConfigureAwait(false);
 
     var template = await TaskTable!.ReadTaskAsync("TaskSubmittedId",
                                                   cts.Token)
                                    .ConfigureAwait(false);
-    await TaskTable.CreateTasks(new[]
-                                {
-                                  template with
-                                  {
-                                    TaskId = "TaskAfterReconnection",
-                                    Status = TaskStatus.Creating,
-                                  },
-                                },
-                                cts.Token)
-                   .ConfigureAwait(false);
+    await TaskTable!.CreateTasks(new[]
+                                 {
+                                   template with
+                                   {
+                                     TaskId = "TaskAfterReconnection",
+                                     Status = TaskStatus.Creating,
+                                   },
+                                 },
+                                 cts.Token)
+                    .ConfigureAwait(false);
 
     await using var enumerator = secondStream.GetAsyncEnumerator(cts.Token);
     Assert.That(await enumerator.MoveNextAsync()
