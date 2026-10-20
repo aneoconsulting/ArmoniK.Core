@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Threading;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Sessions;
@@ -32,17 +33,20 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public class GridClient : IGridClient
 {
+  private readonly CancellationToken   cancellationToken_;
   private readonly ChannelBase         channel_;
   private readonly ILogger<GridClient> logger_;
   private readonly Options.HtcMock     optionsHtcMock_;
 
-  public GridClient(ChannelBase     channel,
-                    ILoggerFactory  loggerFactory,
-                    Options.HtcMock optionsHtcMock)
+  public GridClient(ChannelBase       channel,
+                    ILoggerFactory    loggerFactory,
+                    Options.HtcMock   optionsHtcMock,
+                    CancellationToken cancellationToken)
   {
-    channel_        = channel;
-    optionsHtcMock_ = optionsHtcMock;
-    logger_         = loggerFactory.CreateLogger<GridClient>();
+    cancellationToken_ = cancellationToken;
+    channel_           = channel;
+    optionsHtcMock_    = optionsHtcMock;
+    logger_            = loggerFactory.CreateLogger<GridClient>();
   }
 
   public ISessionClient CreateSubSession(string taskId)
@@ -83,7 +87,8 @@ public class GridClient : IGridClient
                                                     {
                                                       optionsHtcMock_.Partition,
                                                     },
-                                                  });
+                                                  },
+                                                  cancellationToken: cancellationToken_);
 
     logger_.LogInformation("Session {sessionId} created",
                            createSessionReply.SessionId);
@@ -91,6 +96,7 @@ public class GridClient : IGridClient
     return new SessionClient(channel_,
                              createSessionReply.SessionId,
                              optionsHtcMock_,
-                             logger_);
+                             logger_,
+                             cancellationToken_);
   }
 }

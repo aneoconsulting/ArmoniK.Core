@@ -40,6 +40,7 @@ namespace ArmoniK.Samples.HtcMock.Client;
 
 public sealed class SessionClient : ISessionClient
 {
+  private readonly CancellationToken       cancellationToken_;
   private readonly ChannelBase             channel_;
   private readonly ILogger<GridClient>     logger_;
   private readonly Options.HtcMock         optionsHtcMock_;
@@ -51,39 +52,57 @@ public sealed class SessionClient : ISessionClient
   public SessionClient(ChannelBase         channel,
                        string              sessionId,
                        Options.HtcMock     optionsHtcMock,
-                       ILogger<GridClient> logger)
+                       ILogger<GridClient> logger,
+                       CancellationToken   cancellationToken)
   {
-    resultsClient_  = new Results.ResultsClient(channel);
-    sessionsClient_ = new Sessions.SessionsClient(channel);
-    tasksClient_    = new Tasks.TasksClient(channel);
-    channel_        = channel;
-    logger_         = logger;
-    sessionId_      = sessionId;
-    optionsHtcMock_ = optionsHtcMock;
+    cancellationToken_ = cancellationToken;
+    resultsClient_     = new Results.ResultsClient(channel);
+    sessionsClient_    = new Sessions.SessionsClient(channel);
+    tasksClient_       = new Tasks.TasksClient(channel);
+    channel_           = channel;
+    logger_            = logger;
+    sessionId_         = sessionId;
+    optionsHtcMock_    = optionsHtcMock;
   }
 
 
   public void Dispose()
   {
-    sessionsClient_.CancelSession(new CancelSessionRequest
-                                  {
-                                    SessionId = sessionId_,
-                                  });
-    var stats = channel_.ComputeThroughput(sessionId_)
-                        .Result;
+    if (cancellationToken_.IsCancellationRequested)
+    {
+      sessionsClient_.CancelSession(new CancelSessionRequest
+                                    {
+                                      SessionId = sessionId_,
+                                    },
+                                    cancellationToken: CancellationToken.None);
+    }
+    else
+    {
+      sessionsClient_.CloseSession(new CloseSessionRequest
+                                   {
+                                     SessionId = sessionId_,
+                                   },
+                                   cancellationToken: CancellationToken.None);
 
-    logger_.LogInformation("Throughput for session {session} : {sessionThroughput} task/s ({nTasks} tasks in {timespan})",
-                           sessionId_,
-                           stats.TasksCount / stats.Duration.TotalMilliseconds * 1000,
-                           stats.TasksCount,
-                           stats.Duration);
+      // Only meaningful for a completed run; it also fails when no task has finished yet
+      var stats = channel_.ComputeThroughput(sessionId_,
+                                             CancellationToken.None)
+                          .Result;
+
+      logger_.LogInformation("Throughput for session {session} : {sessionThroughput} task/s ({nTasks} tasks in {timespan})",
+                             sessionId_,
+                             stats.TasksCount / stats.Duration.TotalMilliseconds * 1000,
+                             stats.TasksCount,
+                             stats.Duration);
+    }
 
     if (optionsHtcMock_.PurgeData)
     {
       sessionsClient_.PurgeSession(new PurgeSessionRequest
                                    {
                                      SessionId = sessionId_,
-                                   });
+                                   },
+                                   cancellationToken: CancellationToken.None);
     }
   }
 
@@ -100,7 +119,7 @@ public sealed class SessionClient : ISessionClient
                                                                      id,
                                                                    },
                                                                    parallelism: 1,
-                                                                   cancellationToken: CancellationToken.None)
+                                                                   cancellationToken: cancellationToken_)
                                               .ConfigureAwait(false);
 
   public IEnumerable<string> SubmitTasksWithDependencies(IEnumerable<Tuple<byte[], IList<string>>> payloadsWithDependencies)
@@ -121,7 +140,8 @@ public sealed class SessionClient : ISessionClient
                                                         Name = $"payload {i}",
                                                       },
                                                     },
-                                                  });
+                                                  },
+                                                  cancellationToken: cancellationToken_);
 
       var result = resultsClient_.CreateResultsMetaData(new CreateResultsMetaDataRequest
                                                         {
@@ -133,7 +153,8 @@ public sealed class SessionClient : ISessionClient
                                                               Name = $"root {i}",
                                                             },
                                                           },
-                                                        })
+                                                        },
+                                                        cancellationToken: cancellationToken_)
                                  .Results.Select(raw => raw.ResultId)
                                  .Single();
 
@@ -156,7 +177,8 @@ public sealed class SessionClient : ISessionClient
                                      },
                                    },
                                  },
-                               });
+                               },
+                               cancellationToken: cancellationToken_);
 
       logger_.LogDebug("Dependencies : {dep}",
                        string.Join(", ",
