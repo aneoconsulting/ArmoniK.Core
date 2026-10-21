@@ -201,12 +201,20 @@ internal sealed class WalBroadcaster<T> : IDisposable
   }
 
   // Stops the generation once the idle timeout has elapsed, unless a subscriber joined it in the
-  // meantime, which changed its IdleVersion.
+  // meantime, which changed its IdleVersion. Ends early when the generation is stopped otherwise.
   private async Task StopAfterIdleTimeout(Generation generation,
                                           long       idleVersion)
   {
-    await Task.Delay(idleTimeout_)
-              .ConfigureAwait(false);
+    try
+    {
+      await Task.Delay(idleTimeout_,
+                       generation.CancellationToken)
+                .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+      return;
+    }
 
     lock (lock_)
     {
