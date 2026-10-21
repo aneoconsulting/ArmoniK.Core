@@ -56,6 +56,15 @@ public class TaskWatcherTests : TaskWatcherTestBase
   }
 
   [Test]
+  public void WatchAfterDisposeShouldThrow()
+  {
+    ((IDisposable)TaskWatcher!).Dispose();
+
+    Assert.That(() => TaskWatcher.GetNewTasks(data => data.SessionId == "SessionId"),
+                Throws.InstanceOf<ObjectDisposedException>());
+  }
+
+  [Test]
   public async Task WatchShouldRecoverAfterReplicationConnectionIsTerminated()
   {
     using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
