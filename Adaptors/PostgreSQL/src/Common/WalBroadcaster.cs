@@ -72,15 +72,12 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
   public void Dispose()
   {
-    Generation? toStop;
     lock (lock_)
     {
       disposed_ = true;
-      toStop    = Close(current_);
+      // The loop completes the channels of its remaining subscribers once it is cancelled.
+      Stop(current_);
     }
-
-    // The loop completes the channels of its remaining subscribers once it is cancelled.
-    toStop?.Stop();
   }
 
   /// <summary>
@@ -161,10 +158,14 @@ internal sealed class WalBroadcaster<T> : IDisposable
             Open: true,
           })
       {
-        var generation = new Generation();
+        // The loop owns the token source and disposes it; the generation only cancels it.
+        var cts = new CancellationTokenSource();
+        var generation = new Generation(cts.CancelAsync,
+                                        cts.Token);
         current_ = generation;
         // Task.Run so that no code of the loop runs under the lock.
-        _ = Task.Run(() => RunLoop(generation));
+        _ = Task.Run(() => RunLoop(generation,
+                                   cts));
       }
 
       current_.Subscribers[id] = channel;
@@ -180,42 +181,48 @@ internal sealed class WalBroadcaster<T> : IDisposable
   {
     channel.Writer.TryComplete();
 
-    Generation? toStop = null;
     lock (lock_)
     {
       generation.Subscribers.TryRemove(id,
                                        out _);
       if (generation.Subscribers.IsEmpty)
       {
-        toStop = Close(generation);
+        Stop(generation);
       }
     }
-
-    toStop?.Stop();
   }
 
-  // Closes the generation to new subscribers. Returns it when it was open, with one more owner, so
-  // that the caller stops its loop outside the lock (Cancel runs the callbacks registered on the
-  // token, such as those of Npgsql, synchronously), then releases it. Must be called while
+  // Closes the generation to new subscribers. Returns whether it was open. Must be called while
   // holding lock_.
-  private static Generation? Close(Generation? generation)
+  private static bool Close(Generation? generation)
   {
     if (generation is not
         {
           Open: true,
         })
     {
-      return null;
+      return false;
     }
 
     generation.Open = false;
-    generation.AddOwner();
-    return generation;
+    return true;
   }
 
-  private async Task RunLoop(Generation generation)
+  // Closes the generation and cancels its loop, unless it was already closed. CancelAsync only
+  // flags the token synchronously and runs the callbacks registered on it, such as those of
+  // Npgsql, asynchronously: no work is done under the lock. Must be called while holding lock_.
+  private static void Stop(Generation? generation)
   {
-    var        cancellationToken = generation.Cts.Token;
+    if (Close(generation))
+    {
+      generation!.Cancellation = generation.CancelAsync();
+    }
+  }
+
+  private async Task RunLoop(Generation              generation,
+                             CancellationTokenSource cts)
+  {
+    var        cancellationToken = generation.CancellationToken;
     Exception? loopException     = null;
     try
     {
@@ -278,20 +285,27 @@ internal sealed class WalBroadcaster<T> : IDisposable
       // Close the generation and complete its channels under the lock: a subscriber either
       // joined before, and its channel is completed here, or it sees the generation closed and
       // starts a new one.
-      Generation? closed;
       lock (lock_)
       {
-        closed = Close(generation);
+        Close(generation);
         foreach (var (_, ch) in generation.Subscribers)
         {
           ch.Writer.TryComplete(loopException);
         }
       }
 
-      // The loop has ended: no need to cancel it. Release the ownership taken by Close, if this
-      // block closed the generation, then the one of the loop itself.
-      closed?.ReleaseOwner();
-      generation.ReleaseOwner();
+      // The generation is closed, so nobody cancels it anymore. Wait for the callbacks of a
+      // cancellation that was requested, then dispose the token source.
+      try
+      {
+        await generation.Cancellation.ConfigureAwait(false);
+      }
+      catch (Exception)
+      {
+        // A failing cancellation callback must not prevent the disposal.
+      }
+
+      cts.Dispose();
     }
   }
 
@@ -299,49 +313,27 @@ internal sealed class WalBroadcaster<T> : IDisposable
   ///   One replication connection and the subscribers it serves, from the first subscriber to the
   ///   end of its loop.
   /// </summary>
-  private sealed class Generation : IDisposable
+  private sealed class Generation(Func<Task>        cancelAsync,
+                                  CancellationToken cancellationToken)
   {
-    // Disposed by the last of its owners: the loop, which uses its token, and whoever closed the
-    // generation and has yet to cancel it. Cancel therefore never runs on a disposed source.
-    public readonly CancellationTokenSource Cts = new();
+    // Requests the cancellation of the loop, see Stop.
+    public readonly Func<Task> CancelAsync = cancelAsync;
+
+    // Token of the loop. The loop owns its token source, and disposes it once the generation is
+    // closed: from then on, nobody cancels it anymore.
+    public readonly CancellationToken CancellationToken = cancellationToken;
 
     public readonly TaskCompletionSource SlotReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
 
     // Written under lock_, read without it by the loop.
     public readonly ConcurrentDictionary<Guid, Channel<T>> Subscribers = new();
 
+    // Completes once the callbacks of the requested cancellation, if any, have run. Set under
+    // lock_ when the generation is stopped.
+    public Task Cancellation = Task.CompletedTask;
+
     // Whether new subscribers may join. Set to false, under lock_, when the generation is
     // stopped or its loop ends.
     public bool Open = true;
-
-    // The loop owns the generation from its creation.
-    private int owners_ = 1;
-
-    public void Dispose()
-      => Cts.Dispose();
-
-    public void AddOwner()
-      => Interlocked.Increment(ref owners_);
-
-    public void ReleaseOwner()
-    {
-      if (Interlocked.Decrement(ref owners_) == 0)
-      {
-        Dispose();
-      }
-    }
-
-    // Cancels the loop, then releases the ownership taken by Close.
-    public void Stop()
-    {
-      try
-      {
-        Cts.Cancel();
-      }
-      finally
-      {
-        ReleaseOwner();
-      }
-    }
   }
 }
