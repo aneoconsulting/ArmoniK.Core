@@ -237,7 +237,7 @@ internal static class Program
                                                                                DefaultTaskOption = new TaskOptions
                                                                                                    {
                                                                                                      MaxDuration = Duration.FromTimeSpan(benchOptions.MaxDuration),
-                                                                                                     MaxRetries  = 2,
+                                                                                                     MaxRetries  = benchOptions.MaxRetries,
                                                                                                      Priority = int.Max(benchOptions.TaskPriority,
                                                                                                                         1),
                                                                                                      PartitionId = benchOptions.Partition,
@@ -516,7 +516,7 @@ internal static class Program
       await results.ParallelForEach(new ParallelTaskOptions(benchOptions.DegreeOfParallelism),
                                     async resultId =>
                                     {
-                                      for (var i = 0; i < benchOptions.MaxRetries; i++)
+                                      for (var i = 0; i < benchOptions.DownloadMaxAttempts; i++)
                                       {
                                         await using var channel = await channelPool.GetAsync(CancellationToken.None)
                                                                                    .ConfigureAwait(false);
