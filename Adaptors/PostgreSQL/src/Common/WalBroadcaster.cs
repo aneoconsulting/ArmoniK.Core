@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -291,6 +292,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
   ///   One replication connection and the subscribers it serves, from the first subscriber to the
   ///   end of its loop.
   /// </summary>
+  [SuppressMessage("Design",
+                   "CA1001: Types that own disposable fields should be disposable",
+                   Justification = "Cts is not disposed on purpose, see its comment")]
   private sealed class Generation
   {
     // Never disposed: without timer nor linked token, it holds nothing the GC cannot reclaim,
