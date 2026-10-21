@@ -18,7 +18,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Channels;
@@ -81,7 +80,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
 
     // The loop completes the channels of its remaining subscribers once it is cancelled.
-    toStop?.Cts.Cancel();
+    toStop?.Stop();
   }
 
   /// <summary>
@@ -192,12 +191,13 @@ internal sealed class WalBroadcaster<T> : IDisposable
       }
     }
 
-    toStop?.Cts.Cancel();
+    toStop?.Stop();
   }
 
-  // Closes the generation to new subscribers. Returns it when it was open, so that the caller
-  // cancels its loop outside the lock: Cancel runs the callbacks registered on the token, such
-  // as those of Npgsql, synchronously. Must be called while holding lock_.
+  // Closes the generation to new subscribers. Returns it when it was open, with one more owner, so
+  // that the caller stops its loop outside the lock (Cancel runs the callbacks registered on the
+  // token, such as those of Npgsql, synchronously), then releases it. Must be called while
+  // holding lock_.
   private static Generation? Close(Generation? generation)
   {
     if (generation is not
@@ -209,6 +209,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
 
     generation.Open = false;
+    generation.AddOwner();
     return generation;
   }
 
@@ -277,14 +278,20 @@ internal sealed class WalBroadcaster<T> : IDisposable
       // Close the generation and complete its channels under the lock: a subscriber either
       // joined before, and its channel is completed here, or it sees the generation closed and
       // starts a new one.
+      Generation? closed;
       lock (lock_)
       {
-        Close(generation);
+        closed = Close(generation);
         foreach (var (_, ch) in generation.Subscribers)
         {
           ch.Writer.TryComplete(loopException);
         }
       }
+
+      // The loop has ended: no need to cancel it. Release the ownership taken by Close, if this
+      // block closed the generation, then the one of the loop itself.
+      closed?.ReleaseOwner();
+      generation.ReleaseOwner();
     }
   }
 
@@ -292,13 +299,10 @@ internal sealed class WalBroadcaster<T> : IDisposable
   ///   One replication connection and the subscribers it serves, from the first subscriber to the
   ///   end of its loop.
   /// </summary>
-  [SuppressMessage("Design",
-                   "CA1001: Types that own disposable fields should be disposable",
-                   Justification = "Cts is not disposed on purpose, see its comment")]
-  private sealed class Generation
+  private sealed class Generation : IDisposable
   {
-    // Never disposed: without timer nor linked token, it holds nothing the GC cannot reclaim,
-    // and Cancel may be called after the loop has ended.
+    // Disposed by the last of its owners: the loop, which uses its token, and whoever closed the
+    // generation and has yet to cancel it. Cancel therefore never runs on a disposed source.
     public readonly CancellationTokenSource Cts = new();
 
     public readonly TaskCompletionSource SlotReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
@@ -309,5 +313,35 @@ internal sealed class WalBroadcaster<T> : IDisposable
     // Whether new subscribers may join. Set to false, under lock_, when the generation is
     // stopped or its loop ends.
     public bool Open = true;
+
+    // The loop owns the generation from its creation.
+    private int owners_ = 1;
+
+    public void Dispose()
+      => Cts.Dispose();
+
+    public void AddOwner()
+      => Interlocked.Increment(ref owners_);
+
+    public void ReleaseOwner()
+    {
+      if (Interlocked.Decrement(ref owners_) == 0)
+      {
+        Dispose();
+      }
+    }
+
+    // Cancels the loop, then releases the ownership taken by Close.
+    public void Stop()
+    {
+      try
+      {
+        Cts.Cancel();
+      }
+      finally
+      {
+        ReleaseOwner();
+      }
+    }
   }
 }
