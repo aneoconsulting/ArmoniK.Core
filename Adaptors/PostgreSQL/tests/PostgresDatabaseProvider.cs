@@ -59,7 +59,8 @@ internal class PostgresDatabaseProvider : IDisposable
 #pragma warning restore CS0618
   }
 
-  public PostgresDatabaseProvider()
+  /// <param name="extraConfig">Configuration entries added to, or replacing, the default test configuration</param>
+  public PostgresDatabaseProvider(IDictionary<string, string?>? extraConfig = null)
   {
     EnsureServerStarted();
     TruncateAllTables();
@@ -94,6 +95,11 @@ internal class PostgresDatabaseProvider : IDisposable
       minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.Port)}"]         = sharedPort_.ToString();
       minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.User)}"]         = PgUser;
       minimalConfig[$"{Options.PostgreSQL.SettingSection}:{nameof(Options.PostgreSQL.DatabaseName)}"] = DatabaseName;
+    }
+
+    foreach (var (key, value) in extraConfig ?? new Dictionary<string, string?>())
+    {
+      minimalConfig[key] = value;
     }
 
     var configuration = new ConfigurationManager();

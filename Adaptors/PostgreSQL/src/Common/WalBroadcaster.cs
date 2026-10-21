@@ -42,17 +42,19 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Common;
 ///     otherwise be lost.
 ///   </para>
 ///   <para>
-///     The connection is closed when the last subscriber disconnects. A later subscriber
-///     opens a new connection, in a new <see cref="Generation" />.
+///     The connection is closed when the last subscriber disconnects, or once it has stayed without
+///     subscriber for <see cref="Options.PostgreSQL.ReplicationIdleTimeout" /> when it is positive.
+///     A later subscriber opens a new connection, in a new <see cref="Generation" />.
 ///   </para>
 /// </summary>
 /// <typeparam name="T">The decoded event payload type (e.g. TaskData, Result).</typeparam>
 internal sealed class WalBroadcaster<T> : IDisposable
   where T : class
 {
-  // Every section under this lock is synchronous: a plain lock is enough, and it needs no disposal.
-  private readonly Lock lock_ = new();
+  private readonly TimeSpan idleTimeout_;
 
+  // Every section under this lock is synchronous: a plain lock is enough, and it needs no disposal.
+  private readonly Lock                                                          lock_ = new();
   private readonly NpgsqlConnectionProvider                                      provider_;
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
   private readonly IUuidGenerator                                                uuidGenerator_;
@@ -68,6 +70,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     provider_      = provider;
     tryParse_      = tryParse;
     uuidGenerator_ = uuidGenerator;
+    idleTimeout_   = provider.ReplicationIdleTimeout;
   }
 
   public void Dispose()
@@ -159,13 +162,15 @@ internal sealed class WalBroadcaster<T> : IDisposable
         current_ = new Generation(RunLoop);
       }
 
+      // Joining invalidates the pending idle timeout of the generation, if any.
+      current_.IdleVersion++;
       current_.Subscribers[id] = channel;
       return current_;
     }
   }
 
   // Removes the subscriber from its own generation, and stops that generation once it has no
-  // subscriber left. A newer generation is never affected.
+  // subscriber left, right away or after the idle timeout. A newer generation is never affected.
   private void Unsubscribe(Generation generation,
                            Guid       id,
                            Channel<T> channel)
@@ -176,7 +181,36 @@ internal sealed class WalBroadcaster<T> : IDisposable
     {
       generation.Subscribers.TryRemove(id,
                                        out _);
-      if (generation.Subscribers.IsEmpty)
+      if (!generation.Subscribers.IsEmpty)
+      {
+        return;
+      }
+
+      if (idleTimeout_ > TimeSpan.Zero && !generation.IsStopped)
+      {
+        // Keep the replication connection open for a while: a new subscriber can reuse it
+        // instead of creating a new replication slot.
+        _ = StopAfterIdleTimeout(generation,
+                                 ++generation.IdleVersion);
+      }
+      else
+      {
+        generation.Stop();
+      }
+    }
+  }
+
+  // Stops the generation once the idle timeout has elapsed, unless a subscriber joined it in the
+  // meantime, which changed its IdleVersion.
+  private async Task StopAfterIdleTimeout(Generation generation,
+                                          long       idleVersion)
+  {
+    await Task.Delay(idleTimeout_)
+              .ConfigureAwait(false);
+
+    lock (lock_)
+    {
+      if (generation.IdleVersion == idleVersion && generation.Subscribers.IsEmpty)
       {
         generation.Stop();
       }
@@ -315,6 +349,10 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
     // Written under lock_, read without it by the loop.
     public ConcurrentDictionary<Guid, Channel<T>> Subscribers { get; } = new();
+
+    // Incremented, under lock_, when the generation starts waiting for its idle timeout and when a
+    // subscriber joins it, so that a pending idle timeout knows whether it still applies.
+    public long IdleVersion { get; set; }
 
     // A stopped generation is never joined. Stopped by Stop only, under lock_, so reading it under
     // lock_ is consistent. Still readable once the token source is disposed.
