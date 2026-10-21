@@ -163,9 +163,11 @@ internal sealed class WalBroadcaster<T> : IDisposable
         var generation = new Generation(cts.CancelAsync,
                                         cts.Token);
         current_ = generation;
-        // Task.Run so that no code of the loop runs under the lock.
+        // Task.Run so that no code of the loop runs under the lock. Not cancellable: the loop must
+        // always run, since its finally block completes the subscribers and disposes cts.
         _ = Task.Run(() => RunLoop(generation,
-                                   cts));
+                                   cts),
+                     CancellationToken.None);
       }
 
       current_.Subscribers[id] = channel;
