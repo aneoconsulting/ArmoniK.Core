@@ -29,7 +29,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: aneoconsulting/ArmoniK@724a4b5c7e894941d58e2f2abd626816be174e01 # main
+      - uses: aneoconsulting/ArmoniK@880747d7cafb9186b6cf126bc001f5ff9c300737 # main
         id: deploy-infra
         with:
           control-plane-image: dockerhubaneo/armonik_control
@@ -86,7 +86,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
 
-      - uses: aneoconsulting/ArmoniK@724a4b5c7e894941d58e2f2abd626816be174e01 # main
+      - uses: aneoconsulting/ArmoniK@880747d7cafb9186b6cf126bc001f5ff9c300737 # main
         id: deploy-infra
         with:
           control-plane-image: dockerhubaneo/armonik_control
