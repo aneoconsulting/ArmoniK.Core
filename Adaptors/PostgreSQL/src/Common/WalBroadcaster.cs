@@ -142,7 +142,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
   }
 
-  // Adds the subscriber to the open generation, or to a new one started for it.
+  // Adds the subscriber to the current generation, or to a new one if it is stopped.
   private Generation Register(Guid       id,
                               Channel<T> channel)
   {
@@ -153,7 +153,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
       if (current_ is not
           {
-            Open: true,
+            IsStopped: false,
           })
       {
         current_ = new Generation(RunLoop);
@@ -246,19 +246,19 @@ internal sealed class WalBroadcaster<T> : IDisposable
       // still waiting on SlotReady so it can clean up and retry.
       generation.SlotReady.TrySetCanceled(CancellationToken.None);
 
-      // Close the generation and complete its channels under the lock: a subscriber either
-      // joined before, and its channel is completed here, or it sees the generation closed and
-      // starts a new one. A closed generation is never joined, so a new one can start right away.
+      // Stop the generation and complete its channels under the lock: a subscriber either joined
+      // before, and its channel is completed here, or it sees the generation stopped and starts a
+      // new one. A stopped generation is never joined, so a new one can start right away.
       lock (lock_)
       {
-        generation.Open = false;
+        generation.Stop();
         foreach (var (_, ch) in generation.Subscribers)
         {
           ch.Writer.TryComplete(loopException);
         }
       }
 
-      // Disposed only once the generation is closed: disposing a broken connection can take time,
+      // Disposed only once the generation is stopped: disposing a broken connection can take time,
       // and no subscriber must join the generation meanwhile.
       if (replConn is not null)
       {
@@ -300,7 +300,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
                      }
                      finally
                      {
-                       // The loop has closed the generation under lock_: nobody cancels it anymore.
+                       // The loop has stopped the generation under lock_: nobody cancels it anymore.
                        // A failing cancellation callback must not prevent the disposal.
                        await cancellation_.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
                        cts.Dispose();
@@ -316,21 +316,20 @@ internal sealed class WalBroadcaster<T> : IDisposable
     // Written under lock_, read without it by the loop.
     public ConcurrentDictionary<Guid, Channel<T>> Subscribers { get; } = new();
 
-    // Whether new subscribers may join. Set to false, under lock_, when the generation is
-    // stopped or its loop ends.
-    public bool Open { get; set; } = true;
+    // A stopped generation is never joined. Stopped by Stop only, under lock_, so reading it under
+    // lock_ is consistent. Still readable once the token source is disposed.
+    public bool IsStopped
+      => CancellationToken.IsCancellationRequested;
 
-    // Closes the generation and cancels its loop. Must be called while holding lock_: CancelAsync
+    // Stops the generation by cancelling its token, once. Called when its last subscriber leaves,
+    // on Dispose, and by its loop when it ends. Must be called while holding lock_: CancelAsync
     // runs the token callbacks, such as those of Npgsql, off the lock.
     public void Stop()
     {
-      if (!Open)
+      if (!IsStopped)
       {
-        return;
+        cancellation_ = cancelAsync_();
       }
-
-      Open          = false;
-      cancellation_ = cancelAsync_();
     }
   }
 }
