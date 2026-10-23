@@ -59,28 +59,54 @@ internal class Program
                  .Bind(optionsHtcMock);
     var channel = GrpcChannelFactory.CreateChannel(options!);
 
-    var gridClient = new GridClient(channel,
-                                    factory,
-                                    optionsHtcMock);
-
-    using var client = new HtcMockClient(gridClient,
-                                         factory.CreateLogger<Htc.Mock.Client>());
-
-    Console.CancelKeyPress += (sender,
+    // Cancelled on Ctrl+C or on failure: the session is then cancelled instead of closed
+    using var cts = new CancellationTokenSource();
+    Console.CancelKeyPress += (_,
                                args) =>
                               {
                                 args.Cancel = true;
-                                client.Dispose();
-                                Environment.Exit(0);
+                                cts.Cancel();
                               };
+
+    var gridClient = new GridClient(channel,
+                                    factory,
+                                    optionsHtcMock,
+                                    cts.Token);
+
+    using var client = new HtcMockClient(gridClient,
+                                         factory.CreateLogger<Htc.Mock.Client>());
 
     var runConfiguration = new RunConfiguration(optionsHtcMock.TotalCalculationTime,
                                                 optionsHtcMock.NTasks,
                                                 optionsHtcMock.DataSize,
                                                 optionsHtcMock.MemorySize,
                                                 optionsHtcMock.SubTasksLevels);
-    return client.Start(runConfiguration)
-             ? 0
-             : 1;
+    try
+    {
+      return client.Start(runConfiguration)
+               ? 0
+               : 1;
+    }
+    // Returning instead of rethrowing lets the session client be disposed on a normal exit path
+    catch (Exception e)
+    {
+      var interrupted = cts.IsCancellationRequested;
+      cts.Cancel();
+      var logger = factory.CreateLogger<Program>();
+      if (interrupted)
+      {
+        logger.LogError(e,
+                        "HtcMock run interrupted");
+      }
+      else
+      {
+        logger.LogError(e,
+                        "HtcMock run failed");
+      }
+
+      return interrupted
+               ? 130
+               : 1;
+    }
   }
 }
