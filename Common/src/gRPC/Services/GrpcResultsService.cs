@@ -29,8 +29,7 @@ using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -41,7 +40,6 @@ using Google.Protobuf;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -50,7 +48,6 @@ using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Results" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcResultsService : Results.ResultsBase
 {
   private readonly ILogger<GrpcResultsService>                  logger_;
@@ -98,36 +95,40 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(GetOwnerTaskId))]
   public override async Task<GetOwnerTaskIdResponse> GetOwnerTaskId(GetOwnerTaskIdRequest request,
                                                                     ServerCallContext     context)
   {
     using var measure = meter_.CountAndTime();
     using var _       = logger_.LogFunction();
 
+    // The results read to decide the call, when authorization read them all
+    var resolved = request.ResultId.Distinct()
+                          .Select(context.ResolvedResult)
+                          .ToList();
+    var results = resolved.Count != 0 && resolved.All(result => result is not null)
+                    ? resolved.Select(result => result!)
+                              .ToList()
+                    : await resultTable_.GetResults(request.SessionId,
+                                                    request.ResultId,
+                                                    context.CancellationToken)
+                                        .ToListAsync(context.CancellationToken)
+                                        .ConfigureAwait(false);
+
     return new GetOwnerTaskIdResponse
            {
              SessionId = request.SessionId,
              ResultTask =
              {
-               await resultTable_.GetResults(request.SessionId,
-                                             request.ResultId,
-                                             context.CancellationToken)
-                                 .Select(result => new GetOwnerTaskIdResponse.Types.MapResultTask
-                                                   {
-                                                     TaskId   = result.OwnerTaskId,
-                                                     ResultId = result.Name,
-                                                   })
-                                 .ToListAsync(context.CancellationToken)
-                                 .ConfigureAwait(false),
+               results.Select(result => new GetOwnerTaskIdResponse.Types.MapResultTask
+                                        {
+                                          TaskId   = result.OwnerTaskId,
+                                          ResultId = result.Name,
+                                        }),
              },
            };
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(ListResults))]
   public override async Task<ListResultsResponse> ListResults(ListResultsRequest request,
                                                               ServerCallContext  context)
   {
@@ -137,9 +138,9 @@ public class GrpcResultsService : Results.ResultsBase
                         ? resultTable_.Secondary
                         : resultTable_;
 
-    var results = await resultTable.ListResultsAsync(request.Filters is null
-                                                       ? data => true
-                                                       : request.Filters.ToResultFilter(),
+    var results = await resultTable.ListResultsAsync(context.RestrictListing<Result>(request.Filters is null
+                                                                                       ? data => true
+                                                                                       : request.Filters.ToResultFilter()),
                                                      request.Sort is null
                                                        ? result => result.ResultId
                                                        : request.Sort.ToField(),
@@ -148,21 +149,23 @@ public class GrpcResultsService : Results.ResultsBase
                                                      request.PageSize,
                                                      context.CancellationToken)
                                    .ConfigureAwait(false);
+    var page = results.results.ToList();
+    var shown = await context.DataReferenceShownAsync(sessionTable_,
+                                                      page.Select(result => result.SessionId))
+                             .ConfigureAwait(false);
     return new ListResultsResponse
            {
              PageSize = request.PageSize,
              Page     = request.Page,
              Results =
              {
-               results.results.Select(result => result.ToGrpcResultRaw()),
+               page.Select(result => result.ToGrpcResultRaw(shown(result.SessionId))),
              },
              Total = results.totalCount,
            };
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(CreateResultsMetaData))]
   public override async Task<CreateResultsMetaDataResponse> CreateResultsMetaData(CreateResultsMetaDataRequest request,
                                                                                   ServerCallContext            context)
   {
@@ -207,8 +210,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(CreateResults))]
   public override async Task<CreateResultsResponse> CreateResults(CreateResultsRequest request,
                                                                   ServerCallContext    context)
   {
@@ -284,8 +285,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(DeleteResultsData))]
   public override async Task<DeleteResultsDataResponse> DeleteResultsData(DeleteResultsDataRequest request,
                                                                           ServerCallContext        context)
   {
@@ -322,16 +321,14 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(DownloadResultData))]
   public override async Task DownloadResultData(DownloadResultDataRequest                       request,
                                                 IServerStreamWriter<DownloadResultDataResponse> responseStream,
                                                 ServerCallContext                               context)
   {
     using var measure = meter_.CountAndTime();
 
-    var id = (await resultTable_.GetResult(request.ResultId)
-                                .ConfigureAwait(false)).OpaqueId;
+    var id = (context.ResolvedResult(request.ResultId) ?? await resultTable_.GetResult(request.ResultId)
+                                                                            .ConfigureAwait(false)).OpaqueId;
 
     await foreach (var chunk in objectStorage_.GetValuesAsync(id,
                                                               context.CancellationToken)
@@ -346,8 +343,6 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(GetServiceConfiguration))]
   public override Task<ResultsServiceConfigurationResponse> GetServiceConfiguration(Empty             request,
                                                                                     ServerCallContext context)
   {
@@ -360,8 +355,6 @@ public class GrpcResultsService : Results.ResultsBase
 
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(UploadResultData))]
   public override async Task<UploadResultDataResponse> UploadResultData(IAsyncStreamReader<UploadResultDataRequest> requestStream,
                                                                         ServerCallContext                           context)
   {
@@ -384,8 +377,8 @@ public class GrpcResultsService : Results.ResultsBase
     }
 
     var id = current.Id;
-    var sessionTask = sessionTable_.GetSessionAsync(id.SessionId,
-                                                    context.CancellationToken);
+    var sessionTask = context.GetSessionAsync(sessionTable_,
+                                              id.SessionId);
 
 
     var (opaqueId, size) = await objectStorage_.AddOrUpdateAsync(new ObjectData
@@ -427,25 +420,25 @@ public class GrpcResultsService : Results.ResultsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(GetResult))]
   public override async Task<GetResultResponse> GetResult(GetResultRequest  request,
                                                           ServerCallContext context)
   {
     using var measure = meter_.CountAndTime();
-    var result = await resultTable_.GetResult(request.ResultId,
-                                              context.CancellationToken)
-                                   .ConfigureAwait(false);
+    var result = context.ResolvedResult(request.ResultId) ?? await resultTable_.GetResult(request.ResultId,
+                                                                                          context.CancellationToken)
+                                                                               .ConfigureAwait(false);
+
+    var shown = await context.DataReferenceShownAsync(sessionTable_,
+                                                      [result.SessionId])
+                             .ConfigureAwait(false);
 
     return new GetResultResponse
            {
-             Result = result.ToGrpcResultRaw(),
+             Result = result.ToGrpcResultRaw(shown(result.SessionId)),
            };
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcResultsService),
-                      nameof(ImportResultsData))]
   public override async Task<ImportResultsDataResponse> ImportResultsData(ImportResultsDataRequest request,
                                                                           ServerCallContext        context)
   {
@@ -457,9 +450,9 @@ public class GrpcResultsService : Results.ResultsBase
       return new ImportResultsDataResponse();
     }
 
-    var sessionData = await sessionTable_.GetSessionAsync(request.SessionId,
-                                                          context.CancellationToken)
-                                         .ConfigureAwait(false);
+    var sessionData = await context.GetSessionAsync(sessionTable_,
+                                                    request.SessionId)
+                                   .ConfigureAwait(false);
 
     var resultIds = request.Results.Select(id => id.ResultId)
                            .ToHashSet();

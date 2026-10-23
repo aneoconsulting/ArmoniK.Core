@@ -39,15 +39,15 @@ public static class ListSessionsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that access the field from the object
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<SessionData, object?>> ToField(this ListSessionsRequest.Types.Sort sort)
-    => sort.Field.FieldCase switch
-       {
-         SessionField.FieldOneofCase.SessionRawField        => sort.Field.SessionRawField.Field.ToField(),
-         SessionField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
-         SessionField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
-         _                                                  => throw new ArgumentOutOfRangeException(nameof(sort)),
-       };
+    => FilterConversion.Convert(() => sort.Field.FieldCase switch
+                                      {
+                                        SessionField.FieldOneofCase.SessionRawField        => sort.Field.SessionRawField.Field.ToField(),
+                                        SessionField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
+                                        SessionField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
+                                        _                                                  => throw new ArgumentOutOfRangeException(nameof(sort)),
+                                      });
 
   /// <summary>
   ///   Converts gRPC message into the associated <see cref="SessionData" /> field
@@ -74,11 +74,14 @@ public static class ListSessionsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
+  public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
+    => FilterConversion.Convert(() => BuildSessionDataFilter(filters));
+
   [SuppressMessage("Style",
                    "IDE0066:Convert switch statement to expression",
                    Justification = "Readability for nested switch")]
-  public static Expression<Func<SessionData, bool>> ToSessionDataFilter(this Filters filters)
+  private static Expression<Func<SessionData, bool>> BuildSessionDataFilter(Filters filters)
   {
     Expression<Func<SessionData, bool>> expr = data => false;
 

@@ -42,6 +42,7 @@ public class ListSessionsRequestValidator : AbstractValidator<ListSessionsReques
     RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new SessionFiltersValidator())
       .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
@@ -56,6 +57,8 @@ public class ListSessionsRequestValidator : AbstractValidator<ListSessionsReques
                         RuleFor(request => request.Sort.Field)
                           .NotNull()
                           .NotEmpty()
+                          .Must(field => field is null || field.FieldCase != SessionField.FieldOneofCase.None)
+                          .WithMessage("A sort must name the field it sorts on")
                           .WithName($"{nameof(ListSessionsRequest)}.{nameof(ListSessionsRequest.Sort)}.{nameof(ListSessionsRequest.Sort.Field)}");
                       });
   }

@@ -16,10 +16,14 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Threading;
 
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
+
+using Grpc.Core;
 
 using Htc.Mock.Core;
 
@@ -57,7 +61,31 @@ internal class Program
     var optionsHtcMock = new Options.HtcMock();
     configuration.GetSection(Options.HtcMock.SettingSection)
                  .Bind(optionsHtcMock);
-    var channel = GrpcChannelFactory.CreateChannel(options!);
+    ChannelBase channel = GrpcChannelFactory.CreateChannel(options!);
+
+    // Token minted outside of this client
+    var bearerToken = configuration["GrpcClient:BearerToken"];
+
+    // Used by negative tests: a certificate sent as a header must be dropped by an ingress that does not verify it
+    var forgedCertificate = configuration["GrpcClient:ForgedClientCert"];
+
+    var extraHeaders = new List<(string Name, string Value)>();
+
+    if (!string.IsNullOrEmpty(bearerToken))
+    {
+      extraHeaders.Add(("Authorization", $"Bearer {bearerToken}"));
+    }
+
+    if (!string.IsNullOrEmpty(forgedCertificate))
+    {
+      extraHeaders.Add(("X-Forwarded-Client-Cert", $"Cert=\"{Uri.EscapeDataString(File.ReadAllText(forgedCertificate))}\""));
+    }
+
+    if (extraHeaders.Count != 0)
+    {
+      channel = new ExtraHeaderChannel(channel,
+                                       extraHeaders);
+    }
 
     // Cancelled on Ctrl+C or on failure: the session is then cancelled instead of closed
     using var cts = new CancellationTokenSource();

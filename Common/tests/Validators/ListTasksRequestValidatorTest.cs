@@ -17,6 +17,7 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -155,5 +156,88 @@ public class ListTasksRequestValidatorTest
     Assert.That(validator_.Validate(validListTasksRequest_)
                           .IsValid,
                 Is.True);
+  }
+
+  private static Filters OneCondition(FilterField condition)
+    => new()
+       {
+         Or =
+         {
+           new FiltersAnd
+           {
+             And =
+             {
+               condition,
+             },
+           },
+         },
+       };
+
+  private static FilterField SessionCondition()
+    => new()
+       {
+         Field = new TaskField
+                 {
+                   TaskSummaryField = new TaskSummaryField
+                                      {
+                                        Field = TaskSummaryEnumField.SessionId,
+                                      },
+                 },
+         FilterString = new FilterString
+                        {
+                          Value    = "session",
+                          Operator = FilterStringOperator.Equal,
+                        },
+       };
+
+  [Test]
+  public void ListTasksRequestWithACompleteConditionShouldBeValid()
+  {
+    validListTasksRequest_!.Filters = OneCondition(SessionCondition());
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.True);
+  }
+
+  [Test]
+  public void ListTasksRequestConditionWithoutFieldShouldFail()
+  {
+    var condition = SessionCondition();
+    condition.Field                 = null;
+    validListTasksRequest_!.Filters = OneCondition(condition);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListTasksRequestConditionWithEmptyFieldShouldFail()
+  {
+    var condition = SessionCondition();
+    condition.Field                 = new TaskField();
+    validListTasksRequest_!.Filters = OneCondition(condition);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListTasksRequestConditionWithoutValueConditionShouldFail()
+  {
+    var condition = SessionCondition();
+    condition.ClearValueCondition();
+    validListTasksRequest_!.Filters = OneCondition(condition);
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListTasksRequestSortWithoutFieldShouldFail()
+  {
+    validListTasksRequest_!.Sort.Field = new TaskField();
+    Assert.That(validator_.Validate(validListTasksRequest_)
+                          .IsValid,
+                Is.False);
   }
 }

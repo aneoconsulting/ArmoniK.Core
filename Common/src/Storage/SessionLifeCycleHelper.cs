@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -39,23 +40,22 @@ public static class SessionLifeCycleHelper
   /// <param name="defaultTaskOptions">Default options for the tasks in the session</param>
   /// <param name="defaultPartition">Default partition for the session</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <param name="owner">Principal recorded as owner, null when the session is created without authorization</param>
+  /// <param name="createdUnder">Principals of the grants that permitted the creation of the session</param>
   /// <returns>
   ///   The ID of the created session
   /// </returns>
   /// <exception cref="PartitionNotFoundException">when the partition is not found</exception>
-  public static async Task<string> CreateSession(ISessionTable     sessionTable,
-                                                 IPartitionTable   partitionTable,
-                                                 IList<string>     partitionIds,
-                                                 TaskOptions       defaultTaskOptions,
-                                                 string            defaultPartition,
-                                                 CancellationToken cancellationToken = default)
+  public static async Task<string> CreateSession(ISessionTable        sessionTable,
+                                                 IPartitionTable      partitionTable,
+                                                 IList<string>        partitionIds,
+                                                 TaskOptions          defaultTaskOptions,
+                                                 string               defaultPartition,
+                                                 CancellationToken    cancellationToken = default,
+                                                 string?              owner             = null,
+                                                 IEnumerable<string>? createdUnder      = null)
   {
-    if (!partitionIds.Any())
-    {
-      partitionIds.Add(defaultPartition);
-    }
-
-    if (partitionIds.Count == 1 && string.IsNullOrEmpty(partitionIds.Single()))
+    if (DeclaresNoPartition(partitionIds))
     {
       partitionIds.Clear();
       partitionIds.Add(defaultPartition);
@@ -88,8 +88,52 @@ public static class SessionLifeCycleHelper
 
     var sessionId = await sessionTable.SetSessionDataAsync(partitionIds,
                                                            defaultTaskOptions,
+                                                           owner,
+                                                           createdUnder ?? Array.Empty<string>(),
                                                            cancellationToken)
                                       .ConfigureAwait(false);
     return sessionId;
   }
+
+  /// <summary>
+  ///   The partitions a session creation puts in play: the declared partitions, the default one when none is declared
+  /// </summary>
+  /// <remarks>
+  ///   The partition of the default task options is not one of them: it must be one of these, see
+  ///   <see cref="TaskOptionsPartition" />, so that a session never uses a partition its creation was not decided on
+  /// </remarks>
+  /// <param name="partitionIds">Partitions declared by the request</param>
+  /// <param name="defaultPartition">Default partition of the deployment</param>
+  /// <returns>The partitions, without duplicates</returns>
+  public static IReadOnlyList<string> EffectivePartitions(IEnumerable<string> partitionIds,
+                                                          string              defaultPartition)
+  {
+    var partitions = partitionIds.ToList();
+
+    return DeclaresNoPartition(partitions)
+             ? [defaultPartition]
+             : partitions.Distinct()
+                         .ToList();
+  }
+
+  /// <summary>
+  ///   The partition of the default task options of a session creation: the one requested, the default one when none is
+  ///   requested
+  /// </summary>
+  /// <param name="taskOptionsPartition">Partition of the default task options of the request</param>
+  /// <param name="defaultPartition">Default partition of the deployment</param>
+  /// <returns>The partition</returns>
+  public static string TaskOptionsPartition(string? taskOptionsPartition,
+                                            string  defaultPartition)
+    => string.IsNullOrEmpty(taskOptionsPartition)
+         ? defaultPartition
+         : taskOptionsPartition;
+
+  /// <summary>
+  ///   Whether a session creation declares no partition, and is then put in the default one
+  /// </summary>
+  /// <param name="partitionIds">Partitions declared by the request</param>
+  /// <returns>Whether no partition is declared</returns>
+  private static bool DeclaresNoPartition(ICollection<string> partitionIds)
+    => partitionIds.Count == 0 || (partitionIds.Count == 1 && string.IsNullOrEmpty(partitionIds.Single()));
 }

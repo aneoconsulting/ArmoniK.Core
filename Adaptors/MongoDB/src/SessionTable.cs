@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -76,6 +77,8 @@ public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISe
   [PublicAPI]
   public async Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
                                                 TaskOptions         defaultOptions,
+                                                string?             owner,
+                                                IEnumerable<string> createdUnder,
                                                 CancellationToken   cancellationToken = default)
   {
     using var activity = StartActivity();
@@ -88,7 +91,11 @@ public class SessionTable : BaseTable<SessionData, SessionDataModelMapping>, ISe
     SessionData data = new(rootSessionId,
                            SessionStatus.Running,
                            partitionIds.AsIList(),
-                           defaultOptions);
+                           defaultOptions)
+                       {
+                         Owner        = owner,
+                         CreatedUnder = createdUnder.ToList(),
+                       };
 
     await sessionCollection.InsertOneAsync(data,
                                            cancellationToken: cancellationToken)
