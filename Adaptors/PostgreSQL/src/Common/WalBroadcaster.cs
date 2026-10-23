@@ -33,7 +33,7 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Common;
 
 /// <summary>
 ///   Holds a single shared WAL replication connection for one event type and fans out decoded
-///   events to all active subscribers via in-memory channels: a shared, reference counted source.
+///   events to all active subscribers via in-memory channels.
 ///   <para>
 ///     The replication connection and slot are opened when the first subscriber registers.
 ///     The slot creation is signalled via an internal <see cref="TaskCompletionSource" /> so
@@ -143,8 +143,6 @@ internal sealed class WalBroadcaster<T> : IDisposable
   }
 
   // Adds the subscriber to the open generation, or to a new one started for it.
-  // A generation that is closed (stopping or dead) is never joined: its loop completes the
-  // channels of its own subscribers only, so a new generation can start right away.
   private Generation Register(Guid       id,
                               Channel<T> channel)
   {
@@ -187,8 +185,9 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
   private async Task RunLoop(Generation generation)
   {
-    var        cancellationToken = generation.CancellationToken;
-    Exception? loopException     = null;
+    var                           cancellationToken = generation.CancellationToken;
+    Exception?                    loopException     = null;
+    LogicalReplicationConnection? replConn          = null;
     try
     {
       var slotName = $"armonik_{uuidGenerator_.GenerateUuid():N}";
@@ -196,7 +195,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
                                                    PgOutputProtocolVersion.V1,
                                                    true);
 
-      await using var replConn = provider_.CreateReplicationConnection();
+      replConn = provider_.CreateReplicationConnection();
       await replConn.Open(cancellationToken)
                     .ConfigureAwait(false);
 
@@ -249,7 +248,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
       // Close the generation and complete its channels under the lock: a subscriber either
       // joined before, and its channel is completed here, or it sees the generation closed and
-      // starts a new one.
+      // starts a new one. A closed generation is never joined, so a new one can start right away.
       lock (lock_)
       {
         generation.Open = false;
@@ -257,6 +256,15 @@ internal sealed class WalBroadcaster<T> : IDisposable
         {
           ch.Writer.TryComplete(loopException);
         }
+      }
+
+      // Disposed only once the generation is closed: disposing a broken connection can take time,
+      // and no subscriber must join the generation meanwhile.
+      if (replConn is not null)
+      {
+        await replConn.DisposeAsync()
+                      .AsTask()
+                      .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
       }
     }
   }
@@ -293,15 +301,8 @@ internal sealed class WalBroadcaster<T> : IDisposable
                      finally
                      {
                        // The loop has closed the generation under lock_: nobody cancels it anymore.
-                       try
-                       {
-                         await cancellation_.ConfigureAwait(false);
-                       }
-                       catch (Exception)
-                       {
-                         // A failing cancellation callback must not prevent the disposal.
-                       }
-
+                       // A failing cancellation callback must not prevent the disposal.
+                       await cancellation_.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
                        cts.Dispose();
                      }
                    },
@@ -319,9 +320,8 @@ internal sealed class WalBroadcaster<T> : IDisposable
     // stopped or its loop ends.
     public bool Open { get; set; } = true;
 
-    // Closes the generation and cancels its loop, unless it was already closed. CancelAsync only
-    // flags the token synchronously and runs the callbacks registered on it, such as those of
-    // Npgsql, asynchronously: no work is done under the lock. Must be called while holding lock_.
+    // Closes the generation and cancels its loop. Must be called while holding lock_: CancelAsync
+    // runs the token callbacks, such as those of Npgsql, off the lock.
     public void Stop()
     {
       if (!Open)

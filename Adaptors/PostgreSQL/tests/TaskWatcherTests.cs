@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -72,14 +73,8 @@ public class TaskWatcherTests : TaskWatcherTestBase
     var firstStream = await TaskWatcher!.GetNewTasks(data => data.SessionId == "SessionId",
                                                      cts.Token)
                                         .ConfigureAwait(false);
-    var firstWatch = Task.Run(async () =>
-                              {
-                                await foreach (var _ in firstStream.WithCancellation(cts.Token)
-                                                                   .ConfigureAwait(false))
-                                {
-                                }
-                              },
-                              CancellationToken.None);
+    Task firstWatch = firstStream.ToListAsync(cts.Token)
+                                 .AsTask();
 
     // Kill the walsender of the replication slot, as a network failure or a server restart would.
     await using (var command = connectionProvider_!.DataSource.CreateCommand("SELECT pg_terminate_backend(active_pid) FROM pg_replication_slots " +
@@ -90,22 +85,15 @@ public class TaskWatcherTests : TaskWatcherTestBase
     }
 
     // The broken stream must end, with or without an exception, instead of hanging.
-    try
-    {
-      await firstWatch.WaitAsync(cts.Token)
-                      .ConfigureAwait(false);
-    }
-    catch (Exception) when (!cts.IsCancellationRequested)
-    {
-    }
-
+    await firstWatch.WaitAsync(cts.Token)
+                    .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
     Assert.That(cts.IsCancellationRequested,
                 Is.False);
 
     // A new subscription must start a new replication connection and receive events.
-    var secondStream = await TaskWatcher!.GetNewTasks(data => data.SessionId == "SessionId",
-                                                      cts.Token)
-                                         .ConfigureAwait(false);
+    var secondStream = await TaskWatcher.GetNewTasks(data => data.SessionId == "SessionId",
+                                                     cts.Token)
+                                        .ConfigureAwait(false);
 
     var template = await TaskTable!.ReadTaskAsync("TaskSubmittedId",
                                                   cts.Token)
@@ -121,11 +109,9 @@ public class TaskWatcherTests : TaskWatcherTestBase
                                  cts.Token)
                     .ConfigureAwait(false);
 
-    await using var enumerator = secondStream.GetAsyncEnumerator(cts.Token);
-    Assert.That(await enumerator.MoveNextAsync()
-                                .ConfigureAwait(false),
-                Is.True);
-    Assert.That(enumerator.Current.TaskId,
+    var first = await secondStream.FirstAsync(cts.Token)
+                                  .ConfigureAwait(false);
+    Assert.That(first.TaskId,
                 Is.EqualTo("TaskAfterReconnection"));
   }
 }
