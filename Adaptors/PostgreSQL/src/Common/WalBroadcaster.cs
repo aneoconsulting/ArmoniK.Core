@@ -76,7 +76,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
     {
       disposed_ = true;
       // The loop completes the channels of its remaining subscribers once it is cancelled.
-      Stop(current_);
+      current_?.Stop();
     }
   }
 
@@ -158,16 +158,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
             Open: true,
           })
       {
-        // The loop owns the token source and disposes it; the generation only cancels it.
-        var cts = new CancellationTokenSource();
-        var generation = new Generation(cts.CancelAsync,
-                                        cts.Token);
-        current_ = generation;
-        // Task.Run so that no code of the loop runs under the lock. Not cancellable: the loop must
-        // always run, since its finally block completes the subscribers and disposes cts.
-        _ = Task.Run(() => RunLoop(generation,
-                                   cts),
-                     CancellationToken.None);
+        current_ = new Generation(RunLoop);
       }
 
       current_.Subscribers[id] = channel;
@@ -189,40 +180,12 @@ internal sealed class WalBroadcaster<T> : IDisposable
                                        out _);
       if (generation.Subscribers.IsEmpty)
       {
-        Stop(generation);
+        generation.Stop();
       }
     }
   }
 
-  // Closes the generation to new subscribers. Returns whether it was open. Must be called while
-  // holding lock_.
-  private static bool Close(Generation? generation)
-  {
-    if (generation is not
-        {
-          Open: true,
-        })
-    {
-      return false;
-    }
-
-    generation.Open = false;
-    return true;
-  }
-
-  // Closes the generation and cancels its loop, unless it was already closed. CancelAsync only
-  // flags the token synchronously and runs the callbacks registered on it, such as those of
-  // Npgsql, asynchronously: no work is done under the lock. Must be called while holding lock_.
-  private static void Stop(Generation? generation)
-  {
-    if (Close(generation))
-    {
-      generation!.Cancellation = generation.CancelAsync();
-    }
-  }
-
-  private async Task RunLoop(Generation              generation,
-                             CancellationTokenSource cts)
+  private async Task RunLoop(Generation generation)
   {
     var        cancellationToken = generation.CancellationToken;
     Exception? loopException     = null;
@@ -289,25 +252,12 @@ internal sealed class WalBroadcaster<T> : IDisposable
       // starts a new one.
       lock (lock_)
       {
-        Close(generation);
+        generation.Open = false;
         foreach (var (_, ch) in generation.Subscribers)
         {
           ch.Writer.TryComplete(loopException);
         }
       }
-
-      // The generation is closed, so nobody cancels it anymore. Wait for the callbacks of a
-      // cancellation that was requested, then dispose the token source.
-      try
-      {
-        await generation.Cancellation.ConfigureAwait(false);
-      }
-      catch (Exception)
-      {
-        // A failing cancellation callback must not prevent the disposal.
-      }
-
-      cts.Dispose();
     }
   }
 
@@ -315,27 +265,72 @@ internal sealed class WalBroadcaster<T> : IDisposable
   ///   One replication connection and the subscribers it serves, from the first subscriber to the
   ///   end of its loop.
   /// </summary>
-  private sealed class Generation(Func<Task>        cancelAsync,
-                                  CancellationToken cancellationToken)
+  private sealed class Generation
   {
-    // Requests the cancellation of the loop, see Stop.
-    public readonly Func<Task> CancelAsync = cancelAsync;
-
-    // Token of the loop. The loop owns its token source, and disposes it once the generation is
-    // closed: from then on, nobody cancels it anymore.
-    public readonly CancellationToken CancellationToken = cancellationToken;
-
-    public readonly TaskCompletionSource SlotReady = new(TaskCreationOptions.RunContinuationsAsynchronously);
-
-    // Written under lock_, read without it by the loop.
-    public readonly ConcurrentDictionary<Guid, Channel<T>> Subscribers = new();
+    private readonly Func<Task> cancelAsync_;
 
     // Completes once the callbacks of the requested cancellation, if any, have run. Set under
-    // lock_ when the generation is stopped.
-    public Task Cancellation = Task.CompletedTask;
+    // lock_ by Stop.
+    private Task cancellation_ = Task.CompletedTask;
+
+    // Starts the loop of the generation. The generation owns its token source: the token source
+    // is disposed once the loop has ended and the callbacks of its cancellation have run.
+    public Generation(Func<Generation, Task> run)
+    {
+      var cts = new CancellationTokenSource();
+      CancellationToken = cts.Token;
+      cancelAsync_      = cts.CancelAsync;
+
+      // Task.Run so that no code of the loop runs under the lock. Not cancellable: the loop must
+      // always run, since it completes the subscribers and the token source must be disposed.
+      _ = Task.Run(async () =>
+                   {
+                     try
+                     {
+                       await run(this)
+                         .ConfigureAwait(false);
+                     }
+                     finally
+                     {
+                       // The loop has closed the generation under lock_: nobody cancels it anymore.
+                       try
+                       {
+                         await cancellation_.ConfigureAwait(false);
+                       }
+                       catch (Exception)
+                       {
+                         // A failing cancellation callback must not prevent the disposal.
+                       }
+
+                       cts.Dispose();
+                     }
+                   },
+                   CancellationToken.None);
+    }
+
+    public CancellationToken CancellationToken { get; }
+
+    public TaskCompletionSource SlotReady { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    // Written under lock_, read without it by the loop.
+    public ConcurrentDictionary<Guid, Channel<T>> Subscribers { get; } = new();
 
     // Whether new subscribers may join. Set to false, under lock_, when the generation is
     // stopped or its loop ends.
-    public bool Open = true;
+    public bool Open { get; set; } = true;
+
+    // Closes the generation and cancels its loop, unless it was already closed. CancelAsync only
+    // flags the token synchronously and runs the callbacks registered on it, such as those of
+    // Npgsql, asynchronously: no work is done under the lock. Must be called while holding lock_.
+    public void Stop()
+    {
+      if (!Open)
+      {
+        return;
+      }
+
+      Open          = false;
+      cancellation_ = cancelAsync_();
+    }
   }
 }
