@@ -15,6 +15,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
+
 using ArmoniK.Utils.DocAttribute;
 
 using JetBrains.Annotations;
@@ -100,4 +102,12 @@ public class PostgreSQL
   ///   removal of data dependencies (one transaction per task). 0 uses the number of threads.
   /// </summary>
   public int DegreeOfParallelism { get; set; }
+
+  /// <summary>
+  ///   How long a WAL replication connection used by the task and result watchers is kept open after its last
+  ///   subscriber left. A new subscription within this delay reuses the connection instead of creating a new
+  ///   replication slot, which waits for every transaction running at that time to finish. 0 closes the connection
+  ///   as soon as the last subscriber leaves.
+  /// </summary>
+  public TimeSpan ReplicationIdleTimeout { get; set; } = TimeSpan.Zero;
 }

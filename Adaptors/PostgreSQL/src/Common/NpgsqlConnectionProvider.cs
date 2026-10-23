@@ -101,6 +101,13 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
   /// </summary>
   public NpgsqlDataSource DataSource { get; }
 
+  /// <summary>
+  ///   How long an idle WAL replication connection is kept open, see
+  ///   <see cref="Options.PostgreSQL.ReplicationIdleTimeout" />
+  /// </summary>
+  internal TimeSpan ReplicationIdleTimeout
+    => options_.ReplicationIdleTimeout;
+
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {

@@ -42,23 +42,26 @@ namespace ArmoniK.Core.Adapters.PostgreSQL.Common;
 ///     otherwise be lost.
 ///   </para>
 ///   <para>
-///     The connection is closed when the last subscriber disconnects.
+///     The connection is closed when the last subscriber disconnects, or once it has stayed without
+///     subscriber for <see cref="Options.PostgreSQL.ReplicationIdleTimeout" /> when it is positive.
+///     A later subscriber opens a new connection, in a new <see cref="Generation" />.
 ///   </para>
 /// </summary>
 /// <typeparam name="T">The decoded event payload type (e.g. TaskData, Result).</typeparam>
 internal sealed class WalBroadcaster<T> : IDisposable
   where T : class
 {
-  private readonly SemaphoreSlim lock_ = new(1,
-                                             1);
+  private readonly TimeSpan idleTimeout_;
 
+  // Every section under this lock is synchronous: a plain lock is enough, and it needs no disposal.
+  private readonly Lock                                                          lock_ = new();
   private readonly NpgsqlConnectionProvider                                      provider_;
-  private readonly ConcurrentDictionary<Guid, Channel<T>>                        subscribers_ = new();
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
   private readonly IUuidGenerator                                                uuidGenerator_;
-  private          Task?                                                         broadcastLoop_;
-  private          CancellationTokenSource?                                      loopCts_;
-  private          TaskCompletionSource?                                         slotReady_;
+
+  // Generation that new subscribers join while it is open. Read and written under lock_ only.
+  private Generation? current_;
+  private bool        disposed_;
 
   internal WalBroadcaster(NpgsqlConnectionProvider                                      provider,
                           Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse,
@@ -67,16 +70,17 @@ internal sealed class WalBroadcaster<T> : IDisposable
     provider_      = provider;
     tryParse_      = tryParse;
     uuidGenerator_ = uuidGenerator;
+    idleTimeout_   = provider.ReplicationIdleTimeout;
   }
 
   public void Dispose()
   {
-    loopCts_?.Cancel();
-    loopCts_?.Dispose();
-    lock_.Dispose();
-    // Concurrent StopIfIdle / EnsureStartedAndRegister callers handle ObjectDisposedException
-    // from lock_.WaitAsync() and loopCts_.Cancel() gracefully — see ReleaseLockSafe and
-    // the try/catch in StopIfIdle.
+    lock (lock_)
+    {
+      disposed_ = true;
+      // The loop completes the channels of its remaining subscribers once it is cancelled.
+      current_?.Stop();
+    }
   }
 
   /// <summary>
@@ -96,47 +100,32 @@ internal sealed class WalBroadcaster<T> : IDisposable
   {
     var id      = uuidGenerator_.GenerateUuid();
     var channel = Channel.CreateUnbounded<T>();
-
-    // Register the channel inside EnsureStartedAndRegister (while holding the lock),
-    // after confirming the loop is running. This prevents a cancelling loop's finally
-    // block from completing a channel that belongs to the next generation of the loop.
-    TaskCompletionSource tcs;
-    try
-    {
-      tcs = await EnsureStartedAndRegister(id,
-                                           channel,
-                                           cancellationToken)
-              .ConfigureAwait(false);
-    }
-    catch
-    {
-      channel.Writer.TryComplete();
-      throw;
-    }
+    var generation = Register(id,
+                              channel);
 
     try
     {
       // Block until the replication slot exists. After this returns, the caller
       // can safely query existing DB state knowing the WAL is capturing events.
-      await tcs.Task.WaitAsync(cancellationToken)
-               .ConfigureAwait(false);
+      await generation.SlotReady.Task.WaitAsync(cancellationToken)
+                      .ConfigureAwait(false);
     }
     catch
     {
-      subscribers_.TryRemove(id,
-                             out _);
-      channel.Writer.TryComplete();
-      await StopIfIdle()
-        .ConfigureAwait(false);
+      Unsubscribe(generation,
+                  id,
+                  channel);
       throw;
     }
 
-    return ReadChannel(id,
+    return ReadChannel(generation,
+                       id,
                        channel,
                        cancellationToken);
   }
 
-  private async IAsyncEnumerable<T> ReadChannel(Guid                                       id,
+  private async IAsyncEnumerable<T> ReadChannel(Generation                                 generation,
+                                                Guid                                       id,
                                                 Channel<T>                                 channel,
                                                 [EnumeratorCancellation] CancellationToken cancellationToken)
   {
@@ -150,130 +139,97 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
     finally
     {
-      subscribers_.TryRemove(id,
-                             out _);
-      channel.Writer.TryComplete();
-      await StopIfIdle()
-        .ConfigureAwait(false);
+      Unsubscribe(generation,
+                  id,
+                  channel);
     }
   }
 
-  // Ensures the broadcast loop is running (starting a new one if needed), registers the
-  // subscriber channel while holding the lock, and returns the slot-ready TCS.
-  // 
-  // Registering inside the lock (after verifying the loop is not cancelling) prevents a
-  // race where StopIfIdle cancels the loop after the channel is added to subscribers_ but
-  // before EnsureStarted runs — in that scenario the old loop's finally would complete the
-  // new channel with immediate EOF.
-  // 
-  // When the previous loop is still winding down we wait for it OUTSIDE the lock so we do
-  // not block other concurrent SubscribeAsync callers (which would hang if the replication
-  // connection takes time to respond to cancellation).
-  private async Task<TaskCompletionSource> EnsureStartedAndRegister(Guid              id,
-                                                                    Channel<T>        channel,
-                                                                    CancellationToken cancellationToken)
+  // Adds the subscriber to the current generation, or to a new one if it is stopped.
+  private Generation Register(Guid       id,
+                              Channel<T> channel)
   {
-    while (true)
+    lock (lock_)
     {
-      Task? oldLoop = null;
+      ObjectDisposedException.ThrowIf(disposed_,
+                                      this);
 
-      await lock_.WaitAsync(cancellationToken)
-                 .ConfigureAwait(false);
-      try
+      if (current_ is not
+          {
+            IsStopped: false,
+          })
       {
-        var loopHealthy = broadcastLoop_ is not null && !broadcastLoop_.IsCompleted && loopCts_?.IsCancellationRequested != true;
-
-        if (loopHealthy)
-        {
-          // Loop is running and healthy — register and return immediately.
-          subscribers_[id] = channel;
-          return slotReady_!;
-        }
-
-        if (broadcastLoop_ is not null && !broadcastLoop_.IsCompleted)
-        {
-          // Cancellation was requested but the loop isn't done yet. Capture it to await
-          // OUTSIDE the lock so we don't block other subscribers from making progress.
-          oldLoop = broadcastLoop_;
-        }
-        else
-        {
-          // Loop has finished (or was never started) — safe to start the new one.
-          slotReady_       = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
-          loopCts_         = new CancellationTokenSource();
-          broadcastLoop_   = RunLoop(loopCts_.Token);
-          subscribers_[id] = channel;
-          return slotReady_!;
-        }
-      }
-      finally
-      {
-        ReleaseLockSafe();
+        current_ = new Generation(RunLoop);
       }
 
-      // Old loop is still shutting down — wait for it without holding the lock, then retry.
-      await oldLoop!.WaitAsync(cancellationToken)
-                    .ConfigureAwait(false);
+      // Joining invalidates the pending idle timeout of the generation, if any.
+      current_.IdleVersion++;
+      current_.Subscribers[id] = channel;
+      return current_;
     }
   }
 
-  private async Task StopIfIdle()
+  // Removes the subscriber from its own generation, and stops that generation once it has no
+  // subscriber left, right away or after the idle timeout. A newer generation is never affected.
+  private void Unsubscribe(Generation generation,
+                           Guid       id,
+                           Channel<T> channel)
   {
-    // lock_.WaitAsync() with no cancellation token throws ObjectDisposedException if the
-    // broadcaster has been disposed. Catch it so ReadChannel.finally exits cleanly.
-    bool acquired;
+    channel.Writer.TryComplete();
+
+    lock (lock_)
+    {
+      generation.Subscribers.TryRemove(id,
+                                       out _);
+      if (!generation.Subscribers.IsEmpty)
+      {
+        return;
+      }
+
+      if (idleTimeout_ > TimeSpan.Zero && !generation.IsStopped)
+      {
+        // Keep the replication connection open for a while: a new subscriber can reuse it
+        // instead of creating a new replication slot.
+        _ = StopAfterIdleTimeout(generation,
+                                 ++generation.IdleVersion);
+      }
+      else
+      {
+        generation.Stop();
+      }
+    }
+  }
+
+  // Stops the generation once the idle timeout has elapsed, unless a subscriber joined it in the
+  // meantime, which changed its IdleVersion. Ends early when the generation is stopped otherwise.
+  private async Task StopAfterIdleTimeout(Generation generation,
+                                          long       idleVersion)
+  {
     try
     {
-      await lock_.WaitAsync()
-                 .ConfigureAwait(false);
-      acquired = true;
+      await Task.Delay(idleTimeout_,
+                       generation.CancellationToken)
+                .ConfigureAwait(false);
     }
-    catch (ObjectDisposedException)
+    catch (OperationCanceledException)
     {
       return;
     }
 
-    if (!acquired)
+    lock (lock_)
     {
-      return;
-    }
-
-    try
-    {
-      if (subscribers_.IsEmpty)
+      if (generation.IdleVersion == idleVersion && generation.Subscribers.IsEmpty)
       {
-        try
-        {
-          loopCts_?.Cancel();
-        }
-        catch (ObjectDisposedException)
-        {
-        }
+        generation.Stop();
       }
     }
-    finally
-    {
-      ReleaseLockSafe();
-    }
   }
 
-  // SemaphoreSlim.Release() throws ObjectDisposedException when Dispose() has already
-  // run and another thread is simultaneously in the Release path. Swallow it here: the
-  // semaphore is being torn down and the lock invariant no longer needs to hold.
-  private void ReleaseLockSafe()
+  private async Task RunLoop(Generation generation)
   {
-    try
-    {
-      lock_.Release();
-    }
-    catch (ObjectDisposedException)
-    {
-    }
-  }
-
-  private async Task RunLoop(CancellationToken cancellationToken)
-  {
-    Exception? loopException = null;
+    var                           cancellationToken = generation.CancellationToken;
+    Exception?                    loopException     = null;
+    LogicalReplicationConnection? replConn          = null;
     try
     {
       var slotName = $"armonik_{uuidGenerator_.GenerateUuid():N}";
@@ -281,7 +237,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
                                                    PgOutputProtocolVersion.V1,
                                                    true);
 
-      await using var replConn = provider_.CreateReplicationConnection();
+      replConn = provider_.CreateReplicationConnection();
       await replConn.Open(cancellationToken)
                     .ConfigureAwait(false);
 
@@ -291,7 +247,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
                                .ConfigureAwait(false);
 
       // Slot exists — subscribers can now safely snapshot the DB.
-      slotReady_?.TrySetResult();
+      generation.SlotReady.TrySetResult();
 
       await foreach (var message in replConn.StartReplication(slot,
                                                               options,
@@ -303,7 +259,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
                      .ConfigureAwait(false);
         if (item is not null)
         {
-          foreach (var (_, ch) in subscribers_)
+          foreach (var (_, ch) in generation.Subscribers)
           {
             ch.Writer.TryWrite(item);
           }
@@ -316,26 +272,109 @@ internal sealed class WalBroadcaster<T> : IDisposable
     }
     catch (OperationCanceledException)
     {
-      // Normal shutdown (loopCts_ cancelled) or server-side connection reset
+      // Normal shutdown (generation cancelled) or server-side connection reset
       // (e.g. wal_sender_timeout) — Npgsql raises OperationCanceledException in
       // both cases. Complete channels cleanly so consumers can reconnect.
     }
     catch (Exception ex)
     {
       // Slot creation or streaming failed — unblock any waiting SubscribeAsync callers.
-      slotReady_?.TrySetException(ex);
+      generation.SlotReady.TrySetException(ex);
       loopException = ex;
     }
     finally
     {
-      // If the loop exited before CreatePgOutputReplicationSlot succeeded (e.g. an
-      // OperationCanceledException that was caught silently above), slotReady_ may still
-      // be unresolved.  Unblock any SubscribeAsync caller waiting on tcs.Task so it can
-      // clean up and retry rather than hanging until its cancellation token fires.
-      slotReady_?.TrySetCanceled(CancellationToken.None);
-      foreach (var (_, ch) in subscribers_)
+      // If the loop exited before the slot was created, unblock any SubscribeAsync caller
+      // still waiting on SlotReady so it can clean up and retry.
+      generation.SlotReady.TrySetCanceled(CancellationToken.None);
+
+      // Stop the generation and complete its channels under the lock: a subscriber either joined
+      // before, and its channel is completed here, or it sees the generation stopped and starts a
+      // new one. A stopped generation is never joined, so a new one can start right away.
+      lock (lock_)
       {
-        ch.Writer.TryComplete(loopException);
+        generation.Stop();
+        foreach (var (_, ch) in generation.Subscribers)
+        {
+          ch.Writer.TryComplete(loopException);
+        }
+      }
+
+      // Disposed only once the generation is stopped: disposing a broken connection can take time,
+      // and no subscriber must join the generation meanwhile.
+      if (replConn is not null)
+      {
+        await replConn.DisposeAsync()
+                      .AsTask()
+                      .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+      }
+    }
+  }
+
+  /// <summary>
+  ///   One replication connection and the subscribers it serves, from the first subscriber to the
+  ///   end of its loop.
+  /// </summary>
+  private sealed class Generation
+  {
+    private readonly Func<Task> cancelAsync_;
+
+    // Completes once the callbacks of the requested cancellation, if any, have run. Set under
+    // lock_ by Stop.
+    private Task cancellation_ = Task.CompletedTask;
+
+    // Starts the loop of the generation. The generation owns its token source: the token source
+    // is disposed once the loop has ended and the callbacks of its cancellation have run.
+    public Generation(Func<Generation, Task> run)
+    {
+      var cts = new CancellationTokenSource();
+      CancellationToken = cts.Token;
+      cancelAsync_      = cts.CancelAsync;
+
+      // Task.Run so that no code of the loop runs under the lock. Not cancellable: the loop must
+      // always run, since it completes the subscribers and the token source must be disposed.
+      _ = Task.Run(async () =>
+                   {
+                     try
+                     {
+                       await run(this)
+                         .ConfigureAwait(false);
+                     }
+                     finally
+                     {
+                       // The loop has stopped the generation under lock_: nobody cancels it anymore.
+                       // A failing cancellation callback must not prevent the disposal.
+                       await cancellation_.ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+                       cts.Dispose();
+                     }
+                   },
+                   CancellationToken.None);
+    }
+
+    public CancellationToken CancellationToken { get; }
+
+    public TaskCompletionSource SlotReady { get; } = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    // Written under lock_, read without it by the loop.
+    public ConcurrentDictionary<Guid, Channel<T>> Subscribers { get; } = new();
+
+    // Incremented, under lock_, when the generation starts waiting for its idle timeout and when a
+    // subscriber joins it, so that a pending idle timeout knows whether it still applies.
+    public long IdleVersion { get; set; }
+
+    // A stopped generation is never joined. Stopped by Stop only, under lock_, so reading it under
+    // lock_ is consistent. Still readable once the token source is disposed.
+    public bool IsStopped
+      => CancellationToken.IsCancellationRequested;
+
+    // Stops the generation by cancelling its token, once. Called when its last subscriber leaves,
+    // on Dispose, and by its loop when it ends. Must be called while holding lock_: CancelAsync
+    // runs the token callbacks, such as those of Npgsql, off the lock.
+    public void Stop()
+    {
+      if (!IsStopped)
+      {
+        cancellation_ = cancelAsync_();
       }
     }
   }
