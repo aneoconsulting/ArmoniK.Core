@@ -71,7 +71,7 @@ jobs:
           terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+      uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
       with:
         tool: just
 
@@ -161,7 +161,7 @@ jobs:
        terraform_version: latest
 
     - name: Setup just
-      uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+      uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
       with:
         tool: just
 
@@ -328,7 +328,7 @@ jobs:
       uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4  
 
     - name: Setup just
-      uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+      uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
       with:
         tool: just
 
@@ -342,7 +342,7 @@ jobs:
         sudo systemctl restart docker
 
     - name: Login to Docker Hub
-      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
       if: ${{ always() && env.REPOSITORY == github.repository }}
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
@@ -373,7 +373,7 @@ jobs:
           - dockerhubaneo/armonik_core_bench_test_client
     steps:
     - name: Login to Docker Hub
-      uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+      uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
       if: ${{ env.REPOSITORY == github.repository }}
       with:
         username: ${{ secrets.DOCKER_HUB_LOGIN }}
@@ -421,7 +421,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
@@ -573,7 +573,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
       
@@ -805,7 +805,7 @@ jobs:
           aws-region: us-east-1
 
       - name: Login to Docker Hub
-        uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4
+        uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4
         if: ${{ env.REPOSITORY == github.repository }}
         with:
           username: ${{ secrets.DOCKER_HUB_LOGIN }}
@@ -1009,7 +1009,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
@@ -1140,7 +1140,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
@@ -1255,7 +1255,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
@@ -1370,7 +1370,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
@@ -1513,7 +1513,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
@@ -1605,7 +1605,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
@@ -1701,7 +1701,7 @@ jobs:
           ref: ${{ env.REFERENCE }}
 
       - name: Setup just
-        uses: taiki-e/install-action@f7e5d7c961414b23f5b25b2da9294395d08513ad # v2
+        uses: taiki-e/install-action@1e29709c0ec63babbe8f266397a465f29a825f91 # v2
         with:
           tool: just
 
