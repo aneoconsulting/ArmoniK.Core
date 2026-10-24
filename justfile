@@ -10,7 +10,7 @@ local_images := "false"          # If true, Terraform builds images locally inst
 log_level    := "Information"    # Serilog log level: Verbose, Debug, Information, Warning, Error, Fatal
 queue        := "activemq"       # Queue backend: activemq, rabbitmq, nats, sqs, pubsub, none
 database     := "mongo"          # Database backend: mongo, postgresql
-worker       := "htcmock"        # Test worker: htcmock, stream, bench, crashingworker
+worker       := "htcmock"        # Test worker: htcmock, stream, bench, crashingworker, graph
 object       := "redis"          # Object storage: redis, seaweedfs, gcs, local, embed, null
 replicas     := "3"              # Number of PollingAgent+Worker pairs to deploy
 partitions   := "2"              # Number of ArmoniK partitions
@@ -60,6 +60,22 @@ bench_max_duration             := "01:00:00"
 bench_priority                 := "1"
 bench_task_rpc_exception       := ""
 bench_task_error               := ""
+
+# Graph test client parameters (defaults match GraphOptions.cs)
+graph_seed                     := "1"
+graph_tasks                    := "uniform:5:20"
+graph_levels                   := "3"
+graph_tasks_per_level          := "uniform"
+graph_dependencies             := "uniform:1:4"
+graph_parent_choice            := "uniform"
+graph_skip_levels              := "0"
+graph_duration                 := "const:100"
+graph_output_size              := "const:1"
+graph_max_retries              := "1"
+graph_batch_size               := "100"
+graph_submit_order             := "reverse"
+graph_timeout                  := "01:00:00"
+graph_purge_data               := "true"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag          := tag
@@ -132,6 +148,8 @@ image_worker := if worker == "stream" {
   "dockerhubaneo/armonik_core_bench_test_worker" + ":" + tag
 } else if worker == "crashingworker" {
   "dockerhubaneo/armonik_core_crashingworker_test_worker" + ":" + tag
+} else if worker == "graph" {
+  "dockerhubaneo/armonik_core_graph_test_worker" + ":" + tag
 } else {
   "dockerhubaneo/armonik_core_htcmock_test_worker" + ":" + tag
 }
@@ -142,6 +160,8 @@ dockerfile_worker := if worker == "stream" {
   "./Tests/Bench/Server/src/"
 } else if worker == "crashingworker" {
   "./Tests/CrashingWorker/Server/src/"
+} else if worker == "graph" {
+  "./Tests/Graph/Server/src/"
 } else {
   "./Tests/HtcMock/Server/src/"
 }
@@ -157,6 +177,7 @@ image_client_mock           := env_var_or_default('MOCK_CLIENT_IMAGE', "dockerhu
 image_client_bench          := env_var_or_default('BENCH_CLIENT_IMAGE', "dockerhubaneo/armonik_core_bench_test_client")
 image_client_stream         := env_var_or_default('STREAM_CLIENT_IMAGE', "dockerhubaneo/armonik_core_stream_test_client")
 image_client_crashingworker := env_var_or_default('CRASHINGWORKER_CLIENT_IMAGE', "dockerhubaneo/armonik_core_crashingworker_test_client")
+image_client_graph          := env_var_or_default('GRAPH_CLIENT_IMAGE', "dockerhubaneo/armonik_core_graph_test_client")
 
 # Armonik docker images full name (image + tag)
 export ARMONIK_METRICS             := image_metrics + ":" + tag
@@ -166,6 +187,7 @@ export HTCMOCK_CLIENT_IMAGE        := image_client_mock + ":" + tag
 export STREAM_CLIENT_IMAGE         := image_client_stream + ":" + tag
 export BENCH_CLIENT_IMAGE          := image_client_bench + ":" + tag
 export CRASHINGWORKER_CLIENT_IMAGE := image_client_crashingworker + ":" + tag
+export GRAPH_CLIENT_IMAGE          := image_client_graph + ":" + tag
 
 export TF_VAR_submitter                       := '{ image = "' + image_submitter + '" }'
 export TF_VAR_armonik_metrics_image           := image_metrics
@@ -227,6 +249,7 @@ _usage:
         htcmock: for HtcMock V3 (default)
         stream: for Stream worker
         bench:  for Benchmark worker
+        graph:  for the Graph worker (database benchmark with task graphs)
 
         It is possible to use a custom worker, this is handled by
         defining either of the following environment variables:
@@ -426,6 +449,33 @@ runBench: buildBenchClient
 
 # Build Crashing Worker Client
 buildCrashingWorkerClient: (build CRASHINGWORKER_CLIENT_IMAGE  "./Tests/CrashingWorker/Client/src/Dockerfile")
+
+# Build Graph Client
+buildGraphClient: (build GRAPH_CLIENT_IMAGE  "./Tests/Graph/Client/src/Dockerfile")
+
+# Run Graph test client against a running deployment (deploy with worker=graph)
+# Note: always rebuilds the client image to pick up local changes
+# Override any variable: just ntasks=10000 graph_parent_choice=zipf:1.2 runGraph
+runGraph: buildGraphClient
+  docker run {{net_arg}} --rm \
+    -e GraphOptions__NTasks={{ntasks}} \
+    -e GraphOptions__Seed={{graph_seed}} \
+    -e GraphOptions__GraphTasks={{graph_tasks}} \
+    -e GraphOptions__Levels={{graph_levels}} \
+    -e GraphOptions__TasksPerLevel={{graph_tasks_per_level}} \
+    -e GraphOptions__DependenciesPerTask={{graph_dependencies}} \
+    -e GraphOptions__ParentChoice={{graph_parent_choice}} \
+    -e GraphOptions__SkipLevels={{graph_skip_levels}} \
+    -e GraphOptions__TaskDuration={{graph_duration}} \
+    -e GraphOptions__OutputSize={{graph_output_size}} \
+    -e GraphOptions__Partition={{partition}} \
+    -e GraphOptions__MaxRetries={{graph_max_retries}} \
+    -e GraphOptions__BatchSize={{graph_batch_size}} \
+    -e GraphOptions__SubmitOrder={{graph_submit_order}} \
+    -e GraphOptions__Timeout={{graph_timeout}} \
+    -e GraphOptions__PurgeData={{graph_purge_data}} \
+    -e GrpcClient__Endpoint={{endpoint}} \
+    {{GRAPH_CLIENT_IMAGE}}
 
 # Build all images necessary for the deployment
 build-core: buildMetrics buildSubmitter buildPollingAgent
