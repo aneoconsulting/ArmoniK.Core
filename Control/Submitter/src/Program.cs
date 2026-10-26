@@ -26,8 +26,8 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.PostgreSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.DynamicLoading;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
@@ -41,7 +41,6 @@ using ArmoniK.Core.Utils;
 using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Connections;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
@@ -55,8 +54,6 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 using Serilog;
-
-using ServiceCollectionExt = ArmoniK.Core.Adapters.PostgreSQL.ServiceCollectionExt;
 
 #pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
 
@@ -121,8 +118,19 @@ public static class Program
              .AddScoped(typeof(FunctionExecutionMetrics<>))
              .ValidateGrpcRequests();
 
+      var authorizationEnabled = builder.Services.AddArmoniKAuthorization(builder.Configuration,
+                                                                          logger.GetLogger());
+
       builder.Services.AddHealthChecks();
-      builder.Services.AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>());
+      builder.Services.AddGrpc(options =>
+                               {
+                                 options.Interceptors.Add<ExceptionInterceptor>();
+                                 // After the exception interceptor, so that refusals are reported like other errors
+                                 if (authorizationEnabled)
+                                 {
+                                   options.Interceptors.Add<AuthorizationInterceptor>();
+                                 }
+                               });
 
       var otel = builder.Services.AddOpenTelemetry();
       otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()
@@ -172,27 +180,10 @@ public static class Program
                          });
       }
 
-      ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
-                                                                   builder.Configuration);
-      Adapters.MongoDB.ServiceCollectionExt.AddClientSubmitterAuthenticationStorage(builder.Services,
-                                                                                    builder.Configuration);
-      builder.Services.AddClientSubmitterAuthServices(builder.Configuration,
-                                                      out var authCache);
-
       builder.WebHost.UseKestrel(options =>
                                  {
                                    options.ListenAnyIP(1080,
-                                                       listenOptions =>
-                                                       {
-                                                         listenOptions.Protocols = HttpProtocols.Http2;
-                                                         listenOptions.Use(async (context,
-                                                                                  func) =>
-                                                                           {
-                                                                             await func.Invoke()
-                                                                                       .ConfigureAwait(false);
-                                                                             authCache.FlushConnection(context.ConnectionId);
-                                                                           });
-                                                       });
+                                                       listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
                                    options.ListenAnyIP(1081,
                                                        listenOptions => listenOptions.Protocols = HttpProtocols.Http1);
                                  });
@@ -204,13 +195,16 @@ public static class Program
         app.UseDeveloperExceptionPage();
       }
 
-      app.UseAuthentication();
-
       app.UseRouting();
       app.UseGrpcWeb();
+      // Before the endpoints, so that the request of a caller without valid credentials is never read
+      if (authorizationEnabled)
+      {
+        app.UseCallerAuthentication();
+      }
+
       app.UseOpenTelemetryPrometheusScrapingEndpoint(context => context.Connection.LocalPort == 1081 && context.Request.Path == "/metrics");
 
-      app.UseAuthorization();
       app.UseSerilogRequestLogging();
 
       app.MapGrpcService<GrpcSubmitterService>()
@@ -266,7 +260,6 @@ public static class Program
       var resultTable          = app.Services.GetRequiredService<IResultTable>();
       var partitionTable       = app.Services.GetRequiredService<IPartitionTable>();
       var sessionTable         = app.Services.GetRequiredService<ISessionTable>();
-      var authTable            = app.Services.GetRequiredService<IAuthenticationTable>();
       var taskObjectFactory    = objectStorage.Init(CancellationToken.None);
       var taskPushQueueStorage = pushQueueStorage.Init(CancellationToken.None);
 
@@ -278,11 +271,24 @@ public static class Program
                           .ConfigureAwait(false);
       await sessionTable.Init(CancellationToken.None)
                         .ConfigureAwait(false);
-      await authTable.Init(CancellationToken.None)
-                     .ConfigureAwait(false);
 
       await taskObjectFactory.ConfigureAwait(false);
       await taskPushQueueStorage.ConfigureAwait(false);
+
+      if (authorizationEnabled)
+      {
+        await app.Services.GetRequiredService<IAuthorizationTable>()
+                 .Init(CancellationToken.None)
+                 .ConfigureAwait(false);
+
+        if (app.Services.GetRequiredService<InitServices>()
+               .InitDatabase)
+        {
+          await app.Services.GetRequiredService<AuthorizationReconciler>()
+                   .ReconcileAsync(CancellationToken.None)
+                   .ConfigureAwait(false);
+        }
+      }
 
       if (app.Services.GetRequiredService<InitServices>()
              .StopAfterInit)

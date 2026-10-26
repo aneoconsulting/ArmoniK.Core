@@ -134,6 +134,8 @@ internal class ExceptionInterceptorTests
                                                                       typeof(TaskAlreadyExistsException),
                                                                       typeof(WorkerDownException),
                                                                       typeof(QueueInsertionFailedException),
+                                                                      typeof(GrantAlreadyExistsException),
+                                                                      typeof(PermissionSetVersionAlreadyExistsException),
                                                                     };
 
   [Test]
@@ -162,6 +164,92 @@ internal class ExceptionInterceptorTests
                   $"{exceptionType.Name} falls through to the generic ArmoniKException -> Internal mapping. " +
                   "Add a dedicated arm in ExceptionInterceptor.HandleException, or add it to InternalFallbackWhitelist.");
     }
+  }
+
+  [Test]
+  public void APartitionOutsideTheSessionIsAnsweredInvalidWithoutCountingTowardTheErrors()
+  {
+    using var exceptionManager = BuildExceptionManager(0);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                               TestServerCallContext.Create(),
+                                                                                                               (_,
+                                                                                                                _) => throw new
+                                                                                                                        PartitionNotInSessionException("partition p is not in the session"))
+                                                                           .ConfigureAwait(false));
+
+    Assert.That(rpc!.StatusCode,
+                Is.EqualTo(StatusCode.InvalidArgument));
+    Assert.That(rpc.Status.Detail,
+                Does.Contain("partition p is not in the session"));
+    Assert.That(exceptionManager.Failed,
+                Is.False);
+  }
+
+  [Test]
+  public void AnInvalidFilterIsAnsweredInvalidWithoutCountingTowardTheErrors()
+  {
+    using var exceptionManager = BuildExceptionManager(0);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                               TestServerCallContext.Create(),
+                                                                                                               (_,
+                                                                                                                _) => throw new
+                                                                                                                        InvalidFilterException("The filters or the sort of the request are invalid"))
+                                                                           .ConfigureAwait(false));
+
+    Assert.That(rpc!.StatusCode,
+                Is.EqualTo(StatusCode.InvalidArgument));
+    Assert.That(exceptionManager.Failed,
+                Is.False);
+  }
+
+  [Test]
+  public void AnUndecidedRequestIsAnsweredUnavailableWithoutCountingTowardTheErrors()
+  {
+    using var exceptionManager = BuildExceptionManager(0);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                               TestServerCallContext.Create(),
+                                                                                                               (_,
+                                                                                                                _) => throw new
+                                                                                                                        AuthorizationUnavailableException("Authorization could not be decided"))
+                                                                           .ConfigureAwait(false));
+
+    Assert.That(rpc!.StatusCode,
+                Is.EqualTo(StatusCode.Unavailable));
+    Assert.That(rpc.Status.Detail,
+                Is.EqualTo("Authorization could not be decided"));
+    Assert.That(exceptionManager.Failed,
+                Is.False);
+  }
+
+  [Test]
+  public void UnreadableGrantsAreAnsweredUnavailableWithoutCountingTowardTheErrors()
+  {
+    using var exceptionManager = BuildExceptionManager(0);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                               TestServerCallContext.Create(),
+                                                                                                               (_,
+                                                                                                                _) => throw new
+                                                                                                                        GrantsUnavailableException("Grants were being changed"))
+                                                                           .ConfigureAwait(false));
+
+    Assert.That(rpc!.StatusCode,
+                Is.EqualTo(StatusCode.Unavailable));
+    Assert.That(rpc.Status.Detail,
+                Is.EqualTo("Authorization could not be decided"));
+    Assert.That(exceptionManager.Failed,
+                Is.False);
   }
 
   [Test]

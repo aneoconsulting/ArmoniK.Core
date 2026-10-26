@@ -23,7 +23,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Agent;
-using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.StateMachines;
@@ -41,7 +41,6 @@ using Agent = ArmoniK.Api.gRPC.V1.Agent.Agent;
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Api.gRPC.V1.Agent.Agent" />
-[IgnoreAuthentication]
 public class GrpcAgentService : Agent.AgentBase
 {
   private IAgent? agent_;
@@ -218,15 +217,25 @@ public class GrpcAgentService : Agent.AgentBase
                                   context.CancellationToken)
                 .ConfigureAwait(false);
 
-    var submittedTasks = await agent_.SubmitTasks(createdTasks.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
-                                                                                                                creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                                creation.ExpectedOutputKeys,
-                                                                                                                creation.DataDependencies)),
-                                                  taskOptions.ToNullableTaskOptions(),
-                                                  agent_.SessionId,
-                                                  agent_.Token,
-                                                  context.CancellationToken)
-                                     .ConfigureAwait(false);
+    ICollection<TaskCreationRequest> submittedTasks;
+    try
+    {
+      submittedTasks = await agent_.SubmitTasks(createdTasks.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
+                                                                                                              creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                              creation.ExpectedOutputKeys,
+                                                                                                              creation.DataDependencies)),
+                                                taskOptions.ToNullableTaskOptions(),
+                                                agent_.SessionId,
+                                                agent_.Token,
+                                                context.CancellationToken)
+                                   .ConfigureAwait(false);
+    }
+    catch (PartitionNotInSessionException e)
+    {
+      // An error of the worker, answered as such rather than as an unknown failure, as in SubmitTasks
+      throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                        e.Message));
+    }
 
     return new CreateTaskReply
            {
@@ -379,15 +388,25 @@ public class GrpcAgentService : Agent.AgentBase
   {
     if (agent_ is not null)
     {
-      var createdTasks = await agent_.SubmitTasks(request.TaskCreations.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
-                                                                                                                         creation.TaskOptions.ToNullableTaskOptions(),
-                                                                                                                         creation.ExpectedOutputKeys.AsICollection(),
-                                                                                                                         creation.DataDependencies.AsICollection())),
-                                                  request.TaskOptions.ToNullableTaskOptions(),
-                                                  request.SessionId,
-                                                  request.CommunicationToken,
-                                                  context.CancellationToken)
-                                     .ConfigureAwait(false);
+      ICollection<TaskCreationRequest> createdTasks;
+      try
+      {
+        createdTasks = await agent_.SubmitTasks(request.TaskCreations.ViewSelect(creation => new TaskSubmissionRequest(creation.PayloadId,
+                                                                                                                       creation.TaskOptions.ToNullableTaskOptions(),
+                                                                                                                       creation.ExpectedOutputKeys.AsICollection(),
+                                                                                                                       creation.DataDependencies.AsICollection())),
+                                                request.TaskOptions.ToNullableTaskOptions(),
+                                                request.SessionId,
+                                                request.CommunicationToken,
+                                                context.CancellationToken)
+                                   .ConfigureAwait(false);
+      }
+      catch (PartitionNotInSessionException e)
+      {
+        // An error of the worker, answered as such rather than as an unknown failure
+        throw new RpcException(new Status(StatusCode.InvalidArgument,
+                                          e.Message));
+      }
 
       return new SubmitTasksResponse
              {

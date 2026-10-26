@@ -4,6 +4,14 @@ module "fluenbit" {
   network = local.network
 }
 
+module "keycloak" {
+  count      = var.enable_keycloak ? 1 : 0
+  source     = "./modules/identity/keycloak"
+  image      = var.keycloak_image
+  network    = local.network
+  log_driver = module.fluenbit.log_driver
+}
+
 module "seq" {
   count   = var.enable_seq ? 1 : 0
   source  = "./modules/monitoring/seq"

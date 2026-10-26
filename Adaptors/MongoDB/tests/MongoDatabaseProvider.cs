@@ -75,10 +75,6 @@ internal class MongoDatabaseProvider : IDisposable
                                                     $"{Components.SettingSection}:{nameof(Components.TableStorage)}", "ArmoniK.Adapters.MongoDB.TableStorage"
                                                   },
                                                   {
-                                                    $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
-                                                    "ArmoniK.Adapters.MongoDB.AuthenticationTable"
-                                                  },
-                                                  {
                                                     $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
                                                   },
                                                   {
@@ -94,7 +90,6 @@ internal class MongoDatabaseProvider : IDisposable
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddMongoStorages(configuration,
                                        logger);
-    serviceCollection.AddClientSubmitterAuthenticationStorage(configuration);
     serviceCollection.AddSingleton(ActivitySource);
     serviceCollection.AddTransient<IMongoClient>(_ => client);
     serviceCollection.AddInitializedOption<InitServices>(configuration,

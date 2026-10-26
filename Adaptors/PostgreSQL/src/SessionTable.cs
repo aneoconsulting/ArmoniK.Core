@@ -66,6 +66,8 @@ public class SessionTable : ISessionTable
   /// <inheritdoc />
   public async Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
                                                 TaskOptions         defaultOptions,
+                                                string?             owner,
+                                                IEnumerable<string> createdUnder,
                                                 CancellationToken   cancellationToken = default)
   {
     using var activity = activitySource_.StartActivity();
@@ -83,12 +85,14 @@ INSERT INTO sessions (
   session_id, status, client_submission, worker_submission, creation_date,
   partition_ids, options_options, options_max_duration, options_max_retries,
   options_priority, options_partition_id, options_app_name, options_app_version,
-  options_app_namespace, options_app_service, options_engine_type
+  options_app_namespace, options_app_service, options_engine_type,
+  owner, created_under
 ) VALUES (
   @session_id, @status, @client_submission, @worker_submission, @creation_date,
   @partition_ids, @options_options, @options_max_duration, @options_max_retries,
   @options_priority, @options_partition_id, @options_app_name, @options_app_version,
-  @options_app_namespace, @options_app_service, @options_engine_type
+  @options_app_namespace, @options_app_service, @options_engine_type,
+  @owner, @created_under
 )";
     cmd.Parameters.AddWithValue("session_id",
                                 sessionId);
@@ -124,6 +128,12 @@ INSERT INTO sessions (
                                 defaultOptions.ApplicationService);
     cmd.Parameters.AddWithValue("options_engine_type",
                                 defaultOptions.EngineType);
+    cmd.Parameters.AddWithValue("owner",
+                                NpgsqlDbType.Text,
+                                (object?)owner ?? DBNull.Value);
+    cmd.Parameters.AddWithValue("created_under",
+                                NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                createdUnder.ToArray());
 
     await cmd.ExecuteNonQueryAsync(cancellationToken)
              .ConfigureAwait(false);

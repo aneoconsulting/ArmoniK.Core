@@ -168,6 +168,17 @@ variable "log_driver_image" {
   default = "fluent/fluent-bit:latest"
 }
 
+variable "keycloak_image" {
+  type    = string
+  default = "quay.io/keycloak/keycloak:26.0"
+}
+
+variable "enable_keycloak" {
+  description = "Deploy a Keycloak identity provider and validate tokens against it"
+  type        = bool
+  default     = false
+}
+
 variable "seq_image" {
   type    = string
   default = "datalust/seq:latest"
@@ -260,6 +271,11 @@ variable "ingress" {
           mtls = true
       } }
   ) })
+  # Without TLS, nginx has no client certificate to verify and forwards an empty one as if it were present
+  validation {
+    condition     = alltrue([for name, config in var.ingress.configs : config.tls || !config.mtls])
+    error_message = "An ingress config with mtls = true must also set tls = true: ${join(", ", [for name, config in var.ingress.configs : name if config.mtls && !config.tls])}"
+  }
   default = {}
 }
 
@@ -295,4 +311,27 @@ variable "container_init" {
 variable "windows" {
   type    = bool
   default = false
+}
+
+variable "authorization" {
+  description = "Authorization of requests: methods callers authenticate with (None, Xfcc, Token or Xfcc,Token; None allows every request), grants and permission sets of the access model"
+  type = object({
+    authentication  = optional(string, "None")
+    config_revision = optional(number, 0)
+    permission_sets = optional(list(object({
+      name        = string
+      permissions = list(string)
+    })), [])
+    grants = optional(list(object({
+      id             = string
+      principal      = string
+      permission_set = string
+      condition      = optional(string)
+    })), [])
+  })
+  validation {
+    condition     = contains(["None", "Xfcc", "Token", "Xfcc,Token", "Token,Xfcc"], replace(var.authorization.authentication, " ", ""))
+    error_message = "authorization.authentication must be None, Xfcc, Token or Xfcc,Token, not '${var.authorization.authentication}'"
+  }
+  default = {}
 }
