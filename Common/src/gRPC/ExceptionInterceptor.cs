@@ -251,6 +251,13 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                  context,
                                                  StatusCode.FailedPrecondition,
                                                  "Task is paused"),
+         // A watcher lost its connection: not an error of the control plane, the client should subscribe again
+         EventStreamInterruptedException => ProcessException(ExceptionAction.Warning,
+                                                             e,
+                                                             context,
+                                                             StatusCode.Unavailable,
+                                                             "Event stream interrupted, subscribe again",
+                                                             true),
          ArmoniKException => ProcessException(ExceptionAction.Warning,
                                               e,
                                               context,

@@ -165,6 +165,34 @@ internal class ExceptionInterceptorTests
   }
 
   [Test]
+  public async Task EventStreamInterruptedShouldBeUnavailableAndNotRecorded()
+  {
+    using var exceptionManager = BuildExceptionManager(1);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    for (var i = 0; i < 3; i++)
+    {
+      var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.ServerStreamingServerHandler<object, object>(new object(),
+                                                                                                                         Mock.Of<IServerStreamWriter<object>>(),
+                                                                                                                         TestServerCallContext.Create(),
+                                                                                                                         (_,
+                                                                                                                          _,
+                                                                                                                          _) => throw new
+                                                                                                                                  EventStreamInterruptedException("stopped"))
+                                                                             .ConfigureAwait(false));
+
+      Assert.That(rpc!.StatusCode,
+                  Is.EqualTo(StatusCode.Unavailable));
+    }
+
+    // A lost watcher connection is not an error of the control plane: it must not become unhealthy
+    Assert.That((await interceptor.Check(HealthCheckTag.Readiness)
+                                  .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
+  }
+
+  [Test]
   [Obsolete]
   public async Task TooManyExceptionUnaryCallShouldBeUnhealthy()
   {

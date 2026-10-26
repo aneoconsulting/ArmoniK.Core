@@ -54,7 +54,7 @@ internal class SimpleResultWatcher : IResultWatcher
                                        ResultId,
                                        OwnerPodId,
                                        ResultStatus.Created),
-                       }.ToAsyncEnumerable());
+                       }.UntilCancelled(cancellationToken));
 
   /// <inheritdoc />
   public Task<IAsyncEnumerable<ResultOwnerUpdate>> GetResultOwnerUpdates(Expression<Func<Result, bool>> filter,
@@ -65,7 +65,7 @@ internal class SimpleResultWatcher : IResultWatcher
                                                ResultId,
                                                PreviousOwnerPodId,
                                                OwnerPodId),
-                       }.ToAsyncEnumerable());
+                       }.UntilCancelled(cancellationToken));
 
   /// <inheritdoc />
   public Task<IAsyncEnumerable<ResultStatusUpdate>> GetResultStatusUpdates(Expression<Func<Result, bool>> filter,
@@ -75,5 +75,5 @@ internal class SimpleResultWatcher : IResultWatcher
                          new ResultStatusUpdate(SessionId,
                                                 ResultId,
                                                 ResultStatus.Completed),
-                       }.ToAsyncEnumerable());
+                       }.UntilCancelled(cancellationToken));
 }

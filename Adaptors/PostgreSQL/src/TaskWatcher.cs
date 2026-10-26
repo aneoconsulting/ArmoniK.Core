@@ -31,6 +31,7 @@ using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using Npgsql.Replication.PgOutput.Messages;
 
@@ -50,7 +51,8 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
                      [FromKeyedServices(UuidServiceKey.Monotonic)]
                      IUuidGenerator uuidGenerator,
-                     ActivitySource activitySource)
+                     ActivitySource activitySource,
+                     ILogger<TaskWatcher> logger)
   {
     connectionProvider_ = connectionProvider;
     activitySource_     = activitySource;
@@ -71,7 +73,9 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                                         .ConfigureAwait(false);
                                                         return null;
                                                       },
-                                                      uuidGenerator);
+                                                      uuidGenerator,
+                                                      "tasks insert",
+                                                      logger);
 
     updateBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
                                                       async (message,
@@ -92,7 +96,9 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                                         .ConfigureAwait(false);
                                                         return null;
                                                       },
-                                                      uuidGenerator);
+                                                      uuidGenerator,
+                                                      "tasks update",
+                                                      logger);
   }
 
   /// <inheritdoc />

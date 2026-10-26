@@ -18,19 +18,25 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
+
+using Moq;
 
 using NUnit.Framework;
 
@@ -121,6 +127,122 @@ public class WatchToGrpcTests
                 Has.Count.EqualTo(8 * nTries));
   }
 
+
+  [Test]
+  [TestCase(false)]
+  [TestCase(true)]
+  public void StoppedWatcherShouldInterruptStream(bool throws)
+  {
+    var cts           = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    var newTasksToken = CancellationToken.None;
+    var taskWatcher   = new Mock<ITaskWatcher>();
+    taskWatcher.Setup(watcher => watcher.GetTaskStatusUpdates(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                              It.IsAny<CancellationToken>()))
+               .ReturnsAsync(() => StatusUpdates(throws
+                                                   ? new InvalidOperationException("connection lost")
+                                                   : null));
+    taskWatcher.Setup(watcher => watcher.GetNewTasks(It.IsAny<Expression<Func<TaskData, bool>>>(),
+                                                     It.IsAny<CancellationToken>()))
+               .Callback((Expression<Func<TaskData, bool>> _,
+                          CancellationToken                token) => newTasksToken = token)
+               .ReturnsAsync(() => Array.Empty<NewTask>()
+                                        .UntilCancelled(newTasksToken));
+
+    var wtg = new WatchToGrpc(new SimpleTaskTable(),
+                              taskWatcher.Object,
+                              new SimpleResultTable(),
+                              new SimpleResultWatcher(),
+                              NullLogger.Instance);
+
+    var list = new List<EventSubscriptionResponse>();
+
+    var exception = Assert.ThrowsAsync<EventStreamInterruptedException>(async () =>
+                                                                        {
+                                                                          await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
+                                                                                                                                        new List<EventsEnum>
+                                                                                                                                        {
+                                                                                                                                          EventsEnum.NewTask,
+                                                                                                                                          EventsEnum.TaskStatusUpdate,
+                                                                                                                                        },
+                                                                                                                                        null,
+                                                                                                                                        null,
+                                                                                                                                        cts.Token)
+                                                                                                                             .ConfigureAwait(false))
+                                                                          {
+                                                                            list.Add(eventSubscriptionResponse);
+                                                                          }
+                                                                        });
+
+    Assert.That(list.Select(esr => esr.TaskStatusUpdate?.TaskId),
+                Does.Contain("StatusTaskId"));
+    Assert.That(exception!.InnerException,
+                throws
+                  ? Is.InstanceOf<InvalidOperationException>()
+                  : Is.Null);
+    // The other sources of the subscription are released
+    Assert.That(newTasksToken.IsCancellationRequested,
+                Is.True);
+    Assert.That(cts.IsCancellationRequested,
+                Is.False);
+  }
+
+  [Test]
+  public void FailedSnapshotShouldInterruptStream()
+  {
+    var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+    var wtg = new WatchToGrpc(new FailingTaskTable(),
+                              new SimpleTaskWatcher(),
+                              new SimpleResultTable(),
+                              new SimpleResultWatcher(),
+                              NullLogger.Instance);
+
+    var exception = Assert.ThrowsAsync<EventStreamInterruptedException>(async () =>
+                                                                        {
+                                                                          await foreach (var _ in wtg.GetEvents("SessionId",
+                                                                                                                new List<EventsEnum>
+                                                                                                                {
+                                                                                                                  EventsEnum.NewTask,
+                                                                                                                },
+                                                                                                                null,
+                                                                                                                null,
+                                                                                                                cts.Token)
+                                                                                                     .ConfigureAwait(false))
+                                                                          {
+                                                                          }
+                                                                        });
+
+    Assert.That(exception!.InnerException,
+                Is.InstanceOf<InvalidOperationException>());
+  }
+
+  private static async IAsyncEnumerable<TaskStatusUpdate> StatusUpdates(Exception? error)
+  {
+    yield return new TaskStatusUpdate("SessionId",
+                                      "StatusTaskId",
+                                      TaskStatus.Completed);
+    await Task.Yield();
+    if (error is not null)
+    {
+      throw error;
+    }
+  }
+
+  private sealed class FailingTaskTable : SimpleTaskTable, ITaskTable
+  {
+    IAsyncEnumerable<T> ITaskTable.FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
+                                                     Expression<Func<TaskData, T>>    selector,
+                                                     CancellationToken                cancellationToken)
+      => Fail<T>();
+
+    private static async IAsyncEnumerable<T> Fail<T>()
+    {
+      await Task.Yield();
+      throw new InvalidOperationException("database unavailable");
+#pragma warning disable CS0162 // Unreachable code detected
+      yield break;
+#pragma warning restore CS0162
+    }
+  }
 
   [Test]
   public async Task UseMongoForTasksShouldSucceed()

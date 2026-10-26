@@ -16,16 +16,21 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Core.Adapters.PostgreSQL.Common;
+using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Tests.TestBase;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
 
@@ -43,6 +48,8 @@ public class TaskWatcherTests : TaskWatcherTestBase
   }
 
   private NpgsqlConnectionProvider? connectionProvider_;
+  private IResultTable?             resultTable_;
+  private IResultWatcher?           resultWatcher_;
   private PostgresDatabaseProvider? tableProvider_;
 
   public override void GetInstance()
@@ -52,6 +59,8 @@ public class TaskWatcherTests : TaskWatcherTestBase
 
     TaskTable           = provider.GetRequiredService<ITaskTable>();
     TaskWatcher         = provider.GetRequiredService<ITaskWatcher>();
+    resultTable_        = provider.GetRequiredService<IResultTable>();
+    resultWatcher_      = provider.GetRequiredService<IResultWatcher>();
     connectionProvider_ = provider.GetRequiredService<NpgsqlConnectionProvider>();
     RunTests            = true;
   }
@@ -113,5 +122,47 @@ public class TaskWatcherTests : TaskWatcherTestBase
                                   .ConfigureAwait(false);
     Assert.That(first.TaskId,
                 Is.EqualTo("TaskAfterReconnection"));
+  }
+
+  [Test]
+  public async Task GetEventsShouldFailWhenReplicationConnectionIsTerminated()
+  {
+    using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+
+    var wtg = new WatchToGrpc(TaskTable!,
+                              TaskWatcher!,
+                              resultTable_!,
+                              resultWatcher_!,
+                              NullLogger.Instance);
+
+    var events = wtg.GetEvents("SessionId",
+                               new List<EventsEnum>
+                               {
+                                 EventsEnum.TaskStatusUpdate,
+                               },
+                               null,
+                               null,
+                               cts.Token)
+                    .ToListAsync(cts.Token)
+                    .AsTask();
+
+    // Wait for the subscription to open its replication slot, then kill its walsender.
+    var terminated = 0;
+    while (terminated == 0)
+    {
+      await Task.Delay(100,
+                       cts.Token)
+                .ConfigureAwait(false);
+      await using var command = connectionProvider_!.DataSource.CreateCommand("SELECT count(pg_terminate_backend(active_pid)) FROM pg_replication_slots " +
+                                                                              "WHERE slot_name LIKE 'armonik_%' AND active_pid IS NOT NULL");
+      terminated = Convert.ToInt32(await command.ExecuteScalarAsync(cts.Token)
+                                                .ConfigureAwait(false));
+    }
+
+    // The client must receive an error to subscribe again, instead of waiting on a silent stream.
+    Assert.That(() => events,
+                Throws.InstanceOf<EventStreamInterruptedException>());
+    Assert.That(cts.IsCancellationRequested,
+                Is.False);
   }
 }

@@ -65,7 +65,7 @@ internal class SimpleTaskWatcher : ITaskWatcher
                                      new List<string>(),
                                      new List<string>(),
                                      TaskStatus.Creating),
-                       }.ToAsyncEnumerable());
+                       }.UntilCancelled(cancellationToken));
 
   public Task<IAsyncEnumerable<TaskStatusUpdate>> GetTaskStatusUpdates(Expression<Func<TaskData, bool>> filter,
                                                                        CancellationToken                cancellationToken = default)
@@ -80,5 +80,5 @@ internal class SimpleTaskWatcher : ITaskWatcher
                          new TaskStatusUpdate(SessionId,
                                               TaskId,
                                               TaskStatus.Completed),
-                       }.ToAsyncEnumerable());
+                       }.UntilCancelled(cancellationToken));
 }
