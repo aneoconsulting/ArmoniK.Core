@@ -2190,6 +2190,7 @@ public class TaskTableTestBase
                                                                               "PayloadId",
                                                                             },
                                                                             td => td.TaskId,
+                                                                            false,
                                                                             CancellationToken.None)
                                       .ToListAsync(CancellationToken.None)
                                       .ConfigureAwait(false);
@@ -2256,6 +2257,7 @@ public class TaskTableTestBase
                                                                               dd1,
                                                                             },
                                                                             td => td.TaskId,
+                                                                            false,
                                                                             CancellationToken.None)
                                       .ToListAsync(CancellationToken.None)
                                       .ConfigureAwait(false);
@@ -2583,6 +2585,7 @@ public class TaskTableTestBase
                                                                             dep1,
                                                                           },
                                                                           td => td.TaskId,
+                                                                          false,
                                                                           CancellationToken.None)
                                     .ToListAsync(CancellationToken.None)
                                     .ConfigureAwait(false);
@@ -2602,6 +2605,81 @@ public class TaskTableTestBase
                                                                          payloadId,
                                                                        },
                                                                        td => td.TaskId,
+                                                                       false,
+                                                                       CancellationToken.None)
+                                 .ToListAsync(CancellationToken.None)
+                                 .ConfigureAwait(false);
+
+      Assert.That(ready,
+                  Is.EqualTo(new[]
+                             {
+                               taskId,
+                             }));
+    }
+  }
+
+  [Test]
+  public async Task RemoveRemainingDataDependenciesRecoveryShouldReportTasksReadyBefore()
+  {
+    if (RunTests)
+    {
+      var taskId = Guid.NewGuid()
+                       .ToString();
+      const string dep       = "depRecovery";
+      const string payloadId = "payloadForRecoveryTest";
+
+      await TaskTable!.CreateTasks(new[]
+                                   {
+                                     new TaskData("SessionId",
+                                                  taskId,
+                                                  "",
+                                                  "",
+                                                  payloadId,
+                                                  "CreatedBy",
+                                                  Array.Empty<string>(),
+                                                  new[]
+                                                  {
+                                                    dep,
+                                                  },
+                                                  new[]
+                                                  {
+                                                    "output1",
+                                                  },
+                                                  Array.Empty<string>(),
+                                                  TaskStatus.Pending,
+                                                  Options,
+                                                  new Output(OutputStatus.Error,
+                                                             "")),
+                                   })
+                      .ConfigureAwait(false);
+
+      // A previous call removes the last dependencies, but fails before enqueueing the task
+      await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                           {
+                                                             taskId,
+                                                           },
+                                                           new[]
+                                                           {
+                                                             dep,
+                                                             payloadId,
+                                                           },
+                                                           td => td.TaskId,
+                                                           false,
+                                                           CancellationToken.None)
+                     .ToListAsync(CancellationToken.None)
+                     .ConfigureAwait(false);
+
+      var ready = await TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                       {
+                                                                         taskId,
+                                                                       },
+                                                                       new[]
+                                                                       {
+                                                                         dep,
+                                                                         payloadId,
+                                                                       },
+                                                                       td => td.TaskId,
+                                                                       true,
                                                                        CancellationToken.None)
                                  .ToListAsync(CancellationToken.None)
                                  .ConfigureAwait(false);

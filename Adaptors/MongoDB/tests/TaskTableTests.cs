@@ -133,6 +133,7 @@ public class TaskTableTests : TaskTableTestBase
                                                                                                                                 dependency,
                                                                                                                               },
                                                                                                                               td => td.TaskId,
+                                                                                                                              false,
                                                                                                                               CancellationToken.None)
                                                                                         .ToListAsync(CancellationToken.None)
                                                                                         .ConfigureAwait(false);

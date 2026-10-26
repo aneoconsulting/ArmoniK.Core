@@ -390,6 +390,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
   public async IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>                        taskIds,
                                                                            ICollection<string>                        dependenciesToRemove,
                                                                            Expression<Func<TaskData, T>>              selector,
+                                                                           bool                                       recovery          = false,
                                                                            [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var activity       = StartActivity();
@@ -419,6 +420,9 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     // that still hold its own tag. Tasks are only updated if they still have one of the dependencies to remove,
     // so no call can update a task after its last dependency has been removed: the call that removed it is the last
     // one to write the tag, and is thus the only one to report the task as ready.
+    // Tasks created without remaining dependencies (eg: retries) are never tagged, and are reported by every call.
+    // In recovery, the call that removed the last dependency may have failed before enqueueing the task,
+    // so the tag is not checked.
     var updater = Guid.NewGuid()
                       .ToString();
     update = update.Set(LastDependencyUpdaterField,
@@ -438,11 +442,17 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
                                          cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
 
-    var readyFilter = filter.And(filter.Where(data => taskIds.Contains(data.TaskId) &&
-                                                      (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                                      data.RemainingDataDependencies == new Dictionary<string, bool>()),
-                                 filter.Eq(LastDependencyUpdaterField,
-                                           updater));
+    var readyFilter = filter.Where(data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
+                                           data.RemainingDataDependencies == new Dictionary<string, bool>());
+
+    if (!recovery)
+    {
+      readyFilter = filter.And(readyFilter,
+                               filter.Or(filter.Eq(LastDependencyUpdaterField,
+                                                   updater),
+                                         filter.Exists(LastDependencyUpdaterField,
+                                                       false)));
+    }
 
     var readyTasks = taskCollection.Find(sessionHandle,
                                          readyFilter)

@@ -1256,6 +1256,7 @@ public class TaskHandlerTest
     public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
                                                                        ICollection<string>           dependenciesToRemove,
                                                                        Expression<Func<TaskData, T>> selector,
+                                                                       bool                          recovery          = false,
                                                                        CancellationToken             cancellationToken = default)
       => AsyncEnumerable.Empty<T>();
   }
@@ -1682,6 +1683,7 @@ public class TaskHandlerTest
     public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
                                                                        ICollection<string>           dependenciesToRemove,
                                                                        Expression<Func<TaskData, T>> selector,
+                                                                       bool                          recovery          = false,
                                                                        CancellationToken             cancellationToken = default)
       => AsyncEnumerable.Empty<T>();
   }

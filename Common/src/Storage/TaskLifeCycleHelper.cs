@@ -216,6 +216,10 @@ public static class TaskLifeCycleHelper
   /// <param name="sessionData">Session data of the completed results</param>
   /// <param name="parentTaskId">Id of the tasks that creates the tasks</param>
   /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="recovery">
+  ///   Whether a previous attempt may have already removed the dependencies of the tasks without enqueueing them,
+  ///   in which case all the tasks without remaining dependencies are enqueued
+  /// </param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
@@ -227,6 +231,7 @@ public static class TaskLifeCycleHelper
                                                 SessionData                      sessionData,
                                                 string                           parentTaskId,
                                                 ILogger                          logger,
+                                                bool                             recovery          = false,
                                                 CancellationToken                cancellationToken = default)
   {
     if (!taskRequests.Any())
@@ -241,6 +246,7 @@ public static class TaskLifeCycleHelper
                                                           resultTable,
                                                           taskRequests,
                                                           logger,
+                                                          recovery,
                                                           cancellationToken);
 
     // Transfer ownership while dependencies are in preparation
@@ -322,6 +328,7 @@ public static class TaskLifeCycleHelper
                                                                               IResultTable                     resultTable,
                                                                               ICollection<TaskCreationRequest> taskRequests,
                                                                               ILogger                          logger,
+                                                                              bool                             recovery,
                                                                               CancellationToken                cancellationToken)
   {
     using var scope = logger.BeginScope("Prepare task dependencies for {@TaskIds}",
@@ -462,6 +469,7 @@ public static class TaskLifeCycleHelper
                                                                 data => new MessageData(data.TaskId,
                                                                                         data.SessionId,
                                                                                         data.Options),
+                                                                recovery,
                                                                 cancellationToken)
                           .ToListAsync(cancellationToken)
                           .ConfigureAwait(false);
@@ -476,6 +484,10 @@ public static class TaskLifeCycleHelper
   /// <param name="sessionData">Session data of the completed results</param>
   /// <param name="results">Collection of completed results</param>
   /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="recovery">
+  ///   Whether a previous attempt may have already removed the results from their dependents without enqueueing them,
+  ///   in which case all the dependents without remaining dependencies are enqueued
+  /// </param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
@@ -486,6 +498,7 @@ public static class TaskLifeCycleHelper
                                                SessionData         sessionData,
                                                ICollection<string> results,
                                                ILogger             logger,
+                                               bool                recovery          = false,
                                                CancellationToken   cancellationToken = default)
   {
     using var activity = logger.BeginScope("Resolving dependencies for {@ResultIds}",
@@ -519,6 +532,7 @@ public static class TaskLifeCycleHelper
                                                                           data => new MessageData(data.TaskId,
                                                                                                   data.SessionId,
                                                                                                   data.Options),
+                                                                          recovery,
                                                                           cancellationToken)
                                     .ToListAsync(cancellationToken)
                                     .ConfigureAwait(false);
@@ -779,6 +793,7 @@ public static class TaskLifeCycleHelper
                       taskData.TaskId);
 
     string retryId;
+    var    recovery = false;
 
     try
     {
@@ -789,8 +804,10 @@ public static class TaskLifeCycleHelper
     }
     catch (TaskAlreadyExistsException)
     {
-      // If the retry task already exist, we just continue as-if we just submitted it
-      retryId = taskData.RetryId();
+      // If the retry task already exist, we just continue as-if we just submitted it.
+      // The previous attempt may have removed its dependencies without enqueueing it.
+      retryId  = taskData.RetryId();
+      recovery = true;
     }
 
     // Submit retry task into the queue
@@ -808,6 +825,7 @@ public static class TaskLifeCycleHelper
                                sessionData,
                                taskData.TaskId,
                                logger,
+                               recovery,
                                cancellationToken)
       .ConfigureAwait(false);
 
@@ -998,6 +1016,7 @@ public static class TaskLifeCycleHelper
                                    sessionData,
                                    taskData.TaskId,
                                    logger,
+                                   true,
                                    cancellationToken)
           .ConfigureAwait(false);
 
@@ -1007,6 +1026,7 @@ public static class TaskLifeCycleHelper
                                   sessionData,
                                   results.ViewSelect(r => r.ResultId),
                                   logger,
+                                  true,
                                   cancellationToken)
           .ConfigureAwait(false);
 
