@@ -16,8 +16,10 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Sockets;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -67,8 +69,14 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
                                  .ConfigureAwait(false);
         logger_.LogDebug("Result from other polling agent: {result}",
                          result);
-        return result.Split(",")
-                     .Contains(taskId);
+        return JsonSerializer.Deserialize<Dictionary<string, string[]>>(result)
+                             ?.ContainsKey(taskId) ?? false;
+      }
+      catch (JsonException ex)
+      {
+        logger_.LogWarning(ex,
+                           "Invalid response from other pod");
+        return false;
       }
       catch (InvalidOperationException ex)
       {

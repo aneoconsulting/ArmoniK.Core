@@ -95,7 +95,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private          IAgent?                               agent_;
   private          TimeSpan?                             delayMessage_;
   private          DateTime?                             fetchedDate_;
-  private          Action?                               onDispose_;
+  private          Action<TaskHandler>?                  onDispose_;
   private          Output?                               output_;
   private          SessionData?                          sessionData_;
   private          bool                                  taskCancelled_;
@@ -121,7 +121,7 @@ public sealed class TaskHandler : IAsyncDisposable
   /// <param name="logger">The logger for diagnostic and trace logging.</param>
   /// <param name="pollsterOptions">The pollster options for configuration.</param>
   /// <param name="submitterOptions">The submitter options for configuration.</param>
-  /// <param name="onDispose">The action to execute on disposal.</param>
+  /// <param name="onDispose">The action to execute on disposal, given this handler.</param>
   /// <param name="exceptionManager">The exception manager for handling cancellation and errors.</param>
   /// <param name="functionExecutionMetrics">The metrics collector for function execution.</param>
   /// <param name="healthCheckRecord">The health check record for agent health monitoring.</param>
@@ -144,7 +144,7 @@ public sealed class TaskHandler : IAsyncDisposable
                      ILogger                               logger,
                      Injection.Options.Pollster            pollsterOptions,
                      Submitter                             submitterOptions,
-                     Action                                onDispose,
+                     Action<TaskHandler>                   onDispose,
                      ExceptionManager                      exceptionManager,
                      FunctionExecutionMetrics<TaskHandler> functionExecutionMetrics,
                      HealthCheckRecord                     healthCheckRecord,
@@ -332,7 +332,7 @@ public sealed class TaskHandler : IAsyncDisposable
     using var measure = functionExecutionMetrics_.CountAndTime();
     var onDispose = Interlocked.Exchange(ref onDispose_,
                                          null);
-    onDispose?.Invoke();
+    onDispose?.Invoke(this);
 
     logger_.LogDebug("MessageHandler status is {Status}",
                      messageHandler_.Status);

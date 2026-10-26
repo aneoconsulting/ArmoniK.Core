@@ -189,7 +189,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                      provider.GetRequiredService<ILogger>(),
                                                      provider.GetRequiredService<Injection.Options.Pollster>(),
                                                      provider.GetRequiredService<Injection.Options.Submitter>(),
-                                                     () =>
+                                                     _ =>
                                                      {
                                                      },
                                                      provider.GetRequiredService<ExceptionManager>(),

@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -56,34 +55,34 @@ namespace ArmoniK.Core.Common.Pollster;
 public class Pollster : IInitializable
 {
   // Fields documentation
-  private readonly ActivitySource                            activitySource_;
-  private readonly IAgentHandler                             agentHandler_;
-  private readonly DataPrefetcher                            dataPrefetcher_;
-  private readonly ExceptionManager                          exceptionManager_;
-  private readonly HealthCheckRecord                         healthCheckRecord_;
-  private readonly ILogger<Pollster>                         logger_;
-  private readonly ILoggerFactory                            loggerFactory_;
-  private readonly int                                       messageBatchSize_;
-  private readonly MeterHolder                               meterHolder_;
-  private readonly IObjectStorage                            objectStorage_;
-  private readonly string                                    ownerPodId_;
-  private readonly string                                    ownerPodName_;
-  private readonly Counter<int>                              pipeliningCounter_;
-  private readonly Injection.Options.Pollster                pollsterOptions_;
-  private readonly IPullQueueStorage                         pullQueueStorage_;
-  private readonly IPushQueueStorage                         pushQueueStorage_;
-  private readonly IResultTable                              resultTable_;
-  private readonly RunningTaskQueue                          runningTaskQueue_;
-  private readonly ISessionTable                             sessionTable_;
-  private readonly ISubmitter                                submitter_;
-  private readonly Submitter                                 submitterOptions_;
-  private readonly ITaskProcessingChecker                    taskProcessingChecker_;
-  private readonly ConcurrentDictionary<string, TaskHandler> taskProcessingDict_ = new();
-  private readonly ITaskTable                                taskTable_;
-  private readonly IUuidGenerator                            uuidGenerator_;
-  private readonly IWorkerStreamHandler                      workerStreamHandler_;
-  private          bool                                      endLoopReached_;
-  private          HealthCheckResult?                        healthCheckFailedResult_;
+  private readonly ActivitySource                      activitySource_;
+  private readonly IAgentHandler                       agentHandler_;
+  private readonly DataPrefetcher                      dataPrefetcher_;
+  private readonly ExceptionManager                    exceptionManager_;
+  private readonly HealthCheckRecord                   healthCheckRecord_;
+  private readonly ILogger<Pollster>                   logger_;
+  private readonly ILoggerFactory                      loggerFactory_;
+  private readonly int                                 messageBatchSize_;
+  private readonly MeterHolder                         meterHolder_;
+  private readonly IObjectStorage                      objectStorage_;
+  private readonly string                              ownerPodId_;
+  private readonly string                              ownerPodName_;
+  private readonly Counter<int>                        pipeliningCounter_;
+  private readonly Injection.Options.Pollster          pollsterOptions_;
+  private readonly IPullQueueStorage                   pullQueueStorage_;
+  private readonly IPushQueueStorage                   pushQueueStorage_;
+  private readonly IResultTable                        resultTable_;
+  private readonly RunningTaskQueue                    runningTaskQueue_;
+  private readonly ISessionTable                       sessionTable_;
+  private readonly ISubmitter                          submitter_;
+  private readonly Submitter                           submitterOptions_;
+  private readonly TaskProcessingRegistry<TaskHandler> taskProcessing_ = new();
+  private readonly ITaskProcessingChecker              taskProcessingChecker_;
+  private readonly ITaskTable                          taskTable_;
+  private readonly IUuidGenerator                      uuidGenerator_;
+  private readonly IWorkerStreamHandler                workerStreamHandler_;
+  private          bool                                endLoopReached_;
+  private          HealthCheckResult?                  healthCheckFailedResult_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Pollster" /> class.
@@ -187,7 +186,8 @@ public class Pollster : IInitializable
                                                                meterHolder_.Tags);
 
     meterHolder.Meter.CreateObservableGauge("TaskRunningTime",
-                                            () => taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
+                                            () => taskProcessing_.Handlers()
+                                                                 .MinBy(taskHandler => taskHandler.StartedAt) switch
                                                   {
                                                     null => 0.0,
                                                     // ReSharper disable once PatternAlwaysMatches
@@ -198,7 +198,8 @@ public class Pollster : IInitializable
                                             meterHolder_.Tags);
 
     meterHolder.Meter.CreateObservableGauge("TaskStartTime",
-                                            () => (taskProcessingDict_.Values.MinBy(taskHandler => taskHandler.StartedAt) switch
+                                            () => (taskProcessing_.Handlers()
+                                                                  .MinBy(taskHandler => taskHandler.StartedAt) switch
                                                    {
                                                      null => TimeSpan.MaxValue,
                                                      // ReSharper disable once PatternAlwaysMatches
@@ -210,10 +211,10 @@ public class Pollster : IInitializable
   }
 
   /// <summary>
-  ///   Gets the collection of task IDs that are currently being processed.
+  ///   Gets the ids of the queue messages currently being processed, by task id.
   /// </summary>
-  public ICollection<string> TaskProcessing
-    => taskProcessingDict_.Keys;
+  public IReadOnlyDictionary<string, string[]> TaskProcessing
+    => taskProcessing_.Snapshot();
 
   /// <summary>
   ///   Initializes the pollster and its dependencies.
@@ -264,7 +265,7 @@ public class Pollster : IInitializable
       healthCheckFailedResult_ = result;
     }
 
-    if (pollsterOptions_.FailReadinessIfNoTasks && tag == HealthCheckTag.Readiness && taskProcessingDict_.IsEmpty)
+    if (pollsterOptions_.FailReadinessIfNoTasks && tag == HealthCheckTag.Readiness && taskProcessing_.IsEmpty)
     {
       return HealthCheckResult.Unhealthy("No tasks to process");
     }
@@ -278,7 +279,7 @@ public class Pollster : IInitializable
   /// <returns>A task representing the asynchronous operation.</returns>
   public async Task StopCancelledTask()
   {
-    foreach (var taskHandler in taskProcessingDict_.Values.ToArray())
+    foreach (var taskHandler in taskProcessing_.Handlers())
     {
       await taskHandler.StopCancelledTask()
                        .ConfigureAwait(false);
@@ -382,10 +383,11 @@ public class Pollster : IInitializable
                                               taskHandlerLogger,
                                               pollsterOptions_,
                                               submitterOptions_,
-                                              () =>
+                                              handler =>
                                               {
-                                                taskProcessingDict_.TryRemove(message.TaskId,
-                                                                              out var _);
+                                                taskProcessing_.Remove(message.TaskId,
+                                                                       message.MessageId,
+                                                                       handler);
                                                 pipeliningCounter_.Add(-1);
                                               },
                                               exceptionManager_,
@@ -401,8 +403,9 @@ public class Pollster : IInitializable
             // the responsibility of the dispose is transferred.
             await using var taskHandlerDispose = new Deferrer(taskHandler);
 
-            if (!taskProcessingDict_.TryAdd(message.TaskId,
-                                            taskHandler))
+            if (!taskProcessing_.TryAdd(message.TaskId,
+                                        message.MessageId,
+                                        taskHandler))
             {
               message.Status = QueueMessageStatus.Processed;
               // TaskHandler is disposed automatically by `taskHandlerDispose`
