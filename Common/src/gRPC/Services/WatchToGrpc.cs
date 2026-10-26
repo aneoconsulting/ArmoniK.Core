@@ -26,8 +26,8 @@ using System.Threading.Tasks;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Tasks;
-using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Exceptions;
+using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 
@@ -339,10 +339,10 @@ public class WatchToGrpc
   /// <param name="name">Name of the source used in logs</param>
   /// <param name="cts">Cancelled when the subscription ends; cancelled by this method when the source fails</param>
   private void Forward(IAsyncEnumerable<EventSubscriptionResponse> source,
-                       ChannelWriter<EventSubscriptionResponse>     writer,
-                       bool                                         isWatcher,
-                       string                                       name,
-                       CancellationTokenSource                      cts)
+                       ChannelWriter<EventSubscriptionResponse>    writer,
+                       bool                                        isWatcher,
+                       string                                      name,
+                       CancellationTokenSource                     cts)
   {
     // Read now: the subscription may end and dispose cts before the task starts
     var cancellationToken = cts.Token;

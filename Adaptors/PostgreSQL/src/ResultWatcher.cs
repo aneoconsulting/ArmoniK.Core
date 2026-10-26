@@ -54,7 +54,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
   public ResultWatcher(NpgsqlConnectionProvider connectionProvider,
                        [FromKeyedServices(UuidServiceKey.Monotonic)]
                        IUuidGenerator uuidGenerator,
-                       ActivitySource activitySource,
+                       ActivitySource         activitySource,
                        ILogger<ResultWatcher> logger)
   {
     connectionProvider_ = connectionProvider;

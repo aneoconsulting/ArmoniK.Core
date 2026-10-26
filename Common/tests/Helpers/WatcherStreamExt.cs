@@ -27,7 +27,7 @@ internal static class WatcherStreamExt
   /// <summary>
   ///   Yield the given events then stay open until cancellation, like a real watcher does
   /// </summary>
-  public static async IAsyncEnumerable<T> UntilCancelled<T>(this IEnumerable<T>                        events,
+  public static async IAsyncEnumerable<T> UntilCancelled<T>(this                     IEnumerable<T>    events,
                                                             [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     foreach (var e in events)

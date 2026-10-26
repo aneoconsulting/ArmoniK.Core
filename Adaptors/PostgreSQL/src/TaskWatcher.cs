@@ -51,7 +51,7 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
                      [FromKeyedServices(UuidServiceKey.Monotonic)]
                      IUuidGenerator uuidGenerator,
-                     ActivitySource activitySource,
+                     ActivitySource       activitySource,
                      ILogger<TaskWatcher> logger)
   {
     connectionProvider_ = connectionProvider;
