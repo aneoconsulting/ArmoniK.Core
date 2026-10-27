@@ -29,8 +29,10 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -44,34 +46,39 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
 {
   /// <summary>
-  ///   Field storing the id of the last call to <see cref="RemoveRemainingDataDependenciesAsync{T}" /> that updated the task.
+  ///   Field storing the id of the last call to <see cref="RemoveRemainingDataDependenciesAsync{T}" /> that updated the
+  ///   task.
   ///   It is not part of <see cref="TaskData" /> and is ignored during deserialization.
   /// </summary>
   private static readonly StringFieldDefinition<TaskData, string> LastDependencyUpdaterField = new("LastDependencyUpdater");
+
+  private readonly IUuidGenerator uuidGenerator_;
 
   /// <inheritdoc />
   public TaskTable(SessionProvider                                         sessionProvider,
                    MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider,
                    ActivitySource                                          activitySource,
-                   ILogger<TaskTable>                                      logger)
+                   [FromKeyedServices(UuidServiceKey.Monotonic)]
+                   IUuidGenerator uuidGenerator,
+                   ILogger<TaskTable> logger)
     : base(sessionProvider,
            taskCollectionProvider,
            activitySource,
            logger)
-  {
-  }
+    => uuidGenerator_ = uuidGenerator;
 
   /// <inheritdoc />
-  private TaskTable(TaskTable taskTable,
-                    bool      readOnly)
+  private TaskTable(TaskTable      taskTable,
+                    IUuidGenerator uuidGenerator,
+                    bool           readOnly)
     : base(taskTable,
            readOnly)
-  {
-  }
+    => uuidGenerator_ = uuidGenerator;
 
   /// <inheritdoc />
   public ITaskTable Secondary
     => new TaskTable(this,
+                     uuidGenerator_,
                      true);
 
   /// <inheritdoc />
@@ -423,8 +430,8 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
     // Tasks created without remaining dependencies (eg: retries) are never tagged, and are reported by every call.
     // In recovery, the call that removed the last dependency may have failed before enqueueing the task,
     // so the tag is not checked.
-    var updater = Guid.NewGuid()
-                      .ToString();
+    var updater = uuidGenerator_.GenerateUuid()
+                                .ToString();
     update = update.Set(LastDependencyUpdaterField,
                         updater);
 

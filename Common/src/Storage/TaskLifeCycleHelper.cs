@@ -216,10 +216,7 @@ public static class TaskLifeCycleHelper
   /// <param name="sessionData">Session data of the completed results</param>
   /// <param name="parentTaskId">Id of the tasks that creates the tasks</param>
   /// <param name="logger">Logger used to produce logs</param>
-  /// <param name="recovery">
-  ///   Whether a previous attempt may have already removed the dependencies of the tasks without enqueueing them,
-  ///   in which case all the tasks without remaining dependencies are enqueued
-  /// </param>
+  /// <param name="recovery">Enqueue all ready tasks, even if a previous attempt removed their last dependency</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method
@@ -320,6 +317,7 @@ public static class TaskLifeCycleHelper
   /// <param name="resultTable">Interface to manage result states</param>
   /// <param name="taskRequests">Tasks requests to finalize</param>
   /// <param name="logger">Logger used to produce logs</param>
+  /// <param name="recovery">Return all ready tasks, even if a previous attempt removed their last dependency</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Queue messages for ready tasks
@@ -484,10 +482,7 @@ public static class TaskLifeCycleHelper
   /// <param name="sessionData">Session data of the completed results</param>
   /// <param name="results">Collection of completed results</param>
   /// <param name="logger">Logger used to produce logs</param>
-  /// <param name="recovery">
-  ///   Whether a previous attempt may have already removed the results from their dependents without enqueueing them,
-  ///   in which case all the dependents without remaining dependencies are enqueued
-  /// </param>
+  /// <param name="recovery">Enqueue all ready tasks, even if a previous attempt removed their last dependency</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Task representing the asynchronous execution of the method

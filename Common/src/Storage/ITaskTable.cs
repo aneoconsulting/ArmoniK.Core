@@ -277,11 +277,7 @@ public interface ITaskTable : IInitializable
   /// <param name="taskIds">Tasks</param>
   /// <param name="dependenciesToRemove">Dependencies</param>
   /// <param name="selector">Expression to select part of the returned task data</param>
-  /// <param name="recovery">
-  ///   Whether a previous call may have removed the last dependencies of the tasks without enqueueing them.
-  ///   If true, all the tasks without remaining dependencies are reported as ready, even if their last dependency was
-  ///   removed by another call.
-  /// </param>
+  /// <param name="recovery">Report all ready tasks, even if another call removed their last dependency</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Projected tasks that are ready after the dependencies removal
