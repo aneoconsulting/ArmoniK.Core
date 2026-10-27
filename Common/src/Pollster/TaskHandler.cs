@@ -643,8 +643,8 @@ public sealed class TaskHandler : IAsyncDisposable
           {
             // if the task is acquired by another pod, we check if the task is running on the other pod
             var processingMessageIds = await taskProcessingChecker_.GetProcessingMessageIds(taskData_.TaskId,
-                                                                                           taskData_.OwnerPodId,
-                                                                                           CancellationToken.None)
+                                                                                            taskData_.OwnerPodId,
+                                                                                            CancellationToken.None)
                                                                    .ConfigureAwait(false);
             var taskProcessingElsewhere = processingMessageIds.Count > 0;
 
@@ -792,8 +792,8 @@ public sealed class TaskHandler : IAsyncDisposable
       {
         // if the task is acquired by another pod, we check if the task is running on the other pod
         var processingMessageIds = await taskProcessingChecker_.GetProcessingMessageIds(taskData_.TaskId,
-                                                                                       taskData_.OwnerPodId,
-                                                                                       CancellationToken.None)
+                                                                                        taskData_.OwnerPodId,
+                                                                                        CancellationToken.None)
                                                                .ConfigureAwait(false);
         var taskProcessingElsewhere = processingMessageIds.Count > 0;
 

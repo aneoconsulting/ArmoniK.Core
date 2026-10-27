@@ -50,7 +50,7 @@ public class TaskProcessingCheckerClientTest
   }
 
   private static Task<IReadOnlyCollection<string>> GetProcessingMessageIds(string body,
-                                                                          string taskId)
+                                                                           string taskId)
   {
     var factory = new Mock<IHttpClientFactory>();
     factory.Setup(f => f.CreateClient(It.IsAny<string>()))
