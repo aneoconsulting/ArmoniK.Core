@@ -201,20 +201,20 @@ ON CONFLICT DO NOTHING");
     await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
                                                   .ConfigureAwait(false);
 
-    long totalModified = 0;
+    await using var batch = new NpgsqlBatch(connection,
+                                            transaction);
     foreach (var (resultId, taskId) in requests)
     {
-      await using var cmd = connection.CreateCommand();
-      cmd.Transaction = transaction;
-      cmd.CommandText = "UPDATE results SET owner_task_id = @task_id WHERE result_id = @result_id";
+      var cmd = new NpgsqlBatchCommand("UPDATE results SET owner_task_id = @task_id WHERE result_id = @result_id");
       cmd.Parameters.AddWithValue("task_id",
                                   taskId);
       cmd.Parameters.AddWithValue("result_id",
                                   resultId);
-
-      totalModified += await cmd.ExecuteNonQueryAsync(cancellationToken)
-                                .ConfigureAwait(false);
+      batch.BatchCommands.Add(cmd);
     }
+
+    var totalModified = await batch.ExecuteNonQueryAsync(cancellationToken)
+                                   .ConfigureAwait(false);
 
     if (totalModified != requests.Count)
     {
