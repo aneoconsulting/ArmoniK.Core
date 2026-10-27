@@ -142,7 +142,7 @@ public class WatchToGrpc
                                                                                   SessionId = cur.SessionId,
                                                                                 });
 
-        Forward(newTasks,
+        Forward(_ => newTasks,
                 channel.Writer,
                 true,
                 "New task",
@@ -163,7 +163,7 @@ public class WatchToGrpc
                                                                                   SessionId = cur.SessionId,
                                                                                 });
 
-        Forward(newTasks,
+        Forward(_ => newTasks,
                 channel.Writer,
                 true,
                 "Task status update",
@@ -185,7 +185,7 @@ public class WatchToGrpc
                                                                                       SessionId = cur.SessionId,
                                                                                     });
 
-        Forward(newResults,
+        Forward(_ => newResults,
                 channel.Writer,
                 true,
                 "New result",
@@ -206,7 +206,7 @@ public class WatchToGrpc
                                                                                       SessionId = cur.SessionId,
                                                                                     });
 
-        Forward(newResults,
+        Forward(_ => newResults,
                 channel.Writer,
                 true,
                 "Result status update",
@@ -228,7 +228,7 @@ public class WatchToGrpc
                                                                                       SessionId = cur.SessionId,
                                                                                     });
 
-        Forward(newResults,
+        Forward(_ => newResults,
                 channel.Writer,
                 true,
                 "Result owner update",
@@ -237,49 +237,51 @@ public class WatchToGrpc
 
       if (!events.Any() || events.Contains(EventsEnum.NewTask))
       {
-        var tasks = taskTable_.FindTasksAsync(internalTasksFilter,
-                                              cur => new
-                                                     {
-                                                       cur.ParentTaskIds,
-                                                       cur.DataDependencies,
-                                                       cur.ExpectedOutputIds,
-                                                       cur.InitialTaskId,
-                                                       cur.PayloadId,
-                                                       cur.RetryOfIds,
-                                                       cur.Status,
-                                                       cur.TaskId,
-                                                       cur.SessionId,
-                                                     },
-                                              cts.Token)
-                              .Select(esr => new EventSubscriptionResponse
-                                             {
-                                               NewTask = new EventSubscriptionResponse.Types.NewTask
-                                                         {
-                                                           PayloadId = esr.PayloadId,
-                                                           Status    = esr.Status.ToGrpcStatus(),
-                                                           DataDependencies =
-                                                           {
-                                                             esr.DataDependencies,
-                                                           },
-                                                           ExpectedOutputKeys =
-                                                           {
-                                                             esr.ExpectedOutputIds,
-                                                           },
-                                                           OriginTaskId = esr.InitialTaskId,
-                                                           ParentTaskIds =
-                                                           {
-                                                             esr.ParentTaskIds,
-                                                           },
-                                                           RetryOfIds =
-                                                           {
-                                                             esr.RetryOfIds,
-                                                           },
-                                                           TaskId = esr.TaskId,
-                                                         },
-                                               SessionId = esr.SessionId,
-                                             });
+        // Build the query in the background task so that it does not delay the subscription
+        IAsyncEnumerable<EventSubscriptionResponse> Tasks(CancellationToken token)
+          => taskTable_.FindTasksAsync(internalTasksFilter,
+                                       cur => new
+                                              {
+                                                cur.ParentTaskIds,
+                                                cur.DataDependencies,
+                                                cur.ExpectedOutputIds,
+                                                cur.InitialTaskId,
+                                                cur.PayloadId,
+                                                cur.RetryOfIds,
+                                                cur.Status,
+                                                cur.TaskId,
+                                                cur.SessionId,
+                                              },
+                                       token)
+                       .Select(esr => new EventSubscriptionResponse
+                                      {
+                                        NewTask = new EventSubscriptionResponse.Types.NewTask
+                                                  {
+                                                    PayloadId = esr.PayloadId,
+                                                    Status    = esr.Status.ToGrpcStatus(),
+                                                    DataDependencies =
+                                                    {
+                                                      esr.DataDependencies,
+                                                    },
+                                                    ExpectedOutputKeys =
+                                                    {
+                                                      esr.ExpectedOutputIds,
+                                                    },
+                                                    OriginTaskId = esr.InitialTaskId,
+                                                    ParentTaskIds =
+                                                    {
+                                                      esr.ParentTaskIds,
+                                                    },
+                                                    RetryOfIds =
+                                                    {
+                                                      esr.RetryOfIds,
+                                                    },
+                                                    TaskId = esr.TaskId,
+                                                  },
+                                        SessionId = esr.SessionId,
+                                      });
 
-        Forward(tasks,
+        Forward(Tasks,
                 channel.Writer,
                 false,
                 "New task from db",
@@ -288,27 +290,28 @@ public class WatchToGrpc
 
       if (!events.Any() || events.Contains(EventsEnum.NewResult))
       {
-        var results = resultTable_.GetResults(internalResultsFilter,
-                                              cur => new
-                                                     {
-                                                       cur.Status,
-                                                       cur.OwnerTaskId,
-                                                       cur.ResultId,
-                                                       cur.SessionId,
-                                                     },
-                                              cts.Token)
-                                  .Select(esr => new EventSubscriptionResponse
-                                                 {
-                                                   NewResult = new EventSubscriptionResponse.Types.NewResult
-                                                               {
-                                                                 OwnerId  = esr.OwnerTaskId,
-                                                                 ResultId = esr.ResultId,
-                                                                 Status   = esr.Status.ToGrpcStatus(),
-                                                               },
-                                                   SessionId = esr.SessionId,
-                                                 });
+        IAsyncEnumerable<EventSubscriptionResponse> Results(CancellationToken token)
+          => resultTable_.GetResults(internalResultsFilter,
+                                     cur => new
+                                            {
+                                              cur.Status,
+                                              cur.OwnerTaskId,
+                                              cur.ResultId,
+                                              cur.SessionId,
+                                            },
+                                     token)
+                         .Select(esr => new EventSubscriptionResponse
+                                        {
+                                          NewResult = new EventSubscriptionResponse.Types.NewResult
+                                                      {
+                                                        OwnerId  = esr.OwnerTaskId,
+                                                        ResultId = esr.ResultId,
+                                                        Status   = esr.Status.ToGrpcStatus(),
+                                                      },
+                                          SessionId = esr.SessionId,
+                                        });
 
-        Forward(results,
+        Forward(Results,
                 channel.Writer,
                 false,
                 "New result from db",
@@ -323,7 +326,8 @@ public class WatchToGrpc
     }
     finally
     {
-      cts.Cancel();
+      await cts.CancelAsync()
+               .ConfigureAwait(false);
     }
   }
 
@@ -333,16 +337,16 @@ public class WatchToGrpc
   ///   <see cref="EventStreamInterruptedException" /> so that the client receives an error and can subscribe again,
   ///   instead of waiting on a silent stream.
   /// </summary>
-  /// <param name="source">Events to copy</param>
+  /// <param name="source">Creates the events to copy, called in the background task</param>
   /// <param name="writer">Channel read by the client</param>
   /// <param name="isWatcher">Whether the source is a watcher (endless) or a database snapshot (finite)</param>
   /// <param name="name">Name of the source used in logs</param>
   /// <param name="cts">Cancelled when the subscription ends; cancelled by this method when the source fails</param>
-  private void Forward(IAsyncEnumerable<EventSubscriptionResponse> source,
-                       ChannelWriter<EventSubscriptionResponse>    writer,
-                       bool                                        isWatcher,
-                       string                                      name,
-                       CancellationTokenSource                     cts)
+  private void Forward(Func<CancellationToken, IAsyncEnumerable<EventSubscriptionResponse>> source,
+                       ChannelWriter<EventSubscriptionResponse>                             writer,
+                       bool                                                                 isWatcher,
+                       string                                                               name,
+                       CancellationTokenSource                                              cts)
   {
     // Read now: the subscription may end and dispose cts before the task starts
     var cancellationToken = cts.Token;
@@ -353,7 +357,8 @@ public class WatchToGrpc
                    Exception? error = null;
                    try
                    {
-                     await foreach (var esr in source.WithCancellation(cancellationToken)
+                     await foreach (var esr in source(cancellationToken)
+                                                     .WithCancellation(cancellationToken)
                                                      .ConfigureAwait(false))
                      {
                        logger_.LogDebug("{source} {event}",
@@ -381,11 +386,13 @@ public class WatchToGrpc
                                                                           error));
                    try
                    {
-                     cts.Cancel();
+                     await cts.CancelAsync()
+                              .ConfigureAwait(false);
                    }
                    catch (ObjectDisposedException)
                    {
-                     // The subscription already ended
+                     logger_.LogDebug("Subscription already ended when event source {source} stopped",
+                                      name);
                    }
                  },
                  CancellationToken.None);

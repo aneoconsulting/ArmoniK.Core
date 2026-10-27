@@ -71,7 +71,7 @@ internal sealed class WalBroadcaster<T> : IDisposable
                           Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse,
                           IUuidGenerator                                                uuidGenerator,
                           string                                                        name,
-                          ILogger                                                       logger)
+                          ILogger<WalBroadcaster<T>>                                    logger)
   {
     name_          = name;
     logger_        = logger;

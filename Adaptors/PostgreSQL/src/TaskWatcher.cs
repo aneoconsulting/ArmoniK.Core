@@ -51,8 +51,8 @@ public class TaskWatcher : ITaskWatcher, IDisposable
   public TaskWatcher(NpgsqlConnectionProvider connectionProvider,
                      [FromKeyedServices(UuidServiceKey.Monotonic)]
                      IUuidGenerator uuidGenerator,
-                     ActivitySource       activitySource,
-                     ILogger<TaskWatcher> logger)
+                     ActivitySource activitySource,
+                     ILoggerFactory loggerFactory)
   {
     connectionProvider_ = connectionProvider;
     activitySource_     = activitySource;
@@ -75,7 +75,7 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                       },
                                                       uuidGenerator,
                                                       "tasks insert",
-                                                      logger);
+                                                      loggerFactory.CreateLogger<WalBroadcaster<TaskData>>());
 
     updateBroadcaster_ = new WalBroadcaster<TaskData>(connectionProvider,
                                                       async (message,
@@ -98,7 +98,7 @@ public class TaskWatcher : ITaskWatcher, IDisposable
                                                       },
                                                       uuidGenerator,
                                                       "tasks update",
-                                                      logger);
+                                                      loggerFactory.CreateLogger<WalBroadcaster<TaskData>>());
   }
 
   /// <inheritdoc />

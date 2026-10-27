@@ -54,8 +54,8 @@ public class ResultWatcher : IResultWatcher, IDisposable
   public ResultWatcher(NpgsqlConnectionProvider connectionProvider,
                        [FromKeyedServices(UuidServiceKey.Monotonic)]
                        IUuidGenerator uuidGenerator,
-                       ActivitySource         activitySource,
-                       ILogger<ResultWatcher> logger)
+                       ActivitySource activitySource,
+                       ILoggerFactory loggerFactory)
   {
     connectionProvider_ = connectionProvider;
     activitySource_     = activitySource;
@@ -78,7 +78,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
                                                     },
                                                     uuidGenerator,
                                                     "results insert",
-                                                    logger);
+                                                    loggerFactory.CreateLogger<WalBroadcaster<Result>>());
 
     updateBroadcaster_ = new WalBroadcaster<Result>(connectionProvider,
                                                     async (message,
@@ -105,7 +105,7 @@ public class ResultWatcher : IResultWatcher, IDisposable
                                                     },
                                                     uuidGenerator,
                                                     "results update",
-                                                    logger);
+                                                    loggerFactory.CreateLogger<WalBroadcaster<Result>>());
   }
 
   /// <inheritdoc />
