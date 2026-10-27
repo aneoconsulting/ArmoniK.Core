@@ -148,21 +148,42 @@ public static class TaskLifeCycleHelper
 
     parentTaskIds.Add(parentTaskId);
 
-    await taskTable.CreateTasks(taskCreationRequests.Select(request => new TaskData(sessionId,
-                                                                                    request.TaskId,
-                                                                                    "",
-                                                                                    "",
-                                                                                    request.PayloadId,
-                                                                                    createdBy,
-                                                                                    parentTaskIds,
-                                                                                    request.DataDependencies.ToList(),
-                                                                                    request.ExpectedOutputKeys.ToList(),
-                                                                                    Array.Empty<string>(),
-                                                                                    TaskStatus.Creating,
-                                                                                    request.Options ??
-                                                                                    throw new ArmoniKException("Task Options should not be null here"),
-                                                                                    new Output(OutputStatus.Success,
-                                                                                               ""))),
+    // Dependencies that are already completed, such as payloads uploaded before the submission, are not recorded as
+    // remaining: FinalizeTaskCreation would only remove them right away. Completed is a final status, so they cannot
+    // become needed again.
+    var dependencies = taskCreationRequests.SelectMany(request => request.DataDependencies.Append(request.PayloadId))
+                                           .ToHashSet();
+    var completedDependencies = await resultTable.GetResults(result => dependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
+                                                             result => result.ResultId,
+                                                             cancellationToken)
+                                                 .ToHashSetAsync(cancellationToken: cancellationToken)
+                                                 .ConfigureAwait(false);
+
+    await taskTable.CreateTasks(taskCreationRequests.Select(request =>
+                                                            {
+                                                              var taskData = new TaskData(sessionId,
+                                                                                          request.TaskId,
+                                                                                          "",
+                                                                                          "",
+                                                                                          request.PayloadId,
+                                                                                          createdBy,
+                                                                                          parentTaskIds,
+                                                                                          request.DataDependencies.ToList(),
+                                                                                          request.ExpectedOutputKeys.ToList(),
+                                                                                          Array.Empty<string>(),
+                                                                                          TaskStatus.Creating,
+                                                                                          request.Options ??
+                                                                                          throw new ArmoniKException("Task Options should not be null here"),
+                                                                                          new Output(OutputStatus.Success,
+                                                                                                     ""));
+                                                              return taskData with
+                                                                     {
+                                                                       RemainingDataDependencies = taskData.RemainingDataDependencies
+                                                                                                           .Where(pair => !completedDependencies.Contains(pair.Key))
+                                                                                                           .ToDictionary(pair => pair.Key,
+                                                                                                                         pair => pair.Value),
+                                                                     };
+                                                            }),
                                 cancellationToken)
                    .ConfigureAwait(false);
 

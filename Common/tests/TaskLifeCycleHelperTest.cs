@@ -428,6 +428,13 @@ public class TaskLifeCycleHelperTest
 
     Assert.That(taskData.Status,
                 Is.EqualTo(TaskStatus.Creating));
+    // The payload is already completed, so it is not recorded as a remaining dependency
+    Assert.That(taskData.RemainingDataDependencies.Keys,
+                Is.EquivalentTo(new[]
+                                {
+                                  results[1].ResultId,
+                                  results[2].ResultId,
+                                }));
 
     await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
                                                    holder.ResultTable,
@@ -669,10 +676,10 @@ public class TaskLifeCycleHelperTest
                              "",
                              "",
                              "",
-                             ResultStatus.Completed,
+                             ResultStatus.Created,
                              new List<string>(),
                              DateTime.UtcNow,
-                             DateTime.UtcNow,
+                             null,
                              0,
                              Array.Empty<byte>(),
                              false);
@@ -703,6 +710,13 @@ public class TaskLifeCycleHelperTest
                                           tasks,
                                           NullLogger.Instance)
                              .ConfigureAwait(false);
+
+    // The payload is completed after the creation of the task, so it is still a remaining dependency
+    await holder.ResultTable.CompleteResult(sessionId,
+                                            payload.ResultId,
+                                            10,
+                                            Encoding.UTF8.GetBytes("payload"))
+                .ConfigureAwait(false);
 
     // Previous attempt removed the last dependency of the task, but crashed before enqueueing it
     await holder.TaskTable.RemoveRemainingDataDependenciesAsync(new[]
