@@ -327,7 +327,7 @@ public class TestPollsterProvider : IDisposable
                 .ConfigureAwait(false);
     }
 
-    Assert.Fail($"Pollster was still processing {string.Join(", ", Pollster.TaskProcessing)}");
+    Assert.Fail($"Pollster was still processing {string.Join(", ", Pollster.TaskProcessing.Keys)}");
   }
 
   public void AssertFailAfterError(int nbError = 1)

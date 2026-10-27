@@ -556,6 +556,157 @@ public class PollsterTest
     testServiceProvider.AssertFailAfterError(6);
   }
 
+  /// <summary>
+  ///   Worker that runs until the test releases it, so a test can act while a task is still running.
+  /// </summary>
+  private class GatedWorkerStreamHandler : IWorkerStreamHandler
+  {
+    private readonly TaskCompletionSource release_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource started_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public Task Started
+      => started_.Task;
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Task.FromResult(HealthCheckResult.Healthy());
+
+    public Task Init(CancellationToken cancellationToken)
+      => Task.CompletedTask;
+
+    public void Dispose()
+      => GC.SuppressFinalize(this);
+
+    public async Task<Output> StartTaskProcessing(TaskData          taskData,
+                                                  string            token,
+                                                  string            dataFolder,
+                                                  Configuration     configuration,
+                                                  CancellationToken cancellationToken)
+    {
+      started_.TrySetResult();
+
+      await release_.Task.WaitAsync(cancellationToken)
+                    .ConfigureAwait(false);
+      return new Output(OutputStatus.Success,
+                        "");
+    }
+
+    public void Release()
+      => release_.TrySetResult();
+  }
+
+  /// <summary>
+  ///   Queue that signals when the pollster starts its third pull.
+  /// </summary>
+  /// <remarks>
+  ///   With a batch size of 1, the pollster pulls once per message and finishes handling a message, disposal
+  ///   included, before pulling again. The third pull therefore means the second message has been fully handled.
+  /// </remarks>
+  private class PullCountingQueueStorage : IPullQueueStorage
+  {
+    public readonly  SimplePullQueueStorageChannel Queue      = new();
+    private readonly TaskCompletionSource          thirdPull_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private          int                           pulls_;
+
+    public Task ThirdPull
+      => thirdPull_.Task;
+
+    public Task<HealthCheckResult> Check(HealthCheckTag tag)
+      => Queue.Check(tag);
+
+    public Task Init(CancellationToken cancellationToken)
+      => Queue.Init(cancellationToken);
+
+    public int MaxPriority
+      => Queue.MaxPriority;
+
+    public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string            partitionId,
+                                                                    int               nbMessages,
+                                                                    CancellationToken cancellationToken = default)
+    {
+      if (Interlocked.Increment(ref pulls_) == 3)
+      {
+        thirdPull_.TrySetResult();
+      }
+
+      return Queue.PullMessagesAsync(partitionId,
+                                     nbMessages,
+                                     cancellationToken);
+    }
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task DuplicateMessageShouldNotHideRunningTask()
+  {
+    var pullQueueStorage = new PullCountingQueueStorage();
+    var worker           = new GatedWorkerStreamHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(worker,
+                                                             new SimpleAgentHandler(),
+                                                             pullQueueStorage);
+
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    testServiceProvider.SessionTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+    await pullQueueStorage.Queue.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                           {
+                                                             CancellationToken = CancellationToken.None,
+                                                             Status            = QueueMessageStatus.Waiting,
+                                                             MessageId = Guid.NewGuid()
+                                                                             .ToString(),
+                                                             TaskId = taskSubmitted,
+                                                           })
+                          .ConfigureAwait(false);
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var stillProcessing = false;
+
+    // While the task runs, the same pod receives another message for it, as a broker does when the
+    // task has been pushed twice. Handling that duplicate must not make the pod stop reporting the task
+    // as processing, or other pods conclude that it crashed and retry it.
+    async Task ReceiveDuplicateWhileRunning()
+    {
+      try
+      {
+        await worker.Started.ConfigureAwait(false);
+
+        await pullQueueStorage.Queue.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                               {
+                                                                 CancellationToken = CancellationToken.None,
+                                                                 Status            = QueueMessageStatus.Waiting,
+                                                                 MessageId = Guid.NewGuid()
+                                                                                 .ToString(),
+                                                                 TaskId = taskSubmitted,
+                                                               })
+                              .ConfigureAwait(false);
+
+        await pullQueueStorage.ThirdPull.ConfigureAwait(false);
+
+        stillProcessing = testServiceProvider.Pollster.TaskProcessing.ContainsKey(taskSubmitted);
+      }
+      finally
+      {
+        worker.Release();
+      }
+    }
+
+    var stop = testServiceProvider.StopApplicationWhen(ReceiveDuplicateWhileRunning());
+
+    Assert.DoesNotThrowAsync(() => testServiceProvider.Pollster.MainLoop());
+    Assert.DoesNotThrowAsync(() => stop);
+
+    Assert.That(stillProcessing,
+                Is.True);
+
+    testServiceProvider.AssertFailAfterError(6);
+  }
+
   [Test]
   [Timeout(10000)]
   public async Task ExecuteTaskTimeoutAcquire()

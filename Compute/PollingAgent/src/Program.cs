@@ -215,9 +215,8 @@ public static class Program
                           });
 
       app.MapGet("/taskprocessing",
-                 () => string.Join(",",
-                                   app.Services.GetRequiredService<Common.Pollster.Pollster>()
-                                      .TaskProcessing));
+                 () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
+                          .TaskProcessing);
 
       app.MapGet("/stopcancelledtask",
                  () => app.Services.GetRequiredService<Common.Pollster.Pollster>()
