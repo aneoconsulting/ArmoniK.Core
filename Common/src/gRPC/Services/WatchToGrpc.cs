@@ -358,8 +358,8 @@ public class WatchToGrpc
                    try
                    {
                      await foreach (var esr in source(cancellationToken)
-                                                     .WithCancellation(cancellationToken)
-                                                     .ConfigureAwait(false))
+                                               .WithCancellation(cancellationToken)
+                                               .ConfigureAwait(false))
                      {
                        logger_.LogDebug("{source} {event}",
                                         name,
