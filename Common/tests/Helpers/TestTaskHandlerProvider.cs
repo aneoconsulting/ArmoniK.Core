@@ -172,30 +172,10 @@ public class TestTaskHandlerProvider : IDisposable
            .AddScoped(typeof(FunctionExecutionMetrics<>))
            .AddSingleton<HealthCheckRecord>()
            .AddUuidGeneratorDefault()
-           .AddSingleton(provider => new TaskHandler(provider.GetRequiredService<ISessionTable>(),
-                                                     provider.GetRequiredService<ITaskTable>(),
-                                                     provider.GetRequiredService<IResultTable>(),
-                                                     provider.GetRequiredService<IPushQueueStorage>(),
-                                                     provider.GetRequiredService<IObjectStorage>(),
-                                                     provider.GetRequiredService<ISubmitter>(),
-                                                     provider.GetRequiredService<DataPrefetcher>(),
-                                                     workerStreamHandler ?? new SimpleWorkerStreamHandler(),
-                                                     queueStorage        ?? new SimpleQueueMessageHandler(),
-                                                     provider.GetRequiredService<ITaskProcessingChecker>(),
-                                                     "ownerpodid",
-                                                     "ownerpodname",
-                                                     provider.GetRequiredService<ActivitySource>(),
-                                                     agentHandler ?? new SimpleAgentHandler(),
-                                                     provider.GetRequiredService<ILogger>(),
-                                                     provider.GetRequiredService<Injection.Options.Pollster>(),
-                                                     provider.GetRequiredService<Injection.Options.Submitter>(),
-                                                     _ =>
-                                                     {
-                                                     },
-                                                     provider.GetRequiredService<ExceptionManager>(),
-                                                     provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>(),
-                                                     provider.GetRequiredService<HealthCheckRecord>(),
-                                                     provider.GetRequiredService<IUuidGenerator>()))
+           .AddSingleton(provider => CreateTaskHandler(provider,
+                                                       queueStorage        ?? new SimpleQueueMessageHandler(),
+                                                       workerStreamHandler ?? new SimpleWorkerStreamHandler(),
+                                                       agentHandler        ?? new SimpleAgentHandler()))
            .AddSingleton<DataPrefetcher>();
 
     if (taskProcessingChecker is not null)
@@ -264,4 +244,46 @@ public class TestTaskHandlerProvider : IDisposable
   public T GetRequiredService<T>()
     where T : notnull
     => app_.Services.GetRequiredService<T>();
+
+  /// <summary>
+  ///   Create another task handler processing the given message, with the services of this provider.
+  /// </summary>
+  /// <param name="message">Queue message processed by the task handler</param>
+  /// <returns>
+  ///   The task handler
+  /// </returns>
+  public TaskHandler CreateTaskHandler(IQueueMessageHandler message)
+    => CreateTaskHandler(app_.Services,
+                         message,
+                         new SimpleWorkerStreamHandler(),
+                         new SimpleAgentHandler());
+
+  private static TaskHandler CreateTaskHandler(IServiceProvider     provider,
+                                               IQueueMessageHandler message,
+                                               IWorkerStreamHandler workerStreamHandler,
+                                               IAgentHandler        agentHandler)
+    => new(provider.GetRequiredService<ISessionTable>(),
+           provider.GetRequiredService<ITaskTable>(),
+           provider.GetRequiredService<IResultTable>(),
+           provider.GetRequiredService<IPushQueueStorage>(),
+           provider.GetRequiredService<IObjectStorage>(),
+           provider.GetRequiredService<ISubmitter>(),
+           provider.GetRequiredService<DataPrefetcher>(),
+           workerStreamHandler,
+           message,
+           provider.GetRequiredService<ITaskProcessingChecker>(),
+           "ownerpodid",
+           "ownerpodname",
+           provider.GetRequiredService<ActivitySource>(),
+           agentHandler,
+           provider.GetRequiredService<ILogger>(),
+           provider.GetRequiredService<Injection.Options.Pollster>(),
+           provider.GetRequiredService<Injection.Options.Submitter>(),
+           _ =>
+           {
+           },
+           provider.GetRequiredService<ExceptionManager>(),
+           provider.GetRequiredService<FunctionExecutionMetrics<TaskHandler>>(),
+           provider.GetRequiredService<HealthCheckRecord>(),
+           provider.GetRequiredService<IUuidGenerator>());
 }

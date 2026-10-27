@@ -16,33 +16,54 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Common.Pollster;
+using ArmoniK.Core.Common.Tests.Helpers;
 
 using NUnit.Framework;
 
 namespace ArmoniK.Core.Common.Tests.Pollster;
 
-[TestFixture(TestOf = typeof(TaskProcessingRegistry<>))]
+[TestFixture(TestOf = typeof(TaskProcessingRegistry))]
 public class TaskProcessingRegistryTest
 {
-  private sealed class Handler
+  [OneTimeSetUp]
+  public void BeforeAll()
+    => provider_ = new TestTaskHandlerProvider();
+
+  [OneTimeTearDown]
+  public void AfterAll()
   {
+    provider_?.Dispose();
+    provider_ = null;
   }
+
+  private TestTaskHandlerProvider? provider_;
+
+  private static SimpleQueueMessageHandler Message(string taskId,
+                                                   string messageId)
+    => new()
+       {
+         TaskId    = taskId,
+         MessageId = messageId,
+       };
+
+  private TaskHandler Handler(SimpleQueueMessageHandler message)
+    => provider_!.CreateTaskHandler(message);
 
   [Test]
   public void RemoveShouldForgetTask()
   {
-    var registry = new TaskProcessingRegistry<Handler>();
-    var handler  = new Handler();
+    var registry = new TaskProcessingRegistry();
+    var message  = Message("task",
+                           "message");
+    var handler = Handler(message);
 
-    Assert.That(registry.TryAdd("task",
-                                "message",
+    Assert.That(registry.TryAdd(message,
                                 handler),
                 Is.True);
     Assert.That(registry.IsEmpty,
                 Is.False);
 
-    registry.Remove("task",
-                    "message",
+    registry.Remove(message,
                     handler);
 
     Assert.That(registry.IsEmpty,
@@ -56,21 +77,22 @@ public class TaskProcessingRegistryTest
   [Test]
   public void RemovingOneMessageShouldKeepTheOthersOfTheTask()
   {
-    var registry = new TaskProcessingRegistry<Handler>();
-    var first    = new Handler();
-    var second   = new Handler();
+    var registry = new TaskProcessingRegistry();
+    var message1 = Message("task",
+                           "message1");
+    var message2 = Message("task",
+                           "message2");
+    var first  = Handler(message1);
+    var second = Handler(message2);
 
-    Assert.That(registry.TryAdd("task",
-                                "message1",
+    Assert.That(registry.TryAdd(message1,
                                 first),
                 Is.True);
-    Assert.That(registry.TryAdd("task",
-                                "message2",
+    Assert.That(registry.TryAdd(message2,
                                 second),
                 Is.True);
 
-    registry.Remove("task",
-                    "message2",
+    registry.Remove(message2,
                     second);
 
     Assert.That(registry.Snapshot(),
@@ -89,21 +111,20 @@ public class TaskProcessingRegistryTest
   [Test]
   public void RejectedHandlerShouldNotRemoveTrackedHandler()
   {
-    var registry  = new TaskProcessingRegistry<Handler>();
-    var tracked   = new Handler();
-    var duplicate = new Handler();
+    var registry  = new TaskProcessingRegistry();
+    var message   = Message("task",
+                            "message");
+    var tracked   = Handler(message);
+    var duplicate = Handler(message);
 
-    Assert.That(registry.TryAdd("task",
-                                "message",
+    Assert.That(registry.TryAdd(message,
                                 tracked),
                 Is.True);
-    Assert.That(registry.TryAdd("task",
-                                "message",
+    Assert.That(registry.TryAdd(message,
                                 duplicate),
                 Is.False);
 
-    registry.Remove("task",
-                    "message",
+    registry.Remove(message,
                     duplicate);
 
     Assert.That(registry.Handlers(),
@@ -116,19 +137,20 @@ public class TaskProcessingRegistryTest
   [Test]
   public void RemoveOfUnknownEntryShouldDoNothing()
   {
-    var registry = new TaskProcessingRegistry<Handler>();
-    var handler  = new Handler();
+    var registry = new TaskProcessingRegistry();
+    var message  = Message("task",
+                           "message");
+    var handler = Handler(message);
 
-    Assert.That(registry.TryAdd("task",
-                                "message",
+    Assert.That(registry.TryAdd(message,
                                 handler),
                 Is.True);
 
-    registry.Remove("other",
-                    "message",
+    registry.Remove(Message("other",
+                            "message"),
                     handler);
-    registry.Remove("task",
-                    "other",
+    registry.Remove(Message("task",
+                            "other"),
                     handler);
 
     Assert.That(registry.Handlers(),
@@ -141,18 +163,18 @@ public class TaskProcessingRegistryTest
   [Test]
   public void SnapshotShouldBeACopy()
   {
-    var registry = new TaskProcessingRegistry<Handler>();
-    var handler  = new Handler();
+    var registry = new TaskProcessingRegistry();
+    var message  = Message("task",
+                           "message");
+    var handler = Handler(message);
 
-    registry.TryAdd("task",
-                    "message",
+    registry.TryAdd(message,
                     handler);
 
     var snapshot = registry.Snapshot();
     var handlers = registry.Handlers();
 
-    registry.Remove("task",
-                    "message",
+    registry.Remove(message,
                     handler);
 
     Assert.That(snapshot,

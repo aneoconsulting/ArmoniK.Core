@@ -18,21 +18,21 @@
 using System.Collections.Generic;
 using System.Linq;
 
+using ArmoniK.Core.Base;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
-///   Tracks the handlers processing tasks on this agent, by task id and by queue message id.
+///   Tracks the handlers processing tasks on this agent, by queue message.
 /// </summary>
 /// <remarks>
 ///   A task can be received several times through different queue messages. Each handler is tracked under its own
 ///   message, so that disposing the handler of a duplicate message cannot hide a handler still processing the task.
 /// </remarks>
-/// <typeparam name="THandler">Type of the handlers that are tracked</typeparam>
-public sealed class TaskProcessingRegistry<THandler>
-  where THandler : class
+public sealed class TaskProcessingRegistry
 {
-  private readonly object                                           lock_  = new();
-  private readonly Dictionary<string, Dictionary<string, THandler>> tasks_ = new();
+  private readonly object                                              lock_  = new();
+  private readonly Dictionary<string, Dictionary<string, TaskHandler>> tasks_ = new();
 
   /// <summary>
   ///   Whether no handler is tracked.
@@ -49,61 +49,63 @@ public sealed class TaskProcessingRegistry<THandler>
   }
 
   /// <summary>
-  ///   Track the handler processing the given message of the given task.
+  ///   Track the handler processing the given message.
   /// </summary>
-  /// <param name="taskId">Id of the task</param>
-  /// <param name="messageId">Id of the queue message</param>
+  /// <param name="message">Queue message processed by the handler</param>
   /// <param name="handler">Handler processing the message</param>
   /// <returns>
-  ///   False if a handler is already tracked for this task and this message
+  ///   False if a handler is already tracked for this message
   /// </returns>
-  public bool TryAdd(string   taskId,
-                     string   messageId,
-                     THandler handler)
+  public bool TryAdd(IQueueMessageHandler message,
+                     TaskHandler          handler)
   {
     lock (lock_)
     {
-      if (!tasks_.TryGetValue(taskId,
+      if (!tasks_.TryGetValue(message.TaskId,
                               out var messages))
       {
-        messages       = new Dictionary<string, THandler>();
-        tasks_[taskId] = messages;
+        messages               = new Dictionary<string, TaskHandler>();
+        tasks_[message.TaskId] = messages;
       }
 
-      return messages.TryAdd(messageId,
+      return messages.TryAdd(message.MessageId,
                              handler);
     }
   }
 
   /// <summary>
-  ///   Stop tracking the handler of the given message of the given task.
+  ///   Stop tracking the handler of the given message.
   /// </summary>
   /// <remarks>
   ///   Nothing is removed if another handler is tracked for this message, as is the case when the given handler was
   ///   rejected by <see cref="TryAdd" />.
   /// </remarks>
-  /// <param name="taskId">Id of the task</param>
-  /// <param name="messageId">Id of the queue message</param>
+  /// <param name="message">Queue message processed by the handler</param>
   /// <param name="handler">Handler to stop tracking</param>
-  public void Remove(string   taskId,
-                     string   messageId,
-                     THandler handler)
+  public void Remove(IQueueMessageHandler message,
+                     TaskHandler          handler)
   {
     lock (lock_)
     {
-      if (!tasks_.TryGetValue(taskId,
-                              out var messages)                                           || !messages.TryGetValue(messageId,
-                                                                                                                   out var tracked) || !ReferenceEquals(tracked,
-                                                                                                                                                        handler))
+      if (!tasks_.TryGetValue(message.TaskId,
+                              out var messages))
       {
         return;
       }
 
-      messages.Remove(messageId);
+      // A handler rejected by TryAdd must not remove the handler tracked for the same message
+      if (!messages.TryGetValue(message.MessageId,
+                                out var tracked) || !ReferenceEquals(tracked,
+                                                                     handler))
+      {
+        return;
+      }
+
+      messages.Remove(message.MessageId);
 
       if (messages.Count == 0)
       {
-        tasks_.Remove(taskId);
+        tasks_.Remove(message.TaskId);
       }
     }
   }
@@ -129,7 +131,7 @@ public sealed class TaskProcessingRegistry<THandler>
   /// <returns>
   ///   The tracked handlers
   /// </returns>
-  public THandler[] Handlers()
+  public TaskHandler[] Handlers()
   {
     lock (lock_)
     {

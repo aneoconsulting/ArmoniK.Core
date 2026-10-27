@@ -76,7 +76,7 @@ public class Pollster : IInitializable
   private readonly ISessionTable                       sessionTable_;
   private readonly ISubmitter                          submitter_;
   private readonly Submitter                           submitterOptions_;
-  private readonly TaskProcessingRegistry<TaskHandler> taskProcessing_ = new();
+  private readonly TaskProcessingRegistry              taskProcessing_ = new();
   private readonly ITaskProcessingChecker              taskProcessingChecker_;
   private readonly ITaskTable                          taskTable_;
   private readonly IUuidGenerator                      uuidGenerator_;
@@ -385,8 +385,7 @@ public class Pollster : IInitializable
                                               submitterOptions_,
                                               handler =>
                                               {
-                                                taskProcessing_.Remove(message.TaskId,
-                                                                       message.MessageId,
+                                                taskProcessing_.Remove(message,
                                                                        handler);
                                                 pipeliningCounter_.Add(-1);
                                               },
@@ -403,8 +402,7 @@ public class Pollster : IInitializable
             // the responsibility of the dispose is transferred.
             await using var taskHandlerDispose = new Deferrer(taskHandler);
 
-            if (!taskProcessing_.TryAdd(message.TaskId,
-                                        message.MessageId,
+            if (!taskProcessing_.TryAdd(message,
                                         taskHandler))
             {
               message.Status = QueueMessageStatus.Processed;
