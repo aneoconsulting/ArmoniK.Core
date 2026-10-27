@@ -55,34 +55,34 @@ namespace ArmoniK.Core.Common.Pollster;
 public class Pollster : IInitializable
 {
   // Fields documentation
-  private readonly ActivitySource                      activitySource_;
-  private readonly IAgentHandler                       agentHandler_;
-  private readonly DataPrefetcher                      dataPrefetcher_;
-  private readonly ExceptionManager                    exceptionManager_;
-  private readonly HealthCheckRecord                   healthCheckRecord_;
-  private readonly ILogger<Pollster>                   logger_;
-  private readonly ILoggerFactory                      loggerFactory_;
-  private readonly int                                 messageBatchSize_;
-  private readonly MeterHolder                         meterHolder_;
-  private readonly IObjectStorage                      objectStorage_;
-  private readonly string                              ownerPodId_;
-  private readonly string                              ownerPodName_;
-  private readonly Counter<int>                        pipeliningCounter_;
-  private readonly Injection.Options.Pollster          pollsterOptions_;
-  private readonly IPullQueueStorage                   pullQueueStorage_;
-  private readonly IPushQueueStorage                   pushQueueStorage_;
-  private readonly IResultTable                        resultTable_;
-  private readonly RunningTaskQueue                    runningTaskQueue_;
-  private readonly ISessionTable                       sessionTable_;
-  private readonly ISubmitter                          submitter_;
-  private readonly Submitter                           submitterOptions_;
-  private readonly TaskProcessingRegistry              taskProcessing_ = new();
-  private readonly ITaskProcessingChecker              taskProcessingChecker_;
-  private readonly ITaskTable                          taskTable_;
-  private readonly IUuidGenerator                      uuidGenerator_;
-  private readonly IWorkerStreamHandler                workerStreamHandler_;
-  private          bool                                endLoopReached_;
-  private          HealthCheckResult?                  healthCheckFailedResult_;
+  private readonly ActivitySource             activitySource_;
+  private readonly IAgentHandler              agentHandler_;
+  private readonly DataPrefetcher             dataPrefetcher_;
+  private readonly ExceptionManager           exceptionManager_;
+  private readonly HealthCheckRecord          healthCheckRecord_;
+  private readonly ILogger<Pollster>          logger_;
+  private readonly ILoggerFactory             loggerFactory_;
+  private readonly int                        messageBatchSize_;
+  private readonly MeterHolder                meterHolder_;
+  private readonly IObjectStorage             objectStorage_;
+  private readonly string                     ownerPodId_;
+  private readonly string                     ownerPodName_;
+  private readonly Counter<int>               pipeliningCounter_;
+  private readonly Injection.Options.Pollster pollsterOptions_;
+  private readonly IPullQueueStorage          pullQueueStorage_;
+  private readonly IPushQueueStorage          pushQueueStorage_;
+  private readonly IResultTable               resultTable_;
+  private readonly RunningTaskQueue           runningTaskQueue_;
+  private readonly ISessionTable              sessionTable_;
+  private readonly ISubmitter                 submitter_;
+  private readonly Submitter                  submitterOptions_;
+  private readonly TaskProcessingRegistry     taskProcessing_ = new();
+  private readonly ITaskProcessingChecker     taskProcessingChecker_;
+  private readonly ITaskTable                 taskTable_;
+  private readonly IUuidGenerator             uuidGenerator_;
+  private readonly IWorkerStreamHandler       workerStreamHandler_;
+  private          bool                       endLoopReached_;
+  private          HealthCheckResult?         healthCheckFailedResult_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="Pollster" /> class.

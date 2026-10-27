@@ -53,8 +53,8 @@ public class TaskProcessingRegistryTest
   public void RemoveShouldForgetTask()
   {
     var registry = new TaskProcessingRegistry();
-    var message  = Message("task",
-                           "message");
+    var message = Message("task",
+                          "message");
     var handler = Handler(message);
 
     Assert.That(registry.TryAdd(message,
@@ -111,9 +111,9 @@ public class TaskProcessingRegistryTest
   [Test]
   public void RejectedHandlerShouldNotRemoveTrackedHandler()
   {
-    var registry  = new TaskProcessingRegistry();
-    var message   = Message("task",
-                            "message");
+    var registry = new TaskProcessingRegistry();
+    var message = Message("task",
+                          "message");
     var tracked   = Handler(message);
     var duplicate = Handler(message);
 
@@ -138,8 +138,8 @@ public class TaskProcessingRegistryTest
   public void RemoveOfUnknownEntryShouldDoNothing()
   {
     var registry = new TaskProcessingRegistry();
-    var message  = Message("task",
-                           "message");
+    var message = Message("task",
+                          "message");
     var handler = Handler(message);
 
     Assert.That(registry.TryAdd(message,
@@ -164,8 +164,8 @@ public class TaskProcessingRegistryTest
   public void SnapshotShouldBeACopy()
   {
     var registry = new TaskProcessingRegistry();
-    var message  = Message("task",
-                           "message");
+    var message = Message("task",
+                          "message");
     var handler = Handler(message);
 
     registry.TryAdd(message,
