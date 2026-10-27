@@ -278,6 +278,7 @@ public class TaskTable : ITaskTable
   public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
                                                                      ICollection<string>           dependenciesToRemove,
                                                                      Expression<Func<TaskData, T>> selector,
+                                                                     bool                          recovery          = false,
                                                                      CancellationToken             cancellationToken = default)
   {
     using var _ = Logger.LogFunction();

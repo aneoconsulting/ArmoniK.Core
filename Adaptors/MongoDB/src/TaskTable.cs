@@ -29,8 +29,10 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel;
 using ArmoniK.Core.Base.Exceptions;
 using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 using MongoDB.Driver;
@@ -43,29 +45,40 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 /// <inheritdoc cref="ITaskTable" />
 public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
 {
+  /// <summary>
+  ///   Field storing the id of the last call to <see cref="RemoveRemainingDataDependenciesAsync{T}" /> that updated the
+  ///   task.
+  ///   It is not part of <see cref="TaskData" /> and is ignored during deserialization.
+  /// </summary>
+  private static readonly StringFieldDefinition<TaskData, string> LastDependencyUpdaterField = new("LastDependencyUpdater");
+
+  private readonly IUuidGenerator uuidGenerator_;
+
   /// <inheritdoc />
   public TaskTable(SessionProvider                                         sessionProvider,
                    MongoCollectionProvider<TaskData, TaskDataModelMapping> taskCollectionProvider,
                    ActivitySource                                          activitySource,
-                   ILogger<TaskTable>                                      logger)
+                   [FromKeyedServices(UuidServiceKey.Monotonic)]
+                   IUuidGenerator uuidGenerator,
+                   ILogger<TaskTable> logger)
     : base(sessionProvider,
            taskCollectionProvider,
            activitySource,
            logger)
-  {
-  }
+    => uuidGenerator_ = uuidGenerator;
 
   /// <inheritdoc />
-  private TaskTable(TaskTable taskTable,
-                    bool      readOnly)
+  private TaskTable(TaskTable      taskTable,
+                    IUuidGenerator uuidGenerator,
+                    bool           readOnly)
     : base(taskTable,
            readOnly)
-  {
-  }
+    => uuidGenerator_ = uuidGenerator;
 
   /// <inheritdoc />
   public ITaskTable Secondary
     => new TaskTable(this,
+                     uuidGenerator_,
                      true);
 
   /// <inheritdoc />
@@ -384,6 +397,7 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
   public async IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>                        taskIds,
                                                                            ICollection<string>                        dependenciesToRemove,
                                                                            Expression<Func<TaskData, T>>              selector,
+                                                                           bool                                       recovery          = false,
                                                                            [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     using var activity       = StartActivity();
@@ -408,19 +422,47 @@ public class TaskTable : BaseTable<TaskData, TaskDataModelMapping>, ITaskTable
       update = update.Unset(data => data.RemainingDataDependencies[key]);
     }
 
+    // Several calls can remove dependencies of the same task concurrently, and all of them could then see the task as ready.
+    // To report a ready task only once, each call tags the tasks it updates with a unique id, and only reports the tasks
+    // that still hold its own tag. Tasks are only updated if they still have one of the dependencies to remove,
+    // so no call can update a task after its last dependency has been removed: the call that removed it is the last
+    // one to write the tag, and is thus the only one to report the task as ready.
+    // Tasks created without remaining dependencies (eg: retries) are never tagged, and are reported by every call.
+    // In recovery, the call that removed the last dependency may have failed before enqueueing the task,
+    // so the tag is not checked.
+    var updater = uuidGenerator_.GenerateUuid()
+                                .ToString();
+    update = update.Set(LastDependencyUpdaterField,
+                        updater);
+
+    var filter = Builders<TaskData>.Filter;
+    var updateFilter = filter.And(filter.Where(data => taskIds.Contains(data.TaskId)),
+                                  filter.Or(dependenciesToRemove.Select(dep => filter.Exists($"{nameof(TaskData.RemainingDataDependencies)}.{dep}"))));
+
     Logger.LogDebug("Remove data dependencies {@ResultIds} for tasks {@TaskIds}",
                     dependenciesToRemove,
                     taskIds);
 
     await taskCollection.UpdateManyAsync(sessionHandle,
-                                         data => taskIds.Contains(data.TaskId),
+                                         updateFilter,
                                          update,
                                          cancellationToken: cancellationToken)
                         .ConfigureAwait(false);
 
+    var readyFilter = filter.Where(data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
+                                           data.RemainingDataDependencies == new Dictionary<string, bool>());
+
+    if (!recovery)
+    {
+      readyFilter = filter.And(readyFilter,
+                               filter.Or(filter.Eq(LastDependencyUpdaterField,
+                                                   updater),
+                                         filter.Exists(LastDependencyUpdaterField,
+                                                       false)));
+    }
+
     var readyTasks = taskCollection.Find(sessionHandle,
-                                         data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                                 data.RemainingDataDependencies == new Dictionary<string, bool>())
+                                         readyFilter)
                                    .Project(selector)
                                    .ToAsyncEnumerable(cancellationToken);
 

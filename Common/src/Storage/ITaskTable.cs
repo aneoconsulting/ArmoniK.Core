@@ -270,9 +270,14 @@ public interface ITaskTable : IInitializable
   /// <summary>
   ///   Remove data dependencies from remaining data dependencies, and returns tasks that are ready
   /// </summary>
+  /// <remarks>
+  ///   When several calls remove dependencies of the same task concurrently, implementations may report the task as
+  ///   ready only to the call that removed its last dependency, or to several calls.
+  /// </remarks>
   /// <param name="taskIds">Tasks</param>
   /// <param name="dependenciesToRemove">Dependencies</param>
   /// <param name="selector">Expression to select part of the returned task data</param>
+  /// <param name="recovery">Report all ready tasks, even if another call removed their last dependency</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
   ///   Projected tasks that are ready after the dependencies removal
@@ -280,5 +285,6 @@ public interface ITaskTable : IInitializable
   IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
                                                               ICollection<string>           dependenciesToRemove,
                                                               Expression<Func<TaskData, T>> selector,
+                                                              bool                          recovery          = false,
                                                               CancellationToken             cancellationToken = default);
 }

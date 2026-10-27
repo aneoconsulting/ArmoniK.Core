@@ -508,6 +508,246 @@ public class TaskLifeCycleHelperTest
   }
 
   [Test]
+  public async Task ResolveDependenciesShouldRecoverTasksReleasedByPreviousAttempt([Values] bool recovery)
+  {
+    using var holder = new Holder();
+
+    var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
+                                                               holder.PartitionTable,
+                                                               new List<string>
+                                                               {
+                                                                 Holder.Partition,
+                                                               },
+                                                               holder.Options.ToTaskOptions(),
+                                                               Holder.Partition)
+                                                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+    var results = new List<Result>
+                  {
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "Payload",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Completed,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        DateTime.UtcNow,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                    new(sessionId,
+                        Guid.NewGuid()
+                            .ToString(),
+                        "DataDependency",
+                        "",
+                        "",
+                        "",
+                        ResultStatus.Created,
+                        new List<string>(),
+                        DateTime.UtcNow,
+                        null,
+                        0,
+                        Array.Empty<byte>(),
+                        false),
+                  };
+
+    await holder.ResultTable.Create(results)
+                .ConfigureAwait(false);
+
+    var tasks = new List<TaskCreationRequest>
+                {
+                  new(Guid.NewGuid()
+                          .ToString(),
+                      results[0].ResultId,
+                      holder.Options.ToTaskOptions(),
+                      new List<string>(),
+                      new List<string>
+                      {
+                        results[1].ResultId,
+                      }),
+                };
+
+    var taskId = tasks.Single()
+                      .TaskId;
+
+    await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                          holder.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          tasks,
+                                          NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                   holder.ResultTable,
+                                                   holder.PushQueueStorage,
+                                                   tasks,
+                                                   sessionData,
+                                                   sessionId,
+                                                   NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    await holder.ResultTable.CompleteResult(sessionId,
+                                            results[1].ResultId,
+                                            10,
+                                            Encoding.UTF8.GetBytes("data dependency"))
+                .ConfigureAwait(false);
+
+    // Previous attempt removed the last dependency of the task, but crashed before enqueueing it
+    await holder.TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                {
+                                                                  taskId,
+                                                                },
+                                                                new[]
+                                                                {
+                                                                  results[1].ResultId,
+                                                                },
+                                                                data => data.TaskId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.ResolveDependencies(holder.TaskTable,
+                                                  holder.ResultTable,
+                                                  holder.PushQueueStorage,
+                                                  sessionData,
+                                                  new List<string>
+                                                  {
+                                                    results[1].ResultId,
+                                                  },
+                                                  NullLogger.Instance,
+                                                  recovery)
+                             .ConfigureAwait(false);
+
+    var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                               .ConfigureAwait(false);
+
+    var messages = new List<string>();
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      messages.Add(handler.TaskId);
+    }
+
+    Assert.That(taskData.Status,
+                Is.EqualTo(recovery
+                             ? TaskStatus.Submitted
+                             : TaskStatus.Pending));
+    Assert.That(messages.Count(id => id == taskId),
+                Is.EqualTo(recovery
+                             ? 1
+                             : 0));
+  }
+
+  [Test]
+  public async Task FinalizeTaskCreationShouldRecoverTasksReleasedByPreviousAttempt([Values] bool recovery)
+  {
+    using var holder = new Holder();
+
+    var sessionId = await SessionLifeCycleHelper.CreateSession(holder.SessionTable,
+                                                               holder.PartitionTable,
+                                                               new List<string>
+                                                               {
+                                                                 Holder.Partition,
+                                                               },
+                                                               holder.Options.ToTaskOptions(),
+                                                               Holder.Partition)
+                                                .ConfigureAwait(false);
+
+    var sessionData = await holder.SessionTable.GetSessionAsync(sessionId)
+                                  .ConfigureAwait(false);
+
+    var payload = new Result(sessionId,
+                             Guid.NewGuid()
+                                 .ToString(),
+                             "Payload",
+                             "",
+                             "",
+                             "",
+                             ResultStatus.Completed,
+                             new List<string>(),
+                             DateTime.UtcNow,
+                             DateTime.UtcNow,
+                             0,
+                             Array.Empty<byte>(),
+                             false);
+
+    await holder.ResultTable.Create(new[]
+                                    {
+                                      payload,
+                                    })
+                .ConfigureAwait(false);
+
+    var tasks = new List<TaskCreationRequest>
+                {
+                  new(Guid.NewGuid()
+                          .ToString(),
+                      payload.ResultId,
+                      holder.Options.ToTaskOptions(),
+                      new List<string>(),
+                      new List<string>()),
+                };
+
+    var taskId = tasks.Single()
+                      .TaskId;
+
+    await TaskLifeCycleHelper.CreateTasks(holder.TaskTable,
+                                          holder.ResultTable,
+                                          sessionId,
+                                          sessionId,
+                                          tasks,
+                                          NullLogger.Instance)
+                             .ConfigureAwait(false);
+
+    // Previous attempt removed the last dependency of the task, but crashed before enqueueing it
+    await holder.TaskTable.RemoveRemainingDataDependenciesAsync(new[]
+                                                                {
+                                                                  taskId,
+                                                                },
+                                                                new[]
+                                                                {
+                                                                  payload.ResultId,
+                                                                },
+                                                                data => data.TaskId)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+    await TaskLifeCycleHelper.FinalizeTaskCreation(holder.TaskTable,
+                                                   holder.ResultTable,
+                                                   holder.PushQueueStorage,
+                                                   tasks,
+                                                   sessionData,
+                                                   sessionId,
+                                                   NullLogger.Instance,
+                                                   recovery)
+                             .ConfigureAwait(false);
+
+    var taskData = await holder.TaskTable.ReadTaskAsync(taskId)
+                               .ConfigureAwait(false);
+
+    var messages = new List<string>();
+
+    while (holder.QueueStorage.Channel.Reader.TryRead(out var handler))
+    {
+      messages.Add(handler.TaskId);
+    }
+
+    Assert.That(taskData.Status,
+                Is.EqualTo(recovery
+                             ? TaskStatus.Submitted
+                             : TaskStatus.Pending));
+    Assert.That(messages.Count(id => id == taskId),
+                Is.EqualTo(recovery
+                             ? 1
+                             : 0));
+  }
+
+  [Test]
   public async Task TaskDeletionDuringSubmissionShouldSucceed([Values] bool finalize)
   {
     using var holder = new Holder();

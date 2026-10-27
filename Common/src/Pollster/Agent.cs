@@ -164,12 +164,14 @@ public sealed class Agent : IAgent
                                           cancellationToken)
                     .ConfigureAwait(false);
 
+    // If the task is a retry, a previous attempt may have completed the same results without enqueueing their dependents
     await TaskLifeCycleHelper.ResolveDependencies(taskTable_,
                                                   resultTable_,
                                                   pushQueueStorage_,
                                                   sessionData_,
                                                   resultsToComplete.Keys,
                                                   logger_,
+                                                  taskData_.RetryOfIds.Count > 0,
                                                   cancellationToken)
                              .ConfigureAwait(false);
   }

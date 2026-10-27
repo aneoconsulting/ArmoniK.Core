@@ -416,6 +416,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                     id.ResultId,
                                                   },
                                                   logger_,
+                                                  false,
                                                   context.CancellationToken)
                              .ConfigureAwait(false);
 
@@ -530,6 +531,7 @@ public class GrpcResultsService : Results.ResultsBase
                                                   sessionData,
                                                   resultIds,
                                                   logger_,
+                                                  false,
                                                   context.CancellationToken)
                              .ConfigureAwait(false);
 

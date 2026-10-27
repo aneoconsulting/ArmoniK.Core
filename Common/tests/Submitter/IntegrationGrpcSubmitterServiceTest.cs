@@ -922,6 +922,7 @@ internal class IntegrationGrpcSubmitterServiceTest
     public IAsyncEnumerable<TData> RemoveRemainingDataDependenciesAsync<TData>(ICollection<string>               taskIds,
                                                                                ICollection<string>               dependenciesToRemove,
                                                                                Expression<Func<TaskData, TData>> selector,
+                                                                               bool                              recovery          = false,
                                                                                CancellationToken                 cancellationToken = default)
       => throw new T();
   }
