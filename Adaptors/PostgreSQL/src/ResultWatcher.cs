@@ -31,6 +31,7 @@ using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
 
 using Npgsql.Replication.PgOutput.Messages;
 
@@ -53,7 +54,8 @@ public class ResultWatcher : IResultWatcher, IDisposable
   public ResultWatcher(NpgsqlConnectionProvider connectionProvider,
                        [FromKeyedServices(UuidServiceKey.Monotonic)]
                        IUuidGenerator uuidGenerator,
-                       ActivitySource activitySource)
+                       ActivitySource activitySource,
+                       ILoggerFactory loggerFactory)
   {
     connectionProvider_ = connectionProvider;
     activitySource_     = activitySource;
@@ -74,7 +76,9 @@ public class ResultWatcher : IResultWatcher, IDisposable
                                                                       .ConfigureAwait(false);
                                                       return null;
                                                     },
-                                                    uuidGenerator);
+                                                    uuidGenerator,
+                                                    "results insert",
+                                                    loggerFactory.CreateLogger<WalBroadcaster<Result>>());
 
     updateBroadcaster_ = new WalBroadcaster<Result>(connectionProvider,
                                                     async (message,
@@ -99,7 +103,9 @@ public class ResultWatcher : IResultWatcher, IDisposable
                                                                       .ConfigureAwait(false);
                                                       return null;
                                                     },
-                                                    uuidGenerator);
+                                                    uuidGenerator,
+                                                    "results update",
+                                                    loggerFactory.CreateLogger<WalBroadcaster<Result>>());
   }
 
   /// <inheritdoc />

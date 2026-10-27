@@ -25,6 +25,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Utils.Uuid;
 
+using Microsoft.Extensions.Logging;
+
 using Npgsql.Replication;
 using Npgsql.Replication.PgOutput;
 using Npgsql.Replication.PgOutput.Messages;
@@ -55,6 +57,8 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
   // Every section under this lock is synchronous: a plain lock is enough, and it needs no disposal.
   private readonly Lock                                                          lock_ = new();
+  private readonly ILogger                                                       logger_;
+  private readonly string                                                        name_;
   private readonly NpgsqlConnectionProvider                                      provider_;
   private readonly Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse_;
   private readonly IUuidGenerator                                                uuidGenerator_;
@@ -65,8 +69,12 @@ internal sealed class WalBroadcaster<T> : IDisposable
 
   internal WalBroadcaster(NpgsqlConnectionProvider                                      provider,
                           Func<PgOutputReplicationMessage, CancellationToken, Task<T?>> tryParse,
-                          IUuidGenerator                                                uuidGenerator)
+                          IUuidGenerator                                                uuidGenerator,
+                          string                                                        name,
+                          ILogger<WalBroadcaster<T>>                                    logger)
   {
+    name_          = name;
+    logger_        = logger;
     provider_      = provider;
     tryParse_      = tryParse;
     uuidGenerator_ = uuidGenerator;
@@ -270,14 +278,23 @@ internal sealed class WalBroadcaster<T> : IDisposable
         replConn.SetReplicationStatus(message.WalEnd);
       }
     }
-    catch (OperationCanceledException)
+    catch (OperationCanceledException ex)
     {
       // Normal shutdown (generation cancelled) or server-side connection reset
       // (e.g. wal_sender_timeout) — Npgsql raises OperationCanceledException in
       // both cases. Complete channels cleanly so consumers can reconnect.
+      if (!cancellationToken.IsCancellationRequested)
+      {
+        logger_.LogWarning(ex,
+                           "WAL replication for {broadcaster} was interrupted by the server",
+                           name_);
+      }
     }
     catch (Exception ex)
     {
+      logger_.LogError(ex,
+                       "WAL replication for {broadcaster} failed",
+                       name_);
       // Slot creation or streaming failed — unblock any waiting SubscribeAsync callers.
       generation.SlotReady.TrySetException(ex);
       loopException = ex;
