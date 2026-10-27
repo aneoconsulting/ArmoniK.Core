@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -26,15 +27,16 @@ namespace ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 public interface ITaskProcessingChecker
 {
   /// <summary>
-  ///   Check if the task is running on the given pod
+  ///   Get the queue messages from which the task is running on the given pod
   /// </summary>
   /// <param name="taskId">id of the task to check</param>
   /// <param name="ownerPodId">Id of the pod which should execute the task</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
   /// <returns>
-  ///   A bool representing whether or not the task is running on the pod
+  ///   The ids of the messages from which the task is running on the pod, empty if the task is not running on the pod
+  ///   or if the pod cannot be reached
   /// </returns>
-  Task<bool> Check(string            taskId,
-                   string            ownerPodId,
-                   CancellationToken cancellationToken);
+  Task<IReadOnlyCollection<string>> GetProcessingMessageIds(string            taskId,
+                                                            string            ownerPodId,
+                                                            CancellationToken cancellationToken);
 }

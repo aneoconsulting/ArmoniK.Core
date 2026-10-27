@@ -356,10 +356,10 @@ public sealed class TaskHandler : IAsyncDisposable
                          await Task.Delay(delayMessage_.Value,
                                           exceptionManager_.EarlyCancellationToken)
                                    .ConfigureAwait(false);
-                       } while (await taskProcessingChecker_.Check(taskData_.TaskId,
-                                                                   taskData_.OwnerPodId,
-                                                                   exceptionManager_.EarlyCancellationToken)
-                                                            .ConfigureAwait(false));
+                       } while ((await taskProcessingChecker_.GetProcessingMessageIds(taskData_.TaskId,
+                                                                                      taskData_.OwnerPodId,
+                                                                                      exceptionManager_.EarlyCancellationToken)
+                                                             .ConfigureAwait(false)).Count > 0);
 
                        logger_.LogDebug("Other pod is not processing anymore {Task}: MessageHandler is released with status {Status}",
                                         taskData_.TaskId,
@@ -642,10 +642,11 @@ public sealed class TaskHandler : IAsyncDisposable
           if (taskData_.OwnerPodId != ownerPodId_)
           {
             // if the task is acquired by another pod, we check if the task is running on the other pod
-            var taskProcessingElsewhere = await taskProcessingChecker_.Check(taskData_.TaskId,
-                                                                             taskData_.OwnerPodId,
-                                                                             CancellationToken.None)
-                                                                      .ConfigureAwait(false);
+            var processingMessageIds = await taskProcessingChecker_.GetProcessingMessageIds(taskData_.TaskId,
+                                                                                           taskData_.OwnerPodId,
+                                                                                           CancellationToken.None)
+                                                                   .ConfigureAwait(false);
+            var taskProcessingElsewhere = processingMessageIds.Count > 0;
 
             logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}, treating it {processing}",
                                    taskData_.TaskId,
@@ -695,7 +696,17 @@ public sealed class TaskHandler : IAsyncDisposable
                 return AcquisitionStatus.TaskIsProcessingButSeemsCrashed;
               }
             }
-            // task is processing elsewhere so message is duplicated
+            // task is processing elsewhere from another message, so this message is a duplicate that can be removed:
+            // the other pod still holds its own message, which is redelivered if the other pod crashes
+            else if (!processingMessageIds.Contains(messageHandler_.MessageId))
+            {
+              logger_.LogInformation("Task {taskId} is processing by {OtherOwnerPodId} from another message, remove the duplicate message",
+                                     taskData_.TaskId,
+                                     taskData_.OwnerPodId);
+              messageHandler_.Status = QueueMessageStatus.Processed;
+              return AcquisitionStatus.TaskIsProcessingElsewhereFromAnotherMessage;
+            }
+            // task is processing elsewhere from this message, which has been redelivered
             else
             {
               // if the task is running elsewhere, we delayed the release of the message to let time
@@ -780,10 +791,11 @@ public sealed class TaskHandler : IAsyncDisposable
       if (taskData_.OwnerPodId != ownerPodId_)
       {
         // if the task is acquired by another pod, we check if the task is running on the other pod
-        var taskProcessingElsewhere = await taskProcessingChecker_.Check(taskData_.TaskId,
-                                                                         taskData_.OwnerPodId,
-                                                                         CancellationToken.None)
-                                                                  .ConfigureAwait(false);
+        var processingMessageIds = await taskProcessingChecker_.GetProcessingMessageIds(taskData_.TaskId,
+                                                                                       taskData_.OwnerPodId,
+                                                                                       CancellationToken.None)
+                                                               .ConfigureAwait(false);
+        var taskProcessingElsewhere = processingMessageIds.Count > 0;
 
         logger_.LogInformation("Task {taskId} already acquired by {OtherOwnerPodId}, treating it {processing}",
                                taskData_.TaskId,
@@ -870,8 +882,19 @@ public sealed class TaskHandler : IAsyncDisposable
           }
         }
 
-        // if the task is running elsewhere, we delayed the release of the message to let time
-        // for the other pod to either complete the task, or finish crashing.
+        // if the task is running elsewhere from another message, this message is a duplicate that can be removed:
+        // the other pod still holds its own message, which is redelivered if the other pod crashes
+        if (taskProcessingElsewhere && !processingMessageIds.Contains(messageHandler_.MessageId))
+        {
+          logger_.LogInformation("Task {taskId} is processing by {OtherOwnerPodId} from another message, remove the duplicate message",
+                                 taskData_.TaskId,
+                                 taskData_.OwnerPodId);
+          messageHandler_.Status = QueueMessageStatus.Processed;
+          return AcquisitionStatus.AcquisitionFailedProcessingElsewhereFromAnotherMessage;
+        }
+
+        // if the task is running elsewhere from this message, which has been redelivered, we delayed the release of the
+        // message to let time for the other pod to either complete the task, or finish crashing.
         // If the other pod is still processing the task the next time, it will loop on this check
         // until the pod finishes or crashes.
         logger_.LogInformation("Task {taskId} is still processing by {OtherOwnerPodId}, delay the requeue of the message for {MessageDelay}",

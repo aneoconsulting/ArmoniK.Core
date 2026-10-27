@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -24,8 +25,8 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 internal class HelperTaskProcessingChecker : ITaskProcessingChecker
 {
-  public Task<bool> Check(string            taskId,
-                          string            ownerPodId,
-                          CancellationToken cancellationToken)
-    => Task.FromResult(true);
+  public Task<IReadOnlyCollection<string>> GetProcessingMessageIds(string            taskId,
+                                                                   string            ownerPodId,
+                                                                   CancellationToken cancellationToken)
+    => Task.FromResult<IReadOnlyCollection<string>>(["message"]);
 }

@@ -690,49 +690,52 @@ public class TaskHandlerTest
                                          TaskStatus         TaskStatus,
                                          QueueMessageStatus MessageStatus);
 
+  private static TaskData AcquireTaskData()
+    => new TaskData("session",
+                    Guid.NewGuid()
+                        .ToString(),
+                    "ownerpodid",
+                    "ownerpodname",
+                    "payload",
+                    new List<string>(),
+                    new List<string>(),
+                    new Dictionary<string, bool>(),
+                    new List<string>(),
+                    "init",
+                    "createdby",
+                    new List<string>(),
+                    TaskStatus.Creating,
+                    "",
+                    new TaskOptions(new Dictionary<string, string>(),
+                                    TimeSpan.FromMinutes(4),
+                                    2,
+                                    1,
+                                    "part1",
+                                    "",
+                                    "",
+                                    "",
+                                    "",
+                                    ""),
+                    DateTime.Now,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    null,
+                    new Output(OutputStatus.Error,
+                               ""));
+
   public static IEnumerable TestCaseAcquireTask
   {
     get
     {
-      var taskData = new TaskData("session",
-                                  Guid.NewGuid()
-                                      .ToString(),
-                                  "ownerpodid",
-                                  "ownerpodname",
-                                  "payload",
-                                  new List<string>(),
-                                  new List<string>(),
-                                  new Dictionary<string, bool>(),
-                                  new List<string>(),
-                                  "init",
-                                  "createdby",
-                                  new List<string>(),
-                                  TaskStatus.Creating,
-                                  "",
-                                  new TaskOptions(new Dictionary<string, string>(),
-                                                  TimeSpan.FromMinutes(4),
-                                                  2,
-                                                  1,
-                                                  "part1",
-                                                  "",
-                                                  "",
-                                                  "",
-                                                  "",
-                                                  ""),
-                                  DateTime.Now,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  null,
-                                  new Output(OutputStatus.Error,
-                                             ""));
+      var taskData = AcquireTaskData();
 
       yield return new TestCaseData(taskData with
                                     {
@@ -923,8 +926,46 @@ public class TaskHandlerTest
 
   [Test]
   [TestCaseSource(nameof(TestCaseAcquireTask))]
-  public async Task<AcquireTaskReturn> AcquireStatusShouldFail(TaskData taskData,
-                                                               bool     check)
+  public Task<AcquireTaskReturn> AcquireStatusShouldFail(TaskData taskData,
+                                                         bool     check)
+    => AcquireTask(taskData,
+                   messageId => check
+                                  ? [messageId]
+                                  : []);
+
+  public static IEnumerable TestCaseAcquireTaskProcessingElsewhereFromAnotherMessage
+  {
+    get
+    {
+      var taskData = AcquireTaskData() with
+                     {
+                       Status = TaskStatus.Processing,
+                       OwnerPodId = "anotherowner",
+                     };
+
+      yield return new TestCaseData(taskData).Returns(new AcquireTaskReturn(AcquisitionStatus.TaskIsProcessingElsewhereFromAnotherMessage,
+                                                                            TaskStatus.Processing,
+                                                                            QueueMessageStatus.Processed))
+                                             .SetArgDisplayNames("Processing task on another agent");
+
+      yield return new TestCaseData(taskData with
+                                    {
+                                      Status = TaskStatus.Dispatched,
+                                    }).Returns(new AcquireTaskReturn(AcquisitionStatus.AcquisitionFailedProcessingElsewhereFromAnotherMessage,
+                                                                     TaskStatus.Dispatched,
+                                                                     QueueMessageStatus.Processed))
+                                      .SetArgDisplayNames("Dispatched task on another agent");
+    }
+  }
+
+  [Test]
+  [TestCaseSource(nameof(TestCaseAcquireTaskProcessingElsewhereFromAnotherMessage))]
+  public Task<AcquireTaskReturn> AcquireShouldRemoveMessageWhenTaskIsProcessingElsewhereFromAnotherMessage(TaskData taskData)
+    => AcquireTask(taskData,
+                   _ => ["anotherMessage"]);
+
+  private static async Task<AcquireTaskReturn> AcquireTask(TaskData               taskData,
+                                                           Func<string, string[]> processingMessageIds)
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -937,10 +978,10 @@ public class TaskHandlerTest
     var mockStreamHandler         = new Mock<IWorkerStreamHandler>();
     var mockAgentHandler          = new Mock<IAgentHandler>();
     var mockTaskProcessingChecker = new Mock<ITaskProcessingChecker>();
-    mockTaskProcessingChecker.Setup(checker => checker.Check(It.IsAny<string>(),
-                                                             It.IsAny<string>(),
-                                                             It.IsAny<CancellationToken>()))
-                             .Returns(Task.FromResult(check));
+    mockTaskProcessingChecker.Setup(checker => checker.GetProcessingMessageIds(It.IsAny<string>(),
+                                                                               It.IsAny<string>(),
+                                                                               It.IsAny<CancellationToken>()))
+                             .ReturnsAsync(processingMessageIds(sqmh.MessageId));
     using var testServiceProvider = new TestTaskHandlerProvider(mockStreamHandler.Object,
                                                                 mockAgentHandler.Object,
                                                                 sqmh,
@@ -2882,13 +2923,17 @@ public class TaskHandlerTest
     var checkResult           = true;
     var tcs                   = new TaskCompletionSource();
     var taskProcessingChecker = new Mock<ITaskProcessingChecker>();
-    taskProcessingChecker.Setup(checker => checker.Check(It.IsAny<string>(),
-                                                         It.IsAny<string>(),
-                                                         It.IsAny<CancellationToken>()))
-                         .ReturnsAsync(() => checkResult);
+    taskProcessingChecker.Setup(checker => checker.GetProcessingMessageIds(It.IsAny<string>(),
+                                                                           It.IsAny<string>(),
+                                                                           It.IsAny<CancellationToken>()))
+                         .ReturnsAsync(() => checkResult
+                                               ? ["message"]
+                                               : []);
 
     var qmh = new Mock<IQueueMessageHandler>().SetupProperty(m => m.Status,
                                                              QueueMessageStatus.Waiting);
+    qmh.Setup(m => m.MessageId)
+       .Returns("message");
 
     var conf = new Dictionary<string, string>
                {
