@@ -98,7 +98,7 @@ public sealed class ParentChoice
     => Kind switch
        {
          ParentChoiceKind.Zipf => $"zipf:{Exponent.ToString("R", CultureInfo.InvariantCulture)}",
-         _                     => Kind.ToString()
-                                      .ToLowerInvariant(),
+         _ => Kind.ToString()
+                  .ToLowerInvariant(),
        };
 }

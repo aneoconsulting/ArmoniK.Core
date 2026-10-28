@@ -98,9 +98,20 @@ public class LevelShapeTest
                    Is.EqualTo(expected));
 
   [Test]
-  public void SplitShouldGiveAtLeastOneTaskPerLevel([Values("uniform", "increasing", "decreasing", "1,1000")] string shape,
-                                                    [Values(1, 2, 7, 100)]                                    int    tasks,
-                                                    [Values(1, 2, 5)]                                         int    levels)
+  public void SplitShouldGiveAtLeastOneTaskPerLevel([Values("uniform",
+                                                            "increasing",
+                                                            "decreasing",
+                                                            "1,1000")]
+                                                    string shape,
+                                                    [Values(1,
+                                                            2,
+                                                            7,
+                                                            100)]
+                                                    int tasks,
+                                                    [Values(1,
+                                                            2,
+                                                            5)]
+                                                    int levels)
   {
     levels = Math.Min(levels,
                       tasks);

@@ -240,8 +240,15 @@ public class GraphGeneratorTest
   }
 
   [Test]
-  public void DependenciesShouldPointToEarlierLevelsOfTheSameGraph([Values("uniform", "zipf:1.5", "zipf:5", "local")] string parentChoice,
-                                                                   [Values(0, 0.5, 1)]                                double skipLevels)
+  public void DependenciesShouldPointToEarlierLevelsOfTheSameGraph([Values("uniform",
+                                                                           "zipf:1.5",
+                                                                           "zipf:5",
+                                                                           "local")]
+                                                                   string parentChoice,
+                                                                   [Values(0,
+                                                                           0.5,
+                                                                           1)]
+                                                                   double skipLevels)
   {
     var settings = Settings(graphTasks: "uniform:1:60",
                             levels: 5,
@@ -293,7 +300,7 @@ public class GraphGeneratorTest
     Assert.That(graph.LevelSizes,
                 Is.EqualTo(Enumerable.Repeat(2,
                                              3)));
-    Assert.That(graph.Tasks.Where(t => t.Level > 0),
+    Assert.That(graph.Tasks.Where(t => t.Level                       > 0),
                 Has.All.Matches<GraphTask>(t => t.Dependencies.Count == 2));
 
     var skipping = GraphGenerator.GenerateRoot(settings with
@@ -301,12 +308,16 @@ public class GraphGeneratorTest
                                                  SkipLevels = 0.5,
                                                },
                                                6);
-    Assert.That(skipping.Tasks.Where(t => t.Level == 2),
+    Assert.That(skipping.Tasks.Where(t => t.Level                    == 2),
                 Has.All.Matches<GraphTask>(t => t.Dependencies.Count == 4));
   }
 
   [Test]
-  public void SubGraphShouldEndWithASingleAggregator([Values(1, 2, 3, 6)] int levels)
+  public void SubGraphShouldEndWithASingleAggregator([Values(1,
+                                                             2,
+                                                             3,
+                                                             6)]
+                                                     int levels)
   {
     var settings = Settings(graphTasks: "uniform:1:30",
                             levels: levels,
