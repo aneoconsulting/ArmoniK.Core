@@ -28,7 +28,10 @@ namespace ArmoniK.Samples.Graph.Common;
 /// <param name="Position">Logical position of the task, see <see cref="GraphTask.Position" /></param>
 /// <param name="Budget">Budget of the task, see <see cref="GraphTask.Budget" /></param>
 /// <param name="DurationMs">Time the task sleeps, in milliseconds</param>
-/// <param name="OutputSize">Size in bytes of the output of the task (written by the aggregator of its sub-graph when it expands)</param>
+/// <param name="OutputSize">
+///   Size in bytes of the output of the task (written by the aggregator of its sub-graph when it
+///   expands)
+/// </param>
 /// <param name="Dependencies">Expected size in bytes of each data dependency, by result id</param>
 public sealed record TaskPayload(string                   Position,
                                  int                      Budget,

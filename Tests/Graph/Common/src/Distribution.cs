@@ -140,7 +140,8 @@ public sealed class Distribution
         continue;
       }
 
-      var name  = token[..eq].Trim();
+      var name = token[..eq]
+        .Trim();
       var value = ParseNumber(token[(eq + 1)..],
                               text);
       switch (name.ToLowerInvariant())
@@ -161,11 +162,11 @@ public sealed class Distribution
                .ToLowerInvariant() switch
                {
                  "const" or "constant" => DistributionKind.Const,
-                 "uniform"             => DistributionKind.Uniform,
-                 "normal"              => DistributionKind.Normal,
-                 "lognormal"           => DistributionKind.LogNormal,
+                 "uniform" => DistributionKind.Uniform,
+                 "normal" => DistributionKind.Normal,
+                 "lognormal" => DistributionKind.LogNormal,
                  "exponential" or "exp" => DistributionKind.Exponential,
-                 "poisson"             => DistributionKind.Poisson,
+                 "poisson" => DistributionKind.Poisson,
                  _ => throw new FormatException($"Unknown distribution '{tokens[0]}' in '{text}', expected const, uniform, normal, lognormal, exponential or poisson"),
                };
 
@@ -182,21 +183,21 @@ public sealed class Distribution
       throw new FormatException($"Distribution '{text}' expects {expected} parameter(s), got {parameters.Count}");
     }
 
-    var first  = parameters[0];
+    var first = parameters[0];
     var second = expected > 1
                    ? parameters[1]
                    : 0;
 
     var error = kind switch
                 {
-                  DistributionKind.Uniform when first > second => "MIN must be lower or equal to MAX",
-                  DistributionKind.Normal when second < 0      => "STDDEV must be positive",
-                  DistributionKind.LogNormal when first <= 0   => "MEDIAN must be strictly positive",
-                  DistributionKind.LogNormal when second < 0   => "SHAPE must be positive",
-                  DistributionKind.Exponential when first <= 0 => "MEAN must be strictly positive",
-                  DistributionKind.Poisson when first < 0      => "MEAN must be positive",
-                  _ when min > max                             => "min must be lower or equal to max",
-                  _                                            => null,
+                  DistributionKind.Uniform when first     > second => "MIN must be lower or equal to MAX",
+                  DistributionKind.Normal when second     < 0      => "STDDEV must be positive",
+                  DistributionKind.LogNormal when first   <= 0     => "MEDIAN must be strictly positive",
+                  DistributionKind.LogNormal when second  < 0      => "SHAPE must be positive",
+                  DistributionKind.Exponential when first <= 0     => "MEAN must be strictly positive",
+                  DistributionKind.Poisson when first     < 0      => "MEAN must be positive",
+                  _ when min                              > max    => "min must be lower or equal to max",
+                  _                                                => null,
                 };
 
     if (error is not null)
@@ -224,8 +225,8 @@ public sealed class Distribution
                 {
                   DistributionKind.Const       => First,
                   DistributionKind.Uniform     => First + (Second - First) * random.NextDouble(),
-                  DistributionKind.Normal      => First + Second * random.NextStandardNormal(),
-                  DistributionKind.LogNormal   => First * Math.Exp(Second * random.NextStandardNormal()),
+                  DistributionKind.Normal      => First + Second           * random.NextStandardNormal(),
+                  DistributionKind.LogNormal   => First  * Math.Exp(Second * random.NextStandardNormal()),
                   DistributionKind.Exponential => -First * Math.Log(random.NextDoubleNonZero()),
                   DistributionKind.Poisson     => SamplePoisson(random),
                   _                            => throw new InvalidOperationException($"Unknown distribution kind {Kind}"),

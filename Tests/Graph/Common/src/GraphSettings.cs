@@ -115,7 +115,7 @@ public sealed record GraphSettings(ulong        Seed,
                              levels,
                              LevelShape.Parse(tasksPerLevel),
                              Distribution.Parse(dependenciesPerTask),
-                             Common.ParentChoice.Parse(parentChoice),
+                             ParentChoice.Parse(parentChoice),
                              skipLevels,
                              Distribution.Parse(taskDuration),
                              Distribution.Parse(outputSize));

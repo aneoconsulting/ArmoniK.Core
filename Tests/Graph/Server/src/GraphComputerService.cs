@@ -142,7 +142,8 @@ public class GraphComputerService : WorkerStreamWrapper
   {
     if (taskHandler.DataDependencies.Count != payload.Dependencies.Count)
     {
-      throw new InvalidOperationException($"Task {payload.Position} expects {payload.Dependencies.Count} data dependencies but received {taskHandler.DataDependencies.Count}");
+      throw new
+        InvalidOperationException($"Task {payload.Position} expects {payload.Dependencies.Count} data dependencies but received {taskHandler.DataDependencies.Count}");
     }
 
     foreach (var (id, size) in payload.Dependencies)

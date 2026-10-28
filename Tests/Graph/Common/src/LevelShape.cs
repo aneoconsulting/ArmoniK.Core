@@ -73,7 +73,8 @@ public sealed class LevelShape
                                                       CultureInfo.InvariantCulture,
                                                       out var value) && double.IsFinite(value) && value > 0
                                         ? value
-                                        : throw new FormatException($"Invalid TasksPerLevel '{text}': expected uniform, increasing, decreasing or a comma separated list of strictly positive weights"))
+                                        : throw new
+                                            FormatException($"Invalid TasksPerLevel '{text}': expected uniform, increasing, decreasing or a comma separated list of strictly positive weights"))
                          .ToArray();
 
     return new LevelShape(string.Join(",",
@@ -158,7 +159,7 @@ public sealed class LevelShape
     => Name switch
        {
          "uniform"    => _ => 1.0,
-         "increasing" => l => l + 1.0,
+         "increasing" => l => l      + 1.0,
          "decreasing" => l => levels - l,
          _ => l => weights_[Math.Min(l,
                                      weights_.Length - 1)],

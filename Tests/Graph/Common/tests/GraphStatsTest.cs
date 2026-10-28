@@ -152,7 +152,7 @@ public class GraphStatsTest
                                             6);
     var ids = graph.Tasks.Select(t => $"result-{t.Id}")
                    .ToList();
-    var task    = graph.Tasks[^1];
+    var task = graph.Tasks[^1];
     var payload = TaskPayload.Create(graph,
                                      task,
                                      ids);

@@ -185,8 +185,8 @@ internal static class Program
                                                                                                         DefaultTaskOption = new TaskOptions
                                                                                                                             {
                                                                                                                               MaxDuration =
-                                                                                                                                Duration.FromTimeSpan(TimeSpan
-                                                                                                                                                        .FromHours(1)),
+                                                                                                                                Duration
+                                                                                                                                  .FromTimeSpan(TimeSpan.FromHours(1)),
                                                                                                                               MaxRetries  = graphOptions.MaxRetries,
                                                                                                                               Priority    = 1,
                                                                                                                               PartitionId = graphOptions.Partition,
@@ -232,19 +232,24 @@ internal static class Program
     var resultIds = new string[root.Tasks.Count];
     foreach (var chunk in root.Tasks.Chunk(graphOptions.BatchSize))
     {
-      var created = await channelPool.WithInstanceAsync(async channel => await new Results.ResultsClient(channel).CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
-                                                                                                                                                {
-                                                                                                                                                  SessionId = sessionId,
-                                                                                                                                                  Results =
-                                                                                                                                                  {
-                                                                                                                                                    chunk.Select(task => new CreateResultsMetaDataRequest
-                                                                                                                                                                         .Types.ResultCreate
-                                                                                                                                                                         {
-                                                                                                                                                                           Name = task.Position,
-                                                                                                                                                                         }),
-                                                                                                                                                  },
-                                                                                                                                                }),
-                                                      CancellationToken.None)
+      var created = await channelPool.WithInstanceAsync(async channel
+                                                          => await new Results.ResultsClient(channel).CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
+                                                                                                                                 {
+                                                                                                                                   SessionId = sessionId,
+                                                                                                                                   Results =
+                                                                                                                                   {
+                                                                                                                                     chunk.Select(task
+                                                                                                                                                    => new
+                                                                                                                                                       CreateResultsMetaDataRequest
+                                                                                                                                                       .Types.
+                                                                                                                                                       ResultCreate
+                                                                                                                                                       {
+                                                                                                                                                         Name = task
+                                                                                                                                                           .Position,
+                                                                                                                                                       }),
+                                                                                                                                   },
+                                                                                                                                 }),
+                                                        CancellationToken.None)
                                      .ConfigureAwait(false);
       var idByName = created.Results.ToDictionary(result => result.Name,
                                                   result => result.ResultId);
@@ -271,18 +276,20 @@ internal static class Program
                                                                                                                          SessionId = sessionId,
                                                                                                                          Results =
                                                                                                                          {
-                                                                                                                           chunk.Select(task => new CreateResultsRequest.Types
-                                                                                                                                                .ResultCreate
-                                                                                                                                                {
-                                                                                                                                                  Name =
-                                                                                                                                                    $"payload {task.Position}",
-                                                                                                                                                  Data = UnsafeByteOperations
-                                                                                                                                                    .UnsafeWrap(TaskPayload
-                                                                                                                                                                .Create(root,
-                                                                                                                                                                        task,
-                                                                                                                                                                        resultIds)
-                                                                                                                                                                .Serialize()),
-                                                                                                                                                }),
+                                                                                                                           chunk.Select(task
+                                                                                                                                          => new CreateResultsRequest.
+                                                                                                                                             Types.ResultCreate
+                                                                                                                                             {
+                                                                                                                                               Name =
+                                                                                                                                                 $"payload {task.Position}",
+                                                                                                                                               Data =
+                                                                                                                                                 UnsafeByteOperations
+                                                                                                                                                   .UnsafeWrap(TaskPayload
+                                                                                                                                                               .Create(root,
+                                                                                                                                                                       task,
+                                                                                                                                                                       resultIds)
+                                                                                                                                                               .Serialize()),
+                                                                                                                                             }),
                                                                                                                          },
                                                                                                                        });
                                             var payloadIds = payloads.Results.ToDictionary(result => result.Name,
@@ -293,24 +300,25 @@ internal static class Program
                                                                                                                     SessionId = sessionId,
                                                                                                                     TaskCreations =
                                                                                                                     {
-                                                                                                                      chunk.Select(task => new SubmitTasksRequest.Types
-                                                                                                                                           .TaskCreation
-                                                                                                                                           {
-                                                                                                                                             PayloadId =
-                                                                                                                                               payloadIds
-                                                                                                                                                 [$"payload {task.Position}"],
-                                                                                                                                             ExpectedOutputKeys =
-                                                                                                                                             {
-                                                                                                                                               resultIds[task.Id],
-                                                                                                                                             },
-                                                                                                                                             DataDependencies =
-                                                                                                                                             {
-                                                                                                                                               task.Dependencies
-                                                                                                                                                   .Select(dependency =>
-                                                                                                                                                             resultIds
-                                                                                                                                                               [dependency]),
-                                                                                                                                             },
-                                                                                                                                           }),
+                                                                                                                      chunk.Select(task
+                                                                                                                                     => new SubmitTasksRequest.Types.
+                                                                                                                                        TaskCreation
+                                                                                                                                        {
+                                                                                                                                          PayloadId =
+                                                                                                                                            payloadIds
+                                                                                                                                              [$"payload {task.Position}"],
+                                                                                                                                          ExpectedOutputKeys =
+                                                                                                                                          {
+                                                                                                                                            resultIds[task.Id],
+                                                                                                                                          },
+                                                                                                                                          DataDependencies =
+                                                                                                                                          {
+                                                                                                                                            task.Dependencies
+                                                                                                                                                .Select(dependency
+                                                                                                                                                          => resultIds
+                                                                                                                                                            [dependency]),
+                                                                                                                                          },
+                                                                                                                                        }),
                                                                                                                     },
                                                                                                                   });
 
@@ -333,18 +341,18 @@ internal static class Program
                           submissionTime);
 
     // 3. Wait until every task is in a final status, by polling the task counts of the session
-    var                          outcome      = "timeout";
-    var                          lastProgress = Stopwatch.GetTimestamp();
-    IReadOnlyDictionary<TaskStatus, int> counts = new Dictionary<TaskStatus, int>();
+    var                                  outcome      = "timeout";
+    var                                  lastProgress = Stopwatch.GetTimestamp();
+    IReadOnlyDictionary<TaskStatus, int> counts       = new Dictionary<TaskStatus, int>();
     while (Stopwatch.GetElapsedTime(submissionStart) < graphOptions.Timeout)
     {
       counts = await channelPool.WithInstanceAsync(async channel => await CountTasksAsync(channel,
                                                                                           sessionId)
-                                                                     .ConfigureAwait(false),
+                                                                      .ConfigureAwait(false),
                                                    CancellationToken.None)
                                 .ConfigureAwait(false);
 
-      var final  = FinalStatuses.Sum(status => counts.GetValueOrDefault(status));
+      var final = FinalStatuses.Sum(status => counts.GetValueOrDefault(status));
       var active = counts.Where(pair => !FinalStatuses.Contains(pair.Key) && pair.Key != TaskStatus.Retried)
                          .Sum(pair => pair.Value);
       var failed = final - counts.GetValueOrDefault(TaskStatus.Completed);
@@ -443,20 +451,20 @@ internal static class Program
 
     var result = new Dictionary<string, object>
                  {
-                   ["SessionId"]         = sessionId,
-                   ["Outcome"]           = outcome,
-                   ["Success"]           = success,
-                   ["NTasks"]            = graphOptions.NTasks,
-                   ["Settings"]          = settings.ToOptions(),
-                   ["Stats"]             = stats,
-                   ["GenerationMs"]      = generationTime.TotalMilliseconds,
-                   ["SubmissionMs"]      = submissionTime.TotalMilliseconds,
-                   ["WallClockMs"]       = wallClock.TotalMilliseconds,
+                   ["SessionId"]                = sessionId,
+                   ["Outcome"]                  = outcome,
+                   ["Success"]                  = success,
+                   ["NTasks"]                   = graphOptions.NTasks,
+                   ["Settings"]                 = settings.ToOptions(),
+                   ["Stats"]                    = stats,
+                   ["GenerationMs"]             = generationTime.TotalMilliseconds,
+                   ["SubmissionMs"]             = submissionTime.TotalMilliseconds,
+                   ["WallClockMs"]              = wallClock.TotalMilliseconds,
                    ["ThroughputTasksPerSecond"] = throughput,
-                   ["MinimumDurationMs"] = stats.MinimumDurationMs,
-                   ["Completed"]         = completed,
-                   ["Errors"]            = errors,
-                   ["TotalCounted"]      = total,
+                   ["MinimumDurationMs"]        = stats.MinimumDurationMs,
+                   ["Completed"]                = completed,
+                   ["Errors"]                   = errors,
+                   ["TotalCounted"]             = total,
                    ["CountsByStatus"] = counts.ToDictionary(pair => pair.Key.ToString(),
                                                             pair => pair.Value),
                  };
@@ -495,8 +503,7 @@ internal static class Program
                                                                                                            {
                                                                                                              TaskSummaryField = new TaskSummaryField
                                                                                                                                 {
-                                                                                                                                  Field = TaskSummaryEnumField
-                                                                                                                                    .SessionId,
+                                                                                                                                  Field = TaskSummaryEnumField.SessionId,
                                                                                                                                 },
                                                                                                            },
                                                                                                  },

@@ -135,8 +135,8 @@ public sealed record GraphStats(long TotalTasks,
         totalTasks++;
         totalDurationMs += task.DurationMs;
         edges           += task.Dependencies.Count;
-        maxDependencies =  Math.Max(maxDependencies,
-                                    task.Dependencies.Count);
+        maxDependencies = Math.Max(maxDependencies,
+                                   task.Dependencies.Count);
         foreach (var dependency in task.Dependencies)
         {
           dependents[dependency]++;
@@ -168,8 +168,8 @@ public sealed record GraphStats(long TotalTasks,
       else
       {
         var parent = stack.Peek();
-        parent.SubGraphPaths ??= new Dictionary<int, Path>();
-        parent.SubGraphPaths[frame.ParentTask] = path;
+        parent.SubGraphPaths                   ??= new Dictionary<int, Path>();
+        parent.SubGraphPaths[frame.ParentTask] =   path;
       }
     }
 

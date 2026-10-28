@@ -228,7 +228,7 @@ public static class GraphGenerator
       var levels = Math.Max(2,
                             Math.Min(settings.Levels,
                                      n));
-      levelSizes = settings.TasksPerLevel.Split(n - 1,
+      levelSizes = settings.TasksPerLevel.Split(n      - 1,
                                                 levels - 1)
                            .Append(1)
                            .ToArray();
@@ -344,10 +344,10 @@ public static class GraphGenerator
   /// </summary>
   private sealed class DependencyChooser
   {
-    private readonly int[]                   levelSizes_;
-    private readonly int[]                   levelStarts_;
-    private readonly DeterministicRandom     random_;
-    private readonly GraphSettings           settings_;
+    private readonly int[]                     levelSizes_;
+    private readonly int[]                     levelStarts_;
+    private readonly DeterministicRandom       random_;
+    private readonly GraphSettings             settings_;
     private readonly Dictionary<int, double[]> zipfCdfs_ = new();
 
     public DependencyChooser(GraphSettings       settings,
@@ -512,9 +512,9 @@ public static class GraphGenerator
       var sum = 0.0;
       for (var r = 0; r < size; r++)
       {
-        sum    += 1.0 / Math.Pow(r + 1,
-                                 settings_.ParentChoice.Exponent);
-        cdf[r] =  sum;
+        sum += 1.0 / Math.Pow(r + 1,
+                              settings_.ParentChoice.Exponent);
+        cdf[r] = sum;
       }
 
       zipfCdfs_[size] = cdf;
