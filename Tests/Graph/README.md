@@ -44,7 +44,9 @@ without options, so every worker sees exactly the client's settings. Each task h
 position, `level.index` for each nesting joined by `/` (`2.17/0.3` is task 3 of level 0 of the
 sub-graph of task 17 of level 2 of the client graph). A sub-graph is generated only from the
 seed, the position and the budget of its parent, with a xoshiro256** generator seeded by a
-SplitMix64/FNV-1a hash. ArmoniK ids, `System.Random` and `string.GetHashCode` are never used,
+SplitMix64/FNV-1a hash. Payloads carry only the 64-bit hash of the position (computed
+incrementally) and results are named `depth:level.index`, so their size does not grow with the
+nesting depth. ArmoniK ids, `System.Random` and `string.GetHashCode` are never used,
 so the same seed and options give the same full graph on every machine and on every retry.
 Before submitting anything, the client generates the whole graph, nested sub-graphs included,
 and prints its statistics.

@@ -244,8 +244,13 @@ internal static class Program
                                                                                                                                                        .Types.
                                                                                                                                                        ResultCreate
                                                                                                                                                        {
-                                                                                                                                                         Name = task
-                                                                                                                                                           .Position,
+                                                                                                                                                         Name =
+                                                                                                                                                           TaskPayload
+                                                                                                                                                             .Name(0,
+                                                                                                                                                                   task
+                                                                                                                                                                     .Level,
+                                                                                                                                                                   task
+                                                                                                                                                                     .Index),
                                                                                                                                                        }),
                                                                                                                                    },
                                                                                                                                  }),
@@ -255,7 +260,9 @@ internal static class Program
                                                   result => result.ResultId);
       foreach (var task in chunk)
       {
-        resultIds[task.Id] = idByName[task.Position];
+        resultIds[task.Id] = idByName[TaskPayload.Name(0,
+                                                       task.Level,
+                                                       task.Index)];
       }
     }
 
@@ -281,13 +288,14 @@ internal static class Program
                                                                                                                                              Types.ResultCreate
                                                                                                                                              {
                                                                                                                                                Name =
-                                                                                                                                                 $"payload {task.Position}",
+                                                                                                                                                 $"payload {TaskPayload.Name(0, task.Level, task.Index)}",
                                                                                                                                                Data =
                                                                                                                                                  UnsafeByteOperations
                                                                                                                                                    .UnsafeWrap(TaskPayload
                                                                                                                                                                .Create(root,
                                                                                                                                                                        task,
-                                                                                                                                                                       resultIds)
+                                                                                                                                                                       resultIds,
+                                                                                                                                                                       0)
                                                                                                                                                                .Serialize()),
                                                                                                                                              }),
                                                                                                                          },
@@ -306,7 +314,7 @@ internal static class Program
                                                                                                                                         {
                                                                                                                                           PayloadId =
                                                                                                                                             payloadIds
-                                                                                                                                              [$"payload {task.Position}"],
+                                                                                                                                              [$"payload {TaskPayload.Name(0, task.Level, task.Index)}"],
                                                                                                                                           ExpectedOutputKeys =
                                                                                                                                           {
                                                                                                                                             resultIds[task.Id],

@@ -260,7 +260,12 @@ public sealed class Distribution
     double value;
     if (Kind == DistributionKind.Uniform && IsInteger(First) && IsInteger(Second) && Second - First < int.MaxValue)
     {
-      value = Clamp(First + random.NextInt((int)(Second - First) + 1));
+      // Bounds rounded so that values close to an integer (1e-9) give the expected range, and value rounded after the
+      // clamp like in the other branch, since Min and Max may not be integers
+      var low  = Math.Round(First);
+      var high = Math.Round(Second);
+      value = Math.Round(Clamp(low + random.NextInt((int)(high - low) + 1)),
+                         MidpointRounding.AwayFromZero);
     }
     else
     {

@@ -70,8 +70,9 @@ public class GraphComputerService : WorkerStreamWrapper
       var settings = GraphSettings.FromOptions(taskHandler.TaskOptions.Options);
       var payload  = TaskPayload.Deserialize(taskHandler.Payload);
 
-      logger_.LogDebug("Task {Position} with budget {Budget}, duration {DurationMs} ms and output size {OutputSize} bytes",
-                       payload.Position,
+      logger_.LogDebug("Task {Label} ({PositionHash}) with budget {Budget}, duration {DurationMs} ms and output size {OutputSize} bytes",
+                       payload.Label,
+                       payload.PositionHash,
                        payload.Budget,
                        payload.DurationMs,
                        payload.OutputSize);
@@ -87,7 +88,7 @@ public class GraphComputerService : WorkerStreamWrapper
       if (payload.Budget <= 1)
       {
         var data = new byte[payload.OutputSize];
-        new DeterministicRandom(StableHash.Fnv1A64(payload.Position)).NextBytes(data);
+        new DeterministicRandom(payload.PositionHash).NextBytes(data);
         await taskHandler.SendResult(output,
                                      data)
                          .ConfigureAwait(false);
@@ -143,7 +144,7 @@ public class GraphComputerService : WorkerStreamWrapper
     if (taskHandler.DataDependencies.Count != payload.Dependencies.Count)
     {
       throw new
-        InvalidOperationException($"Task {payload.Position} expects {payload.Dependencies.Count} data dependencies but received {taskHandler.DataDependencies.Count}");
+        InvalidOperationException($"Task {payload.Label} expects {payload.Dependencies.Count} data dependencies but received {taskHandler.DataDependencies.Count}");
     }
 
     foreach (var (id, size) in payload.Dependencies)
@@ -151,12 +152,12 @@ public class GraphComputerService : WorkerStreamWrapper
       if (!taskHandler.DataDependencies.TryGetValue(id,
                                                     out var data))
       {
-        throw new InvalidOperationException($"Task {payload.Position} did not receive its data dependency {id}");
+        throw new InvalidOperationException($"Task {payload.Label} did not receive its data dependency {id}");
       }
 
       if (data.Length != size)
       {
-        throw new InvalidOperationException($"Data dependency {id} of task {payload.Position} has {data.Length} bytes instead of {size}");
+        throw new InvalidOperationException($"Data dependency {id} of task {payload.Label} has {data.Length} bytes instead of {size}");
       }
     }
   }
@@ -170,12 +171,13 @@ public class GraphComputerService : WorkerStreamWrapper
                                     string        output)
   {
     var graph = GraphGenerator.GenerateSubGraph(settings,
-                                                payload.Position,
+                                                payload.PositionHash,
                                                 payload.Budget,
                                                 payload.OutputSize);
+    var depth = payload.Depth + 1;
 
-    logger_.LogInformation("Task {Position} submits a sub-graph of {Count} tasks over {Levels} levels",
-                           payload.Position,
+    logger_.LogInformation("Task {Label} submits a sub-graph of {Count} tasks over {Levels} levels",
+                           payload.Label,
                            graph.Tasks.Count,
                            graph.LevelSizes.Count);
 
@@ -187,14 +189,18 @@ public class GraphComputerService : WorkerStreamWrapper
     {
       var created = await taskHandler.CreateResultsMetaDataAsync(chunk.Select(task => new CreateResultsMetaDataRequest.Types.ResultCreate
                                                                                       {
-                                                                                        Name = task.Position,
+                                                                                        Name = TaskPayload.Name(depth,
+                                                                                                                task.Level,
+                                                                                                                task.Index),
                                                                                       }))
                                      .ConfigureAwait(false);
       var idByName = created.Results.ToDictionary(result => result.Name,
                                                   result => result.ResultId);
       foreach (var task in chunk)
       {
-        resultIds[task.Id] = idByName[task.Position];
+        resultIds[task.Id] = idByName[TaskPayload.Name(depth,
+                                                       task.Level,
+                                                       task.Index)];
       }
     }
 
@@ -202,10 +208,11 @@ public class GraphComputerService : WorkerStreamWrapper
     {
       var payloads = await taskHandler.CreateResultsAsync(chunk.Select(task => new CreateResultsRequest.Types.ResultCreate
                                                                                {
-                                                                                 Name = $"payload {task.Position}",
+                                                                                 Name = $"payload {TaskPayload.Name(depth, task.Level, task.Index)}",
                                                                                  Data = UnsafeByteOperations.UnsafeWrap(TaskPayload.Create(graph,
                                                                                                                                            task,
-                                                                                                                                           resultIds)
+                                                                                                                                           resultIds,
+                                                                                                                                           depth)
                                                                                                                                    .Serialize()),
                                                                                }))
                                       .ConfigureAwait(false);
@@ -214,7 +221,7 @@ public class GraphComputerService : WorkerStreamWrapper
 
       await taskHandler.SubmitTasksAsync(chunk.Select(task => new SubmitTasksRequest.Types.TaskCreation
                                                               {
-                                                                PayloadId = payloadIds[$"payload {task.Position}"],
+                                                                PayloadId = payloadIds[$"payload {TaskPayload.Name(depth, task.Level, task.Index)}"],
                                                                 ExpectedOutputKeys =
                                                                 {
                                                                   resultIds[task.Id],
