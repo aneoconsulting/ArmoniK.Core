@@ -16,8 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Frozen;
 using System.Collections.Generic;
-using System.Linq;
 
 using ArmoniK.Core.Base.DataStructures;
 
@@ -133,14 +133,67 @@ public record TaskData(string        SessionId,
            ownerPodId,
            ownerPodName,
            payloadId,
+           createdBy,
            parentTaskIds,
            dataDependencies,
-           dataDependencies.Concat(new[]
-                                   {
-                                     payloadId,
-                                   })
-                           .ToDictionary(s => s,
-                                         _ => true),
+           expectedOutputIds,
+           retryOfIds,
+           status,
+           options,
+           output,
+           FrozenSet<string>.Empty)
+  {
+  }
+
+  /// <summary>
+  ///   Initializes task metadata with specified fields, without recording the dependencies that are already completed
+  /// </summary>
+  /// <param name="sessionId">Unique identifier of the session in which the task belongs</param>
+  /// <param name="taskId">Unique identifier of the task</param>
+  /// <param name="ownerPodId">Identifier of the polling agent running the task</param>
+  /// <param name="ownerPodName">Hostname of the polling agent running the task</param>
+  /// <param name="payloadId">Unique identifier of the payload in input of the task</param>
+  /// <param name="createdBy">Id of the task that created this task.</param>
+  /// <param name="parentTaskIds">
+  ///   Unique identifiers of the tasks that submitted the current task up to the session id which
+  ///   represents a submission from the client
+  /// </param>
+  /// <param name="dataDependencies">Unique identifiers of the results the task depends on</param>
+  /// <param name="expectedOutputIds">
+  ///   Identifiers of the outputs the task should produce or should transmit the
+  ///   responsibility to produce
+  /// </param>
+  /// <param name="retryOfIds">List of previous tasks ids before the current retry</param>
+  /// <param name="status">Current status of the task</param>
+  /// <param name="options">Task options</param>
+  /// <param name="output">Output of the task after its successful completion</param>
+  /// <param name="completedDependencies">
+  ///   Results already completed; the data dependencies and the payload in this set are not recorded as remaining
+  /// </param>
+  public TaskData(string               sessionId,
+                  string               taskId,
+                  string               ownerPodId,
+                  string               ownerPodName,
+                  string               payloadId,
+                  string               createdBy,
+                  IList<string>        parentTaskIds,
+                  IList<string>        dataDependencies,
+                  IList<string>        expectedOutputIds,
+                  IList<string>        retryOfIds,
+                  TaskStatus           status,
+                  TaskOptions          options,
+                  Output               output,
+                  IReadOnlySet<string> completedDependencies)
+    : this(sessionId,
+           taskId,
+           ownerPodId,
+           ownerPodName,
+           payloadId,
+           parentTaskIds,
+           dataDependencies,
+           BuildRemainingDataDependencies(dataDependencies,
+                                          payloadId,
+                                          completedDependencies),
            expectedOutputIds,
            taskId,
            createdBy,
@@ -196,4 +249,37 @@ public record TaskData(string        SessionId,
   /// </returns>
   public string RetryId()
     => InitialTaskId + $"###{RetryOfIds.Count + 1}";
+
+  /// <summary>
+  ///   Builds the remaining data dependencies of a task from its data dependencies and its payload
+  /// </summary>
+  /// <param name="dataDependencies">Unique identifiers of the results the task depends on</param>
+  /// <param name="payloadId">Unique identifier of the payload in input of the task</param>
+  /// <param name="completedDependencies">Results already completed, which are not recorded as remaining</param>
+  /// <returns>
+  ///   The remaining data dependencies
+  /// </returns>
+  /// <exception cref="ArgumentException">when a dependency appears twice</exception>
+  private static Dictionary<string, bool> BuildRemainingDataDependencies(IList<string>        dataDependencies,
+                                                                         string               payloadId,
+                                                                         IReadOnlySet<string> completedDependencies)
+  {
+    var remaining = new Dictionary<string, bool>(dataDependencies.Count + 1);
+    foreach (var dependency in dataDependencies)
+    {
+      if (!completedDependencies.Contains(dependency))
+      {
+        remaining.Add(dependency,
+                      true);
+      }
+    }
+
+    if (!completedDependencies.Contains(payloadId))
+    {
+      remaining.Add(payloadId,
+                    true);
+    }
+
+    return remaining;
+  }
 }

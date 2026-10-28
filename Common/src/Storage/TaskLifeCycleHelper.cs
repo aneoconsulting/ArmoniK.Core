@@ -159,31 +159,22 @@ public static class TaskLifeCycleHelper
                                                  .ToHashSetAsync(cancellationToken: cancellationToken)
                                                  .ConfigureAwait(false);
 
-    await taskTable.CreateTasks(taskCreationRequests.Select(request =>
-                                                            {
-                                                              var taskData = new TaskData(sessionId,
-                                                                                          request.TaskId,
-                                                                                          "",
-                                                                                          "",
-                                                                                          request.PayloadId,
-                                                                                          createdBy,
-                                                                                          parentTaskIds,
-                                                                                          request.DataDependencies.ToList(),
-                                                                                          request.ExpectedOutputKeys.ToList(),
-                                                                                          Array.Empty<string>(),
-                                                                                          TaskStatus.Creating,
-                                                                                          request.Options ??
-                                                                                          throw new ArmoniKException("Task Options should not be null here"),
-                                                                                          new Output(OutputStatus.Success,
-                                                                                                     ""));
-                                                              return taskData with
-                                                                     {
-                                                                       RemainingDataDependencies = taskData.RemainingDataDependencies
-                                                                                                           .Where(pair => !completedDependencies.Contains(pair.Key))
-                                                                                                           .ToDictionary(pair => pair.Key,
-                                                                                                                         pair => pair.Value),
-                                                                     };
-                                                            }),
+    await taskTable.CreateTasks(taskCreationRequests.Select(request => new TaskData(sessionId,
+                                                                                    request.TaskId,
+                                                                                    "",
+                                                                                    "",
+                                                                                    request.PayloadId,
+                                                                                    createdBy,
+                                                                                    parentTaskIds,
+                                                                                    request.DataDependencies.ToList(),
+                                                                                    request.ExpectedOutputKeys.ToList(),
+                                                                                    Array.Empty<string>(),
+                                                                                    TaskStatus.Creating,
+                                                                                    request.Options ??
+                                                                                    throw new ArmoniKException("Task Options should not be null here"),
+                                                                                    new Output(OutputStatus.Success,
+                                                                                               ""),
+                                                                                    completedDependencies)),
                                 cancellationToken)
                    .ConfigureAwait(false);
 
