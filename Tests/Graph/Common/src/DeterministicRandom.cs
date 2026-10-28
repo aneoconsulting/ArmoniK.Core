@@ -47,6 +47,24 @@ public sealed class DeterministicRandom
   }
 
   /// <summary>
+  ///   Creates a generator from its raw state, used to check the reference values of xoshiro256**
+  /// </summary>
+  /// <param name="s0">First word of the state</param>
+  /// <param name="s1">Second word of the state</param>
+  /// <param name="s2">Third word of the state</param>
+  /// <param name="s3">Fourth word of the state</param>
+  internal DeterministicRandom(ulong s0,
+                               ulong s1,
+                               ulong s2,
+                               ulong s3)
+  {
+    s0_ = s0;
+    s1_ = s1;
+    s2_ = s2;
+    s3_ = s3;
+  }
+
+  /// <summary>
   ///   Next 64 random bits
   /// </summary>
   /// <returns>
@@ -63,8 +81,8 @@ public sealed class DeterministicRandom
     s1_ ^= s2_;
     s0_ ^= s3_;
     s2_ ^= t;
-    s3_ =  RotateLeft(s3_,
-                      45);
+    s3_ = RotateLeft(s3_,
+                     45);
 
     return result;
   }
