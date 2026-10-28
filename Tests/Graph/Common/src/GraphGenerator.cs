@@ -106,12 +106,46 @@ public static class GraphGenerator
   /// </returns>
   internal static TaskGraph GenerateSubGraphWithoutPositions(GraphSettings settings,
                                                              GraphTask     task)
-    => Generate(settings,
-                null,
-                task.PositionHash,
-                task.Budget - 1,
-                true,
-                task.OutputSize);
+    => GenerateSubGraph(settings,
+                        task.PositionHash,
+                        task.Budget,
+                        task.OutputSize);
+
+  /// <summary>
+  ///   Generates the sub-graph of an expanding task from the hash of its position, without building the position
+  ///   strings of its tasks (they are empty); only <see cref="GraphTask.PositionHash" /> is set. Used by the workers,
+  ///   whose payloads carry only the hash, so that their size does not grow with the nesting depth.
+  /// </summary>
+  /// <param name="settings">Graph settings</param>
+  /// <param name="positionHash">
+  ///   Hash of the position of the expanding task, see <see cref="GraphTask.PositionHash" />
+  /// </param>
+  /// <param name="budget">Budget of the expanding task, greater than 1</param>
+  /// <param name="outputSize">
+  ///   Size of the output of the expanding task, given to the aggregator of the sub-graph that produces it
+  /// </param>
+  /// <returns>
+  ///   The sub-graph, identical to <see cref="GenerateSubGraph(GraphSettings, string, int, long)" /> but positions
+  /// </returns>
+  public static TaskGraph GenerateSubGraph(GraphSettings settings,
+                                           ulong         positionHash,
+                                           int           budget,
+                                           long          outputSize)
+  {
+    if (budget < 2)
+    {
+      throw new ArgumentOutOfRangeException(nameof(budget),
+                                            budget,
+                                            "Only tasks with a budget greater than 1 have a sub-graph");
+    }
+
+    return Generate(settings,
+                    null,
+                    positionHash,
+                    budget - 1,
+                    true,
+                    outputSize);
+  }
 
   /// <summary>
   ///   Generates the sub-graph of an expanding task of a graph

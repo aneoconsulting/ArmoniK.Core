@@ -155,7 +155,8 @@ public class GraphStatsTest
     var task = graph.Tasks[^1];
     var payload = TaskPayload.Create(graph,
                                      task,
-                                     ids);
+                                     ids,
+                                     2);
 
     Assert.That(payload.Dependencies.Keys,
                 Is.EquivalentTo(task.Dependencies.Select(d => ids[d])));
@@ -163,8 +164,10 @@ public class GraphStatsTest
                 Has.All.EqualTo(1024));
 
     var read = TaskPayload.Deserialize(payload.Serialize());
-    Assert.That(read.Position,
-                Is.EqualTo(task.Position));
+    Assert.That(read.PositionHash,
+                Is.EqualTo(StableHash.Fnv1A64(task.Position)));
+    Assert.That(read.Label,
+                Is.EqualTo($"2:{task.Level}.{task.Index}"));
     Assert.That(read.Budget,
                 Is.EqualTo(task.Budget));
     Assert.That(read.DurationMs,

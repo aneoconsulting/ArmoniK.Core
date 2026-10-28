@@ -117,6 +117,33 @@ public class DistributionTest
                 Is.EqualTo(0));
   }
 
+  [TestCase("uniform:1:10:min=2.5",
+            3,
+            10)]
+  [TestCase("uniform:1:10:max=5.5",
+            1,
+            6)]
+  [TestCase("uniform:0.9999999999:3",
+            1,
+            3)]
+  public void UniformCountsShouldBeRoundedAfterClamp(string text,
+                                                     int    expectedMin,
+                                                     int    expectedMax)
+  {
+    var random       = new DeterministicRandom(3);
+    var distribution = Distribution.Parse(text);
+    var counts = Enumerable.Range(0,
+                                  10000)
+                           .Select(_ => distribution.SampleCount(random,
+                                                                 0))
+                           .ToHashSet();
+
+    Assert.That(counts.Min(),
+                Is.EqualTo(expectedMin));
+    Assert.That(counts.Max(),
+                Is.EqualTo(expectedMax));
+  }
+
   [Test]
   public void UniformCountsShouldCoverAllIntegersEvenly()
   {
