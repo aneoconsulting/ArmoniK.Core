@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.ComponentModel;
 using System.Linq;
 
 using NUnit.Framework;
@@ -142,6 +143,41 @@ public class DistributionTest
                 Is.EqualTo(expectedMin));
     Assert.That(counts.Max(),
                 Is.EqualTo(expectedMax));
+  }
+
+  [TestCase("const:100",
+            100.0)]
+  [TestCase("uniform:10:500",
+            500.0)]
+  [TestCase("uniform:10:500:max=200",
+            200.0)]
+  [TestCase("lognormal:100:1:max=5000",
+            5000.0)]
+  [TestCase("exponential:100",
+            null)]
+  [TestCase("normal:100:10:min=0",
+            null)]
+  public void UpperBoundShouldBeTheLargestPossibleValue(string  text,
+                                                        double? expected)
+    => Assert.That(Distribution.Parse(text)
+                               .UpperBound,
+                   Is.EqualTo(expected));
+
+  [Test]
+  public void ConverterShouldParseAndFormatTheTextSyntax()
+  {
+    var converter = TypeDescriptor.GetConverter(typeof(Distribution));
+
+    Assert.That(converter.CanConvertFrom(typeof(string)),
+                Is.True);
+    var distribution = (Distribution)converter.ConvertFromInvariantString("lognormal:100:1:max=5000")!;
+    Assert.That(distribution.ToString(),
+                Is.EqualTo(Distribution.Parse("lognormal:100:1:max=5000")
+                                       .ToString()));
+    Assert.That(converter.ConvertToInvariantString(distribution),
+                Is.EqualTo(distribution.ToString()));
+    Assert.That(() => converter.ConvertFromInvariantString("unknown:1"),
+                Throws.TypeOf<FormatException>());
   }
 
   [Test]

@@ -99,6 +99,41 @@ public sealed record GraphSettings(ulong        Seed,
                                     double skipLevels,
                                     string taskDuration,
                                     string outputSize)
+    => Parse(seed,
+             Distribution.Parse(graphTasks),
+             levels,
+             tasksPerLevel,
+             Distribution.Parse(dependenciesPerTask),
+             parentChoice,
+             skipLevels,
+             Distribution.Parse(taskDuration),
+             Distribution.Parse(outputSize));
+
+  /// <summary>
+  ///   Validates the settings, with the distributions already parsed
+  /// </summary>
+  /// <param name="seed">Seed of the graph</param>
+  /// <param name="graphTasks">Distribution of the number of tasks of a graph</param>
+  /// <param name="levels">Maximum number of levels of a graph</param>
+  /// <param name="tasksPerLevel">Shape of the levels</param>
+  /// <param name="dependenciesPerTask">Distribution of the number of dependencies of a task</param>
+  /// <param name="parentChoice">Choice of the dependencies inside a level</param>
+  /// <param name="skipLevels">Probability to take a dependency from an older level</param>
+  /// <param name="taskDuration">Distribution of the durations in milliseconds</param>
+  /// <param name="outputSize">Distribution of the output sizes in kilobytes</param>
+  /// <returns>
+  ///   The validated settings
+  /// </returns>
+  /// <exception cref="FormatException">A setting is invalid</exception>
+  public static GraphSettings Parse(long         seed,
+                                    Distribution graphTasks,
+                                    int          levels,
+                                    string       tasksPerLevel,
+                                    Distribution dependenciesPerTask,
+                                    string       parentChoice,
+                                    double       skipLevels,
+                                    Distribution taskDuration,
+                                    Distribution outputSize)
   {
     if (levels < 1)
     {
@@ -111,14 +146,14 @@ public sealed record GraphSettings(ulong        Seed,
     }
 
     return new GraphSettings(unchecked((ulong)seed),
-                             Distribution.Parse(graphTasks),
+                             graphTasks,
                              levels,
                              LevelShape.Parse(tasksPerLevel),
-                             Distribution.Parse(dependenciesPerTask),
+                             dependenciesPerTask,
                              ParentChoice.Parse(parentChoice),
                              skipLevels,
-                             Distribution.Parse(taskDuration),
-                             Distribution.Parse(outputSize));
+                             taskDuration,
+                             outputSize);
   }
 
   /// <summary>
