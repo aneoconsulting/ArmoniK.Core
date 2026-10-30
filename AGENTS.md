@@ -30,7 +30,7 @@ Adaptors/         Pluggable backends
   NullStorage/    Object storage — no-op (testing)
 Compute/          PollingAgent service
 Control/          Submitter and Metrics services
-Tests/            Integration test workers: HtcMock, Bench, Stream, CrashingWorker, Connectivity
+Tests/            Integration test workers: HtcMock, Bench, Stream, CrashingWorker, Graph, Connectivity
 terraform/        Terraform modules for Docker-based deployment (no docker-compose)
 tools/            Helper scripts: deployment, testing, monitoring, DB ops
 .github/          CI/CD workflows
