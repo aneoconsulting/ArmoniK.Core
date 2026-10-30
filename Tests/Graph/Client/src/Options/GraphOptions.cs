@@ -17,6 +17,8 @@
 
 using System;
 
+using ArmoniK.Samples.Graph.Common;
+
 using JetBrains.Annotations;
 
 namespace ArmoniK.Samples.Graph.Client.Options;
@@ -45,7 +47,14 @@ public class GraphOptions
   /// <summary>
   ///   Distribution of the number of tasks of a graph (limited by its budget)
   /// </summary>
-  public string GraphTasks { get; set; } = "uniform:5:20";
+  /// <remarks>
+  ///   <para>
+  ///     Distribution, written <c>const:V</c>, <c>uniform:MIN:MAX</c>, <c>normal:MEAN:STDDEV</c>,
+  ///     <c>lognormal:MEDIAN:SHAPE</c>, <c>exponential:MEAN</c> or <c>poisson:MEAN</c>, optionally followed by
+  ///     <c>:min=X</c> and/or <c>:max=Y</c> to clamp the drawn values, e.g. <c>lognormal:100:1:max=5000</c>.
+  ///   </para>
+  /// </remarks>
+  public Distribution GraphTasks { get; set; } = Distribution.Parse("uniform:5:20");
 
   /// <summary>
   ///   Maximum number of levels of a graph
@@ -60,7 +69,14 @@ public class GraphOptions
   /// <summary>
   ///   Distribution of the number of data dependencies of a task that is not on the first level
   /// </summary>
-  public string DependenciesPerTask { get; set; } = "uniform:1:4";
+  /// <remarks>
+  ///   <para>
+  ///     Distribution, written <c>const:V</c>, <c>uniform:MIN:MAX</c>, <c>normal:MEAN:STDDEV</c>,
+  ///     <c>lognormal:MEDIAN:SHAPE</c>, <c>exponential:MEAN</c> or <c>poisson:MEAN</c>, optionally followed by
+  ///     <c>:min=X</c> and/or <c>:max=Y</c> to clamp the drawn values, e.g. <c>lognormal:100:1:max=5000</c>.
+  ///   </para>
+  /// </remarks>
+  public Distribution DependenciesPerTask { get; set; } = Distribution.Parse("uniform:1:4");
 
   /// <summary>
   ///   Choice of the dependencies inside a level: uniform, zipf:S or local
@@ -75,14 +91,29 @@ public class GraphOptions
   public double SkipLevels { get; set; }
 
   /// <summary>
-  ///   Distribution of the duration of the tasks in milliseconds
+  ///   Distribution of the duration of the tasks in milliseconds. Its upper bound (the constant, the maximum of
+  ///   <c>uniform</c> or <c>max=</c>) also sets the maximum duration of the tasks in ArmoniK, with a margin.
   /// </summary>
-  public string TaskDuration { get; set; } = "const:100";
+  /// <remarks>
+  ///   <para>
+  ///     Distribution, written <c>const:V</c>, <c>uniform:MIN:MAX</c>, <c>normal:MEAN:STDDEV</c>,
+  ///     <c>lognormal:MEDIAN:SHAPE</c>, <c>exponential:MEAN</c> or <c>poisson:MEAN</c>, optionally followed by
+  ///     <c>:min=X</c> and/or <c>:max=Y</c> to clamp the drawn values, e.g. <c>lognormal:100:1:max=5000</c>.
+  ///   </para>
+  /// </remarks>
+  public Distribution TaskDuration { get; set; } = Distribution.Parse("const:100");
 
   /// <summary>
   ///   Distribution of the size of the outputs in kilobytes
   /// </summary>
-  public string OutputSize { get; set; } = "const:1";
+  /// <remarks>
+  ///   <para>
+  ///     Distribution, written <c>const:V</c>, <c>uniform:MIN:MAX</c>, <c>normal:MEAN:STDDEV</c>,
+  ///     <c>lognormal:MEDIAN:SHAPE</c>, <c>exponential:MEAN</c> or <c>poisson:MEAN</c>, optionally followed by
+  ///     <c>:min=X</c> and/or <c>:max=Y</c> to clamp the drawn values, e.g. <c>lognormal:100:1:max=5000</c>.
+  ///   </para>
+  /// </remarks>
+  public Distribution OutputSize { get; set; } = Distribution.Parse("const:1");
 
   /// <summary>
   ///   Partition in which to submit the tasks

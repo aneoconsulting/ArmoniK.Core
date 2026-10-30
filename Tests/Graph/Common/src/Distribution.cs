@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 
@@ -62,6 +63,7 @@ public enum DistributionKind
 ///     same probability.
 ///   </para>
 /// </remarks>
+[TypeConverter(typeof(DistributionConverter))]
 public sealed class Distribution
 {
   private Distribution(DistributionKind kind,
@@ -91,6 +93,33 @@ public sealed class Distribution
 
   /// <summary>Upper bound applied to the drawn values, if any</summary>
   public double? Max { get; }
+
+  /// <summary>
+  ///   Largest value the distribution can give, if it is bounded: the value of a constant, the maximum of a uniform
+  ///   distribution or <see cref="Max" />; null for the unbounded distributions without <see cref="Max" />
+  /// </summary>
+  public double? UpperBound
+  {
+    get
+    {
+      double? natural = Kind switch
+                        {
+                          DistributionKind.Const   => First,
+                          DistributionKind.Uniform => Second,
+                          _                        => null,
+                        };
+      return (natural, Max) switch
+             {
+               ({
+                } n, {
+                     } m) => Math.Min(n,
+                                      m),
+               ({
+                } n, null) => n,
+               (null, var m) => m,
+             };
+    }
+  }
 
   /// <summary>
   ///   Creates a constant distribution
@@ -368,4 +397,39 @@ public sealed class Distribution
                       out var value)
          ? value
          : throw new FormatException($"Invalid number '{text}' in distribution '{distribution}'");
+}
+
+/// <summary>
+///   Converts the text syntax of <see cref="Distribution" /> so that the configuration binder can fill
+///   <see cref="Distribution" /> properties from a string, e.g. an environment variable
+/// </summary>
+public sealed class DistributionConverter : TypeConverter
+{
+  /// <inheritdoc />
+  public override bool CanConvertFrom(ITypeDescriptorContext? context,
+                                      Type                    sourceType)
+    => sourceType == typeof(string) || base.CanConvertFrom(context,
+                                                           sourceType);
+
+  /// <inheritdoc />
+  public override object? ConvertFrom(ITypeDescriptorContext? context,
+                                      CultureInfo?            culture,
+                                      object                  value)
+    => value is string text
+         ? Distribution.Parse(text)
+         : base.ConvertFrom(context,
+                            culture,
+                            value);
+
+  /// <inheritdoc />
+  public override object? ConvertTo(ITypeDescriptorContext? context,
+                                    CultureInfo?            culture,
+                                    object?                 value,
+                                    Type                    destinationType)
+    => destinationType == typeof(string) && value is Distribution distribution
+         ? distribution.ToString()
+         : base.ConvertTo(context,
+                          culture,
+                          value,
+                          destinationType);
 }

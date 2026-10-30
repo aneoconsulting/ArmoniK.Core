@@ -69,7 +69,19 @@ internal static class Program
   /// <summary>Number of results per event stream request</summary>
   private const int WaitBucketSize = 100;
 
+  /// <summary>Factor applied to the upper bound of the task durations to get the maximum duration of the tasks</summary>
+  private const double MaxDurationFactor = 1.5;
+
   private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(1);
+
+  /// <summary>Margin added to the maximum duration of the tasks, for the work of a task besides its sleep</summary>
+  private static readonly TimeSpan MaxDurationMargin = TimeSpan.FromMinutes(1);
+
+  /// <summary>Smallest maximum duration of the tasks, so that a loaded deployment does not time short tasks out</summary>
+  private static readonly TimeSpan MinMaxDuration = TimeSpan.FromMinutes(5);
+
+  /// <summary>Maximum duration of the tasks when the task durations have no upper bound</summary>
+  private static readonly TimeSpan DefaultMaxDuration = TimeSpan.FromHours(1);
 
   private static readonly TaskStatus[] FinalStatuses =
   {
@@ -101,8 +113,19 @@ internal static class Program
     logger.LogInformation("gRPC options : {@GrpcOptions}",
                           options);
     var graphOptions = new GraphOptions();
-    configuration.GetSection(GraphOptions.SettingSection)
-                 .Bind(graphOptions);
+    try
+    {
+      configuration.GetSection(GraphOptions.SettingSection)
+                   .Bind(graphOptions);
+    }
+    catch (InvalidOperationException e)
+    {
+      // An invalid distribution: the FormatException of Distribution.Parse is the inner exception
+      logger.LogError(e,
+                      "Invalid graph options");
+      return 2;
+    }
+
     logger.LogInformation("graph options : {@GraphOptions}",
                           graphOptions);
     using var _ = logger.BeginPropertyScope(("@graphOptions", graphOptions));
@@ -200,9 +223,12 @@ internal static class Program
     try
     {
       // 2. Create the session and submit the client graph
+      var maxDuration = MaxTaskDuration(graphOptions.TaskDuration,
+                                        logger);
       sessionId = await CreateSessionAsync(channelPool,
                                            graphOptions,
                                            settings,
+                                           maxDuration,
                                            interruption.Token)
                     .ConfigureAwait(false);
       logger.LogInformation("Session Id : {SessionId}",
@@ -356,13 +382,14 @@ internal static class Program
   private static async Task<string> CreateSessionAsync(ObjectPool<ChannelBase> channelPool,
                                                        GraphOptions            graphOptions,
                                                        GraphSettings           settings,
+                                                       TimeSpan                maxDuration,
                                                        CancellationToken       cancellationToken)
   {
     var request = new CreateSessionRequest
                   {
                     DefaultTaskOption = new TaskOptions
                                         {
-                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                                          MaxDuration = Duration.FromTimeSpan(maxDuration),
                                           MaxRetries  = graphOptions.MaxRetries,
                                           Priority    = 1,
                                           PartitionId = graphOptions.Partition,
@@ -382,6 +409,40 @@ internal static class Program
                                                     cancellationToken)
                                  .ConfigureAwait(false);
     return reply.SessionId;
+  }
+
+  /// <summary>
+  ///   Maximum duration of a task in ArmoniK, beyond which the task is stopped and set in Timeout: the upper bound of
+  ///   <paramref name="taskDuration" /> with a margin for the rest of the work of the task (dependencies, output,
+  ///   submission of its sub-graph), at least <see cref="MinMaxDuration" />. Without an upper bound,
+  ///   <see cref="DefaultMaxDuration" /> is used.
+  /// </summary>
+  private static TimeSpan MaxTaskDuration(Distribution taskDuration,
+                                          ILogger      logger)
+  {
+    TimeSpan maxDuration;
+    if (taskDuration.UpperBound is
+        {
+        } bound)
+    {
+      maxDuration = TimeSpan.FromMilliseconds(Math.Max(bound,
+                                                       0) * MaxDurationFactor) + MaxDurationMargin;
+      if (maxDuration < MinMaxDuration)
+      {
+        maxDuration = MinMaxDuration;
+      }
+    }
+    else
+    {
+      maxDuration = DefaultMaxDuration;
+      logger.LogWarning("TaskDuration {TaskDuration} has no upper bound, the maximum duration of the tasks is set to {MaxDuration}; add :max= to the distribution to bound it",
+                        taskDuration.ToString(),
+                        maxDuration);
+    }
+
+    logger.LogInformation("Maximum duration of the tasks : {MaxDuration}",
+                          maxDuration);
+    return maxDuration;
   }
 
   /// <summary>

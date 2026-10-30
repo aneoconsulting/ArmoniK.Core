@@ -108,6 +108,13 @@ Distributions: `const:V`, `uniform:MIN:MAX`, `normal:MEAN:STDDEV`, `lognormal:ME
 `exponential:MEAN` or `poisson:MEAN`, optionally followed by `:min=X` and/or `:max=Y` to clamp the
 drawn values (e.g. `lognormal:100:1:max=5000`). Counts are rounded to the nearest integer. For
 counts, `uniform` with integer bounds draws every integer between MIN and MAX with the same probability.
+An invalid distribution stops the client with exit code 2 before anything is submitted.
+
+The maximum duration of the tasks in ArmoniK (`MaxDuration` of the session, inherited by the
+sub-tasks) is derived from the upper bound of `TaskDuration`: the constant, the maximum of
+`uniform` or the `max=` bound, times 1.5 plus 1 minute, and at least 5 minutes. An unbounded
+`TaskDuration` (`normal`, `lognormal`, `exponential` or `poisson` without `max=`) gets 1 hour and
+a warning: a task drawn longer than that ends in `Timeout`.
 
 ## Output
 
