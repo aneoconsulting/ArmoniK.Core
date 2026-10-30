@@ -73,6 +73,12 @@ public enum AcquisitionStatus
   TaskIsProcessingElsewhere,
 
   /// <summary>
+  ///   Task not acquired because its status is <see cref="TaskStatus.Processing" /> but task is processing elsewhere from
+  ///   another queue message
+  /// </summary>
+  TaskIsProcessingElsewhereFromAnotherMessage,
+
+  /// <summary>
   ///   Task not acquired because its status is <see cref="TaskStatus.Processing" /> but task is processing here
   /// </summary>
   TaskIsProcessingHere,
@@ -127,6 +133,11 @@ public enum AcquisitionStatus
   ///   Task acquisition failed and message seems to be duplicated
   /// </summary>
   AcquisitionFailedMessageDuplicated,
+
+  /// <summary>
+  ///   Task not acquired because it is processing on another pod from another queue message
+  /// </summary>
+  AcquisitionFailedProcessingElsewhereFromAnotherMessage,
 
   /// <summary>
   ///   Task acquisition failed and task status is <see cref="TaskStatus.Dispatched" /> but the other agent does not seem to

@@ -52,9 +52,9 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
   }
 
   /// <inheritdoc />
-  public async Task<bool> Check(string            taskId,
-                                string            ownerPodId,
-                                CancellationToken cancellationToken)
+  public async Task<IReadOnlyCollection<string>> GetProcessingMessageIds(string            taskId,
+                                                                         string            ownerPodId,
+                                                                         CancellationToken cancellationToken)
   {
     logger_.LogTrace("Check if task is processing");
     var client = httpClientFactory_.CreateClient();
@@ -70,26 +70,26 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
         logger_.LogDebug("Result from other polling agent: {result}",
                          result);
         return JsonSerializer.Deserialize<Dictionary<string, string[]>>(result)
-                             ?.ContainsKey(taskId) ?? false;
+                             ?.GetValueOrDefault(taskId) ?? [];
       }
       catch (JsonException ex)
       {
         logger_.LogWarning(ex,
                            "Invalid response from other pod");
-        return false;
+        return [];
       }
       catch (InvalidOperationException ex)
       {
         logger_.LogWarning(ex,
                            "Cannot communicate with other pod");
-        return false;
+        return [];
       }
       catch (OperationCanceledException ex)
       {
         logger_.LogWarning(ex,
                            "Cannot communicate with other pod due to timeout of {time}",
                            requestTimeout_);
-        return false;
+        return [];
       }
       catch (HttpRequestException ex) when (ex.InnerException is SocketException
                                                                  {
@@ -103,17 +103,17 @@ public class TaskProcessingCheckerClient : ITaskProcessingChecker
       {
         logger_.LogWarning(ex,
                            "Cannot communicate with other pod");
-        return false;
+        return [];
       }
       catch (UriFormatException ex)
       {
         logger_.LogWarning(ex,
                            "Invalid other pod hostname");
-        return false;
+        return [];
       }
     }
 
     logger_.LogWarning("Too many tries to communicate with other pod");
-    return false;
+    return [];
   }
 }

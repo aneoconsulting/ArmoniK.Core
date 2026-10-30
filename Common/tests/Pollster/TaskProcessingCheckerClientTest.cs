@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -48,34 +49,41 @@ public class TaskProcessingCheckerClientTest
                          });
   }
 
-  private static Task<bool> Check(string body,
-                                  string taskId)
+  private static Task<IReadOnlyCollection<string>> GetProcessingMessageIds(string body,
+                                                                           string taskId)
   {
     var factory = new Mock<IHttpClientFactory>();
     factory.Setup(f => f.CreateClient(It.IsAny<string>()))
            .Returns(() => new HttpClient(new StaticResponseHandler(body)));
 
     return new TaskProcessingCheckerClient(factory.Object,
-                                           NullLogger<TaskProcessingCheckerClient>.Instance).Check(taskId,
-                                                                                                   "pod",
-                                                                                                   CancellationToken.None);
+                                           NullLogger<TaskProcessingCheckerClient>.Instance).GetProcessingMessageIds(taskId,
+                                                                                                                     "pod",
+                                                                                                                     CancellationToken.None);
   }
 
   [TestCase("{\"task\":[\"message\"]}",
-            ExpectedResult = true)]
+            ExpectedResult = new[]
+                             {
+                               "message",
+                             })]
   [TestCase("{\"task\":[\"message1\",\"message2\"],\"other\":[\"message3\"]}",
-            ExpectedResult = true)]
+            ExpectedResult = new[]
+                             {
+                               "message1",
+                               "message2",
+                             })]
   [TestCase("{\"other\":[\"message\"]}",
-            ExpectedResult = false)]
+            ExpectedResult = new string[0])]
   [TestCase("{}",
-            ExpectedResult = false)]
+            ExpectedResult = new string[0])]
   [TestCase("null",
-            ExpectedResult = false)]
+            ExpectedResult = new string[0])]
   [TestCase("task,other",
-            ExpectedResult = false)]
+            ExpectedResult = new string[0])]
   [TestCase("",
-            ExpectedResult = false)]
-  public Task<bool> CheckShouldFindTaskInResponse(string body)
-    => Check(body,
-             "task");
+            ExpectedResult = new string[0])]
+  public Task<IReadOnlyCollection<string>> GetProcessingMessageIdsShouldReturnMessagesOfTask(string body)
+    => GetProcessingMessageIds(body,
+                               "task");
 }
