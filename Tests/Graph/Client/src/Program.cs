@@ -96,9 +96,10 @@ internal static class Program
                                                                 WriteIndented = false,
                                                               };
 
-  private static async Task<int> Main()
+  private static async Task<int> Main(string[] args)
   {
-    var builder       = new ConfigurationBuilder().AddEnvironmentVariables();
+    var builder = new ConfigurationBuilder().AddEnvironmentVariables()
+                                            .AddCommandLine(args);
     var configuration = builder.Build();
     var seriLogger = new LoggerConfiguration().ReadFrom.Configuration(configuration)
                                               .Enrich.FromLogContext()
