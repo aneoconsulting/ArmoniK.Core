@@ -69,6 +69,10 @@ docker run --rm \
   dockerhubaneo/armonik_core_graph_test_client:<tag>
 ```
 
+Every option can also be given as a command line argument, which overrides the environment
+variable of the same option, e.g. `--GraphOptions:NTasks=10000` or
+`--GrpcClient:Endpoint=http://host:port` (arguments after the image name with `docker run`).
+
 The client can also run from the sources with the same variables:
 
 ```bash
