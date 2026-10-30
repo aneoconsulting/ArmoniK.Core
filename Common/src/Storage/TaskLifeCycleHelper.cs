@@ -148,6 +148,17 @@ public static class TaskLifeCycleHelper
 
     parentTaskIds.Add(parentTaskId);
 
+    // Dependencies that are already completed, such as payloads uploaded before the submission, are not recorded as
+    // remaining: FinalizeTaskCreation would only remove them right away. Completed is a final status, so they cannot
+    // become needed again.
+    var dependencies = taskCreationRequests.SelectMany(request => request.DataDependencies.Append(request.PayloadId))
+                                           .ToHashSet();
+    var completedDependencies = await resultTable.GetResults(result => dependencies.Contains(result.ResultId) && result.Status == ResultStatus.Completed,
+                                                             result => result.ResultId,
+                                                             cancellationToken)
+                                                 .ToHashSetAsync(cancellationToken: cancellationToken)
+                                                 .ConfigureAwait(false);
+
     await taskTable.CreateTasks(taskCreationRequests.Select(request => new TaskData(sessionId,
                                                                                     request.TaskId,
                                                                                     "",
@@ -162,7 +173,8 @@ public static class TaskLifeCycleHelper
                                                                                     request.Options ??
                                                                                     throw new ArmoniKException("Task Options should not be null here"),
                                                                                     new Output(OutputStatus.Success,
-                                                                                               ""))),
+                                                                                               ""),
+                                                                                    completedDependencies)),
                                 cancellationToken)
                    .ConfigureAwait(false);
 
