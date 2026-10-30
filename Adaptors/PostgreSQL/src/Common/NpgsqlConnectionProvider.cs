@@ -267,9 +267,35 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
       await using var connection = await DataSource.OpenConnectionAsync()
                                                    .ConfigureAwait(false);
       await using var cmd = connection.CreateCommand();
-      cmd.CommandText = "SELECT 1";
-      await cmd.ExecuteScalarAsync()
-               .ConfigureAwait(false);
+      // The pool does not reset connections (NoResetOnClose, see BuildConnectionString): check that the
+      // previous users of this connection left no session state behind.
+      cmd.CommandText = @"
+SELECT (SELECT count(*) FROM pg_settings WHERE source = 'session'),
+       (SELECT count(*) FROM pg_class WHERE relnamespace = pg_my_temp_schema()),
+       (SELECT count(*) FROM pg_locks WHERE pid = pg_backend_pid() AND locktype = 'advisory'),
+       (SELECT count(*) FROM pg_listening_channels()),
+       (SELECT count(*) FROM pg_cursors WHERE is_holdable)";
+      await using var reader = await cmd.ExecuteReaderAsync()
+                                        .ConfigureAwait(false);
+      await reader.ReadAsync()
+                  .ConfigureAwait(false);
+
+      var settings         = reader.GetInt64(0);
+      var temporaryTables  = reader.GetInt64(1);
+      var advisoryLocks    = reader.GetInt64(2);
+      var listenedChannels = reader.GetInt64(3);
+      var holdableCursors  = reader.GetInt64(4);
+
+      if (settings + temporaryTables + advisoryLocks + listenedChannels + holdableCursors > 0)
+      {
+        logger_.LogError("A pooled PostgreSQL connection kept session state: {Settings} settings, {TemporaryTables} temporary tables, {AdvisoryLocks} advisory locks, {ListenedChannels} listened channels, {HoldableCursors} holdable cursors",
+                         settings,
+                         temporaryTables,
+                         advisoryLocks,
+                         listenedChannels,
+                         holdableCursors);
+      }
+
       return HealthCheckResult.Healthy();
     }
     catch (Exception ex)
@@ -367,6 +393,10 @@ ON CONFLICT (auth_id) DO NOTHING";
     }
   }
 
+  // NoResetOnClose skips the DISCARD ALL that Npgsql sends when a pooled connection is reused.
+  // It is safe only as long as no connection of the pool leaves session state behind: no SET outside
+  // SET LOCAL, no temporary table, no session-level advisory lock, no LISTEN, no WITH HOLD cursor.
+  // The liveness check logs an error when a connection of the pool kept such state.
   private static string BuildConnectionString(Options.PostgreSQL options)
   {
     NpgsqlConnectionStringBuilder builder;
@@ -377,6 +407,7 @@ ON CONFLICT (auth_id) DO NOTHING";
                 {
                   MaxPoolSize        = options.MaxPoolSize,
                   IncludeErrorDetail = true,
+                  NoResetOnClose     = true,
                 };
 
       if (options.Ssl)
@@ -398,6 +429,7 @@ ON CONFLICT (auth_id) DO NOTHING";
                             ? SslMode.Require
                             : SslMode.Prefer,
                 IncludeErrorDetail = true,
+                NoResetOnClose     = true,
               };
 
     if (!string.IsNullOrEmpty(options.User))
