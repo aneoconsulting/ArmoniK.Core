@@ -23,10 +23,12 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Client;
 using ArmoniK.Api.Client.Options;
 using ArmoniK.Api.Client.Submitter;
 using ArmoniK.Api.Common.Utils;
 using ArmoniK.Api.gRPC.V1;
+using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Sessions;
 using ArmoniK.Api.gRPC.V1.Tasks;
@@ -48,6 +50,7 @@ using Serilog.Formatting.Compact;
 using FilterField = ArmoniK.Api.gRPC.V1.Tasks.FilterField;
 using Filters = ArmoniK.Api.gRPC.V1.Tasks.Filters;
 using FiltersAnd = ArmoniK.Api.gRPC.V1.Tasks.FiltersAnd;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 using TaskStatus = ArmoniK.Api.gRPC.V1.TaskStatus;
 
 namespace ArmoniK.Samples.Graph.Client;
@@ -60,8 +63,13 @@ internal static class Program
   /// <summary>Prefix of the final line holding all the numbers of the run, for scripts</summary>
   private const string ResultPrefix = "GRAPH_RESULT ";
 
-  private static readonly TimeSpan PollingInterval  = TimeSpan.FromSeconds(1);
-  private static readonly TimeSpan ProgressInterval = TimeSpan.FromSeconds(5);
+  /// <summary>Number of parallel event streams used to wait for the outputs of the client graph</summary>
+  private const int WaitParallelism = 4;
+
+  /// <summary>Number of results per event stream request</summary>
+  private const int WaitBucketSize = 100;
+
+  private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(1);
 
   private static readonly TaskStatus[] FinalStatuses =
   {
@@ -175,222 +183,99 @@ internal static class Program
 
     var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options!));
 
-    // 2. Create the session: the graph settings go in its default task options, so that the sub-tasks submitted by the
-    // workers (without task options) see them too
-    var sessionId = await channelPool.WithInstanceAsync(async channel =>
-                                                        {
-                                                          var client = new Sessions.SessionsClient(channel);
-                                                          var reply = await client.CreateSessionAsync(new CreateSessionRequest
-                                                                                                      {
-                                                                                                        DefaultTaskOption = new TaskOptions
-                                                                                                                            {
-                                                                                                                              MaxDuration =
-                                                                                                                                Duration
-                                                                                                                                  .FromTimeSpan(TimeSpan.FromHours(1)),
-                                                                                                                              MaxRetries  = graphOptions.MaxRetries,
-                                                                                                                              Priority    = 1,
-                                                                                                                              PartitionId = graphOptions.Partition,
-                                                                                                                              Options =
-                                                                                                                              {
-                                                                                                                                settings.ToOptions(),
-                                                                                                                              },
-                                                                                                                            },
-                                                                                                        PartitionIds =
-                                                                                                        {
-                                                                                                          graphOptions.Partition,
-                                                                                                        },
-                                                                                                      });
-                                                          return reply.SessionId;
-                                                        },
-                                                        CancellationToken.None)
-                                     .ConfigureAwait(false);
-    logger.LogInformation("Session Id : {SessionId}",
-                          sessionId);
-
+    // Ctrl+C cancels the run; the session is then cancelled (and purged) like a failed run
+    using var interruption = new CancellationTokenSource();
     Console.CancelKeyPress += (_,
                                args) =>
                               {
                                 args.Cancel = true;
-                                using var channel = channelPool.Get();
-                                var       client  = new Sessions.SessionsClient(channel);
-                                client.CancelSession(new CancelSessionRequest
-                                                     {
-                                                       SessionId = sessionId,
-                                                     });
-                                if (graphOptions.PurgeData)
-                                {
-                                  client.PurgeSession(new PurgeSessionRequest
-                                                      {
-                                                        SessionId = sessionId,
-                                                      });
-                                }
-
-                                Environment.Exit(1);
+                                interruption.Cancel();
                               };
 
-    // Outputs of the client graph, created first so that every task can reference its dependencies
-    var resultIds = new string[root.Tasks.Count];
-    foreach (var chunk in root.Tasks.Chunk(graphOptions.BatchSize))
+    string?                              sessionId      = null;
+    var                                  outcome        = "finished";
+    var                                  submissionTime = TimeSpan.Zero;
+    var                                  wallClock      = TimeSpan.Zero;
+    IReadOnlyDictionary<TaskStatus, int> counts         = new Dictionary<TaskStatus, int>();
+    try
     {
-      var created = await channelPool.WithInstanceAsync(async channel
-                                                          => await new Results.ResultsClient(channel).CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest
-                                                                                                                                 {
-                                                                                                                                   SessionId = sessionId,
-                                                                                                                                   Results =
-                                                                                                                                   {
-                                                                                                                                     chunk.Select(task
-                                                                                                                                                    => new
-                                                                                                                                                       CreateResultsMetaDataRequest
-                                                                                                                                                       .Types.
-                                                                                                                                                       ResultCreate
-                                                                                                                                                       {
-                                                                                                                                                         Name =
-                                                                                                                                                           TaskPayload
-                                                                                                                                                             .Name(0,
-                                                                                                                                                                   task
-                                                                                                                                                                     .Level,
-                                                                                                                                                                   task
-                                                                                                                                                                     .Index),
-                                                                                                                                                       }),
-                                                                                                                                   },
-                                                                                                                                 }),
-                                                        CancellationToken.None)
-                                     .ConfigureAwait(false);
-      var idByName = created.Results.ToDictionary(result => result.Name,
-                                                  result => result.ResultId);
-      foreach (var task in chunk)
+      // 2. Create the session and submit the client graph
+      sessionId = await CreateSessionAsync(channelPool,
+                                           graphOptions,
+                                           settings,
+                                           interruption.Token)
+                    .ConfigureAwait(false);
+      logger.LogInformation("Session Id : {SessionId}",
+                            sessionId);
+
+      var resultIds = await CreateOutputsAsync(channelPool,
+                                               sessionId,
+                                               root,
+                                               graphOptions.BatchSize,
+                                               interruption.Token)
+                        .ConfigureAwait(false);
+
+      // The timeout of the run starts with the first submission
+      using var timeout = CancellationTokenSource.CreateLinkedTokenSource(interruption.Token);
+      timeout.CancelAfter(graphOptions.Timeout);
+      var submissionStart = Stopwatch.GetTimestamp();
+      await SubmitClientGraphAsync(channelPool,
+                                   sessionId,
+                                   root,
+                                   resultIds,
+                                   reverse,
+                                   graphOptions.BatchSize,
+                                   logger,
+                                   interruption.Token)
+        .ConfigureAwait(false);
+      submissionTime = Stopwatch.GetElapsedTime(submissionStart);
+      logger.LogInformation("{ClientTasks} client tasks submitted in {SubmissionTime}",
+                            root.Tasks.Count,
+                            submissionTime);
+
+      if (graphOptions.ExitAfterSubmission)
       {
-        resultIds[task.Id] = idByName[TaskPayload.Name(0,
-                                                       task.Level,
-                                                       task.Index)];
+        logger.LogInformation("Exiting after the submission, the session {SessionId} is left running",
+                              sessionId);
+        return 0;
       }
-    }
 
-    // Reverse: last level first, so that the dependents are always submitted before their dependencies and wait
-    var submissionOrder = reverse
-                            ? root.Tasks.OrderByDescending(task => task.Level)
-                                  .ThenBy(task => task.Index)
-                                  .ToList()
-                            : root.Tasks.ToList();
+      // 3. Wait for the end of the run
+      try
+      {
+        await WaitForCompletionAsync(channelPool,
+                                     sessionId,
+                                     resultIds,
+                                     timeout.Token)
+          .ConfigureAwait(false);
+      }
+      // A cancelled gRPC call throws an RpcException (Cancelled) rather than an OperationCanceledException, so the
+      // outcome is decided from the tokens
+      catch (Exception) when (timeout.IsCancellationRequested && !interruption.IsCancellationRequested)
+      {
+        outcome = "timeout";
+      }
+      catch (Exception e) when (!timeout.IsCancellationRequested)
+      {
+        // An output of the client graph is aborted: a task failed for good
+        logger.LogError(e,
+                        "A task of the graph failed");
+        outcome = "failed";
+      }
 
-    var submissionStart = Stopwatch.GetTimestamp();
-    foreach (var chunk in submissionOrder.Chunk(graphOptions.BatchSize))
-    {
-      await channelPool.WithInstanceAsync(async channel =>
-                                          {
-                                            var payloads = await new Results.ResultsClient(channel).CreateResultsAsync(new CreateResultsRequest
-                                                                                                                       {
-                                                                                                                         SessionId = sessionId,
-                                                                                                                         Results =
-                                                                                                                         {
-                                                                                                                           chunk.Select(task
-                                                                                                                                          => new CreateResultsRequest.
-                                                                                                                                             Types.ResultCreate
-                                                                                                                                             {
-                                                                                                                                               Name =
-                                                                                                                                                 $"payload {TaskPayload.Name(0, task.Level, task.Index)}",
-                                                                                                                                               Data =
-                                                                                                                                                 UnsafeByteOperations
-                                                                                                                                                   .UnsafeWrap(TaskPayload
-                                                                                                                                                               .Create(root,
-                                                                                                                                                                       task,
-                                                                                                                                                                       resultIds,
-                                                                                                                                                                       0)
-                                                                                                                                                               .Serialize()),
-                                                                                                                                             }),
-                                                                                                                         },
-                                                                                                                       });
-                                            var payloadIds = payloads.Results.ToDictionary(result => result.Name,
-                                                                                           result => result.ResultId);
-
-                                            var submitted = await new Tasks.TasksClient(channel).SubmitTasksAsync(new SubmitTasksRequest
-                                                                                                                  {
-                                                                                                                    SessionId = sessionId,
-                                                                                                                    TaskCreations =
-                                                                                                                    {
-                                                                                                                      chunk.Select(task
-                                                                                                                                     => new SubmitTasksRequest.Types.
-                                                                                                                                        TaskCreation
-                                                                                                                                        {
-                                                                                                                                          PayloadId =
-                                                                                                                                            payloadIds
-                                                                                                                                              [$"payload {TaskPayload.Name(0, task.Level, task.Index)}"],
-                                                                                                                                          ExpectedOutputKeys =
-                                                                                                                                          {
-                                                                                                                                            resultIds[task.Id],
-                                                                                                                                          },
-                                                                                                                                          DataDependencies =
-                                                                                                                                          {
-                                                                                                                                            task.Dependencies
-                                                                                                                                                .Select(dependency
-                                                                                                                                                          => resultIds
-                                                                                                                                                            [dependency]),
-                                                                                                                                          },
-                                                                                                                                        }),
-                                                                                                                    },
-                                                                                                                  });
-
-                                            if (logger.IsEnabled(LogLevel.Debug))
-                                            {
-                                              foreach (var info in submitted.TaskInfos)
-                                              {
-                                                logger.LogDebug("task created {TaskId}",
-                                                                info.TaskId);
-                                              }
-                                            }
-                                          },
-                                          CancellationToken.None)
-                       .ConfigureAwait(false);
-    }
-
-    var submissionTime = Stopwatch.GetElapsedTime(submissionStart);
-    logger.LogInformation("{ClientTasks} client tasks submitted in {SubmissionTime}",
-                          root.Tasks.Count,
-                          submissionTime);
-
-    // 3. Wait until every task is in a final status, by polling the task counts of the session
-    var                                  outcome      = "timeout";
-    var                                  lastProgress = Stopwatch.GetTimestamp();
-    IReadOnlyDictionary<TaskStatus, int> counts       = new Dictionary<TaskStatus, int>();
-    while (Stopwatch.GetElapsedTime(submissionStart) < graphOptions.Timeout)
-    {
+      wallClock = Stopwatch.GetElapsedTime(submissionStart);
       counts = await channelPool.WithInstanceAsync(async channel => await CountTasksAsync(channel,
-                                                                                          sessionId)
+                                                                                          sessionId,
+                                                                                          interruption.Token)
                                                                       .ConfigureAwait(false),
-                                                   CancellationToken.None)
+                                                   interruption.Token)
                                 .ConfigureAwait(false);
-
-      var final = FinalStatuses.Sum(status => counts.GetValueOrDefault(status));
-      var active = counts.Where(pair => !FinalStatuses.Contains(pair.Key) && pair.Key != TaskStatus.Retried)
-                         .Sum(pair => pair.Value);
-      var failed = final - counts.GetValueOrDefault(TaskStatus.Completed);
-
-      if (Stopwatch.GetElapsedTime(lastProgress) >= ProgressInterval)
-      {
-        lastProgress = Stopwatch.GetTimestamp();
-        logger.LogInformation("Progress : {Final}/{NTasks} tasks in a final status ({Completed} completed, {Failed} failed), {Active} active, {Retried} retried, elapsed {Elapsed}",
-                              final,
-                              graphOptions.NTasks,
-                              counts.GetValueOrDefault(TaskStatus.Completed),
-                              failed,
-                              active,
-                              counts.GetValueOrDefault(TaskStatus.Retried),
-                              Stopwatch.GetElapsedTime(submissionStart));
-      }
-
-      // Sub-tasks are created (in status Creating) before their parent ends, so no active task means nothing more
-      // will be created: either every task is final, or a failure prevented sub-graphs from being submitted
-      if (active == 0 && (final >= graphOptions.NTasks || failed > 0))
-      {
-        outcome = "finished";
-        break;
-      }
-
-      await Task.Delay(PollingInterval)
-                .ConfigureAwait(false);
     }
-
-    var wallClock = Stopwatch.GetElapsedTime(submissionStart);
+    catch (Exception) when (interruption.IsCancellationRequested)
+    {
+      logger.LogWarning("Run interrupted");
+      outcome = "interrupted";
+    }
 
     // 4. Results
     var completed = counts.GetValueOrDefault(TaskStatus.Completed);
@@ -419,45 +304,25 @@ internal static class Program
                                               pair => pair.Value));
 
     // 5. Clean the session; a failure here must not hide the result of the run
-    try
+    if (sessionId is not null)
     {
-      await channelPool.WithInstanceAsync(async channel =>
-                                          {
-                                            var client = new Sessions.SessionsClient(channel);
-                                            if (!success)
-                                            {
-                                              await client.CancelSessionAsync(new CancelSessionRequest
-                                                                              {
-                                                                                SessionId = sessionId,
-                                                                              });
-                                            }
-                                            else
-                                            {
-                                              await client.CloseSessionAsync(new CloseSessionRequest
-                                                                             {
-                                                                               SessionId = sessionId,
-                                                                             });
-                                            }
-
-                                            if (graphOptions.PurgeData)
-                                            {
-                                              await client.PurgeSessionAsync(new PurgeSessionRequest
-                                                                             {
-                                                                               SessionId = sessionId,
-                                                                             });
-                                            }
-                                          },
-                                          CancellationToken.None)
-                       .ConfigureAwait(false);
-    }
-    catch (RpcException e)
-    {
-      logger.LogWarning(e,
-                        "Could not clean the session {SessionId}",
-                        sessionId);
+      try
+      {
+        await CleanSessionAsync(channelPool,
+                                sessionId,
+                                success,
+                                graphOptions.PurgeData)
+          .ConfigureAwait(false);
+      }
+      catch (RpcException e)
+      {
+        logger.LogWarning(e,
+                          "Could not clean the session {SessionId}",
+                          sessionId);
+      }
     }
 
-    var result = new Dictionary<string, object>
+    var result = new Dictionary<string, object?>
                  {
                    ["SessionId"]                = sessionId,
                    ["Outcome"]                  = outcome,
@@ -485,10 +350,262 @@ internal static class Program
   }
 
   /// <summary>
+  ///   Creates the session; the graph settings go in its default task options, so that the sub-tasks submitted by the
+  ///   workers (without task options) see them too
+  /// </summary>
+  private static async Task<string> CreateSessionAsync(ObjectPool<ChannelBase> channelPool,
+                                                       GraphOptions            graphOptions,
+                                                       GraphSettings           settings,
+                                                       CancellationToken       cancellationToken)
+  {
+    var request = new CreateSessionRequest
+                  {
+                    DefaultTaskOption = new TaskOptions
+                                        {
+                                          MaxDuration = Duration.FromTimeSpan(TimeSpan.FromHours(1)),
+                                          MaxRetries  = graphOptions.MaxRetries,
+                                          Priority    = 1,
+                                          PartitionId = graphOptions.Partition,
+                                          Options =
+                                          {
+                                            settings.ToOptions(),
+                                          },
+                                        },
+                    PartitionIds =
+                    {
+                      graphOptions.Partition,
+                    },
+                  };
+
+    var reply = await channelPool.WithInstanceAsync(async channel => await new Sessions.SessionsClient(channel).CreateSessionAsync(request,
+                                                                                                                                   cancellationToken: cancellationToken),
+                                                    cancellationToken)
+                                 .ConfigureAwait(false);
+    return reply.SessionId;
+  }
+
+  /// <summary>
+  ///   Creates the outputs of the client graph first, so that every task can reference its dependencies
+  /// </summary>
+  /// <returns>
+  ///   The result id of the output of each task of the client graph, by task id
+  /// </returns>
+  private static async Task<string[]> CreateOutputsAsync(ObjectPool<ChannelBase> channelPool,
+                                                         string                  sessionId,
+                                                         TaskGraph               root,
+                                                         int                     batchSize,
+                                                         CancellationToken       cancellationToken)
+  {
+    var resultIds = new string[root.Tasks.Count];
+    foreach (var chunk in root.Tasks.Chunk(batchSize))
+    {
+      var request = new CreateResultsMetaDataRequest
+                    {
+                      SessionId = sessionId,
+                      Results =
+                      {
+                        chunk.Select(task => new CreateResultsMetaDataRequest.Types.ResultCreate
+                                             {
+                                               Name = TaskPayload.Name(0,
+                                                                       task.Level,
+                                                                       task.Index),
+                                             }),
+                      },
+                    };
+
+      var created = await channelPool.WithInstanceAsync(async channel => await new Results.ResultsClient(channel).CreateResultsMetaDataAsync(request,
+                                                                                                                                             cancellationToken:
+                                                                                                                                             cancellationToken),
+                                                        cancellationToken)
+                                     .ConfigureAwait(false);
+      var idByName = created.Results.ToDictionary(result => result.Name,
+                                                  result => result.ResultId);
+      foreach (var task in chunk)
+      {
+        resultIds[task.Id] = idByName[TaskPayload.Name(0,
+                                                       task.Level,
+                                                       task.Index)];
+      }
+    }
+
+    return resultIds;
+  }
+
+  /// <summary>
+  ///   Submits the tasks of the client graph, by chunks of <paramref name="batchSize" />
+  /// </summary>
+  /// <param name="reverse">
+  ///   Last level first, so that the dependents are always submitted before their dependencies and wait
+  /// </param>
+  private static async Task SubmitClientGraphAsync(ObjectPool<ChannelBase> channelPool,
+                                                   string                  sessionId,
+                                                   TaskGraph               root,
+                                                   string[]                resultIds,
+                                                   bool                    reverse,
+                                                   int                     batchSize,
+                                                   ILogger                 logger,
+                                                   CancellationToken       cancellationToken)
+  {
+    var submissionOrder = reverse
+                            ? root.Tasks.OrderByDescending(task => task.Level)
+                                  .ThenBy(task => task.Index)
+                                  .ToList()
+                            : root.Tasks.ToList();
+
+    foreach (var chunk in submissionOrder.Chunk(batchSize))
+    {
+      var payloadsRequest = new CreateResultsRequest
+                            {
+                              SessionId = sessionId,
+                              Results =
+                              {
+                                chunk.Select(task => new CreateResultsRequest.Types.ResultCreate
+                                                     {
+                                                       Name = PayloadName(task),
+                                                       Data = UnsafeByteOperations.UnsafeWrap(TaskPayload.Create(root,
+                                                                                                                 task,
+                                                                                                                 resultIds,
+                                                                                                                 0)
+                                                                                                         .Serialize()),
+                                                     }),
+                              },
+                            };
+
+      await channelPool.WithInstanceAsync(async channel =>
+                                          {
+                                            var payloads = await new Results.ResultsClient(channel).CreateResultsAsync(payloadsRequest,
+                                                                                                                       cancellationToken: cancellationToken);
+                                            var payloadIds = payloads.Results.ToDictionary(result => result.Name,
+                                                                                           result => result.ResultId);
+
+                                            var submitRequest = new SubmitTasksRequest
+                                                                {
+                                                                  SessionId = sessionId,
+                                                                  TaskCreations =
+                                                                  {
+                                                                    chunk.Select(task => new SubmitTasksRequest.Types.TaskCreation
+                                                                                         {
+                                                                                           PayloadId = payloadIds[PayloadName(task)],
+                                                                                           ExpectedOutputKeys =
+                                                                                           {
+                                                                                             resultIds[task.Id],
+                                                                                           },
+                                                                                           DataDependencies =
+                                                                                           {
+                                                                                             task.Dependencies.Select(dependency => resultIds[dependency]),
+                                                                                           },
+                                                                                         }),
+                                                                  },
+                                                                };
+                                            var submitted = await new Tasks.TasksClient(channel).SubmitTasksAsync(submitRequest,
+                                                                                                                  cancellationToken: cancellationToken);
+
+                                            if (logger.IsEnabled(LogLevel.Debug))
+                                            {
+                                              foreach (var info in submitted.TaskInfos)
+                                              {
+                                                logger.LogDebug("task created {TaskId}",
+                                                                info.TaskId);
+                                              }
+                                            }
+                                          },
+                                          cancellationToken)
+                       .ConfigureAwait(false);
+    }
+
+    static string PayloadName(GraphTask task)
+      => $"payload {TaskPayload.Name(0, task.Level, task.Index)}";
+  }
+
+  /// <summary>
+  ///   Waits for the end of the run: first for the outputs of the client graph with the events API, then for the tasks
+  ///   still active.
+  /// </summary>
+  /// <remarks>
+  ///   The output of an expanding task is delegated to the aggregator of its sub-graph, so the outputs of the client
+  ///   graph complete only once the sub-graphs that produce them are done. A task of a sub-graph whose output no task
+  ///   consumes can still be running at that point, hence the polling of the task counts, which is short since it
+  ///   only waits for these last tasks.
+  /// </remarks>
+  /// <exception cref="Exception">An output of the client graph is aborted</exception>
+  /// <exception cref="OperationCanceledException"><paramref name="cancellationToken" /> was cancelled</exception>
+  private static async Task WaitForCompletionAsync(ObjectPool<ChannelBase> channelPool,
+                                                   string                  sessionId,
+                                                   ICollection<string>     resultIds,
+                                                   CancellationToken       cancellationToken)
+  {
+    await channelPool.WithInstanceAsync(async channel => await new Events.EventsClient(channel).WaitForResultsAsync(sessionId,
+                                                                                                                    resultIds,
+                                                                                                                    WaitParallelism,
+                                                                                                                    WaitBucketSize,
+                                                                                                                    cancellationToken)
+                                                                                               .ConfigureAwait(false),
+                                        cancellationToken)
+                     .ConfigureAwait(false);
+
+    while (true)
+    {
+      var counts = await channelPool.WithInstanceAsync(async channel => await CountTasksAsync(channel,
+                                                                                              sessionId,
+                                                                                              cancellationToken)
+                                                                          .ConfigureAwait(false),
+                                                       cancellationToken)
+                                    .ConfigureAwait(false);
+      var active = counts.Where(pair => !FinalStatuses.Contains(pair.Key) && pair.Key != TaskStatus.Retried)
+                         .Sum(pair => pair.Value);
+      if (active == 0)
+      {
+        return;
+      }
+
+      await Task.Delay(PollingInterval,
+                       cancellationToken)
+                .ConfigureAwait(false);
+    }
+  }
+
+  /// <summary>
+  ///   Closes the session after a successful run or cancels it otherwise, then purges it if requested
+  /// </summary>
+  private static async Task CleanSessionAsync(ObjectPool<ChannelBase> channelPool,
+                                              string                  sessionId,
+                                              bool                    success,
+                                              bool                    purgeData)
+    => await channelPool.WithInstanceAsync(async channel =>
+                                           {
+                                             var client = new Sessions.SessionsClient(channel);
+                                             if (success)
+                                             {
+                                               await client.CloseSessionAsync(new CloseSessionRequest
+                                                                              {
+                                                                                SessionId = sessionId,
+                                                                              });
+                                             }
+                                             else
+                                             {
+                                               await client.CancelSessionAsync(new CancelSessionRequest
+                                                                               {
+                                                                                 SessionId = sessionId,
+                                                                               });
+                                             }
+
+                                             if (purgeData)
+                                             {
+                                               await client.PurgeSessionAsync(new PurgeSessionRequest
+                                                                              {
+                                                                                SessionId = sessionId,
+                                                                              });
+                                             }
+                                           },
+                                           CancellationToken.None)
+                        .ConfigureAwait(false);
+
+  /// <summary>
   ///   Counts the tasks of the session by status
   /// </summary>
-  private static async Task<IReadOnlyDictionary<TaskStatus, int>> CountTasksAsync(ChannelBase channel,
-                                                                                  string      sessionId)
+  private static async Task<IReadOnlyDictionary<TaskStatus, int>> CountTasksAsync(ChannelBase       channel,
+                                                                                  string            sessionId,
+                                                                                  CancellationToken cancellationToken)
   {
     var reply = await new Tasks.TasksClient(channel).CountTasksByStatusAsync(new CountTasksByStatusRequest
                                                                              {
@@ -519,7 +636,8 @@ internal static class Program
                                                                                              },
                                                                                            },
                                                                                          },
-                                                                             })
+                                                                             },
+                                                                             cancellationToken: cancellationToken)
                                                     .ConfigureAwait(false);
 
     return reply.Status.GroupBy(count => count.Status)
