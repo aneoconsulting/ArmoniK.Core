@@ -68,7 +68,9 @@ public class GraphOptions
   public string ParentChoice { get; set; } = "uniform";
 
   /// <summary>
-  ///   Probability that a dependency is taken from a uniformly chosen older level instead of the previous one
+  ///   Probability, between 0 and 1, that a dependency is taken from a uniformly chosen older level instead of the
+  ///   previous one. Unlike the distributions, it is not a drawn value but the parameter of the draw made for each
+  ///   dependency.
   /// </summary>
   public double SkipLevels { get; set; }
 
@@ -102,6 +104,12 @@ public class GraphOptions
   ///   their dependencies) or natural (first level first)
   /// </summary>
   public string SubmitOrder { get; set; } = "reverse";
+
+  /// <summary>
+  ///   Exit right after the submission of the client graph, without waiting for the end of the run: the session is
+  ///   left running (neither closed nor purged) and no result is reported
+  /// </summary>
+  public bool ExitAfterSubmission { get; set; }
 
   /// <summary>
   ///   Maximum time to wait for the end of the tasks

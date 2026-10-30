@@ -75,6 +75,7 @@ graph_batch_size               := "100"
 graph_submit_order             := "reverse"
 graph_timeout                  := "01:00:00"
 graph_purge_data               := "true"
+graph_exit_after_submission    := "false"
 
 # Export them as terraform environment variables
 export TF_VAR_core_tag          := tag
@@ -472,6 +473,7 @@ runGraph: buildGraphClient
     -e GraphOptions__SubmitOrder={{graph_submit_order}} \
     -e GraphOptions__Timeout={{graph_timeout}} \
     -e GraphOptions__PurgeData={{graph_purge_data}} \
+    -e GraphOptions__ExitAfterSubmission={{graph_exit_after_submission}} \
     -e GrpcClient__Endpoint={{endpoint}} \
     {{GRAPH_CLIENT_IMAGE}}
 

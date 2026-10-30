@@ -51,6 +51,35 @@ so the same seed and options give the same full graph on every machine and on ev
 Before submitting anything, the client generates the whole graph, nested sub-graphs included,
 and prints its statistics.
 
+## Running without just
+
+The test has two images: the worker, `dockerhubaneo/armonik_core_graph_test_worker`, to deploy
+as the worker of a partition of any ArmoniK deployment, and the client,
+`dockerhubaneo/armonik_core_graph_test_client`, a console application configured only through
+environment variables (see [Options](#options)). The client needs the endpoint of the control
+plane; the other `GrpcClient__*` variables (`CaCert`, `CertPem`, `KeyPem`,
+`AllowUnsafeConnection`, ...) configure TLS as for the other ArmoniK clients.
+
+```bash
+docker run --rm \
+  -e GrpcClient__Endpoint=<control plane endpoint, e.g. http://host:port> \
+  -e GraphOptions__Partition=<partition of the graph worker> \
+  -e GraphOptions__NTasks=10000 \
+  -e GraphOptions__ParentChoice=zipf:1.2 \
+  dockerhubaneo/armonik_core_graph_test_client:<tag>
+```
+
+The client can also run from the sources with the same variables:
+
+```bash
+GrpcClient__Endpoint=<control plane endpoint, e.g. http://host:port> GraphOptions__NTasks=10000 \
+  dotnet run --project Tests/Graph/Client/src
+```
+
+The worker reads the graph settings from the task options of the session, so it needs no
+configuration besides the usual ArmoniK worker settings. Client and worker must be built from
+the same version: the graph is generated on both sides and must match.
+
 ## Options
 
 Environment variables `GraphOptions__<Name>` of the client (just variables in parentheses):
@@ -64,7 +93,7 @@ Environment variables `GraphOptions__<Name>` of the client (just variables in pa
 | `TasksPerLevel` (`graph_tasks_per_level`) | `uniform` | `uniform`, `increasing`, `decreasing` or weights such as `1,10,100`     |
 | `DependenciesPerTask` (`graph_dependencies`) | `uniform:1:4` | Number of dependencies of a task (distribution)                     |
 | `ParentChoice` (`graph_parent_choice`) | `uniform` | `uniform`, `zipf:S` (a few outputs are depended on by many tasks) or `local` |
-| `SkipLevels` (`graph_skip_levels`) | `0`        | Probability to take a dependency from an older level                        |
+| `SkipLevels` (`graph_skip_levels`) | `0`        | Probability, between 0 and 1, to take each dependency from an older level (not a distribution) |
 | `TaskDuration` (`graph_duration`) | `const:100` | Task duration in ms (distribution)                                          |
 | `OutputSize` (`graph_output_size`) | `const:1`  | Output size in KB (distribution, 0 allowed)                                 |
 | `Partition` (`partition`)      | `""`           | Partition of the tasks                                                      |
@@ -73,6 +102,7 @@ Environment variables `GraphOptions__<Name>` of the client (just variables in pa
 | `SubmitOrder` (`graph_submit_order`) | `reverse` | `reverse` (last level first, so dependents always wait) or `natural`      |
 | `Timeout` (`graph_timeout`)    | `01:00:00`     | Maximum time to wait for the tasks                                          |
 | `PurgeData` (`graph_purge_data`) | `true`       | Purge the session at the end                                                |
+| `ExitAfterSubmission` (`graph_exit_after_submission`) | `false` | Exit after submitting the client graph, leaving the session running (no result) |
 
 Distributions: `const:V`, `uniform:MIN:MAX`, `normal:MEAN:STDDEV`, `lognormal:MEDIAN:SHAPE`,
 `exponential:MEAN` or `poisson:MEAN`, optionally followed by `:min=X` and/or `:max=Y` to clamp the
@@ -86,5 +116,12 @@ number of tasks, dependency edges, the maximum number of dependencies of a task,
 number of tasks waiting on the same output, the nesting depth, the number of expanding tasks,
 the critical path (in tasks) and the theoretical minimum duration. At the end it prints a
 `GRAPH_RESULT {json}` line with the wall-clock duration from the first submission, the
-throughput, the counts by status and the outcome. The exit code is non-zero if a task did
-not complete or if the session does not hold exactly NTasks tasks.
+throughput, the counts by status and the outcome (`finished`, `failed`, `timeout` or
+`interrupted`). The exit code is non-zero if a task did not complete or if the session does not
+hold exactly NTasks tasks.
+
+The client waits for the outputs of the client graph with the events API. The output of an
+expanding task is produced by the aggregator of its sub-graph, so these outputs complete once
+the sub-graphs that produce them are done; the client then polls the task counts only until the
+last tasks whose output no task consumes are done. Ctrl+C stops the client, then cancels the
+session (and purges it if `PurgeData` is set).
