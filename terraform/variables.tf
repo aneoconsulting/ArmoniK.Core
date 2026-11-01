@@ -79,8 +79,8 @@ variable "queue_storage" {
   })
   description = "Parameters to define the broker and protocol"
   validation {
-    condition     = can(regex("^(activemq|rabbitmq|artemis|pubsub|nats|sqs|none)$", var.queue_storage.name))
-    error_message = "Must be activemq, rabbitmq, artemis, pubsub, nats, sqs or none"
+    condition     = can(regex("^(activemq|rabbitmq|artemis|pubsub|nats|sqs|broker|none)$", var.queue_storage.name))
+    error_message = "Must be activemq, rabbitmq, artemis, pubsub, nats, sqs, broker or none"
   }
   default = {}
 }

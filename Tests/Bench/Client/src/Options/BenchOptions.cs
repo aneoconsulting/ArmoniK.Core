@@ -56,6 +56,17 @@ public class BenchOptions
   public int ResultSize { get; set; } = 1;
 
   /// <summary>
+  ///   Number of data shared by the tasks, created once in the session before the submission: the task i depends
+  ///   on the shared data i modulo this number. 0 disables them.
+  /// </summary>
+  public int SharedDataCount { get; set; }
+
+  /// <summary>
+  ///   Size of each shared data in kilobytes
+  /// </summary>
+  public int SharedDataSize { get; set; } = 1;
+
+  /// <summary>
   ///   Size of the payload from which streams are used to send payloads in kilobytes
   /// </summary>
   public int SwitchToStreamSize { get; set; } = 10;
