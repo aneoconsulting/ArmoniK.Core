@@ -17,7 +17,7 @@
     <PackageReference Include="ArmoniK.Utils.DocAttribute" Version="0.7.5">
       <ExcludeAssets>runtime</ExcludeAssets>
     </PackageReference>
-    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.13.0" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="4.16.0" />
   </ItemGroup>
 
   <ItemGroup>
