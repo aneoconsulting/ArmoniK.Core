@@ -2729,6 +2729,7 @@ public class TaskTableTestBase
                                                                      ReadyDependencies.Append(ReadyPayloadId)
                                                                                       .ToArray(),
                                                                      selector,
+                                                                     false,
                                                                      CancellationToken.None)
                                .ToListAsync(CancellationToken.None)
                                .ConfigureAwait(false);
