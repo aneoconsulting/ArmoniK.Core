@@ -58,18 +58,21 @@ if [ "$status" -eq 0 ]; then
   exit 1
 fi
 
-# The clients let an RpcException escape, so the status arrives as `Status(StatusCode="Unauthenticated",
-# Detail="...")` in the unhandled-exception trace. Matching the rendering exactly means a future gRPC
-# version that changes it fails this check rather than silently weakening it.
-if ! grep -q "StatusCode=\"$expected\"" "$log"; then
-  found="$(grep -o 'StatusCode="[A-Za-z]*"' "$log" | sort -u | paste -sd ' ' -)"
+# The status arrives as `Status(StatusCode="Unauthenticated", Detail="...")`, either in an unhandled-exception
+# trace or in the exception of a compact JSON log record, where its quotes are escaped. Matching the rendering
+# exactly means a future gRPC version that changes it fails this check rather than silently weakening it.
+status_of() {
+  printf 'StatusCode=\\\\?"%s\\\\?"' "$1"
+}
+if ! grep -qE "$(status_of "$expected")" "$log"; then
+  found="$(grep -oE "$(status_of '[A-Za-z]*')" "$log" | tr -d '\\' | sort -u | paste -sd ' ' -)"
   echo "FAIL: expected a refusal with $expected, got ${found:-no gRPC status at all} — the command failed," \
        "but not by being refused" >&2
   exit 1
 fi
 
 # The status alone does not say why: a token may be refused for another reason than the one under test
-if [ -n "$detail" ] && ! grep "StatusCode=\"$expected\"" "$log" | grep -qF -- "$detail"; then
+if [ -n "$detail" ] && ! grep -E "$(status_of "$expected")" "$log" | grep -qF -- "$detail"; then
   echo "FAIL: refused with $expected, but not for '$detail'" >&2
   exit 1
 fi
