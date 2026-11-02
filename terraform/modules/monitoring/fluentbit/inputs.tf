@@ -13,3 +13,8 @@ variable "exposed_port" {
   type    = number
   default = 24224
 }
+
+variable "windows" {
+  type    = bool
+  default = false
+}

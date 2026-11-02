@@ -8,6 +8,10 @@ resource "docker_container" "fluentbit" {
   image   = docker_image.fluentbit.image_id
   restart = "always"
 
+  # Windows nanoserver images run as ContainerUser, which cannot create files at the root of C:.
+  # fluent-bit writes armonik-logs.json in its working directory (C:\), so run it as administrator.
+  user = var.windows ? "ContainerAdministrator" : null
+
   networks_advanced {
     name = var.network.name
   }
