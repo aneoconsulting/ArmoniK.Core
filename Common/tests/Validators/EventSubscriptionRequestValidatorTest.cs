@@ -23,8 +23,8 @@ using ArmoniK.Api.gRPC.V1.Events;
 using ArmoniK.Api.gRPC.V1.Results;
 using ArmoniK.Api.gRPC.V1.Tasks;
 using ArmoniK.Core.Common.gRPC.Validators;
+using ArmoniK.Core.Common.Testing;
 using ArmoniK.Core.Common.Tests.ListResultsRequestExt;
-using ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 
 using FluentValidation.TestHelper;
 

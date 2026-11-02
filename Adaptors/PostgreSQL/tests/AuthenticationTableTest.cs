@@ -16,7 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 
 using Microsoft.Extensions.DependencyInjection;
 

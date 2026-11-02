@@ -18,7 +18,7 @@
 using System.Collections.Concurrent;
 
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 
 using Microsoft.Extensions.DependencyInjection;
 

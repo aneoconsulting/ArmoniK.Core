@@ -34,6 +34,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\Adaptors\MongoDB\src\ArmoniK.Core.Adapters.MongoDB.csproj" />
     <ProjectReference Include="..\src\ArmoniK.Core.Common.csproj" />
+    <ProjectReference Include="..\testing\ArmoniK.Core.Common.Testing.csproj" />
     <ProjectReference Include="../../Adaptors/Memory/src/ArmoniK.Core.Adapters.Memory.csproj" />
     <ProjectReference Include="../../Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj" />
   </ItemGroup>

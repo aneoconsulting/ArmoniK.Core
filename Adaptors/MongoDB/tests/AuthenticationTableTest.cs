@@ -18,7 +18,7 @@
 using System;
 
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 
 using Microsoft.Extensions.DependencyInjection;
 

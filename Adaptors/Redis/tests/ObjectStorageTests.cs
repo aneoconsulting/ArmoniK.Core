@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 using ArmoniK.Core.Utils;
 using ArmoniK.Core.Utils.Uuid;
 

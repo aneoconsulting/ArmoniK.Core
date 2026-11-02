@@ -21,7 +21,7 @@ using System.IO;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 using ArmoniK.Core.Common.Utils;
 
 using Microsoft.Extensions.Configuration;

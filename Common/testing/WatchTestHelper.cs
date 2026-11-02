@@ -22,7 +22,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ArmoniK.Core.Common.Tests.TestBase;
+namespace ArmoniK.Core.Common.Testing;
 
 /// <summary>
 ///   Helpers for the watcher tests.
