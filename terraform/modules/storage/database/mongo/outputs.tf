@@ -2,8 +2,8 @@ locals {
   query_parameters = compact([
     var.mongodb_params.use_direct_connection ? "directConnection=true" : null,
     can(coalesce(var.mongodb_params.replica_set_name)) ? "replicaSet=${var.mongodb_params.replica_set_name}" : null,
-    "tls=true",
-    "tlsInsecure=true",
+    local.tls ? "tls=true" : null,
+    local.tls ? "tlsInsecure=true" : null,
   ])
 
   query_suffix = length(local.query_parameters) > 0 ? "?${join("&", local.query_parameters)}" : ""
@@ -18,7 +18,7 @@ output "generated_env_vars" {
     "MongoDB__TableStorage__PollingDelayMin" = "${var.mongodb_params.min_polling_delay}"
     "MongoDB__TableStorage__PollingDelayMax" = "${var.mongodb_params.max_polling_delay}"
     "MongoDB__AllowInsecureTls"              = "false"
-    "MongoDB__CAFile"                        = "/mongo-certificate/ca.pem"
+    "MongoDB__CAFile"                        = local.tls ? "/mongo-certificate/ca.pem" : ""
     "MongoDB__ServerSelectionTimeout"        = "00:00:20"
   }
 
