@@ -304,6 +304,23 @@ public class Pollster : IInitializable
       // Number of tasks acquired while the currently running task was still busy (ie: prefetched tasks)
       // that could not be sent to the running stage before TimeoutBeforeNextAcquisition.
       var prefetchAttempts = 0;
+      var prefetchDisabled = pollsterOptions_.MaxPrefetchAttempts <= 0;
+
+      // Wait for the running task to finish. Returns false if the pollster is stopping.
+      async Task<bool> WaitForRunningTask()
+      {
+        try
+        {
+          await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
+                                                exceptionManager_.EarlyCancellationToken)
+                                 .ConfigureAwait(false);
+          return true;
+        }
+        catch (Exception e) when (e is OperationCanceledException or ChannelClosedException)
+        {
+          return false;
+        }
+      }
 
       while (!exceptionManager_.EarlyCancellationToken.IsCancellationRequested)
       {
@@ -323,13 +340,8 @@ public class Pollster : IInitializable
         if (prefetchAttempts >= pollsterOptions_.MaxPrefetchAttempts)
         {
           logger_.LogDebug("Waiting for processing task to finish before acquiring a new task");
-          try
-          {
-            await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
-                                                  exceptionManager_.EarlyCancellationToken)
-                                   .ConfigureAwait(false);
-          }
-          catch (Exception e) when (e is OperationCanceledException or ChannelClosedException)
+          if (!await WaitForRunningTask()
+                 .ConfigureAwait(false))
           {
             break;
           }
@@ -379,6 +391,14 @@ public class Pollster : IInitializable
           {
             var             message        = messages.Current;
             await using var messageDispose = new Deferrer(() => message.DisposeIgnoreErrorAsync(logger_));
+
+            // Prefetch disabled: the messages of the batch are processed sequentially,
+            // each task being acquired only once the previous one has finished.
+            if (prefetchDisabled && !await WaitForRunningTask()
+                                          .ConfigureAwait(false))
+            {
+              break;
+            }
 
             var taskHandlerLogger = loggerFactory_.CreateLogger<TaskHandler>();
             using var _ = taskHandlerLogger.BeginNamedScope("Prefetch messageHandler",
@@ -479,9 +499,9 @@ public class Pollster : IInitializable
                                             "Error during Task Pre-Processing");
             }
 
-            if (prefetchAttempts >= pollsterOptions_.MaxPrefetchAttempts)
+            if (!prefetchDisabled && prefetchAttempts >= pollsterOptions_.MaxPrefetchAttempts)
             {
-              // No more prefetch allowed: stop going through the messages.
+              // No more prefetch attempt: stop going through the messages.
               // The remaining ones are released (by `messagesDispose`) so that other agents can process them
               // while this agent waits for its running task to finish.
               break;

@@ -72,7 +72,8 @@ public class Pollster
   ///   Number of acquisitions to try during the processing of a previous task (prefetch).
   ///   If the processing task is still running after that many acquisitions,
   ///   the Agent will stop acquiring tasks until the processing task has finished.
-  ///   Set to 0 (or a negative value) to disable prefetch: a task is acquired only once the previous one has finished.
+  ///   Set to 0 (or a negative value) to disable prefetch: a task is acquired only once the previous one has finished,
+  ///   and the messages of a batch (see MessageBatchSize) are processed sequentially.
   /// </summary>
   public int MaxPrefetchAttempts { get; set; } = 3;
 
