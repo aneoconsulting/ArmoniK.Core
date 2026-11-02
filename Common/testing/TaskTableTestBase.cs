@@ -39,7 +39,6 @@ using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.ListTasksRequestExt;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
 
@@ -54,7 +53,7 @@ using Output = ArmoniK.Core.Common.Storage.Output;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
-namespace ArmoniK.Core.Common.Tests.TestBase;
+namespace ArmoniK.Core.Common.Testing;
 
 [TestFixture]
 public class TaskTableTestBase

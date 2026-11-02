@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Partitions;
 
-namespace ArmoniK.Core.Common.Tests.ListPartitionsRequestExt;
+namespace ArmoniK.Core.Common.Testing;
 
 public static class ListPartitionsHelper
 {

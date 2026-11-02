@@ -31,7 +31,7 @@ using NUnit.Framework;
 
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
-namespace ArmoniK.Core.Common.Tests.TestBase;
+namespace ArmoniK.Core.Common.Testing;
 
 [TestFixture]
 public class TaskWatcherTestBase

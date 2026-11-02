@@ -32,7 +32,7 @@
 using System.Collections.Concurrent;
 
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.DependencyInjection;

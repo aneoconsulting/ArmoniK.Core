@@ -24,7 +24,7 @@ using ArmoniK.Api.gRPC.V1.Tasks;
 using static Google.Protobuf.WellKnownTypes.Duration;
 using static Google.Protobuf.WellKnownTypes.Timestamp;
 
-namespace ArmoniK.Core.Common.Tests.ListTasksRequestExt;
+namespace ArmoniK.Core.Common.Testing;
 
 public static class ListTasksHelper
 {

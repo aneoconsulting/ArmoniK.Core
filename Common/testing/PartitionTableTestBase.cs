@@ -28,13 +28,12 @@ using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.ListPartitionsRequestExt;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests.TestBase;
+namespace ArmoniK.Core.Common.Testing;
 
 [TestFixture]
 public class PartitionTableTestBase
