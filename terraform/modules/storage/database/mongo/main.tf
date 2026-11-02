@@ -7,7 +7,10 @@ resource "docker_container" "database" {
   name  = var.mongodb_params.database_name
   image = docker_image.database.image_id
 
-  command = ["mongod", "--bind_ip_all", "--replSet", var.mongodb_params.replica_set_name, "--tlsMode=requireTLS", "--tlsDisabledProtocols=TLS1_0", "--tlsCertificateKeyFile=/mongo-certificate/key.pem", "--tlsCAFile=/mongo-certificate/ca.pem", "--tlsAllowConnectionsWithoutCertificates"]
+  command = concat(
+    ["mongod", "--bind_ip_all", "--replSet", var.mongodb_params.replica_set_name],
+    local.tls ? ["--tlsMode=requireTLS", "--tlsDisabledProtocols=TLS1_0", "--tlsCertificateKeyFile=/mongo-certificate/key.pem", "--tlsCAFile=/mongo-certificate/ca.pem", "--tlsAllowConnectionsWithoutCertificates"] : [],
+  )
 
   networks_advanced {
     name = var.network.name
@@ -50,9 +53,12 @@ resource "time_sleep" "wait" {
   depends_on      = [docker_container.database]
 }
 locals {
+  # TLS is disabled on Windows: mongod from the nanoserver image fails to load the TLS key
+  # ("InvalidSSLConfiguration: NCryptImportKey failed"), as administrator or not.
+  tls       = !var.windows
   linux_run = "docker exec ${docker_container.database.name} mongosh mongodb://127.0.0.1:27017/${var.mongodb_params.database_name} --tls --tlsCAFile /mongo-certificate/ca.pem"
   // mongosh is not installed in windows docker images so we need it to be installed locally
-  windows_run = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name}?serverSelectionTimeoutMS=10000 --tls --tlsCAFile ${local_sensitive_file.ca.filename}"
+  windows_run = "mongosh.exe mongodb://127.0.0.1:${var.mongodb_params.exposed_port}/${var.mongodb_params.database_name}?serverSelectionTimeoutMS=10000"
   prefix_run  = var.windows ? local.windows_run : local.linux_run
   mongo_init_repset = templatefile("${path.module}/mongo_init.tpl.js", {
     replica_set_name = var.mongodb_params.replica_set_name

@@ -103,7 +103,11 @@ export TF_VAR_queue_storage := if queue == "rabbitmq" {
 export TF_VAR_database_storage := if database == "postgresql" {
   '{ name = "postgresql", image = "postgres" }'
 } else if database == "mongo" {
-  '{ name = "mongo", image = "mongo" }'
+  if os_family() == "windows" {
+    '{ name = "mongo", image = "mongo:nanoserver-ltsc2022" }'
+  } else {
+    '{ name = "mongo", image = "mongo" }'
+  }
 } else {
   error("Unknown database: " + database + ". Must be mongo or postgresql")
 }
@@ -177,7 +181,7 @@ export TF_VAR_ingress:= if ingress == "false" {
 }
 
 export TF_VAR_log_driver_image:= if os_family() == "windows" {
-  "fluent/fluent-bit:windows-2022-3.1.4"
+  "fluent/fluent-bit:windows-nano-2025-5.1.5"
 } else {
   "fluent/fluent-bit:latest"
 }

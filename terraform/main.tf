@@ -2,6 +2,7 @@ module "fluenbit" {
   source  = "./modules/monitoring/fluentbit"
   image   = var.log_driver_image
   network = local.network
+  windows = var.windows
 }
 
 module "seq" {
