@@ -395,7 +395,7 @@ public class Pollster : IInitializable
             // Prefetch disabled: the messages of the batch are processed sequentially,
             // each task being acquired only once the previous one has finished.
             if (prefetchDisabled && !await WaitForRunningTask()
-                                          .ConfigureAwait(false))
+                                       .ConfigureAwait(false))
             {
               break;
             }
