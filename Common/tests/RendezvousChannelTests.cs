@@ -77,6 +77,28 @@ public class RendezvousChannelTest
 
   [Test]
   [Timeout(10000)]
+  [Repeat(1000)]
+  public async Task ReaderShouldNotBeReadyAfterRead()
+  {
+    var queue = new RendezvousChannel<int>();
+
+    var reader = queue.ReadAsync(Timeout.InfiniteTimeSpan);
+
+    await queue.WriteAsync(1,
+                           Timeout.InfiniteTimeSpan)
+               .ConfigureAwait(false);
+
+    // Once the write has completed, the reader is busy with the value until it reads again:
+    // waiting for the reader must not succeed on a stale notification.
+    Assert.That(() => queue.WaitForReader(TimeSpan.Zero),
+                Throws.InstanceOf<TimeoutException>());
+
+    Assert.That(await reader.ConfigureAwait(false),
+                Is.EqualTo(1));
+  }
+
+  [Test]
+  [Timeout(10000)]
   public async Task TimeoutDuration([Values] bool isReader,
                                     [Values] bool useCancellation)
   {

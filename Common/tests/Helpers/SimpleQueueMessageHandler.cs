@@ -25,8 +25,17 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class SimpleQueueMessageHandler : IQueueMessageHandler
 {
+  private readonly TaskCompletionSource disposed_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+  /// <summary>
+  ///   Completes when the message has been disposed (ie: released to the queue)
+  /// </summary>
+  public Task Disposed
+    => disposed_.Task;
+
   public ValueTask DisposeAsync()
   {
+    disposed_.TrySetResult();
     GC.SuppressFinalize(this);
     return ValueTask.CompletedTask;
   }

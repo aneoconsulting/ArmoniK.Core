@@ -156,8 +156,7 @@ public class TestPollsterProvider : IDisposable
     {
       foreach (var pair in additionalConfig)
       {
-        minimalConfig.Add(pair.Key,
-                          pair.Value);
+        minimalConfig[pair.Key] = pair.Value;
       }
     }
 

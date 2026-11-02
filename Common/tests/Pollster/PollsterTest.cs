@@ -41,6 +41,7 @@ using Moq;
 
 using NUnit.Framework;
 
+using ComputePlane = ArmoniK.Api.Common.Options.ComputePlane;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
@@ -818,6 +819,324 @@ public class PollsterTest
                 Is.EqualTo(TaskStatus.Submitted));
 
     testServiceProvider.AssertFailAfterError();
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task PrefetchShouldBeDisabledWhenNoPrefetchAttempts([Values(0,
+                                                                           1)]
+                                                                   int maxPrefetchAttempts)
+  {
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(3000);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage,
+                                                             acquireTimeout: TimeSpan.FromSeconds(10),
+                                                             additionalConfig: new Dictionary<string, string>
+                                                                               {
+                                                                                 {
+                                                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.MaxPrefetchAttempts)}",
+                                                                                   maxPrefetchAttempts.ToString()
+                                                                                 },
+                                                                               });
+
+    var (sessionId, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                            testServiceProvider.PartitionTable,
+                                                            testServiceProvider.ResultTable,
+                                                            testServiceProvider.SessionTable,
+                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+    var taskSubmitted2 = await CreateTask(testServiceProvider,
+                                          sessionId)
+                           .ConfigureAwait(false);
+
+    foreach (var taskId in new[]
+                           {
+                             taskSubmitted,
+                             taskSubmitted2,
+                           })
+    {
+      await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                           {
+                                                             CancellationToken = CancellationToken.None,
+                                                             Status            = QueueMessageStatus.Waiting,
+                                                             MessageId = Guid.NewGuid()
+                                                                             .ToString(),
+                                                             TaskId = taskId,
+                                                           })
+                                .ConfigureAwait(false);
+    }
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var mainLoop = testServiceProvider.Pollster.MainLoop();
+
+    await waitWorkerStreamHandler.Started.ConfigureAwait(false);
+
+    if (maxPrefetchAttempts > 0)
+    {
+      // Prefetch enabled: the second task is acquired while the first one is still running
+      await testServiceProvider.WaitForTaskStatus(taskSubmitted2,
+                                                  new[]
+                                                  {
+                                                    TaskStatus.Dispatched,
+                                                  },
+                                                  TimeSpan.FromSeconds(2))
+                               .ConfigureAwait(false);
+    }
+    else
+    {
+      // Prefetch disabled: the second task is not acquired while the first one is still running
+      await Task.Delay(TimeSpan.FromMilliseconds(1000))
+                .ConfigureAwait(false);
+
+      Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted2,
+                                                                    CancellationToken.None)
+                                           .ConfigureAwait(false),
+                  Is.EqualTo(TaskStatus.Submitted));
+    }
+
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.DoesNotThrowAsync(() => mainLoop);
+
+    // No error check here: when prefetch is enabled, the application may be stopped while the second task
+    // is still being pre-processed, and that cancellation is recorded as an error.
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task RemainingMessagesShouldBeReleasedWhenNoMorePrefetchAttempts()
+  {
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(5000);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage,
+                                                             acquireTimeout: TimeSpan.FromMilliseconds(200),
+                                                             maxError: 0,
+                                                             additionalConfig: new Dictionary<string, string>
+                                                                               {
+                                                                                 {
+                                                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.MaxPrefetchAttempts)}",
+                                                                                   "1"
+                                                                                 },
+                                                                                 {
+                                                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "3"
+                                                                                 },
+                                                                               });
+
+    var (sessionId, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                            testServiceProvider.PartitionTable,
+                                                            testServiceProvider.ResultTable,
+                                                            testServiceProvider.SessionTable,
+                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+    var taskSubmitted2 = await CreateTask(testServiceProvider,
+                                          sessionId)
+                           .ConfigureAwait(false);
+
+    // All three messages are pulled in the same batch:
+    // - the first task is sent to the worker,
+    // - the second task is prefetched, times out and uses the only prefetch attempt,
+    // - the third message must then be released without waiting for the first task to finish.
+    var messages = new[]
+      {
+        taskSubmitted,
+        taskSubmitted2,
+        "TaskNeverReached",
+      }.Select(taskId => new SimpleQueueMessageHandler
+                         {
+                           CancellationToken = CancellationToken.None,
+                           Status            = QueueMessageStatus.Waiting,
+                           MessageId = Guid.NewGuid()
+                                           .ToString(),
+                           TaskId = taskId,
+                         })
+       .ToList();
+
+    foreach (var message in messages)
+    {
+      await mockPullQueueStorage.Channel.Writer.WriteAsync(message)
+                                .ConfigureAwait(false);
+    }
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var mainLoop = testServiceProvider.Pollster.MainLoop();
+
+    await waitWorkerStreamHandler.Started.ConfigureAwait(false);
+
+    // The worker runs for 5s: the released messages must be disposed well before that
+    Assert.That(() => Task.WhenAll(messages[1].Disposed,
+                                   messages[2].Disposed)
+                          .WaitAsync(TimeSpan.FromSeconds(2)),
+                Throws.Nothing);
+    Assert.That(messages[2].Status,
+                Is.EqualTo(QueueMessageStatus.Waiting));
+    Assert.That(messages[0].Disposed.IsCompleted,
+                Is.False);
+
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.DoesNotThrowAsync(() => mainLoop);
+
+    testServiceProvider.AssertFailAfterError();
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task BatchShouldBeProcessedSequentiallyWhenPrefetchDisabled()
+  {
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(1500);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage,
+                                                             acquireTimeout: TimeSpan.FromSeconds(10),
+                                                             additionalConfig: new Dictionary<string, string>
+                                                                               {
+                                                                                 {
+                                                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.MaxPrefetchAttempts)}",
+                                                                                   "0"
+                                                                                 },
+                                                                                 {
+                                                                                   $"{ComputePlane.SettingSection}:{nameof(ComputePlane.MessageBatchSize)}", "2"
+                                                                                 },
+                                                                               });
+
+    var (sessionId, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                            testServiceProvider.PartitionTable,
+                                                            testServiceProvider.ResultTable,
+                                                            testServiceProvider.SessionTable,
+                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+    var taskSubmitted2 = await CreateTask(testServiceProvider,
+                                          sessionId)
+                           .ConfigureAwait(false);
+
+    // Both messages are pulled in the same batch.
+    // The queue does not deliver released messages again: the second task can only be processed
+    // if its message is kept by the pollster while the first task is running.
+    var messages = new[]
+      {
+        taskSubmitted,
+        taskSubmitted2,
+      }.Select(taskId => new SimpleQueueMessageHandler
+                         {
+                           CancellationToken = CancellationToken.None,
+                           Status            = QueueMessageStatus.Waiting,
+                           MessageId = Guid.NewGuid()
+                                           .ToString(),
+                           TaskId = taskId,
+                         })
+       .ToList();
+
+    foreach (var message in messages)
+    {
+      await mockPullQueueStorage.Channel.Writer.WriteAsync(message)
+                                .ConfigureAwait(false);
+    }
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var mainLoop = testServiceProvider.Pollster.MainLoop();
+
+    await waitWorkerStreamHandler.Started.ConfigureAwait(false);
+
+    // While the first task is running, the second one is neither acquired nor released
+    await Task.Delay(TimeSpan.FromMilliseconds(500))
+              .ConfigureAwait(false);
+
+    Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted2,
+                                                                  CancellationToken.None)
+                                         .ConfigureAwait(false),
+                Is.EqualTo(TaskStatus.Submitted));
+    Assert.That(messages[1].Disposed.IsCompleted,
+                Is.False);
+
+    // Once the first task has finished, the second one is processed from the same batch
+    await testServiceProvider.WaitForTaskStatus(taskSubmitted2,
+                                                new[]
+                                                {
+                                                  TaskStatus.Dispatched,
+                                                  TaskStatus.Processing,
+                                                },
+                                                TimeSpan.FromSeconds(5))
+                             .ConfigureAwait(false);
+
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.DoesNotThrowAsync(() => mainLoop);
+  }
+
+  private static async Task<string> CreateTask(TestPollsterProvider testServiceProvider,
+                                               string               sessionId)
+  {
+    var expectedOutput = Guid.NewGuid()
+                             .ToString();
+    await testServiceProvider.ResultTable.Create(new[]
+                                                 {
+                                                   new Result(sessionId,
+                                                              expectedOutput,
+                                                              "",
+                                                              "",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              null,
+                                                              0,
+                                                              Array.Empty<byte>(),
+                                                              false),
+                                                 },
+                                                 CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var requests = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                   sessionId,
+                                                                   new TaskOptions(),
+                                                                   new List<TaskRequest>
+                                                                   {
+                                                                     new(new[]
+                                                                         {
+                                                                           expectedOutput,
+                                                                         },
+                                                                         new List<string>(),
+                                                                         new List<ReadOnlyMemory<byte>>
+                                                                         {
+                                                                           new(Encoding.ASCII.GetBytes("AAAA")),
+                                                                         }.ToAsyncEnumerable()),
+                                                                   }.ToAsyncEnumerable(),
+                                                                   CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    var sessionData = await testServiceProvider.SessionTable.GetSessionAsync(sessionId,
+                                                                             CancellationToken.None)
+                                               .ConfigureAwait(false);
+
+    await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
+                                                             sessionData,
+                                                             sessionId,
+                                                             CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    return requests.First()
+                   .TaskId;
   }
 
   [Test]

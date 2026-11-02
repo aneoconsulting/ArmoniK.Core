@@ -161,11 +161,23 @@ public class RendezvousChannel<T>
 
     // Notify the presence of a reader
     readerReady_.SetResult();
-    await using var notReady = new Deferrer(() => readerReady_ = new TaskCompletionSource());
 
-    if (!await readerSem_.WaitAsync(timeout,
-                                    cancellationToken)
-                         .ConfigureAwait(false))
+    bool acquired;
+    try
+    {
+      acquired = await readerSem_.WaitAsync(timeout,
+                                            cancellationToken)
+                                 .ConfigureAwait(false);
+    }
+    finally
+    {
+      // The reader is no longer ready as soon as it stops waiting.
+      // This must happen before the writer is released so that a writer calling WaitForReader
+      // right after a successful write does not observe a stale ready reader.
+      readerReady_ = new TaskCompletionSource();
+    }
+
+    if (!acquired)
     {
       throw new TimeoutException("No producer in the allotted time");
     }

@@ -55,11 +55,27 @@ public class Pollster
   public TimeSpan TimeoutBeforeNextAcquisition { get; set; } = TimeSpan.FromSeconds(10);
 
   /// <summary>
-  ///   Number of acquisitions to try during the processing of a previous task.
+  ///   Deprecated alias of <see cref="MaxPrefetchAttempts" />.
+  /// </summary>
+  /// <remarks>
+  ///   Declared before <see cref="MaxPrefetchAttempts" /> on purpose: configuration is bound in declaration order,
+  ///   so <see cref="MaxPrefetchAttempts" /> takes precedence when both are set.
+  /// </remarks>
+  [Obsolete($"Use {nameof(MaxPrefetchAttempts)} instead")]
+  public int NbAcquisitionRetry
+  {
+    get => MaxPrefetchAttempts;
+    set => MaxPrefetchAttempts = value;
+  }
+
+  /// <summary>
+  ///   Number of acquisitions to try during the processing of a previous task (prefetch).
   ///   If the processing task is still running after that many acquisitions,
   ///   the Agent will stop acquiring tasks until the processing task has finished.
+  ///   Set to 0 (or a negative value) to disable prefetch: a task is acquired only once the previous one has finished,
+  ///   and the messages of a batch (see MessageBatchSize) are processed sequentially.
   /// </summary>
-  public int NbAcquisitionRetry { get; set; } = 3;
+  public int MaxPrefetchAttempts { get; set; } = 3;
 
   /// <summary>
   ///   Delay between consecutive re-reads of a task that is still in Pending status during acquisition,
