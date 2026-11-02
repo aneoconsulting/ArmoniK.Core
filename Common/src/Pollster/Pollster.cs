@@ -22,6 +22,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Linq;
 using System.Threading;
+using System.Threading.Channels;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Options;
@@ -300,7 +301,9 @@ public class Pollster : IInitializable
 
       using var logLoop = logger_.LogFunction(functionName: $"{nameof(Pollster)}.{nameof(MainLoop)}.prefetchTask.WhileLoop");
 
-      var acquisitionRetry = 0;
+      // Number of tasks acquired while the currently running task was still busy (ie: prefetched tasks)
+      // that could not be sent to the running stage before TimeoutBeforeNextAcquisition.
+      var prefetchAttempts = 0;
 
       while (!exceptionManager_.EarlyCancellationToken.IsCancellationRequested)
       {
@@ -313,6 +316,25 @@ public class Pollster : IInitializable
                                        hcr.Status,
                                        hcr.Description);
           return;
+        }
+
+        // When no more prefetch attempts are allowed (always the case if prefetch is disabled),
+        // wait for the running task to finish before pulling and acquiring new tasks.
+        if (prefetchAttempts >= pollsterOptions_.NbAcquisitionRetry)
+        {
+          logger_.LogDebug("Waiting for processing task to finish before acquiring a new task");
+          try
+          {
+            await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
+                                                  exceptionManager_.EarlyCancellationToken)
+                                   .ConfigureAwait(false);
+          }
+          catch (Exception e) when (e is OperationCanceledException or ChannelClosedException)
+          {
+            break;
+          }
+
+          prefetchAttempts = 0;
         }
 
         logger_.LogTrace("Trying to fetch messages");
@@ -432,54 +454,22 @@ public class Pollster : IInitializable
                 // TaskHandler has been successfully sent to the next stage of the pipeline
                 // So remove the automatic dispose of the TaskHandler
                 taskHandlerDispose.Reset();
+
+                // A new task is now running: the prefetch attempts are counted from scratch for this one
+                prefetchAttempts = 0;
               }
-              catch (Exception e)
+              catch (Exception e) when (e is TimeoutException or OperationCanceledException)
+              {
+                // The running task is still busy (or the pollster is stopping): give the task back to the queue
+                await taskHandler.ReleaseAndPostponeTask()
+                                 .ConfigureAwait(false);
+                prefetchAttempts += 1;
+              }
+              catch
               {
                 await taskHandler.ReleaseAndPostponeTask()
                                  .ConfigureAwait(false);
-
-                switch (e)
-                {
-                  // If there is still a running task after the acquire timeout
-                  case TimeoutException:
-                    // If we still have acquisition retries available, continue right away with the next message
-                    acquisitionRetry += 1;
-                    if (acquisitionRetry < pollsterOptions_.NbAcquisitionRetry)
-                    {
-                      break;
-                    }
-
-                    acquisitionRetry = 0;
-
-                    // Otherwise, we just wait for the running task to finish before trying to acquire a new task
-                    try
-                    {
-                      logger_.LogDebug("Too many acquire timeouts, waiting for processing task to finish");
-
-                      // We dispose early the messages in order to avoid blocking them while not trying to acquire their corresponding tasks
-                      // Disposing twice is safe as the second dispose (from the using) will just do nothing.
-                      // ReSharper disable once DisposeOnUsingVariable
-                      await taskHandlerDispose.DisposeAsync()
-                                              .ConfigureAwait(false);
-                      // ReSharper disable once DisposeOnUsingVariable
-                      await messagesDispose.DisposeAsync()
-                                           .ConfigureAwait(false);
-                      await runningTaskQueue_.WaitForReader(Timeout.InfiniteTimeSpan,
-                                                            exceptionManager_.EarlyCancellationToken)
-                                             .ConfigureAwait(false);
-                    }
-                    catch (OperationCanceledException)
-                    {
-                    }
-
-                    break;
-                  // If the cancellation token has been triggered, we ignore the error and continue right away
-                  case OperationCanceledException:
-                    break;
-                  // In case of any other error, we record the error and continue right away
-                  default:
-                    throw;
-                }
+                throw;
               }
             }
             catch (Exception e)
@@ -487,6 +477,14 @@ public class Pollster : IInitializable
               exceptionManager_.RecordError(logger_,
                                             e,
                                             "Error during Task Pre-Processing");
+            }
+
+            if (prefetchAttempts >= pollsterOptions_.NbAcquisitionRetry)
+            {
+              // No more prefetch allowed: stop going through the messages.
+              // The remaining ones are released (by `messagesDispose`) so that other agents can process them
+              // while this agent waits for its running task to finish.
+              break;
             }
           }
         }

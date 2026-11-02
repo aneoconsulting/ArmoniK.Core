@@ -822,6 +822,139 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
+  public async Task PrefetchShouldBeDisabledWhenNoAcquisitionRetry([Values(0, 1)] int nbAcquisitionRetry)
+  {
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(3000);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage,
+                                                             acquireTimeout: TimeSpan.FromSeconds(10),
+                                                             maxError: 0,
+                                                             additionalConfig: new Dictionary<string, string>
+                                                                               {
+                                                                                 {
+                                                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.NbAcquisitionRetry)}",
+                                                                                   nbAcquisitionRetry.ToString()
+                                                                                 },
+                                                                               });
+
+    var (sessionId, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                            testServiceProvider.PartitionTable,
+                                                            testServiceProvider.ResultTable,
+                                                            testServiceProvider.SessionTable,
+                                                            CancellationToken.None)
+                                          .ConfigureAwait(false);
+
+    var expectedOutput = "ExpectedOutputPrefetch";
+    await testServiceProvider.ResultTable.Create(new[]
+                                                 {
+                                                   new Result(sessionId,
+                                                              expectedOutput,
+                                                              "",
+                                                              "",
+                                                              "",
+                                                              "",
+                                                              ResultStatus.Created,
+                                                              new List<string>(),
+                                                              DateTime.UtcNow,
+                                                              null,
+                                                              0,
+                                                              Array.Empty<byte>(),
+                                                              false),
+                                                 },
+                                                 CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var requests = await testServiceProvider.Submitter.CreateTasks(sessionId,
+                                                                   sessionId,
+                                                                   new TaskOptions(),
+                                                                   new List<TaskRequest>
+                                                                   {
+                                                                     new(new[]
+                                                                         {
+                                                                           expectedOutput,
+                                                                         },
+                                                                         new List<string>(),
+                                                                         new List<ReadOnlyMemory<byte>>
+                                                                         {
+                                                                           new(Encoding.ASCII.GetBytes("AAAA")),
+                                                                         }.ToAsyncEnumerable()),
+                                                                   }.ToAsyncEnumerable(),
+                                                                   CancellationToken.None)
+                                            .ConfigureAwait(false);
+
+    var sessionData = await testServiceProvider.SessionTable.GetSessionAsync(sessionId,
+                                                                             CancellationToken.None)
+                                               .ConfigureAwait(false);
+
+    await testServiceProvider.Submitter.FinalizeTaskCreation(requests,
+                                                             sessionData,
+                                                             sessionId,
+                                                             CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var taskSubmitted2 = requests.First()
+                                 .TaskId;
+
+    foreach (var taskId in new[]
+                           {
+                             taskSubmitted,
+                             taskSubmitted2,
+                           })
+    {
+      await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                           {
+                                                             CancellationToken = CancellationToken.None,
+                                                             Status            = QueueMessageStatus.Waiting,
+                                                             MessageId = Guid.NewGuid()
+                                                                             .ToString(),
+                                                             TaskId = taskId,
+                                                           })
+                                .ConfigureAwait(false);
+    }
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var mainLoop = testServiceProvider.Pollster.MainLoop();
+
+    await waitWorkerStreamHandler.Started.ConfigureAwait(false);
+
+    if (nbAcquisitionRetry > 0)
+    {
+      // Prefetch enabled: the second task is acquired while the first one is still running
+      await testServiceProvider.WaitForTaskStatus(taskSubmitted2,
+                                                  new[]
+                                                  {
+                                                    TaskStatus.Dispatched,
+                                                  },
+                                                  TimeSpan.FromSeconds(2))
+                               .ConfigureAwait(false);
+    }
+    else
+    {
+      // Prefetch disabled: the second task is not acquired while the first one is still running
+      await Task.Delay(TimeSpan.FromMilliseconds(1000))
+                .ConfigureAwait(false);
+
+      Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted2,
+                                                                    CancellationToken.None)
+                                           .ConfigureAwait(false),
+                  Is.EqualTo(TaskStatus.Submitted));
+    }
+
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.DoesNotThrowAsync(() => mainLoop);
+
+    testServiceProvider.AssertFailAfterError();
+  }
+
+  [Test]
+  [Timeout(10000)]
   public async Task ExecuteTaskThatExceedsGraceDelayShouldResubmit([Values] bool healthy)
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
