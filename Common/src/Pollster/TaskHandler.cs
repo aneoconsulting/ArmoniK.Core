@@ -1314,12 +1314,18 @@ public sealed class TaskHandler : IAsyncDisposable
         {
           foreach (var id in agent_.CreatedResultIds)
           {
+            // Copy to a temporary file first, then move it atomically into the cache:
+            // dependent tasks may already be reading the cache on this agent, and must never see a partially written file
+            var tmp = Path.Combine(cache_,
+                                   $"{id}{uuidGenerator_.GenerateUuid().ToString()}.tmp");
             try
             {
               File.Copy(Path.Combine(folder_,
                                      id),
-                        Path.Combine(cache_,
-                                     id));
+                        tmp);
+              FileExt.MoveOrDelete(tmp,
+                                   Path.Combine(cache_,
+                                                id));
             }
             catch (Exception e) when (e is IOException or UnauthorizedAccessException)
             {
