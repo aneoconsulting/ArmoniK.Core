@@ -320,7 +320,7 @@ public class Pollster : IInitializable
 
         // When no more prefetch attempts are allowed (always the case if prefetch is disabled),
         // wait for the running task to finish before pulling and acquiring new tasks.
-        if (prefetchAttempts >= pollsterOptions_.NbAcquisitionRetry)
+        if (prefetchAttempts >= pollsterOptions_.MaxPrefetchAttempts)
         {
           logger_.LogDebug("Waiting for processing task to finish before acquiring a new task");
           try
@@ -479,7 +479,7 @@ public class Pollster : IInitializable
                                             "Error during Task Pre-Processing");
             }
 
-            if (prefetchAttempts >= pollsterOptions_.NbAcquisitionRetry)
+            if (prefetchAttempts >= pollsterOptions_.MaxPrefetchAttempts)
             {
               // No more prefetch allowed: stop going through the messages.
               // The remaining ones are released (by `messagesDispose`) so that other agents can process them

@@ -822,7 +822,7 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
-  public async Task PrefetchShouldBeDisabledWhenNoAcquisitionRetry([Values(0, 1)] int nbAcquisitionRetry)
+  public async Task PrefetchShouldBeDisabledWhenNoPrefetchAttempts([Values(0, 1)] int maxPrefetchAttempts)
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new WaitWorkerStreamHandler(3000);
@@ -836,8 +836,8 @@ public class PollsterTest
                                                              additionalConfig: new Dictionary<string, string>
                                                                                {
                                                                                  {
-                                                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.NbAcquisitionRetry)}",
-                                                                                   nbAcquisitionRetry.ToString()
+                                                                                   $"{Injection.Options.Pollster.SettingSection}:{nameof(Injection.Options.Pollster.MaxPrefetchAttempts)}",
+                                                                                   maxPrefetchAttempts.ToString()
                                                                                  },
                                                                                });
 
@@ -923,7 +923,7 @@ public class PollsterTest
 
     await waitWorkerStreamHandler.Started.ConfigureAwait(false);
 
-    if (nbAcquisitionRetry > 0)
+    if (maxPrefetchAttempts > 0)
     {
       // Prefetch enabled: the second task is acquired while the first one is still running
       await testServiceProvider.WaitForTaskStatus(taskSubmitted2,
