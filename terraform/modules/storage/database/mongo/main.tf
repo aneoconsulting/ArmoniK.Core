@@ -7,6 +7,10 @@ resource "docker_container" "database" {
   name  = var.mongodb_params.database_name
   image = docker_image.database.image_id
 
+  # The nanoserver image runs as ContainerUser, for which mongod fails to import the TLS key
+  # ("NCryptImportKey failed"). Run it as administrator on Windows, as the Server Core image did.
+  user = var.windows ? "ContainerAdministrator" : null
+
   command = ["mongod", "--bind_ip_all", "--replSet", var.mongodb_params.replica_set_name, "--tlsMode=requireTLS", "--tlsDisabledProtocols=TLS1_0", "--tlsCertificateKeyFile=/mongo-certificate/key.pem", "--tlsCAFile=/mongo-certificate/ca.pem", "--tlsAllowConnectionsWithoutCertificates"]
 
   networks_advanced {
