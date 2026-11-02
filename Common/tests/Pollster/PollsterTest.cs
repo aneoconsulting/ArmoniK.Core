@@ -823,7 +823,9 @@ public class PollsterTest
 
   [Test]
   [Timeout(10000)]
-  public async Task PrefetchShouldBeDisabledWhenNoPrefetchAttempts([Values(0, 1)] int maxPrefetchAttempts)
+  public async Task PrefetchShouldBeDisabledWhenNoPrefetchAttempts([Values(0,
+                                                                           1)]
+                                                                   int maxPrefetchAttempts)
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
     var waitWorkerStreamHandler = new WaitWorkerStreamHandler(3000);
@@ -947,19 +949,19 @@ public class PollsterTest
     // - the second task is prefetched, times out and uses the only prefetch attempt,
     // - the third message must then be released without waiting for the first task to finish.
     var messages = new[]
-                   {
-                     taskSubmitted,
-                     taskSubmitted2,
-                     "TaskNeverReached",
-                   }.Select(taskId => new SimpleQueueMessageHandler
-                                      {
-                                        CancellationToken = CancellationToken.None,
-                                        Status            = QueueMessageStatus.Waiting,
-                                        MessageId = Guid.NewGuid()
-                                                        .ToString(),
-                                        TaskId = taskId,
-                                      })
-                    .ToList();
+      {
+        taskSubmitted,
+        taskSubmitted2,
+        "TaskNeverReached",
+      }.Select(taskId => new SimpleQueueMessageHandler
+                         {
+                           CancellationToken = CancellationToken.None,
+                           Status            = QueueMessageStatus.Waiting,
+                           MessageId = Guid.NewGuid()
+                                           .ToString(),
+                           TaskId = taskId,
+                         })
+       .ToList();
 
     foreach (var message in messages)
     {
@@ -1029,18 +1031,18 @@ public class PollsterTest
     // The queue does not deliver released messages again: the second task can only be processed
     // if its message is kept by the pollster while the first task is running.
     var messages = new[]
-                   {
-                     taskSubmitted,
-                     taskSubmitted2,
-                   }.Select(taskId => new SimpleQueueMessageHandler
-                                      {
-                                        CancellationToken = CancellationToken.None,
-                                        Status            = QueueMessageStatus.Waiting,
-                                        MessageId = Guid.NewGuid()
-                                                        .ToString(),
-                                        TaskId = taskId,
-                                      })
-                    .ToList();
+      {
+        taskSubmitted,
+        taskSubmitted2,
+      }.Select(taskId => new SimpleQueueMessageHandler
+                         {
+                           CancellationToken = CancellationToken.None,
+                           Status            = QueueMessageStatus.Waiting,
+                           MessageId = Guid.NewGuid()
+                                           .ToString(),
+                           TaskId = taskId,
+                         })
+       .ToList();
 
     foreach (var message in messages)
     {
