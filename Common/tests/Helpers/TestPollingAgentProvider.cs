@@ -32,6 +32,8 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Utils;
 
+using JetBrains.Annotations;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -43,6 +45,7 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
+[MustDisposeResource]
 public class TestPollingAgentProvider : IDisposable
 {
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
@@ -58,7 +61,7 @@ public class TestPollingAgentProvider : IDisposable
   {
     var logger = NullLogger.Instance;
 
-    database_ = SharedMongoRunner.CreateDatabase();
+    database_ = MongoTestDatabase.Create();
     IMongoClient client = database_.CreateClient();
 
     // Minimal set of configurations to operate on a toy DB

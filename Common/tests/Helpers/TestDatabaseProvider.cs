@@ -34,6 +34,8 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
+using JetBrains.Annotations;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
@@ -48,6 +50,7 @@ using MongoDB.Driver.Core.Events;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
+[MustDisposeResource]
 public class TestDatabaseProvider : IDisposable
 {
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
@@ -66,7 +69,7 @@ public class TestDatabaseProvider : IDisposable
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var loggerDb       = loggerProvider.CreateLogger("db commands");
 
-    database_ = SharedMongoRunner.CreateDatabase(useSingleNodeReplicaSet);
+    database_ = MongoTestDatabase.Create(useSingleNodeReplicaSet);
     var client = database_.CreateClient(settings =>
                                         {
                                           if (logMongoRequests)

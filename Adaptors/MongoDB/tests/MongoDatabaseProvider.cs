@@ -24,6 +24,8 @@ using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils;
 
+using JetBrains.Annotations;
+
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -36,6 +38,7 @@ using Serilog;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
+[MustDisposeResource]
 internal class MongoDatabaseProvider : IDisposable
 {
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
@@ -52,7 +55,7 @@ internal class MongoDatabaseProvider : IDisposable
     var logger = LoggerFactory.Create(builder => builder.AddSerilog(loggerSerilog))
                               .CreateLogger("root");
 
-    database_ = SharedMongoRunner.CreateDatabase(useSingleNodeReplicaSet);
+    database_ = MongoTestDatabase.Create(useSingleNodeReplicaSet);
 
     var client = database_.CreateClient(settings => settings.ClusterConfigurator =
                                                       cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",

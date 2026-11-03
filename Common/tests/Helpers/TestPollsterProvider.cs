@@ -39,6 +39,8 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
+using JetBrains.Annotations;
+
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -56,6 +58,7 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
+[MustDisposeResource]
 public class TestPollsterProvider : IDisposable
 {
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
@@ -88,7 +91,7 @@ public class TestPollsterProvider : IDisposable
                               IDictionary<string, string>? additionalConfig = null)
   {
     graceDelay_ = graceDelay;
-    database_   = SharedMongoRunner.CreateDatabase();
+    database_   = MongoTestDatabase.Create();
     var client = database_.CreateClient();
 
     // Minimal set of configurations to operate on a toy DB
