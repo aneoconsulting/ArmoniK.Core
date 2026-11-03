@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 
@@ -45,7 +44,8 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 [MustDisposeResource]
 public sealed class MongoTestDatabase : IDisposable
 {
-  private static readonly ConcurrentDictionary<bool, Lazy<Server>> Servers = new();
+  private static readonly Lazy<(IMongoRunner Runner, MongoClient AdminClient)> Standalone = new(() => StartServer(false));
+  private static readonly Lazy<(IMongoRunner Runner, MongoClient AdminClient)> ReplicaSet = new(() => StartServer(true));
 
   private readonly IMongoClient      adminClient_;
   private readonly List<MongoClient> clients_ = new();
@@ -103,13 +103,13 @@ public sealed class MongoTestDatabase : IDisposable
   [MustDisposeResource]
   public static MongoTestDatabase Create(bool useSingleNodeReplicaSet = false)
   {
-    var server = Servers.GetOrAdd(useSingleNodeReplicaSet,
-                                  rs => new Lazy<Server>(() => new Server(rs)))
-                        .Value;
+    var (runner, adminClient) = useSingleNodeReplicaSet
+                                  ? ReplicaSet.Value
+                                  : Standalone.Value;
 
-    return new MongoTestDatabase(server.Runner.ConnectionString,
+    return new MongoTestDatabase(runner.ConnectionString,
                                  $"ArmoniK_TestDB_{Guid.NewGuid():N}",
-                                 server.Client);
+                                 adminClient);
   }
 
   /// <summary>
@@ -153,22 +153,23 @@ public sealed class MongoTestDatabase : IDisposable
     }
   }
 
-  private sealed class Server
+  /// <summary>
+  ///   Start a shared server, stopped when the test process exits.
+  /// </summary>
+  /// <param name="useSingleNodeReplicaSet">Whether the server is a single-node replica set</param>
+  /// <returns>The server and a client to administrate it</returns>
+  private static (IMongoRunner Runner, MongoClient AdminClient) StartServer(bool useSingleNodeReplicaSet)
   {
-    public Server(bool useSingleNodeReplicaSet)
-    {
-      Runner = MongoRunner.Run(MongoRunnerOptionsFactory.Create(useSingleNodeReplicaSet));
-      Client = new MongoClient(Runner.ConnectionString);
+    var runner      = MongoRunner.Run(MongoRunnerOptionsFactory.Create(useSingleNodeReplicaSet));
+    var adminClient = new MongoClient(runner.ConnectionString);
 
-      AppDomain.CurrentDomain.ProcessExit += (_,
-                                              _) =>
-                                             {
-                                               TryRun(Client.Dispose);
-                                               TryRun(Runner.Dispose);
-                                             };
-    }
+    AppDomain.CurrentDomain.ProcessExit += (_,
+                                            _) =>
+                                           {
+                                             TryRun(adminClient.Dispose);
+                                             TryRun(runner.Dispose);
+                                           };
 
-    public IMongoRunner Runner { get; }
-    public MongoClient  Client { get; }
+    return (runner, adminClient);
   }
 }
