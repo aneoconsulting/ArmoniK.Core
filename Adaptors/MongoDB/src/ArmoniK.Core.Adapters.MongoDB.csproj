@@ -37,6 +37,17 @@
     <PackageReference Include="AWSSDK.Core" Version="3.7.501.1" />
   </ItemGroup>
 
+  <!--
+    Transitive dependency of MongoDB.Driver, pinned for security.
+    MongoDB.Driver 3.13.0 only requires SharpCompress >= 0.48.1, which is affected by
+    GHSA-5wf8-cxh5-32fv (LZMA2 infinite loop, fixed in 0.50.6) and GHSA-rch7-vc9j-fw2v (TAR symlink traversal, <= 0.50.3).
+    Do not upgrade to 1.x: SharpCompress 1.0.0 removed SharpCompressStream.CreateNonDisposing, used by MongoDB.Driver 3.13.0.
+    Remove this reference once MongoDB.Driver requires a patched version.
+  -->
+  <ItemGroup>
+    <PackageReference Include="SharpCompress" Version="0.50.8" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>
