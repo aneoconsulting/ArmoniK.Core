@@ -34,8 +34,6 @@ using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
-using EphemeralMongo;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.TestHost;
@@ -52,11 +50,10 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestDatabaseProvider : IDisposable
 {
-  private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   public readonly         WebApplication App;
 
-  private readonly IMongoRunner runner_;
+  private readonly MongoTestDatabase database_;
 
 
   public TestDatabaseProvider(Action<IServiceCollection>?    collectionConfigurator           = null,
@@ -66,25 +63,22 @@ public class TestDatabaseProvider : IDisposable
                               bool                           validateGrpcRequests             = false,
                               bool                           useSingleNodeReplicaSet          = false)
   {
-    var options = MongoRunnerOptionsFactory.Create(useSingleNodeReplicaSet);
-
     var loggerProvider = new ConsoleForwardingLoggerProvider();
     var loggerDb       = loggerProvider.CreateLogger("db commands");
 
-    runner_ = MongoRunner.Run(options);
-    var settings = MongoClientSettings.FromConnectionString(runner_.ConnectionString);
-
-    if (logMongoRequests)
-    {
-      settings.ClusterConfigurator = cb =>
-                                     {
-                                       cb.Subscribe<CommandStartedEvent>(e => loggerDb.LogTrace("{CommandName} - {Command}",
-                                                                                                e.CommandName,
-                                                                                                e.Command.ToJson()));
-                                     };
-    }
-
-    var client = new MongoClient(settings);
+    database_ = SharedMongoRunner.CreateDatabase(useSingleNodeReplicaSet);
+    var client = database_.CreateClient(settings =>
+                                        {
+                                          if (logMongoRequests)
+                                          {
+                                            settings.ClusterConfigurator = cb =>
+                                                                           {
+                                                                             cb.Subscribe<CommandStartedEvent>(e => loggerDb.LogTrace("{CommandName} - {Command}",
+                                                                                                                                      e.CommandName,
+                                                                                                                                      e.Command.ToJson()));
+                                                                           };
+                                          }
+                                        });
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -100,7 +94,7 @@ public class TestDatabaseProvider : IDisposable
                                                   },
                                                   {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-                                                    DatabaseName
+                                                    database_.Name
                                                   },
                                                   {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
@@ -190,7 +184,7 @@ public class TestDatabaseProvider : IDisposable
   public void Dispose()
   {
     ((IDisposable)App).Dispose();
-    runner_.Dispose();
+    database_.Dispose();
     GC.SuppressFinalize(this);
   }
 

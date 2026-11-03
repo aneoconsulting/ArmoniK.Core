@@ -39,8 +39,6 @@ using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 
-using EphemeralMongo;
-
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -60,7 +58,6 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollsterProvider : IDisposable
 {
-  private const           string         DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
   private readonly        WebApplication app_;
 
@@ -76,7 +73,7 @@ public class TestPollsterProvider : IDisposable
   public readonly  IPartitionTable          PartitionTable;
   public readonly  Common.Pollster.Pollster Pollster;
   public readonly  IResultTable             ResultTable;
-  private readonly IMongoRunner             runner_;
+  private readonly MongoTestDatabase        database_;
   public readonly  ISessionTable            SessionTable;
   public readonly  ISubmitter               Submitter;
   public readonly  ITaskTable               TaskTable;
@@ -91,8 +88,8 @@ public class TestPollsterProvider : IDisposable
                               IDictionary<string, string>? additionalConfig = null)
   {
     graceDelay_ = graceDelay;
-    runner_     = MongoRunner.Run(MongoRunnerOptionsFactory.Create());
-    var client = new MongoClient(runner_.ConnectionString);
+    database_   = SharedMongoRunner.CreateDatabase();
+    var client = database_.CreateClient();
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -105,7 +102,7 @@ public class TestPollsterProvider : IDisposable
                                                   },
                                                   {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-                                                    DatabaseName
+                                                    database_.Name
                                                   },
                                                   {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
@@ -237,7 +234,7 @@ public class TestPollsterProvider : IDisposable
     app_.StopAsync()
         .Wait();
     ((IDisposable)app_)?.Dispose();
-    runner_?.Dispose();
+    database_.Dispose();
     GC.SuppressFinalize(this);
   }
 
