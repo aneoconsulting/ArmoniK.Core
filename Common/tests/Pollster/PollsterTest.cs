@@ -705,6 +705,11 @@ public class PollsterTest
     Assert.That(stillProcessing,
                 Is.True);
 
+    // The loop returns before the post processor has finished the task, and the success it then records
+    // decrements the error count, so it must be over before counting errors.
+    await testServiceProvider.WaitForNoTaskProcessing()
+                             .ConfigureAwait(false);
+
     testServiceProvider.AssertFailAfterError(6);
   }
 
