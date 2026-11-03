@@ -38,7 +38,7 @@ using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
 using ArmoniK.Core.Utils.Uuid;
 
-using EphemeralMongo;
+using JetBrains.Annotations;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
@@ -52,11 +52,12 @@ using MongoDB.Driver;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;
 
+[MustDisposeResource]
 public class TestTaskHandlerProvider : IDisposable
 {
-  private const           string            DatabaseName   = "ArmoniK_TestDB";
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
   private readonly        WebApplication    app_;
+  private readonly        MongoTestDatabase database_;
   public readonly         HealthCheckRecord HealthCheckRecord;
   public readonly         ILogger           Logger;
 
@@ -65,7 +66,6 @@ public class TestTaskHandlerProvider : IDisposable
   public readonly  IPartitionTable   PartitionTable;
   public readonly  IPushQueueStorage PushQueueStorage;
   public readonly  IResultTable      ResultTable;
-  private readonly IMongoRunner      runner_;
   public readonly  ISessionTable     SessionTable;
   public readonly  ISubmitter        Submitter;
   public readonly  TaskHandler       TaskHandler;
@@ -86,8 +86,8 @@ public class TestTaskHandlerProvider : IDisposable
   {
     var logger = NullLogger.Instance;
 
-    runner_ = MongoRunner.Run(MongoRunnerOptionsFactory.Create());
-    var client = new MongoClient(runner_.ConnectionString);
+    database_ = MongoTestDatabase.Create();
+    var client = database_.CreateClient();
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -100,7 +100,7 @@ public class TestTaskHandlerProvider : IDisposable
                                                   },
                                                   {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
-                                                    DatabaseName
+                                                    database_.Name
                                                   },
                                                   {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage)}:{nameof(Adapters.MongoDB.Options.MongoDB.TableStorage.PollingDelayMin)}",
@@ -236,7 +236,7 @@ public class TestTaskHandlerProvider : IDisposable
                .AsTask()
                .Wait();
     ((IDisposable)app_)?.Dispose();
-    runner_?.Dispose();
+    database_.Dispose();
     loggerFactory_?.Dispose();
     GC.SuppressFinalize(this);
   }

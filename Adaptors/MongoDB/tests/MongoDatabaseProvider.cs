@@ -24,7 +24,7 @@ using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils;
 
-using EphemeralMongo;
+using JetBrains.Annotations;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -38,16 +38,15 @@ using Serilog;
 
 namespace ArmoniK.Core.Adapters.MongoDB.Tests;
 
+[MustDisposeResource]
 internal class MongoDatabaseProvider : IDisposable
 {
-  private const           string          DatabaseName   = "ArmoniK_TestDB";
-  private static readonly ActivitySource  ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
-  private readonly        ServiceProvider provider_;
-  private readonly        IMongoRunner?   runner_;
+  private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Adapters.MongoDB.Tests");
+  private readonly        MongoTestDatabase database_;
+  private readonly        ServiceProvider   provider_;
 
   public MongoDatabaseProvider(bool                        useSingleNodeReplicaSet = false,
-                               Action<IServiceCollection>? serviceConfigurator     = null,
-                               bool                        showMongoLogs           = false)
+                               Action<IServiceCollection>? serviceConfigurator     = null)
   {
     var loggerSerilog = new LoggerConfiguration().WriteTo.Console()
                                                  .Enrich.FromLogContext()
@@ -56,17 +55,12 @@ internal class MongoDatabaseProvider : IDisposable
     var logger = LoggerFactory.Create(builder => builder.AddSerilog(loggerSerilog))
                               .CreateLogger("root");
 
-    runner_ = MongoRunner.Run(MongoRunnerOptionsFactory.Create(useSingleNodeReplicaSet,
-                                                               showMongoLogs
-                                                                 ? logger
-                                                                 : null));
-    var settings = MongoClientSettings.FromUrl(new MongoUrl(runner_.ConnectionString));
+    database_ = MongoTestDatabase.Create(useSingleNodeReplicaSet);
 
-    settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
-                                                                                                      e.CommandName,
-                                                                                                      e.Command.ToJson()));
-
-    var client = new MongoClient(settings);
+    var client = database_.CreateClient(settings => settings.ClusterConfigurator =
+                                                      cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
+                                                                                                                         e.CommandName,
+                                                                                                                         e.Command.ToJson())));
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
@@ -79,7 +73,7 @@ internal class MongoDatabaseProvider : IDisposable
                                                     "ArmoniK.Adapters.MongoDB.AuthenticationTable"
                                                   },
                                                   {
-                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", DatabaseName
+                                                    $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.DatabaseName)}", database_.Name
                                                   },
                                                   {
                                                     $"{Options.MongoDB.SettingSection}:{nameof(Options.MongoDB.TableStorage)}:{nameof(Options.MongoDB.TableStorage.PollingDelayMax)}",
@@ -113,7 +107,7 @@ internal class MongoDatabaseProvider : IDisposable
   public void Dispose()
   {
     provider_.Dispose();
-    runner_?.Dispose();
+    database_.Dispose();
   }
 
   public IServiceProvider GetServiceProvider()
