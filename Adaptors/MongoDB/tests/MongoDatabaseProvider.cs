@@ -54,9 +54,10 @@ internal class MongoDatabaseProvider : IDisposable
 
     database_ = SharedMongoRunner.CreateDatabase(useSingleNodeReplicaSet);
 
-    var client = database_.CreateClient(settings => settings.ClusterConfigurator = cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
-                                                                                                                                                   e.CommandName,
-                                                                                                                                                   e.Command.ToJson())));
+    var client = database_.CreateClient(settings => settings.ClusterConfigurator =
+                                                      cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
+                                                                                                                         e.CommandName,
+                                                                                                                         e.Command.ToJson())));
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()

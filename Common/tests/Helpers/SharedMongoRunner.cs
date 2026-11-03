@@ -15,7 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -110,6 +109,19 @@ public sealed class MongoTestDatabase : IDisposable
   public string Name { get; }
 
   /// <summary>
+  ///   Drop the database and dispose the clients created with <see cref="CreateClient" />.
+  /// </summary>
+  public void Dispose()
+  {
+    foreach (var client in clients_)
+    {
+      client.Dispose();
+    }
+
+    adminClient_.DropDatabase(Name);
+  }
+
+  /// <summary>
   ///   Create a client connected to the shared server, disposed with this database.
   /// </summary>
   /// <param name="configure">Changes applied to the client settings</param>
@@ -125,18 +137,5 @@ public sealed class MongoTestDatabase : IDisposable
     var client = new MongoClient(settings);
     clients_.Add(client);
     return client;
-  }
-
-  /// <summary>
-  ///   Drop the database and dispose the clients created with <see cref="CreateClient" />.
-  /// </summary>
-  public void Dispose()
-  {
-    foreach (var client in clients_)
-    {
-      client.Dispose();
-    }
-
-    adminClient_.DropDatabase(Name);
   }
 }

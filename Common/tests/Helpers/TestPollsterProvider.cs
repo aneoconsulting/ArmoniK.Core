@@ -58,8 +58,9 @@ namespace ArmoniK.Core.Common.Tests.Helpers;
 
 public class TestPollsterProvider : IDisposable
 {
-  private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
-  private readonly        WebApplication app_;
+  private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestPollsterProvider");
+  private readonly        WebApplication    app_;
+  private readonly        MongoTestDatabase database_;
 
   [SuppressMessage("Usage",
                    "CA2213: Disposable fields must be disposed")]
@@ -73,7 +74,6 @@ public class TestPollsterProvider : IDisposable
   public readonly  IPartitionTable          PartitionTable;
   public readonly  Common.Pollster.Pollster Pollster;
   public readonly  IResultTable             ResultTable;
-  private readonly MongoTestDatabase        database_;
   public readonly  ISessionTable            SessionTable;
   public readonly  ISubmitter               Submitter;
   public readonly  ITaskTable               TaskTable;

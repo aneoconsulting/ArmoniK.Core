@@ -47,9 +47,9 @@ public class TestPollingAgentProvider : IDisposable
 {
   private static readonly ActivitySource ActivitySource = new("ArmoniK.Core.Common.Tests.FullIntegration");
   private readonly        WebApplication app_;
-  private readonly        LoggerFactory  loggerFactory_;
 
   private readonly MongoTestDatabase database_;
+  private readonly LoggerFactory     loggerFactory_;
   private readonly Task              pollsterRunningTask_;
   public readonly  ISubmitter        Submitter;
 

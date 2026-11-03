@@ -54,6 +54,7 @@ public class TestTaskHandlerProvider : IDisposable
 {
   private static readonly ActivitySource    ActivitySource = new("ArmoniK.Core.Common.Tests.TestTaskHandlerProvider");
   private readonly        WebApplication    app_;
+  private readonly        MongoTestDatabase database_;
   public readonly         HealthCheckRecord HealthCheckRecord;
   public readonly         ILogger           Logger;
 
@@ -62,7 +63,6 @@ public class TestTaskHandlerProvider : IDisposable
   public readonly  IPartitionTable   PartitionTable;
   public readonly  IPushQueueStorage PushQueueStorage;
   public readonly  IResultTable      ResultTable;
-  private readonly MongoTestDatabase database_;
   public readonly  ISessionTable     SessionTable;
   public readonly  ISubmitter        Submitter;
   public readonly  TaskHandler       TaskHandler;
