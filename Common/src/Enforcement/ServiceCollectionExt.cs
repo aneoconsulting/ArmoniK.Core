@@ -61,6 +61,11 @@ public static class ServiceCollectionExt
   private static readonly string[] CertificateSettings = [nameof(IdentityOptions.CertificateHeader)];
 
   /// <summary>
+  ///   Flags of the removed authentication which, when true, made it check callers
+  /// </summary>
+  private static readonly string[] LegacyRequirements = ["Authenticator:RequireAuthentication", "Authenticator:RequireAuthorization"];
+
+  /// <summary>
   ///   Register the authorization of requests when a method of authentication is selected
   /// </summary>
   /// <param name="services">Collection of services</param>
@@ -72,7 +77,8 @@ public static class ServiceCollectionExt
                                              IConfiguration          configuration,
                                              ILogger                 logger)
   {
-    ThrowIfLegacyConfiguration(configuration);
+    ThrowIfLegacyConfiguration(configuration,
+                               logger);
 
     var options = configuration.GetInitializedValue<AuthorizationOptions>(AuthorizationOptions.SettingSection);
 
@@ -186,13 +192,16 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  ///   Refuse to start on a configuration of the removed authentication without an explicit choice about authorization,
-  ///   since removing the former flags alone would leave every request allowed, and on the removed
-  ///   <c>Authorization:Enabled</c>
+  ///   Refuse to start on a configuration requiring the removed authentication without an explicit choice about
+  ///   authorization, since ignoring it would leave every request allowed, and on the removed
+  ///   <c>Authorization:Enabled</c>. The other settings of the removed authentication are only warned about, since they
+  ///   allowed every request already.
   /// </summary>
   /// <param name="configuration">Configuration of the application</param>
-  /// <exception cref="InvalidOperationException">The configuration of the removed authentication is present</exception>
-  public static void ThrowIfLegacyConfiguration(IConfiguration configuration)
+  /// <param name="logger">Logger warning about the settings of the removed authentication that are ignored</param>
+  /// <exception cref="InvalidOperationException">The configuration requires the removed authentication</exception>
+  public static void ThrowIfLegacyConfiguration(IConfiguration configuration,
+                                                ILogger        logger)
   {
     // Ignoring it would allow every request of a deployment that enabled authorization
     if (configuration[$"{AuthorizationOptions.SettingSection}:Enabled"] is not null)
@@ -212,14 +221,35 @@ public static class ServiceCollectionExt
                                   .Exists())
        .ToList();
 
-    if (legacy.Count != 0 && configuration[AuthenticationKey] is null)
+    if (legacy.Count == 0 || configuration[AuthenticationKey] is not null)
     {
-      throw new InvalidOperationException($"The configuration holds settings of the removed authentication ({string.Join(", ", legacy)}). Set " +
+      return;
+    }
+
+    var required = LegacyRequirements.Where(key => IsTrueLegacyFlag(configuration[key]))
+                                     .ToList();
+
+    if (required.Count != 0)
+    {
+      throw new InvalidOperationException($"The configuration requires the removed authentication ({string.Join(", ", required)}). Set "        +
                                           $"{AuthenticationKey} explicitly, to {CallerAuthentication.Xfcc}, {CallerAuthentication.Token} or "   +
                                           $"{CallerAuthentication.Xfcc},{CallerAuthentication.Token} to authorize requests with grants, or to " +
                                           $"{CallerAuthentication.None} to allow every request, and remove these settings");
     }
+
+    logger.LogWarning("{Settings} of the removed authentication are ignored: every request is allowed, as before, until {AuthenticationSetting} is set",
+                      string.Join(", ",
+                                  legacy),
+                      AuthenticationKey);
   }
+
+  /// <summary>
+  ///   Whether a flag of the removed authentication is true: absent means false, as the removed appsettings.json wrote,
+  ///   and a value that is not false is taken as true, so that a misspelled value never leaves every request allowed
+  /// </summary>
+  private static bool IsTrueLegacyFlag(string? value)
+    => value is not null && !(bool.TryParse(value,
+                                            out var flag) && !flag);
 
   private static void AddTokenValidation(IServiceCollection services,
                                          IdentityOptions    identity)
