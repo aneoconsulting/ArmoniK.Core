@@ -161,11 +161,13 @@ public class StoredDecisionEngineProviderTest
   private StoredDecisionEngineProvider Provider()
     => Provider(Ttl);
 
-  private StoredDecisionEngineProvider Provider(TimeSpan ttl)
+  private StoredDecisionEngineProvider Provider(TimeSpan  ttl,
+                                                TimeSpan? readTimeout = null)
     => new(table_.Object,
            new AuthorizationOptions
            {
-             GrantCacheTtl = ttl,
+             GrantCacheTtl    = ttl,
+             GrantReadTimeout = readTimeout ?? TimeSpan.FromSeconds(30),
            },
            new AuthorizationAudit(auditLogs_),
            exceptionManager_,
@@ -599,6 +601,42 @@ public class StoredDecisionEngineProviderTest
     Assert.That(faults_,
                 Has.One.Contains("Fault on grant b"));
   }
+
+  [Test]
+  public async Task AReadThatNeverEndsFailsAtItsDeadlineAndIsCounted()
+  {
+    using var provider = Provider(Ttl,
+                                  TimeSpan.FromMilliseconds(100));
+    // Ignores its token, as a read blocked on a connection that no longer answers
+    table_.Setup(table => table.GetGenerationAsync(It.IsAny<CancellationToken>()))
+          .Returns(new TaskCompletionSource<AuthorizationGeneration>().Task);
+
+    Assert.That(() => provider.GetEngineAsync()
+                              .AsTask()
+                              .WaitAsync(TimeSpan.FromSeconds(5)),
+                Throws.InstanceOf<GrantsUnavailableException>());
+    Assert.That(exceptionManager_.Failed,
+                Is.False);
+
+    // The next read never ends either: counted again
+    await Task.Delay(Ttl * 1.25)
+              .ConfigureAwait(false);
+    Assert.That(() => provider.GetEngineAsync()
+                              .AsTask()
+                              .WaitAsync(TimeSpan.FromSeconds(5)),
+                Throws.InstanceOf<GrantsUnavailableException>());
+    Assert.That(exceptionManager_.Failed,
+                Is.True);
+  }
+
+  [TestCase("00:00:00")]
+  [TestCase("-00:00:00.001")]
+  [TestCase("14.00:00:00.001")]
+  public void AReadTimeoutOutOfRangeIsRefused(string timeout)
+    => Assert.That(() => Provider(Ttl,
+                                  TimeSpan.Parse(timeout,
+                                                 CultureInfo.InvariantCulture)),
+                   Throws.InstanceOf<ArgumentOutOfRangeException>());
 
   [TestCase("00:00:00")]
   [TestCase("-00:00:00.001")]

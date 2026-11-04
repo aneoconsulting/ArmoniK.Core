@@ -56,6 +56,7 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   private readonly ExceptionManager                      exceptionManager_;
   private readonly ILogger<StoredDecisionEngineProvider> logger_;
   private readonly TimeSpan                              maxStaleness_;
+  private readonly TimeSpan                              readTimeout_;
   private readonly ExecutionSingleizer<DecisionEngine>   reload_;
   private readonly IAuthorizationTable                   table_;
   private          Loaded?                               last_;
@@ -78,6 +79,12 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
                                                        TimeSpan.Zero);
     ArgumentOutOfRangeException.ThrowIfGreaterThan(options.GrantCacheTtl,
                                                    AuthorizationOptions.MaxGrantCacheTtl);
+    // Checked at startup as well: past the maximum, the delay may exceed what a cancellation timer accepts
+    ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(options.GrantReadTimeout,
+                                                       TimeSpan.Zero);
+    ArgumentOutOfRangeException.ThrowIfGreaterThan(options.GrantReadTimeout,
+                                                   AuthorizationOptions.MaxGrantCacheTtl);
+    readTimeout_  = options.GrantReadTimeout;
     maxStaleness_ = 2 * options.GrantCacheTtl;
     reload_       = new ExecutionSingleizer<DecisionEngine>(options.GrantCacheTtl);
   }
@@ -87,7 +94,8 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
   ///   The generation is read once per period, and the grants only when it moved, by a single read shared by the callers
   ///   waiting for it; a failed read is not tried again before a period either. Until the engine read last is two periods
   ///   old, it is served while the grants are read again; past that, callers wait for the read, and are refused when it
-  ///   fails. A read during a change of the grants fails, so that the change is never decided on half written.
+  ///   fails. A read during a change of the grants fails, so that the change is never decided on half written. A read
+  ///   taking longer than <see cref="AuthorizationOptions.GrantReadTimeout" /> fails as well.
   /// </remarks>
   public async ValueTask<DecisionEngine> GetEngineAsync(CancellationToken cancellationToken = default)
   {
@@ -117,41 +125,15 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
 
   private async Task<DecisionEngine> ReloadAsync(CancellationToken cancellationToken)
   {
+    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    timeout.CancelAfter(readTimeout_);
     try
     {
-      // Kept only when no change was under way, so that a change is never read half written
-      var before = await table_.GetGenerationAsync(cancellationToken)
-                               .ConfigureAwait(false);
-
-      // Every change moves the generation, so the engine read last is still the one in force
-      if (before.Stable && last_?.Generation == before.Ended)
-      {
-        last_ = last_ with
-                {
-                  LoadedAt = Stopwatch.GetTimestamp(),
-                };
-        return last_.Engine;
-      }
-
-      var loaded = await LoadAsync(cancellationToken)
-                     .ConfigureAwait(false);
-      var after = await table_.GetGenerationAsync(cancellationToken)
-                              .ConfigureAwait(false);
-      if (!before.Stable || after != before)
-      {
-        // A change under way is not a fault of the control plane: not counted toward the errors that stop it
-        throw new GrantsUnavailableException($"Grants were being changed while they were read, at generation {after.Begun}");
-      }
-
-      if (last_?.Generation != before.Ended)
-      {
-        audit_.RecordGeneration(before.Ended);
-      }
-
-      last_ = new Loaded(loaded,
-                         before.Ended,
-                         Stopwatch.GetTimestamp());
-      return loaded;
+      // Waited for with the deadline as well, since a read blocked on a connection that no longer answers may not
+      // observe its token
+      return await ReadAsync(timeout.Token)
+                   .WaitAsync(timeout.Token)
+                   .ConfigureAwait(false);
     }
     catch (GrantsUnavailableException e)
     {
@@ -159,7 +141,8 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
                          "Grants could not be read");
       throw;
     }
-    catch (Exception e) when (e is not OperationCanceledException)
+    // A read past its deadline is a fault like any other, unlike a read cancelled by its caller
+    catch (Exception e) when (e is not OperationCanceledException || !cancellationToken.IsCancellationRequested)
     {
       // Counted once for the read, not once for each request refused while it is kept
       exceptionManager_.RecordError(logger_,
@@ -168,6 +151,43 @@ public sealed class StoredDecisionEngineProvider : IDecisionEngineProvider, IDis
       throw new GrantsUnavailableException("Grants could not be read",
                                            e);
     }
+  }
+
+  private async Task<DecisionEngine> ReadAsync(CancellationToken cancellationToken)
+  {
+    // Kept only when no change was under way, so that a change is never read half written
+    var before = await table_.GetGenerationAsync(cancellationToken)
+                             .ConfigureAwait(false);
+
+    // Every change moves the generation, so the engine read last is still the one in force
+    if (before.Stable && last_?.Generation == before.Ended)
+    {
+      last_ = last_ with
+              {
+                LoadedAt = Stopwatch.GetTimestamp(),
+              };
+      return last_.Engine;
+    }
+
+    var loaded = await LoadAsync(cancellationToken)
+                   .ConfigureAwait(false);
+    var after = await table_.GetGenerationAsync(cancellationToken)
+                            .ConfigureAwait(false);
+    if (!before.Stable || after != before)
+    {
+      // A change under way is not a fault of the control plane: not counted toward the errors that stop it
+      throw new GrantsUnavailableException($"Grants were being changed while they were read, at generation {after.Begun}");
+    }
+
+    if (last_?.Generation != before.Ended)
+    {
+      audit_.RecordGeneration(before.Ended);
+    }
+
+    last_ = new Loaded(loaded,
+                       before.Ended,
+                       Stopwatch.GetTimestamp());
+    return loaded;
   }
 
   private async Task<DecisionEngine> LoadAsync(CancellationToken cancellationToken)

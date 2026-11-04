@@ -1102,4 +1102,20 @@ public class AddArmoniKAuthorizationTest
     => Assert.That(Add(Configuration(("Authorization:Authentication", "Xfcc"),
                                      ("Authorization:GrantCacheTtl", ttl))),
                    Is.True);
+
+  [TestCase("00:00:00")]
+  [TestCase("-00:00:00.001")]
+  [TestCase("14.00:00:00.001")]
+  public void AGrantReadTimeoutOutOfRangePreventsStarting(string timeout)
+    => Assert.That(() => Add(Configuration(("Authorization:Authentication", "Xfcc"),
+                                           ("Authorization:GrantReadTimeout", timeout))),
+                   Throws.InstanceOf<InvalidOperationException>()
+                         .With.Message.Contains("GrantReadTimeout"));
+
+  [TestCase("00:00:00.001")]
+  [TestCase("14.00:00:00")]
+  public void AGrantReadTimeoutInRangeIsAccepted(string timeout)
+    => Assert.That(Add(Configuration(("Authorization:Authentication", "Xfcc"),
+                                     ("Authorization:GrantReadTimeout", timeout))),
+                   Is.True);
 }

@@ -52,6 +52,13 @@ public class AuthorizationOptions
   public TimeSpan GrantCacheTtl { get; set; } = TimeSpan.FromSeconds(10);
 
   /// <summary>
+  ///   Longest time a read of the grants and permission sets may take: past it, the read is abandoned and counted as a
+  ///   failure, so that a storage that stops answering is handled as one that fails. Above zero and at most
+  ///   <see cref="MaxGrantCacheTtl" />
+  /// </summary>
+  public TimeSpan GrantReadTimeout { get; set; } = TimeSpan.FromSeconds(30);
+
+  /// <summary>
   ///   Revision of the grants and permission sets of the configuration. A deployment with a lower revision than the one
   ///   stored does not change the stored grants and sets
   /// </summary>
