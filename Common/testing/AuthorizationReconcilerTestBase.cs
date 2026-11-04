@@ -25,7 +25,6 @@ using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -33,7 +32,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests.TestBase;
+namespace ArmoniK.Core.Common.Testing;
 
 /// <summary>
 ///   Reconciliation of the stored grants with the configuration, on each storage adaptor

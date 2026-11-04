@@ -27,7 +27,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
+using ArmoniK.Core.Common.Testing;
 
 using Google.Protobuf;
 using Google.Protobuf.WellKnownTypes;

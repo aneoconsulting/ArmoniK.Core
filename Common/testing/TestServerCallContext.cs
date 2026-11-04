@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 using Grpc.Core;
 
-namespace ArmoniK.Core.Common.Tests.Helpers;
+namespace ArmoniK.Core.Common.Testing;
 
 public class TestServerCallContext : ServerCallContext
 {

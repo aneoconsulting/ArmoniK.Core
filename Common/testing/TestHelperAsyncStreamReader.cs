@@ -21,9 +21,9 @@ using System.Threading.Tasks;
 
 using Grpc.Core;
 
-namespace ArmoniK.Core.Common.Tests.Helpers;
+namespace ArmoniK.Core.Common.Testing;
 
-internal class TestHelperAsyncStreamReader<T> : IAsyncStreamReader<T>
+public class TestHelperAsyncStreamReader<T> : IAsyncStreamReader<T>
 {
   private readonly IEnumerator<T> enumerator_;
 

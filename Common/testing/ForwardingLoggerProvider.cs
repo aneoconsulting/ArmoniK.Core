@@ -24,7 +24,7 @@ using ArmoniK.Utils;
 
 using Microsoft.Extensions.Logging;
 
-namespace ArmoniK.Core.Common.Tests.Helpers;
+namespace ArmoniK.Core.Common.Testing;
 
 public delegate void LogMessage(LogLevel                                logLevel,
                                 string                                  categoryName,
@@ -33,7 +33,7 @@ public delegate void LogMessage(LogLevel                                logLevel
                                 ICollection<Dictionary<string, object>> states,
                                 Exception?                              exception);
 
-internal class ForwardingLoggerProvider : ILoggerProvider
+public class ForwardingLoggerProvider : ILoggerProvider
 {
   private readonly LogMessage logAction_;
 

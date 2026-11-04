@@ -22,7 +22,7 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgreSQL.Common;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 
 using Microsoft.Extensions.DependencyInjection;
 
