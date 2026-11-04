@@ -1012,21 +1012,44 @@ public class AddArmoniKAuthorizationTest
                          .With.Message.Contains("broken"));
 
   [TestCase("Authenticator:RequireAuthentication",
-            "false")]
-  [TestCase("InitServices:Authentication:Users:0",
-            "{}")]
-  [TestCase("Components:AuthenticationStorage",
-            "ArmoniK.Adapters.MongoDB.AuthenticationTable")]
-  public void RemovedAuthenticationSettingsRequireAnExplicitChoice(string key,
-                                                                   string value)
+            "true")]
+  [TestCase("Authenticator:RequireAuthorization",
+            "True")]
+  [TestCase("Authenticator:RequireAuthentication",
+            "yes")]
+  public void TheRemovedAuthenticationRequiredRequiresAnExplicitChoice(string key,
+                                                                       string value)
   {
     Assert.That(() => Add(Configuration((key, value))),
                 Throws.InstanceOf<InvalidOperationException>()
-                      .With.Message.Contains(key.Split(':')[0])
+                      .With.Message.Contains(key)
                       .And.Message.Contains("Authorization:Authentication"));
     Assert.That(Add(Configuration((key, value),
                                   ("Authorization:Authentication", "None"))),
                 Is.False);
+  }
+
+  [TestCase("Authenticator:RequireAuthentication",
+            "false")]
+  [TestCase("Authenticator:CNHeader",
+            "X-Certificate-Client-CN")]
+  [TestCase("InitServices:Authentication:Users:0",
+            "{}")]
+  [TestCase("Components:AuthenticationStorage",
+            "ArmoniK.Adapters.MongoDB.AuthenticationTable")]
+  public void RemovedAuthenticationSettingsAllowingEveryRequestAreWarnedAbout(string key,
+                                                                              string value)
+  {
+    var logger = new Mock<ILogger>();
+
+    Assert.That(Add(new ServiceCollection(),
+                    Configuration((key, value)),
+                    logger.Object),
+                Is.False);
+
+    logger.VerifyLog(LogLevel.Warning,
+                     key.Split(':')[0],
+                     Times.Once());
   }
 
   [Test]
