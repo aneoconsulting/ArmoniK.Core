@@ -107,6 +107,12 @@ public static class ServiceCollectionExt
                                           $"'{options.GrantCacheTtl}' must be greater than zero and at most {AuthorizationOptions.MaxGrantCacheTtl}");
     }
 
+    if (options.GrantReadTimeout <= TimeSpan.Zero || options.GrantReadTimeout > AuthorizationOptions.MaxGrantCacheTtl)
+    {
+      throw new InvalidOperationException($"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.GrantReadTimeout)} " +
+                                          $"'{options.GrantReadTimeout}' must be greater than zero and at most {AuthorizationOptions.MaxGrantCacheTtl}");
+    }
+
     var identity = configuration.GetInitializedValue<IdentityOptions>(IdentityOptions.SettingSection);
 
     if (options.Authentication.HasFlag(CallerAuthentication.Xfcc) && string.IsNullOrWhiteSpace(identity.CertificateHeader))
