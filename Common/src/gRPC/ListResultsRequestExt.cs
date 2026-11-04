@@ -39,14 +39,14 @@ public static class ListResultsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that access the field from the object
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<Result, object?>> ToField(this ListResultsRequest.Types.Sort sort)
-    => sort.Field.FieldCase switch
-       {
-         ResultField.FieldOneofCase.ResultRawField => sort.Field.ResultRawField.Field.ToField(),
-         ResultField.FieldOneofCase.None           => throw new ArgumentOutOfRangeException(nameof(sort)),
-         _                                         => throw new ArgumentOutOfRangeException(nameof(sort)),
-       };
+    => FilterConversion.Convert(() => sort.Field.FieldCase switch
+                                      {
+                                        ResultField.FieldOneofCase.ResultRawField => sort.Field.ResultRawField.Field.ToField(),
+                                        ResultField.FieldOneofCase.None           => throw new ArgumentOutOfRangeException(nameof(sort)),
+                                        _                                         => throw new ArgumentOutOfRangeException(nameof(sort)),
+                                      });
 
   /// <summary>
   ///   Converts gRPC message into the associated <see cref="Result" /> field
@@ -71,11 +71,14 @@ public static class ListResultsRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
+  public static Expression<Func<Result, bool>> ToResultFilter(this Filters filters)
+    => FilterConversion.Convert(() => BuildResultFilter(filters));
+
   [SuppressMessage("Style",
                    "IDE0066:Convert switch statement to expression",
                    Justification = "Readability for nested switch")]
-  public static Expression<Func<Result, bool>> ToResultFilter(this Filters filters)
+  private static Expression<Func<Result, bool>> BuildResultFilter(Filters filters)
   {
     Expression<Func<Result, bool>> expr = data => false;
 

@@ -32,21 +32,25 @@ public static class ResultExt
   ///   Conversion operator from <see cref="Result" /> to <see cref="ResultRaw" />
   /// </summary>
   /// <param name="result">The input result data</param>
+  /// <param name="withOpaqueId">Whether the reference of the data in the object storage is given, left empty otherwise</param>
   /// <returns>
   ///   The converted result data
   /// </returns>
-  public static ResultRaw ToGrpcResultRaw(this Result result)
+  public static ResultRaw ToGrpcResultRaw(this Result result,
+                                          bool        withOpaqueId = true)
     => new()
        {
-         SessionId      = result.SessionId,
-         Status         = result.Status.ToGrpcStatus(),
-         CreatedAt      = Timestamp.FromDateTime(result.CreationDate),
-         Name           = result.Name,
-         CreatedBy      = result.CreatedBy,
-         OwnerTaskId    = result.OwnerTaskId,
-         ResultId       = result.ResultId,
-         Size           = result.Size,
-         OpaqueId       = ByteString.CopyFrom(result.OpaqueId),
+         SessionId   = result.SessionId,
+         Status      = result.Status.ToGrpcStatus(),
+         CreatedAt   = Timestamp.FromDateTime(result.CreationDate),
+         Name        = result.Name,
+         CreatedBy   = result.CreatedBy,
+         OwnerTaskId = result.OwnerTaskId,
+         ResultId    = result.ResultId,
+         Size        = result.Size,
+         OpaqueId = withOpaqueId
+                      ? ByteString.CopyFrom(result.OpaqueId)
+                      : ByteString.Empty,
          ManualDeletion = result.ManualDeletion,
          CompletedAt = result.CompletionDate is not null
                          ? Timestamp.FromDateTime(result.CompletionDate.Value)

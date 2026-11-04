@@ -18,6 +18,8 @@
 using System;
 using System.Linq;
 
+using ArmoniK.Core.Common.Testing;
+
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.Tests.Helpers;

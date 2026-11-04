@@ -18,7 +18,6 @@
 using System.Collections.Generic;
 using System.Linq;
 
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Storage;
 
 namespace ArmoniK.Core.Common.Injection.Options.Database;
@@ -36,38 +35,6 @@ public class InitDatabase
   public InitDatabase(InitServices initServices)
   {
     Init = initServices.InitDatabase;
-
-    Roles = initServices.Authentication.Roles.Select(Role.FromJson)
-                        .OrderBy(role => role.Name)
-                        .Select((role,
-                                 i) => new RoleData(i,
-                                                    role.Name,
-                                                    role.Permissions.ToArray()))
-                        .ToList();
-
-    var roleDic = Roles.ToDictionary(data => data.RoleName,
-                                     data => data.RoleId);
-
-    Users = initServices.Authentication.Users.Select(User.FromJson)
-                        .OrderBy(user => user.Name)
-                        .Select((user,
-                                 i) => new UserData(i,
-                                                    user.Name,
-                                                    user.Roles.Select(roleName => roleDic[roleName])
-                                                        .ToArray()))
-                        .ToList();
-
-    var userDic = Users.ToDictionary(data => data.Username,
-                                     data => data.UserId);
-
-    Auths = initServices.Authentication.UserCertificates.Select(Certificate.FromJson)
-                        .OrderBy(certificate => (certificate.Fingerprint, CN: certificate.Cn))
-                        .Select((certificate,
-                                 i) => new AuthData(i,
-                                                    userDic[certificate.User],
-                                                    certificate.Cn,
-                                                    certificate.Fingerprint))
-                        .ToList();
 
     Partitions = initServices.Partitioning.Partitions.Select(Partition.FromJson)
                              .Select(partition => new PartitionData(partition.PartitionId,
@@ -89,19 +56,4 @@ public class InitDatabase
   ///   Collection of data to insert in the database for Partitions during ArmoniK initialization
   /// </summary>
   public IReadOnlyCollection<PartitionData> Partitions { get; init; }
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Roles during ArmoniK initialization
-  /// </summary>
-  public IReadOnlyCollection<RoleData> Roles { get; init; }
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Users during ArmoniK initialization
-  /// </summary>
-  public IReadOnlyCollection<UserData> Users { get; init; }
-
-  /// <summary>
-  ///   Collection of data to insert in the database for Authentication during ArmoniK initialization
-  /// </summary>
-  public IReadOnlyCollection<AuthData> Auths { get; init; }
 }

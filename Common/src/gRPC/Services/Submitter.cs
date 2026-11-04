@@ -136,9 +136,11 @@ public class Submitter : ISubmitter
   }
 
   /// <inheritdoc />
-  public async Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
-                                                      TaskOptions       defaultTaskOptions,
-                                                      CancellationToken cancellationToken)
+  public async Task<CreateSessionReply> CreateSession(IList<string>        partitionIds,
+                                                      TaskOptions          defaultTaskOptions,
+                                                      CancellationToken    cancellationToken,
+                                                      string?              owner        = null,
+                                                      IEnumerable<string>? createdUnder = null)
   {
     using var activity = activitySource_.StartActivity($"{nameof(CreateSession)}");
 
@@ -149,7 +151,9 @@ public class Submitter : ISubmitter
                                                                     partitionIds,
                                                                     defaultTaskOptions,
                                                                     submitterOptions_.DefaultPartition,
-                                                                    cancellationToken)
+                                                                    cancellationToken,
+                                                                    owner,
+                                                                    createdUnder)
                                                      .ConfigureAwait(false),
            };
   }

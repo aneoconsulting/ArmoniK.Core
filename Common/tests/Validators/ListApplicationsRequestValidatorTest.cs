@@ -17,6 +17,7 @@
 
 using System;
 
+using ArmoniK.Api.gRPC.V1;
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.SortDirection;
 using ArmoniK.Core.Common.gRPC.Validators;
@@ -161,5 +162,43 @@ public class ListApplicationsRequestValidatorTest
     Assert.That(validator_.Validate(validListApplicationsRequest_)
                           .IsValid,
                 Is.True);
+  }
+
+  [Test]
+  public void ListApplicationsRequestConditionWithoutFieldShouldFail()
+  {
+    validListApplicationsRequest_!.Filters = new Filters
+                                             {
+                                               Or =
+                                               {
+                                                 new FiltersAnd
+                                                 {
+                                                   And =
+                                                   {
+                                                     new FilterField
+                                                     {
+                                                       FilterString = new FilterString
+                                                                      {
+                                                                        Operator = FilterStringOperator.Equal,
+                                                                        Value    = "x",
+                                                                      },
+                                                     },
+                                                   },
+                                                 },
+                                               },
+                                             };
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
+  }
+
+  [Test]
+  public void ListApplicationsRequestSortWithoutFieldShouldFail()
+  {
+    validListApplicationsRequest_!.Sort.Fields.Clear();
+    validListApplicationsRequest_.Sort.Fields.Add(new ApplicationField());
+    Assert.That(validator_.Validate(validListApplicationsRequest_)
+                          .IsValid,
+                Is.False);
   }
 }

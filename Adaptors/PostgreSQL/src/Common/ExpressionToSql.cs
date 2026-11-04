@@ -183,13 +183,13 @@ public class ExpressionToSql<T>
         if (expression.Object is null && expression.Arguments.Count == 2)
         {
           // If the first argument is the SQL array column (parameter member),
-          // generate: @value = ANY(column)
+          // generate: column @> ARRAY[@value], which GIN indexes serve unlike @value = ANY(column)
           if (IsMemberOfParameter(expression.Arguments[0]))
           {
             var member    = Visit(expression.Arguments[0]);
             var value     = EvaluateExpression(expression.Arguments[1]);
             var paramName = AddParameter(value);
-            return $"({paramName} = ANY({member}))";
+            return $"({member} @> ARRAY[{paramName}])";
           }
 
           var collection = EvaluateExpression(expression.Arguments[0]);
@@ -213,11 +213,11 @@ public class ExpressionToSql<T>
           // ICollection<T>.Contains or IList<T>.Contains
           if (IsMemberOfParameter(expression.Object))
           {
-            // The member is a SQL array column, value is a parameter
+            // The member is a SQL array column, value is a parameter: column @> ARRAY[@value]
             var member    = Visit(expression.Object);
             var value     = EvaluateExpression(expression.Arguments[0]);
             var paramName = AddParameter(value);
-            return $"({paramName} = ANY({member}))";
+            return $"({member} @> ARRAY[{paramName}])";
           }
 
           var collection = EvaluateExpression(expression.Object);

@@ -21,8 +21,6 @@ using System.Threading.Tasks;
 using ArmoniK.Api.gRPC.V1.HealthChecks;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -30,12 +28,9 @@ using ArmoniK.Utils;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
-
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="HealthChecksService" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBase
 {
   private readonly FunctionExecutionMetrics<GrpcHealthChecksService> meter_;
@@ -70,8 +65,6 @@ public class GrpcHealthChecksService : HealthChecksService.HealthChecksServiceBa
   ///   A task representing the asynchronous operation, with a <see cref="CheckHealthResponse" /> result containing
   ///   the health status of services.
   /// </returns>
-  [RequiresPermission(typeof(GrpcHealthChecksService),
-                      nameof(CheckHealth))]
   public override async Task<CheckHealthResponse> CheckHealth(CheckHealthRequest request,
                                                               ServerCallContext  context)
   {

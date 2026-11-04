@@ -7,12 +7,6 @@ map $http_upgrade $connection_upgrade {
     '' close;
 }
 
-%{if var.mtls~}
-    map $ssl_client_s_dn $ssl_client_s_dn_cn {
-        default "";
-        ~CN=(?<CN>[^,/]+) $CN;
-    }
-%{endif~}
 server {
 %{if var.tls~}
     listen 8443 ssl http2;
@@ -26,8 +20,6 @@ server {
     ssl_client_certificate /client_ca.crt;
 %{else~}
     ssl_verify_client off;
-    proxy_hide_header X-Certificate-Client-CN;
-    proxy_hide_header X-Certificate-Client-Fingerprint;
 %{endif~}
     ssl_protocols TLSv1.2 TLSv1.3;
     ssl_ciphers EECDH+AESGCM:EECDH+AES256;
@@ -41,12 +33,23 @@ server {
 
     sendfile on;
 
+    # Docker embedded DNS, used by the grpc_pass variable below so that the submitter address is
+    # resolved at runtime instead of once at startup (a restarted submitter may change address)
+    resolver 127.0.0.11 valid=10s ipv6=off;
+
     location ~* ^/armonik\. {
 %{if var.mtls~}
-        grpc_set_header X-Certificate-Client-CN $ssl_client_s_dn_cn;
-        grpc_set_header X-Certificate-Client-Fingerprint $ssl_client_fingerprint;
+        # Client certificate in the Envoy XFCC format, replacing any header sent by the client. No Hash:
+        # $ssl_client_fingerprint is SHA-1 where Envoy writes SHA-256
+        grpc_set_header X-Forwarded-Client-Cert "Cert=\"$ssl_client_escaped_cert\"";
+%{else~}
+        # No client certificate is verified on this listener: drop the identity header sent by the client
+        # (proxy_hide_header only applies to response headers)
+        grpc_set_header X-Forwarded-Client-Cert "";
 %{endif~}
-        grpc_pass grpc://${var.submitter.url}:${var.submitter.port};
+        # Through a variable so that the resolver above is used
+        set $submitter_upstream grpc://${var.submitter.url}:${var.submitter.port};
+        grpc_pass $submitter_upstream;
 
         # Apparently, multiple chunks in a grpc stream is counted has a single body
         # So disable the limit

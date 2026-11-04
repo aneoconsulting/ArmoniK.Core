@@ -64,8 +64,7 @@ public class GrpcTasksServiceTests
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
                                                                   .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                          builder => builder.UseRouting()
-                                                            .UseAuthorization(),
+                                          builder => builder.UseRouting(),
                                           builder => builder.MapGrpcService<GrpcTasksService>(),
                                           true);
 
@@ -118,8 +117,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -218,6 +216,90 @@ public class GrpcTasksServiceTests
   }
 
   [Test]
+  public async Task SubmitTaskInAPartitionOfAnotherSessionShouldFail()
+  {
+    using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
+                                                                        .AddSingleton<IPushQueueStorage, SimplePushQueueStorage>()
+                                                                        .AddSingleton<IPartitionTable, SimplePartitionTable>()
+                                                                        .AddSingleton<Injection.Options.Submitter>()
+                                                                        .AddSingleton<MeterHolder>()
+                                                                        .AddSingleton<AgentIdentifier>()
+                                                                        .AddScoped(typeof(FunctionExecutionMetrics<>))
+                                                                        .AddHttpClient()
+                                                                        .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
+                                                builder => builder.UseRouting(),
+                                                builder =>
+                                                {
+                                                  builder.MapGrpcService<GrpcTasksService>();
+                                                  builder.MapGrpcService<GrpcSessionsService>();
+                                                  builder.MapGrpcService<GrpcResultsService>();
+                                                },
+                                                true);
+    await helper.App.StartAsync()
+                .ConfigureAwait(false);
+
+    var channel = GrpcChannel.ForAddress("http://localhost:9999",
+                                         new GrpcChannelOptions
+                                         {
+                                           HttpHandler = helper.App.GetTestServer()
+                                                               .CreateHandler(),
+                                         });
+
+    var sessionId = new Sessions.SessionsClient(channel).CreateSession(new CreateSessionRequest
+                                                                       {
+                                                                         DefaultTaskOption = new TaskOptions
+                                                                                             {
+                                                                                               MaxRetries = 1,
+                                                                                               Priority   = 2,
+                                                                                               MaxDuration = new Duration
+                                                                                                             {
+                                                                                                               Seconds = 500,
+                                                                                                             },
+                                                                                             },
+                                                                       })
+                                                        .SessionId;
+    var payloadId = new Results.ResultsClient(channel).CreateResults(new CreateResultsRequest
+                                                                     {
+                                                                       SessionId = sessionId,
+                                                                       Results =
+                                                                       {
+                                                                         new CreateResultsRequest.Types.ResultCreate
+                                                                         {
+                                                                           Name = "payload",
+                                                                         },
+                                                                       },
+                                                                     })
+                                                      .Results.Single()
+                                                      .ResultId;
+
+    var client = new Tasks.TasksClient(channel);
+    Assert.That(() => client.SubmitTasks(new SubmitTasksRequest
+                                         {
+                                           SessionId = sessionId,
+                                           TaskCreations =
+                                           {
+                                             new SubmitTasksRequest.Types.TaskCreation
+                                             {
+                                               PayloadId = payloadId,
+                                               TaskOptions = new TaskOptions
+                                                             {
+                                                               PartitionId = "another-partition",
+                                                               MaxRetries  = 1,
+                                                               Priority    = 2,
+                                                               MaxDuration = new Duration
+                                                                             {
+                                                                               Seconds = 500,
+                                                                             },
+                                                             },
+                                             },
+                                           },
+                                         }),
+                Throws.InstanceOf<RpcException>()
+                      .With.Property(nameof(RpcException.StatusCode))
+                      .EqualTo(StatusCode.InvalidArgument));
+  }
+
+  [Test]
   public async Task SubmitTaskWithoutCreationsShouldFailWithRpcException()
   {
     using var helper = new TestDatabaseProvider(collection => collection.AddSingleton<IPullQueueStorage, SimplePullQueueStorage>()
@@ -229,8 +311,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -290,8 +371,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -372,8 +452,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();
@@ -487,8 +566,7 @@ public class GrpcTasksServiceTests
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
-                                                builder => builder.UseRouting()
-                                                                  .UseAuthorization(),
+                                                builder => builder.UseRouting(),
                                                 builder =>
                                                 {
                                                   builder.MapGrpcService<GrpcTasksService>();

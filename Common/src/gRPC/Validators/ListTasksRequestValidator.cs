@@ -42,6 +42,7 @@ public class ListTasksRequestValidator : AbstractValidator<ListTasksRequest>
     RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new TaskFiltersValidator())
       .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
@@ -56,6 +57,8 @@ public class ListTasksRequestValidator : AbstractValidator<ListTasksRequest>
                         RuleFor(request => request.Sort.Field)
                           .NotNull()
                           .NotEmpty()
+                          .Must(field => field is null || field.FieldCase != TaskField.FieldOneofCase.None)
+                          .WithMessage("A sort must name the field it sorts on")
                           .WithName($"{nameof(ListTasksRequest)}.{nameof(ListTasksRequest.Sort)}.{nameof(ListTasksRequest.Sort.Field)}");
                       });
   }
