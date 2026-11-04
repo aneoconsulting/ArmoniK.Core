@@ -26,7 +26,7 @@ using ArmoniK.Core.Adapters.MongoDB.Table.DataModel.Authorization;
 using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.TestBase;
+using ArmoniK.Core.Common.Testing;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;

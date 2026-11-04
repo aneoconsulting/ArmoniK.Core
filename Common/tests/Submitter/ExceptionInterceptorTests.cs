@@ -29,6 +29,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Testing;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Utils;
@@ -175,13 +176,12 @@ internal class ExceptionInterceptorTests
 
     for (var i = 0; i < 3; i++)
     {
-      var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.ServerStreamingServerHandler<object, object>(new object(),
-                                                                                                                           Mock.Of<IServerStreamWriter<object>>(),
-                                                                                                                           TestServerCallContext.Create(),
-                                                                                                                           (_,
-                                                                                                                            _,
-                                                                                                                            _) => throw new
-                                                                                                                                    EventStreamInterruptedException("stopped"))
+      var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.ServerStreamingServerHandler(new object(),
+                                                                                                           Mock.Of<IServerStreamWriter<object>>(),
+                                                                                                           TestServerCallContext.Create(),
+                                                                                                           (_,
+                                                                                                            _,
+                                                                                                            _) => throw new EventStreamInterruptedException("stopped"))
                                                                              .ConfigureAwait(false));
 
       Assert.That(rpc!.StatusCode,

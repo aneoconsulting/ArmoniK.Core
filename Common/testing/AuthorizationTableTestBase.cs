@@ -25,7 +25,7 @@ using ArmoniK.Core.Common.Storage;
 
 using NUnit.Framework;
 
-namespace ArmoniK.Core.Common.Tests.TestBase;
+namespace ArmoniK.Core.Common.Testing;
 
 [TestFixture]
 public class AuthorizationTableTestBase

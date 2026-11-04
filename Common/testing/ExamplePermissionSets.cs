@@ -20,12 +20,12 @@ using System.Linq;
 
 using ArmoniK.Core.Common.Injection.Options;
 
-namespace ArmoniK.Core.Common.Tests.Helpers;
+namespace ArmoniK.Core.Common.Testing;
 
 /// <summary>
 ///   The permission sets of the access model, as a deployment defines them in its configuration: none is shipped
 /// </summary>
-internal static class ExamplePermissionSets
+public static class ExamplePermissionSets
 {
   private static readonly string[] SessionView = ["session:read", "task:read", "data:read", "data:download", "event:watch"];
 

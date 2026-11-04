@@ -40,7 +40,6 @@ using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
-using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Core.Utils.Uuid;
 
 using Google.Protobuf;
@@ -65,10 +64,11 @@ using FiltersAnd = ArmoniK.Api.gRPC.V1.Results.FiltersAnd;
 using Output = ArmoniK.Core.Common.Storage.Output;
 using Result = ArmoniK.Core.Common.Storage.Result;
 using ResultStatus = ArmoniK.Core.Common.Storage.ResultStatus;
+using Submitter = ArmoniK.Core.Common.Injection.Options.Submitter;
 using TaskOptions = ArmoniK.Core.Base.DataStructures.TaskOptions;
 using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
-namespace ArmoniK.Core.Common.Tests.TestBase;
+namespace ArmoniK.Core.Common.Testing;
 
 /// <summary>
 ///   Requests decided by the enforcer over sessions, tasks and results stored by each adaptor
@@ -204,7 +204,7 @@ public class AuthorizationEnforcerTestBase
            sessionTable,
            TaskTable!,
            ResultTable!,
-           new Injection.Options.Submitter
+           new Submitter
            {
              DefaultPartition = "part0",
            },
@@ -437,7 +437,7 @@ public class AuthorizationEnforcerTestBase
                                            Mock.Of<IObjectStorage>(),
                                            Mock.Of<IPushQueueStorage>(),
                                            services.GetRequiredService<FunctionExecutionMetrics<GrpcResultsService>>(),
-                                           new Injection.Options.Submitter(),
+                                           new Submitter(),
                                            Mock.Of<IUuidGenerator>(),
                                            NullLogger<GrpcResultsService>.Instance);
       var request = new ListResultsRequest
@@ -509,7 +509,7 @@ public class AuthorizationEnforcerTestBase
                                                SessionTable!,
                                                TaskTable!,
                                                ResultTable!,
-                                               new Injection.Options.Submitter
+                                               new Submitter
                                                {
                                                  DefaultPartition = "part0",
                                                },
@@ -553,7 +553,7 @@ public class AuthorizationEnforcerTestBase
                                                SessionTable!,
                                                TaskTable!,
                                                ResultTable!,
-                                               new Injection.Options.Submitter
+                                               new Submitter
                                                {
                                                  DefaultPartition = "part0",
                                                },
@@ -739,7 +739,7 @@ public class AuthorizationEnforcerTestBase
                                   Mock.Of<IObjectStorage>(),
                                   Mock.Of<IPushQueueStorage>(),
                                   services.GetRequiredService<FunctionExecutionMetrics<GrpcResultsService>>(),
-                                  new Injection.Options.Submitter(),
+                                  new Submitter(),
                                   Mock.Of<IUuidGenerator>(),
                                   NullLogger<GrpcResultsService>.Instance);
   }
@@ -1285,7 +1285,7 @@ public class AuthorizationEnforcerTestBase
                                                SessionTable!,
                                                TaskTable!,
                                                ResultTable!,
-                                               new Injection.Options.Submitter
+                                               new Submitter
                                                {
                                                  DefaultPartition = "part0",
                                                },
