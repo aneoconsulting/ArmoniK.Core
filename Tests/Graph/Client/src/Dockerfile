@@ -1,0 +1,35 @@
+#See https://aka.ms/containerfastmode to understand how Visual Studio uses this Dockerfile to build your images for faster debugging.
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-azurelinux3.0-distroless AS base-linux
+USER $APP_UID
+ENTRYPOINT [ "dotnet" ]
+
+FROM mcr.microsoft.com/dotnet/aspnet:10.0-nanoserver-ltsc2022 AS base-windows
+ENTRYPOINT ["C:\\Program Files\\dotnet\\dotnet.exe"]
+
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0 AS build-linux
+FROM --platform=$BUILDPLATFORM mcr.microsoft.com/dotnet/sdk:10.0-nanoserver-ltsc2022 AS build-windows
+
+# Configure sh for RUN commands
+RUN pwsh -Command "Invoke-WebRequest -Uri https://frippery.org/files/busybox/busybox64u.exe -OutFile 'C:\\Program Files\\busybox.exe'"
+RUN pwsh -Command "Set-Content -Path 'C:\\Program Files\\sh.ps1' -Value '$wrapper = ''\"C:\Program Files\sh.ps1\"''; $cmdLine = [Environment]::CommandLine; $idx = $cmdLine.IndexOf($wrapper) + $wrapper.Length; $cmd = $cmdLine.Substring($idx).TrimStart(); $cmd | & ''C:\Program Files\busybox.exe'' sh'"
+SHELL ["pwsh", "-File", "\"C:\\Program Files\\sh.ps1\""]
+
+FROM build-${BUILDOS} AS build
+ARG TARGETARCH
+ARG TARGETOS
+ARG VERSION=1.0.0.0
+
+WORKDIR /src
+COPY ["Tests/Graph/Client/src/ArmoniK.Samples.Graph.Client.csproj", "Tests/Graph/Client/src/"]
+COPY ["Tests/Graph/Common/src/ArmoniK.Samples.Graph.Common.csproj", "Tests/Graph/Common/src/"]
+RUN dotnet restore -a "${TARGETARCH}" "Tests/Graph/Client/src/ArmoniK.Samples.Graph.Client.csproj"
+COPY ["Tests/Graph/Client/src", "Tests/Graph/Client/src"]
+COPY ["Tests/Graph/Common/src", "Tests/Graph/Common/src"]
+WORKDIR "/src/Tests/Graph/Client/src"
+RUN dotnet publish -a "${TARGETARCH}" "ArmoniK.Samples.Graph.Client.csproj" --no-restore -o /app/publish -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion="$VERSION" -p:Version="$VERSION"
+
+FROM base-${TARGETOS} AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+CMD ["ArmoniK.Samples.Graph.Client.dll"]
