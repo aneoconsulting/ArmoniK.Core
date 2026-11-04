@@ -104,7 +104,7 @@ Environment variables `GraphOptions__<Name>` of the client (just variables in pa
 | `MaxRetries` (`graph_max_retries`) | `1`        | Maximum number of retries of a task                                         |
 | `BatchSize` (`graph_batch_size`) | `100`        | Number of tasks submitted per request by the client                         |
 | `SubmitOrder` (`graph_submit_order`) | `reverse` | `reverse` (last level first, so dependents always wait) or `natural`      |
-| `Timeout` (`graph_timeout`)    | `01:00:00`     | Maximum time to wait for the tasks                                          |
+| `Timeout` (`graph_timeout`)    | `01:00:00`     | Maximum time for the run, from the first submission (submission and wait)   |
 | `PurgeData` (`graph_purge_data`) | `true`       | Purge the session at the end                                                |
 | `ExitAfterSubmission` (`graph_exit_after_submission`) | `false` | Exit after submitting the client graph, leaving the session running (no result) |
 
@@ -112,27 +112,34 @@ Distributions: `const:V`, `uniform:MIN:MAX`, `normal:MEAN:STDDEV`, `lognormal:ME
 `exponential:MEAN` or `poisson:MEAN`, optionally followed by `:min=X` and/or `:max=Y` to clamp the
 drawn values (e.g. `lognormal:100:1:max=5000`). Counts are rounded to the nearest integer. For
 counts, `uniform` with integer bounds draws every integer between MIN and MAX with the same probability.
-An invalid distribution stops the client with exit code 2 before anything is submitted.
+An invalid distribution stops the client with exit code 2 before anything is submitted, as does an
+`OutputSize` whose upper bound exceeds the largest array .NET can allocate (about 2 GB).
 
 The maximum duration of the tasks in ArmoniK (`MaxDuration` of the session, inherited by the
 sub-tasks) is derived from the upper bound of `TaskDuration`: the constant, the maximum of
-`uniform` or the `max=` bound, times 1.5 plus 1 minute, and at least 5 minutes. An unbounded
+`uniform`, raised to the `min=` bound and lowered to the `max=` bound, times 1.5 plus 1 minute,
+and at least 5 minutes. An unbounded
 `TaskDuration` (`normal`, `lognormal`, `exponential` or `poisson` without `max=`) gets 1 hour and
 a warning: a task drawn longer than that ends in `Timeout`.
 
 ## Output
 
-The client prints a `GRAPH_STATS {json}` line before submitting anything. It holds the total
+The client logs (in CLEF, like every ArmoniK component) a `GRAPH_STATS` event before submitting
+anything, with the statistics in its `GraphStats` property. It holds the total
 number of tasks, dependency edges, the maximum number of dependencies of a task, the maximum
 number of tasks waiting on the same output, the nesting depth, the number of expanding tasks,
-the critical path (in tasks) and the theoretical minimum duration. At the end it prints a
-`GRAPH_RESULT {json}` line with the wall-clock duration from the first submission, the
+the critical path (in tasks) and the theoretical minimum duration. At the end it logs a
+`GRAPH_RESULT` event, with in its `GraphResult` property the wall-clock duration from the first
+submission, the
 throughput, the counts by status and the outcome (`finished`, `failed`, `timeout` or
 `interrupted`). The exit code is non-zero if a task did not complete or if the session does not
-hold exactly NTasks tasks.
+hold exactly NTasks tasks. Scripts select these events by their message template, e.g.
+`jq 'select(."@mt" | startswith("GRAPH_RESULT")) | .GraphResult'`.
 
 The client waits for the outputs of the client graph with the events API. The output of an
 expanding task is produced by the aggregator of its sub-graph, so these outputs complete once
 the sub-graphs that produce them are done; the client then polls the task counts only until the
-last tasks whose output no task consumes are done. Ctrl+C stops the client, then cancels the
-session (and purges it if `PurgeData` is set).
+last tasks whose output no task consumes are done. Whatever ends the run (completion, failure,
+timeout or Ctrl+C), the client then counts the tasks, cancels or closes the session (and purges it
+if `PurgeData` is set) and logs `GRAPH_RESULT`; the count and the cleanup are each limited to 30
+seconds. A second Ctrl+C stops the client right away.

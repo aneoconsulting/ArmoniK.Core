@@ -87,6 +87,11 @@ public class GraphComputerService : WorkerStreamWrapper
 
       if (payload.Budget <= 1)
       {
+        if (payload.OutputSize < 0 || payload.OutputSize > Array.MaxLength)
+        {
+          throw new InvalidOperationException($"Task {payload.Label} has an output size of {payload.OutputSize} bytes, outside [0, {Array.MaxLength}]");
+        }
+
         var data = new byte[payload.OutputSize];
         new DeterministicRandom(payload.PositionHash).NextBytes(data);
         await taskHandler.SendResult(output,
@@ -109,16 +114,11 @@ public class GraphComputerService : WorkerStreamWrapper
     }
     catch (RpcException ex)
     {
+      // Communication error with the agent: rethrown so that the agent retries the task (up to MaxRetries), whereas
+      // an Output.Error ends the task for good
       logger_.LogError(ex,
-                       "Error while computing task");
-
-      return new Output
-             {
-               Error = new Output.Types.Error
-                       {
-                         Details = ex.Message + ex.StackTrace,
-                       },
-             };
+                       "Communication error with the agent while computing task");
+      throw;
     }
     catch (Exception ex)
     {

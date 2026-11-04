@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,28 +56,16 @@ namespace ArmoniK.Samples.Graph.Client;
 
 internal static class Program
 {
-  /// <summary>Prefix of the line holding the statistics of the generated graph, for scripts</summary>
-  private const string StatsPrefix = "GRAPH_STATS ";
-
-  /// <summary>Prefix of the final line holding all the numbers of the run, for scripts</summary>
-  private const string ResultPrefix = "GRAPH_RESULT ";
-
   /// <summary>Number of parallel event streams used to wait for the outputs of the client graph</summary>
   private const int WaitParallelism = 4;
 
   /// <summary>Number of results per event stream request</summary>
   private const int WaitBucketSize = 100;
 
-  /// <summary>Factor applied to the upper bound of the task durations to get the maximum duration of the tasks</summary>
-  private const double MaxDurationFactor = 1.5;
+  /// <summary>Time given to the final count and to the cleanup of the session</summary>
+  private static readonly TimeSpan CleanupTimeout = TimeSpan.FromSeconds(30);
 
   private static readonly TimeSpan PollingInterval = TimeSpan.FromSeconds(1);
-
-  /// <summary>Margin added to the maximum duration of the tasks, for the work of a task besides its sleep</summary>
-  private static readonly TimeSpan MaxDurationMargin = TimeSpan.FromMinutes(1);
-
-  /// <summary>Smallest maximum duration of the tasks, so that a loaded deployment does not time short tasks out</summary>
-  private static readonly TimeSpan MinMaxDuration = TimeSpan.FromMinutes(5);
 
   /// <summary>Maximum duration of the tasks when the task durations have no upper bound</summary>
   private static readonly TimeSpan DefaultMaxDuration = TimeSpan.FromHours(1);
@@ -90,11 +77,6 @@ internal static class Program
     TaskStatus.Cancelled,
     TaskStatus.Timeout,
   };
-
-  private static readonly JsonSerializerOptions JsonOptions = new()
-                                                              {
-                                                                WriteIndented = false,
-                                                              };
 
   private static async Task<int> Main(string[] args)
   {
@@ -193,9 +175,9 @@ internal static class Program
                           stats.MinimumDurationMs,
                           stats.TotalDurationMs,
                           generationTime);
-    // Plain line on the standard output (not a log) so that scripts can grep it
-    Console.Out.WriteLine(StatsPrefix + JsonSerializer.Serialize(stats,
-                                                                 JsonOptions));
+    // Single log event holding the statistics, for scripts: select it by its message template
+    logger.LogInformation("GRAPH_STATS {@GraphStats}",
+                          stats);
 
     if (stats.TotalTasks != graphOptions.NTasks)
     {
@@ -207,24 +189,33 @@ internal static class Program
 
     var channelPool = new ObjectPool<ChannelBase>(() => GrpcChannelFactory.CreateChannel(options!));
 
-    // Ctrl+C cancels the run; the session is then cancelled (and purged) like a failed run
+    // Ctrl+C cancels the run; the session is then cancelled (and purged) like a failed run. A second Ctrl+C stops the
+    // process right away, e.g. if the cleanup hangs.
     using var interruption = new CancellationTokenSource();
     Console.CancelKeyPress += (_,
                                args) =>
                               {
+                                if (interruption.IsCancellationRequested)
+                                {
+                                  return;
+                                }
+
                                 args.Cancel = true;
                                 interruption.Cancel();
                               };
 
-    string?                              sessionId      = null;
-    var                                  outcome        = "finished";
-    var                                  submissionTime = TimeSpan.Zero;
-    var                                  wallClock      = TimeSpan.Zero;
-    IReadOnlyDictionary<TaskStatus, int> counts         = new Dictionary<TaskStatus, int>();
+    // The timeout of the run starts with the first submission and covers the submission and the wait
+    using var timeout = CancellationTokenSource.CreateLinkedTokenSource(interruption.Token);
+
+    string?                              sessionId       = null;
+    long?                                submissionStart = null;
+    var                                  outcome         = "finished";
+    var                                  submissionTime  = TimeSpan.Zero;
+    IReadOnlyDictionary<TaskStatus, int> counts          = new Dictionary<TaskStatus, int>();
     try
     {
       // 2. Create the session and submit the client graph
-      var maxDuration = MaxTaskDuration(graphOptions.TaskDuration,
+      var maxDuration = MaxTaskDuration(settings,
                                         logger);
       sessionId = await CreateSessionAsync(channelPool,
                                            graphOptions,
@@ -242,10 +233,8 @@ internal static class Program
                                                interruption.Token)
                         .ConfigureAwait(false);
 
-      // The timeout of the run starts with the first submission
-      using var timeout = CancellationTokenSource.CreateLinkedTokenSource(interruption.Token);
       timeout.CancelAfter(graphOptions.Timeout);
-      var submissionStart = Stopwatch.GetTimestamp();
+      submissionStart = Stopwatch.GetTimestamp();
       await SubmitClientGraphAsync(channelPool,
                                    sessionId,
                                    root,
@@ -253,9 +242,9 @@ internal static class Program
                                    reverse,
                                    graphOptions.BatchSize,
                                    logger,
-                                   interruption.Token)
+                                   timeout.Token)
         .ConfigureAwait(false);
-      submissionTime = Stopwatch.GetElapsedTime(submissionStart);
+      submissionTime = Stopwatch.GetElapsedTime(submissionStart.Value);
       logger.LogInformation("{ClientTasks} client tasks submitted in {SubmissionTime}",
                             root.Tasks.Count,
                             submissionTime);
@@ -268,43 +257,60 @@ internal static class Program
       }
 
       // 3. Wait for the end of the run
-      try
-      {
-        await WaitForCompletionAsync(channelPool,
-                                     sessionId,
-                                     resultIds,
-                                     timeout.Token)
-          .ConfigureAwait(false);
-      }
-      // A cancelled gRPC call throws an RpcException (Cancelled) rather than an OperationCanceledException, so the
-      // outcome is decided from the tokens
-      catch (Exception) when (timeout.IsCancellationRequested && !interruption.IsCancellationRequested)
-      {
-        outcome = "timeout";
-      }
-      catch (Exception e) when (!timeout.IsCancellationRequested)
-      {
-        // An output of the client graph is aborted: a task failed for good
-        logger.LogError(e,
-                        "A task of the graph failed");
-        outcome = "failed";
-      }
-
-      wallClock = Stopwatch.GetElapsedTime(submissionStart);
-      counts = await channelPool.WithInstanceAsync(async channel => await CountTasksAsync(channel,
-                                                                                          sessionId,
-                                                                                          interruption.Token)
-                                                                      .ConfigureAwait(false),
-                                                   interruption.Token)
-                                .ConfigureAwait(false);
+      await WaitForCompletionAsync(channelPool,
+                                   sessionId,
+                                   resultIds,
+                                   timeout.Token)
+        .ConfigureAwait(false);
     }
+    // A cancelled gRPC call throws an RpcException (Cancelled) rather than an OperationCanceledException, so the
+    // outcome is decided from the tokens
     catch (Exception) when (interruption.IsCancellationRequested)
     {
       logger.LogWarning("Run interrupted");
       outcome = "interrupted";
     }
+    catch (Exception) when (timeout.IsCancellationRequested)
+    {
+      logger.LogError("Run timed out after {Timeout}",
+                      graphOptions.Timeout);
+      outcome = "timeout";
+    }
+    catch (Exception e)
+    {
+      // Session creation or submission failed, or an output of the client graph is aborted (a task failed for good)
+      logger.LogError(e,
+                      "Run failed");
+      outcome = "failed";
+    }
 
-    // 4. Results
+    var wallClock = submissionStart is
+                    {
+                    } start
+                      ? Stopwatch.GetElapsedTime(start)
+                      : TimeSpan.Zero;
+
+    // 4. Results; the counts and the cleanup are bounded so that a hanging call cannot block the report
+    if (sessionId is not null)
+    {
+      try
+      {
+        using var countDeadline = new CancellationTokenSource(CleanupTimeout);
+        counts = await channelPool.WithInstanceAsync(async channel => await CountTasksAsync(channel,
+                                                                                            sessionId,
+                                                                                            countDeadline.Token)
+                                                                        .ConfigureAwait(false),
+                                                     countDeadline.Token)
+                                  .ConfigureAwait(false);
+      }
+      catch (Exception e)
+      {
+        logger.LogWarning(e,
+                          "Could not count the tasks of the session {SessionId}",
+                          sessionId);
+      }
+    }
+
     var completed = counts.GetValueOrDefault(TaskStatus.Completed);
     var errors    = counts.GetValueOrDefault(TaskStatus.Error);
     var total = counts.Where(pair => pair.Key != TaskStatus.Retried)
@@ -335,13 +341,15 @@ internal static class Program
     {
       try
       {
+        using var cleanupDeadline = new CancellationTokenSource(CleanupTimeout);
         await CleanSessionAsync(channelPool,
                                 sessionId,
                                 success,
-                                graphOptions.PurgeData)
+                                graphOptions.PurgeData,
+                                cleanupDeadline.Token)
           .ConfigureAwait(false);
       }
-      catch (RpcException e)
+      catch (Exception e)
       {
         logger.LogWarning(e,
                           "Could not clean the session {SessionId}",
@@ -349,27 +357,24 @@ internal static class Program
       }
     }
 
-    var result = new Dictionary<string, object?>
-                 {
-                   ["SessionId"]                = sessionId,
-                   ["Outcome"]                  = outcome,
-                   ["Success"]                  = success,
-                   ["NTasks"]                   = graphOptions.NTasks,
-                   ["Settings"]                 = settings.ToOptions(),
-                   ["Stats"]                    = stats,
-                   ["GenerationMs"]             = generationTime.TotalMilliseconds,
-                   ["SubmissionMs"]             = submissionTime.TotalMilliseconds,
-                   ["WallClockMs"]              = wallClock.TotalMilliseconds,
-                   ["ThroughputTasksPerSecond"] = throughput,
-                   ["MinimumDurationMs"]        = stats.MinimumDurationMs,
-                   ["Completed"]                = completed,
-                   ["Errors"]                   = errors,
-                   ["TotalCounted"]             = total,
-                   ["CountsByStatus"] = counts.ToDictionary(pair => pair.Key.ToString(),
-                                                            pair => pair.Value),
-                 };
-    Console.Out.WriteLine(ResultPrefix + JsonSerializer.Serialize(result,
-                                                                  JsonOptions));
+    // Single log event holding all the numbers of the run, for scripts: select it by its message template
+    logger.LogInformation("GRAPH_RESULT {@GraphResult}",
+                          new GraphResult(sessionId,
+                                          outcome,
+                                          success,
+                                          graphOptions.NTasks,
+                                          settings.ToOptions(),
+                                          stats,
+                                          generationTime.TotalMilliseconds,
+                                          submissionTime.TotalMilliseconds,
+                                          wallClock.TotalMilliseconds,
+                                          throughput,
+                                          stats.MinimumDurationMs,
+                                          completed,
+                                          errors,
+                                          total,
+                                          counts.ToDictionary(pair => pair.Key.ToString(),
+                                                              pair => pair.Value)));
 
     return success
              ? 0
@@ -413,37 +418,24 @@ internal static class Program
   }
 
   /// <summary>
-  ///   Maximum duration of a task in ArmoniK, beyond which the task is stopped and set in Timeout: the upper bound of
-  ///   <paramref name="taskDuration" /> with a margin for the rest of the work of the task (dependencies, output,
-  ///   submission of its sub-graph), at least <see cref="MinMaxDuration" />. Without an upper bound,
-  ///   <see cref="DefaultMaxDuration" /> is used.
+  ///   Maximum duration of a task in ArmoniK, see <see cref="GraphSettings.MaxTaskDuration" />; without an upper bound
+  ///   of the task durations, <see cref="DefaultMaxDuration" /> is used.
   /// </summary>
-  private static TimeSpan MaxTaskDuration(Distribution taskDuration,
-                                          ILogger      logger)
+  private static TimeSpan MaxTaskDuration(GraphSettings settings,
+                                          ILogger       logger)
   {
-    TimeSpan maxDuration;
-    if (taskDuration.UpperBound is
-        {
-        } bound)
-    {
-      maxDuration = TimeSpan.FromMilliseconds(Math.Max(bound,
-                                                       0) * MaxDurationFactor) + MaxDurationMargin;
-      if (maxDuration < MinMaxDuration)
-      {
-        maxDuration = MinMaxDuration;
-      }
-    }
-    else
+    var maxDuration = settings.MaxTaskDuration;
+    if (maxDuration is null)
     {
       maxDuration = DefaultMaxDuration;
       logger.LogWarning("TaskDuration {TaskDuration} has no upper bound, the maximum duration of the tasks is set to {MaxDuration}; add :max= to the distribution to bound it",
-                        taskDuration.ToString(),
+                        settings.TaskDuration.ToString(),
                         maxDuration);
     }
 
     logger.LogInformation("Maximum duration of the tasks : {MaxDuration}",
                           maxDuration);
-    return maxDuration;
+    return maxDuration.Value;
   }
 
   /// <summary>
@@ -632,7 +624,8 @@ internal static class Program
   private static async Task CleanSessionAsync(ObjectPool<ChannelBase> channelPool,
                                               string                  sessionId,
                                               bool                    success,
-                                              bool                    purgeData)
+                                              bool                    purgeData,
+                                              CancellationToken       cancellationToken)
     => await channelPool.WithInstanceAsync(async channel =>
                                            {
                                              var client = new Sessions.SessionsClient(channel);
@@ -641,14 +634,16 @@ internal static class Program
                                                await client.CloseSessionAsync(new CloseSessionRequest
                                                                               {
                                                                                 SessionId = sessionId,
-                                                                              });
+                                                                              },
+                                                                              cancellationToken: cancellationToken);
                                              }
                                              else
                                              {
                                                await client.CancelSessionAsync(new CancelSessionRequest
                                                                                {
                                                                                  SessionId = sessionId,
-                                                                               });
+                                                                               },
+                                                                               cancellationToken: cancellationToken);
                                              }
 
                                              if (purgeData)
@@ -656,10 +651,11 @@ internal static class Program
                                                await client.PurgeSessionAsync(new PurgeSessionRequest
                                                                               {
                                                                                 SessionId = sessionId,
-                                                                              });
+                                                                              },
+                                                                              cancellationToken: cancellationToken);
                                              }
                                            },
-                                           CancellationToken.None)
+                                           cancellationToken)
                         .ConfigureAwait(false);
 
   /// <summary>

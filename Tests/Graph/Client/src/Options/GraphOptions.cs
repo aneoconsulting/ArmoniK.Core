@@ -143,7 +143,8 @@ public class GraphOptions
   public bool ExitAfterSubmission { get; set; }
 
   /// <summary>
-  ///   Maximum time to wait for the end of the tasks
+  ///   Maximum time for the run, from the first submission: it bounds the submission of the client graph and the wait
+  ///   for the end of the tasks
   /// </summary>
   public TimeSpan Timeout { get; set; } = TimeSpan.FromHours(1);
 

@@ -95,8 +95,9 @@ public sealed class Distribution
   public double? Max { get; }
 
   /// <summary>
-  ///   Largest value the distribution can give, if it is bounded: the value of a constant, the maximum of a uniform
-  ///   distribution or <see cref="Max" />; null for the unbounded distributions without <see cref="Max" />
+  ///   Largest value the distribution can give, if it is bounded: the value of a constant or the maximum of a uniform
+  ///   distribution, raised to <see cref="Min" /> and lowered to <see cref="Max" />; <see cref="Max" /> for the other
+  ///   distributions, null if they have no <see cref="Max" />
   /// </summary>
   public double? UpperBound
   {
@@ -108,16 +109,29 @@ public sealed class Distribution
                           DistributionKind.Uniform => Second,
                           _                        => null,
                         };
-      return (natural, Max) switch
-             {
-               ({
-                } n, {
-                     } m) => Math.Min(n,
-                                      m),
-               ({
-                } n, null) => n,
-               (null, var m) => m,
-             };
+      // The drawn values are clamped to [Min, Max]: a Min above the natural bound raises it, Max lowers it
+      if (natural is
+          {
+          } n && Min is
+          {
+          } min && min > n)
+      {
+        natural = min;
+      }
+
+      if (Max is
+          {
+          } max)
+      {
+        return natural is
+               {
+               } upper
+                 ? Math.Min(upper,
+                            max)
+                 : max;
+      }
+
+      return natural;
     }
   }
 

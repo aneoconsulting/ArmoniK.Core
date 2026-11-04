@@ -93,7 +93,7 @@ public sealed record GraphStats(long TotalTasks,
 
     // Explicit stack instead of recursion: the nesting can be as deep as NTasks (e.g. GraphTasks=const:1).
     // Only the graphs on the path from the client graph to the current one are in memory, and they are disjoint, so
-    // the memory is bounded by O(NTasks) small tasks (positions are not built, see GenerateSubGraphWithoutPositions).
+    // the memory is bounded by O(NTasks) small tasks (only the hashes of the positions are kept).
     var stack = new Stack<Frame>();
     stack.Push(new Frame(root,
                          0));
@@ -113,9 +113,8 @@ public sealed record GraphStats(long TotalTasks,
       {
         var task = tasks[frame.Next];
         frame.Next++;
-        // Positions are not built: they grow with the depth and would make the memory quadratic in the depth
-        stack.Push(new Frame(GraphGenerator.GenerateSubGraphWithoutPositions(settings,
-                                                                             task),
+        stack.Push(new Frame(GraphGenerator.GenerateSubGraph(settings,
+                                                             task),
                              frame.Depth + 1)
                    {
                      ParentTask = task.Id,

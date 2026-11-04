@@ -51,22 +51,9 @@ public class GraphGeneratorTest
   /// </summary>
   private static IEnumerable<TaskGraph> AllGraphs(GraphSettings settings,
                                                   int           nTasks)
-  {
-    var stack = new Stack<TaskGraph>();
-    stack.Push(GraphGenerator.GenerateRoot(settings,
-                                           nTasks));
-    while (stack.Count > 0)
-    {
-      var graph = stack.Pop();
-      yield return graph;
-      foreach (var task in graph.Tasks.Where(t => t.IsExpanding)
-                                .Reverse())
-      {
-        stack.Push(GraphGenerator.GenerateSubGraph(settings,
-                                                   task));
-      }
-    }
-  }
+    => Positions.AllGraphs(settings,
+                           nTasks)
+                .Select(pair => pair.Graph);
 
   /// <summary>
   ///   Textual description of the full graph, to compare graphs
@@ -75,18 +62,19 @@ public class GraphGeneratorTest
                                  int           nTasks)
   {
     var builder = new StringBuilder();
-    foreach (var graph in AllGraphs(settings,
-                                    nTasks))
+    foreach (var (position, graph) in Positions.AllGraphs(settings,
+                                                          nTasks))
     {
       builder.Append('[')
-             .Append(graph.Position)
+             .Append(position)
              .Append(']')
              .Append(string.Join(",",
                                  graph.LevelSizes))
              .Append('\n');
       foreach (var task in graph.Tasks)
       {
-        builder.Append(task.Position)
+        builder.Append(Positions.Of(task,
+                                    position))
                .Append(' ')
                .Append(task.Budget)
                .Append(' ')
@@ -324,8 +312,8 @@ public class GraphGeneratorTest
                             dependenciesPerTask: "uniform:0:3");
 
     var subGraphs = 0;
-    foreach (var parentGraph in AllGraphs(settings,
-                                          3000))
+    foreach (var (parentPosition, parentGraph) in Positions.AllGraphs(settings,
+                                                                      3000))
     {
       foreach (var task in parentGraph.Tasks.Where(t => t.IsExpanding))
       {
@@ -343,8 +331,10 @@ public class GraphGeneratorTest
                     Is.EqualTo(graph.LevelSizes.Count - 1));
         Assert.That(graph.Aggregator.OutputSize,
                     Is.EqualTo(task.OutputSize));
-        Assert.That(graph.Aggregator.Position,
-                    Does.StartWith(task.Position + "/"));
+        Assert.That(graph.Aggregator.PositionHash,
+                    Is.EqualTo(StableHash.Fnv1A64(Positions.Of(graph.Aggregator,
+                                                               Positions.Of(task,
+                                                                            parentPosition)))));
         Assert.That(graph.LevelSizes.Count,
                     Is.LessThanOrEqualTo(Math.Max(2,
                                                   levels)));
@@ -371,9 +361,10 @@ public class GraphGeneratorTest
   public void SubGraphShouldOnlyDependOnSeedPositionAndBudget()
   {
     var settings = Settings(skipLevels: 0.2);
+    var position = StableHash.Fnv1A64("1.4/0.2");
 
     var reference = GraphGenerator.GenerateSubGraph(settings,
-                                                    "1.4/0.2",
+                                                    position,
                                                     57,
                                                     2048);
 
@@ -382,63 +373,52 @@ public class GraphGeneratorTest
                   1000)
       .ToList();
     var again = GraphGenerator.GenerateSubGraph(settings,
-                                                "1.4/0.2",
+                                                position,
                                                 57,
                                                 2048);
     Assert.That(Describe(again),
                 Is.EqualTo(Describe(reference)));
 
     // The tasks of the sub-graph are positioned below the expanding task
-    Assert.That(reference.Tasks.Select(t => t.Position),
-                Has.All.StartWith("1.4/0.2/"));
+    Assert.That(reference.Tasks.Select(t => t.PositionHash),
+                Is.EqualTo(reference.Tasks.Select(t => StableHash.Fnv1A64(Positions.Of(t,
+                                                                                       "1.4/0.2")))));
 
-    // Each of the inputs changes the sub-graph
-    Assert.That(Describe(GraphGenerator.GenerateSubGraph(settings,
-                                                         "1.4/0.3",
-                                                         57,
-                                                         2048)),
-                Is.Not.EqualTo(Describe(reference)
-                                 .Replace("1.4/0.2/",
-                                          "1.4/0.3/")));
-    Assert.That(Describe(GraphGenerator.GenerateSubGraph(settings,
-                                                         "1.4/0.2",
-                                                         58,
-                                                         2048)),
-                Is.Not.EqualTo(Describe(reference)));
-    Assert.That(Describe(GraphGenerator.GenerateSubGraph(settings with
-                                                         {
-                                                           Seed = 2,
-                                                         },
-                                                         "1.4/0.2",
-                                                         57,
-                                                         2048)),
-                Is.Not.EqualTo(Describe(reference)));
+    // Each of the inputs changes the sub-graph, not only the positions of its tasks
+    Assert.That(DescribeShape(GraphGenerator.GenerateSubGraph(settings,
+                                                              StableHash.Fnv1A64("1.4/0.3"),
+                                                              57,
+                                                              2048)),
+                Is.Not.EqualTo(DescribeShape(reference)));
+    Assert.That(DescribeShape(GraphGenerator.GenerateSubGraph(settings,
+                                                              position,
+                                                              58,
+                                                              2048)),
+                Is.Not.EqualTo(DescribeShape(reference)));
+    Assert.That(DescribeShape(GraphGenerator.GenerateSubGraph(settings with
+                                                              {
+                                                                Seed = 2,
+                                                              },
+                                                              position,
+                                                              57,
+                                                              2048)),
+                Is.Not.EqualTo(DescribeShape(reference)));
   }
 
   [Test]
   public void PositionHashShouldBeTheHashOfThePosition()
   {
     var settings = Settings();
-    foreach (var graph in AllGraphs(settings,
-                                    500))
+    foreach (var (position, graph) in Positions.AllGraphs(settings,
+                                                          500))
     {
+      Assert.That(graph.PositionHash,
+                  Is.EqualTo(StableHash.Fnv1A64(position)));
       foreach (var task in graph.Tasks)
       {
         Assert.That(task.PositionHash,
-                    Is.EqualTo(StableHash.Fnv1A64(task.Position)));
-
-        if (task.IsExpanding)
-        {
-          // The sub-graph generated for the statistics only differs by the missing positions
-          var full = GraphGenerator.GenerateSubGraph(settings,
-                                                     task);
-          var compact = GraphGenerator.GenerateSubGraphWithoutPositions(settings,
-                                                                        task);
-          Assert.That(compact.Tasks.Select(t => t.Position),
-                      Has.All.Empty);
-          Assert.That(compact.Tasks.Select(DescribeWithoutPosition),
-                      Is.EqualTo(full.Tasks.Select(DescribeWithoutPosition)));
-        }
+                    Is.EqualTo(StableHash.Fnv1A64(Positions.Of(task,
+                                                               position))));
       }
     }
   }
@@ -480,10 +460,14 @@ public class GraphGeneratorTest
                                             10)));
   }
 
-  private static string DescribeWithoutPosition(GraphTask task)
-    => $"{task.PositionHash} {task.Level}.{task.Index} {task.Budget} {task.DurationMs} {task.OutputSize} <- {string.Join(",", task.Dependencies)}";
-
   private static string Describe(TaskGraph graph)
     => string.Join("\n",
-                   graph.Tasks.Select(t => $"{t.Position} {t.Budget} {t.DurationMs} {t.OutputSize} <- {string.Join(",", t.Dependencies)}"));
+                   graph.Tasks.Select(t => $"{t.PositionHash} {DescribeShape(t)}"));
+
+  private static string DescribeShape(TaskGraph graph)
+    => string.Join("\n",
+                   graph.Tasks.Select(DescribeShape));
+
+  private static string DescribeShape(GraphTask task)
+    => $"{task.Level}.{task.Index} {task.Budget} {task.DurationMs} {task.OutputSize} <- {string.Join(",", task.Dependencies)}";
 }

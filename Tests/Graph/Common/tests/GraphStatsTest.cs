@@ -165,7 +165,8 @@ public class GraphStatsTest
 
     var read = TaskPayload.Deserialize(payload.Serialize());
     Assert.That(read.PositionHash,
-                Is.EqualTo(StableHash.Fnv1A64(task.Position)));
+                Is.EqualTo(StableHash.Fnv1A64(Positions.Of(task,
+                                                           string.Empty))));
     Assert.That(read.Label,
                 Is.EqualTo($"2:{task.Level}.{task.Index}"));
     Assert.That(read.Budget,

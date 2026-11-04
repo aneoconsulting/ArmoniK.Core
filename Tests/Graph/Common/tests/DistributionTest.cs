@@ -153,6 +153,12 @@ public class DistributionTest
             200.0)]
   [TestCase("lognormal:100:1:max=5000",
             5000.0)]
+  [TestCase("uniform:0:1000:min=600000",
+            600000.0)]
+  [TestCase("const:5:min=10:max=20",
+            10.0)]
+  [TestCase("exponential:100:min=10",
+            null)]
   [TestCase("exponential:100",
             null)]
   [TestCase("normal:100:10:min=0",

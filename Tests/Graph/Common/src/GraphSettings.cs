@@ -47,6 +47,9 @@ public sealed record GraphSettings(ulong        Seed,
                                    Distribution TaskDuration,
                                    Distribution OutputSize)
 {
+  /// <summary>Factor applied to the upper bound of the task durations to get the maximum duration of the tasks</summary>
+  public const double MaxDurationFactor = 1.5;
+
   /// <summary>Key of <see cref="Seed" /> in the task options</summary>
   public const string SeedKey = "GraphSeed";
 
@@ -73,6 +76,39 @@ public sealed record GraphSettings(ulong        Seed,
 
   /// <summary>Key of <see cref="OutputSize" /> in the task options</summary>
   public const string OutputSizeKey = "GraphOutputSize";
+
+  /// <summary>Margin added to the maximum duration of the tasks, for the work of a task besides its sleep</summary>
+  public static readonly TimeSpan MaxDurationMargin = TimeSpan.FromMinutes(1);
+
+  /// <summary>Smallest maximum duration of the tasks, so that a loaded deployment does not time short tasks out</summary>
+  public static readonly TimeSpan MinMaxDuration = TimeSpan.FromMinutes(5);
+
+  /// <summary>
+  ///   Maximum duration of a task in ArmoniK, beyond which the task is stopped and set in Timeout: the upper bound of
+  ///   <see cref="TaskDuration" /> (at most <see cref="int.MaxValue" /> ms, like the drawn durations) times
+  ///   <see cref="MaxDurationFactor" /> plus <see cref="MaxDurationMargin" />, for the rest of the work of the task
+  ///   (dependencies, output, submission of its sub-graph), and at least <see cref="MinMaxDuration" />. Null when
+  ///   <see cref="TaskDuration" /> has no upper bound.
+  /// </summary>
+  public TimeSpan? MaxTaskDuration
+  {
+    get
+    {
+      if (TaskDuration.UpperBound is not
+          {
+          } bound)
+      {
+        return null;
+      }
+
+      var duration = TimeSpan.FromMilliseconds(Math.Clamp(bound,
+                                                          0,
+                                                          int.MaxValue) * MaxDurationFactor) + MaxDurationMargin;
+      return duration > MinMaxDuration
+               ? duration
+               : MinMaxDuration;
+    }
+  }
 
   /// <summary>
   ///   Parses and validates the settings
@@ -143,6 +179,12 @@ public sealed record GraphSettings(ulong        Seed,
     if (!(skipLevels is >= 0 and <= 1))
     {
       throw new FormatException($"SkipLevels should be a probability between 0 and 1, got {skipLevels}");
+    }
+
+    // The worker allocates the output in a single array
+    if (outputSize.UpperBound * 1024 > Array.MaxLength)
+    {
+      throw new FormatException($"OutputSize {outputSize} can exceed {Array.MaxLength / 1024} KB, the largest output a task can write");
     }
 
     return new GraphSettings(unchecked((ulong)seed),
