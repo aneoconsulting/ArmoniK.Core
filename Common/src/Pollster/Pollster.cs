@@ -64,6 +64,7 @@ public class Pollster : IInitializable
   private readonly ILogger<Pollster>          logger_;
   private readonly ILoggerFactory             loggerFactory_;
   private readonly int                        messageBatchSize_;
+  private readonly QueueMessageReleaser       messageReleaser_;
   private readonly MeterHolder                meterHolder_;
   private readonly IObjectStorage             objectStorage_;
   private readonly string                     ownerPodId_;
@@ -107,6 +108,7 @@ public class Pollster : IInitializable
   /// <param name="workerStreamHandler">Handler for worker streams.</param>
   /// <param name="agentHandler">Handler for agents.</param>
   /// <param name="runningTaskQueue">Queue for running tasks.</param>
+  /// <param name="messageReleaser">Service releasing the queue messages in background.</param>
   /// <param name="identifier">Identifier for the agent running the pollster.</param>
   /// <param name="meterHolder">Holder for metrics collection.</param>
   /// <param name="healthCheckRecord">Record for the health check of the application.</param>
@@ -131,6 +133,7 @@ public class Pollster : IInitializable
                   IWorkerStreamHandler       workerStreamHandler,
                   IAgentHandler              agentHandler,
                   RunningTaskQueue           runningTaskQueue,
+                  QueueMessageReleaser       messageReleaser,
                   AgentIdentifier            identifier,
                   MeterHolder                meterHolder,
                   HealthCheckRecord          healthCheckRecord,
@@ -167,6 +170,7 @@ public class Pollster : IInitializable
     workerStreamHandler_   = workerStreamHandler;
     agentHandler_          = agentHandler;
     runningTaskQueue_      = runningTaskQueue;
+    messageReleaser_       = messageReleaser;
     meterHolder_           = meterHolder;
     submitterOptions_      = submitterOptions;
     healthCheckRecord_     = healthCheckRecord;
@@ -356,9 +360,13 @@ public class Pollster : IInitializable
 
         try
         {
+          // Messages are wrapped so that their release (ack/nack) is performed in background by `messageReleaser_`
+          // instead of blocking the pipeline stage that releases them.
           await using var messages = pullQueueStorage_.PullMessagesAsync(pollsterOptions_.PartitionId,
                                                                          messageBatchSize_,
                                                                          exceptionManager_.EarlyCancellationToken)
+                                                      .Select(IQueueMessageHandler (message) => new AsyncReleaseQueueMessageHandler(message,
+                                                                                                                                    messageReleaser_))
                                                       .GetAsyncEnumerator(exceptionManager_.EarlyCancellationToken);
 
           // `messagesDispose` is guaranteed to be disposed *before* `messages` because it is defined _after_
