@@ -113,6 +113,7 @@ public static class Program
              .AddHostedService<PostProcessor>()
              .AddSingleton<RunningTaskQueue>()
              .AddSingleton<PostProcessingTaskQueue>()
+             .AddQueueMessageReleaser()
              .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
              .AddUuidGeneratorDefault()
