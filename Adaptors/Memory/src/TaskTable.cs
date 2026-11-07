@@ -63,6 +63,13 @@ public class TaskTable : ITaskTable
   public TaskTable(ILogger<TaskTable> logger)
     => Logger = logger;
 
+  /// <summary>
+  ///   Number of handlers subscribed to <see cref="TaskChanged" />
+  /// </summary>
+  internal int TaskChangedHandlerCount
+    => TaskChanged?.GetInvocationList()
+                  .Length ?? 0;
+
   /// <inheritdoc />
   public TimeSpan PollingDelayMax { get; set; }
 
@@ -92,6 +99,8 @@ public class TaskTable : ITaskTable
       {
         tasks_.Add(task.TaskId,
                    task);
+        OnChanged(null,
+                  task);
       }
     }
 
@@ -256,6 +265,8 @@ public class TaskTable : ITaskTable
       newTaskData = Copy(new TaskData(current,
                                       updates));
       tasks_[taskId] = newTaskData;
+      OnChanged(oldTaskData,
+                newTaskData);
     }
 
     var result = before
@@ -284,8 +295,11 @@ public class TaskTable : ITaskTable
 
       foreach (var current in matching)
       {
-        tasks_[current.TaskId] = Copy(new TaskData(current,
-                                                   updates));
+        var updated = Copy(new TaskData(current,
+                                        updates));
+        tasks_[current.TaskId] = updated;
+        OnChanged(current,
+                  updated);
       }
 
       return Task.FromResult<long>(matching.Count);
@@ -355,12 +369,15 @@ public class TaskTable : ITaskTable
             remaining.Remove(dependency);
           }
 
+          var previous = current;
           current = current with
                     {
                       RemainingDataDependencies = remaining,
                     };
           tasks_[taskId]                 = current;
           lastDependencyUpdater_[taskId] = updater;
+          OnChanged(previous,
+                    current);
         }
 
         if (current.Status is not (TaskStatus.Creating or TaskStatus.Pending) || current.RemainingDataDependencies.Count != 0)
@@ -399,6 +416,41 @@ public class TaskTable : ITaskTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
+
+  /// <summary>
+  ///   Raised after each write, with the previous value of the task (null when it is created) and its new value.
+  /// </summary>
+  /// <remarks>
+  ///   The event is raised under the table lock, so handlers see the writes in the order they were applied. Handlers must
+  ///   not block nor call the table. An exception thrown by a handler is logged and does not reach the writer nor the other
+  ///   handlers.
+  /// </remarks>
+  internal event Action<TaskData?, TaskData>? TaskChanged;
+
+  /// <summary>
+  ///   Raise <see cref="TaskChanged" />. Must be called under the lock.
+  /// </summary>
+  /// <param name="previous">Previous value of the task, null when it is created</param>
+  /// <param name="current">New value of the task</param>
+  private void OnChanged(TaskData? previous,
+                         TaskData  current)
+  {
+    foreach (var handler in Delegate.EnumerateInvocationList(TaskChanged))
+    {
+      try
+      {
+        handler(previous,
+                current);
+      }
+      catch (Exception e)
+      {
+        Logger.LogError(e,
+                        "A handler of {Event} failed for task {TaskId}",
+                        nameof(TaskChanged),
+                        current.TaskId);
+      }
+    }
+  }
 
   /// <summary>
   ///   Copy the tasks matching the filter, under the lock
