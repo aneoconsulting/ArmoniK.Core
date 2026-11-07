@@ -16,9 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
@@ -31,26 +29,54 @@ using ArmoniK.Core.Common.Storage;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
+/// <summary>
+///   In-memory implementation of <see cref="IResultTable" />.
+/// </summary>
+/// <remarks>
+///   Every public method runs under a single lock, so that each call is atomic, as a single document operation is in a
+///   database. Stored values are never modified in place: an update replaces the stored value with a new one, so values
+///   returned to callers are not affected by later writes.
+/// </remarks>
 public class ResultTable : IResultTable
 {
-  private readonly ConcurrentDictionary<string, Result> results_ = new();
+  private readonly Lock                       lock_    = new();
+  private readonly Dictionary<string, Result> results_ = new();
 
   private bool isInitialized_;
+
+  /// <summary>
+  ///   Creates an empty result table
+  /// </summary>
+  /// <param name="logger">Logger used to produce logs for this class</param>
+  public ResultTable(ILogger<ResultTable> logger)
+    => Logger = logger;
 
   /// <inheritdoc />
   public Task Create(ICollection<Result> results,
                      CancellationToken   cancellationToken = default)
   {
-    foreach (var result in results)
+    var newResults = results.Select(Copy)
+                            .ToList();
+
+    lock (lock_)
     {
-      if (!results_.TryAdd(result.ResultId,
-                           result))
+      // Validate the whole batch before inserting, so that a duplicate does not leave part of the batch inserted.
+      var ids = new HashSet<string>();
+      foreach (var result in newResults)
       {
-        throw new ArmoniKException($"Key {result.ResultId} already exists");
+        if (results_.ContainsKey(result.ResultId) || !ids.Add(result.ResultId))
+        {
+          throw new ArmoniKException($"Key {result.ResultId} already exists");
+        }
+      }
+
+      foreach (var result in newResults)
+      {
+        results_.Add(result.ResultId,
+                     result);
       }
     }
 
@@ -61,13 +87,16 @@ public class ResultTable : IResultTable
   public Task DeleteResults(string            sessionId,
                             CancellationToken cancellationToken = default)
   {
-    var ids = results_.Values.Where(result => result.SessionId == sessionId)
-                      .Select(result => result.ResultId);
-
-    foreach (var id in ids)
+    lock (lock_)
     {
-      results_.TryRemove(id,
-                         out _);
+      var ids = results_.Values.Where(result => result.SessionId == sessionId)
+                        .Select(result => result.ResultId)
+                        .ToList();
+
+      foreach (var id in ids)
+      {
+        results_.Remove(id);
+      }
     }
 
     return Task.CompletedTask;
@@ -77,10 +106,12 @@ public class ResultTable : IResultTable
   public Task DeleteResults(ICollection<string> results,
                             CancellationToken   cancellationToken = default)
   {
-    foreach (var id in results)
+    lock (lock_)
     {
-      results_.TryRemove(id,
-                         out _);
+      foreach (var id in results)
+      {
+        results_.Remove(id);
+      }
     }
 
     return Task.CompletedTask;
@@ -90,9 +121,9 @@ public class ResultTable : IResultTable
   public IAsyncEnumerable<T> GetResults<T>(Expression<Func<Result, bool>> filter,
                                            Expression<Func<Result, T>>    convertor,
                                            CancellationToken              cancellationToken = default)
-    => results_.Values.Where(filter.Compile())
-               .Select(convertor.Compile())
-               .ToAsyncEnumerable();
+    => Snapshot(filter)
+       .Select(convertor.Compile())
+       .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public Task<(IEnumerable<Result> results, int totalCount)> ListResultsAsync(Expression<Func<Result, bool>>    filter,
@@ -102,40 +133,42 @@ public class ResultTable : IResultTable
                                                                               int                               pageSize,
                                                                               CancellationToken                 cancellationToken = default)
   {
-    var queryable = results_.Values.AsQueryable()
-                            .Where(filter);
+    var matching = Snapshot(filter);
+    var results = matching.OrderByKey(orderField,
+                                      ascOrder)
+                          .Skip(page * pageSize)
+                          .Take(pageSize)
+                          .Select(result => result with
+                                            {
+                                              DependentTasks = [],
+                                            })
+                          .ToList();
 
-    var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
-
-    return Task.FromResult<(IEnumerable<Result> results, int totalCount)>((ordered.Skip(page * pageSize)
-                                                                                  .Take(pageSize)
-                                                                                  .AsEnumerable()
-                                                                                  .Select(result => result with
-                                                                                                    {
-                                                                                                      DependentTasks = [],
-                                                                                                    }), ordered.Count()));
+    return Task.FromResult<(IEnumerable<Result> results, int totalCount)>((results, matching.Count));
   }
 
   /// <inheritdoc />
   public Task SetTaskOwnership(ICollection<(string resultId, string taskId)> requests,
                                CancellationToken                             cancellationToken = default)
   {
-    foreach (var (resultId, taskId) in requests)
+    lock (lock_)
     {
-      if (!results_.TryGetValue(resultId,
-                                out var result))
+      // Validate all the requests before applying them, so that a missing result does not leave part of them applied.
+      foreach (var (resultId, _) in requests)
       {
-        throw new ResultNotFoundException($"Key '{resultId}' not found");
+        if (!results_.ContainsKey(resultId))
+        {
+          throw new ResultNotFoundException($"Key '{resultId}' not found");
+        }
       }
 
-      results_.TryUpdate(resultId,
-                         result with
-                         {
-                           OwnerTaskId = taskId,
-                         },
-                         result);
+      foreach (var (resultId, taskId) in requests)
+      {
+        results_[resultId] = results_[resultId] with
+                             {
+                               OwnerTaskId = taskId,
+                             };
+      }
     }
 
     return Task.CompletedTask;
@@ -149,7 +182,7 @@ public class ResultTable : IResultTable
   }
 
   /// <inheritdoc />
-  public ILogger Logger { get; } = NullLogger.Instance;
+  public ILogger Logger { get; }
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -162,20 +195,23 @@ public class ResultTable : IResultTable
                                       UpdateDefinition<Result>       updates,
                                       CancellationToken              cancellationToken = default)
   {
-    long i = 0;
-    foreach (var id in results_.Values.AsQueryable()
-                               .Where(filter)
-                               .Select(data => data.ResultId))
-    {
-      i++;
-      results_.AddOrUpdate(id,
-                           _ => throw new ResultNotFoundException("Result not found"),
-                           (_,
-                            data) => new Result(data,
-                                                updates));
-    }
+    var compiledFilter = filter.Compile();
 
-    return Task.FromResult(i);
+    lock (lock_)
+    {
+      // The filter is evaluated and the updates are applied under the same lock,
+      // so that a result that no longer matches the filter is not updated.
+      var matching = results_.Values.Where(compiledFilter)
+                             .ToList();
+
+      foreach (var current in matching)
+      {
+        results_[current.ResultId] = Copy(new Result(current,
+                                                     updates));
+      }
+
+      return Task.FromResult<long>(matching.Count);
+    }
   }
 
   /// <inheritdoc />
@@ -183,15 +219,22 @@ public class ResultTable : IResultTable
                                       UpdateDefinition<Result> updates,
                                       CancellationToken        cancellationToken = default)
   {
-    if (!results_.TryGetValue(resultId,
-                              out var result))
+    Result oldResult;
+
+    lock (lock_)
     {
-      throw new ResultNotFoundException($"Result '{resultId}' not found");
+      if (!results_.TryGetValue(resultId,
+                                out var current))
+      {
+        throw new ResultNotFoundException($"Result '{resultId}' not found");
+      }
+
+      oldResult = current;
+      results_[resultId] = Copy(new Result(current,
+                                           updates));
     }
 
-    results_[resultId] = new Result(result,
-                                    updates);
-    return Task.FromResult(result with
+    return Task.FromResult(oldResult with
                            {
                              DependentTasks = [],
                            });
@@ -202,17 +245,24 @@ public class ResultTable : IResultTable
                                     IEnumerable<IResultTable.ChangeResultOwnershipRequest> requests,
                                     CancellationToken                                      cancellationToken)
   {
-    foreach (var request in requests)
+    var requestList = requests.ToList();
+
+    lock (lock_)
     {
-      foreach (var result in results_.Values.ToImmutableList()
-                                     .Where(result => result.OwnerTaskId == oldTaskId))
+      foreach (var request in requestList)
       {
-        results_.TryUpdate(result.ResultId,
-                           result with
-                           {
-                             OwnerTaskId = request.NewTaskId,
-                           },
-                           result);
+        foreach (var key in request.Keys)
+        {
+          // Only the results still owned by the previous owner are transferred.
+          if (results_.TryGetValue(key,
+                                   out var current) && current.OwnerTaskId == oldTaskId)
+          {
+            results_[key] = current with
+                            {
+                              OwnerTaskId = request.NewTaskId,
+                            };
+          }
+        }
       }
     }
 
@@ -223,16 +273,26 @@ public class ResultTable : IResultTable
   public Task AddTaskDependencies(IDictionary<string, ICollection<string>> dependencies,
                                   CancellationToken                        cancellationToken = default)
   {
-    foreach (var (resultId, taskIds) in dependencies)
+    lock (lock_)
     {
-      if (!results_.TryGetValue(resultId,
-                                out var result))
+      // Validate all the results before updating them, so that a missing result does not leave part of them updated.
+      foreach (var resultId in dependencies.Keys)
       {
-        throw new ResultNotFoundException($"Key '{resultId}' not found");
+        if (!results_.ContainsKey(resultId))
+        {
+          throw new ResultNotFoundException($"Key '{resultId}' not found");
+        }
       }
 
-      var newTaskIds = taskIds.Except(result.DependentTasks);
-      result.DependentTasks.AddRange(newTaskIds);
+      foreach (var (resultId, taskIds) in dependencies)
+      {
+        var current = results_[resultId];
+        results_[resultId] = current with
+                             {
+                               DependentTasks = current.DependentTasks.Union(taskIds)
+                                                       .ToList(),
+                             };
+      }
     }
 
     return Task.CompletedTask;
@@ -242,12 +302,44 @@ public class ResultTable : IResultTable
   public Task DeleteResult(string            key,
                            CancellationToken cancellationToken = default)
   {
-    if (!results_.ContainsKey(key))
+    lock (lock_)
     {
-      throw new ResultNotFoundException($"Key '{key}' not found");
+      if (!results_.Remove(key))
+      {
+        throw new ResultNotFoundException($"Key '{key}' not found");
+      }
     }
 
-    return Task.FromResult(results_.Remove(key,
-                                           out _));
+    return Task.CompletedTask;
   }
+
+  /// <summary>
+  ///   Copy the results matching the filter, under the lock
+  /// </summary>
+  /// <param name="filter">Filter on the results</param>
+  /// <returns>
+  ///   The matching results, at the time of the call
+  /// </returns>
+  private List<Result> Snapshot(Expression<Func<Result, bool>> filter)
+  {
+    var compiledFilter = filter.Compile();
+    lock (lock_)
+    {
+      return results_.Values.Where(compiledFilter)
+                     .ToList();
+    }
+  }
+
+  /// <summary>
+  ///   Copy the mutable members of a result, so that the stored value does not share them with the caller
+  /// </summary>
+  /// <param name="result">Result to copy</param>
+  /// <returns>
+  ///   The copy of the result
+  /// </returns>
+  private static Result Copy(Result result)
+    => result with
+       {
+         DependentTasks = new List<string>(result.DependentTasks),
+       };
 }

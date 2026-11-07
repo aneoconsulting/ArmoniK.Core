@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -33,18 +32,29 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
+/// <summary>
+///   In-memory implementation of <see cref="ISessionTable" />.
+/// </summary>
+/// <remarks>
+///   Every public method runs under a single lock, so that each call is atomic, as a single document operation is in a
+///   database. Stored values are never modified in place: an update replaces the stored value with a new one.
+/// </remarks>
 public class SessionTable : ISessionTable
 {
-  private readonly ConcurrentDictionary<string, SessionData> storage_;
-  private readonly IUuidGenerator                            uuidGenerator_;
+  private readonly Lock                            lock_     = new();
+  private readonly Dictionary<string, SessionData> sessions_ = new();
+  private readonly IUuidGenerator                  uuidGenerator_;
 
   private bool isInitialized_;
 
-  public SessionTable(ConcurrentDictionary<string, SessionData> storage,
-                      ILogger<SessionTable>                     logger,
-                      IUuidGenerator                            uuidGenerator)
+  /// <summary>
+  ///   Creates an empty session table
+  /// </summary>
+  /// <param name="logger">Logger used to produce logs for this class</param>
+  /// <param name="uuidGenerator">Generator for the session ids</param>
+  public SessionTable(ILogger<SessionTable> logger,
+                      IUuidGenerator        uuidGenerator)
   {
-    storage_       = storage;
     Logger         = logger;
     uuidGenerator_ = uuidGenerator;
   }
@@ -67,32 +77,39 @@ public class SessionTable : ISessionTable
                                           TaskOptions         defaultOptions,
                                           CancellationToken   cancellationToken = default)
   {
-    var rootSessionId = uuidGenerator_.GenerateUuid()
-                                      .ToString();
+    var sessionId = uuidGenerator_.GenerateUuid()
+                                  .ToString();
+    var sessionData = new SessionData(sessionId,
+                                      SessionStatus.Running,
+                                      partitionIds.AsIList(),
+                                      defaultOptions);
 
-    storage_.TryAdd(rootSessionId,
-                    new SessionData(rootSessionId,
-                                    SessionStatus.Running,
-                                    partitionIds.AsIList(),
-                                    defaultOptions));
-    return Task.FromResult(rootSessionId);
+    lock (lock_)
+    {
+      sessions_.Add(sessionId,
+                    sessionData);
+    }
+
+    return Task.FromResult(sessionId);
   }
 
   /// <inheritdoc />
   public IAsyncEnumerable<T> FindSessionsAsync<T>(Expression<Func<SessionData, bool>> filter,
                                                   Expression<Func<SessionData, T>>    selector,
                                                   CancellationToken                   cancellationToken = default)
-    => storage_.Select(pair => pair.Value)
-               .Where(filter.Compile())
-               .Select(selector.Compile())
-               .ToAsyncEnumerable();
+    => Snapshot(filter)
+       .Select(selector.Compile())
+       .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public Task DeleteSessionAsync(string            sessionId,
                                  CancellationToken cancellationToken = default)
   {
-    storage_.TryRemove(sessionId,
-                       out _);
+    lock (lock_)
+    {
+      sessions_.Remove(sessionId);
+    }
+
     return Task.CompletedTask;
   }
 
@@ -104,16 +121,14 @@ public class SessionTable : ISessionTable
                                                                                       int                                    pageSize,
                                                                                       CancellationToken                      cancellationToken = default)
   {
-    var queryable = storage_.AsQueryable()
-                            .Select(pair => pair.Value)
-                            .Where(filter);
+    var matching = Snapshot(filter);
+    var sessions = matching.OrderByKey(orderField,
+                                       ascOrder)
+                           .Skip(page * pageSize)
+                           .Take(pageSize)
+                           .ToList();
 
-    var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
-
-    return Task.FromResult<(IEnumerable<SessionData> sessions, long totalCount)>((ordered.Skip(page * pageSize)
-                                                                                         .Take(pageSize), ordered.Count()));
+    return Task.FromResult<(IEnumerable<SessionData> sessions, long totalCount)>((sessions, matching.Count));
   }
 
   /// <inheritdoc />
@@ -123,28 +138,43 @@ public class SessionTable : ISessionTable
                                                   bool                                 before            = false,
                                                   CancellationToken                    cancellationToken = default)
   {
-    if (!storage_.TryGetValue(sessionId,
-                              out var sessionData))
-    {
-      return Task.FromResult<SessionData?>(null);
-    }
+    var compiledFilter = filter?.Compile();
 
-    if (filter is not null)
+    lock (lock_)
     {
-      if (!filter.Compile()
-                 .Invoke(sessionData))
+      if (!sessions_.TryGetValue(sessionId,
+                                 out var current) || (compiledFilter is not null && !compiledFilter(current)))
       {
         return Task.FromResult<SessionData?>(null);
       }
-    }
 
-    var newSessionData = storage_[sessionId] = new SessionData(sessionData,
-                                                               updates);
-    return Task.FromResult<SessionData?>(before
-                                           ? sessionData
-                                           : newSessionData);
+      var updated = new SessionData(current,
+                                    updates);
+      sessions_[sessionId] = updated;
+
+      return Task.FromResult<SessionData?>(before
+                                             ? current
+                                             : updated);
+    }
   }
 
   /// <inheritdoc />
   public ILogger Logger { get; }
+
+  /// <summary>
+  ///   Copy the sessions matching the filter, under the lock
+  /// </summary>
+  /// <param name="filter">Filter on the sessions</param>
+  /// <returns>
+  ///   The matching sessions, at the time of the call
+  /// </returns>
+  private List<SessionData> Snapshot(Expression<Func<SessionData, bool>> filter)
+  {
+    var compiledFilter = filter.Compile();
+    lock (lock_)
+    {
+      return sessions_.Values.Where(compiledFilter)
+                      .ToList();
+    }
+  }
 }
