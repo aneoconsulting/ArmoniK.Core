@@ -16,10 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -30,16 +28,40 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
+/// <summary>
+///   In-memory queue, implementing both <see cref="IPushQueueStorage" /> and <see cref="IPullQueueStorage" />.
+/// </summary>
+/// <remarks>
+///   <para>
+///     There is one queue per partition. Messages are pulled by decreasing priority, then in the order they were pushed.
+///   </para>
+///   <para>
+///     A pulled message is invisible until its handler is disposed. Depending on
+///     <see cref="IQueueMessageHandler.Status" />
+///     when it is disposed, it is:
+///     <list type="bullet">
+///       <item>
+///         <see cref="QueueMessageStatus.Waiting" />, <see cref="QueueMessageStatus.Running" />,
+///         <see cref="QueueMessageStatus.Failed" />: put back at its place at the front of the queue;
+///       </item>
+///       <item><see cref="QueueMessageStatus.Postponed" />: put back at the end of the queue;</item>
+///       <item>
+///         <see cref="QueueMessageStatus.Processed" />, <see cref="QueueMessageStatus.Cancelled" />,
+///         <see cref="QueueMessageStatus.Poisonous" />: removed.
+///       </item>
+///     </list>
+///   </para>
+///   <para>
+///     As with other queues, the same task can be pushed several times: each push is a distinct message.
+///   </para>
+/// </remarks>
 public class QueueStorage : IPullQueueStorage, IPushQueueStorage
 {
-  private static readonly MessageHandler DefaultMessage = new();
+  private readonly Lock lock_ = new();
 
-  private static readonly KeyValuePair<MessageHandler, MessageHandler> DefaultPair = new(DefaultMessage,
-                                                                                         DefaultMessage);
+  private readonly Dictionary<string, PriorityQueue<QueuedMessage, (int priority, long order)>> partitions_ = new();
 
-  private readonly ConcurrentDictionary<string, MessageHandler> id2Handlers_ = new();
-
-  private readonly SortedList<MessageHandler, MessageHandler> queues_ = new(MessageComparer.Instance);
+  private long order_;
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -53,238 +75,173 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
   public int MaxPriority
     => 100;
 
-
   /// <inheritdoc />
-  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
-                                                                        int                                        nbMessages,
-                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
+  public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string            partitionId,
+                                                                  int               nbMessages,
+                                                                  CancellationToken cancellationToken = default)
   {
-    while (nbMessages > 0 && queues_.Any())
+    cancellationToken.ThrowIfCancellationRequested();
+
+    var messages = new List<IQueueMessageHandler>();
+
+    lock (lock_)
     {
-      cancellationToken.ThrowIfCancellationRequested();
-      var (message, _) = queues_.FirstOrDefault(pair => pair.Key.IsVisible = true,
-                                                DefaultPair);
-      if (ReferenceEquals(message,
-                          DefaultMessage))
+      if (partitions_.TryGetValue(partitionId,
+                                  out var queue))
       {
-        continue;
-      }
-
-      try
-      {
-        await message.Semaphore.WaitAsync(CancellationToken.None)
-                     .ConfigureAwait(false);
-        if (message.IsVisible)
+        while (messages.Count < nbMessages && queue.TryDequeue(out var message,
+                                                               out _))
         {
-          message.IsVisible = false;
-          yield return message;
-        }
-        else
-        {
-          continue;
+          messages.Add(new MessageHandler(this,
+                                          message)
+                       {
+                         ReceptionDateTime = DateTime.UtcNow,
+                       });
         }
       }
-      finally
-      {
-        message.Semaphore.Release();
-      }
-
-      nbMessages--;
     }
+
+    return messages.ToAsyncEnumerable();
   }
 
   /// <inheritdoc />
   public Task PushMessagesAsync(IEnumerable<MessageData> messages,
-                                string                   _,
+                                string                   partitionId,
                                 CancellationToken        cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
 
-    var messageHandlers = messages.Select(message => new MessageHandler
-                                                     {
-                                                       IsVisible         = true,
-                                                       Priority          = message.Options.Priority,
-                                                       TaskId            = message.TaskId,
-                                                       CancellationToken = CancellationToken.None,
-                                                       Status            = QueueMessageStatus.Waiting,
-                                                       Queues            = queues_,
-                                                       Handlers          = id2Handlers_,
-                                                     });
-    foreach (var messageHandler in messageHandlers)
+    var newMessages = messages.ToList();
+
+    lock (lock_)
     {
-      queues_.Add(messageHandler,
-                  messageHandler);
-      if (!id2Handlers_.TryAdd(messageHandler.TaskId,
-                               messageHandler))
+      foreach (var message in newMessages)
       {
-        throw new InvalidOperationException("Duplicate messageId found.");
+        Enqueue(new QueuedMessage(partitionId,
+                                  message.TaskId,
+                                  message.Options.Priority,
+                                  ++order_));
       }
     }
 
     return Task.CompletedTask;
   }
 
-  private class MessageHandler : IQueueMessageHandler
+  /// <summary>
+  ///   Put a message in the queue of its partition. Must be called under the lock.
+  /// </summary>
+  /// <param name="message">Message to enqueue</param>
+  private void Enqueue(QueuedMessage message)
   {
-    private static long _count;
-
-    public int Priority { get; init; }
-
-    public bool IsVisible { get; set; }
-
-    public SemaphoreSlim Semaphore { get; } = new(1);
-
-    public long Order { get; } = Interlocked.Increment(ref _count);
-
-    public SortedList<MessageHandler, MessageHandler>   Queues   { get; init; } = new();
-    public ConcurrentDictionary<string, MessageHandler> Handlers { get; init; } = new();
-
-    /// <inheritdoc />
-    public ValueTask DisposeAsync()
+    if (!partitions_.TryGetValue(message.PartitionId,
+                                 out var queue))
     {
-      switch (Status)
+      queue = new PriorityQueue<QueuedMessage, (int priority, long order)>();
+      partitions_.Add(message.PartitionId,
+                      queue);
+    }
+
+    // Lower elements are dequeued first: negate the priority so that the highest priority comes first,
+    // then the lowest order, so that messages of the same priority come out in the order they were pushed.
+    queue.Enqueue(message,
+                  (-message.Priority, message.Order));
+  }
+
+  /// <summary>
+  ///   Apply the status of a pulled message whose handler is disposed
+  /// </summary>
+  /// <param name="message">Message pulled from the queue</param>
+  /// <param name="status">Status of the handler when it is disposed</param>
+  private void Release(QueuedMessage      message,
+                       QueueMessageStatus status)
+  {
+    lock (lock_)
+    {
+      switch (status)
       {
-        case QueueMessageStatus.Postponed:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var handler))
-          {
-            throw new KeyNotFoundException();
-          }
-
-          if (handler.IsVisible)
-          {
-            throw new InvalidOperationException("Cannot change the status of a message that is visible.");
-          }
-
-          var newMessage = new MessageHandler
-                           {
-                             IsVisible         = true,
-                             Priority          = handler.Priority,
-                             TaskId            = handler.TaskId,
-                             CancellationToken = CancellationToken.None,
-                             Status            = QueueMessageStatus.Waiting,
-                           };
-
-          Queues.Add(newMessage,
-                     newMessage);
-          if (!Handlers.TryAdd(newMessage.TaskId,
-                               newMessage))
-          {
-            throw new InvalidOperationException("Duplicate messageId found.");
-          }
-
-          if (!Queues.Remove(handler,
-                             out _))
-          {
-            throw new KeyNotFoundException();
-          }
-
-          break;
-        case QueueMessageStatus.Failed:
-        case QueueMessageStatus.Running:
         case QueueMessageStatus.Waiting:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var failedHandler))
-          {
-            throw new KeyNotFoundException();
-          }
-
-          failedHandler.IsVisible = true;
+        case QueueMessageStatus.Running:
+        case QueueMessageStatus.Failed:
+          // Back at its place, at the front of the queue
+          Enqueue(message);
+          break;
+        case QueueMessageStatus.Postponed:
+          // Back at the end of the queue
+          Enqueue(message with
+                  {
+                    Order = ++order_,
+                  });
           break;
         case QueueMessageStatus.Processed:
         case QueueMessageStatus.Cancelled:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var processedHandler))
-          {
-            throw new KeyNotFoundException();
-          }
-
-          if (processedHandler.IsVisible)
-          {
-            throw new InvalidOperationException("Cannot change the status of a message that is visible.");
-          }
-
-          if (!Queues.Remove(processedHandler,
-                             out _))
-          {
-            throw new KeyNotFoundException();
-          }
-
-          break;
         case QueueMessageStatus.Poisonous:
-          if (!Handlers.TryRemove(TaskId,
-                                  out var rejectedHandler))
-          {
-            throw new KeyNotFoundException();
-          }
-
-          if (rejectedHandler.IsVisible)
-          {
-            throw new InvalidOperationException("Cannot change the status of a message that is visible.");
-          }
-
-          if (!Queues.Remove(rejectedHandler,
-                             out _))
-          {
-            throw new KeyNotFoundException();
-          }
-
           break;
         default:
-          throw new ArgumentOutOfRangeException(nameof(Status),
-                                                Status,
-                                                null);
+          throw new ArgumentOutOfRangeException(nameof(status),
+                                                status,
+                                                $"Unknown {nameof(QueueMessageStatus)}");
       }
+    }
+  }
 
-      // TODO: dispose semaphore ?
-      // Semaphore.Dispose();
-      return ValueTask.CompletedTask;
+  /// <summary>
+  ///   Message stored in the queue
+  /// </summary>
+  /// <param name="PartitionId">Partition of the message</param>
+  /// <param name="TaskId">Task of the message</param>
+  /// <param name="Priority">Priority of the message, higher is pulled first</param>
+  /// <param name="Order">Order of the message among the messages of the same priority, lower is pulled first</param>
+  private sealed record QueuedMessage(string PartitionId,
+                                      string TaskId,
+                                      int    Priority,
+                                      long   Order);
+
+  /// <summary>
+  ///   Handler of a pulled message
+  /// </summary>
+  private sealed class MessageHandler : IQueueMessageHandler
+  {
+    private readonly QueuedMessage message_;
+    private readonly QueueStorage  queue_;
+    private          int           disposed_;
+
+    public MessageHandler(QueueStorage  queue,
+                          QueuedMessage message)
+    {
+      queue_   = queue;
+      message_ = message;
     }
 
     /// <inheritdoc />
+    [Obsolete("ArmoniK now manages loss of link with the queue")]
     public CancellationToken CancellationToken { get; set; } = CancellationToken.None;
 
     /// <inheritdoc />
     public string MessageId
-      => $"Message#{Order}";
+      => $"Message#{message_.Order}";
 
     /// <inheritdoc />
-    public string TaskId { get; init; } = "";
+    public string TaskId
+      => message_.TaskId;
 
     /// <inheritdoc />
-    public QueueMessageStatus Status { get; set; } = 0;
+    public QueueMessageStatus Status { get; set; } = QueueMessageStatus.Waiting;
 
     /// <inheritdoc />
     public DateTime ReceptionDateTime { get; init; }
-  }
 
-  private class MessageComparer : IComparer<MessageHandler>
-  {
-    public static readonly IComparer<MessageHandler> Instance = new MessageComparer();
-
-    public int Compare(MessageHandler? x,
-                       MessageHandler? y)
+    /// <inheritdoc />
+    public ValueTask DisposeAsync()
     {
-      if (ReferenceEquals(x,
-                          y))
+      // A handler releases its message only once
+      if (Interlocked.Exchange(ref disposed_,
+                               1) == 0)
       {
-        return 0;
+        queue_.Release(message_,
+                       Status);
       }
 
-      if (y is null)
-      {
-        return 1;
-      }
-
-      if (x is null)
-      {
-        return -1;
-      }
-
-      var priorityComparison = x.Priority.CompareTo(y.Priority);
-      return priorityComparison == 0
-               ? x.Order.CompareTo(y.Order)
-               : priorityComparison;
+      return ValueTask.CompletedTask;
     }
   }
 }
