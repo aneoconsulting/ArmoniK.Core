@@ -21,6 +21,8 @@ using System.Threading.Tasks;
 
 using ArmoniK.Core.Base;
 
+using Microsoft.Extensions.Logging;
+
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
@@ -29,20 +31,23 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 /// <remarks>
 ///   <para>
-///     Disposing the wrapper returns as soon as the message has been handed over:
-///     the acknowledgment (or negative acknowledgment) is sent in background.
-///     If the hand over fails (release queue full or closed), the message is released synchronously.
+///     Disposing the wrapper returns as soon as the release has started in background:
+///     the acknowledgment (or negative acknowledgment) is sent without blocking the caller.
+///     If no release slot is free (or the releaser is closed), the message is released synchronously, as without the
+///     wrapper.
 ///   </para>
 ///   <para>
-///     All the other members are forwarded to the wrapped message, in particular <see cref="Status" />
-///     which is read by the adapter upon release.
+///     <see cref="Status" /> is frozen when the wrapper is disposed: the adapter releases the message with the status
+///     it had at that time, as if it had been released synchronously. Later changes are ignored and logged.
 ///   </para>
 /// </remarks>
 public sealed class AsyncReleaseQueueMessageHandler : IQueueMessageHandler
 {
   private readonly IQueueMessageHandler inner_;
+  private readonly object               lock_ = new();
   private readonly QueueMessageReleaser releaser_;
-  private          int                  disposed_;
+  private          bool                 disposed_;
+  private          QueueMessageStatus   status_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="AsyncReleaseQueueMessageHandler" /> class.
@@ -54,6 +59,7 @@ public sealed class AsyncReleaseQueueMessageHandler : IQueueMessageHandler
   {
     inner_            = inner;
     releaser_         = releaser;
+    status_           = inner.Status;
     ReceptionDateTime = inner.ReceptionDateTime;
   }
 
@@ -74,10 +80,33 @@ public sealed class AsyncReleaseQueueMessageHandler : IQueueMessageHandler
     => inner_.TaskId;
 
   /// <inheritdoc />
+  /// <remarks>Changes made after the disposal of the wrapper are ignored.</remarks>
   public QueueMessageStatus Status
   {
-    get => inner_.Status;
-    set => inner_.Status = value;
+    get
+    {
+      lock (lock_)
+      {
+        return status_;
+      }
+    }
+    set
+    {
+      lock (lock_)
+      {
+        if (!disposed_)
+        {
+          status_ = value;
+          return;
+        }
+      }
+
+      releaser_.Logger.LogWarning("Status of message {MessageHandler} for task {TaskId} set to {Status} after its release; ignored, the message is released with status {ReleasedStatus}",
+                                  MessageId,
+                                  TaskId,
+                                  value,
+                                  Status);
+    }
   }
 
   /// <inheritdoc />
@@ -86,13 +115,20 @@ public sealed class AsyncReleaseQueueMessageHandler : IQueueMessageHandler
   /// <inheritdoc />
   public async ValueTask DisposeAsync()
   {
-    if (Interlocked.Exchange(ref disposed_,
-                             1) != 0)
+    lock (lock_)
     {
-      return;
+      if (disposed_)
+      {
+        return;
+      }
+
+      disposed_ = true;
+
+      // Freeze the status: the adapter reads it when it releases the message
+      inner_.Status = status_;
     }
 
-    if (releaser_.TryEnqueue(inner_))
+    if (releaser_.TryStart(inner_))
     {
       return;
     }

@@ -17,11 +17,12 @@
 
 using System;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 using System.Threading;
-using System.Threading.Channels;
 using System.Threading.Tasks;
 
+using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
@@ -33,53 +34,52 @@ using Microsoft.Extensions.Logging;
 namespace ArmoniK.Core.Common.Pollster;
 
 /// <summary>
-///   Background service that releases (acknowledges or negatively acknowledges) queue messages
+///   Service that releases (acknowledges or negatively acknowledges) queue messages
 ///   outside of the critical path of the pollster pipeline.
 /// </summary>
 /// <remarks>
 ///   <para>
-///     Messages are handed over through <see cref="TryEnqueue" /> by <see cref="AsyncReleaseQueueMessageHandler" />.
-///     They are released concurrently, with at most <see cref="Injection.Options.Pollster.MessageReleaseParallelism" />
-///     releases in flight.
-///   </para>
-///   <para>
-///     When the internal queue is full or closed, <see cref="TryEnqueue" /> returns <c>false</c>
+///     There is no waiting queue: a message is accepted through <see cref="TryStart" /> only if one of the
+///     <see cref="Injection.Options.Pollster.MessageReleaseParallelism" /> release slots is free,
+///     in which case its release starts immediately in background.
+///     Otherwise, <see cref="TryStart" /> returns <c>false</c> without waiting
 ///     and the caller keeps the ownership of the message: it has to release it itself.
 ///   </para>
 ///   <para>
-///     The internal queue is closed when <see cref="ExceptionManager.LateCancellationToken" /> is triggered,
+///     The service is closed when <see cref="ExceptionManager.LateCancellationToken" /> is triggered,
 ///     that is once all the stages of the pipeline are stopped or after the grace delay.
-///     The messages already enqueued are then released before the service stops.
+///     No release is accepted afterward, and the service waits for the releases in flight before stopping.
 ///   </para>
 /// </remarks>
 public sealed class QueueMessageReleaser : BackgroundService
 {
-  private readonly Channel<IQueueMessageHandler> channel_;
-  private readonly ExceptionManager              exceptionManager_;
-  private readonly Counter<int>                  inlineReleaseCounter_;
-  private readonly ILogger<QueueMessageReleaser> logger_;
-  private readonly int                           parallelism_;
-  private readonly Histogram<double>             releaseDuration_;
+  private readonly ExceptionManager  exceptionManager_;
+  private readonly Counter<int>      inlineReleaseCounter_;
+  private readonly object            lock_ = new();
+  private readonly int               parallelism_;
+  private readonly Histogram<double> releaseDuration_;
+
+  [SuppressMessage("Usage",
+                   "CA2213:Disposable fields should be disposed",
+                   Justification = "A release in flight must be able to give its slot back after the host is disposed; " +
+                                   "SemaphoreSlim holds no unmanaged resource as long as AvailableWaitHandle is not used")]
+  private readonly SemaphoreSlim slots_;
+
+  private bool closed_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="QueueMessageReleaser" /> class.
   /// </summary>
-  /// <param name="pollsterOptions">Pollster options containing the release queue capacity and parallelism.</param>
+  /// <param name="pollsterOptions">Pollster options containing the release parallelism.</param>
   /// <param name="exceptionManager">The manager handling exceptions and cancellation.</param>
   /// <param name="meterHolder">Holder for metrics collection.</param>
   /// <param name="logger">The logger for this class.</param>
-  /// <exception cref="ArgumentOutOfRangeException">Capacity or parallelism is less than 1.</exception>
+  /// <exception cref="ArgumentOutOfRangeException">Parallelism is less than 1.</exception>
   public QueueMessageReleaser(Injection.Options.Pollster    pollsterOptions,
                               ExceptionManager              exceptionManager,
                               MeterHolder                   meterHolder,
                               ILogger<QueueMessageReleaser> logger)
   {
-    if (pollsterOptions.MessageReleaseQueueCapacity < 1)
-    {
-      throw new ArgumentOutOfRangeException(nameof(pollsterOptions),
-                                            $"The minimum value for {nameof(Injection.Options.Pollster.MessageReleaseQueueCapacity)} is 1.");
-    }
-
     if (pollsterOptions.MessageReleaseParallelism < 1)
     {
       throw new ArgumentOutOfRangeException(nameof(pollsterOptions),
@@ -87,78 +87,117 @@ public sealed class QueueMessageReleaser : BackgroundService
     }
 
     exceptionManager_ = exceptionManager;
-    logger_           = logger;
+    Logger            = logger;
     parallelism_      = pollsterOptions.MessageReleaseParallelism;
-    channel_ = Channel.CreateBounded<IQueueMessageHandler>(new BoundedChannelOptions(pollsterOptions.MessageReleaseQueueCapacity)
-                                                           {
-                                                             FullMode     = BoundedChannelFullMode.Wait,
-                                                             SingleReader = true,
-                                                             SingleWriter = false,
-                                                           });
+    slots_ = new SemaphoreSlim(parallelism_,
+                               parallelism_);
 
-    meterHolder.Meter.CreateObservableGauge("MessageReleaseQueueSize",
-                                            () => channel_.Reader.Count,
+    meterHolder.Meter.CreateObservableGauge("MessageReleaseInFlight",
+                                            () => parallelism_ - slots_.CurrentCount,
                                             "Messages",
-                                            "Number of queue messages waiting to be released",
+                                            "Number of queue messages being released in background",
                                             meterHolder.Tags);
 
     inlineReleaseCounter_ = meterHolder.Meter.CreateCounter<int>("MessageReleaseInline",
                                                                  "Messages",
-                                                                 "Number of queue messages released by the caller because the release queue was full or closed",
+                                                                 "Number of queue messages released by the caller because no release slot was free or the releaser was closed",
                                                                  meterHolder.Tags);
 
     releaseDuration_ = meterHolder.Meter.CreateHistogram<double>("MessageReleaseDuration",
                                                                  "Milliseconds",
-                                                                 "Duration of the release of a queue message by the queue adapter",
+                                                                 "Duration of the release of a queue message by the queue adapter in background",
                                                                  meterHolder.Tags);
   }
 
   /// <summary>
-  ///   Try to hand over the release of <paramref name="message" /> to the background service.
+  ///   Logger used for the releases performed in background
   /// </summary>
-  /// <param name="message">The message to release</param>
+  internal ILogger Logger { get; }
+
+  /// <summary>
+  ///   Try to start the release of <paramref name="message" /> in background. This method never waits.
+  /// </summary>
+  /// <param name="message">The message to release, with its final status</param>
   /// <returns>
-  ///   <c>true</c> if the background service took the ownership of the message;
-  ///   <c>false</c> if the queue is full or closed, in which case the caller remains responsible for releasing it.
+  ///   <c>true</c> if the release has started in background: the service took the ownership of the message;
+  ///   <c>false</c> if no release slot is free or the service is closed,
+  ///   in which case the caller remains responsible for releasing the message.
   /// </returns>
-  public bool TryEnqueue(IQueueMessageHandler message)
+  public bool TryStart(IQueueMessageHandler message)
   {
-    if (channel_.Writer.TryWrite(message))
+    // The lock makes the check of `closed_` and the acquisition of a slot atomic with respect to `Close`:
+    // once `Close` returns, no slot can be acquired anymore, so waiting for all the slots waits for every release.
+    lock (lock_)
     {
-      return true;
+      if (closed_ || !slots_.Wait(0))
+      {
+        inlineReleaseCounter_.Add(1);
+        return false;
+      }
     }
 
-    inlineReleaseCounter_.Add(1);
-    return false;
+    // Task.Run flows the execution context: the logging scopes of the caller (task id, session id...)
+    // are kept for the logs emitted during the release.
+    _ = Task.Run(() => ReleaseAsync(message));
+    return true;
+  }
+
+  private async Task ReleaseAsync(IQueueMessageHandler message)
+  {
+    try
+    {
+      using var _ = Logger.BeginPropertyScope(("messageHandler", message.MessageId),
+                                              ("taskId", message.TaskId));
+      var start = Stopwatch.GetTimestamp();
+      await message.DisposeIgnoreErrorAsync(Logger)
+                   .ConfigureAwait(false);
+      releaseDuration_.Record(Stopwatch.GetElapsedTime(start)
+                                       .TotalMilliseconds);
+    }
+    finally
+    {
+      slots_.Release();
+    }
+  }
+
+  /// <summary>
+  ///   Stop accepting new releases. Releases already started are not affected.
+  /// </summary>
+  private void Close()
+  {
+    lock (lock_)
+    {
+      closed_ = true;
+    }
   }
 
   /// <inheritdoc />
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
-    // Close the queue once the pipeline is stopped (or the grace delay expired).
-    // Messages released afterward are released by their caller.
-    await using var closeOnLate = exceptionManager_.LateCancellationToken.Register(() => channel_.Writer.TryComplete());
+    Logger.LogDebug("Start queue message releaser with a parallelism of {Parallelism}",
+                    parallelism_);
 
-    logger_.LogDebug("Start queue message releaser with a parallelism of {Parallelism}",
-                     parallelism_);
+    // Releases are accepted until the pipeline is stopped (or the grace delay expired).
+    try
+    {
+      await Task.Delay(Timeout.InfiniteTimeSpan,
+                       exceptionManager_.LateCancellationToken)
+                .ConfigureAwait(false);
+    }
+    catch (OperationCanceledException)
+    {
+    }
 
-    // The reading is not cancelled: the loop ends when the queue is closed and empty,
-    // so that every enqueued message is released.
-    await Parallel.ForEachAsync(channel_.Reader.ReadAllAsync(CancellationToken.None),
-                                new ParallelOptions
-                                {
-                                  MaxDegreeOfParallelism = parallelism_,
-                                },
-                                async (message, _) =>
-                                {
-                                  var start = Stopwatch.GetTimestamp();
-                                  await message.DisposeIgnoreErrorAsync(logger_)
-                                               .ConfigureAwait(false);
-                                  releaseDuration_.Record(Stopwatch.GetElapsedTime(start)
-                                                                   .TotalMilliseconds);
-                                })
+    Close();
+
+    // No slot can be acquired anymore: acquiring all of them waits for the end of every release in flight.
+    // This wait is not cancelled; it is bounded by the shutdown timeout of the host.
+    for (var i = 0; i < parallelism_; i++)
+    {
+      await slots_.WaitAsync(CancellationToken.None)
                   .ConfigureAwait(false);
+    }
 
-    logger_.LogDebug("End of queue message releaser; no more messages will be released in background");
+    Logger.LogDebug("End of queue message releaser; no more messages will be released in background");
   }
 }

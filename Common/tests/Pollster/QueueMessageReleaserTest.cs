@@ -69,27 +69,38 @@ public class QueueMessageReleaserTest
   private ExceptionManager    exceptionManager_ = null!;
   private ServiceProvider     provider_         = null!;
 
-  private QueueMessageReleaser CreateReleaser(int capacity    = 100,
-                                              int parallelism = 8)
+  private QueueMessageReleaser CreateReleaser(int parallelism = 8)
     => new(new Injection.Options.Pollster
            {
-             MessageReleaseQueueCapacity = capacity,
-             MessageReleaseParallelism   = parallelism,
+             MessageReleaseParallelism = parallelism,
            },
            exceptionManager_,
            provider_.GetRequiredService<MeterHolder>(),
            NullLogger<QueueMessageReleaser>.Instance);
 
+  /// <summary>
+  ///   Dispose a wrapper around <paramref name="inner" /> and wait at most <paramref name="timeout" /> for the disposal
+  ///   to return.
+  /// </summary>
+  /// <returns>Whether the disposal returned within the timeout (ie: it did not wait for the release)</returns>
+  private static async Task<bool> DisposeReturnsWithin(IQueueMessageHandler inner,
+                                                       QueueMessageReleaser releaser,
+                                                       TimeSpan             timeout)
+  {
+    var dispose = new AsyncReleaseQueueMessageHandler(inner,
+                                                      releaser).DisposeAsync()
+                                                               .AsTask();
+    return await Task.WhenAny(dispose,
+                              Task.Delay(timeout))
+                     .ConfigureAwait(false) == dispose;
+  }
+
   [Test]
   public void InvalidOptionsShouldThrow([Values(0,
                                                 -1)]
                                         int value)
-  {
-    Assert.That(() => CreateReleaser(value),
-                Throws.InstanceOf<ArgumentOutOfRangeException>());
-    Assert.That(() => CreateReleaser(parallelism: value),
-                Throws.InstanceOf<ArgumentOutOfRangeException>());
-  }
+    => Assert.That(() => CreateReleaser(value),
+                   Throws.InstanceOf<ArgumentOutOfRangeException>());
 
   [Test]
   [Timeout(10000)]
@@ -100,14 +111,13 @@ public class QueueMessageReleaserTest
                   .ConfigureAwait(false);
 
     var inner = new BlockingQueueMessageHandler();
-    var wrapper = new AsyncReleaseQueueMessageHandler(inner,
-                                                      releaser);
 
     // The release of the inner message is blocked, the disposal of the wrapper must return anyway
-    await wrapper.DisposeAsync()
-                 .AsTask()
-                 .WaitAsync(TimeSpan.FromSeconds(5))
-                 .ConfigureAwait(false);
+    Assert.That(await DisposeReturnsWithin(inner,
+                                           releaser,
+                                           TimeSpan.FromSeconds(5))
+                  .ConfigureAwait(false),
+                Is.True);
 
     await inner.Started.WaitAsync(TimeSpan.FromSeconds(5))
                .ConfigureAwait(false);
@@ -147,13 +157,15 @@ public class QueueMessageReleaserTest
   }
 
   [Test]
-  public void MembersShouldBeForwarded()
+  [Timeout(10000)]
+  public async Task MembersShouldBeForwardedAndStatusFrozenOnDispose()
   {
     using var releaser = CreateReleaser();
     var inner = new SimpleQueueMessageHandler
                 {
                   MessageId = "msg",
                   TaskId    = "task",
+                  Status    = QueueMessageStatus.Waiting,
                   ReceptionDateTime = new DateTime(2026,
                                                    1,
                                                    1,
@@ -163,10 +175,7 @@ public class QueueMessageReleaserTest
                                                    DateTimeKind.Utc),
                 };
     var wrapper = new AsyncReleaseQueueMessageHandler(inner,
-                                                      releaser)
-                  {
-                    Status = QueueMessageStatus.Postponed,
-                  };
+                                                      releaser);
 
     Assert.Multiple(() =>
                     {
@@ -176,121 +185,247 @@ public class QueueMessageReleaserTest
                                   Is.EqualTo("task"));
                       Assert.That(wrapper.ReceptionDateTime,
                                   Is.EqualTo(inner.ReceptionDateTime));
-                      // Status is read by the adapter upon release: it must be set on the inner message
-                      Assert.That(inner.Status,
-                                  Is.EqualTo(QueueMessageStatus.Postponed));
+                      Assert.That(wrapper.Status,
+                                  Is.EqualTo(QueueMessageStatus.Waiting));
                     });
+
+    wrapper.Status = QueueMessageStatus.Postponed;
+    await wrapper.DisposeAsync()
+                 .ConfigureAwait(false);
+    await inner.Disposed.WaitAsync(TimeSpan.FromSeconds(5))
+               .ConfigureAwait(false);
+
+    // Status is read by the adapter upon release: it must have been set on the inner message
+    Assert.That(inner.Status,
+                Is.EqualTo(QueueMessageStatus.Postponed));
   }
 
   [Test]
   [Timeout(10000)]
-  public async Task FullQueueShouldReleaseInline()
+  public async Task StatusChangeAfterDisposeShouldBeIgnored()
   {
-    // The releaser is not started: nothing is read from its queue
-    using var releaser = CreateReleaser(1);
-
-    var first  = new SimpleQueueMessageHandler();
-    var second = new SimpleQueueMessageHandler();
-
-    await new AsyncReleaseQueueMessageHandler(first,
-                                              releaser).DisposeAsync()
-                                                       .ConfigureAwait(false);
-    await new AsyncReleaseQueueMessageHandler(second,
-                                              releaser).DisposeAsync()
-                                                       .ConfigureAwait(false);
-
-    Assert.Multiple(() =>
-                    {
-                      // First one is waiting in the queue
-                      Assert.That(first.Disposed.IsCompleted,
-                                  Is.False);
-                      // Second one has been released synchronously by the caller
-                      Assert.That(second.Disposed.IsCompleted,
-                                  Is.True);
-                    });
-  }
-
-  [Test]
-  [Timeout(10000)]
-  public async Task ParallelismShouldBeBounded()
-  {
-    const int parallelism = 3;
-    const int nbMessages  = 20;
-
-    using var releaser = CreateReleaser(parallelism: parallelism);
+    using var releaser = CreateReleaser();
     await releaser.StartAsync(CancellationToken.None)
                   .ConfigureAwait(false);
 
-    var tracker = new ConcurrencyTracker();
-    var messages = Enumerable.Range(0,
-                                    nbMessages)
-                             .Select(_ => new CountingQueueMessageHandler(tracker,
-                                                                          TimeSpan.FromMilliseconds(50)))
-                             .ToList();
+    var inner = new BlockingQueueMessageHandler();
+    var wrapper = new AsyncReleaseQueueMessageHandler(inner,
+                                                      releaser)
+                  {
+                    Status = QueueMessageStatus.Processed,
+                  };
 
-    foreach (var message in messages)
+    await wrapper.DisposeAsync()
+                 .ConfigureAwait(false);
+    await inner.Started.WaitAsync(TimeSpan.FromSeconds(5))
+               .ConfigureAwait(false);
+
+    // The release is in flight: a late change must not alter the outcome
+    wrapper.Status = QueueMessageStatus.Postponed;
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(inner.Status,
+                                  Is.EqualTo(QueueMessageStatus.Processed));
+                      Assert.That(wrapper.Status,
+                                  Is.EqualTo(QueueMessageStatus.Processed));
+                    });
+
+    inner.Unblock();
+    await inner.Completed.WaitAsync(TimeSpan.FromSeconds(5))
+               .ConfigureAwait(false);
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task NoFreeSlotShouldReleaseInlineAndSlotsShouldBeReused()
+  {
+    const int parallelism = 3;
+
+    using var releaser = CreateReleaser(parallelism);
+    await releaser.StartAsync(CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    // Occupy all the slots
+    var busy = Enumerable.Range(0,
+                                parallelism)
+                         .Select(_ => new BlockingQueueMessageHandler())
+                         .ToList();
+    foreach (var message in busy)
     {
-      await new AsyncReleaseQueueMessageHandler(message,
-                                                releaser).DisposeAsync()
-                                                         .ConfigureAwait(false);
+      Assert.That(await DisposeReturnsWithin(message,
+                                             releaser,
+                                             TimeSpan.FromSeconds(5))
+                    .ConfigureAwait(false),
+                  Is.True);
     }
 
-    await Task.WhenAll(messages.Select(m => m.Disposed))
+    await Task.WhenAll(busy.Select(m => m.Started))
               .WaitAsync(TimeSpan.FromSeconds(5))
               .ConfigureAwait(false);
 
-    Assert.Multiple(() =>
-                    {
-                      Assert.That(tracker.Max,
-                                  Is.LessThanOrEqualTo(parallelism));
-                      Assert.That(tracker.Max,
-                                  Is.GreaterThan(1));
-                    });
+    // No free slot: the message is released by the caller, so the disposal waits for the release
+    var inline = new BlockingQueueMessageHandler();
+    var inlineDispose = new AsyncReleaseQueueMessageHandler(inline,
+                                                            releaser).DisposeAsync()
+                                                                     .AsTask();
+    await inline.Started.WaitAsync(TimeSpan.FromSeconds(5))
+                .ConfigureAwait(false);
+    await Task.Delay(100)
+              .ConfigureAwait(false);
+    Assert.That(inlineDispose.IsCompleted,
+                Is.False);
+    inline.Unblock();
+    await inlineDispose.WaitAsync(TimeSpan.FromSeconds(5))
+                       .ConfigureAwait(false);
+
+    // Releasing the slots makes them available again
+    foreach (var message in busy)
+    {
+      message.Unblock();
+    }
+
+    await Task.WhenAll(busy.Select(m => m.Completed))
+              .WaitAsync(TimeSpan.FromSeconds(5))
+              .ConfigureAwait(false);
+
+    // The slot is given back right after the release completes: retry for a short while
+    var reused = false;
+    for (var i = 0; i < 50 && !reused; i++)
+    {
+      var probe = new BlockingQueueMessageHandler();
+      reused = await DisposeReturnsWithin(probe,
+                                          releaser,
+                                          TimeSpan.FromMilliseconds(100))
+                 .ConfigureAwait(false);
+      probe.Unblock();
+      await probe.Completed.WaitAsync(TimeSpan.FromSeconds(5))
+                 .ConfigureAwait(false);
+    }
+
+    Assert.That(reused,
+                Is.True);
   }
 
   [Test]
   [Timeout(10000)]
-  public async Task StopShouldReleaseEnqueuedMessages()
+  public async Task StopShouldWaitForReleasesInFlight()
   {
-    using var releaser = CreateReleaser(parallelism: 1);
+    using var releaser = CreateReleaser(2);
     await releaser.StartAsync(CancellationToken.None)
                   .ConfigureAwait(false);
 
-    var messages = Enumerable.Range(0,
-                                    10)
-                             .Select(_ => new CountingQueueMessageHandler(null,
-                                                                          TimeSpan.FromMilliseconds(20)))
-                             .ToList();
-    foreach (var message in messages)
+    var inFlight = new[]
+                   {
+                     new BlockingQueueMessageHandler(),
+                     new BlockingQueueMessageHandler(),
+                   };
+    foreach (var message in inFlight)
     {
       await new AsyncReleaseQueueMessageHandler(message,
                                                 releaser).DisposeAsync()
                                                          .ConfigureAwait(false);
     }
 
-    // Triggers the late cancellation token (no grace delay): the queue is closed
+    // Triggers the late cancellation token (no grace delay)
     lifetime_.StopApplication();
+
+    await Task.Delay(200)
+              .ConfigureAwait(false);
+    Assert.That(releaser.ExecuteTask!.IsCompleted,
+                Is.False);
+
+    foreach (var message in inFlight)
+    {
+      message.Unblock();
+    }
 
     await releaser.ExecuteTask!.WaitAsync(TimeSpan.FromSeconds(5))
                   .ConfigureAwait(false);
 
+    Assert.That(inFlight.Select(m => m.Completed.IsCompleted),
+                Is.All.True);
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task ClosedReleaserShouldReleaseInline()
+  {
+    using var releaser = CreateReleaser();
+    await releaser.StartAsync(CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    lifetime_.StopApplication();
+    await releaser.ExecuteTask!.WaitAsync(TimeSpan.FromSeconds(5))
+                  .ConfigureAwait(false);
+
+    // Slots are free but the releaser is closed: the disposal waits for the release
+    var late = new BlockingQueueMessageHandler();
+    Assert.That(await DisposeReturnsWithin(late,
+                                           releaser,
+                                           TimeSpan.FromMilliseconds(200))
+                  .ConfigureAwait(false),
+                Is.False);
+    late.Unblock();
+    await late.Completed.WaitAsync(TimeSpan.FromSeconds(5))
+              .ConfigureAwait(false);
+  }
+
+  [Test]
+  [Timeout(30000)]
+  public async Task ConcurrentReleasesDuringStopShouldReleaseEveryMessageOnce()
+  {
+    const int producers   = 8;
+    const int perProducer = 500;
+
+    using var releaser = CreateReleaser(4);
+    await releaser.StartAsync(CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    var messages = Enumerable.Range(0,
+                                    producers * perProducer)
+                             .Select(_ => new CountingQueueMessageHandler())
+                             .ToList();
+
+    using var go = new ManualResetEventSlim();
+    var tasks = Enumerable.Range(0,
+                                 producers)
+                          .Select(p => Task.Run(async () =>
+                                                {
+                                                  go.Wait();
+                                                  foreach (var message in messages.Skip(p * perProducer)
+                                                                                  .Take(perProducer))
+                                                  {
+                                                    await new AsyncReleaseQueueMessageHandler(message,
+                                                                                              releaser).DisposeAsync()
+                                                                                                       .ConfigureAwait(false);
+                                                  }
+                                                }))
+                          .ToList();
+
+    go.Set();
+    // Close the releaser while the producers are releasing messages
+    await Task.Delay(1)
+              .ConfigureAwait(false);
+    lifetime_.StopApplication();
+
+    await Task.WhenAll(tasks)
+              .WaitAsync(TimeSpan.FromSeconds(20))
+              .ConfigureAwait(false);
+    await releaser.ExecuteTask!.WaitAsync(TimeSpan.FromSeconds(5))
+                  .ConfigureAwait(false);
+
+    // Once the releaser has stopped, every message must have been released exactly once,
+    // either in background or by its caller
     Assert.That(messages.Select(m => m.DisposeCount),
                 Is.All.EqualTo(1));
-
-    // The queue is closed: new messages are released by the caller
-    var late = new SimpleQueueMessageHandler();
-    await new AsyncReleaseQueueMessageHandler(late,
-                                              releaser).DisposeAsync()
-                                                       .ConfigureAwait(false);
-    Assert.That(late.Disposed.IsCompleted,
-                Is.True);
   }
 
   [Test]
   [Timeout(10000)]
   public async Task ReleaseErrorShouldNotStopTheReleaser()
   {
-    using var releaser = CreateReleaser(parallelism: 1);
+    using var releaser = CreateReleaser(1);
     await releaser.StartAsync(CancellationToken.None)
                   .ConfigureAwait(false);
 
