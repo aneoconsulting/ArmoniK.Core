@@ -21,7 +21,6 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.Common.Options;
-using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
@@ -31,7 +30,6 @@ using ArmoniK.Core.Utils.Uuid;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -127,13 +125,10 @@ public sealed class AgentHandler : IAgentHandler, IAsyncDisposable
                                              break;
                                            }
                                            case GrpcSocketType.Tcp:
-                                             var channelOptions = context.Configuration.GetRequiredSection(ComputePlane.SettingSection)
-                                                                         .GetSection(ComputePlane.AgentChannelSection);
-
-                                             options.Limits.Http2.KeepAlivePingTimeout = channelOptions.GetTimeSpanOrDefault("KeepAlivePingTimeout",
-                                                                                                                             TimeSpan.FromSeconds(20));
-                                             options.Limits.KeepAliveTimeout = channelOptions.GetTimeSpanOrDefault("KeepAliveTimeout",
-                                                                                                                   TimeSpan.FromSeconds(130));
+                                             // Use the options already parsed for this agent: the configuration of the process may not hold them,
+                                             // for instance when several agents run in the same process.
+                                             options.Limits.Http2.KeepAlivePingTimeout = computePlaneOptions.AgentChannel.KeepAlivePingTimeOut;
+                                             options.Limits.KeepAliveTimeout           = computePlaneOptions.AgentChannel.KeepAliveTimeOut;
                                              var uri = new Uri(address);
                                              options.ListenAnyIP(uri.Port,
                                                                  listenOptions => listenOptions.Protocols = HttpProtocols.Http2);
