@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -57,11 +58,38 @@ namespace ArmoniK.Core.Adapters.Memory;
 /// </remarks>
 public class QueueStorage : IPullQueueStorage, IPushQueueStorage
 {
+  /// <summary>
+  ///   Default time a pull waits for a message when the queue is empty
+  /// </summary>
+  public static readonly TimeSpan DefaultPullWaitTime = TimeSpan.FromSeconds(1);
+
   private readonly Lock lock_ = new();
 
   private readonly Dictionary<string, PriorityQueue<QueuedMessage, (int priority, long order)>> partitions_ = new();
 
+  private readonly TimeSpan pullWaitTime_;
+
+  /// <summary>
+  ///   Completed when messages are put in the queue, then replaced. Used to wake up the pulls waiting on an empty queue.
+  /// </summary>
+  private TaskCompletionSource enqueued_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
   private long order_;
+
+  /// <summary>
+  ///   Creates an empty queue
+  /// </summary>
+  public QueueStorage()
+    : this(DefaultPullWaitTime)
+  {
+  }
+
+  /// <summary>
+  ///   Creates an empty queue
+  /// </summary>
+  /// <param name="pullWaitTime">Time a pull waits for a message when the queue is empty</param>
+  internal QueueStorage(TimeSpan pullWaitTime)
+    => pullWaitTime_ = pullWaitTime;
 
   /// <inheritdoc />
   public Task<HealthCheckResult> Check(HealthCheckTag tag)
@@ -76,32 +104,62 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
     => 100;
 
   /// <inheritdoc />
-  public IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string            partitionId,
-                                                                  int               nbMessages,
-                                                                  CancellationToken cancellationToken = default)
+  /// <remarks>
+  ///   When the queue of the partition is empty, the pull waits until messages are pushed or released, for at most the
+  ///   pull wait time, as other queues do: pollers calling it in a loop do not spin on an empty queue.
+  ///   Messages pulled but not enumerated, when the enumeration stops early, are put back in the queue.
+  /// </remarks>
+  public async IAsyncEnumerable<IQueueMessageHandler> PullMessagesAsync(string                                     partitionId,
+                                                                        int                                        nbMessages,
+                                                                        [EnumeratorCancellation] CancellationToken cancellationToken = default)
   {
     cancellationToken.ThrowIfCancellationRequested();
 
-    var messages = new List<IQueueMessageHandler>();
+    var messages = TryDequeue(partitionId,
+                              nbMessages,
+                              out var enqueued);
 
-    lock (lock_)
+    if (messages.Count == 0)
     {
-      if (partitions_.TryGetValue(partitionId,
-                                  out var queue))
+      try
       {
-        while (messages.Count < nbMessages && queue.TryDequeue(out var message,
-                                                               out _))
-        {
-          messages.Add(new MessageHandler(this,
-                                          message)
-                       {
-                         ReceptionDateTime = DateTime.UtcNow,
-                       });
-        }
+        await enqueued.WaitAsync(pullWaitTime_,
+                                 cancellationToken)
+                      .ConfigureAwait(false);
       }
+      catch (TimeoutException)
+      {
+        // No message pushed in time: the pull returns nothing
+      }
+      catch (OperationCanceledException)
+      {
+        yield break;
+      }
+
+      messages = TryDequeue(partitionId,
+                            nbMessages,
+                            out _);
     }
 
-    return messages.ToAsyncEnumerable();
+    var handedOut = 0;
+    try
+    {
+      foreach (var message in messages)
+      {
+        handedOut++;
+        yield return message;
+      }
+    }
+    finally
+    {
+      // Put back the messages that were not handed out, when the enumeration stops early
+      for (var i = handedOut; i < messages.Count; i++)
+      {
+        await messages[i]
+              .DisposeAsync()
+              .ConfigureAwait(false);
+      }
+    }
   }
 
   /// <inheritdoc />
@@ -122,9 +180,58 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
                                   message.Options.Priority,
                                   ++order_));
       }
+
+      SignalEnqueued();
     }
 
     return Task.CompletedTask;
+  }
+
+  /// <summary>
+  ///   Take the available messages of a partition
+  /// </summary>
+  /// <param name="partitionId">Partition of the messages</param>
+  /// <param name="nbMessages">Maximal number of messages to take</param>
+  /// <param name="enqueued">Task completed when messages are put in the queue after this call</param>
+  /// <returns>
+  ///   The handlers of the messages taken, possibly none
+  /// </returns>
+  private List<MessageHandler> TryDequeue(string   partitionId,
+                                          int      nbMessages,
+                                          out Task enqueued)
+  {
+    var messages = new List<MessageHandler>();
+
+    lock (lock_)
+    {
+      if (partitions_.TryGetValue(partitionId,
+                                  out var queue))
+      {
+        while (messages.Count < nbMessages && queue.TryDequeue(out var message,
+                                                               out _))
+        {
+          messages.Add(new MessageHandler(this,
+                                          message)
+                       {
+                         ReceptionDateTime = DateTime.UtcNow,
+                       });
+        }
+      }
+
+      enqueued = enqueued_.Task;
+    }
+
+    return messages;
+  }
+
+  /// <summary>
+  ///   Wake up the pulls waiting for messages. Must be called under the lock.
+  /// </summary>
+  private void SignalEnqueued()
+  {
+    var enqueued = enqueued_;
+    enqueued_ = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    enqueued.TrySetResult();
   }
 
   /// <summary>
@@ -164,6 +271,7 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
         case QueueMessageStatus.Failed:
           // Back at its place, at the front of the queue
           Enqueue(message);
+          SignalEnqueued();
           break;
         case QueueMessageStatus.Postponed:
           // Back at the end of the queue
@@ -171,6 +279,7 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
                   {
                     Order = ++order_,
                   });
+          SignalEnqueued();
           break;
         case QueueMessageStatus.Processed:
         case QueueMessageStatus.Cancelled:

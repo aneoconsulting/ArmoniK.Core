@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,7 +34,9 @@ public class QueueStorageTests
 {
   [SetUp]
   public void SetUp()
-    => queue_ = new QueueStorage();
+    => queue_ = new QueueStorage(PullWaitTime);
+
+  private static readonly TimeSpan PullWaitTime = TimeSpan.FromMilliseconds(100);
 
   private QueueStorage? queue_;
 
@@ -305,6 +308,73 @@ public class QueueStorageTests
                                   Has.Exactly(2)
                                      .Items);
                     });
+  }
+
+  [Test]
+  public async Task PullOnAnEmptyQueueShouldWaitForAPush()
+  {
+    var pull = Pull("partition",
+                    1);
+
+    await Task.Delay(PullWaitTime / 4)
+              .ConfigureAwait(false);
+    Assert.That(pull.IsCompleted,
+                Is.False);
+
+    await Push("partition",
+               1,
+               "task")
+      .ConfigureAwait(false);
+
+    Assert.That((await pull.ConfigureAwait(false)).Single()
+                                                  .TaskId,
+                Is.EqualTo("task"));
+  }
+
+  [Test]
+  public async Task PullOnAnEmptyQueueShouldReturnNothingAfterTheWaitTime()
+  {
+    var watch = Stopwatch.StartNew();
+
+    var messages = await Pull("partition",
+                              1)
+                     .ConfigureAwait(false);
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(messages,
+                                  Is.Empty);
+                      Assert.That(watch.Elapsed,
+                                  Is.GreaterThanOrEqualTo(PullWaitTime * 0.9));
+                    });
+  }
+
+  [Test]
+  public async Task MessagesNotEnumeratedShouldBePutBack()
+  {
+    await Push("partition",
+               1,
+               "task1",
+               "task2",
+               "task3")
+      .ConfigureAwait(false);
+
+    // Take only the first message of a pull of three
+    var first = await queue_!.PullMessagesAsync("partition",
+                                                3)
+                             .FirstAsync()
+                             .ConfigureAwait(false);
+    first.Status = QueueMessageStatus.Processed;
+    await first.DisposeAsync()
+               .ConfigureAwait(false);
+
+    Assert.That(await Drain("partition")
+                  .ConfigureAwait(false),
+                Is.EqualTo(new[]
+                           {
+                             "task2",
+                             "task3",
+                           }));
   }
 
   [Test]
