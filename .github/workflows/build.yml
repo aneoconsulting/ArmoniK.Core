@@ -54,6 +54,7 @@ jobs:
           - Adaptors/S3/tests
           - Adaptors/Gcs/tests
           - Adaptors/Embed/tests
+          - Standalone/tests
         os:
           - ubuntu-latest
       fail-fast: false
