@@ -59,12 +59,30 @@ public class StartupTests
 
   [TearDown]
   public void TearDown()
-    => tableProvider_?.Dispose();
+  {
+    if (createdDatabases_.Count > 0)
+    {
+      using var provider   = CreateProvider(options => UseDatabase(options,
+                                                                   "postgres"));
+      using var connection = provider.DataSource.OpenConnection();
+      foreach (var databaseName in createdDatabases_)
+      {
+        using var cmd = connection.CreateCommand();
+        cmd.CommandText = $"DROP DATABASE IF EXISTS \"{databaseName}\" WITH (FORCE)";
+        cmd.ExecuteNonQuery();
+      }
+
+      createdDatabases_.Clear();
+    }
+
+    tableProvider_?.Dispose();
+  }
 
   private PostgresDatabaseProvider?                tableProvider_;
   private Options.PostgreSQL?                      options_;
   private InitDatabase?                            initDatabase_;
   private Mock<ILogger<NpgsqlConnectionProvider>>? logger_;
+  private readonly List<string>                    createdDatabases_ = new();
 
   private const string InitializationMessage = "Initializing PostgreSQL schema";
   private const string RetryMessage          = "retrying the initialization";
@@ -89,6 +107,60 @@ public class StartupTests
     return new NpgsqlConnectionProvider(options,
                                         initDatabase,
                                         logger_!.Object);
+  }
+
+  private static void UseDatabase(Options.PostgreSQL options,
+                                  string             databaseName)
+  {
+    if (options.ConnectionString is not null)
+    {
+      options.ConnectionString = new NpgsqlConnectionStringBuilder(options.ConnectionString)
+                                 {
+                                   Database = databaseName,
+                                 }.ConnectionString;
+    }
+
+    options.DatabaseName = databaseName;
+  }
+
+  /// <summary>
+  ///   Creates an empty database, dropped in <see cref="TearDown" />, so that the test does not depend on the
+  ///   schema created by the other tests in the shared database
+  /// </summary>
+  private string CreateEmptyDatabase()
+  {
+    var databaseName = $"armonik_startup_{Guid.NewGuid():N}";
+
+    using var provider   = CreateProvider(options => UseDatabase(options,
+                                                                 "postgres"));
+    using var connection = provider.DataSource.OpenConnection();
+    using var cmd        = connection.CreateCommand();
+    cmd.CommandText = $"CREATE DATABASE \"{databaseName}\"";
+    cmd.ExecuteNonQuery();
+
+    createdDatabases_.Add(databaseName);
+    return databaseName;
+  }
+
+  private static InitDatabase DisabledInitDatabase(params Partition[] partitions)
+    => new(new InitServices
+           {
+             InitDatabase = false,
+             Partitioning = new Partitioning
+                            {
+                              Partitions = partitions.Select(partition => partition.ToJson())
+                                                     .ToList(),
+                            },
+           });
+
+  private static async Task<long> CountPublicTables(NpgsqlConnectionProvider provider)
+  {
+    await using var connection = await provider.GetConnectionAsync()
+                                               .ConfigureAwait(false);
+    await using var cmd = connection.CreateCommand();
+    cmd.CommandText = "SELECT count(*) FROM pg_tables WHERE schemaname = 'public'";
+    return (long)(await cmd.ExecuteScalarAsync()
+                           .ConfigureAwait(false))!;
   }
 
   private void VerifyLog(LogLevel level,
@@ -132,40 +204,65 @@ public class StartupTests
   }
 
   [Test]
-  public async Task InitShouldSkipSchemaAndSeedingWhenInitDatabaseIsDisabled()
+  public async Task InitShouldFailWhenInitDatabaseIsDisabledAndSchemaIsMissing()
   {
-    const string partitionId = "PartitionNotSeeded";
-    var initDatabase = new InitDatabase(new InitServices
-                                        {
-                                          InitDatabase = false,
-                                          Partitioning = new Partitioning
-                                                         {
-                                                           Partitions = new List<string>
-                                                                        {
-                                                                          new Partition
-                                                                          {
-                                                                            PartitionId          = partitionId,
-                                                                            ParentPartitionIds   = new List<string>(),
-                                                                            PodReserved          = 1,
-                                                                            PodMax               = 1,
-                                                                            PreemptionPercentage = 0,
-                                                                            Priority             = 1,
-                                                                          }.ToJson(),
-                                                                        },
-                                                         },
-                                        });
+    var databaseName = CreateEmptyDatabase();
 
-    await using var provider = CreateProvider(_ =>
+    await using var provider = CreateProvider(options =>
                                               {
+                                                UseDatabase(options,
+                                                            databaseName);
+                                                options.MaxRetries = 2;
                                               },
-                                              initDatabase);
+                                              DisabledInitDatabase());
+
+    Assert.That(() => provider.Init(CancellationToken.None),
+                Throws.InstanceOf<InvalidOperationException>()
+                      .With.Message.Contains("not up to date"));
+
+    VerifyLog(LogLevel.Warning,
+              RetryMessage,
+              Times.Once());
+
+    var health = await provider.Check(HealthCheckTag.Startup)
+                               .ConfigureAwait(false);
+    Assert.That(health.Status,
+                Is.EqualTo(HealthStatus.Unhealthy));
+
+    // Neither the schema nor the DbUp journal (schemaversions) has been created
+    Assert.That(await CountPublicTables(provider)
+                  .ConfigureAwait(false),
+                Is.Zero);
+  }
+
+  [Test]
+  public async Task InitShouldSkipSeedingWhenInitDatabaseIsDisabled()
+  {
+    const string partitionId  = "PartitionNotSeeded";
+    var          databaseName = CreateEmptyDatabase();
+
+    // Another process migrated the schema
+    await using (var migrator = CreateProvider(options => UseDatabase(options,
+                                                                      databaseName)))
+    {
+      await migrator.Init(CancellationToken.None)
+                    .ConfigureAwait(false);
+    }
+
+    await using var provider = CreateProvider(options => UseDatabase(options,
+                                                                     databaseName),
+                                              DisabledInitDatabase(new Partition
+                                                                   {
+                                                                     PartitionId          = partitionId,
+                                                                     ParentPartitionIds   = new List<string>(),
+                                                                     PodReserved          = 1,
+                                                                     PodMax               = 1,
+                                                                     PreemptionPercentage = 0,
+                                                                     Priority             = 1,
+                                                                   }));
 
     await provider.Init(CancellationToken.None)
                   .ConfigureAwait(false);
-
-    VerifyLog(LogLevel.Information,
-              InitializationMessage,
-              Times.Never());
 
     var health = await provider.Check(HealthCheckTag.Liveness)
                                .ConfigureAwait(false);
@@ -181,6 +278,28 @@ public class StartupTests
     Assert.That(await cmd.ExecuteScalarAsync()
                          .ConfigureAwait(false),
                 Is.EqualTo(0L));
+  }
+
+  [Test]
+  public void InitShouldRetryWhileDatabaseIsUnreachableWhenInitDatabaseIsDisabled()
+  {
+    using var provider = CreateProvider(options =>
+                                        {
+                                          options.ConnectionString = null;
+                                          options.Host             = "localhost";
+                                          options.Port             = GetClosedPort();
+                                          options.MaxRetries       = 2;
+                                        },
+                                        DisabledInitDatabase());
+
+    Assert.That(() => provider.Init(CancellationToken.None),
+                Throws.InstanceOf<NpgsqlException>()
+                      .With.Property(nameof(NpgsqlException.IsTransient))
+                      .True);
+
+    VerifyLog(LogLevel.Warning,
+              RetryMessage,
+              Times.Once());
   }
 
   [Test]
