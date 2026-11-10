@@ -69,8 +69,12 @@ public class StartupTests
   private const string InitializationMessage = "Initializing PostgreSQL schema";
   private const string RetryMessage          = "retrying the initialization";
 
+  private NpgsqlConnectionProvider CreateProvider(Action<Options.PostgreSQL> configure)
+    => CreateProvider(configure,
+                      initDatabase_!);
+
   private NpgsqlConnectionProvider CreateProvider(Action<Options.PostgreSQL> configure,
-                                                  InitDatabase?              initDatabase = null)
+                                                  InitDatabase               initDatabase)
   {
     var options = new Options.PostgreSQL
                   {
@@ -83,7 +87,7 @@ public class StartupTests
                   };
     configure(options);
     return new NpgsqlConnectionProvider(options,
-                                        initDatabase ?? initDatabase_!,
+                                        initDatabase,
                                         logger_!.Object);
   }
 
