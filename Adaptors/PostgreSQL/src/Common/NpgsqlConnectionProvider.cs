@@ -189,6 +189,17 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
 
   private async Task InitializeDatabase(CancellationToken cancellationToken)
   {
+    // InitServices:InitDatabase disables the schema migration and the data seeding, which are then left to
+    // another process (e.g. a dedicated init container). Only check that the database is reachable.
+    if (!initDatabase_.Init)
+    {
+      logger_.LogInformation("PostgreSQL schema initialization is disabled, only checking the connection");
+
+      await using var checkConnection = await GetConnectionAsync(cancellationToken)
+                                          .ConfigureAwait(false);
+      return;
+    }
+
     logger_.LogInformation("Initializing PostgreSQL schema");
 
     await using var connection = await GetConnectionAsync(cancellationToken)

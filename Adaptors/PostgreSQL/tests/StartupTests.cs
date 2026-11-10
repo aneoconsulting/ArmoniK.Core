@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -23,9 +24,12 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Core.Adapters.PostgreSQL.Common;
+using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Injection.Options.Database;
 
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 
 using Moq;
@@ -65,7 +69,8 @@ public class StartupTests
   private const string InitializationMessage = "Initializing PostgreSQL schema";
   private const string RetryMessage          = "retrying the initialization";
 
-  private NpgsqlConnectionProvider CreateProvider(Action<Options.PostgreSQL> configure)
+  private NpgsqlConnectionProvider CreateProvider(Action<Options.PostgreSQL> configure,
+                                                  InitDatabase?              initDatabase = null)
   {
     var options = new Options.PostgreSQL
                   {
@@ -78,7 +83,7 @@ public class StartupTests
                   };
     configure(options);
     return new NpgsqlConnectionProvider(options,
-                                        initDatabase_!,
+                                        initDatabase ?? initDatabase_!,
                                         logger_!.Object);
   }
 
@@ -120,6 +125,58 @@ public class StartupTests
     VerifyLog(LogLevel.Information,
               InitializationMessage,
               Times.Once());
+  }
+
+  [Test]
+  public async Task InitShouldSkipSchemaAndSeedingWhenInitDatabaseIsDisabled()
+  {
+    const string partitionId = "PartitionNotSeeded";
+    var initDatabase = new InitDatabase(new InitServices
+                                        {
+                                          InitDatabase = false,
+                                          Partitioning = new Partitioning
+                                                         {
+                                                           Partitions = new List<string>
+                                                                        {
+                                                                          new Partition
+                                                                          {
+                                                                            PartitionId          = partitionId,
+                                                                            ParentPartitionIds   = new List<string>(),
+                                                                            PodReserved          = 1,
+                                                                            PodMax               = 1,
+                                                                            PreemptionPercentage = 0,
+                                                                            Priority             = 1,
+                                                                          }.ToJson(),
+                                                                        },
+                                                         },
+                                        });
+
+    await using var provider = CreateProvider(_ =>
+                                              {
+                                              },
+                                              initDatabase);
+
+    await provider.Init(CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    VerifyLog(LogLevel.Information,
+              InitializationMessage,
+              Times.Never());
+
+    var health = await provider.Check(HealthCheckTag.Liveness)
+                               .ConfigureAwait(false);
+    Assert.That(health.Status,
+                Is.EqualTo(HealthStatus.Healthy));
+
+    await using var connection = await provider.GetConnectionAsync()
+                                               .ConfigureAwait(false);
+    await using var cmd = connection.CreateCommand();
+    cmd.CommandText = "SELECT count(*) FROM partitions WHERE partition_id = @partition_id";
+    cmd.Parameters.AddWithValue("partition_id",
+                                partitionId);
+    Assert.That(await cmd.ExecuteScalarAsync()
+                         .ConfigureAwait(false),
+                Is.EqualTo(0L));
   }
 
   [Test]
