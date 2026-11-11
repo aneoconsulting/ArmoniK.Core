@@ -2,7 +2,7 @@ terraform {
   required_providers {
     docker = {
       source  = "registry.opentofu.org/kreuzwerker/docker"
-      version = "~> 4.6.0"
+      version = "~> 4.7.0"
     }
     random = {
       source  = "registry.opentofu.org/hashicorp/random"
