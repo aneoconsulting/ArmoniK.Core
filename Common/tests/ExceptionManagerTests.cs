@@ -248,7 +248,12 @@ public class ExceptionManagerTests
     await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
     await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
     await using var d2 = em.LateCancellationToken.Register(() => events.Enqueue(2));
-    await using var d3 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(3));
+    var stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    await using var d3 = lifetime_.ApplicationStopping.Register(() =>
+                                                                {
+                                                                  events.Enqueue(3);
+                                                                  stopping.TrySetResult();
+                                                                });
     await using var d4 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(4));
 
     lifetime_.NotifyStarted();
@@ -266,15 +271,9 @@ public class ExceptionManagerTests
     Assert.That(em.Failed,
                 Is.True);
 
-    try
-    {
-      await lifetime_.ApplicationStopping.AsTask()
-                     .ConfigureAwait(false);
-    }
-    catch (OperationCanceledException)
-    {
-      // ignore
-    }
+    // Waiting on ApplicationStopping itself would not be enough: callbacks run in LIFO order, so a waiter
+    // registered after d3 resumes the test before d3 has run, and NotifyStopped can then race with it.
+    await stopping.Task.ConfigureAwait(false);
 
     Assert.That(em.Failed,
                 Is.True);
@@ -310,7 +309,12 @@ public class ExceptionManagerTests
     await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
     await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
     await using var d2 = em.LateCancellationToken.Register(() => events.Enqueue(2));
-    await using var d3 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(3));
+    var stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    await using var d3 = lifetime_.ApplicationStopping.Register(() =>
+                                                                {
+                                                                  events.Enqueue(3);
+                                                                  stopping.TrySetResult();
+                                                                });
     await using var d4 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(4));
 
     lifetime_.NotifyStarted();
@@ -350,15 +354,9 @@ public class ExceptionManagerTests
 
     // Once the early token fired, the existing grace delay chain still drives the application all the
     // way down to ApplicationStopping.
-    try
-    {
-      await lifetime_.ApplicationStopping.AsTask()
-                     .ConfigureAwait(false);
-    }
-    catch (OperationCanceledException)
-    {
-      // ignore
-    }
+    // Waiting on ApplicationStopping itself would not be enough: callbacks run in LIFO order, so a waiter
+    // registered after d3 resumes the test before d3 has run, and NotifyStopped can then race with it.
+    await stopping.Task.ConfigureAwait(false);
 
     Assert.That(em.Failed,
                 Is.True);
@@ -424,7 +422,12 @@ public class ExceptionManagerTests
     await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
     await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
     await using var d2 = em.LateCancellationToken.Register(() => events.Enqueue(2));
-    await using var d3 = lifetime_.ApplicationStopping.Register(() => events.Enqueue(3));
+    var stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    await using var d3 = lifetime_.ApplicationStopping.Register(() =>
+                                                                {
+                                                                  events.Enqueue(3);
+                                                                  stopping.TrySetResult();
+                                                                });
     await using var d4 = lifetime_.ApplicationStopped.Register(() => events.Enqueue(4));
 
     lifetime_.NotifyStarted();
@@ -446,15 +449,9 @@ public class ExceptionManagerTests
                    new ApplicationException("Error"),
                    nameof(FatalStop));
 
-    try
-    {
-      await lifetime_.ApplicationStopping.AsTask()
-                     .ConfigureAwait(false);
-    }
-    catch (OperationCanceledException)
-    {
-      // ignore
-    }
+    // Waiting on ApplicationStopping itself would not be enough: callbacks run in LIFO order, so a waiter
+    // registered after d3 resumes the test before d3 has run, and NotifyStopped can then race with it.
+    await stopping.Task.ConfigureAwait(false);
 
     Assert.That(em.Failed,
                 Is.True);
