@@ -64,12 +64,9 @@ public sealed class AsyncReleaseQueueMessageHandler : IQueueMessageHandler
   }
 
   /// <inheritdoc />
+  /// <remarks>Required by the interface but not used: it is not forwarded to the wrapped message.</remarks>
   [Obsolete("ArmoniK now manages loss of link with the queue")]
-  public CancellationToken CancellationToken
-  {
-    get => inner_.CancellationToken;
-    set => inner_.CancellationToken = value;
-  }
+  public CancellationToken CancellationToken { get; set; }
 
   /// <inheritdoc />
   public string MessageId
