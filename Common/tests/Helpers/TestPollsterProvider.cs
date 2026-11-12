@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -328,6 +329,22 @@ public class TestPollsterProvider : IDisposable
 
     Assert.Fail($"Pollster was still processing {string.Join(", ", Pollster.TaskProcessing.Keys)}");
   }
+
+  /// <summary>
+  ///   Wait until the <see cref="RunningTaskProcessor" /> has stopped.
+  /// </summary>
+  /// <remarks>
+  ///   An error raised while executing a task is recorded in the processor's catch block, after the task
+  ///   handler has been disposed and has therefore left Pollster.TaskProcessing. Tests that count errors
+  ///   have to wait for the processor itself: once it has stopped, every error it saw has been recorded.
+  ///   The processor only stops once the early cancellation token is cancelled, so the application has to
+  ///   be stopping for this method to return.
+  /// </remarks>
+  public Task WaitForRunningTaskProcessorEnd()
+    => app_.Services.GetServices<IHostedService>()
+           .OfType<RunningTaskProcessor>()
+           .Single()
+           .ExecuteTask ?? Task.CompletedTask;
 
   public void AssertFailAfterError(int nbError = 1)
   {
