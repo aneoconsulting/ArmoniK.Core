@@ -28,6 +28,7 @@ using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Utils;
 
 using DbUp;
+using DbUp.Engine;
 using DbUp.Postgresql;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
@@ -161,6 +162,17 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
                            cancellationToken)
                     .ConfigureAwait(false);
         }
+        // With InitServices:InitDatabase disabled, another process migrates the schema: wait for it.
+        catch (SchemaNotUpToDateException ex) when (attempt < options_.MaxRetries)
+        {
+          logger_.LogWarning(ex,
+                             "PostgreSQL schema is not up to date yet, retrying the initialization ({Attempt}/{MaxRetries})",
+                             attempt,
+                             options_.MaxRetries);
+          await Task.Delay(TimeSpan.FromSeconds(attempt),
+                           cancellationToken)
+                    .ConfigureAwait(false);
+        }
       }
 
       isInitialized_ = true;
@@ -189,6 +201,22 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
 
   private async Task InitializeDatabase(CancellationToken cancellationToken)
   {
+    // InitServices:InitDatabase disables the schema migration and the data seeding, which are then left to
+    // another process (e.g. a dedicated init container). Only check that this process already migrated the
+    // schema: IsUpgradeRequired reads the DbUp journal and does not modify the database.
+    if (!initDatabase_.Init)
+    {
+      logger_.LogInformation("PostgreSQL schema initialization is disabled, checking that the schema is up to date");
+
+      if (BuildUpgrader()
+          .IsUpgradeRequired())
+      {
+        throw new SchemaNotUpToDateException();
+      }
+
+      return;
+    }
+
     logger_.LogInformation("Initializing PostgreSQL schema");
 
     await using var connection = await GetConnectionAsync(cancellationToken)
@@ -219,14 +247,8 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
                    .ConfigureAwait(false);
     }
 
-    // DbUp connects through the data source so that it validates the server certificate like the pool.
-    var upgrader = DeployChanges.To.PostgresqlDatabase(new PostgresqlConnectionManager(DataSource))
-                                .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
-                                .WithTransactionPerScript()
-                                .LogTo(logger_)
-                                .Build();
-
-    var result = upgrader.PerformUpgrade();
+    var result = BuildUpgrader()
+      .PerformUpgrade();
     if (!result.Successful)
     {
       throw new InvalidOperationException("PostgreSQL schema migration failed",
@@ -242,6 +264,14 @@ public class NpgsqlConnectionProvider : IInitializable, IDisposable, IAsyncDispo
 
     logger_.LogInformation("PostgreSQL schema initialized successfully");
   }
+
+  // DbUp connects through the data source so that it validates the server certificate like the pool.
+  private UpgradeEngine BuildUpgrader()
+    => DeployChanges.To.PostgresqlDatabase(new PostgresqlConnectionManager(DataSource))
+                    .WithScriptsEmbeddedInAssembly(Assembly.GetExecutingAssembly())
+                    .WithTransactionPerScript()
+                    .LogTo(logger_)
+                    .Build();
 
   /// <summary>
   ///   Creates a new logical replication connection using the same credentials as the regular connection pool.
@@ -463,5 +493,16 @@ ON CONFLICT (auth_id) DO NOTHING";
     }
 
     return builder.ConnectionString;
+  }
+
+  /// <summary>
+  ///   Thrown when InitServices:InitDatabase is disabled and the schema has not been migrated yet
+  /// </summary>
+  private sealed class SchemaNotUpToDateException : InvalidOperationException
+  {
+    public SchemaNotUpToDateException()
+      : base("PostgreSQL schema is not up to date and InitServices:InitDatabase is disabled: the database must be initialized by another process")
+    {
+    }
   }
 }
