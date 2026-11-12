@@ -62,8 +62,8 @@ public class StartupTests
   {
     if (createdDatabases_.Count > 0)
     {
-      using var provider   = CreateProvider(options => UseDatabase(options,
-                                                                   "postgres"));
+      using var provider = CreateProvider(options => UseDatabase(options,
+                                                                 "postgres"));
       using var connection = provider.DataSource.OpenConnection();
       foreach (var databaseName in createdDatabases_)
       {
@@ -78,11 +78,11 @@ public class StartupTests
     tableProvider_?.Dispose();
   }
 
-  private PostgresDatabaseProvider?                tableProvider_;
-  private Options.PostgreSQL?                      options_;
-  private InitDatabase?                            initDatabase_;
-  private Mock<ILogger<NpgsqlConnectionProvider>>? logger_;
-  private readonly List<string>                    createdDatabases_ = new();
+  private          PostgresDatabaseProvider?                tableProvider_;
+  private          Options.PostgreSQL?                      options_;
+  private          InitDatabase?                            initDatabase_;
+  private          Mock<ILogger<NpgsqlConnectionProvider>>? logger_;
+  private readonly List<string>                             createdDatabases_ = new();
 
   private const string InitializationMessage = "Initializing PostgreSQL schema";
   private const string RetryMessage          = "retrying the initialization";
@@ -131,8 +131,8 @@ public class StartupTests
   {
     var databaseName = $"armonik_startup_{Guid.NewGuid():N}";
 
-    using var provider   = CreateProvider(options => UseDatabase(options,
-                                                                 "postgres"));
+    using var provider = CreateProvider(options => UseDatabase(options,
+                                                               "postgres"));
     using var connection = provider.DataSource.OpenConnection();
     using var cmd        = connection.CreateCommand();
     cmd.CommandText = $"CREATE DATABASE \"{databaseName}\"";
