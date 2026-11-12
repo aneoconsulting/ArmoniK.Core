@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -179,42 +180,11 @@ public class QueueStorageTests
     await PushQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
-    var testTaskOptions = new TaskOptions(new Dictionary<string, string>
-                                          {
-                                            {
-                                              "testOptionKey", "testOptionValue"
-                                            },
-                                          },
-                                          TimeSpan.FromHours(2),
-                                          2,
-                                          1,
-                                          "TestPartition0",
-                                          "testApplication",
-                                          "testVersion",
-                                          "testNamespace",
-                                          "testService",
-                                          "testEngineType");
-    var testMessages = new List<MessageData>
-                       {
-                         new("msg1",
-                             "session1",
-                             testTaskOptions),
-                         new("msg2",
-                             "session1",
-                             testTaskOptions),
-                         new("msg3",
-                             "session1",
-                             testTaskOptions),
-                         new("msg4",
-                             "session1",
-                             testTaskOptions),
-                         new("msg5",
-                             "session1",
-                             testTaskOptions),
-                       };
+    var partition = NewPartition();
 
-    await PushQueueStorage.PushMessagesAsync(testMessages,
-                                             "TestPartition0",
+    await PushQueueStorage.PushMessagesAsync(CreateMessages(partition,
+                                                            5),
+                                             partition,
                                              CancellationToken.None)
                           .ConfigureAwait(false);
   }
@@ -227,76 +197,35 @@ public class QueueStorageTests
     await PullQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
-    var testTaskOptions = new TaskOptions(new Dictionary<string, string>
-                                          {
-                                            {
-                                              "testOptionKey", "testOptionValue"
-                                            },
-                                          },
-                                          TimeSpan.FromHours(2),
-                                          2,
-                                          1,
-                                          "TestPartition0",
-                                          "testApplication",
-                                          "testVersion",
-                                          "testNamespace",
-                                          "testService",
-                                          "testEngineType");
-    var testMessages = new List<MessageData>
-                       {
-                         new("msg1",
-                             "session1",
-                             testTaskOptions),
-                         new("msg2",
-                             "session1",
-                             testTaskOptions),
-                         new("msg3",
-                             "session1",
-                             testTaskOptions),
-                         new("msg4",
-                             "session1",
-                             testTaskOptions),
-                         new("msg5",
-                             "session1",
-                             testTaskOptions),
-                       };
+    var partition = NewPartition();
+
     /* Push 5 messages to the queue to test the pull */
-    await PushQueueStorage.PushMessagesAsync(testMessages,
-                                             "TestPartition0",
+    await PushQueueStorage.PushMessagesAsync(CreateMessages(partition,
+                                                            5),
+                                             partition,
                                              CancellationToken.None)
                           .ConfigureAwait(false);
 
-    /* Pull 3 messages from the queue, their default status being pending means that
+    /* Pull 3 messages from the queue, their default status being waiting means that
      they should be pushed again to the queue */
-    var messages = PullQueueStorage.PullMessagesAsync("TestPartition0",
-                                                      3,
-                                                      CancellationToken.None);
+    var pulled = await PullAndDisposeAsync(partition,
+                                           3,
+                                           null)
+                   .ConfigureAwait(false);
 
-    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                      .ConfigureAwait(false))
-    {
-      Assert.That(qmh.Status,
-                  Is.EqualTo(QueueMessageStatus.Waiting));
-      await qmh.DisposeAsync()
-               .ConfigureAwait(false);
-    }
+    Assert.That(pulled,
+                Has.Count.EqualTo(3));
 
-    /* Pull 2 messages from the queue and change their status to processing; this means that
-     these two should be treated as dequeued  by the broker and the remaining three
-     as Pending if the test passes */
-    var messages2 = PullQueueStorage.PullMessagesAsync("TestPartition0",
-                                                       2,
-                                                       CancellationToken.None);
+    /* Pull 2 messages from the queue and change their status to processed; this means that
+     these two should be treated as dequeued by the broker and the remaining three
+     as pending if the test passes */
+    var pulled2 = await PullAndDisposeAsync(partition,
+                                            2,
+                                            QueueMessageStatus.Processed)
+                    .ConfigureAwait(false);
 
-    await foreach (var qmh in messages2.WithCancellation(CancellationToken.None)
-                                       .ConfigureAwait(false))
-    {
-      Assert.That(qmh.Status,
-                  Is.EqualTo(QueueMessageStatus.Waiting));
-      qmh.Status = QueueMessageStatus.Processed;
-      await qmh.DisposeAsync()
-               .ConfigureAwait(false);
-    }
+    Assert.That(pulled2,
+                Has.Count.EqualTo(2));
   }
 
   [Test]
@@ -308,6 +237,79 @@ public class QueueStorageTests
     await PushQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
+    var partition = NewPartition();
+    var messages = CreateMessages(partition,
+                                  5);
+
+    await PushQueueStorage.PushMessagesAsync(messages,
+                                             partition,
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
+
+    var pulled = await PullAndDisposeAsync(partition,
+                                           messages.Count,
+                                           QueueMessageStatus.Processed)
+                   .ConfigureAwait(false);
+
+    Assert.That(pulled,
+                Is.EquivalentTo(messages.Select(message => message.TaskId)));
+  }
+
+  /// <summary>
+  ///   Messages pushed to a partition that no consumer has ever pulled from must not be lost:
+  ///   this is the situation of a partition scaled to zero polling agent when tasks are submitted.
+  /// </summary>
+  /// <remarks>
+  ///   The Pub/Sub emulator delivers the messages retained by the topic to subscriptions created after them,
+  ///   unlike GCP, so this test cannot detect the issue for Pub/Sub on the emulator.
+  ///   The Pub/Sub adapter tests check that the subscription is created when pushing.
+  /// </remarks>
+  [Test]
+  public async Task PushBeforeAnyPullOnNewPartitionShouldDeliverMessages()
+  {
+    await PushQueueStorage!.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
+
+    var partition = NewPartition();
+    var messages = CreateMessages(partition,
+                                  5);
+
+    await PushQueueStorage.PushMessagesAsync(messages,
+                                             partition,
+                                             CancellationToken.None)
+                          .ConfigureAwait(false);
+
+    // The consumer starts only after the messages have been pushed
+    await PullQueueStorage!.Init(CancellationToken.None)
+                           .ConfigureAwait(false);
+
+    var pulled = await PullAndDisposeAsync(partition,
+                                           messages.Count,
+                                           QueueMessageStatus.Processed)
+                   .ConfigureAwait(false);
+
+    Assert.That(pulled,
+                Is.EquivalentTo(messages.Select(message => message.TaskId)));
+  }
+
+  #endregion
+
+  #region Helpers
+
+  /// <summary>
+  ///   Maximum time spent pulling the expected messages
+  /// </summary>
+  private static readonly TimeSpan PullTimeout = TimeSpan.FromSeconds(30);
+
+  /// <summary>
+  ///   Generate a partition name that has never been used, so that tests do not share queue state
+  /// </summary>
+  private static string NewPartition()
+    => $"TestPartition{Guid.NewGuid():N}";
+
+  private static List<MessageData> CreateMessages(string partition,
+                                                  int    count)
+  {
     var testTaskOptions = new TaskOptions(new Dictionary<string, string>
                                           {
                                             {
@@ -317,46 +319,64 @@ public class QueueStorageTests
                                           TimeSpan.FromHours(2),
                                           2,
                                           1,
-                                          "TestPartition0",
+                                          partition,
                                           "testApplication",
                                           "testVersion",
                                           "testNamespace",
                                           "testService",
                                           "testEngineType");
-    var testMessages = new List<MessageData>
-                       {
-                         new("msg1",
-                             "session1",
-                             testTaskOptions),
-                         new("msg2",
-                             "session1",
-                             testTaskOptions),
-                         new("msg3",
-                             "session1",
-                             testTaskOptions),
-                         new("msg4",
-                             "session1",
-                             testTaskOptions),
-                         new("msg5",
-                             "session1",
-                             testTaskOptions),
-                       };
-    await PushQueueStorage.PushMessagesAsync(testMessages,
-                                             "TestPartition0",
-                                             CancellationToken.None)
-                          .ConfigureAwait(false);
 
-    var messages = PullQueueStorage.PullMessagesAsync("TestPartition0",
-                                                      5,
-                                                      CancellationToken.None);
+    return Enumerable.Range(1,
+                            count)
+                     .Select(i => new MessageData($"msg{i}",
+                                                  "session1",
+                                                  testTaskOptions))
+                     .ToList();
+  }
 
-    await foreach (var qmh in messages.WithCancellation(CancellationToken.None)
-                                      .ConfigureAwait(false))
+  /// <summary>
+  ///   Pull messages from <paramref name="partition" /> until <paramref name="expected" /> messages have been received
+  ///   or <see cref="PullTimeout" /> is reached. A single pull may return fewer messages than requested.
+  /// </summary>
+  /// <param name="partition">Partition to pull from</param>
+  /// <param name="expected">Number of messages to receive</param>
+  /// <param name="status">Status set on the messages before disposing them; <c>null</c> keeps the default status</param>
+  /// <returns>The task ids of the received messages</returns>
+  private async Task<List<string>> PullAndDisposeAsync(string              partition,
+                                                       int                 expected,
+                                                       QueueMessageStatus? status)
+  {
+    var       taskIds = new List<string>();
+    using var cts     = new CancellationTokenSource(PullTimeout);
+
+    while (taskIds.Count < expected && !cts.IsCancellationRequested)
     {
-      qmh!.Status = QueueMessageStatus.Processed;
-      await qmh.DisposeAsync()
-               .ConfigureAwait(false);
+      try
+      {
+        await foreach (var qmh in PullQueueStorage!.PullMessagesAsync(partition,
+                                                                      expected - taskIds.Count,
+                                                                      cts.Token)
+                                                   .ConfigureAwait(false))
+        {
+          Assert.That(qmh.Status,
+                      Is.EqualTo(QueueMessageStatus.Waiting));
+          taskIds.Add(qmh.TaskId);
+          if (status is not null)
+          {
+            qmh.Status = status.Value;
+          }
+
+          await qmh.DisposeAsync()
+                   .ConfigureAwait(false);
+        }
+      }
+      catch (Exception e) when (cts.IsCancellationRequested && e is not AssertionException)
+      {
+        // Timeout reached while waiting for messages: the assertions of the caller report the missing ones
+      }
     }
+
+    return taskIds;
   }
 
   #endregion

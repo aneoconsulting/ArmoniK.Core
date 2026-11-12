@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Threading.Tasks;
 
 using Google.Cloud.PubSub.V1;
@@ -89,12 +90,20 @@ internal static class PubSubExt
   /// <summary>
   ///   Try to create the subscription for the <paramref name="partition" /> if it does not already exist.
   /// </summary>
+  /// <remarks>
+  ///   The subscription is created without expiration: Pub/Sub only delivers to a subscription the messages
+  ///   published after its creation, so an expired subscription would silently drop the messages of its partition.
+  /// </remarks>
   /// <param name="subscriber">The subscriber client</param>
   /// <param name="options">PubSub options to configure the subscription</param>
   /// <param name="partition">Partition the subscription refers to</param>
-  public static async ValueTask EnsureSubscriptionIsCreatedAsync(this SubscriberServiceApiClient subscriber,
-                                                                 PubSub                          options,
-                                                                 string                          partition)
+  /// <returns>
+  ///   <c>true</c> if the subscription has been created by this call,
+  ///   <c>false</c> if it already existed
+  /// </returns>
+  public static async ValueTask<bool> EnsureSubscriptionIsCreatedAsync(this SubscriberServiceApiClient subscriber,
+                                                                       PubSub                          options,
+                                                                       string                          partition)
   {
     var topicName        = options.GetTopicName(partition);
     var subscriptionName = options.GetSubscriptionName(partition);
@@ -106,14 +115,40 @@ internal static class PubSubExt
                                 EnableExactlyOnceDelivery = options.ExactlyOnceDelivery,
                                 EnableMessageOrdering     = options.MessageOrdering,
                                 AckDeadlineSeconds        = options.AckDeadlinePeriod,
+                                // An expiration policy without TTL means that the subscription never expires
+                                ExpirationPolicy = new ExpirationPolicy(),
                               };
     try
     {
       await subscriber.CreateSubscriptionAsync(subscriptionRequest)
                       .ConfigureAwait(false);
+      return true;
     }
     catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
     {
+      return false;
     }
   }
+
+  /// <summary>
+  ///   Make the messages still retained by the topic of the <paramref name="partition" /> available again
+  ///   in its subscription.
+  /// </summary>
+  /// <remarks>
+  ///   Messages published to the topic before the subscription is created are not delivered to it,
+  ///   but they are kept by the topic during <see cref="PubSub.MessageRetention" />.
+  ///   Seeking the subscription to the beginning of this retention window marks them as unacknowledged.
+  /// </remarks>
+  /// <param name="subscriber">The subscriber client</param>
+  /// <param name="options">PubSub options to configure the subscription</param>
+  /// <param name="partition">Partition the subscription refers to</param>
+  public static async ValueTask SeekToTopicRetentionAsync(this SubscriberServiceApiClient subscriber,
+                                                          PubSub                          options,
+                                                          string                          partition)
+    => await subscriber.SeekAsync(new SeekRequest
+                                  {
+                                    SubscriptionAsSubscriptionName = options.GetSubscriptionName(partition),
+                                    Time                           = Timestamp.FromDateTime(DateTime.UtcNow - options.MessageRetention),
+                                  })
+                       .ConfigureAwait(false);
 }

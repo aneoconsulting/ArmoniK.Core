@@ -37,15 +37,18 @@ namespace ArmoniK.Core.Adapters.PubSub;
 
 internal class PushQueueStorage : IPushQueueStorage
 {
-  private readonly PubSub                    options_;
-  private readonly PublisherServiceApiClient publisher_;
-  private          bool                      isInitialized_;
+  private readonly PubSub                     options_;
+  private readonly PublisherServiceApiClient  publisher_;
+  private readonly SubscriberServiceApiClient subscriber_;
+  private          bool                       isInitialized_;
 
-  public PushQueueStorage(PublisherServiceApiClient publisher,
-                          PubSub                    options)
+  public PushQueueStorage(PublisherServiceApiClient  publisher,
+                          SubscriberServiceApiClient subscriber,
+                          PubSub                     options)
   {
-    publisher_ = publisher;
-    options_   = options;
+    publisher_  = publisher;
+    subscriber_ = subscriber;
+    options_    = options;
   }
 
   public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
@@ -102,6 +105,13 @@ internal class PushQueueStorage : IPushQueueStorage
       await publisher_.EnsureTopicIsCreatedAsync(options_,
                                                  partitionId)
                       .ConfigureAwait(false);
+
+      // Pub/Sub only delivers to a subscription the messages published after its creation.
+      // The subscription must therefore exist before publishing, even if no polling agent has started yet.
+      // No seek is needed: the topic has just been created, so it holds no message yet.
+      await subscriber_.EnsureSubscriptionIsCreatedAsync(options_,
+                                                         partitionId)
+                       .ConfigureAwait(false);
 
       await publisher_.PublishAsync(topicName,
                                     messages.Select(msg => new PubsubMessage
