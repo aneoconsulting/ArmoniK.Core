@@ -134,8 +134,15 @@ public class Pollster
   public double CacheEvictionThreshold { get; set; } = 0;
 
   /// <summary>
+  ///   Maximum number of queue messages waiting to be released (acknowledged or negatively acknowledged) in background.
+  ///   When the release queue is full, the pipeline stage releasing a message waits for a free place.
+  ///   Once the release queue is closed (pipeline stopped), messages are released synchronously.
+  ///   Minimum value is 1.
+  /// </summary>
+  public int MessageReleaseQueueCapacity { get; set; } = 8;
+
+  /// <summary>
   ///   Maximum number of queue messages released (acknowledged or negatively acknowledged) concurrently in background.
-  ///   When all the release slots are busy, messages are released synchronously by the pipeline stage releasing them.
   ///   Minimum value is 1.
   /// </summary>
   public int MessageReleaseParallelism { get; set; } = 8;

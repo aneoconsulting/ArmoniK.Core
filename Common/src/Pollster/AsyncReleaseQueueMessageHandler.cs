@@ -31,10 +31,10 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 /// <remarks>
 ///   <para>
-///     Disposing the wrapper returns as soon as the release has started in background:
+///     Disposing the wrapper returns as soon as the message has been written into the release queue,
+///     waiting for a free place if the queue is full:
 ///     the acknowledgment (or negative acknowledgment) is sent without blocking the caller.
-///     If no release slot is free (or the releaser is closed), the message is released synchronously, as without the
-///     wrapper.
+///     If the release queue is closed, the message is released synchronously, as without the wrapper.
 ///   </para>
 ///   <para>
 ///     <see cref="Status" /> is frozen when the wrapper is disposed: the adapter releases the message with the status
@@ -128,12 +128,7 @@ public sealed class AsyncReleaseQueueMessageHandler : IQueueMessageHandler
       inner_.Status = status_;
     }
 
-    if (releaser_.TryStart(inner_))
-    {
-      return;
-    }
-
-    await inner_.DisposeAsync()
-                .ConfigureAwait(false);
+    await releaser_.ReleaseAsync(inner_)
+                   .ConfigureAwait(false);
   }
 }

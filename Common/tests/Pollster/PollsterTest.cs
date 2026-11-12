@@ -1083,14 +1083,17 @@ public class PollsterTest
 
     try
     {
+      // Each wait is shorter than half of the test timeout, so that a failure tells which step did not happen.
       // All the releases are in flight (the default parallelism is greater than the number of blocked messages)
       Assert.That(() => Task.WhenAll(blocked.Select(m => m.ReleaseStarted))
-                            .WaitAsync(TimeSpan.FromSeconds(5)),
-                  Throws.Nothing);
+                            .WaitAsync(TimeSpan.FromSeconds(4)),
+                  Throws.Nothing,
+                  "The releases of the messages of unknown tasks did not start");
 
       // ... and the next task is executed while they are still blocked
-      Assert.That(() => waitWorkerStreamHandler.Started.WaitAsync(TimeSpan.FromSeconds(5)),
-                  Throws.Nothing);
+      Assert.That(() => waitWorkerStreamHandler.Started.WaitAsync(TimeSpan.FromSeconds(4)),
+                  Throws.Nothing,
+                  "The next task was not executed while the releases were blocked");
     }
     finally
     {
