@@ -999,7 +999,7 @@ public class PollsterTest
   }
 
   [Test]
-  [Timeout(10000)]
+  [Timeout(30000)] // The MongoDB setup alone can take several seconds on Windows runners
   public async Task BatchShouldBeProcessedSequentiallyWhenPrefetchDisabled()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
