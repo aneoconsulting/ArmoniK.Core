@@ -1031,7 +1031,9 @@ public class PollsterTest
   }
 
   [Test]
-  [Timeout(10000)]
+  // The setup (MongoDB, host, session and task creation) takes several seconds on a loaded machine when this test is
+  // the first of the process to use MongoDB. The behavior itself is checked by the 4 s waits below.
+  [Timeout(30000)]
   public async Task SlowMessageReleaseShouldNotBlockThePipeline()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
