@@ -245,10 +245,10 @@ public class ExceptionManagerTests
     Assert.That(em.EarlyCancellationToken,
                 Is.Not.EqualTo(em.LateCancellationToken));
 
-    await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
-    await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
-    await using var d2 = em.LateCancellationToken.Register(() => events.Enqueue(2));
-    var stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    await using var d0       = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
+    await using var d1       = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
+    await using var d2       = em.LateCancellationToken.Register(() => events.Enqueue(2));
+    var             stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     await using var d3 = lifetime_.ApplicationStopping.Register(() =>
                                                                 {
                                                                   events.Enqueue(3);
@@ -306,10 +306,10 @@ public class ExceptionManagerTests
     Assert.That(em.EarlyCancellationToken,
                 Is.Not.EqualTo(em.LateCancellationToken));
 
-    await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
-    await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
-    await using var d2 = em.LateCancellationToken.Register(() => events.Enqueue(2));
-    var stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    await using var d0       = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
+    await using var d1       = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
+    await using var d2       = em.LateCancellationToken.Register(() => events.Enqueue(2));
+    var             stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     await using var d3 = lifetime_.ApplicationStopping.Register(() =>
                                                                 {
                                                                   events.Enqueue(3);
@@ -419,10 +419,10 @@ public class ExceptionManagerTests
     Assert.That(em.EarlyCancellationToken,
                 Is.Not.EqualTo(em.LateCancellationToken));
 
-    await using var d0 = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
-    await using var d1 = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
-    await using var d2 = em.LateCancellationToken.Register(() => events.Enqueue(2));
-    var stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+    await using var d0       = lifetime_.ApplicationStarted.Register(() => events.Enqueue(0));
+    await using var d1       = em.EarlyCancellationToken.Register(() => events.Enqueue(1));
+    await using var d2       = em.LateCancellationToken.Register(() => events.Enqueue(2));
+    var             stopping = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     await using var d3 = lifetime_.ApplicationStopping.Register(() =>
                                                                 {
                                                                   events.Enqueue(3);
