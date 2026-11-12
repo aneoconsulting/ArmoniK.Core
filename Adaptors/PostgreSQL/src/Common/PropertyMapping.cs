@@ -181,6 +181,18 @@ public static class PropertyMapping
                                                                           "PartitionIds", "partition_ids"
                                                                         },
                                                                         {
+                                                                          "Owner", "owner"
+                                                                        },
+                                                                        {
+                                                                          "CreatedUnder", "created_under"
+                                                                        },
+                                                                        {
+                                                                          "SharedWith", "shared_with"
+                                                                        },
+                                                                        {
+                                                                          "DelegatedTo", "delegated_to"
+                                                                        },
+                                                                        {
                                                                           "Options.Options", "options_options"
                                                                         },
                                                                         {

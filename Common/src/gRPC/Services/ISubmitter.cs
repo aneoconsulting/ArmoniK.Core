@@ -64,10 +64,14 @@ public interface ISubmitter
   /// <param name="partitionIds">The list of partition IDs for the session.</param>
   /// <param name="defaultTaskOptions">The default options to use for tasks in this session.</param>
   /// <param name="cancellationToken">Token to cancel the operation.</param>
+  /// <param name="owner">Principal recorded as owner, null when the session is created without authorization.</param>
+  /// <param name="createdUnder">Principals of the grants that permitted the creation of the session.</param>
   /// <returns>A reply containing session creation details.</returns>
-  Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
-                                         TaskOptions       defaultTaskOptions,
-                                         CancellationToken cancellationToken);
+  Task<CreateSessionReply> CreateSession(IList<string>        partitionIds,
+                                         TaskOptions          defaultTaskOptions,
+                                         CancellationToken    cancellationToken,
+                                         string?              owner        = null,
+                                         IEnumerable<string>? createdUnder = null);
 
   /// <summary>
   ///   Creates multiple tasks in a session.

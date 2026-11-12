@@ -55,6 +55,28 @@ public interface ISessionTable : IInitializable
   /// </returns>
   Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
                                    TaskOptions         defaultOptions,
+                                   CancellationToken   cancellationToken = default)
+    => SetSessionDataAsync(partitionIds,
+                           defaultOptions,
+                           null,
+                           Array.Empty<string>(),
+                           cancellationToken);
+
+  /// <summary>
+  ///   Set metadata for a new session created by a caller
+  /// </summary>
+  /// <param name="partitionIds">List of partitions allowed to be used during the session</param>
+  /// <param name="defaultOptions">Default metadata for the tasks to be created in this session</param>
+  /// <param name="owner">Principal recorded as owner, null when the session is created without authorization</param>
+  /// <param name="createdUnder">Principals of the grants that permitted the creation of the session</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>
+  ///   Id of the created session
+  /// </returns>
+  Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
+                                   TaskOptions         defaultOptions,
+                                   string?             owner,
+                                   IEnumerable<string> createdUnder,
                                    CancellationToken   cancellationToken = default);
 
   /// <summary>
