@@ -999,7 +999,7 @@ public class PollsterTest
   }
 
   [Test]
-  [Timeout(10000)]
+  [Timeout(30000)] // The MongoDB setup alone can take several seconds on Windows runners
   public async Task BatchShouldBeProcessedSequentiallyWhenPrefetchDisabled()
   {
     var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
@@ -1193,10 +1193,10 @@ public class PollsterTest
     Assert.That(testServiceProvider.ExceptionManager.Failed,
                 Is.False);
 
-    // The task is resubmitted as the late token drops it, so waiting for the pollster to stop processing
-    // it waits for exactly what the status below asserts, instead of a delay assumed to outlast the
-    // grace delay.
-    await testServiceProvider.WaitForNoTaskProcessing()
+    // The task is resubmitted, then its error is recorded, as the late token drops it. Both happen in the
+    // running task processor, the error only after the task has left Pollster.TaskProcessing, so waiting
+    // for the processor to stop covers the status and the error count asserted below.
+    await testServiceProvider.WaitForRunningTaskProcessorEnd()
                              .ConfigureAwait(false);
 
     Assert.That(await testServiceProvider.TaskTable.GetTaskStatus(taskSubmitted,
