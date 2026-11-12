@@ -1,174 +1,79 @@
 name: Manual Test
 
+# Temporary stress workflow (branch jg/lucid-newton-8zkpft-stress, not meant to be merged):
+# runs the tests fixed in PR #1383 in a loop on the Windows runner, for the PR branch and for main.
+
 on:
   workflow_dispatch:
     inputs:
       filter:
         description: 'Filter for tests'
-        default: ''
+        default: 'FullyQualifiedName~ExceptionManagerTests.ErrorStop|FullyQualifiedName~ExceptionManagerTests.FatalStop|FullyQualifiedName~ExceptionManagerTests.SelfTerminationDelayStop|FullyQualifiedName~PollsterTest.ExecuteTaskThatExceedsGraceDelayShouldResubmit|FullyQualifiedName~PollsterTest.BatchShouldBeProcessedSequentiallyWhenPrefetchDisabled'
+        type: string
+      iterations:
+        description: 'Number of iterations'
+        default: '50'
         type: string
 
 jobs:
-  tests:
+  stressWinOnly:
     strategy:
       matrix:
-        projects:
-          - Common/tests
-          - Adaptors/MongoDB/tests
-          - Adaptors/Memory/tests
-          - Adaptors/S3/tests
-        os:
-          - ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Setup just
-        uses: taiki-e/install-action@682ce6c3c696a4cd5168a05f98e51aa02b877941 # v2
-        with:
-          tool: just
-
-      - name: SeaweedFS Server UP
-        if: ${{ matrix.projects }} == "Adaptors/S3/tests"
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just object=seaweedfs deployTargetObject
-
-      - name: Dotnet Restore
-        run: |
-          MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
-            dotnet restore
-
-      - name: Dotnet Build
-        run: |
-          MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
-            dotnet build
-
-      - name: Run tests
-        run: |
-          MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
-            dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
-        env:
-          filter: ${{ inputs.filter }}
-
-      - name: Test Report
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
-        if: success() || failure()
-        with:
-          name: Test - ${{ matrix.os }} ${{ matrix.projects }}
-          path: ${{ matrix.projects }}/TestResults/test-results.trx
-          reporter: dotnet-trx
-      - name: Upload monitor profile
-        if: always()
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
-        run: |
-          project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
-          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/tests-$project-monitor.tar.gz"
-
-  testsQueueProtos:
-    strategy:
-      matrix:
-        queue:
-          - activemq
-          - rabbitmq
-        projects:
-          - Adaptors/Amqp/tests
-        os:
-          - ubuntu-latest
-        include:
-          - queue: rabbitmq091
-            projects: Adaptors/RabbitMQ/tests
-            os: ubuntu-latest
-      fail-fast: false
-    runs-on: ${{ matrix.os }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
-
-      - name: Setup just
-        run: |
-          sudo snap install --edge --classic just
-
-      - name: Set up queue
-        run: |
-          MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just queue=${{ matrix.queue }} deployTargetQueue
-
-      - name: Dotnet Restore
-        run: |
-          MONITOR_PREFIX="monitor/restore/" MONITOR_CD=${{ matrix.projects }} tools/retry.sh -w 60 -- tools/monitor.sh \
-            dotnet restore
-
-      - name: Dotnet Build
-        run: |
-          MONITOR_PREFIX="monitor/build/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
-            dotnet build
-
-      - name: Run tests
-        run: |
-          MONITOR_PREFIX="monitor/test/" MONITOR_CD=${{ matrix.projects }} tools/monitor.sh \
-            dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
-        env:
-          filter: ${{ inputs.filter }}
-
-      - name: Test Report
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
-        if: success() || failure()
-        with:
-          name: Test - ${{ matrix.queue }} ${{ matrix.projects }}
-          path: ${{ matrix.projects }}/TestResults/test-results.trx
-          reporter: dotnet-trx
-      - name: Upload monitor profile
-        if: always()
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_LOG_BUCKET_NAME: ${{ secrets.AWS_LOG_BUCKET_NAME }}
-        run: |
-          project="$(echo ${{ matrix.projects }} | sed 's:/:_:')"
-          tar -czf - monitor/ | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/test-${{ matrix.queue }}-$project-monitor.tar.gz"
-
-  testsWinOnly:
-    strategy:
-      matrix:
-        projects:
-          - Adaptors/Redis/tests
-          - Common/tests
-          - Adaptors/MongoDB/tests
-          - Adaptors/Memory/tests
+        ref:
+          - jg/lucid-newton-8zkpft
+          - main
       fail-fast: false
     runs-on: windows-latest
+    timeout-minutes: 180
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ matrix.ref }}
 
-      - name: Dotnet Restore
-        run: |
-          cd ${{ matrix.projects }}
-          dotnet restore
+      - name: Install .NET Core
+        uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
+        with:
+          dotnet-version: 10.0.404
 
       - name: Dotnet Build
         run: |
-          cd ${{ matrix.projects }}
+          cd Common/tests
           dotnet build
 
-      - name: Run tests
+      - name: Run tests in a loop
         shell: bash
-        run: |
-          cd ${{ matrix.projects }}
-          dotnet test --logger "trx;LogFileName=test-results.trx" ${filter:+--filter "$filter"} -p:RunAnalyzers=false -p:WarningLevel=0
         env:
           filter: ${{ inputs.filter }}
+          iterations: ${{ inputs.iterations }}
+        run: |
+          cd Common/tests
+          mkdir -p "$GITHUB_WORKSPACE/stress"
+          failedIterations=0
+          for i in $(seq 1 "$iterations"); do
+            log="$GITHUB_WORKSPACE/stress/iteration-$i.log"
+            start=$(date +%s)
+            if dotnet test --no-build --filter "$filter" --logger "console;verbosity=normal" -p:RunAnalyzers=false -p:WarningLevel=0 > "$log" 2>&1; then
+              status=ok
+              rm "$log"
+            else
+              status=FAILED
+              failedIterations=$((failedIterations + 1))
+            fi
+            echo "iteration $i: $status ($(( $(date +%s) - start ))s)"
+          done
+          {
+            echo "## ${{ matrix.ref }}: $failedIterations failed iterations out of $iterations"
+            echo
+            echo '```'
+            cat "$GITHUB_WORKSPACE"/stress/*.log 2>/dev/null | grep -E '^\s+Failed ' | sed -E 's/ \[[^]]*\]$//' | sort | uniq -c || true
+            echo '```'
+          } | tee -a "$GITHUB_STEP_SUMMARY"
 
-      - name: Test Report
-        uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3
-        if: success() || failure()
+      - name: Upload failed iteration logs
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
         with:
-          name: Test - windows ${{ matrix.projects }}
-          path: ${{ matrix.projects }}/TestResults/test-results.trx
-          reporter: dotnet-trx
+          name: stress-${{ strategy.job-index }}
+          path: stress/
+          if-no-files-found: ignore
