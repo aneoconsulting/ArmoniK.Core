@@ -175,10 +175,12 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
     {
       foreach (var message in newMessages)
       {
-        Enqueue(new QueuedMessage(partitionId,
+        var order = ++order_;
+        Enqueue(new QueuedMessage($"Message#{order}",
+                                  partitionId,
                                   message.TaskId,
                                   message.Options.Priority,
-                                  ++order_));
+                                  order));
       }
 
       SignalEnqueued();
@@ -296,11 +298,16 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
   /// <summary>
   ///   Message stored in the queue
   /// </summary>
+  /// <param name="Id">
+  ///   Identifier of the message, kept when the message is put back in the queue, as AMQP and NATS do: the pollster
+  ///   compares it with the messages being processed to recognise a redelivered message
+  /// </param>
   /// <param name="PartitionId">Partition of the message</param>
   /// <param name="TaskId">Task of the message</param>
   /// <param name="Priority">Priority of the message, higher is pulled first</param>
   /// <param name="Order">Order of the message among the messages of the same priority, lower is pulled first</param>
-  private sealed record QueuedMessage(string PartitionId,
+  private sealed record QueuedMessage(string Id,
+                                      string PartitionId,
                                       string TaskId,
                                       int    Priority,
                                       long   Order);
@@ -327,7 +334,7 @@ public class QueueStorage : IPullQueueStorage, IPushQueueStorage
 
     /// <inheritdoc />
     public string MessageId
-      => $"Message#{message_.Order}";
+      => message_.Id;
 
     /// <inheritdoc />
     public string TaskId
