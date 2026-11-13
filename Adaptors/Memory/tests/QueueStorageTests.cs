@@ -258,6 +258,33 @@ public class QueueStorageTests
                 Is.EqualTo(expected));
   }
 
+  [TestCase(QueueMessageStatus.Waiting)]
+  [TestCase(QueueMessageStatus.Failed)]
+  [TestCase(QueueMessageStatus.Postponed)]
+  public async Task RedeliveredMessageShouldKeepItsId(QueueMessageStatus status)
+  {
+    await Push("partition",
+               1,
+               "first",
+               "second")
+      .ConfigureAwait(false);
+
+    var first = (await Pull("partition",
+                            1)
+                   .ConfigureAwait(false)).Single();
+    var id = first.MessageId;
+    first.Status = status;
+    await first.DisposeAsync()
+               .ConfigureAwait(false);
+
+    var redelivered = (await Pull("partition",
+                                  2)
+                         .ConfigureAwait(false)).Single(message => message.TaskId == "first");
+
+    Assert.That(redelivered.MessageId,
+                Is.EqualTo(id));
+  }
+
   [Test]
   public async Task DisposingTwiceShouldReleaseTheMessageOnce()
   {
