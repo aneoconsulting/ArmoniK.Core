@@ -40,9 +40,9 @@ namespace ArmoniK.Core.Adapters.PubSub;
 internal class PushQueueStorage : IPushQueueStorage
 {
   /// <summary>
-  ///   Partitions whose topic and subscription have already been ensured by this process
+  ///   Partitions whose topic and subscription have already been initialized by this process
   /// </summary>
-  private readonly ConcurrentDictionary<string, bool> ensuredPartitions_ = new();
+  private readonly ConcurrentDictionary<string, bool> initializedPartitions_ = new();
 
   private readonly ILogger                    logger_;
   private readonly PubSub                     options_;
@@ -113,7 +113,7 @@ internal class PushQueueStorage : IPushQueueStorage
   private async ValueTask EnsurePartitionAsync(string            partitionId,
                                                CancellationToken cancellationToken)
   {
-    if (ensuredPartitions_.ContainsKey(partitionId))
+    if (initializedPartitions_.ContainsKey(partitionId))
     {
       return;
     }
@@ -135,8 +135,8 @@ internal class PushQueueStorage : IPushQueueStorage
                          partitionId);
     }
 
-    ensuredPartitions_.TryAdd(partitionId,
-                              true);
+    initializedPartitions_.TryAdd(partitionId,
+                                  true);
   }
 
   private async Task Publish(string                   partitionId,
@@ -158,9 +158,9 @@ internal class PushQueueStorage : IPushQueueStorage
     }
     catch (RpcException e) when (e.StatusCode == StatusCode.NotFound)
     {
-      // The topic has been deleted since the partition was ensured by this process
-      ensuredPartitions_.TryRemove(partitionId,
-                                   out _);
+      // The topic has been deleted since the partition was initialized by this process
+      initializedPartitions_.TryRemove(partitionId,
+                                       out _);
       await EnsurePartitionAsync(partitionId,
                                  cancellationToken)
         .ConfigureAwait(false);
