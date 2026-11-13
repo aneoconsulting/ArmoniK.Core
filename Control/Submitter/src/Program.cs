@@ -26,19 +26,15 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.PostgreSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
+using ArmoniK.Core.Common.Auth;
 using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.DynamicLoading;
-using ArmoniK.Core.Common.gRPC;
-using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Meter;
-using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
-using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Connections;
@@ -92,8 +88,7 @@ public static class Program
 
       builder.Host.UseSerilog(logger.GetSerilogConf());
 
-      builder.Services.AddLogging(logger.Configure)
-             .AddHttpClient();
+      builder.Services.AddLogging(logger.Configure);
 
       builder.Services.AddPostgresComponents(builder.Configuration,
                                              logger.GetLogger());
@@ -106,23 +101,7 @@ public static class Program
              .AddAdapter(builder.Configuration,
                          nameof(Components.ObjectStorageAdaptorSettings),
                          logger.GetLogger())
-             .AddUuidGeneratorDefault()
-             .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
-             .AddSingletonWithHealthCheck<ExceptionInterceptor>(nameof(ExceptionInterceptor))
-             .AddInitializedOption<Common.Injection.Options.Submitter>(builder.Configuration,
-                                                                       Common.Injection.Options.Submitter.SettingSection)
-             .AddInitializedOption<InitServices>(builder.Configuration,
-                                                 InitServices.SettingSection)
-             .AddSingleton<InitDatabase>()
-             .AddExceptionManager(sp => ExceptionManager.Options.FromSubmitterOptions(sp.GetRequiredService<Common.Injection.Options.Submitter>()))
-             .AddGrpcReflection()
-             .AddSingleton<MeterHolder>()
-             .AddSingleton<AgentIdentifier>()
-             .AddScoped(typeof(FunctionExecutionMetrics<>))
-             .ValidateGrpcRequests();
-
-      builder.Services.AddHealthChecks();
-      builder.Services.AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>());
+             .AddArmoniKControlPlane(builder.Configuration);
 
       var otel = builder.Services.AddOpenTelemetry();
       otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()
@@ -213,26 +192,7 @@ public static class Program
       app.UseAuthorization();
       app.UseSerilogRequestLogging();
 
-      app.MapGrpcService<GrpcSubmitterService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcTasksService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcSessionsService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcResultsService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcApplicationsService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcAuthService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcEventsService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcPartitionsService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcVersionsService>()
-         .EnableGrpcWeb();
-      app.MapGrpcService<GrpcHealthChecksService>()
-         .EnableGrpcWeb();
+      app.MapArmoniKControlPlane(endpoint => endpoint.EnableGrpcWeb());
 
       app.UseHealthChecks("/startup",
                           1081,
