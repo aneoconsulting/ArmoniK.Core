@@ -111,11 +111,33 @@ public class ComputeSlotTests
                                              120));
 
     Assert.That(() => ComputeSlot.Build(0,
+                                        0,
                                         options,
                                         dataFolder,
                                         new ConfigurationManager(),
                                         new ServiceCollection().BuildServiceProvider()),
                 Throws.InstanceOf<InvalidOperationException>()
                       .With.Message.Contains(nameof(StandaloneOptions.DataFolder)));
+  }
+
+  [Test]
+  public void EachStartOfASlotShouldHaveItsOwnIdentifier()
+  {
+    var first = ComputeSlot.Identifier(1,
+                                       0);
+    var second = ComputeSlot.Identifier(1,
+                                        1);
+    var other = ComputeSlot.Identifier(2,
+                                       0);
+
+    Assert.Multiple(() =>
+                    {
+                      Assert.That(second.OwnerPodId,
+                                  Is.Not.EqualTo(first.OwnerPodId));
+                      Assert.That(other.OwnerPodId,
+                                  Is.Not.EqualTo(first.OwnerPodId));
+                      Assert.That(second.OwnerPodName,
+                                  Is.EqualTo(first.OwnerPodName));
+                    });
   }
 }

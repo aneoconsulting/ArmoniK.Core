@@ -88,9 +88,10 @@ internal sealed class ComputeSlotSupervisor : BackgroundService
                                           dataFolder_,
                                           slot_);
 
-    while (!stoppingToken.IsCancellationRequested)
+    for (var generation = 0; !stoppingToken.IsCancellationRequested; generation++)
     {
       var (host, identifier) = ComputeSlot.Build(slot_,
+                                                 generation,
                                                  options_,
                                                  dataFolder_,
                                                  rootConfiguration_,
@@ -138,6 +139,8 @@ internal sealed class ComputeSlotSupervisor : BackgroundService
       {
         await host.StopAsync(CancellationToken.None)
                   .ConfigureAwait(false);
+        // The tasks still owned by this start of the slot are no longer processed, so that the other agents retry them
+        checker_.Unregister(identifier.OwnerPodId);
         if (host is IAsyncDisposable asyncDisposable)
         {
           await asyncDisposable.DisposeAsync()

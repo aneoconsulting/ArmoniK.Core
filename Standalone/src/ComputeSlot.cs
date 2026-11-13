@@ -102,9 +102,31 @@ internal static class ComputeSlot
   }
 
   /// <summary>
+  ///   Identifier of the agent of a compute slot
+  /// </summary>
+  /// <remarks>
+  ///   Each start of a slot has its own <see cref="AgentIdentifier.OwnerPodId" />: a task left in processing by a
+  ///   previous start is then seen as owned by another agent which no longer processes it, and is retried, instead of
+  ///   being seen as still processing by this agent and postponed forever.
+  /// </remarks>
+  /// <param name="slot">Index of the slot</param>
+  /// <param name="generation">Number of previous starts of the slot</param>
+  /// <returns>
+  ///   The identifier of the agent
+  /// </returns>
+  public static AgentIdentifier Identifier(int slot,
+                                           int generation)
+    => new()
+       {
+         OwnerPodId   = $"standalone-slot{slot}-{generation}",
+         OwnerPodName = $"{Environment.MachineName}-slot{slot}",
+       };
+
+  /// <summary>
   ///   Build the host of a compute slot
   /// </summary>
   /// <param name="slot">Index of the slot</param>
+  /// <param name="generation">Number of previous starts of the slot</param>
   /// <param name="options">Options of the standalone host</param>
   /// <param name="dataFolder">Absolute path of the data folder</param>
   /// <param name="rootConfiguration">Configuration of the standalone host</param>
@@ -113,6 +135,7 @@ internal static class ComputeSlot
   ///   The host of the slot, not started, and the identifier of its agent
   /// </returns>
   public static (IHost host, AgentIdentifier identifier) Build(int               slot,
+                                                               int               generation,
                                                                StandaloneOptions options,
                                                                string            dataFolder,
                                                                IConfiguration    rootConfiguration,
@@ -161,11 +184,8 @@ internal static class ComputeSlot
     var pollsterOptions = configuration.GetSection(PollsterOptions.SettingSection)
                                        .Get<PollsterOptions>() ?? new PollsterOptions();
 
-    var identifier = new AgentIdentifier
-                     {
-                       OwnerPodId   = $"standalone-slot{slot}",
-                       OwnerPodName = $"{Environment.MachineName}-slot{slot}",
-                     };
+    var identifier = Identifier(slot,
+                                generation);
 
     var loggerInit = root.GetRequiredService<LoggerInit>();
 

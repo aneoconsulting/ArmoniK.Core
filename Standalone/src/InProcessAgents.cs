@@ -59,4 +59,12 @@ public sealed class InProcessAgents : ITaskProcessingChecker, ICancelledTaskNoti
   public void Register(string   ownerPodId,
                        Pollster pollster)
     => pollsters_[ownerPodId] = pollster;
+
+  /// <summary>
+  ///   Unregister the pollster of an agent that stopped
+  /// </summary>
+  /// <param name="ownerPodId">Identifier of the agent, as recorded in the tasks it owns</param>
+  public void Unregister(string ownerPodId)
+    => pollsters_.TryRemove(ownerPodId,
+                            out _);
 }
