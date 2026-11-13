@@ -50,19 +50,19 @@ COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 
 # The build is architecture independent (framework-dependent output without apphost):
 # BuildKit runs this stage once and reuses its output for every target platform.
-RUN dotnet restore "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj" \
- && dotnet restore "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj" \
- && dotnet restore "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj" \
- && dotnet restore "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj" \
- && dotnet restore "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj" \
- && dotnet restore "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj" \
- && dotnet restore "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj" \
- && dotnet restore "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj" \
- && dotnet restore "Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj" \
- && dotnet restore "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj" \
- && dotnet restore "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj" \
- && dotnet restore "Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj" \
- && dotnet restore "Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj"
+RUN dotnet restore "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj"
+RUN dotnet restore "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj"
+RUN dotnet restore "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj"
+RUN dotnet restore "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
+RUN dotnet restore "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
+RUN dotnet restore "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj"
+RUN dotnet restore "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
+RUN dotnet restore "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj"
+RUN dotnet restore "Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj"
+RUN dotnet restore "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj"
+RUN dotnet restore "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj"
+RUN dotnet restore "Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj"
+RUN dotnet restore "Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj"
 
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"\$D\\\", \\\"\$D\\\"]"
 COPY ["Adaptors/Amqp/src", "Adaptors/Amqp/src"]
