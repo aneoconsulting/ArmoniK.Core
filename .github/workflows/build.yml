@@ -205,6 +205,22 @@ jobs:
         path: Base/tests/Queue/TestResults/test-results.trx
         reporter: dotnet-trx
         only-summary: ${{ env.REPOSITORY != github.repository }}
+
+    - name: Run PubSub adapter tests
+      if: ${{ matrix.queue == 'pubsub' && (success() || failure()) }}
+      run: |
+        source ./terraform/generated/queue_env.sh
+        MONITOR_PREFIX="monitor/test-adapter/" MONITOR_CD="Adaptors/PubSub/tests/" tools/monitor.sh \
+           dotnet test --logger "trx;LogFileName=test-results.trx" -p:RunAnalyzers=false -p:WarningLevel=0
+
+    - name: PubSub adapter Test Report
+      uses: dorny/test-reporter@d1b5dff021aa968b288b02285a8bf47471c5928a # v3.2.0
+      if: ${{ matrix.queue == 'pubsub' && (success() || failure()) }}
+      with:
+        name: Test - ${{ matrix.queue }} Adaptors/PubSub/tests
+        path: Adaptors/PubSub/tests/TestResults/test-results.trx
+        reporter: dotnet-trx
+        only-summary: ${{ env.REPOSITORY != github.repository }}
     - name: Upload monitor profile
       if: ${{ always() && env.REPOSITORY == github.repository }}
       env:

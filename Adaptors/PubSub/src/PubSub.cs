@@ -21,6 +21,12 @@ using ArmoniK.Utils.DocAttribute;
 
 namespace ArmoniK.Core.Adapters.PubSub;
 
+/// <remarks>
+///   The topic and the subscription of a partition are created by whichever service needs them first: the submitter
+///   when it publishes, or the polling agent when it pulls. They are never updated afterwards, so the options used to
+///   create them (<see cref="MessageRetention" />, <see cref="KmsKeyName" />, <see cref="AckDeadlinePeriod" />,
+///   <see cref="MessageOrdering" />, <see cref="ExactlyOnceDelivery" />) must be identical on all the services.
+/// </remarks>
 [ExtractDocumentation("Options for PubSub")]
 internal class PubSub
 {
