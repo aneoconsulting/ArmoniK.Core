@@ -50,19 +50,8 @@ COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 
 # The build is architecture independent (framework-dependent output without apphost):
 # BuildKit runs this stage once and reuses its output for every target platform.
-RUN dotnet restore "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj"
-RUN dotnet restore "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj"
-RUN dotnet restore "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj"
-RUN dotnet restore "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
-RUN dotnet restore "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
-RUN dotnet restore "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj"
-RUN dotnet restore "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
-RUN dotnet restore "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj"
-RUN dotnet restore "Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj"
-RUN dotnet restore "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj"
-RUN dotnet restore "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj"
-RUN dotnet restore "Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj"
-RUN dotnet restore "Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj"
+COPY ["Docker/Images.proj", "Docker/"]
+RUN dotnet restore "Docker/Images.proj"
 
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"\$D\\\", \\\"\$D\\\"]"
 COPY ["Adaptors/Amqp/src", "Adaptors/Amqp/src"]
@@ -86,8 +75,7 @@ COPY ["Control/Metrics/src", "Control/Metrics/src"]
 COPY ["Control/Submitter/src", "Control/Submitter/src"]
 COPY ["Utils/src", "Utils/src"]
 
-COPY ["Docker/Images.proj", "Docker/"]
-RUN dotnet msbuild "Docker/Images.proj" -m -t:Publish -p:Configuration=Release -p:PublishRoot=/app/publish/ /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+RUN dotnet build "Docker/Images.proj" --no-restore -c Release -t:PublishImages -p:PublishRoot=/app/publish/ /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 
 FROM base-${TARGETOS} AS polling_agent

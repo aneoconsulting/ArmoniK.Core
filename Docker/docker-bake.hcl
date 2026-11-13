@@ -2,6 +2,7 @@
 # Building them in a single bake invocation shares the build stage of the Dockerfile
 # and exports/pushes the three images in parallel.
 # Image names are read from the environment variables exported by the justfile.
+# Relative paths (context, dockerfile) are resolved from the directory bake runs in: the repository root.
 
 variable "ARMONIK_METRICS" {
   default = "dockerhubaneo/armonik_control_metrics:0.0.0.0-local"

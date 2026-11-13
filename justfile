@@ -422,11 +422,11 @@ runBench: buildBenchClient
 buildCrashingWorkerClient: (build CRASHINGWORKER_CLIENT_IMAGE  "./Tests/CrashingWorker/Client/src/Dockerfile")
 
 # Build all images necessary for the deployment (Metrics, Submitter, Polling Agent)
-# A single bake invocation (see docker-bake.hcl) shares the build stage and exports the images in parallel
+# A single bake invocation (see Docker/docker-bake.hcl) shares the build stage and exports the images in parallel
 build-core:
   #!/usr/bin/env bash
   set -x
-  docker buildx bake -f docker-bake.hcl {{docker_build_args}} --set "*.args.VERSION={{tag}}" \
+  docker buildx bake -f Docker/docker-bake.hcl {{docker_build_args}} --set "*.args.VERSION={{tag}}" \
     {{ if platform != "" { "--set '*.platform=" + platform + "'" } else { "" } }} \
     core
 
