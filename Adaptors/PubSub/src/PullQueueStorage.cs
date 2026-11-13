@@ -76,11 +76,12 @@ internal class PullQueueStorage : IPullQueueStorage
       // Messages published before the subscription creation are not delivered to it.
       // The submitter creates the subscription before publishing, so it only misses here when nothing
       // has been submitted to this partition yet.
-      await publisher_.EnsurePartitionIsCreatedAsync(subscriber_,
-                                                     options_,
-                                                     partitionId,
-                                                     cancellationToken)
-                      .ConfigureAwait(false);
+      await PubSubExt.EnsurePartitionIsCreatedAsync(publisher_,
+                                                    subscriber_,
+                                                    options_,
+                                                    partitionId,
+                                                    cancellationToken)
+                     .ConfigureAwait(false);
 
       messages = await subscriber_.PullAsync(subscriptionName,
                                              nbMessages,

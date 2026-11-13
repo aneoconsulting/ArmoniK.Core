@@ -68,41 +68,23 @@ internal static class PubSubExt
   ///   Pub/Sub only delivers to a subscription the messages published after its creation.
   ///   The topic and its subscription are therefore always created together, so that no message can be published
   ///   to a topic without subscription.
+  ///   The subscription is created without expiration: an expired subscription would silently drop the messages
+  ///   published to its topic.
   /// </remarks>
   /// <param name="publisher">The publisher client</param>
   /// <param name="subscriber">The subscriber client</param>
   /// <param name="options">PubSub options to configure the topic and the subscription</param>
   /// <param name="partition">Partition the topic and the subscription refer to</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  public static async ValueTask EnsurePartitionIsCreatedAsync(this PublisherServiceApiClient publisher,
-                                                              SubscriberServiceApiClient     subscriber,
-                                                              PubSub                         options,
-                                                              string                         partition,
-                                                              CancellationToken              cancellationToken)
+  public static async ValueTask EnsurePartitionIsCreatedAsync(PublisherServiceApiClient  publisher,
+                                                              SubscriberServiceApiClient subscriber,
+                                                              PubSub                     options,
+                                                              string                     partition,
+                                                              CancellationToken          cancellationToken)
   {
-    await publisher.EnsureTopicIsCreatedAsync(options,
-                                              partition,
-                                              cancellationToken)
-                   .ConfigureAwait(false);
-    await subscriber.EnsureSubscriptionIsCreatedAsync(options,
-                                                      partition,
-                                                      cancellationToken)
-                    .ConfigureAwait(false);
-  }
+    var topicName        = options.GetTopicName(partition);
+    var subscriptionName = options.GetSubscriptionName(partition);
 
-  /// <summary>
-  ///   Try to create the topic for the <paramref name="partition" /> if it does not already exist.
-  /// </summary>
-  /// <param name="publisher">The publisher client</param>
-  /// <param name="options">PubSub options to configure the topic</param>
-  /// <param name="partition">Partition the topic refers to</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  private static async ValueTask EnsureTopicIsCreatedAsync(this PublisherServiceApiClient publisher,
-                                                           PubSub                         options,
-                                                           string                         partition,
-                                                           CancellationToken              cancellationToken)
-  {
-    var topicName = options.GetTopicName(partition);
     try
     {
       await publisher.CreateTopicAsync(new Topic
@@ -117,26 +99,6 @@ internal static class PubSubExt
     catch (RpcException ex) when (ex.StatusCode == StatusCode.AlreadyExists)
     {
     }
-  }
-
-  /// <summary>
-  ///   Try to create the subscription for the <paramref name="partition" /> if it does not already exist.
-  /// </summary>
-  /// <remarks>
-  ///   The subscription is created without expiration: an expired subscription would silently drop the messages
-  ///   published to its topic.
-  /// </remarks>
-  /// <param name="subscriber">The subscriber client</param>
-  /// <param name="options">PubSub options to configure the subscription</param>
-  /// <param name="partition">Partition the subscription refers to</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  private static async ValueTask EnsureSubscriptionIsCreatedAsync(this SubscriberServiceApiClient subscriber,
-                                                                  PubSub                          options,
-                                                                  string                          partition,
-                                                                  CancellationToken               cancellationToken)
-  {
-    var topicName        = options.GetTopicName(partition);
-    var subscriptionName = options.GetSubscriptionName(partition);
 
     var subscriptionRequest = new Subscription
                               {

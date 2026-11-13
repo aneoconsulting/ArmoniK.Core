@@ -120,11 +120,12 @@ internal class PushQueueStorage : IPushQueueStorage
 
     try
     {
-      await publisher_.EnsurePartitionIsCreatedAsync(subscriber_,
-                                                     options_,
-                                                     partitionId,
-                                                     cancellationToken)
-                      .ConfigureAwait(false);
+      await PubSubExt.EnsurePartitionIsCreatedAsync(publisher_,
+                                                    subscriber_,
+                                                    options_,
+                                                    partitionId,
+                                                    cancellationToken)
+                     .ConfigureAwait(false);
     }
     catch (RpcException e) when (e.StatusCode == StatusCode.PermissionDenied)
     {
