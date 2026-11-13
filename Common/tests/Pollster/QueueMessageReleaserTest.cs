@@ -98,14 +98,60 @@ public class QueueMessageReleaserTest
   }
 
   [Test]
-  public void InvalidOptionsShouldThrow([Values(0,
-                                                -1)]
-                                        int value)
+  [Timeout(10000)]
+  public async Task UnboundedQueueShouldNotWait([Values(0,
+                                                        -1)]
+                                                int capacity)
   {
-    Assert.That(() => CreateReleaser(value),
-                Throws.InstanceOf<ArgumentOutOfRangeException>());
-    Assert.That(() => CreateReleaser(parallelism: value),
-                Throws.InstanceOf<ArgumentOutOfRangeException>());
+    // The releaser is not started: nothing is read from its queue, but the queue is not bounded
+    using var releaser = CreateReleaser(capacity);
+
+    var messages = Enumerable.Range(0,
+                                    100)
+                             .Select(_ => new CountingQueueMessageHandler())
+                             .ToList();
+    foreach (var message in messages)
+    {
+      var (_, returned) = await DisposeWithin(message,
+                                              releaser,
+                                              TimeSpan.FromSeconds(1))
+                            .ConfigureAwait(false);
+      Assert.That(returned,
+                  Is.True);
+    }
+
+    await releaser.StartAsync(CancellationToken.None)
+                  .ConfigureAwait(false);
+    await Task.WhenAll(messages.Select(m => m.Disposed))
+              .WaitAsync(TimeSpan.FromSeconds(5))
+              .ConfigureAwait(false);
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task DefaultOrUnboundedParallelismShouldReleaseMessages([Values(0,
+                                                                               -1)]
+                                                                       int parallelism)
+  {
+    using var releaser = CreateReleaser(parallelism: parallelism);
+    await releaser.StartAsync(CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    var messages = Enumerable.Range(0,
+                                    8)
+                             .Select(_ => new CountingQueueMessageHandler(null,
+                                                                          TimeSpan.FromMilliseconds(20)))
+                             .ToList();
+    foreach (var message in messages)
+    {
+      await new AsyncReleaseQueueMessageHandler(message,
+                                                releaser).DisposeAsync()
+                                                         .ConfigureAwait(false);
+    }
+
+    await Task.WhenAll(messages.Select(m => m.Disposed))
+              .WaitAsync(TimeSpan.FromSeconds(5))
+              .ConfigureAwait(false);
   }
 
   [Test]
@@ -495,6 +541,46 @@ public class QueueMessageReleaserTest
               .ConfigureAwait(false);
     Assert.That(releaser.ExecuteTask!.IsCompleted,
                 Is.False);
+  }
+
+  [Test]
+  [Timeout(10000)]
+  public async Task UnexpectedErrorDuringReleaseShouldNotStopTheReleaser()
+  {
+    using var releaser = CreateReleaser(parallelism: 1);
+    await releaser.StartAsync(CancellationToken.None)
+                  .ConfigureAwait(false);
+
+    // MessageId is read by the releaser for its logging scope, outside of the disposal of the message
+    await new AsyncReleaseQueueMessageHandler(new ThrowingMessageIdQueueMessageHandler(),
+                                              releaser).DisposeAsync()
+                                                       .ConfigureAwait(false);
+
+    var next = new SimpleQueueMessageHandler();
+    await new AsyncReleaseQueueMessageHandler(next,
+                                              releaser).DisposeAsync()
+                                                       .ConfigureAwait(false);
+
+    await next.Disposed.WaitAsync(TimeSpan.FromSeconds(5))
+              .ConfigureAwait(false);
+    Assert.That(releaser.ExecuteTask!.IsCompleted,
+                Is.False);
+  }
+
+  private sealed class ThrowingMessageIdQueueMessageHandler : IQueueMessageHandler
+  {
+    public ValueTask DisposeAsync()
+      => ValueTask.CompletedTask;
+
+    [Obsolete("ArmoniK now manages loss of link with the queue")]
+    public CancellationToken CancellationToken { get; set; }
+
+    public string MessageId
+      => throw new InvalidOperationException("MessageId failure");
+
+    public string             TaskId            { get; } = "";
+    public QueueMessageStatus Status            { get; set; }
+    public DateTime           ReceptionDateTime { get; init; } = DateTime.UtcNow;
   }
 
   private abstract class TestQueueMessageHandlerBase : IQueueMessageHandler

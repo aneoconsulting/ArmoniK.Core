@@ -137,13 +137,14 @@ public class Pollster
   ///   Maximum number of queue messages waiting to be released (acknowledged or negatively acknowledged) in background.
   ///   When the release queue is full, the pipeline stage releasing a message waits for a free place.
   ///   Once the release queue is closed (pipeline stopped), messages are released synchronously.
-  ///   Minimum value is 1.
+  ///   0 or negative for an unbounded queue: messages then never wait, but they can accumulate (and remain reserved
+  ///   in the queue service) if the queue adapter slows down.
   /// </summary>
   public int MessageReleaseQueueCapacity { get; set; } = 8;
 
   /// <summary>
   ///   Maximum number of queue messages released (acknowledged or negatively acknowledged) concurrently in background.
-  ///   Minimum value is 1.
+  ///   0 for the number of threads, negative for no limit, as for ParallelForEach.
   /// </summary>
   public int MessageReleaseParallelism { get; set; } = 8;
 }

@@ -40,8 +40,8 @@ namespace ArmoniK.Core.Common.Pollster;
 /// </summary>
 /// <remarks>
 ///   <para>
-///     Messages are written by <see cref="ReleaseAsync" /> into a bounded queue of
-///     <see cref="Injection.Options.Pollster.MessageReleaseQueueCapacity" /> messages,
+///     Messages are written by <see cref="ReleaseAsync" /> into a queue of
+///     <see cref="Injection.Options.Pollster.MessageReleaseQueueCapacity" /> messages (unbounded if 0 or negative),
 ///     which is drained by at most <see cref="Injection.Options.Pollster.MessageReleaseParallelism" /> concurrent
 ///     releases. When the queue is full, <see cref="ReleaseAsync" /> waits for a free place.
 ///     Once the queue is closed, <see cref="ReleaseAsync" /> releases the message directly.
@@ -71,33 +71,28 @@ public sealed class QueueMessageReleaser : BackgroundService
   /// <param name="exceptionManager">The manager handling exceptions and cancellation.</param>
   /// <param name="meterHolder">Holder for metrics collection.</param>
   /// <param name="logger">The logger for this class.</param>
-  /// <exception cref="ArgumentOutOfRangeException">Capacity or parallelism is less than 1.</exception>
   public QueueMessageReleaser(Injection.Options.Pollster    pollsterOptions,
                               ExceptionManager              exceptionManager,
                               MeterHolder                   meterHolder,
                               ILogger<QueueMessageReleaser> logger)
   {
-    if (pollsterOptions.MessageReleaseQueueCapacity < 1)
-    {
-      throw new ArgumentOutOfRangeException(nameof(pollsterOptions),
-                                            $"The minimum value for {nameof(Injection.Options.Pollster.MessageReleaseQueueCapacity)} is 1.");
-    }
-
-    if (pollsterOptions.MessageReleaseParallelism < 1)
-    {
-      throw new ArgumentOutOfRangeException(nameof(pollsterOptions),
-                                            $"The minimum value for {nameof(Injection.Options.Pollster.MessageReleaseParallelism)} is 1.");
-    }
-
     exceptionManager_ = exceptionManager;
     Logger            = logger;
+    // Same semantics as ParallelForEach: 0 for the number of threads, negative for no limit
     parallelism_      = pollsterOptions.MessageReleaseParallelism;
-    channel_ = Channel.CreateBounded<IQueueMessageHandler>(new BoundedChannelOptions(pollsterOptions.MessageReleaseQueueCapacity)
-                                                           {
-                                                             FullMode     = BoundedChannelFullMode.Wait,
-                                                             SingleReader = true,
-                                                             SingleWriter = false,
-                                                           });
+    // 0 or negative for an unbounded queue
+    channel_ = pollsterOptions.MessageReleaseQueueCapacity > 0
+                 ? Channel.CreateBounded<IQueueMessageHandler>(new BoundedChannelOptions(pollsterOptions.MessageReleaseQueueCapacity)
+                                                               {
+                                                                 FullMode     = BoundedChannelFullMode.Wait,
+                                                                 SingleReader = true,
+                                                                 SingleWriter = false,
+                                                               })
+                 : Channel.CreateUnbounded<IQueueMessageHandler>(new UnboundedChannelOptions
+                                                                 {
+                                                                   SingleReader = true,
+                                                                   SingleWriter = false,
+                                                                 });
 
     meterHolder.Meter.CreateObservableGauge("MessageReleaseQueueSize",
                                             () => channel_.Reader.Count,
@@ -169,31 +164,61 @@ public sealed class QueueMessageReleaser : BackgroundService
     Logger.LogDebug("Start queue message releaser with a parallelism of {Parallelism}",
                     parallelism_);
 
-    // Neither the reading nor the releases are cancelled: the enumeration ends once the queue is closed and empty,
-    // so that every message written into the queue is released. Releases are unordered so that a slow release
-    // does not hold back the following ones.
-    await channel_.Reader.ReadAllAsync(CancellationToken.None)
-                  .ParallelForEach(new ParallelTaskOptions(true,
-                                                           parallelism_,
-                                                           CancellationToken.None),
-                                   ReleaseInBackgroundAsync)
-                  .ConfigureAwait(false);
+    try
+    {
+      // Neither the reading nor the releases are cancelled: the enumeration ends once the queue is closed and empty,
+      // so that every message written into the queue is released. Releases are unordered so that a slow release
+      // does not hold back the following ones.
+      await channel_.Reader.ReadAllAsync(CancellationToken.None)
+                    .ParallelForEach(new ParallelTaskOptions(true,
+                                                             parallelism_,
+                                                             CancellationToken.None),
+                                     ReleaseInBackgroundAsync)
+                    .ConfigureAwait(false);
+    }
+    catch (Exception e)
+    {
+      // Should not happen as releases do not throw; stop the application as for the other stages of the pipeline
+      exceptionManager_.FatalError(Logger,
+                                   e,
+                                   "Error in the queue message releaser; remaining messages are released synchronously");
+    }
+    finally
+    {
+      // If the enumeration stopped on an error, the queue may still be open and not empty:
+      // close it so that the next releases are performed by their caller instead of waiting for a free place,
+      // and release the messages left in the queue.
+      CloseWriter();
+      while (channel_.Reader.TryRead(out var message))
+      {
+        await message.DisposeIgnoreErrorAsync(Logger)
+                     .ConfigureAwait(false);
+      }
 
-    exceptionManager_.UnregisterAndStop(Logger,
-                                        "End of queue message releaser; no more messages will be released in background");
+      exceptionManager_.UnregisterAndStop(Logger,
+                                          "End of queue message releaser; no more messages will be released in background");
+    }
   }
 
   private async Task ReleaseInBackgroundAsync(IQueueMessageHandler message)
   {
-    using var _ = Logger.BeginPropertyScope(("messageHandler", message.MessageId),
-                                            ("taskId", message.TaskId));
-    var start = Stopwatch.GetTimestamp();
+    // Nothing is thrown: an exception would stop the enumeration, hence the release of the following messages
+    try
+    {
+      using var _ = Logger.BeginPropertyScope(("messageHandler", message.MessageId),
+                                              ("taskId", message.TaskId));
+      var start = Stopwatch.GetTimestamp();
 
-    // Errors are logged and never thrown: a failing release must not stop the enumeration
-    await message.DisposeIgnoreErrorAsync(Logger)
-                 .ConfigureAwait(false);
+      await message.DisposeIgnoreErrorAsync(Logger)
+                   .ConfigureAwait(false);
 
-    releaseDuration_.Record(Stopwatch.GetElapsedTime(start)
-                                     .TotalMilliseconds);
+      releaseDuration_.Record(Stopwatch.GetElapsedTime(start)
+                                       .TotalMilliseconds);
+    }
+    catch (Exception e)
+    {
+      Logger.LogError(e,
+                      "Unexpected error while releasing a queue message in background");
+    }
   }
 }
