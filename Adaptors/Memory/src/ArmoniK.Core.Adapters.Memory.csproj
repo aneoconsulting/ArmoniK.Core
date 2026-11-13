@@ -27,6 +27,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="ArmoniK.Core.Adapters.Memory.Tests" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.7.5">

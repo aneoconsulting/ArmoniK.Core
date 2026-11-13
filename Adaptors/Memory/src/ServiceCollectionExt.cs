@@ -15,8 +15,11 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Storage;
+using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
@@ -63,11 +66,12 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
-  ///   Register the in-memory tables as singletons
+  ///   Register the in-memory tables and their watchers as singletons
   /// </summary>
   /// <remarks>
   ///   Each table is registered once, and the interface resolves to the same instance as the concrete type: all the
-  ///   consumers of a table share the same data.
+  ///   consumers of a table, including the watchers that subscribe to its change events, share the same data.
+  ///   The partition and authentication tables are filled from <see cref="InitDatabase" /> when it is registered.
   /// </remarks>
   /// <param name="services">Collection of services to fill</param>
   /// <returns>
@@ -81,5 +85,9 @@ public static class ServiceCollectionExt
                .AddSingleton<SessionTable>()
                .AddSingleton<ISessionTable>(sp => sp.GetRequiredService<SessionTable>())
                .AddSingleton<ResultTable>()
-               .AddSingleton<IResultTable>(sp => sp.GetRequiredService<ResultTable>());
+               .AddSingleton<IResultTable>(sp => sp.GetRequiredService<ResultTable>())
+               .AddSingleton<IPartitionTable, PartitionTable>()
+               .AddSingleton<IAuthenticationTable, AuthenticationTable>()
+               .AddSingleton<ITaskWatcher, TaskWatcher>()
+               .AddSingleton<IResultWatcher, ResultWatcher>();
 }
