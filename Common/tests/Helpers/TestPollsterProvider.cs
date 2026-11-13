@@ -180,7 +180,7 @@ public class TestPollsterProvider : IDisposable
            .AddSingleton<ISubmitter, gRPC.Services.Submitter>()
            .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,
                                                               Injection.Options.Submitter.SettingSection)
-           .AddSingleton<IPushQueueStorage, PushQueueStorage>()
+           .AddSingleton<IPushQueueStorage, QueueStorage>()
            .AddSingleton("ownerpodid")
            .AddSingleton<DataPrefetcher>()
            .AddHostedService<RunningTaskProcessor>()
