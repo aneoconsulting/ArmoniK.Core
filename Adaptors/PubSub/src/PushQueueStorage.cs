@@ -110,8 +110,8 @@ internal class PushQueueStorage : IPushQueueStorage
   ///   the subscription must exist before publishing, even if no polling agent has started yet.
   ///   Checking only when publishing fails is not enough, since publishing to a topic without subscription succeeds.
   /// </remarks>
-  private async Task EnsurePartitionAsync(string            partitionId,
-                                          CancellationToken cancellationToken)
+  private async ValueTask EnsurePartitionAsync(string            partitionId,
+                                               CancellationToken cancellationToken)
   {
     if (ensuredPartitions_.ContainsKey(partitionId))
     {
