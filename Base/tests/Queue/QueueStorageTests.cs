@@ -39,6 +39,22 @@ namespace ArmoniK.Core.Tests.Queue;
 
 public class QueueStorageTests
 {
+  /// <summary>
+  ///   Partition shared by the tests. Some queues (RabbitMQ) only accept the partitions declared by the deployment,
+  ///   which are TestPartition0 to TestPartition{n-1} (2 partitions by default).
+  /// </summary>
+  private const string SharedPartition = "TestPartition0";
+
+  /// <summary>
+  ///   Partition used only by <see cref="PushBeforeAnyPullOnNewPartitionShouldDeliverMessages" />
+  /// </summary>
+  private const string FreshPartition = "TestPartition1";
+
+  /// <summary>
+  ///   Maximum time spent pulling the expected messages
+  /// </summary>
+  private static readonly TimeSpan PullTimeout = TimeSpan.FromSeconds(30);
+
   protected IPullQueueStorage? PullQueueStorage;
   protected IPushQueueStorage? PushQueueStorage;
 
@@ -108,8 +124,6 @@ public class QueueStorageTests
     PullQueueStorage = ServiceProvider.GetRequiredService<IPullQueueStorage>();
     PushQueueStorage = ServiceProvider.GetRequiredService<IPushQueueStorage>();
   }
-
-  #region Tests
 
   [Test]
   public void GetQueueStorageInstanceShouldLoad()
@@ -295,26 +309,6 @@ public class QueueStorageTests
                 Is.EquivalentTo(messages.Select(message => message.TaskId)));
   }
 
-  #endregion
-
-  #region Helpers
-
-  /// <summary>
-  ///   Maximum time spent pulling the expected messages
-  /// </summary>
-  private static readonly TimeSpan PullTimeout = TimeSpan.FromSeconds(30);
-
-  /// <summary>
-  ///   Partition shared by the tests. Some queues (RabbitMQ) only accept the partitions declared by the deployment,
-  ///   which are TestPartition0 to TestPartition{n-1} (2 partitions by default).
-  /// </summary>
-  private const string SharedPartition = "TestPartition0";
-
-  /// <summary>
-  ///   Partition used only by <see cref="PushBeforeAnyPullOnNewPartitionShouldDeliverMessages" />
-  /// </summary>
-  private const string FreshPartition = "TestPartition1";
-
   private static List<MessageData> CreateMessages(string partition,
                                                   int    count)
   {
@@ -386,6 +380,4 @@ public class QueueStorageTests
 
     return taskIds;
   }
-
-  #endregion
 }
