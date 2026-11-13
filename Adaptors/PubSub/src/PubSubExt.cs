@@ -102,12 +102,13 @@ internal static class PubSubExt
                                                            string                         partition,
                                                            CancellationToken              cancellationToken)
   {
+    var topicName = options.GetTopicName(partition);
     try
     {
       await publisher.CreateTopicAsync(new Topic
                                        {
                                          MessageRetentionDuration = Duration.FromTimeSpan(options.MessageRetention),
-                                         TopicName                = options.GetTopicName(partition),
+                                         TopicName                = topicName,
                                          KmsKeyName               = options.KmsKeyName,
                                        },
                                        cancellationToken)
@@ -134,18 +135,22 @@ internal static class PubSubExt
                                                                   string                          partition,
                                                                   CancellationToken               cancellationToken)
   {
+    var topicName        = options.GetTopicName(partition);
+    var subscriptionName = options.GetSubscriptionName(partition);
+
+    var subscriptionRequest = new Subscription
+                              {
+                                SubscriptionName          = subscriptionName,
+                                TopicAsTopicName          = topicName,
+                                EnableExactlyOnceDelivery = options.ExactlyOnceDelivery,
+                                EnableMessageOrdering     = options.MessageOrdering,
+                                AckDeadlineSeconds        = options.AckDeadlinePeriod,
+                                // An expiration policy without TTL means that the subscription never expires
+                                ExpirationPolicy = new ExpirationPolicy(),
+                              };
     try
     {
-      await subscriber.CreateSubscriptionAsync(new Subscription
-                                               {
-                                                 SubscriptionName          = options.GetSubscriptionName(partition),
-                                                 TopicAsTopicName          = options.GetTopicName(partition),
-                                                 EnableExactlyOnceDelivery = options.ExactlyOnceDelivery,
-                                                 EnableMessageOrdering     = options.MessageOrdering,
-                                                 AckDeadlineSeconds        = options.AckDeadlinePeriod,
-                                                 // An expiration policy without TTL means that the subscription never expires
-                                                 ExpirationPolicy = new ExpirationPolicy(),
-                                               },
+      await subscriber.CreateSubscriptionAsync(subscriptionRequest,
                                                cancellationToken)
                       .ConfigureAwait(false);
     }
