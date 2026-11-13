@@ -180,7 +180,7 @@ public class QueueStorageTests
     await PushQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
-    var partition = NewPartition();
+    var partition = SharedPartition;
 
     await PushQueueStorage.PushMessagesAsync(CreateMessages(partition,
                                                             5),
@@ -197,7 +197,7 @@ public class QueueStorageTests
     await PullQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
-    var partition = NewPartition();
+    var partition = SharedPartition;
 
     /* Push 5 messages to the queue to test the pull */
     await PushQueueStorage.PushMessagesAsync(CreateMessages(partition,
@@ -237,7 +237,7 @@ public class QueueStorageTests
     await PushQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
-    var partition = NewPartition();
+    var partition = SharedPartition;
     var messages = CreateMessages(partition,
                                   5);
 
@@ -251,8 +251,9 @@ public class QueueStorageTests
                                            QueueMessageStatus.Processed)
                    .ConfigureAwait(false);
 
+    // The shared partition may still hold messages left by the other tests: only the count is checked
     Assert.That(pulled,
-                Is.EquivalentTo(messages.Select(message => message.TaskId)));
+                Has.Count.EqualTo(messages.Count));
   }
 
   /// <summary>
@@ -263,6 +264,8 @@ public class QueueStorageTests
   ///   The Pub/Sub emulator delivers the messages retained by the topic to subscriptions created after them,
   ///   unlike GCP, so this test cannot detect the issue for Pub/Sub on the emulator.
   ///   The Pub/Sub adapter tests check that the subscription is created when pushing.
+  ///   This test relies on <see cref="FreshPartition" /> never being used by another test,
+  ///   so that it has never been pulled from on a freshly deployed queue, as in the CI.
   /// </remarks>
   [Test]
   public async Task PushBeforeAnyPullOnNewPartitionShouldDeliverMessages()
@@ -270,7 +273,7 @@ public class QueueStorageTests
     await PushQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
-    var partition = NewPartition();
+    var partition = FreshPartition;
     var messages = CreateMessages(partition,
                                   5);
 
@@ -302,10 +305,15 @@ public class QueueStorageTests
   private static readonly TimeSpan PullTimeout = TimeSpan.FromSeconds(30);
 
   /// <summary>
-  ///   Generate a partition name that has never been used, so that tests do not share queue state
+  ///   Partition shared by the tests. Some queues (RabbitMQ) only accept the partitions declared by the deployment,
+  ///   which are TestPartition0 to TestPartition{n-1} (2 partitions by default).
   /// </summary>
-  private static string NewPartition()
-    => $"TestPartition{Guid.NewGuid():N}";
+  private const string SharedPartition = "TestPartition0";
+
+  /// <summary>
+  ///   Partition used only by <see cref="PushBeforeAnyPullOnNewPartitionShouldDeliverMessages" />
+  /// </summary>
+  private const string FreshPartition = "TestPartition1";
 
   private static List<MessageData> CreateMessages(string partition,
                                                   int    count)
@@ -328,7 +336,7 @@ public class QueueStorageTests
 
     return Enumerable.Range(1,
                             count)
-                     .Select(i => new MessageData($"msg{i}",
+                     .Select(i => new MessageData($"msg{i}-{Guid.NewGuid()}",
                                                   "session1",
                                                   testTaskOptions))
                      .ToList();
