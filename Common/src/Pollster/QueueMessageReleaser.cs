@@ -79,7 +79,7 @@ public sealed class QueueMessageReleaser : BackgroundService
     exceptionManager_ = exceptionManager;
     Logger            = logger;
     // Same semantics as ParallelForEach: 0 for the number of threads, negative for no limit
-    parallelism_      = pollsterOptions.MessageReleaseParallelism;
+    parallelism_ = pollsterOptions.MessageReleaseParallelism;
     // 0 or negative for an unbounded queue
     channel_ = pollsterOptions.MessageReleaseQueueCapacity > 0
                  ? Channel.CreateBounded<IQueueMessageHandler>(new BoundedChannelOptions(pollsterOptions.MessageReleaseQueueCapacity)
