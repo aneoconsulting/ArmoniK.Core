@@ -24,8 +24,6 @@ SHELL ["pwsh", "-File", "\"C:\\Program Files\\sh.ps1\""]
 
 FROM build-${BUILDOS} AS build
 ARG VERSION=1.0.0.0
-ARG TARGETARCH
-ARG TARGETOS
 
 WORKDIR /src
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"%\\\", \\\"\$D/\\\"]"
@@ -50,19 +48,21 @@ COPY ["Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj", "Control/Metric
 COPY ["Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj", "Control/Submitter/src/"]
 COPY ["Utils/src/ArmoniK.Core.Utils.csproj", "Utils/src/"]
 
-RUN dotnet restore -a "${TARGETARCH}" "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj"
-RUN dotnet restore -a "${TARGETARCH}" "Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj"
+# The build is architecture independent (framework-dependent output without apphost):
+# BuildKit runs this stage once and reuses its output for every target platform.
+RUN dotnet restore "Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj" \
+ && dotnet restore "Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj" \
+ && dotnet restore "Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj" \
+ && dotnet restore "Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj" \
+ && dotnet restore "Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj" \
+ && dotnet restore "Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj" \
+ && dotnet restore "Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj" \
+ && dotnet restore "Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj" \
+ && dotnet restore "Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj" \
+ && dotnet restore "Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj" \
+ && dotnet restore "Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj" \
+ && dotnet restore "Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj" \
+ && dotnet restore "Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj"
 
 # git ls-tree -r HEAD --name-only --full-tree | grep "csproj$" | xargs -I % sh -c "export D=\$(dirname %) ; echo COPY [\\\"\$D\\\", \\\"\$D\\\"]"
 COPY ["Adaptors/Amqp/src", "Adaptors/Amqp/src"]
@@ -86,44 +86,8 @@ COPY ["Control/Metrics/src", "Control/Metrics/src"]
 COPY ["Control/Submitter/src", "Control/Submitter/src"]
 COPY ["Utils/src", "Utils/src"]
 
-WORKDIR /src/Adaptors/SQS/src
-RUN dotnet publish "ArmoniK.Core.Adapters.SQS.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/sqs /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/PubSub/src
-RUN dotnet publish "ArmoniK.Core.Adapters.PubSub.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/pubsub /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/Nats/src
-RUN dotnet publish "ArmoniK.Core.Adapters.Nats.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/nats /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/Amqp/src
-RUN dotnet publish "ArmoniK.Core.Adapters.Amqp.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/amqp /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/LocalStorage/src
-RUN dotnet publish "ArmoniK.Core.Adapters.LocalStorage.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/local_storage /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/Embed/src
-RUN dotnet publish "ArmoniK.Core.Adapters.Embed.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/embed /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/NullStorage/src
-RUN dotnet publish "ArmoniK.Core.Adapters.NullStorage.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/null_storage /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/Redis/src
-RUN dotnet publish "ArmoniK.Core.Adapters.Redis.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/redis /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/S3/src
-RUN dotnet publish "ArmoniK.Core.Adapters.S3.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/s3 /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Adaptors/Gcs/src
-RUN dotnet publish "ArmoniK.Core.Adapters.Gcs.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/gcs /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Compute/PollingAgent/src
-RUN dotnet publish "ArmoniK.Core.Compute.PollingAgent.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/polling_agent /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Control/Metrics/src
-RUN dotnet publish "ArmoniK.Core.Control.Metrics.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/metrics /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
-
-WORKDIR /src/Control/Submitter/src
-RUN dotnet publish "ArmoniK.Core.Control.Submitter.csproj" -a "${TARGETARCH}" --no-restore -o /app/publish/submitter /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
+COPY ["Docker/Images.proj", "Docker/"]
+RUN dotnet msbuild "Docker/Images.proj" -m -t:Publish -p:Configuration=Release -p:PublishRoot=/app/publish/ /p:UseAppHost=false -p:RunAnalyzers=false -p:WarningLevel=0 -p:PackageVersion=$VERSION -p:Version=$VERSION
 
 
 FROM base-${TARGETOS} AS polling_agent

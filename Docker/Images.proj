@@ -1,0 +1,41 @@
+<!--
+  Builds and publishes every project shipped in the core Docker images (see the root Dockerfile).
+
+  All projects are compiled in a single MSBuild invocation, in parallel, then published
+  in parallel without rebuilding. This avoids one `dotnet publish` process per project.
+
+  Usage: dotnet msbuild Docker/Images.proj -m -t:Publish -p:Configuration=Release -p:PublishRoot=/app/publish/
+-->
+<Project DefaultTargets="Publish">
+  <PropertyGroup>
+    <SrcRoot>$(MSBuildThisFileDirectory)../</SrcRoot>
+    <PublishRoot Condition="'$(PublishRoot)' == ''">$(MSBuildThisFileDirectory)../publish/</PublishRoot>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ImageProject Include="$(SrcRoot)Adaptors/SQS/src/ArmoniK.Core.Adapters.SQS.csproj" PublishSubDir="sqs" />
+    <ImageProject Include="$(SrcRoot)Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj" PublishSubDir="pubsub" />
+    <ImageProject Include="$(SrcRoot)Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj" PublishSubDir="nats" />
+    <ImageProject Include="$(SrcRoot)Adaptors/Amqp/src/ArmoniK.Core.Adapters.Amqp.csproj" PublishSubDir="amqp" />
+    <ImageProject Include="$(SrcRoot)Adaptors/LocalStorage/src/ArmoniK.Core.Adapters.LocalStorage.csproj" PublishSubDir="local_storage" />
+    <ImageProject Include="$(SrcRoot)Adaptors/Embed/src/ArmoniK.Core.Adapters.Embed.csproj" PublishSubDir="embed" />
+    <ImageProject Include="$(SrcRoot)Adaptors/NullStorage/src/ArmoniK.Core.Adapters.NullStorage.csproj" PublishSubDir="null_storage" />
+    <ImageProject Include="$(SrcRoot)Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj" PublishSubDir="redis" />
+    <ImageProject Include="$(SrcRoot)Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj" PublishSubDir="s3" />
+    <ImageProject Include="$(SrcRoot)Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj" PublishSubDir="gcs" />
+    <ImageProject Include="$(SrcRoot)Compute/PollingAgent/src/ArmoniK.Core.Compute.PollingAgent.csproj" PublishSubDir="polling_agent" />
+    <ImageProject Include="$(SrcRoot)Control/Metrics/src/ArmoniK.Core.Control.Metrics.csproj" PublishSubDir="metrics" />
+    <ImageProject Include="$(SrcRoot)Control/Submitter/src/ArmoniK.Core.Control.Submitter.csproj" PublishSubDir="submitter" />
+  </ItemGroup>
+
+  <Target Name="Build">
+    <MSBuild Projects="@(ImageProject)" Targets="Build" BuildInParallel="true" />
+  </Target>
+
+  <Target Name="Publish" DependsOnTargets="Build">
+    <ItemGroup>
+      <_ImageProjectToPublish Include="@(ImageProject)" AdditionalProperties="NoBuild=true;PublishDir=$(PublishRoot)%(ImageProject.PublishSubDir)/" />
+    </ItemGroup>
+    <MSBuild Projects="@(_ImageProjectToPublish)" Targets="Publish" BuildInParallel="true" />
+  </Target>
+</Project>
