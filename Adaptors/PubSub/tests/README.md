@@ -11,11 +11,7 @@ It can be deployed alone with Terraform:
 just queue=pubsub deployTargetQueue
 ```
 
-The adapter source project must be built first, so that the test fixture can load it dynamically:
-
-```bash
-dotnet build Adaptors/PubSub/src/
-```
+The adapter is built along with the test project and loaded dynamically from its output directory.
 
 ## Run
 
@@ -26,5 +22,5 @@ dotnet test Adaptors/PubSub/tests/
 ## Emulator limitation
 
 When a topic has a message retention, the emulator delivers the messages retained by the topic to a subscription
-created after them, even without seek. GCP does not: only messages published after the subscription creation are
-delivered, unless the subscription is seeked back. The emulator therefore cannot prove that a seek is required.
+created after them. GCP does not: only the messages published after the subscription creation are delivered.
+Tests that need the GCP behavior create their topic without message retention.

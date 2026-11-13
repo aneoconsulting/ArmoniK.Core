@@ -60,7 +60,7 @@ public class PubSubQueueTests
                                                     "Components:QueueAdaptorSettings:ClassName", "ArmoniK.Core.Adapters.PubSub.QueueBuilder"
                                                   },
                                                   {
-                                                    "Components:QueueAdaptorSettings:AdapterAbsolutePath", $"{SolutionRoot}{PubSubPath}"
+                                                    "Components:QueueAdaptorSettings:AdapterAbsolutePath", AdapterPath
                                                   },
                                                   {
                                                     "PubSub:ProjectId", projectId_
@@ -96,6 +96,11 @@ public class PubSubQueueTests
                       EmulatorDetection = EmulatorDetection.EmulatorOnly,
                     }.BuildAsync()
                      .ConfigureAwait(false);
+    publisher_ = await new PublisherServiceApiClientBuilder
+                   {
+                     EmulatorDetection = EmulatorDetection.EmulatorOnly,
+                   }.BuildAsync()
+                    .ConfigureAwait(false);
   }
 
   [TearDown]
@@ -111,27 +116,42 @@ public class PubSubQueueTests
   private const string Prefix = "akpubsubtests";
 
   /// <summary>
-  ///   Messages become available again within a minute after a seek on GCP: leave some margin
+  ///   Maximum time spent pulling the expected messages
   /// </summary>
-  private static readonly TimeSpan PullTimeout = TimeSpan.FromSeconds(90);
+  private static readonly TimeSpan PullTimeout = TimeSpan.FromSeconds(30);
 
-  private static readonly string SolutionRoot =
-    Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(Path.GetDirectoryName(typeof(PubSubQueueTests)
-                                                                                                                                                .Assembly
-                                                                                                                                                .Location))))) ??
-                                  string.Empty));
+  /// <summary>
+  ///   Output directory of this test project: tests/bin/{Configuration}/{TargetFramework}
+  /// </summary>
+  private static readonly string TestOutputDirectory = Path.GetDirectoryName(typeof(PubSubQueueTests).Assembly.Location)!;
 
-  private static readonly string PubSubPath =
-    $"{Path.DirectorySeparatorChar}src{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}Debug{Path.DirectorySeparatorChar}net10.0{Path.DirectorySeparatorChar}ArmoniK.Core.Adapters.PubSub.dll";
+  /// <summary>
+  ///   Adapter built with the same configuration and target framework as this test project
+  /// </summary>
+  private static readonly string AdapterPath = Path.GetFullPath(Path.Combine(TestOutputDirectory,
+                                                                             "..",
+                                                                             "..",
+                                                                             "..",
+                                                                             "..",
+                                                                             "src",
+                                                                             "bin",
+                                                                             Path.GetFileName(Path.GetDirectoryName(TestOutputDirectory)!),
+                                                                             Path.GetFileName(TestOutputDirectory),
+                                                                             "ArmoniK.Core.Adapters.PubSub.dll"));
 
   private string                      projectId_ = string.Empty;
   private ServiceProvider?            provider_;
   private IPullQueueStorage?          pullQueueStorage_;
+  private PublisherServiceApiClient?  publisher_;
   private IPushQueueStorage?          pushQueueStorage_;
   private SubscriberServiceApiClient? subscriber_;
 
   private static string NewPartition()
     => $"TestPartition{Guid.NewGuid():N}";
+
+  private TopicName GetTopicName(string partition)
+    => TopicName.FromProjectTopic(projectId_,
+                                  $"{Prefix}-{partition}");
 
   private SubscriptionName GetSubscriptionName(string partition)
     => SubscriptionName.FromProjectSubscription(projectId_,
@@ -245,38 +265,64 @@ public class PubSubQueueTests
   }
 
   /// <summary>
-  ///   Messages published while the subscription does not exist are retained by the topic only.
-  ///   The polling agent must recover them when it creates the subscription again.
+  ///   A topic may exist without subscription, for instance when it was created by a submitter of a previous version.
+  ///   The submitter must create the subscription before publishing, otherwise the messages are lost.
   /// </summary>
   /// <remarks>
-  ///   Limitation: unlike GCP, the emulator delivers the messages retained by the topic to a new subscription
-  ///   even without seek. On the emulator, this test only checks that recreating the subscription and seeking
-  ///   it does not fail and that the messages are received; it cannot prove that the seek is required.
+  ///   The topic is created without message retention: with a retention, the emulator delivers to a new subscription
+  ///   the messages published before its creation, unlike GCP.
   /// </remarks>
   [Test]
-  public async Task MessagesPublishedWithoutSubscriptionShouldBeRecoveredByPull()
+  public async Task PushToTopicWithoutSubscriptionShouldCreateItBeforePublishing()
   {
     var partition = NewPartition();
 
-    // Creates the topic and the subscription
+    await publisher_!.CreateTopicAsync(GetTopicName(partition))
+                     .ConfigureAwait(false);
+
+    var messages = CreateMessages(partition,
+                                  5);
+    await pushQueueStorage_!.PushMessagesAsync(messages,
+                                               partition)
+                            .ConfigureAwait(false);
+
+    var expected = messages.Select(message => message.TaskId)
+                           .ToList();
+    var received = await PullUntilAsync(partition,
+                                        expected)
+                     .ConfigureAwait(false);
+
+    Assert.That(received,
+                Is.SupersetOf(expected));
+  }
+
+  /// <summary>
+  ///   The submitter ensures the topic and the subscription only once per partition.
+  ///   If they are deleted afterwards, publishing fails with NotFound and they must be created again.
+  /// </summary>
+  [Test]
+  public async Task PushShouldRecreateDeletedTopicAndSubscription()
+  {
+    var partition = NewPartition();
+
     await pushQueueStorage_!.PushMessagesAsync(CreateMessages(partition,
                                                               1),
                                                partition)
                             .ConfigureAwait(false);
 
-    // Simulates an expired or deleted subscription
     await subscriber_!.DeleteSubscriptionAsync(GetSubscriptionName(partition))
                       .ConfigureAwait(false);
+    await publisher_!.DeleteTopicAsync(GetTopicName(partition))
+                     .ConfigureAwait(false);
 
-    // The topic exists, so the publish succeeds even though no subscription can receive these messages
-    var orphans = CreateMessages(partition,
-                                 5);
-    await pushQueueStorage_.PushMessagesAsync(orphans,
+    var messages = CreateMessages(partition,
+                                  5);
+    await pushQueueStorage_.PushMessagesAsync(messages,
                                               partition)
                            .ConfigureAwait(false);
 
-    var expected = orphans.Select(message => message.TaskId)
-                          .ToList();
+    var expected = messages.Select(message => message.TaskId)
+                           .ToList();
     var received = await PullUntilAsync(partition,
                                         expected)
                      .ConfigureAwait(false);

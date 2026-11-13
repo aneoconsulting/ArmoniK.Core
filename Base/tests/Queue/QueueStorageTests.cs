@@ -300,13 +300,15 @@ public class QueueStorageTests
     await PullQueueStorage!.Init(CancellationToken.None)
                            .ConfigureAwait(false);
 
-    var pulled = await PullAndDisposeAsync(partition,
-                                           messages.Count,
-                                           QueueMessageStatus.Processed)
+    var expected = messages.Select(message => message.TaskId)
+                           .ToList();
+    var pulled = await PullUntilReceivedAsync(partition,
+                                              expected)
                    .ConfigureAwait(false);
 
+    // Leftovers from a previous run or duplicated deliveries may also be received
     Assert.That(pulled,
-                Is.EquivalentTo(messages.Select(message => message.TaskId)));
+                Is.SupersetOf(expected));
   }
 
   private static List<MessageData> CreateMessages(string partition,
@@ -373,6 +375,43 @@ public class QueueStorageTests
         }
       }
       catch (Exception e) when (cts.IsCancellationRequested && e is not AssertionException)
+      {
+        // Timeout reached while waiting for messages: the assertions of the caller report the missing ones
+      }
+    }
+
+    return taskIds;
+  }
+
+  /// <summary>
+  ///   Pull and acknowledge messages from <paramref name="partition" /> until all the <paramref name="expected" />
+  ///   task ids have been received or <see cref="PullTimeout" /> is reached.
+  /// </summary>
+  /// <param name="partition">Partition to pull from</param>
+  /// <param name="expected">Task ids to receive</param>
+  /// <returns>The task ids of all the received messages, including unexpected ones</returns>
+  private async Task<HashSet<string>> PullUntilReceivedAsync(string              partition,
+                                                             ICollection<string> expected)
+  {
+    var       taskIds = new HashSet<string>();
+    using var cts     = new CancellationTokenSource(PullTimeout);
+
+    while (!expected.All(taskIds.Contains) && !cts.IsCancellationRequested)
+    {
+      try
+      {
+        await foreach (var qmh in PullQueueStorage!.PullMessagesAsync(partition,
+                                                                      expected.Count,
+                                                                      cts.Token)
+                                                   .ConfigureAwait(false))
+        {
+          taskIds.Add(qmh.TaskId);
+          qmh.Status = QueueMessageStatus.Processed;
+          await qmh.DisposeAsync()
+                   .ConfigureAwait(false);
+        }
+      }
+      catch (Exception) when (cts.IsCancellationRequested)
       {
         // Timeout reached while waiting for messages: the assertions of the caller report the missing ones
       }

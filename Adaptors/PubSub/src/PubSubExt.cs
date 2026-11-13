@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Google.Cloud.PubSub.V1;
@@ -62,24 +62,55 @@ internal static class PubSubExt
                                                 $"{options.GetTopicNameInternal(partition)}-ak-sub");
 
   /// <summary>
+  ///   Create the topic and the subscription of the <paramref name="partition" /> if they do not already exist.
+  /// </summary>
+  /// <remarks>
+  ///   Pub/Sub only delivers to a subscription the messages published after its creation.
+  ///   The topic and its subscription are therefore always created together, so that no message can be published
+  ///   to a topic without subscription.
+  /// </remarks>
+  /// <param name="publisher">The publisher client</param>
+  /// <param name="subscriber">The subscriber client</param>
+  /// <param name="options">PubSub options to configure the topic and the subscription</param>
+  /// <param name="partition">Partition the topic and the subscription refer to</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  public static async ValueTask EnsurePartitionIsCreatedAsync(this PublisherServiceApiClient publisher,
+                                                              SubscriberServiceApiClient     subscriber,
+                                                              PubSub                         options,
+                                                              string                         partition,
+                                                              CancellationToken              cancellationToken)
+  {
+    await publisher.EnsureTopicIsCreatedAsync(options,
+                                              partition,
+                                              cancellationToken)
+                   .ConfigureAwait(false);
+    await subscriber.EnsureSubscriptionIsCreatedAsync(options,
+                                                      partition,
+                                                      cancellationToken)
+                    .ConfigureAwait(false);
+  }
+
+  /// <summary>
   ///   Try to create the topic for the <paramref name="partition" /> if it does not already exist.
   /// </summary>
   /// <param name="publisher">The publisher client</param>
   /// <param name="options">PubSub options to configure the topic</param>
   /// <param name="partition">Partition the topic refers to</param>
-  public static async ValueTask EnsureTopicIsCreatedAsync(this PublisherServiceApiClient publisher,
-                                                          PubSub                         options,
-                                                          string                         partition)
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  private static async ValueTask EnsureTopicIsCreatedAsync(this PublisherServiceApiClient publisher,
+                                                           PubSub                         options,
+                                                           string                         partition,
+                                                           CancellationToken              cancellationToken)
   {
-    var topicName = options.GetTopicName(partition);
     try
     {
       await publisher.CreateTopicAsync(new Topic
                                        {
                                          MessageRetentionDuration = Duration.FromTimeSpan(options.MessageRetention),
-                                         TopicName                = topicName,
+                                         TopicName                = options.GetTopicName(partition),
                                          KmsKeyName               = options.KmsKeyName,
-                                       })
+                                       },
+                                       cancellationToken)
                      .ConfigureAwait(false);
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.AlreadyExists)
@@ -91,64 +122,35 @@ internal static class PubSubExt
   ///   Try to create the subscription for the <paramref name="partition" /> if it does not already exist.
   /// </summary>
   /// <remarks>
-  ///   The subscription is created without expiration: Pub/Sub only delivers to a subscription the messages
-  ///   published after its creation, so an expired subscription would silently drop the messages of its partition.
+  ///   The subscription is created without expiration: an expired subscription would silently drop the messages
+  ///   published to its topic.
   /// </remarks>
   /// <param name="subscriber">The subscriber client</param>
   /// <param name="options">PubSub options to configure the subscription</param>
   /// <param name="partition">Partition the subscription refers to</param>
-  /// <returns>
-  ///   <c>true</c> if the subscription has been created by this call,
-  ///   <c>false</c> if it already existed
-  /// </returns>
-  public static async ValueTask<bool> EnsureSubscriptionIsCreatedAsync(this SubscriberServiceApiClient subscriber,
-                                                                       PubSub                          options,
-                                                                       string                          partition)
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  private static async ValueTask EnsureSubscriptionIsCreatedAsync(this SubscriberServiceApiClient subscriber,
+                                                                  PubSub                          options,
+                                                                  string                          partition,
+                                                                  CancellationToken               cancellationToken)
   {
-    var topicName        = options.GetTopicName(partition);
-    var subscriptionName = options.GetSubscriptionName(partition);
-
-    var subscriptionRequest = new Subscription
-                              {
-                                SubscriptionName          = subscriptionName,
-                                TopicAsTopicName          = topicName,
-                                EnableExactlyOnceDelivery = options.ExactlyOnceDelivery,
-                                EnableMessageOrdering     = options.MessageOrdering,
-                                AckDeadlineSeconds        = options.AckDeadlinePeriod,
-                                // An expiration policy without TTL means that the subscription never expires
-                                ExpirationPolicy = new ExpirationPolicy(),
-                              };
     try
     {
-      await subscriber.CreateSubscriptionAsync(subscriptionRequest)
+      await subscriber.CreateSubscriptionAsync(new Subscription
+                                               {
+                                                 SubscriptionName          = options.GetSubscriptionName(partition),
+                                                 TopicAsTopicName          = options.GetTopicName(partition),
+                                                 EnableExactlyOnceDelivery = options.ExactlyOnceDelivery,
+                                                 EnableMessageOrdering     = options.MessageOrdering,
+                                                 AckDeadlineSeconds        = options.AckDeadlinePeriod,
+                                                 // An expiration policy without TTL means that the subscription never expires
+                                                 ExpirationPolicy = new ExpirationPolicy(),
+                                               },
+                                               cancellationToken)
                       .ConfigureAwait(false);
-      return true;
     }
     catch (RpcException e) when (e.StatusCode == StatusCode.AlreadyExists)
     {
-      return false;
     }
   }
-
-  /// <summary>
-  ///   Make the messages still retained by the topic of the <paramref name="partition" /> available again
-  ///   in its subscription.
-  /// </summary>
-  /// <remarks>
-  ///   Messages published to the topic before the subscription is created are not delivered to it,
-  ///   but they are kept by the topic during <see cref="PubSub.MessageRetention" />.
-  ///   Seeking the subscription to the beginning of this retention window marks them as unacknowledged.
-  /// </remarks>
-  /// <param name="subscriber">The subscriber client</param>
-  /// <param name="options">PubSub options to configure the subscription</param>
-  /// <param name="partition">Partition the subscription refers to</param>
-  public static async ValueTask SeekToTopicRetentionAsync(this SubscriberServiceApiClient subscriber,
-                                                          PubSub                          options,
-                                                          string                          partition)
-    => await subscriber.SeekAsync(new SeekRequest
-                                  {
-                                    SubscriptionAsSubscriptionName = options.GetSubscriptionName(partition),
-                                    Time                           = Timestamp.FromDateTime(DateTime.UtcNow - options.MessageRetention),
-                                  })
-                       .ConfigureAwait(false);
 }

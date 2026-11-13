@@ -29,6 +29,11 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\Common\tests\ArmoniK.Core.Common.Tests.csproj" />
+    <!-- The adapter is loaded dynamically by the tests: build it first, without referencing its assembly -->
+    <ProjectReference Include="..\src\ArmoniK.Core.Adapters.PubSub.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <Private>false</Private>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

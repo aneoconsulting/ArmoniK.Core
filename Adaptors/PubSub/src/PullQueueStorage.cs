@@ -73,25 +73,14 @@ internal class PullQueueStorage : IPullQueueStorage
     }
     catch (RpcException ex) when (ex.StatusCode == StatusCode.NotFound)
     {
-      await publisher_.EnsureTopicIsCreatedAsync(options_,
-                                                 partitionId)
+      // Messages published before the subscription creation are not delivered to it.
+      // The submitter creates the subscription before publishing, so it only misses here when nothing
+      // has been submitted to this partition yet.
+      await publisher_.EnsurePartitionIsCreatedAsync(subscriber_,
+                                                     options_,
+                                                     partitionId,
+                                                     cancellationToken)
                       .ConfigureAwait(false);
-      var created = await subscriber_.EnsureSubscriptionIsCreatedAsync(options_,
-                                                                       partitionId)
-                                     .ConfigureAwait(false);
-
-      if (created)
-      {
-        // The subscription did not exist: messages may have been published to the topic before its creation
-        // (subscription expired or deleted, topic created by a submitter that did not create the subscription).
-        // They are not delivered to the new subscription unless we seek back into the topic retention window.
-        logger_.LogWarning("Subscription {SubscriptionName} has been created by the polling agent, seeking it back to recover the messages retained by topic {TopicName}",
-                           subscriptionName,
-                           topicName);
-        await subscriber_.SeekToTopicRetentionAsync(options_,
-                                                    partitionId)
-                         .ConfigureAwait(false);
-      }
 
       messages = await subscriber_.PullAsync(subscriptionName,
                                              nbMessages,
