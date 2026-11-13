@@ -54,6 +54,7 @@ jobs:
           - Adaptors/S3/tests
           - Adaptors/Gcs/tests
           - Adaptors/Embed/tests
+          - Standalone/tests
         os:
           - ubuntu-latest
       fail-fast: false
@@ -1848,6 +1849,65 @@ jobs:
           bash tools/export_mongodb.sh
           tar -cvf - *.json | aws s3 cp - "s3://$AWS_LOG_BUCKET_NAME/core-pipeline/${{ github.run_number }}/${{ github.run_attempt }}/htcmock-healthchecktest-database.tar.gz"
 
+  testStandalone:
+    strategy:
+      fail-fast: false
+      matrix:
+        worker:
+          - htcmock
+          - bench
+    runs-on: ubuntu-latest
+    name: Standalone host end-to-end (${{ matrix.worker }})
+    steps:
+    - name: Checkout
+      uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      with:
+        repository: ${{ env.REPOSITORY }}
+        ref: ${{ env.REFERENCE }}
+
+    - name: Install .NET Core
+      uses: actions/setup-dotnet@0f4a354dd5547a28c70b7853dbd95d5b67886e73 # v6
+      with:
+        dotnet-version: 10.0.403
+
+    - name: Dotnet Restore
+      run: |
+        tools/retry.sh -w 60 -- dotnet restore ArmoniK.Core.sln
+
+    - name: Run HtcMock against the standalone host
+      if: ${{ matrix.worker == 'htcmock' }}
+      timeout-minutes: 20
+      env:
+        SLOTS: 4
+        RUN_DIR: /tmp/standalone
+        HtcMock__NTasks: 1000
+        HtcMock__TotalCalculationTime: 00:00:00.100
+        HtcMock__DataSize: 1
+        HtcMock__MemorySize: 1
+        HtcMock__SubTasksLevels: 4
+      run: tools/standalone-e2e.sh htcmock
+
+    - name: Run Bench against the standalone host
+      if: ${{ matrix.worker == 'bench' }}
+      timeout-minutes: 20
+      env:
+        SLOTS: 4
+        RUN_DIR: /tmp/standalone
+        BenchOptions__NTasks: 1000
+        BenchOptions__TaskDurationMs: 100
+        BenchOptions__PayloadSize: 1
+        BenchOptions__ResultSize: 1
+        BenchOptions__ShowEvents: true
+      run: tools/standalone-e2e.sh bench
+
+    - name: Upload logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7
+      with:
+        name: standalone-${{ matrix.worker }}-logs
+        path: /tmp/standalone/logs/
+        retention-days: 5
+
   canMerge:
     needs:
       - tests
@@ -1864,6 +1924,7 @@ jobs:
       - healthCheckTest
       - testConnectivity
       - testWindowsDocker
+      - testStandalone
       - scout
     runs-on: ubuntu-latest
     steps:
