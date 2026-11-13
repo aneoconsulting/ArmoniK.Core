@@ -29,11 +29,8 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Concurrent;
-
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Testing;
-using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -48,10 +45,7 @@ public class SessionTableTests : SessionTableTestBase
   {
     var services = new ServiceCollection();
 
-    services.AddUuidGeneratorDefault();
-    services.AddTransient<ISessionTable, SessionTable>();
-    services.AddTransient<ConcurrentDictionary<string, SessionData>>();
-    services.AddTransient<ConcurrentDictionary<string, ConcurrentDictionary<string, string>>>();
+    services.AddMemoryTables();
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(true);
