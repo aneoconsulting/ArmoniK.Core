@@ -108,10 +108,7 @@ public class TaskWatcher : ITaskWatcher
                                                           .WatchAsync(sessionHandle,
                                                                       pipeline,
                                                                       cancellationToken: cancellationToken,
-                                                                      options: new ChangeStreamOptions
-                                                                               {
-                                                                                 FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
-                                                                               })
+                                                                      options: ChangeStreamUpdate.CreateOptions())
                                                           .ConfigureAwait(false);
 
     return new WatchEnumerable<NewTask, ChangeStreamDocument<TaskData>>(changeStreamCursor,

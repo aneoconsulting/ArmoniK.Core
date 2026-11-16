@@ -109,10 +109,7 @@ public class ResultWatcher : IResultWatcher
                                                             .WatchAsync(sessionHandle,
                                                                         pipeline,
                                                                         cancellationToken: cancellationToken,
-                                                                        options: new ChangeStreamOptions
-                                                                                 {
-                                                                                   FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
-                                                                                 })
+                                                                        options: ChangeStreamUpdate.CreateOptions())
                                                             .ConfigureAwait(false);
 
     return new WatchEnumerable<NewResult, ChangeStreamDocument<Result>>(changeStreamCursor,
