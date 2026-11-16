@@ -197,4 +197,19 @@ public class WatchEnumeratorTests
     {
     }
   }
+
+  [Test]
+  public async Task ConcurrentCancelledWatchesShouldCloseTheirCursors()
+  {
+    // Many subscriptions ending together dispose their cursors at the same time: each disposal sends a
+    // killCursors, which must not starve the thread pool and must not be abandoned.
+    await Task.WhenAll(Enumerable.Range(0,
+                                        100)
+                                 .Select(_ => Watch(TimeSpan.FromMilliseconds(1500))))
+              .ConfigureAwait(false);
+
+    Assert.That(await CountOpenCursors()
+                  .ConfigureAwait(false),
+                Is.Zero);
+  }
 }
