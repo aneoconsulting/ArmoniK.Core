@@ -89,8 +89,22 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
     {
       cancellationToken_.ThrowIfCancellationRequested();
 
-      if (!await cursor_.MoveNextAsync(abortCts_.Token)
-                        .ConfigureAwait(false))
+      bool hasBatch;
+      try
+      {
+        hasBatch = await cursor_.MoveNextAsync(abortCts_.Token)
+                                .ConfigureAwait(false);
+      }
+      catch (OperationCanceledException e) when (abortCts_.IsCancellationRequested)
+      {
+        // The pending getMore was interrupted after the grace period: report the cancellation requested by the
+        // caller, not the internal one
+        throw new OperationCanceledException(e.Message,
+                                             e,
+                                             cancellationToken_);
+      }
+
+      if (!hasBatch)
       {
         return false;
       }

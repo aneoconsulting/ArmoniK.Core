@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -150,5 +151,50 @@ public class WatchEnumeratorTests
                                     .ConfigureAwait(false),
                                   Is.Zero);
                     });
+  }
+
+  [Test]
+  public void AbortedGetMoreShouldReportTheCallerCancellation()
+  {
+    using var cts = new CancellationTokenSource();
+    var enumerator = new WatchEnumerator<int, int>(new NeverEndingCursor(),
+                                                   i => i,
+                                                   cts.Token);
+
+    var moveNext = enumerator.MoveNextAsync()
+                             .AsTask();
+    cts.Cancel();
+
+    // The getMore never returns by itself: it is interrupted once the grace period has elapsed
+    var exception = Assert.CatchAsync<OperationCanceledException>(() => moveNext);
+    Assert.That(exception!.CancellationToken,
+                Is.EqualTo(cts.Token));
+  }
+
+  /// <summary>
+  ///   Cursor whose getMore never returns, as when the server does not answer
+  /// </summary>
+  private sealed class NeverEndingCursor : IChangeStreamCursor<int>
+  {
+    public IEnumerable<int> Current
+      => throw new InvalidOperationException();
+
+    public bool MoveNext(CancellationToken cancellationToken = default)
+      => throw new NotSupportedException();
+
+    public async Task<bool> MoveNextAsync(CancellationToken cancellationToken = default)
+    {
+      await Task.Delay(Timeout.Infinite,
+                       cancellationToken)
+                .ConfigureAwait(false);
+      return true;
+    }
+
+    public BsonDocument? GetResumeToken()
+      => null;
+
+    public void Dispose()
+    {
+    }
   }
 }
