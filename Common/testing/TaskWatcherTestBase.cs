@@ -563,4 +563,27 @@ public class TaskWatcherTestBase
                   Is.EqualTo(expected));
     }
   }
+
+  [Test]
+  public async Task CancelledWatchShouldEndQuickly()
+  {
+    if (RunTests)
+    {
+      using var cts = new CancellationTokenSource();
+
+      var newTasks = await TaskWatcher!.GetNewTasks(data => data.SessionId == "SessionId",
+                                                    cts.Token)
+                                       .ConfigureAwait(false);
+      var statusUpdates = await TaskWatcher.GetTaskStatusUpdates(data => data.SessionId == "SessionId",
+                                                                 cts.Token)
+                                           .ConfigureAwait(false);
+
+      await WatchTestHelper.AssertEndAfterCancellation(cts,
+                                                       WatchTestHelper.Consume(newTasks,
+                                                                               cts.Token),
+                                                       WatchTestHelper.Consume(statusUpdates,
+                                                                               cts.Token))
+                           .ConfigureAwait(false);
+    }
+  }
 }

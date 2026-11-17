@@ -151,15 +151,4 @@ public class WatchEnumeratorTests
                                   Is.Zero);
                     });
   }
-
-  [Test]
-  public async Task CancelledWatchShouldEndAfterMaxAwaitTime()
-  {
-    var start = DateTime.UtcNow;
-    await Watch(TimeSpan.FromMilliseconds(200))
-      .ConfigureAwait(false);
-
-    Assert.That(DateTime.UtcNow - start,
-                Is.LessThan(TimeSpan.FromMilliseconds(200) + ChangeStreamUpdate.MaxAwaitTime + TimeSpan.FromSeconds(2)));
-  }
 }

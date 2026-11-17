@@ -37,7 +37,7 @@ public static class ChangeStreamUpdate
   ///   It bounds how long a <see cref="WatchEnumerator{TOutput,TInput}" /> takes to notice its cancellation without
   ///   interrupting the pending getMore.
   /// </summary>
-  public static readonly TimeSpan MaxAwaitTime = TimeSpan.FromSeconds(1);
+  internal static readonly TimeSpan MaxAwaitTime = TimeSpan.FromSeconds(1);
 
   /// <summary>
   ///   Options used to open the change streams of the watchers
