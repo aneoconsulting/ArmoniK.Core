@@ -29,12 +29,27 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 /// </summary>
 /// <typeparam name="TOutput">Output type</typeparam>
 /// <typeparam name="TInput">Input type</typeparam>
+/// <remarks>
+///   The cancellation token is not passed to the pending getMore of the cursor: the driver closes a connection on
+///   which an operation is cancelled, so that every cancelled watch would break a pooled connection and open a new
+///   one to kill its cursor. Instead, the getMore returns after at most <see cref="ChangeStreamUpdate.MaxAwaitTime" />
+///   and the token is checked between two getMore. The getMore is only interrupted if it does not return within
+///   <see cref="CancellationGracePeriod" /> after the cancellation, for instance when the server is unreachable.
+/// </remarks>
 public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
 {
-  private readonly CancellationToken           cancellationToken_;
-  private readonly Func<TInput, TOutput>       converter_;
-  private readonly IChangeStreamCursor<TInput> cursor_;
-  private          IEnumerator<TInput>?        currentEnumerator_;
+  /// <summary>
+  ///   Time given to a pending getMore to return by itself after the cancellation, before it is interrupted.
+  ///   Must be larger than <see cref="ChangeStreamUpdate.MaxAwaitTime" />.
+  /// </summary>
+  internal static readonly TimeSpan CancellationGracePeriod = TimeSpan.FromSeconds(5);
+
+  private readonly CancellationTokenSource       abortCts_ = new();
+  private readonly CancellationToken             cancellationToken_;
+  private readonly Func<TInput, TOutput>         converter_;
+  private readonly IChangeStreamCursor<TInput>   cursor_;
+  private readonly CancellationTokenRegistration registration_;
+  private          IEnumerator<TInput>?          currentEnumerator_;
 
   /// <summary>
   ///   Initializes a <see cref="IAsyncEnumerator{TOutput}" /> from a <see cref="IChangeStreamCursor{TInput}" />
@@ -50,15 +65,14 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
     cursor_            = cursor;
     converter_         = converter;
     cancellationToken_ = cancellationToken;
+    registration_ = cancellationToken.Register(static state => ((CancellationTokenSource)state!).CancelAfter(CancellationGracePeriod),
+                                               abortCts_);
   }
 
   /// <inheritdoc />
   public async ValueTask<bool> MoveNextAsync()
   {
-    if (cancellationToken_.IsCancellationRequested)
-    {
-      return false;
-    }
+    cancellationToken_.ThrowIfCancellationRequested();
 
     if (currentEnumerator_ is not null)
     {
@@ -73,13 +87,24 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
 
     while (currentEnumerator_ is null)
     {
-      if (cancellationToken_.IsCancellationRequested)
+      cancellationToken_.ThrowIfCancellationRequested();
+
+      bool hasBatch;
+      try
       {
-        return false;
+        hasBatch = await cursor_.MoveNextAsync(abortCts_.Token)
+                                .ConfigureAwait(false);
+      }
+      catch (OperationCanceledException e) when (abortCts_.IsCancellationRequested)
+      {
+        // The pending getMore was interrupted after the grace period: report the cancellation requested by the
+        // caller, not the internal one
+        throw new OperationCanceledException(e.Message,
+                                             e,
+                                             cancellationToken_);
       }
 
-      if (!await cursor_.MoveNextAsync(cancellationToken_)
-                        .ConfigureAwait(false))
+      if (!hasBatch)
       {
         return false;
       }
@@ -106,6 +131,9 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
   /// <inheritdoc />
   public ValueTask DisposeAsync()
   {
+    // Disposed first: the callback can no longer use the token source once the registration is disposed
+    registration_.Dispose();
+    abortCts_.Dispose();
     cursor_.Dispose();
     currentEnumerator_?.Dispose();
     return ValueTask.CompletedTask;

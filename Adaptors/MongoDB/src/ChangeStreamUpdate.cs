@@ -33,6 +33,26 @@ namespace ArmoniK.Core.Adapters.MongoDB;
 public static class ChangeStreamUpdate
 {
   /// <summary>
+  ///   Maximum time the server waits for new events before answering a getMore of a change stream with an empty batch.
+  ///   It bounds how long a <see cref="WatchEnumerator{TOutput,TInput}" /> takes to notice its cancellation without
+  ///   interrupting the pending getMore.
+  /// </summary>
+  internal static readonly TimeSpan MaxAwaitTime = TimeSpan.FromSeconds(1);
+
+  /// <summary>
+  ///   Options used to open the change streams of the watchers
+  /// </summary>
+  /// <returns>
+  ///   New <see cref="ChangeStreamOptions" /> that look up the full document and use <see cref="MaxAwaitTime" />
+  /// </returns>
+  internal static ChangeStreamOptions CreateOptions()
+    => new()
+       {
+         FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
+         MaxAwaitTime = MaxAwaitTime,
+       };
+
+  /// <summary>
   ///   Listen to the change stream with filtering and returns the matching events
   /// </summary>
   /// <typeparam name="T">Type of Document retrieved from the database</typeparam>
@@ -61,10 +81,7 @@ public static class ChangeStreamUpdate
     return await collection.WatchAsync(sessionHandle,
                                        pipeline,
                                        cancellationToken: cancellationToken,
-                                       options: new ChangeStreamOptions
-                                                {
-                                                  FullDocument = ChangeStreamFullDocumentOption.UpdateLookup,
-                                                })
+                                       options: CreateOptions())
                            .ConfigureAwait(false);
   }
 

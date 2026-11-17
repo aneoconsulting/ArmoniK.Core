@@ -546,4 +546,32 @@ public class ResultWatcherTestBase
                   Is.EqualTo(expected));
     }
   }
+
+  [Test]
+  public async Task CancelledWatchShouldEndQuickly()
+  {
+    if (RunTests)
+    {
+      using var cts = new CancellationTokenSource();
+
+      var newResults = await ResultWatcher!.GetNewResults(data => data.SessionId == "SessionId",
+                                                          cts.Token)
+                                           .ConfigureAwait(false);
+      var ownerUpdates = await ResultWatcher.GetResultOwnerUpdates(data => data.SessionId == "SessionId",
+                                                                   cts.Token)
+                                            .ConfigureAwait(false);
+      var statusUpdates = await ResultWatcher.GetResultStatusUpdates(data => data.SessionId == "SessionId",
+                                                                     cts.Token)
+                                             .ConfigureAwait(false);
+
+      await WatchTestHelper.AssertEndAfterCancellation(cts,
+                                                       WatchTestHelper.Consume(newResults,
+                                                                               cts.Token),
+                                                       WatchTestHelper.Consume(ownerUpdates,
+                                                                               cts.Token),
+                                                       WatchTestHelper.Consume(statusUpdates,
+                                                                               cts.Token))
+                           .ConfigureAwait(false);
+    }
+  }
 }

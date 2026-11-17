@@ -32,6 +32,7 @@ using Microsoft.Extensions.Logging;
 
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Configuration;
 using MongoDB.Driver.Core.Events;
 
 using Serilog;
@@ -46,7 +47,8 @@ internal class MongoDatabaseProvider : IDisposable
   private readonly        ServiceProvider   provider_;
 
   public MongoDatabaseProvider(bool                        useSingleNodeReplicaSet = false,
-                               Action<IServiceCollection>? serviceConfigurator     = null)
+                               Action<IServiceCollection>? serviceConfigurator     = null,
+                               Action<ClusterBuilder>?     clusterConfigurator     = null)
   {
     var loggerSerilog = new LoggerConfiguration().WriteTo.Console()
                                                  .Enrich.FromLogContext()
@@ -57,10 +59,14 @@ internal class MongoDatabaseProvider : IDisposable
 
     database_ = MongoTestDatabase.Create(useSingleNodeReplicaSet);
 
-    var client = database_.CreateClient(settings => settings.ClusterConfigurator =
-                                                      cb => cb.Subscribe<CommandStartedEvent>(e => logger.LogInformation("{CommandName} - {Command}",
-                                                                                                                         e.CommandName,
-                                                                                                                         e.Command.ToJson())));
+    var client = database_.CreateClient(settings => settings.ClusterConfigurator = cb =>
+                                                                                   {
+                                                                                     cb.Subscribe<CommandStartedEvent>(e => logger
+                                                                                                                         .LogInformation("{CommandName} - {Command}",
+                                                                                                                                         e.CommandName,
+                                                                                                                                         e.Command.ToJson()));
+                                                                                     clusterConfigurator?.Invoke(cb);
+                                                                                   });
 
     // Minimal set of configurations to operate on a toy DB
     Dictionary<string, string?> minimalConfig = new()
