@@ -221,6 +221,12 @@ public class ExceptionInterceptor : Interceptor, IHealthCheckProvider
                                                    context,
                                                    StatusCode.NotFound,
                                                    "Task was not found"),
+         // Invalid client input: must not count as a control plane error, otherwise clients can make the control plane unhealthy
+         PartitionNotInSessionException => ProcessException(ExceptionAction.Warning,
+                                                            e,
+                                                            context,
+                                                            StatusCode.InvalidArgument,
+                                                            "Partition is not allowed in the session"),
          InvalidSessionTransitionException => ProcessException(ExceptionAction.Warning,
                                                                e,
                                                                context,
