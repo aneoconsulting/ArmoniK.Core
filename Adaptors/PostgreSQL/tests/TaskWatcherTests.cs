@@ -65,6 +65,15 @@ public class TaskWatcherTests : TaskWatcherTestBase
     RunTests            = true;
   }
 
+  /// <inheritdoc />
+  protected override async Task<int?> CountServerWatchResources()
+  {
+    // The replication slots of the watchers are temporary: they disappear with their replication connection
+    await using var command = connectionProvider_!.DataSource.CreateCommand("SELECT count(*) FROM pg_replication_slots WHERE slot_name LIKE 'armonik_%'");
+    return Convert.ToInt32(await command.ExecuteScalarAsync()
+                                        .ConfigureAwait(false));
+  }
+
   [Test]
   public void WatchAfterDisposeShouldThrow()
   {

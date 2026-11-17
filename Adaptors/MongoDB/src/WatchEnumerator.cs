@@ -129,13 +129,13 @@ public sealed class WatchEnumerator<TOutput, TInput> : IAsyncEnumerator<TOutput>
          : converter_(currentEnumerator_.Current);
 
   /// <inheritdoc />
-  public ValueTask DisposeAsync()
+  public async ValueTask DisposeAsync()
   {
     // Disposed first: the callback can no longer use the token source once the registration is disposed
     registration_.Dispose();
     abortCts_.Dispose();
-    cursor_.Dispose();
     currentEnumerator_?.Dispose();
-    return ValueTask.CompletedTask;
+    await CursorDisposer.DisposeAsync(cursor_)
+                        .ConfigureAwait(false);
   }
 }

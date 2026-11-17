@@ -307,6 +307,16 @@ public class TaskWatcherTestBase
   {
   }
 
+  /// <summary>
+  ///   Counts the resources that the watches of the test still hold on the database server, such as change stream
+  ///   cursors or replication slots.
+  /// </summary>
+  /// <returns>
+  ///   The number of resources, or null when the adapter does not support this count
+  /// </returns>
+  protected virtual Task<int?> CountServerWatchResources()
+    => Task.FromResult<int?>(null);
+
   [Test]
   [Category("SkipSetUp")]
   public async Task InitShouldSucceed()
@@ -584,6 +594,51 @@ public class TaskWatcherTestBase
                                                        WatchTestHelper.Consume(statusUpdates,
                                                                                cts.Token))
                            .ConfigureAwait(false);
+    }
+  }
+
+  [Test]
+  public async Task ConcurrentCancelledWatchesShouldReleaseServerResources()
+  {
+    if (RunTests)
+    {
+      if (await CountServerWatchResources()
+            .ConfigureAwait(false) is null)
+      {
+        Assert.Ignore("The adapter does not count the server resources of its watches");
+      }
+
+      // Many subscriptions ending together release their server resources at the same time: no release must
+      // be abandoned, for instance because the threads that perform it are starved.
+      using var cts = new CancellationTokenSource();
+
+      var watches = await Task.WhenAll(Enumerable.Range(0,
+                                                        100)
+                                                 .Select(async _ =>
+                                                         {
+                                                           var newTasks = await TaskWatcher!.GetNewTasks(data => data.SessionId == "SessionId",
+                                                                                                         cts.Token)
+                                                                                            .ConfigureAwait(false);
+                                                           var statusUpdates = await TaskWatcher.GetTaskStatusUpdates(data => data.SessionId == "SessionId",
+                                                                                                                      cts.Token)
+                                                                                                .ConfigureAwait(false);
+                                                           return Task.WhenAll(WatchTestHelper.Consume(newTasks,
+                                                                                                       cts.Token),
+                                                                               WatchTestHelper.Consume(statusUpdates,
+                                                                                                       cts.Token));
+                                                         }))
+                              .ConfigureAwait(false);
+
+      await cts.CancelAsync()
+               .ConfigureAwait(false);
+      await Task.WhenAll(watches)
+                .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
+
+      // Some adapters release their resources in the background once the watch has ended
+      var remaining = await WatchTestHelper.WaitUntilZero(CountServerWatchResources)
+                                           .ConfigureAwait(false);
+      Assert.That(remaining,
+                  Is.Zero);
     }
   }
 }
