@@ -101,36 +101,6 @@ public class WatchEnumeratorTests
               .ConfigureAwait(ConfigureAwaitOptions.SuppressThrowing);
   }
 
-  /// <summary>
-  ///   Count the cursors of the test database still open on the server
-  /// </summary>
-  private async Task<int> CountOpenCursors()
-  {
-    var admin = database_!.Client.GetDatabase("admin");
-    var pipeline = new[]
-                   {
-                     new BsonDocument("$currentOp",
-                                      new BsonDocument
-                                      {
-                                        {
-                                          "idleCursors", true
-                                        },
-                                        {
-                                          "allUsers", true
-                                        },
-                                      }),
-                     new BsonDocument("$match",
-                                      new BsonDocument("ns",
-                                                       new BsonRegularExpression($"^{database_.DatabaseNamespace.DatabaseName}\\."))),
-                   };
-
-    var ops = await admin.AggregateAsync<BsonDocument>(pipeline)
-                         .ConfigureAwait(false);
-    var cursors = await ops.ToListAsync()
-                           .ConfigureAwait(false);
-    return cursors.Count(op => op.Contains("cursor"));
-  }
-
   [Test]
   public async Task CancelledWatchShouldReleaseConnectionsAndCursors()
   {
@@ -147,8 +117,8 @@ public class WatchEnumeratorTests
                                   Is.Zero);
                       Assert.That(getMoreFailures_,
                                   Is.Zero);
-                      Assert.That(await CountOpenCursors()
-                                    .ConfigureAwait(false),
+                      Assert.That(await MongoCursors.CountOpen(database_!)
+                                                    .ConfigureAwait(false),
                                   Is.Zero);
                     });
   }
@@ -196,20 +166,5 @@ public class WatchEnumeratorTests
     public void Dispose()
     {
     }
-  }
-
-  [Test]
-  public async Task ConcurrentCancelledWatchesShouldCloseTheirCursors()
-  {
-    // Many subscriptions ending together dispose their cursors at the same time: each disposal sends a
-    // killCursors, which must not starve the thread pool and must not be abandoned.
-    await Task.WhenAll(Enumerable.Range(0,
-                                        100)
-                                 .Select(_ => Watch(TimeSpan.FromMilliseconds(1500))))
-              .ConfigureAwait(false);
-
-    Assert.That(await CountOpenCursors()
-                  .ConfigureAwait(false),
-                Is.Zero);
   }
 }

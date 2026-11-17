@@ -87,6 +87,32 @@ internal static class WatchTestHelper
   }
 
   /// <summary>
+  ///   Polls <paramref name="count" /> until it returns zero, at most <paramref name="timeout" />.
+  /// </summary>
+  /// <param name="count">Counts the remaining items</param>
+  /// <param name="timeout">Maximum time to wait, 10 seconds by default</param>
+  /// <returns>
+  ///   The last value returned by <paramref name="count" />
+  /// </returns>
+  public static async Task<int?> WaitUntilZero(Func<Task<int?>> count,
+                                               TimeSpan?        timeout = null)
+  {
+    var watch = Stopwatch.StartNew();
+    while (true)
+    {
+      var remaining = await count()
+                        .ConfigureAwait(false);
+      if (remaining is 0 or null || watch.Elapsed >= (timeout ?? TimeSpan.FromSeconds(10)))
+      {
+        return remaining;
+      }
+
+      await Task.Delay(TimeSpan.FromMilliseconds(100))
+                .ConfigureAwait(false);
+    }
+  }
+
+  /// <summary>
   ///   Waits until <paramref name="events" /> contains all the <paramref name="expected" /> events, at most
   ///   <paramref name="timeout" />, then cancels the watch after a short delay so that unexpected extra events
   ///   still arrive and fail the assertion.

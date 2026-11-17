@@ -15,11 +15,15 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System.Threading.Tasks;
+
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
 using ArmoniK.Core.Common.Testing;
 
 using Microsoft.Extensions.DependencyInjection;
+
+using MongoDB.Driver;
 
 using NUnit.Framework;
 
@@ -34,6 +38,7 @@ public class TaskWatcherTests : TaskWatcherTestBase
     RunTests = false;
   }
 
+  private IMongoDatabase?        database_;
   private MongoDatabaseProvider? tableProvider_;
 
   public override void GetInstance()
@@ -43,6 +48,12 @@ public class TaskWatcherTests : TaskWatcherTestBase
 
     TaskTable   = provider.GetRequiredService<ITaskTable>();
     TaskWatcher = provider.GetRequiredService<ITaskWatcher>();
+    database_   = provider.GetRequiredService<IMongoDatabase>();
     RunTests    = true;
   }
+
+  /// <inheritdoc />
+  protected override async Task<int?> CountServerWatchResources()
+    => await MongoCursors.CountOpen(database_!)
+                         .ConfigureAwait(false);
 }
