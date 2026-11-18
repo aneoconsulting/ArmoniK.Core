@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -96,13 +97,13 @@ internal class PullQueueStorage : IPullQueueStorage
     }
 
     // The ack deadline of the received messages starts at reception
-    var pullDateTime = DateTime.UtcNow;
+    var pullTimestamp = Stopwatch.GetTimestamp();
 
     foreach (var message in messages.ReceivedMessages)
     {
       cancellationToken.ThrowIfCancellationRequested();
       yield return new QueueMessageHandler(message,
-                                           pullDateTime,
+                                           pullTimestamp,
                                            subscriber_,
                                            subscriptionName,
                                            options_.AckDeadlinePeriod,

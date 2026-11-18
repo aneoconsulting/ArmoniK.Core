@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -164,7 +165,7 @@ internal class PullQueueStorage : IPullQueueStorage
       }
 
       // The visibility timeout of the received messages starts at reception
-      var pullDateTime = DateTime.UtcNow;
+      var pullTimestamp = Stopwatch.GetTimestamp();
 
       if (messages?.Messages?.Count is null or 0)
       {
@@ -175,7 +176,7 @@ internal class PullQueueStorage : IPullQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         yield return new QueueMessageHandler(message,
-                                             pullDateTime,
+                                             pullTimestamp,
                                              client_,
                                              queueUrl,
                                              options_,
