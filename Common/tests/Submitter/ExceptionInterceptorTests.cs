@@ -49,6 +49,7 @@ using Moq;
 
 using NUnit.Framework;
 
+using SessionStatus = ArmoniK.Core.Common.Storage.SessionStatus;
 using TaskOptions = ArmoniK.Api.gRPC.V1.TaskOptions;
 using TaskRequest = ArmoniK.Core.Common.gRPC.Services.TaskRequest;
 using Type = System.Type;
@@ -173,13 +174,12 @@ internal class ExceptionInterceptorTests
 
     for (var i = 0; i < 3; i++)
     {
-      var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.ServerStreamingServerHandler<object, object>(new object(),
-                                                                                                                           Mock.Of<IServerStreamWriter<object>>(),
-                                                                                                                           TestServerCallContext.Create(),
-                                                                                                                           (_,
-                                                                                                                            _,
-                                                                                                                            _) => throw new
-                                                                                                                                    EventStreamInterruptedException("stopped"))
+      var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.ServerStreamingServerHandler(new object(),
+                                                                                                           Mock.Of<IServerStreamWriter<object>>(),
+                                                                                                           TestServerCallContext.Create(),
+                                                                                                           (_,
+                                                                                                            _,
+                                                                                                            _) => throw new EventStreamInterruptedException("stopped"))
                                                                              .ConfigureAwait(false));
 
       Assert.That(rpc!.StatusCode,
@@ -840,6 +840,59 @@ internal class ExceptionInterceptorTests
 
     Assert.That(exceptionManager.LateCancellationToken.IsCancellationRequested,
                 Is.True);
+  }
+
+  [Test]
+  public async Task PartitionNotInSessionShouldBeInvalidArgumentAndNotRecorded()
+  {
+    using var exceptionManager = BuildExceptionManager(1);
+    var interceptor = new ExceptionInterceptor(exceptionManager,
+                                               NullLogger<ExceptionInterceptor>.Instance);
+
+    var sessionData = new SessionData("session",
+                                      SessionStatus.Running,
+                                      new List<string>
+                                      {
+                                        "part1",
+                                      },
+                                      new Base.DataStructures.TaskOptions() with
+                                      {
+                                        PartitionId = "part1",
+                                      });
+    var submissionOptions = new Base.DataStructures.TaskOptions() with
+                            {
+                              PartitionId = "part2",
+                            };
+
+    for (var i = 0; i < 3; i++)
+    {
+      var rpc = Assert.CatchAsync<RpcException>(async () => await interceptor.UnaryServerHandler<object, object>(new object(),
+                                                                                                                 TestServerCallContext.Create(),
+                                                                                                                 (_,
+                                                                                                                  _) =>
+                                                                                                                 {
+                                                                                                                   TaskLifeCycleHelper.ValidateSession(sessionData,
+                                                                                                                                                       submissionOptions,
+                                                                                                                                                       "",
+                                                                                                                                                       10,
+                                                                                                                                                       NullLogger
+                                                                                                                                                         .Instance,
+                                                                                                                                                       CancellationToken
+                                                                                                                                                         .None);
+                                                                                                                   return Task.FromResult(new object());
+                                                                                                                 })
+                                                                             .ConfigureAwait(false));
+
+      Assert.That(rpc!.StatusCode,
+                  Is.EqualTo(StatusCode.InvalidArgument));
+    }
+
+    // A client submitting to a partition outside its session must not make the control plane unhealthy
+    Assert.That(exceptionManager.Failed,
+                Is.False);
+    Assert.That((await interceptor.Check(HealthCheckTag.Liveness)
+                                  .ConfigureAwait(false)).Status,
+                Is.EqualTo(HealthStatus.Healthy));
   }
 
   [Test]
