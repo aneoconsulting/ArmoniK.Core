@@ -46,6 +46,12 @@ internal class PullQueueStorage : IPullQueueStorage
                           PubSub                     options,
                           ILogger<PullQueueStorage>  logger)
   {
+    if (options.AckExtendDeadlineStep <= 0 || options.AckExtendDeadlineStep >= options.AckDeadlinePeriod)
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(options.AckExtendDeadlineStep)} ({options.AckExtendDeadlineStep}) must be strictly positive and strictly less than {nameof(options.AckDeadlinePeriod)} ({options.AckDeadlinePeriod}).");
+    }
+
     options_    = options;
     subscriber_ = subscriber;
     publisher_  = publisher;

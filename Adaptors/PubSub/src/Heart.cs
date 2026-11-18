@@ -99,20 +99,22 @@ public class Heart
 
     runningTask_ = Task<Task>.Factory.StartNew(async () =>
                                                {
-                                                 var delay = firstBeatDelay;
+                                                 // Only the first delay may be skipped: it is negative when the first beat is already overdue
+                                                 if (firstBeatDelay > TimeSpan.Zero)
+                                                 {
+                                                   await Task.Delay(firstBeatDelay,
+                                                                    stoppedHeartCts_.Token)
+                                                             .ConfigureAwait(false);
+                                                 }
+
                                                  while (!stoppedHeartCts_.IsCancellationRequested)
                                                  {
-                                                   if (delay > TimeSpan.Zero)
-                                                   {
-                                                     await Task.Delay(delay,
-                                                                      stoppedHeartCts_.Token)
-                                                               .ConfigureAwait(false);
-                                                   }
-
                                                    await pulse_(cancellationToken_)
                                                      .ConfigureAwait(false);
 
-                                                   delay = beatPeriod_;
+                                                   await Task.Delay(beatPeriod_,
+                                                                    stoppedHeartCts_.Token)
+                                                             .ConfigureAwait(false);
                                                  }
                                                },
                                                CancellationToken.None,
