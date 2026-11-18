@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -47,6 +48,12 @@ internal class PullQueueStorage : IPullQueueStorage
                           SQS                       options,
                           ILogger<PullQueueStorage> logger)
   {
+    if (options.AckExtendDeadlineStep <= 0 || options.AckExtendDeadlineStep >= options.AckDeadlinePeriod)
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(options.AckExtendDeadlineStep)} ({options.AckExtendDeadlineStep}) must be strictly positive and strictly less than {nameof(options.AckDeadlinePeriod)} ({options.AckDeadlinePeriod}).");
+    }
+
     options_ = options;
     client_  = client;
     logger_  = logger;
@@ -157,6 +164,9 @@ internal class PullQueueStorage : IPullQueueStorage
         }
       }
 
+      // The visibility timeout of the received messages starts at reception
+      var pullTimestamp = Stopwatch.GetTimestamp();
+
       if (messages?.Messages?.Count is null or 0)
       {
         continue;
@@ -166,6 +176,7 @@ internal class PullQueueStorage : IPullQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         yield return new QueueMessageHandler(message,
+                                             pullTimestamp,
                                              client_,
                                              queueUrl,
                                              options_,

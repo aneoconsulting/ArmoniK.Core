@@ -84,7 +84,11 @@ public class Heart
   /// <summary>
   ///   Start the heart. If the heart is beating, it has no effect.
   /// </summary>
-  public void Start()
+  /// <param name="firstBeatDelay">
+  ///   Delay before the first beat; the following beats are separated by the beat period.
+  ///   A zero or negative value triggers the first beat immediately.
+  /// </param>
+  public void Start(TimeSpan firstBeatDelay)
   {
     if (stoppedHeartCts_ is not null) // already running with infinite loop
     {
@@ -95,14 +99,22 @@ public class Heart
 
     runningTask_ = Task<Task>.Factory.StartNew(async () =>
                                                {
+                                                 // Only the first delay may be skipped: it is negative when the first beat is already overdue
+                                                 if (firstBeatDelay > TimeSpan.Zero)
+                                                 {
+                                                   await Task.Delay(firstBeatDelay,
+                                                                    stoppedHeartCts_.Token)
+                                                             .ConfigureAwait(false);
+                                                 }
+
                                                  while (!stoppedHeartCts_.IsCancellationRequested)
                                                  {
-                                                   var delayTask = Task.Delay(beatPeriod_,
-                                                                              stoppedHeartCts_.Token);
                                                    await pulse_(cancellationToken_)
                                                      .ConfigureAwait(false);
 
-                                                   await delayTask.ConfigureAwait(false);
+                                                   await Task.Delay(beatPeriod_,
+                                                                    stoppedHeartCts_.Token)
+                                                             .ConfigureAwait(false);
                                                  }
                                                },
                                                CancellationToken.None,

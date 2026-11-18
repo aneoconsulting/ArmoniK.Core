@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -46,6 +47,12 @@ internal class PullQueueStorage : IPullQueueStorage
                           PubSub                     options,
                           ILogger<PullQueueStorage>  logger)
   {
+    if (options.AckExtendDeadlineStep <= 0 || options.AckExtendDeadlineStep >= options.AckDeadlinePeriod)
+    {
+      throw new ArgumentOutOfRangeException(nameof(options),
+                                            $"{nameof(options.AckExtendDeadlineStep)} ({options.AckExtendDeadlineStep}) must be strictly positive and strictly less than {nameof(options.AckDeadlinePeriod)} ({options.AckDeadlinePeriod}).");
+    }
+
     options_    = options;
     subscriber_ = subscriber;
     publisher_  = publisher;
@@ -89,10 +96,14 @@ internal class PullQueueStorage : IPullQueueStorage
                                   .ConfigureAwait(false);
     }
 
+    // The ack deadline of the received messages starts at reception
+    var pullTimestamp = Stopwatch.GetTimestamp();
+
     foreach (var message in messages.ReceivedMessages)
     {
       cancellationToken.ThrowIfCancellationRequested();
       yield return new QueueMessageHandler(message,
+                                           pullTimestamp,
                                            subscriber_,
                                            subscriptionName,
                                            options_.AckDeadlinePeriod,

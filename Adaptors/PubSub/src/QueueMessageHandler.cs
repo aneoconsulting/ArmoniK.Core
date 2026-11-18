@@ -41,6 +41,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
   private          StackTrace?                stackTrace_;
 
   public QueueMessageHandler(ReceivedMessage            message,
+                             long                       pullTimestamp,
                              SubscriberServiceApiClient subscriberServiceApiClient,
                              SubscriptionName           subscriptionName,
                              int                        ackDeadlinePeriod,
@@ -60,7 +61,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
                                        TimeSpan.FromSeconds(ackExtendDeadlineStep),
                                        CancellationToken);
 
-    autoExtendAckDeadline_.Start();
+    // Messages of a batch are handled lazily: the first extension is scheduled from the pull, not from the handler creation
+    autoExtendAckDeadline_.Start(TimeSpan.FromSeconds(ackExtendDeadlineStep) - Stopwatch.GetElapsedTime(pullTimestamp));
   }
 
   public async ValueTask DisposeAsync()
