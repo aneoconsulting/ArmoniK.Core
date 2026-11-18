@@ -157,6 +157,9 @@ internal class PullQueueStorage : IPullQueueStorage
         }
       }
 
+      // The visibility timeout of the received messages starts at reception
+      var pullDateTime = DateTime.UtcNow;
+
       if (messages?.Messages?.Count is null or 0)
       {
         continue;
@@ -166,6 +169,7 @@ internal class PullQueueStorage : IPullQueueStorage
       {
         cancellationToken.ThrowIfCancellationRequested();
         yield return new QueueMessageHandler(message,
+                                             pullDateTime,
                                              client_,
                                              queueUrl,
                                              options_,

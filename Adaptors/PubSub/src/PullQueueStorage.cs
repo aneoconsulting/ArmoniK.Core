@@ -89,10 +89,14 @@ internal class PullQueueStorage : IPullQueueStorage
                                   .ConfigureAwait(false);
     }
 
+    // The ack deadline of the received messages starts at reception
+    var pullDateTime = DateTime.UtcNow;
+
     foreach (var message in messages.ReceivedMessages)
     {
       cancellationToken.ThrowIfCancellationRequested();
       yield return new QueueMessageHandler(message,
+                                           pullDateTime,
                                            subscriber_,
                                            subscriptionName,
                                            options_.AckDeadlinePeriod,

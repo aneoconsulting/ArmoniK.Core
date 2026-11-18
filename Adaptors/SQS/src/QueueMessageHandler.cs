@@ -47,6 +47,7 @@ internal class QueueMessageHandler : IQueueMessageHandler
   private          StackTrace?     stackTrace_;
 
   public QueueMessageHandler(Message         message,
+                             DateTime        pullDateTime,
                              AmazonSQSClient client,
                              string          queueUrl,
                              SQS             options,
@@ -78,7 +79,8 @@ internal class QueueMessageHandler : IQueueMessageHandler
 
     scope_ = logger_.BeginScope(d);
 
-    autoExtendAckDeadline_.Start();
+    // Messages of a batch are handled lazily: the first extension is scheduled from the pull, not from the handler creation
+    autoExtendAckDeadline_.Start(TimeSpan.FromSeconds(options.AckExtendDeadlineStep) - (DateTime.UtcNow - pullDateTime));
   }
 
   /// <inheritdoc />

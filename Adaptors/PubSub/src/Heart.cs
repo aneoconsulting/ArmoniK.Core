@@ -84,7 +84,11 @@ public class Heart
   /// <summary>
   ///   Start the heart. If the heart is beating, it has no effect.
   /// </summary>
-  public void Start()
+  /// <param name="firstBeatDelay">
+  ///   Delay before the first beat; the following beats are separated by the beat period.
+  ///   A zero or negative value triggers the first beat immediately.
+  /// </param>
+  public void Start(TimeSpan firstBeatDelay)
   {
     if (stoppedHeartCts_ is not null) // already running with infinite loop
     {
@@ -95,15 +99,20 @@ public class Heart
 
     runningTask_ = Task<Task>.Factory.StartNew(async () =>
                                                {
+                                                 var delay = firstBeatDelay;
                                                  while (!stoppedHeartCts_.IsCancellationRequested)
                                                  {
-                                                   // Wait before the first pulse: the deadline is already set when the message is received
-                                                   await Task.Delay(beatPeriod_,
-                                                                    stoppedHeartCts_.Token)
-                                                             .ConfigureAwait(false);
+                                                   if (delay > TimeSpan.Zero)
+                                                   {
+                                                     await Task.Delay(delay,
+                                                                      stoppedHeartCts_.Token)
+                                                               .ConfigureAwait(false);
+                                                   }
 
                                                    await pulse_(cancellationToken_)
                                                      .ConfigureAwait(false);
+
+                                                   delay = beatPeriod_;
                                                  }
                                                },
                                                CancellationToken.None,
