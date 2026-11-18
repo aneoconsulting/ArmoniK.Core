@@ -97,12 +97,13 @@ public class Heart
                                                {
                                                  while (!stoppedHeartCts_.IsCancellationRequested)
                                                  {
-                                                   var delayTask = Task.Delay(beatPeriod_,
-                                                                              stoppedHeartCts_.Token);
+                                                   // Wait before the first pulse: the deadline is already set when the message is received
+                                                   await Task.Delay(beatPeriod_,
+                                                                    stoppedHeartCts_.Token)
+                                                             .ConfigureAwait(false);
+
                                                    await pulse_(cancellationToken_)
                                                      .ConfigureAwait(false);
-
-                                                   await delayTask.ConfigureAwait(false);
                                                  }
                                                },
                                                CancellationToken.None,
