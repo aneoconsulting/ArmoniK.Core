@@ -272,10 +272,10 @@ internal static class Program
 
     if (benchOptions.PauseSessionDuringSubmission)
     {
-      await channelPool.WithInstanceAsync(channel => new Sessions.SessionsClient(channel).PauseSessionAsync(new PauseSessionRequest
-                                                                                                            {
-                                                                                                              SessionId = createSessionReply.SessionId,
-                                                                                                            }),
+      await channelPool.WithInstanceAsync(async channel => await new Sessions.SessionsClient(channel).PauseSessionAsync(new PauseSessionRequest
+                                                                                                                        {
+                                                                                                                          SessionId = createSessionReply.SessionId,
+                                                                                                                        }),
                                           CancellationToken.None)
                        .ConfigureAwait(false);
     }
@@ -484,10 +484,10 @@ internal static class Program
 
     if (benchOptions.PauseSessionDuringSubmission)
     {
-      await channelPool.WithInstanceAsync(channel => new Sessions.SessionsClient(channel).ResumeSessionAsync(new ResumeSessionRequest
-                                                                                                             {
-                                                                                                               SessionId = createSessionReply.SessionId,
-                                                                                                             }),
+      await channelPool.WithInstanceAsync(async channel => await new Sessions.SessionsClient(channel).ResumeSessionAsync(new ResumeSessionRequest
+                                                                                                                         {
+                                                                                                                           SessionId = createSessionReply.SessionId,
+                                                                                                                         }),
                                           CancellationToken.None)
                        .ConfigureAwait(false);
     }
@@ -614,10 +614,10 @@ internal static class Program
 
     var countFinished = Stopwatch.GetTimestamp();
 
-    await channelPool.WithInstanceAsync(channel => new Sessions.SessionsClient(channel).CloseSessionAsync(new CloseSessionRequest
-                                                                                                          {
-                                                                                                            SessionId = createSessionReply.SessionId,
-                                                                                                          }),
+    await channelPool.WithInstanceAsync(async channel => await new Sessions.SessionsClient(channel).CloseSessionAsync(new CloseSessionRequest
+                                                                                                                      {
+                                                                                                                        SessionId = createSessionReply.SessionId,
+                                                                                                                      }),
                                         CancellationToken.None)
                      .ConfigureAwait(false);
 
