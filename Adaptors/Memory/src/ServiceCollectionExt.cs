@@ -27,26 +27,59 @@ using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
+/// <summary>
+///   Registration of the in-memory tables
+/// </summary>
 public static class ServiceCollectionExt
 {
-  [PublicAPI]
-  public static IServiceCollection AddMongoComponents(this IServiceCollection services,
-                                                      ConfigurationManager    configuration,
-                                                      ILogger                 logger)
-  {
-    logger.LogInformation("Configure MongoDB client");
+  /// <summary>
+  ///   Value of <c>Components:TableStorage</c> that selects the in-memory tables
+  /// </summary>
+  public const string TableStorage = "ArmoniK.Adapters.Memory.TableStorage";
 
+  /// <summary>
+  ///   Register the in-memory tables when <c>Components:TableStorage</c> is <see cref="TableStorage" />
+  /// </summary>
+  /// <param name="services">Collection of services to fill</param>
+  /// <param name="configuration">Configuration of the application</param>
+  /// <param name="logger">Logger used during the registration</param>
+  /// <returns>
+  ///   The collection of services
+  /// </returns>
+  [PublicAPI]
+  public static IServiceCollection AddMemoryComponents(this IServiceCollection services,
+                                                       ConfigurationManager    configuration,
+                                                       ILogger                 logger)
+  {
     var components = configuration.GetSection(Components.SettingSection);
 
-
-    if (components["TableStorage"] == "ArmoniK.Adapters.Memory.TableStorage")
+    if (components["TableStorage"] == TableStorage)
     {
-      services.AddUuidGeneratorDefault()
-              .AddTransient<ITaskTable, TaskTable>()
-              .AddTransient<ISessionTable, SessionTable>()
-              .AddTransient<IResultTable, ResultTable>();
+      logger.LogInformation("Configure in-memory tables");
+      services.AddMemoryTables();
     }
 
     return services;
   }
+
+  /// <summary>
+  ///   Register the in-memory tables as singletons
+  /// </summary>
+  /// <remarks>
+  ///   Each table is registered once, and the interface resolves to the same instance as the concrete type: all the
+  ///   consumers of a table share the same data.
+  /// </remarks>
+  /// <param name="services">Collection of services to fill</param>
+  /// <returns>
+  ///   The collection of services
+  /// </returns>
+  [PublicAPI]
+  public static IServiceCollection AddMemoryTables(this IServiceCollection services)
+    => services.AddUuidGeneratorDefault()
+               .AddSingleton<TaskTable>()
+               .AddSingleton<ITaskTable>(sp => sp.GetRequiredService<TaskTable>())
+               .AddSingleton<SessionTable>()
+               .AddSingleton<ISessionTable>(sp => sp.GetRequiredService<SessionTable>())
+               .AddSingleton<ResultTable>()
+               .AddSingleton<IResultTable>(sp => sp.GetRequiredService<ResultTable>());
 }
