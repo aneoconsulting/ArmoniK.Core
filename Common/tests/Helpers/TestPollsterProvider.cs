@@ -187,6 +187,7 @@ public class TestPollsterProvider : IDisposable
            .AddHostedService<PostProcessor>()
            .AddSingleton<RunningTaskQueue>()
            .AddSingleton<PostProcessingTaskQueue>()
+           .AddQueueMessageReleaser()
            .AddSingleton<Common.Pollster.Pollster>()
            .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddSingleton<ITaskProcessingChecker, HelperTaskProcessingChecker>()

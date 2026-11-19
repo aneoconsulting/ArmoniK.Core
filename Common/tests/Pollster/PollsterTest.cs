@@ -601,6 +601,8 @@ public class PollsterTest
   /// <remarks>
   ///   With a batch size of 1, the pollster pulls once per message and finishes handling a message, disposal
   ///   included, before pulling again. The third pull therefore means the second message has been fully handled.
+  ///   The disposal only hands the message over to the <see cref="QueueMessageReleaser" />: the ack/nack may still
+  ///   be in flight, but the task processing registry is already up to date.
   /// </remarks>
   private class PullCountingQueueStorage : IPullQueueStorage
   {
@@ -996,6 +998,116 @@ public class PollsterTest
     Assert.DoesNotThrowAsync(() => mainLoop);
 
     testServiceProvider.AssertFailAfterError();
+  }
+
+  /// <summary>
+  ///   Queue message whose release (ack/nack) blocks until <see cref="Unblock" /> is called.
+  /// </summary>
+  private sealed class BlockingReleaseQueueMessageHandler : IQueueMessageHandler
+  {
+    private readonly TaskCompletionSource releaseStarted_ = new(TaskCreationOptions.RunContinuationsAsynchronously);
+    private readonly TaskCompletionSource unblock_        = new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+    public Task ReleaseStarted
+      => releaseStarted_.Task;
+
+    public async ValueTask DisposeAsync()
+    {
+      releaseStarted_.TrySetResult();
+      await unblock_.Task.ConfigureAwait(false);
+    }
+
+    public CancellationToken CancellationToken { get; set; }
+
+    public string MessageId { get; } = Guid.NewGuid()
+                                           .ToString();
+
+    public string             TaskId            { get; init; } = "";
+    public QueueMessageStatus Status            { get; set; }
+    public DateTime           ReceptionDateTime { get; init; } = DateTime.UtcNow;
+
+    public void Unblock()
+      => unblock_.TrySetResult();
+  }
+
+  [Test]
+  // The setup (MongoDB, host, session and task creation) takes several seconds on a loaded machine when this test is
+  // the first of the process to use MongoDB. The behavior itself is checked by the 4 s waits below.
+  [Timeout(30000)]
+  public async Task SlowMessageReleaseShouldNotBlockThePipeline()
+  {
+    var mockPullQueueStorage    = new SimplePullQueueStorageChannel();
+    var waitWorkerStreamHandler = new WaitWorkerStreamHandler(0);
+    var simpleAgentHandler      = new SimpleAgentHandler();
+
+    using var testServiceProvider = new TestPollsterProvider(waitWorkerStreamHandler,
+                                                             simpleAgentHandler,
+                                                             mockPullQueueStorage);
+
+    var (_, _, taskSubmitted) = await InitSubmitter(testServiceProvider.Submitter,
+                                                    testServiceProvider.PartitionTable,
+                                                    testServiceProvider.ResultTable,
+                                                    testServiceProvider.SessionTable,
+                                                    CancellationToken.None)
+                                  .ConfigureAwait(false);
+
+    // Messages for unknown tasks are not acquired and are released right away by the pollster loop.
+    // Their release blocks: it must not prevent the pollster from pulling and executing the next task.
+    var blocked = Enumerable.Range(0,
+                                   3)
+                            .Select(i => new BlockingReleaseQueueMessageHandler
+                                         {
+                                           Status = QueueMessageStatus.Waiting,
+                                           TaskId = $"UnknownTask{i}",
+                                         })
+                            .ToList();
+
+    foreach (var message in blocked)
+    {
+      await mockPullQueueStorage.Channel.Writer.WriteAsync(message)
+                                .ConfigureAwait(false);
+    }
+
+    await mockPullQueueStorage.Channel.Writer.WriteAsync(new SimpleQueueMessageHandler
+                                                         {
+                                                           CancellationToken = CancellationToken.None,
+                                                           Status            = QueueMessageStatus.Waiting,
+                                                           MessageId = Guid.NewGuid()
+                                                                           .ToString(),
+                                                           TaskId = taskSubmitted,
+                                                         })
+                              .ConfigureAwait(false);
+
+    await testServiceProvider.Pollster.Init(CancellationToken.None)
+                             .ConfigureAwait(false);
+
+    var mainLoop = testServiceProvider.Pollster.MainLoop();
+
+    try
+    {
+      // Each wait is shorter than half of the test timeout, so that a failure tells which step did not happen.
+      // All the releases are in flight (the default parallelism is greater than the number of blocked messages)
+      Assert.That(() => Task.WhenAll(blocked.Select(m => m.ReleaseStarted))
+                            .WaitAsync(TimeSpan.FromSeconds(4)),
+                  Throws.Nothing,
+                  "The releases of the messages of unknown tasks did not start");
+
+      // ... and the next task is executed while they are still blocked
+      Assert.That(() => waitWorkerStreamHandler.Started.WaitAsync(TimeSpan.FromSeconds(4)),
+                  Throws.Nothing,
+                  "The next task was not executed while the releases were blocked");
+    }
+    finally
+    {
+      foreach (var message in blocked)
+      {
+        message.Unblock();
+      }
+    }
+
+    testServiceProvider.Lifetime.StopApplication();
+
+    Assert.DoesNotThrowAsync(() => mainLoop);
   }
 
   [Test]

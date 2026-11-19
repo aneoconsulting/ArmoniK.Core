@@ -24,6 +24,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Common.gRPC.Validators;
 using ArmoniK.Core.Common.Injection.Options;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Stream.Worker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
@@ -229,4 +230,17 @@ public static class ServiceCollectionExt
     => services.AddSingleton<ExceptionManager>()
                .AddSingleton(optionsFactory ?? (_ => new ExceptionManager.Options()))
                .AddSingleton<IHostLifetime>(sp => sp.GetRequiredService<ExceptionManager>());
+
+  /// <summary>
+  ///   Add <see cref="QueueMessageReleaser" /> both as a singleton (to be injected into the
+  ///   <see cref="ArmoniK.Core.Common.Pollster.Pollster" />) and as a hosted service (to run its release loop).
+  /// </summary>
+  /// <param name="services">Collection of service descriptors</param>
+  /// <returns>
+  ///   The updated collection of service descriptors
+  /// </returns>
+  [PublicAPI]
+  public static IServiceCollection AddQueueMessageReleaser(this IServiceCollection services)
+    => services.AddSingleton<QueueMessageReleaser>()
+               .AddHostedService(sp => sp.GetRequiredService<QueueMessageReleaser>());
 }
