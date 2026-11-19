@@ -54,6 +54,13 @@ public class ResultTable : IResultTable
   public ResultTable(ILogger<ResultTable> logger)
     => Logger = logger;
 
+  /// <summary>
+  ///   Number of handlers subscribed to <see cref="ResultChanged" />
+  /// </summary>
+  internal int ResultChangedHandlerCount
+    => ResultChanged?.GetInvocationList()
+                    .Length ?? 0;
+
   /// <inheritdoc />
   public Task Create(ICollection<Result> results,
                      CancellationToken   cancellationToken = default)
@@ -77,6 +84,8 @@ public class ResultTable : IResultTable
       {
         results_.Add(result.ResultId,
                      result);
+        OnChanged(null,
+                  result);
       }
     }
 
@@ -164,10 +173,11 @@ public class ResultTable : IResultTable
 
       foreach (var (resultId, taskId) in requests)
       {
-        results_[resultId] = results_[resultId] with
-                             {
-                               OwnerTaskId = taskId,
-                             };
+        Replace(results_[resultId],
+                current => current with
+                           {
+                             OwnerTaskId = taskId,
+                           });
       }
     }
 
@@ -206,8 +216,9 @@ public class ResultTable : IResultTable
 
       foreach (var current in matching)
       {
-        results_[current.ResultId] = Copy(new Result(current,
-                                                     updates));
+        Replace(current,
+                c => Copy(new Result(c,
+                                     updates)));
       }
 
       return Task.FromResult<long>(matching.Count);
@@ -230,8 +241,9 @@ public class ResultTable : IResultTable
       }
 
       oldResult = current;
-      results_[resultId] = Copy(new Result(current,
-                                           updates));
+      Replace(current,
+              c => Copy(new Result(c,
+                                   updates)));
     }
 
     return Task.FromResult(oldResult with
@@ -257,10 +269,11 @@ public class ResultTable : IResultTable
           if (results_.TryGetValue(key,
                                    out var current) && current.OwnerTaskId == oldTaskId)
           {
-            results_[key] = current with
-                            {
-                              OwnerTaskId = request.NewTaskId,
-                            };
+            Replace(current,
+                    c => c with
+                         {
+                           OwnerTaskId = request.NewTaskId,
+                         });
           }
         }
       }
@@ -286,12 +299,12 @@ public class ResultTable : IResultTable
 
       foreach (var (resultId, taskIds) in dependencies)
       {
-        var current = results_[resultId];
-        results_[resultId] = current with
-                             {
-                               DependentTasks = current.DependentTasks.Union(taskIds)
-                                                       .ToList(),
-                             };
+        Replace(results_[resultId],
+                current => current with
+                           {
+                             DependentTasks = current.DependentTasks.Union(taskIds)
+                                                     .ToList(),
+                           });
       }
     }
 
@@ -311,6 +324,55 @@ public class ResultTable : IResultTable
     }
 
     return Task.CompletedTask;
+  }
+
+  /// <summary>
+  ///   Raised after each write, with the previous value of the result (null when it is created) and its new value.
+  /// </summary>
+  /// <remarks>
+  ///   The event is raised under the table lock, so handlers see the writes in the order they were applied. Handlers must
+  ///   not block nor call the table. An exception thrown by a handler is logged and does not reach the writer nor the other
+  ///   handlers.
+  /// </remarks>
+  internal event Action<Result?, Result>? ResultChanged;
+
+  /// <summary>
+  ///   Replace a stored result with an updated value, and raise <see cref="ResultChanged" />. Must be called under the lock.
+  /// </summary>
+  /// <param name="current">Stored value of the result</param>
+  /// <param name="update">Function that computes the new value from the stored one</param>
+  private void Replace(Result               current,
+                       Func<Result, Result> update)
+  {
+    var updated = update(current);
+    results_[current.ResultId] = updated;
+    OnChanged(current,
+              updated);
+  }
+
+  /// <summary>
+  ///   Raise <see cref="ResultChanged" />. Must be called under the lock.
+  /// </summary>
+  /// <param name="previous">Previous value of the result, null when it is created</param>
+  /// <param name="current">New value of the result</param>
+  private void OnChanged(Result? previous,
+                         Result  current)
+  {
+    foreach (var handler in Delegate.EnumerateInvocationList(ResultChanged))
+    {
+      try
+      {
+        handler(previous,
+                current);
+      }
+      catch (Exception e)
+      {
+        Logger.LogError(e,
+                        "A handler of {Event} failed for result {ResultId}",
+                        nameof(ResultChanged),
+                        current.ResultId);
+      }
+    }
   }
 
   /// <summary>
