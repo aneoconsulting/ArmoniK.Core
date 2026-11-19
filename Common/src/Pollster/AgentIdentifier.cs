@@ -24,15 +24,22 @@ namespace ArmoniK.Core.Common.Pollster;
 /// <summary>
 ///   Represents an identifier for an agent, including the owner's pod ID and pod name.
 /// </summary>
+/// <remarks>
+///   When several agents run in the same process, each one needs its own identifier: set the properties explicitly.
+/// </remarks>
 public class AgentIdentifier
 {
   /// <summary>
-  ///   Gets the owner's pod ID, which is the local IPv4 address.
+  ///   Gets the owner's pod ID. By default, it is the local IPv4 address.
   /// </summary>
-  public readonly string OwnerPodId = LocalIpFinder.LocalIpv4Address();
+  /// <remarks>
+  ///   It identifies the agent that owns a task, and is used to reach that agent to check whether it still processes the
+  ///   task. Each agent must have its own.
+  /// </remarks>
+  public string OwnerPodId { get; init; } = LocalIpFinder.LocalIpv4Address();
 
   /// <summary>
-  ///   Gets the owner's pod name, which is the host name.
+  ///   Gets the owner's pod name. By default, it is the host name.
   /// </summary>
-  public readonly string OwnerPodName = Dns.GetHostName();
+  public string OwnerPodName { get; init; } = Dns.GetHostName();
 }

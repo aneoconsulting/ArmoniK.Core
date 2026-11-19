@@ -18,8 +18,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -31,6 +29,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Utils.Uuid;
 using ArmoniK.Utils;
@@ -50,7 +49,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcTasksService : Task.TasksBase
 {
-  private readonly HttpClient                                 httpClient_;
+  private readonly ICancelledTaskNotifier                     cancelledTaskNotifier_;
   private readonly ILogger<GrpcTasksService>                  logger_;
   private readonly FunctionExecutionMetrics<GrpcTasksService> meter_;
   private readonly Injection.Options.Submitter                options_;
@@ -70,7 +69,7 @@ public class GrpcTasksService : Task.TasksBase
   /// <param name="resultTable">The result table for managing task inputs and outputs.</param>
   /// <param name="pushQueueStorage">The interface to push tasks in the queue.</param>
   /// <param name="meter">The metrics for function execution.</param>
-  /// <param name="httpClient">The HTTP client for making requests.</param>
+  /// <param name="cancelledTaskNotifier">Notifies the agents of the tasks that are cancelled.</param>
   /// <param name="options">The submitter options for task submission.</param>
   /// <param name="uuidGenerator">Generator of UUIDs</param>
   /// <param name="logger">The logger for logging information.</param>
@@ -79,21 +78,21 @@ public class GrpcTasksService : Task.TasksBase
                           IResultTable                               resultTable,
                           IPushQueueStorage                          pushQueueStorage,
                           FunctionExecutionMetrics<GrpcTasksService> meter,
-                          HttpClient                                 httpClient,
+                          ICancelledTaskNotifier                     cancelledTaskNotifier,
                           Injection.Options.Submitter                options,
                           [FromKeyedServices(UuidServiceKey.Monotonic)]
                           IUuidGenerator uuidGenerator,
                           ILogger<GrpcTasksService> logger)
   {
-    logger_           = logger;
-    uuidGenerator_    = uuidGenerator;
-    taskTable_        = taskTable;
-    sessionTable_     = sessionTable;
-    resultTable_      = resultTable;
-    pushQueueStorage_ = pushQueueStorage;
-    httpClient_       = httpClient;
-    options_          = options;
-    meter_            = meter;
+    logger_                = logger;
+    uuidGenerator_         = uuidGenerator;
+    taskTable_             = taskTable;
+    sessionTable_          = sessionTable;
+    resultTable_           = resultTable;
+    pushQueueStorage_      = pushQueueStorage;
+    cancelledTaskNotifier_ = cancelledTaskNotifier;
+    options_               = options;
+    meter_                 = meter;
 
     taskDetailedMask_ = new TaskDataMask(new List<TaskDataFields>
                                          {
@@ -270,28 +269,15 @@ public class GrpcTasksService : Task.TasksBase
     await ownerPodIds.ParallelForEach(new ParallelTaskOptions(options_.DegreeOfParallelism),
                                       async t =>
                                       {
-                                        try
-                                        {
-                                          logger_.LogInformation("Cancel task {TaskId} on {OwnerPodId}",
-                                                                 t.TaskId,
-                                                                 t.OwnerPodId);
+                                        logger_.LogInformation("Cancel task {TaskId} on {OwnerPodId}",
+                                                               t.TaskId,
+                                                               t.OwnerPodId);
 
-                                          await (string.IsNullOrEmpty(t.OwnerPodId)
-                                                   ? System.Threading.Tasks.Task.CompletedTask
-                                                   : httpClient_.GetAsync("http://" + t.OwnerPodId + ":1080/stopcancelledtask")).ConfigureAwait(false);
-                                        }
-                                        // Ignore unreachable agents
-                                        catch (HttpRequestException e) when (e is
-                                                                             {
-                                                                               InnerException: SocketException
-                                                                                               {
-                                                                                                 SocketErrorCode: SocketError.ConnectionRefused,
-                                                                                               },
-                                                                             })
+                                        if (!string.IsNullOrEmpty(t.OwnerPodId))
                                         {
-                                          logger_.LogError(e,
-                                                           "The agent with {OwnerPodId} was not reached successfully",
-                                                           t.OwnerPodId);
+                                          await cancelledTaskNotifier_.NotifyAsync(t.OwnerPodId,
+                                                                                   CancellationToken.None)
+                                                                      .ConfigureAwait(false);
                                         }
                                       })
                      .ConfigureAwait(false);

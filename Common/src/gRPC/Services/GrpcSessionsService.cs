@@ -17,8 +17,7 @@
 
 using System;
 using System.Linq;
-using System.Net.Http;
-using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Sessions;
@@ -29,6 +28,7 @@ using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.gRPC.Convertors;
 using ArmoniK.Core.Common.Meter;
+using ArmoniK.Core.Common.Pollster;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Utils;
 
@@ -45,7 +45,7 @@ namespace ArmoniK.Core.Common.gRPC.Services;
 [Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcSessionsService : Sessions.SessionsBase
 {
-  private readonly HttpClient                                    httpClient_;
+  private readonly ICancelledTaskNotifier                        cancelledTaskNotifier_;
   private readonly ILogger<GrpcSessionsService>                  logger_;
   private readonly FunctionExecutionMetrics<GrpcSessionsService> meter_;
   private readonly IObjectStorage                                objectStorage_;
@@ -67,7 +67,7 @@ public class GrpcSessionsService : Sessions.SessionsBase
   /// <param name="pushQueueStorage">The interface to push tasks in the queue.</param>
   /// <param name="submitterOptions">The submitter options for session configuration.</param>
   /// <param name="meter">The metrics for function execution monitoring.</param>
-  /// <param name="httpClient">The HTTP client for making requests to agents.</param>
+  /// <param name="cancelledTaskNotifier">Notifies the agents of the tasks that are cancelled.</param>
   /// <param name="logger">The logger for logging information and errors.</param>
   public GrpcSessionsService(ISessionTable                                 sessionTable,
                              IPartitionTable                               partitionTable,
@@ -77,19 +77,19 @@ public class GrpcSessionsService : Sessions.SessionsBase
                              IPushQueueStorage                             pushQueueStorage,
                              Injection.Options.Submitter                   submitterOptions,
                              FunctionExecutionMetrics<GrpcSessionsService> meter,
-                             HttpClient                                    httpClient,
+                             ICancelledTaskNotifier                        cancelledTaskNotifier,
                              ILogger<GrpcSessionsService>                  logger)
   {
-    logger_           = logger;
-    sessionTable_     = sessionTable;
-    partitionTable_   = partitionTable;
-    objectStorage_    = objectStorage;
-    resultTable_      = resultTable;
-    taskTable_        = taskTable;
-    pushQueueStorage_ = pushQueueStorage;
-    submitterOptions_ = submitterOptions;
-    meter_            = meter;
-    httpClient_       = httpClient;
+    logger_                = logger;
+    sessionTable_          = sessionTable;
+    partitionTable_        = partitionTable;
+    objectStorage_         = objectStorage;
+    resultTable_           = resultTable;
+    taskTable_             = taskTable;
+    pushQueueStorage_      = pushQueueStorage;
+    submitterOptions_      = submitterOptions;
+    meter_                 = meter;
+    cancelledTaskNotifier_ = cancelledTaskNotifier;
   }
 
   /// <inheritdoc />
@@ -112,26 +112,12 @@ public class GrpcSessionsService : Sessions.SessionsBase
                     .ParallelForEach(new ParallelTaskOptions(submitterOptions_.DegreeOfParallelism),
                                      async podId =>
                                      {
-                                       try
-                                       {
-                                         logger_.LogInformation("Notifying agent {OwnerPodId} to stop tasks for session {SessionId}",
-                                                                podId,
-                                                                request.SessionId);
-                                         await httpClient_.GetAsync("http://" + podId + ":1080/stopcancelledtask")
-                                                          .ConfigureAwait(false);
-                                       }
-                                       catch (HttpRequestException e) when (e is
-                                                                            {
-                                                                              InnerException: SocketException
-                                                                                              {
-                                                                                                SocketErrorCode: SocketError.ConnectionRefused,
-                                                                                              },
-                                                                            })
-                                       {
-                                         logger_.LogError(e,
-                                                          "The agent with {OwnerPodId} was not reached successfully",
-                                                          podId);
-                                       }
+                                       logger_.LogInformation("Notifying agent {OwnerPodId} to stop tasks for session {SessionId}",
+                                                              podId,
+                                                              request.SessionId);
+                                       await cancelledTaskNotifier_.NotifyAsync(podId,
+                                                                                CancellationToken.None)
+                                                                   .ConfigureAwait(false);
                                      })
                     .ConfigureAwait(false);
 

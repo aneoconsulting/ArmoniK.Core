@@ -63,6 +63,7 @@ public class GrpcTasksServiceTests
                                                                   .AddSingleton<AgentIdentifier>()
                                                                   .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                   .AddHttpClient()
+                                                                  .AddTransient<ICancelledTaskNotifier, HttpCancelledTaskNotifier>()
                                                                   .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                           builder => builder.UseRouting()
                                                             .UseAuthorization(),
@@ -117,6 +118,7 @@ public class GrpcTasksServiceTests
                                                                         .AddSingleton<AgentIdentifier>()
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
+                                                                        .AddTransient<ICancelledTaskNotifier, HttpCancelledTaskNotifier>()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                                 builder => builder.UseRouting()
                                                                   .UseAuthorization(),
@@ -228,6 +230,7 @@ public class GrpcTasksServiceTests
                                                                         .AddSingleton<AgentIdentifier>()
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
+                                                                        .AddTransient<ICancelledTaskNotifier, HttpCancelledTaskNotifier>()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                                 builder => builder.UseRouting()
                                                                   .UseAuthorization(),
@@ -289,6 +292,7 @@ public class GrpcTasksServiceTests
                                                                         .AddSingleton<AgentIdentifier>()
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
+                                                                        .AddTransient<ICancelledTaskNotifier, HttpCancelledTaskNotifier>()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                                 builder => builder.UseRouting()
                                                                   .UseAuthorization(),
@@ -371,6 +375,7 @@ public class GrpcTasksServiceTests
                                                                         .AddSingleton<AgentIdentifier>()
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
+                                                                        .AddTransient<ICancelledTaskNotifier, HttpCancelledTaskNotifier>()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                                 builder => builder.UseRouting()
                                                                   .UseAuthorization(),
@@ -486,6 +491,7 @@ public class GrpcTasksServiceTests
                                                                         .AddSingleton<AgentIdentifier>()
                                                                         .AddScoped(typeof(FunctionExecutionMetrics<>))
                                                                         .AddHttpClient()
+                                                                        .AddTransient<ICancelledTaskNotifier, HttpCancelledTaskNotifier>()
                                                                         .AddGrpc(options => options.Interceptors.Add<ExceptionInterceptor>()),
                                                 builder => builder.UseRouting()
                                                                   .UseAuthorization(),

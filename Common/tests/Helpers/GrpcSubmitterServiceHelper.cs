@@ -80,6 +80,7 @@ public class GrpcSubmitterServiceHelper : IDisposable
            .AddLogging(build => build.SetMinimumLevel(logLevel)
                                      .AddConsole())
            .AddHttpClient()
+           .AddTransient<ICancelledTaskNotifier, HttpCancelledTaskNotifier>()
            .AddScoped<GrpcHealthChecksService>()
            .AddMetrics()
            .AddSingleton<AgentIdentifier>()

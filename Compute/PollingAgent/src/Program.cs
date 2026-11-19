@@ -26,24 +26,17 @@ using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.PostgreSQL;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
-using ArmoniK.Core.Common;
 using ArmoniK.Core.Common.DynamicLoading;
-using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
-using ArmoniK.Core.Common.Injection.Options.Database;
 using ArmoniK.Core.Common.Meter;
-using ArmoniK.Core.Common.Pollster;
-using ArmoniK.Core.Common.Pollster.TaskProcessingChecker;
 using ArmoniK.Core.Common.Utils;
 using ArmoniK.Core.Utils;
-using ArmoniK.Core.Utils.Uuid;
 
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -94,8 +87,7 @@ public static class Program
       builder.Host.UseSerilog(logger.GetSerilogConf())
              .ConfigureHostOptions(options => options.ShutdownTimeout = 2 * pollsterOptions.GraceDelay);
 
-      builder.Services.AddLogging(logger.Configure)
-             .AddArmoniKWorkerConnection(builder.Configuration);
+      builder.Services.AddLogging(logger.Configure);
 
       builder.Services.AddPostgresComponents(builder.Configuration,
                                              logger.GetLogger());
@@ -108,31 +100,9 @@ public static class Program
              .AddAdapter(builder.Configuration,
                          nameof(Components.ObjectStorageAdaptorSettings),
                          logger.GetLogger())
-             .AddHostedService<Worker>()
-             .AddHostedService<RunningTaskProcessor>()
-             .AddHostedService<PostProcessor>()
-             .AddSingleton<RunningTaskQueue>()
-             .AddSingleton<PostProcessingTaskQueue>()
-             .AddSingletonWithHealthCheck<Common.Pollster.Pollster>(nameof(Common.Pollster.Pollster))
              .AddSingleton(logger)
-             .AddUuidGeneratorDefault()
-             .AddSingleton<ISubmitter, Common.gRPC.Services.Submitter>()
-             .AddInitializedOption<Submitter>(builder.Configuration,
-                                              Submitter.SettingSection)
-             .AddInitializedOption<InitServices>(builder.Configuration,
-                                                 InitServices.SettingSection)
-             .AddSingleton<InitDatabase>()
-             .AddSingleton(pollsterOptions)
-             .AddSingleton<HealthCheckRecord>()
-             .AddExceptionManager(sp => ExceptionManager.Options.FromPollsterOptions(sp.GetRequiredService<Pollster>()))
-             .AddSingleton<IHealthCheckPublisher, HealthCheckRecord.Publisher>()
-             .AddSingleton<IAgentHandler, AgentHandler>()
-             .AddSingleton<DataPrefetcher>()
-             .AddSingleton<MeterHolder>()
-             .AddSingleton<AgentIdentifier>()
-             .AddScoped(typeof(FunctionExecutionMetrics<>))
-             .AddSingleton<ITaskProcessingChecker, TaskProcessingCheckerClient>()
-             .AddHttpClient();
+             .AddArmoniKComputePlane(builder.Configuration,
+                                     pollsterOptions);
 
       var otel = builder.Services.AddOpenTelemetry();
       otel.WithMetrics(opts => opts.SetResourceBuilder(ResourceBuilder.CreateDefault()

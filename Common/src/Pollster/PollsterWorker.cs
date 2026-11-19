@@ -18,21 +18,25 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-using ArmoniK.Core.Common.Pollster;
-
 using Microsoft.Extensions.Hosting;
 
-#pragma warning disable CS1591 // Missing XML comment for publicly visible type or member
+namespace ArmoniK.Core.Common.Pollster;
 
-namespace ArmoniK.Core.Compute.PollingAgent;
-
-public class Worker : BackgroundService
+/// <summary>
+///   Hosted service that runs the main loop of the <see cref="Pollster" />
+/// </summary>
+public class PollsterWorker : BackgroundService
 {
   private readonly Pollster pollster_;
 
-  public Worker(Pollster pollster)
+  /// <summary>
+  ///   Creates the hosted service of the given pollster
+  /// </summary>
+  /// <param name="pollster">Pollster to run</param>
+  public PollsterWorker(Pollster pollster)
     => pollster_ = pollster;
 
+  /// <inheritdoc />
   protected override Task ExecuteAsync(CancellationToken stoppingToken)
     => pollster_.MainLoop();
 }
