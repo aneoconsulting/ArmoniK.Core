@@ -79,6 +79,22 @@ public class RoleDataModelMapping : IMongoDataModelMapping<RoleData>
   {
     if (initDatabase.Roles.Any())
     {
+      // Ids are positions in the sorted configuration: remove the documents beyond the end of the list, and those
+      // whose name moves to another id, which would break the unique index during the replacement below.
+      // A list without entries leaves the collection untouched, since only some init processes carry the
+      // authentication configuration.
+      var stale = Builders<RoleData>.Filter.Or(initDatabase
+                                               .Roles.Select(data => Builders<RoleData>.Filter.And(Builders<RoleData>.Filter.Eq(roleData => roleData.RoleName,
+                                                                                                                                data.RoleName),
+                                                                                                   Builders<RoleData>.Filter.Ne(roleData => roleData.RoleId,
+                                                                                                                                data.RoleId)))
+                                               .Append(Builders<RoleData>.Filter.Gte(roleData => roleData.RoleId,
+                                                                                     initDatabase.Roles.Count)));
+
+      await collection.DeleteManyAsync(sessionHandle,
+                                       stale)
+                      .ConfigureAwait(false);
+
       var upsert = initDatabase.Roles.Select(data => new ReplaceOneModel<RoleData>(Builders<RoleData>.Filter.Where(roleData => roleData.RoleId == data.RoleId),
                                                                                    data)
                                                      {
