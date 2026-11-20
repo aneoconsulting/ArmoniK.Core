@@ -79,6 +79,22 @@ public class UserDataModelMapping : IMongoDataModelMapping<UserData>
   {
     if (initDatabase.Users.Any())
     {
+      // Ids are positions in the sorted configuration: remove the documents beyond the end of the list, and those
+      // whose name moves to another id, which would break the unique index during the replacement below.
+      // A list without entries leaves the collection untouched, since only some init processes carry the
+      // authentication configuration.
+      var stale = Builders<UserData>.Filter.Or(initDatabase
+                                               .Users.Select(data => Builders<UserData>.Filter.And(Builders<UserData>.Filter.Eq(userData => userData.Username,
+                                                                                                                                data.Username),
+                                                                                                   Builders<UserData>.Filter.Ne(userData => userData.UserId,
+                                                                                                                                data.UserId)))
+                                               .Append(Builders<UserData>.Filter.Gte(userData => userData.UserId,
+                                                                                     initDatabase.Users.Count)));
+
+      await collection.DeleteManyAsync(sessionHandle,
+                                       stale)
+                      .ConfigureAwait(false);
+
       var upsert = initDatabase.Users.Select(data => new ReplaceOneModel<UserData>(Builders<UserData>.Filter.Where(userData => userData.UserId == data.UserId),
                                                                                    data)
                                                      {

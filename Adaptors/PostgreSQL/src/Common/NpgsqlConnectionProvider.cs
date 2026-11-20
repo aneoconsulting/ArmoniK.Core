@@ -364,60 +364,130 @@ ON CONFLICT (partition_id) DO NOTHING";
                .ConfigureAwait(false);
     }
 
-    foreach (var role in initDatabase_.Roles)
+    await SeedAuthData(connection,
+                       cancellationToken)
+      .ConfigureAwait(false);
+  }
+
+  /// <summary>
+  ///   Writes the roles, users and certificates of the configuration into the authentication tables.
+  /// </summary>
+  /// <remarks>
+  ///   <see cref="InitDatabase" /> numbers the entries of each list by their position in the sorted list, and the
+  ///   users and certificates reference roles and users by these ids. The rows must therefore follow the current
+  ///   configuration: existing ids are overwritten, and the rows beyond the end of the list, left by a previous
+  ///   configuration with more entries, are deleted. A list without entries leaves its table untouched, since
+  ///   several init processes may seed the same database and only some of them carry the authentication
+  ///   configuration. The three tables are written in a single transaction so that readers never see references
+  ///   from one configuration resolved against another.
+  /// </remarks>
+  private async Task SeedAuthData(NpgsqlConnection  connection,
+                                  CancellationToken cancellationToken)
+  {
+    await using var transaction = await connection.BeginTransactionAsync(cancellationToken)
+                                                  .ConfigureAwait(false);
+
+    if (initDatabase_.Roles.Any())
     {
-      await using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
+      foreach (var role in initDatabase_.Roles)
+      {
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
+        cmd.CommandText = @"
 INSERT INTO role_data (role_id, role_name, permissions)
 VALUES (@role_id, @role_name, @permissions)
-ON CONFLICT (role_id) DO NOTHING";
-      cmd.Parameters.AddWithValue("role_id",
-                                  role.RoleId);
-      cmd.Parameters.AddWithValue("role_name",
-                                  role.RoleName);
-      cmd.Parameters.AddWithValue("permissions",
-                                  NpgsqlDbType.Array | NpgsqlDbType.Text,
-                                  role.Permissions);
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
+ON CONFLICT (role_id) DO UPDATE SET role_name = EXCLUDED.role_name, permissions = EXCLUDED.permissions";
+        cmd.Parameters.AddWithValue("role_id",
+                                    role.RoleId);
+        cmd.Parameters.AddWithValue("role_name",
+                                    role.RoleName);
+        cmd.Parameters.AddWithValue("permissions",
+                                    NpgsqlDbType.Array | NpgsqlDbType.Text,
+                                    role.Permissions);
+        await cmd.ExecuteNonQueryAsync(cancellationToken)
+                 .ConfigureAwait(false);
+      }
+
+      await DeleteIdsFrom(transaction,
+                          "DELETE FROM role_data WHERE role_id >= @count",
+                          initDatabase_.Roles.Count,
+                          cancellationToken)
+        .ConfigureAwait(false);
     }
 
-    foreach (var user in initDatabase_.Users)
+    if (initDatabase_.Users.Any())
     {
-      await using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
+      foreach (var user in initDatabase_.Users)
+      {
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
+        cmd.CommandText = @"
 INSERT INTO user_data (user_id, username, roles)
 VALUES (@user_id, @username, @roles)
-ON CONFLICT (user_id) DO NOTHING";
-      cmd.Parameters.AddWithValue("user_id",
-                                  user.UserId);
-      cmd.Parameters.AddWithValue("username",
-                                  user.Username);
-      cmd.Parameters.AddWithValue("roles",
-                                  NpgsqlDbType.Array | NpgsqlDbType.Integer,
-                                  user.Roles);
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
+ON CONFLICT (user_id) DO UPDATE SET username = EXCLUDED.username, roles = EXCLUDED.roles";
+        cmd.Parameters.AddWithValue("user_id",
+                                    user.UserId);
+        cmd.Parameters.AddWithValue("username",
+                                    user.Username);
+        cmd.Parameters.AddWithValue("roles",
+                                    NpgsqlDbType.Array | NpgsqlDbType.Integer,
+                                    user.Roles);
+        await cmd.ExecuteNonQueryAsync(cancellationToken)
+                 .ConfigureAwait(false);
+      }
+
+      await DeleteIdsFrom(transaction,
+                          "DELETE FROM user_data WHERE user_id >= @count",
+                          initDatabase_.Users.Count,
+                          cancellationToken)
+        .ConfigureAwait(false);
     }
 
-    foreach (var auth in initDatabase_.Auths)
+    if (initDatabase_.Auths.Any())
     {
-      await using var cmd = connection.CreateCommand();
-      cmd.CommandText = @"
+      foreach (var auth in initDatabase_.Auths)
+      {
+        await using var cmd = connection.CreateCommand();
+        cmd.Transaction = transaction;
+        cmd.CommandText = @"
 INSERT INTO auth_data (auth_id, user_id, cn, fingerprint)
 VALUES (@auth_id, @user_id, @cn, @fingerprint)
-ON CONFLICT (auth_id) DO NOTHING";
-      cmd.Parameters.AddWithValue("auth_id",
-                                  auth.AuthId);
-      cmd.Parameters.AddWithValue("user_id",
-                                  auth.UserId);
-      cmd.Parameters.AddWithValue("cn",
-                                  auth.Cn);
-      cmd.Parameters.AddWithValue("fingerprint",
-                                  (object?)auth.Fingerprint ?? DBNull.Value);
-      await cmd.ExecuteNonQueryAsync(cancellationToken)
-               .ConfigureAwait(false);
+ON CONFLICT (auth_id) DO UPDATE SET user_id = EXCLUDED.user_id, cn = EXCLUDED.cn, fingerprint = EXCLUDED.fingerprint";
+        cmd.Parameters.AddWithValue("auth_id",
+                                    auth.AuthId);
+        cmd.Parameters.AddWithValue("user_id",
+                                    auth.UserId);
+        cmd.Parameters.AddWithValue("cn",
+                                    auth.Cn);
+        cmd.Parameters.AddWithValue("fingerprint",
+                                    (object?)auth.Fingerprint ?? DBNull.Value);
+        await cmd.ExecuteNonQueryAsync(cancellationToken)
+                 .ConfigureAwait(false);
+      }
+
+      await DeleteIdsFrom(transaction,
+                          "DELETE FROM auth_data WHERE auth_id >= @count",
+                          initDatabase_.Auths.Count,
+                          cancellationToken)
+        .ConfigureAwait(false);
     }
+
+    await transaction.CommitAsync(cancellationToken)
+                     .ConfigureAwait(false);
+  }
+
+  private static async Task DeleteIdsFrom(NpgsqlTransaction transaction,
+                                          string            commandText,
+                                          int               count,
+                                          CancellationToken cancellationToken)
+  {
+    await using var cmd = transaction.Connection!.CreateCommand();
+    cmd.Transaction = transaction;
+    cmd.CommandText = commandText;
+    cmd.Parameters.AddWithValue("count",
+                                count);
+    await cmd.ExecuteNonQueryAsync(cancellationToken)
+             .ConfigureAwait(false);
   }
 
   // NoResetOnClose skips the DISCARD ALL that Npgsql sends when a pooled connection is reused.
