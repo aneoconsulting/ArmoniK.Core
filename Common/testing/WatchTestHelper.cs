@@ -29,7 +29,7 @@ namespace ArmoniK.Core.Common.Testing;
 /// <summary>
 ///   Helpers for the watcher tests.
 /// </summary>
-internal static class WatchTestHelper
+public static class WatchTestHelper
 {
   /// <summary>
   ///   Maximum time a watch may take to end once it is cancelled
