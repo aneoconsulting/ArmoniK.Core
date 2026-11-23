@@ -20,6 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <InternalsVisibleTo Include="ArmoniK.Core.Common.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\src\ArmoniK.Core.Common.csproj" />
   </ItemGroup>
 </Project>
