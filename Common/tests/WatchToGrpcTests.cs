@@ -30,6 +30,7 @@ using ArmoniK.Core.Common.Exceptions;
 using ArmoniK.Core.Common.gRPC.Services;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
+using ArmoniK.Core.Common.Testing;
 using ArmoniK.Core.Common.Tests.Helpers;
 using ArmoniK.Utils;
 
@@ -265,30 +266,49 @@ public class WatchToGrpcTests
 
     var wtg = helper.GetRequiredService<WatchToGrpc>();
 
-    var cts  = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-    var list = new List<EventSubscriptionResponse>();
+    // Cancelled once every expected event is received rather than after a fixed delay, which would also cover the
+    // opening of the change streams and make the test depend on the speed of the runner
+    using var cts = new CancellationTokenSource();
+    var expected = new[]
+                   {
+                     taskCompletedData_.TaskId,
+                     taskCreatingData_.TaskId,
+                     TaskProcessingData.TaskId,
+                     taskProcessingData2_.TaskId,
+                     TaskSubmittedData.TaskId,
+                     taskFailedData_.TaskId,
+                   };
+    var ids = new List<string>();
 
-    Assert.That(async () =>
-                {
-                  // Simple* that are used to create this instance return static events
-                  await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
-                                                                                new List<EventsEnum>
-                                                                                {
-                                                                                  EventsEnum.NewTask,
-                                                                                },
-                                                                                null,
-                                                                                null,
-                                                                                cts.Token)
-                                                                     .ConfigureAwait(false))
-                  {
-                    Console.WriteLine(eventSubscriptionResponse);
-                    list.Add(eventSubscriptionResponse);
-                  }
-                },
+    var watch = Task.Run(async () =>
+                         {
+                           await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
+                                                                                         new List<EventsEnum>
+                                                                                         {
+                                                                                           EventsEnum.NewTask,
+                                                                                         },
+                                                                                         null,
+                                                                                         null,
+                                                                                         cts.Token)
+                                                                              .ConfigureAwait(false))
+                           {
+                             lock (ids)
+                             {
+                               ids.Add(eventSubscriptionResponse.NewTask.TaskId);
+                             }
+                           }
+                         },
+                         CancellationToken.None);
+
+    await WatchTestHelper.StopWhenReceived(ids,
+                                           expected,
+                                           cts)
+                         .ConfigureAwait(false);
+
+    Assert.That(() => watch,
                 Throws.InstanceOf<OperationCanceledException>());
-
-    Assert.That(list,
-                Has.Count.EqualTo(6));
+    Assert.That(ids,
+                Is.EquivalentTo(expected));
   }
 
   [Test]
@@ -390,30 +410,48 @@ public class WatchToGrpcTests
 
     var wtg = helper.GetRequiredService<WatchToGrpc>();
 
-    var cts  = new CancellationTokenSource(TimeSpan.FromSeconds(2));
-    var list = new List<EventSubscriptionResponse>();
+    // Cancelled once every expected event is received rather than after a fixed delay, which would also cover the
+    // opening of the change streams and make the test depend on the speed of the runner
+    using var cts = new CancellationTokenSource();
+    var expected = new[]
+                   {
+                     "ResultIsAvailable",
+                     "ResultIsNotAvailable",
+                     "ResultIsCreated",
+                     "ResultIsCreated2",
+                     "ResultIsCompletedWithDependents",
+                   };
+    var ids = new List<string>();
 
-    Assert.That(async () =>
-                {
-                  // Simple* that are used to create this instance return static events
-                  await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
-                                                                                new List<EventsEnum>
-                                                                                {
-                                                                                  EventsEnum.NewResult,
-                                                                                },
-                                                                                null,
-                                                                                null,
-                                                                                cts.Token)
-                                                                     .ConfigureAwait(false))
-                  {
-                    Console.WriteLine(eventSubscriptionResponse);
-                    list.Add(eventSubscriptionResponse);
-                  }
-                },
+    var watch = Task.Run(async () =>
+                         {
+                           await foreach (var eventSubscriptionResponse in wtg.GetEvents("SessionId",
+                                                                                         new List<EventsEnum>
+                                                                                         {
+                                                                                           EventsEnum.NewResult,
+                                                                                         },
+                                                                                         null,
+                                                                                         null,
+                                                                                         cts.Token)
+                                                                              .ConfigureAwait(false))
+                           {
+                             lock (ids)
+                             {
+                               ids.Add(eventSubscriptionResponse.NewResult.ResultId);
+                             }
+                           }
+                         },
+                         CancellationToken.None);
+
+    await WatchTestHelper.StopWhenReceived(ids,
+                                           expected,
+                                           cts)
+                         .ConfigureAwait(false);
+
+    Assert.That(() => watch,
                 Throws.InstanceOf<OperationCanceledException>());
-
-    Assert.That(list,
-                Has.Count.EqualTo(5));
+    Assert.That(ids,
+                Is.EquivalentTo(expected));
   }
 
   private static readonly TaskOptions Options = new(new Dictionary<string, string>

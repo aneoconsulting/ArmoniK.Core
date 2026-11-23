@@ -81,11 +81,17 @@ public class WatchEnumeratorTests
   private int                    getMoreFailures_;
 
   /// <summary>
-  ///   Watch new tasks and task status updates until <paramref name="duration" /> has elapsed
+  ///   Watch new tasks and task status updates until <paramref name="duration" /> has elapsed after the change
+  ///   streams are opened
   /// </summary>
+  /// <remarks>
+  ///   The timer starts once the change streams are open: opening them can take longer than
+  ///   <paramref name="duration" /> on slow hosts, and a cancelled aggregate both throws and breaks its connection,
+  ///   which is not the behavior under test.
+  /// </remarks>
   private async Task Watch(TimeSpan duration)
   {
-    using var cts = new CancellationTokenSource(duration);
+    using var cts = new CancellationTokenSource();
 
     var newTasks = await taskWatcher_!.GetNewTasks(data => data.SessionId == "SessionId",
                                                    cts.Token)
@@ -93,6 +99,8 @@ public class WatchEnumeratorTests
     var statusUpdates = await taskWatcher_.GetTaskStatusUpdates(data => data.SessionId == "SessionId",
                                                                 cts.Token)
                                           .ConfigureAwait(false);
+
+    cts.CancelAfter(duration);
 
     await Task.WhenAll(newTasks.ToListAsync(cts.Token)
                                .AsTask(),
