@@ -303,6 +303,48 @@ public class CallerAuthenticationMiddlewareTest
   }
 
   [Test]
+  public async Task AUserAuthenticatedByTheProxyReachesTheHandler()
+  {
+    await app_!.DisposeAsync()
+               .ConfigureAwait(false);
+    await Start(CallerAuthentication.Proxy)
+      .ConfigureAwait(false);
+
+    await Client(true)
+          .CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest(),
+                                      new Metadata
+                                      {
+                                        {
+                                          "X-Forwarded-User", "alice@example.com"
+                                        },
+                                        {
+                                          "X-Forwarded-Groups", "modelling-team"
+                                        },
+                                      })
+          .ConfigureAwait(false);
+
+    Assert.That(service_!.Calls,
+                Is.EqualTo(1));
+    Assert.That(((AuthenticatedCaller)service_.Caller!).Caller.Identity.Value,
+                Is.EqualTo("oid:alice@example.com"));
+
+    var exception = Assert.ThrowsAsync<RpcException>(async () => await Client()
+                                                                       .CreateResultsMetaDataAsync(new CreateResultsMetaDataRequest(),
+                                                                                                   new Metadata
+                                                                                                   {
+                                                                                                     {
+                                                                                                       "X-Forwarded-Groups", "modelling-team"
+                                                                                                     },
+                                                                                                   })
+                                                                       .ConfigureAwait(false));
+
+    Assert.That(exception!.StatusCode,
+                Is.EqualTo(StatusCode.Unauthenticated));
+    Assert.That(service_.Calls,
+                Is.EqualTo(1));
+  }
+
+  [Test]
   public void ACertificateWhoseSubjectCannotBeDecodedIsUnauthenticated()
   {
     // CN as a PrintableString holding '_', which is not a PrintableString character

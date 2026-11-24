@@ -39,7 +39,7 @@ public class AuthorizationOptions
   public static readonly TimeSpan MaxGrantCacheTtl = TimeSpan.FromDays(14);
 
   /// <summary>
-  ///   How callers prove who they are, several methods being written <c>Xfcc,Token</c>. With
+  ///   How callers prove who they are, several methods being written <c>Xfcc,Token</c> or <c>Xfcc,Proxy</c>. With
   ///   <see cref="CallerAuthentication.None" />, requests are not authorized: every request is allowed
   /// </summary>
   public CallerAuthentication Authentication { get; set; }
@@ -94,6 +94,13 @@ public enum CallerAuthentication
   ///   <see cref="IdentityOptions.ValidateTokens" /> is false
   /// </summary>
   Token = 1 << 1,
+
+  /// <summary>
+  ///   User and roles written by a trusted proxy which authenticated the caller, in
+  ///   <see cref="IdentityOptions.UserHeader" /> and <see cref="IdentityOptions.RolesHeader" />: only for a Submitter
+  ///   reachable solely through that proxy, since anyone else can write any user
+  /// </summary>
+  Proxy = 1 << 2,
 }
 
 /// <summary>
@@ -184,4 +191,14 @@ public class IdentityOptions
   ///   format (text or JSON) with a single element carrying <c>Cert</c>
   /// </summary>
   public string CertificateHeader { get; set; } = "X-Forwarded-Client-Cert";
+
+  /// <summary>
+  ///   Header carrying the user authenticated by the proxy, the identifier of the caller, written once
+  /// </summary>
+  public string UserHeader { get; set; } = "X-Forwarded-User";
+
+  /// <summary>
+  ///   Header carrying the roles of the user authenticated by the proxy, as a comma-separated list
+  /// </summary>
+  public string RolesHeader { get; set; } = "X-Forwarded-Groups";
 }

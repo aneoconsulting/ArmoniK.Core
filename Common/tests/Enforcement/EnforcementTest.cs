@@ -45,6 +45,7 @@ using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.JsonWebTokens;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
@@ -770,6 +771,144 @@ public class CallerResolverTest
                                                        ("X-Forwarded-Client-Cert", Certificate("CN=client")))),
                    Throws.InstanceOf<FormatException>());
 
+  /// <summary>
+  ///   A resolver selecting the given methods, with the default identity settings
+  /// </summary>
+  private static CallerResolver Selecting(CallerAuthentication authentication)
+    => new(new AuthorizationOptions
+           {
+             Authentication = authentication,
+           },
+           new IdentityOptions
+           {
+             ValidateTokens = false,
+           });
+
+  [Test]
+  public async Task AUserWrittenByTheProxyNamesTheCaller()
+  {
+    var caller = await Selecting(CallerAuthentication.Proxy)
+                       .ResolveAsync(Request(("X-Forwarded-User", "alice@example.com"),
+                                             ("X-Forwarded-Groups", "modelling-team,\u00e9quipe")))
+                       .ConfigureAwait(false);
+
+    Assert.That(caller!.Caller.Expansion,
+                Is.EqualTo(new[]
+                           {
+                             "oid:alice@example.com",
+                             "role:modelling-team",
+                             "role:\u00e9quipe",
+                             "*",
+                           }));
+    Assert.That(caller.CredentialKind,
+                Is.EqualTo(CredentialKind.Proxy));
+  }
+
+  [Test]
+  public async Task TheProxyHeadersAreConfigurable()
+  {
+    var resolver = new CallerResolver(new AuthorizationOptions
+                                      {
+                                        Authentication = CallerAuthentication.Proxy,
+                                      },
+                                      new IdentityOptions
+                                      {
+                                        UserHeader  = "X-Auth-Request-Email",
+                                        RolesHeader = "X-Auth-Request-Groups",
+                                      });
+
+    var caller = await resolver.ResolveAsync(Request(("X-Auth-Request-Email", "alice@example.com"),
+                                                     ("X-Auth-Request-Groups", "team"),
+                                                     ("X-Forwarded-User", "mallory")))
+                               .ConfigureAwait(false);
+
+    Assert.That(caller!.Caller.Identity.Value,
+                Is.EqualTo("oid:alice@example.com"));
+  }
+
+  [Test]
+  public async Task TheProxyHeadersAreIgnoredWhenTheProxyIsNotSelected()
+    => Assert.That(await Selecting(CallerAuthentication.Xfcc | CallerAuthentication.Token)
+                         .ResolveAsync(Request(("X-Forwarded-User", "alice"),
+                                               ("X-Forwarded-Groups", "team")))
+                         .ConfigureAwait(false),
+                   Is.Null);
+
+  [Test]
+  public void RolesWithoutAUserAreRefused()
+    => Assert.That(() => Selecting(CallerAuthentication.Proxy)
+                     .ResolveAsync(Request(("X-Forwarded-Groups", "team"))),
+                   Throws.InstanceOf<FormatException>());
+
+  [Test]
+  public void ARepeatedUserIsRefused()
+  {
+    var request = Request();
+    request.Request.Headers["X-Forwarded-User"] = new StringValues(["alice", "bob"]);
+
+    Assert.That(() => Selecting(CallerAuthentication.Proxy)
+                  .ResolveAsync(request),
+                Throws.InstanceOf<FormatException>());
+  }
+
+  [Test]
+  public async Task RepeatedRolesHeadersAreOneList()
+  {
+    var request = Request(("X-Forwarded-User", "alice"));
+    request.Request.Headers["X-Forwarded-Groups"] = new StringValues(["a,b", "c"]);
+
+    var caller = await Selecting(CallerAuthentication.Proxy)
+                       .ResolveAsync(request)
+                       .ConfigureAwait(false);
+
+    Assert.That(caller!.Caller.Roles.Select(role => role.Value),
+                Is.EqualTo(new[]
+                           {
+                             "role:a",
+                             "role:b",
+                             "role:c",
+                           }));
+  }
+
+  [Test]
+  public void AUserAndACertificateTogetherAreRefused()
+    => Assert.That(() => Selecting(CallerAuthentication.Xfcc | CallerAuthentication.Proxy)
+                     .ResolveAsync(Request(("X-Forwarded-User", "alice"),
+                                           ("X-Forwarded-Client-Cert", Certificate("CN=client")))),
+                   Throws.InstanceOf<FormatException>());
+
+  [Test]
+  public void AUserAndATokenTogetherAreRefused()
+    => Assert.That(() => Selecting(CallerAuthentication.Token | CallerAuthentication.Proxy)
+                     .ResolveAsync(Request(("X-Forwarded-User", "alice"),
+                                           ("Authorization", "Bearer x"))),
+                   Throws.InstanceOf<FormatException>());
+
+  // A proxy in front of the control plane may forward the certificate header of callers it does not authenticate
+  [Test]
+  public async Task ACertificateIsIgnoredWhenOnlyTheProxyIsSelected()
+    => Assert.That((await Selecting(CallerAuthentication.Proxy)
+                          .ResolveAsync(Request(("X-Forwarded-User", "alice"),
+                                                ("X-Forwarded-Client-Cert", Certificate("CN=client"))))
+                          .ConfigureAwait(false))!.Caller.Identity.Value,
+                   Is.EqualTo("oid:alice"));
+
+  [TestCase(CallerAuthentication.Xfcc,
+            "A client certificate is required")]
+  [TestCase(CallerAuthentication.Token,
+            "A token is required")]
+  [TestCase(CallerAuthentication.Proxy,
+            "A user authenticated by the proxy is required")]
+  [TestCase(CallerAuthentication.Xfcc | CallerAuthentication.Token,
+            "A token or a client certificate is required")]
+  [TestCase(CallerAuthentication.Xfcc | CallerAuthentication.Proxy,
+            "A client certificate or a user authenticated by the proxy is required")]
+  public void TheMissingCredentialNamesTheSelectedMethods(CallerAuthentication authentication,
+                                                          string               message)
+    => Assert.That(Selecting(authentication)
+                     .MissingCredential,
+                   Is.EqualTo(message));
+
   [Test]
   public void AGarbledCertificateIsRefused()
     => Assert.That(() => Resolver.ResolveAsync(Request(("X-Forwarded-Client-Cert", "not-a-certificate"))),
@@ -900,8 +1039,8 @@ public class AddArmoniKAuthorizationTest
     }
   }
 
-  [TestCase("4")]
-  [TestCase("7")]
+  [TestCase("8")]
+  [TestCase("15")]
   [TestCase("-1")]
   [TestCase("Mtls")]
   [TestCase("Xfcc,Mtls")]
@@ -918,6 +1057,51 @@ public class AddArmoniKAuthorizationTest
                    Throws.InstanceOf<InvalidOperationException>()
                          .With.Message.Contains("Authorization:Authentication")
                          .And.Message.Contains("Xfcc,Token"));
+
+  [TestCase("Proxy")]
+  [TestCase("Xfcc,Proxy")]
+  [TestCase("Xfcc, Token, Proxy")]
+  [TestCase("4")]
+  public void TheProxyIsAMethod(string value)
+    => Assert.That(Add(Configuration(("Authorization:Authentication", value),
+                                     ("Identity:ValidateTokens", "false"))),
+                   Is.True);
+
+  [TestCase("Identity:UserHeader",
+            "")]
+  [TestCase("Identity:RolesHeader",
+            " ")]
+  public void TheProxyRequiresItsHeaders(string key,
+                                         string header)
+    => Assert.That(() => Add(Configuration(("Authorization:Authentication", "Proxy"),
+                                           (key, header))),
+                   Throws.InstanceOf<InvalidOperationException>()
+                         .With.Message.Contains(key));
+
+  [TestCase("Proxy",
+            "Identity:RolesHeader",
+            "x-forwarded-user")]
+  [TestCase("Xfcc,Proxy",
+            "Identity:UserHeader",
+            "X-Forwarded-Client-Cert")]
+  [TestCase("Token,Proxy",
+            "Identity:RolesHeader",
+            "authorization")]
+  public void TheSelectedMethodsReadDistinctHeaders(string authentication,
+                                                    string key,
+                                                    string header)
+    => Assert.That(() => Add(Configuration(("Authorization:Authentication", authentication),
+                                           ("Identity:ValidateTokens", "false"),
+                                           (key, header))),
+                   Throws.InstanceOf<InvalidOperationException>()
+                         .With.Message.Contains("name the same header"));
+
+  // Only the headers of the selected methods are compared
+  [Test]
+  public void AHeaderOfAMethodNotSelectedMayBeShared()
+    => Assert.That(Add(Configuration(("Authorization:Authentication", "Proxy"),
+                                     ("Identity:UserHeader", "X-Forwarded-Client-Cert"))),
+                   Is.True);
 
   [TestCase("")]
   [TestCase(" ")]
@@ -951,6 +1135,14 @@ public class AddArmoniKAuthorizationTest
             "Identity:SubjectClaim")]
   [TestCase("Token",
             "Identity:CertificateHeader")]
+  [TestCase("Xfcc",
+            "Identity:UserHeader")]
+  [TestCase("Token",
+            "Identity:RolesHeader")]
+  [TestCase("Proxy",
+            "Identity:CertificateHeader")]
+  [TestCase("Proxy",
+            "Identity:SubjectClaim")]
   public void TheSettingsOfAMethodNotSelectedAreWarnedAbout(string authentication,
                                                             string key)
   {
@@ -984,10 +1176,12 @@ public class AddArmoniKAuthorizationTest
     var logger = new Mock<ILogger>();
 
     Add(new ServiceCollection(),
-        Configuration(("Authorization:Authentication", "Xfcc,Token"),
+        Configuration(("Authorization:Authentication", "Xfcc,Token,Proxy"),
                       ("Identity:CertificateHeader", "X-Client-Cert"),
                       ("Identity:ValidateTokens", "false"),
-                      ("Identity:SubjectClaim", "sub")),
+                      ("Identity:SubjectClaim", "sub"),
+                      ("Identity:UserHeader", "X-Auth-Request-Email"),
+                      ("Identity:RolesHeader", "X-Auth-Request-Groups")),
         logger.Object);
 
     logger.Verify(x => x.Log(It.IsAny<LogLevel>(),

@@ -16,6 +16,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -29,14 +31,16 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace ArmoniK.Core.Common.Enforcement;
 
 /// <summary>
-///   Derives the caller of a request from the credential presented: a token or a client certificate forwarded by the
-///   ingress, never both. Only the credentials of the selected methods are read: the others are ignored
+///   Derives the caller of a request from the credential presented: a token, a client certificate forwarded by the
+///   ingress, or a user written by a trusted proxy, never more than one. Only the credentials of the selected methods are
+///   read: the others are ignored
 /// </summary>
 public class CallerResolver : IHealthCheckProvider
 {
@@ -67,16 +71,35 @@ public class CallerResolver : IHealthCheckProvider
   private bool AcceptsCertificates
     => authentication_.HasFlag(CallerAuthentication.Xfcc);
 
+  private bool AcceptsProxy
+    => authentication_.HasFlag(CallerAuthentication.Proxy);
+
   /// <summary>
   ///   What a request without credential is answered, naming the selected methods only
   /// </summary>
   public string MissingCredential
-    => authentication_ switch
-       {
-         CallerAuthentication.Xfcc  => "A client certificate is required",
-         CallerAuthentication.Token => "A token is required",
-         _                          => "A token or a client certificate is required",
-       };
+  {
+    get
+    {
+      var credentials = new List<string>();
+      if (AcceptsTokens)
+      {
+        credentials.Add("token");
+      }
+
+      if (AcceptsCertificates)
+      {
+        credentials.Add("client certificate");
+      }
+
+      if (AcceptsProxy)
+      {
+        credentials.Add("user authenticated by the proxy");
+      }
+
+      return $"A {string.Join(" or a ", credentials)} is required";
+    }
+  }
 
   /// <summary>
   ///   The metadata of the authority tokens are validated against, null when tokens are not validated against one
@@ -133,10 +156,29 @@ public class CallerResolver : IHealthCheckProvider
                                  .ToString()
                         : "";
     var hasCertificate = !string.IsNullOrEmpty(certificate);
+    var user = AcceptsProxy
+                 ? context.Request.Headers[options_.UserHeader]
+                 : StringValues.Empty;
+    var roles = AcceptsProxy
+                  ? context.Request.Headers[options_.RolesHeader]
+                  : StringValues.Empty;
+    // Roles without a user are a proxy that lost the user: refused rather than taken as no credential
+    var hasProxy = user.Any(value => !string.IsNullOrEmpty(value)) || roles.Any(value => !string.IsNullOrEmpty(value));
 
-    if (hasToken && hasCertificate)
+    if (new[]
+        {
+          hasToken,
+          hasCertificate,
+          hasProxy,
+        }.Count(presented => presented) > 1)
     {
-      throw new FormatException("A request presents either a token or a client certificate, not both");
+      throw new FormatException("A request presents a single credential: a token, a client certificate or a user authenticated by the proxy");
+    }
+
+    if (hasProxy)
+    {
+      return ProxyIdentity.FromHeaders(user.ToArray(),
+                                       roles);
     }
 
     if (hasToken)

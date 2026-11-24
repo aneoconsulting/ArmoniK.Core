@@ -16,6 +16,7 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -41,7 +42,7 @@ public static class ServiceCollectionExt
   /// <summary>
   ///   Every method a caller can authenticate with
   /// </summary>
-  private const CallerAuthentication AllMethods = CallerAuthentication.Xfcc | CallerAuthentication.Token;
+  private const CallerAuthentication AllMethods = CallerAuthentication.Xfcc | CallerAuthentication.Token | CallerAuthentication.Proxy;
 
   private static readonly string AuthenticationKey = $"{AuthorizationOptions.SettingSection}:{nameof(AuthorizationOptions.Authentication)}";
 
@@ -59,6 +60,11 @@ public static class ServiceCollectionExt
   ///   Settings of <see cref="IdentityOptions" /> read only with <see cref="CallerAuthentication.Xfcc" />
   /// </summary>
   private static readonly string[] CertificateSettings = [nameof(IdentityOptions.CertificateHeader)];
+
+  /// <summary>
+  ///   Settings of <see cref="IdentityOptions" /> read only with <see cref="CallerAuthentication.Proxy" />
+  /// </summary>
+  private static readonly string[] ProxySettings = [nameof(IdentityOptions.UserHeader), nameof(IdentityOptions.RolesHeader)];
 
   /// <summary>
   ///   Flags of the removed authentication which, when true, made it check callers
@@ -86,8 +92,9 @@ public static class ServiceCollectionExt
     if ((options.Authentication & ~AllMethods) != 0)
     {
       throw new InvalidOperationException($"{AuthenticationKey} '{configuration[AuthenticationKey]}' holds an unknown method: "          +
-                                          $"use {CallerAuthentication.None}, {CallerAuthentication.Xfcc}, {CallerAuthentication.Token} " +
-                                          $"or {CallerAuthentication.Xfcc},{CallerAuthentication.Token}");
+                                          $"use {CallerAuthentication.None}, or one or more of {CallerAuthentication.Xfcc}, "            +
+                                          $"{CallerAuthentication.Token} and {CallerAuthentication.Proxy} separated by commas, such as " +
+                                          $"{CallerAuthentication.Xfcc},{CallerAuthentication.Token}");
     }
 
     // Only warned about, so that authorization can be disabled without removing the settings of the methods
@@ -127,6 +134,17 @@ public static class ServiceCollectionExt
                                           $"{AuthenticationKey} holds {CallerAuthentication.Token}, unless {nameof(IdentityOptions.ValidateTokens)} " +
                                           "is false and the tokens are written by a trusted proxy");
     }
+
+    if (options.Authentication.HasFlag(CallerAuthentication.Proxy) &&
+        (string.IsNullOrWhiteSpace(identity.UserHeader) || string.IsNullOrWhiteSpace(identity.RolesHeader)))
+    {
+      throw new InvalidOperationException($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.UserHeader)} and "                   +
+                                          $"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.RolesHeader)} cannot be empty when " +
+                                          $"{AuthenticationKey} holds {CallerAuthentication.Proxy}");
+    }
+
+    ThrowIfHeadersOverlap(options.Authentication,
+                          identity);
 
     // Refuse to start on a configuration whose grants would be refused
     var sets = AuthorizationConfiguration.PermissionSets(options.PermissionSets);
@@ -168,6 +186,39 @@ public static class ServiceCollectionExt
   }
 
   /// <summary>
+  ///   Refuse headers read by the selected methods that name the same header, which would be read as two credentials, or
+  ///   as both the user and the roles. Header names are case-insensitive
+  /// </summary>
+  private static void ThrowIfHeadersOverlap(CallerAuthentication authentication,
+                                            IdentityOptions      identity)
+  {
+    var headers = new List<(string Setting, string Header)>();
+    if (authentication.HasFlag(CallerAuthentication.Xfcc))
+    {
+      headers.Add(($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.CertificateHeader)}", identity.CertificateHeader));
+    }
+
+    if (authentication.HasFlag(CallerAuthentication.Token))
+    {
+      headers.Add((CallerAuthentication.Token.ToString(), "Authorization"));
+    }
+
+    if (authentication.HasFlag(CallerAuthentication.Proxy))
+    {
+      headers.Add(($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.UserHeader)}", identity.UserHeader));
+      headers.Add(($"{IdentityOptions.SettingSection}:{nameof(IdentityOptions.RolesHeader)}", identity.RolesHeader));
+    }
+
+    var overlap = headers.GroupBy(header => header.Header.Trim(),
+                                  StringComparer.OrdinalIgnoreCase)
+                         .FirstOrDefault(group => group.Count() > 1);
+    if (overlap is not null)
+    {
+      throw new InvalidOperationException($"{string.Join(" and ", overlap.Select(header => header.Setting))} name the same header '{overlap.Key}'");
+    }
+  }
+
+  /// <summary>
   ///   Warn about the identity settings written for a method that is not selected, which are ignored
   /// </summary>
   private static void WarnUnusedSettings(IConfiguration       configuration,
@@ -178,6 +229,7 @@ public static class ServiceCollectionExt
                                        {
                                          (CallerAuthentication.Token, TokenSettings),
                                          (CallerAuthentication.Xfcc, CertificateSettings),
+                                         (CallerAuthentication.Proxy, ProxySettings),
                                        })
     {
       if (authentication.HasFlag(method))

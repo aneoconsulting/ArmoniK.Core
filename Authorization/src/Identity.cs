@@ -35,6 +35,9 @@ public enum CredentialKind
 
   /// <summary>A client certificate</summary>
   Certificate,
+
+  /// <summary>The user and roles written in headers by a trusted proxy</summary>
+  Proxy,
 }
 
 /// <summary>
@@ -87,6 +90,50 @@ public static class TokenIdentity
                                               principal.FindAll(rolesClaim)
                                                        .Select(claim => Principal.FromRole(claim.Value))),
                                    CredentialKind.Token);
+  }
+}
+
+/// <summary>
+///   Derives a caller from the headers written by a trusted proxy which authenticated it, such as oauth2-proxy behind
+///   nginx <c>auth_request</c>
+/// </summary>
+/// <remarks>
+///   The headers are taken as written: the proxy must replace them on every request. Their values are read as
+///   written by such proxies, without decoding: the roles are a comma-separated list (RFC 9110 list syntax), so a role
+///   holding a comma cannot be named.
+/// </remarks>
+public static class ProxyIdentity
+{
+  /// <summary>
+  ///   Derive a caller from the values of the user and roles headers
+  /// </summary>
+  /// <param name="user">The values of the user header: exactly one, not empty</param>
+  /// <param name="roles">
+  ///   The values of the roles header, each a comma-separated list. Elements are trimmed of spaces and tabs and empty
+  ///   ones are skipped, as in an HTTP list
+  /// </param>
+  /// <returns>The caller, named <c>oid:</c> with roles named <c>role:</c></returns>
+  /// <exception cref="FormatException">
+  ///   The user header is missing, repeated or empty, or a value is not a valid principal name
+  /// </exception>
+  public static AuthenticatedCaller FromHeaders(IReadOnlyCollection<string?> user,
+                                                IEnumerable<string?>         roles)
+  {
+    var users = user.Where(value => !string.IsNullOrEmpty(value))
+                    .ToList();
+
+    if (users.Count != 1 || users.Count != user.Count)
+    {
+      throw new FormatException($"The proxy wrote {user.Count} user headers, exactly one that is not empty is required");
+    }
+
+    return new AuthenticatedCaller(new Caller(Principal.FromDirectory(users[0]!),
+                                              roles.SelectMany(value => (value ?? "").Split(','))
+                                                   .Select(role => role.Trim(' ',
+                                                                             '\t'))
+                                                   .Where(role => role.Length != 0)
+                                                   .Select(Principal.FromRole)),
+                                   CredentialKind.Proxy);
   }
 }
 

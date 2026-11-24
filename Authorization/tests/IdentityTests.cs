@@ -118,6 +118,147 @@ public class TokenIdentityTests
                    Is.EqualTo(PrincipalKind.DirectoryIdentity));
 }
 
+[TestFixture(TestOf = typeof(ProxyIdentity))]
+public class ProxyIdentityTests
+{
+  private static AuthenticatedCaller Resolve(string?[]        user,
+                                             params string?[] roles)
+    => ProxyIdentity.FromHeaders(user,
+                                 roles);
+
+  private static string[] Roles(AuthenticatedCaller caller)
+    => caller.Caller.Roles.Select(role => role.Value)
+             .ToArray();
+
+  [Test]
+  public void TheUserIsTheCallerAndTheGroupsAreRoles()
+  {
+    // As oauth2-proxy writes X-Auth-Request-Groups: one line, joined with a comma and no space
+    var caller = Resolve(["alice@example.com"],
+                         "modelling-team,research-users");
+
+    Assert.That(caller.CredentialKind,
+                Is.EqualTo(CredentialKind.Proxy));
+    Assert.That(caller.Caller.Expansion,
+                Is.EqualTo(new[]
+                           {
+                             "oid:alice@example.com",
+                             "role:modelling-team",
+                             "role:research-users",
+                             "*",
+                           }));
+  }
+
+  [Test]
+  public void AUserFromAProxyIsTheSameAsFromAToken()
+    => Assert.That(Resolve(["u"],
+                           "modelling-team")
+                   .Caller.Expansion,
+                   Is.EqualTo(TokenIdentity.FromClaims(new ClaimsPrincipal(new ClaimsIdentity(new[]
+                                                                                              {
+                                                                                                new Claim("oid",
+                                                                                                          "u"),
+                                                                                                new Claim("roles",
+                                                                                                          "modelling-team"),
+                                                                                              })),
+                                                       "oid",
+                                                       "roles")
+                                           .Caller.Expansion));
+
+  [Test]
+  public void NoRolesHeaderIsNoRole()
+    // oauth2-proxy writes no groups header for a user without groups
+    => Assert.That(Resolve(["alice"])
+                   .Caller.Roles,
+                   Is.Empty);
+
+  [Test]
+  public void RolesAreReadAsAnHttpList()
+    => Assert.That(Roles(Resolve(["alice"],
+                                 " a ,\tb,, ,c,",
+                                 null,
+                                 "",
+                                 "d")),
+                   Is.EqualTo(new[]
+                              {
+                                "role:a",
+                                "role:b",
+                                "role:c",
+                                "role:d",
+                              }));
+
+  [Test]
+  public void ASpaceInsideARoleIsKept()
+    => Assert.That(Roles(Resolve(["alice"],
+                                 "Team A,Team B")),
+                   Is.EqualTo(new[]
+                              {
+                                "role:Team A",
+                                "role:Team B",
+                              }));
+
+  [Test]
+  public void ARepeatedRoleIsOneRole()
+    => Assert.That(Resolve(["alice"],
+                           "a,a",
+                           "a")
+                   .Caller.Roles,
+                   Has.Count.EqualTo(1));
+
+  [Test]
+  public void ACommaAlwaysSeparatesRoles()
+    // Documented limit: a group whose name holds a comma becomes several roles
+    => Assert.That(Roles(Resolve(["alice"],
+                                 "x,platform-team")),
+                   Is.EqualTo(new[]
+                              {
+                                "role:x",
+                                "role:platform-team",
+                              }));
+
+  [Test]
+  public void TheUserIsNotSplitOnCommas()
+    => Assert.That(Resolve(["Doe, John"])
+                   .Caller.Identity.Value,
+                   Is.EqualTo("oid:Doe, John"));
+
+  [Test]
+  public void NamesBeyondAsciiAreKept()
+    => Assert.That(Resolve(["élodie"],
+                           "équipe")
+                   .Caller.Expansion,
+                   Is.EqualTo(new[]
+                              {
+                                "oid:élodie",
+                                "role:équipe",
+                                "*",
+                              }));
+
+  private static readonly string?[][] NotOneUser = [[], [""], [null], ["alice", "bob"], ["alice", ""]];
+
+  [TestCaseSource(nameof(NotOneUser))]
+  public void TheUserMustBeWrittenOnce(string?[] user)
+    => Assert.Throws<FormatException>(() => Resolve(user,
+                                                    "team"));
+
+  [TestCase(" alice")]
+  [TestCase("alice​")]
+  public void AUserThatIsNotAValidNameIsRejected(string user)
+    => Assert.Throws<FormatException>(() => Resolve([user]));
+
+  [TestCase("team​")]
+  [TestCase("a,b\u0007")]
+  public void ARoleThatIsNotAValidNameIsRejected(string roles)
+    => Assert.Throws<FormatException>(() => Resolve(["alice"],
+                                                    roles));
+
+  [Test]
+  public void AProxyCannotNameARoleAsItsCaller()
+    => Assert.That(Resolve(["role:admins"])
+                   .Caller.Identity.Kind,
+                   Is.EqualTo(PrincipalKind.DirectoryIdentity));
+}
+
 [TestFixture(TestOf = typeof(CertificateIdentity))]
 public class CertificateIdentityTests
 {
