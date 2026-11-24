@@ -73,6 +73,24 @@ public class AuthDataModelMapping : IMongoDataModelMapping<AuthData>
   {
     if (initDatabase.Auths.Any())
     {
+      // Ids are positions in the sorted configuration: remove the documents beyond the end of the list, and those
+      // whose (fingerprint, common name) moves to another id, which would break the unique index during the
+      // replacement below. A list without entries leaves the collection untouched, since only some init processes
+      // carry the authentication configuration.
+      var stale = Builders<AuthData>.Filter.Or(initDatabase.Auths.Select(data => Builders<AuthData>.Filter.And(Builders<AuthData>.Filter.Eq(authData => authData.Cn,
+                                                                                                                                            data.Cn),
+                                                                                                               Builders<AuthData>.Filter.Eq(authData => authData
+                                                                                                                                              .Fingerprint,
+                                                                                                                                            data.Fingerprint),
+                                                                                                               Builders<AuthData>.Filter.Ne(authData => authData.AuthId,
+                                                                                                                                            data.AuthId)))
+                                                           .Append(Builders<AuthData>.Filter.Gte(authData => authData.AuthId,
+                                                                                                 initDatabase.Auths.Count)));
+
+      await collection.DeleteManyAsync(sessionHandle,
+                                       stale)
+                      .ConfigureAwait(false);
+
       var upsert = initDatabase.Auths.Select(data => new ReplaceOneModel<AuthData>(Builders<AuthData>.Filter.Where(authData => authData.AuthId == data.AuthId),
                                                                                    data)
                                                      {
