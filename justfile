@@ -29,7 +29,10 @@ kc_user          := "alice"          # Keycloak user; holds the modelling-team r
 kc_password      := "alice"
 kc_client_id     := "armonik-client" # other-client mints tokens for another audience
 kc_client_secret := "armonik-secret"
-kc_token         := ""               # Token presented by runHtcmockTokenRaw
+kc_token         := ""               # Token presented by runHtcmockTokenRaw and runHtcmockProxyRaw
+proxy        := "false"          # If true, deploy oauth2-proxy behind the ingress_proxy ingress, which writes the user and groups of Keycloak tokens (Proxy); requires keycloak
+forged_user   := ""              # User sent by the HtcMock client as X-Forwarded-User, which the ingress must replace or drop
+forged_groups := ""              # Groups sent by the HtcMock client as X-Forwarded-Groups, likewise
 
 # Shared test parameters
 ntasks    := "100"
@@ -82,7 +85,11 @@ export TF_VAR_container_init    := cinit
 # Tokens are only read when requests are authorized: Keycloak alone would leave every request allowed, tokens unchecked
 export TF_VAR_enable_keycloak   := if keycloak == "true" { if authz == "true" { "true" } else { error("keycloak=true requires authz=true: tokens are only validated when requests are authorized") } } else { keycloak }
 
-# Callers authenticate with the generated mTLS client certificates (Xfcc), and with Keycloak tokens when it is deployed
+# oauth2-proxy validates the Keycloak tokens presented to ingress_proxy
+export TF_VAR_enable_proxy      := if proxy == "true" { if keycloak == "true" { "true" } else { error("proxy=true requires keycloak=true: oauth2-proxy validates the tokens of Keycloak") } } else { proxy }
+
+# Callers authenticate with the generated mTLS client certificates (Xfcc), and with Keycloak tokens when it is deployed.
+# Terraform adds Proxy when oauth2-proxy is deployed
 authentication := if keycloak == "true" { "Xfcc,Token" } else { "Xfcc" }
 
 # Permission sets of the access model (none is shipped) and grants for the generated mTLS client certificate (cn:client)
@@ -420,6 +427,8 @@ runHtcmock: buildHtcmockClient
     -e HtcMock__TaskRpcException={{htcmock_task_rpc_exception}} \
     -e HtcMock__TaskError={{htcmock_task_error}} \
     -e GrpcClient__Endpoint={{endpoint}} \
+    -e GrpcClient__ForgedUser={{forged_user}} \
+    -e GrpcClient__ForgedGroups={{forged_groups}} \
     {{HTCMOCK_CLIENT_IMAGE}}
 
 # Run HtcMock through the mTLS ingress with the generated client certificate
@@ -467,7 +476,7 @@ runHtcmockToken: buildHtcmockClient
   # A nested just starts from the defaults: forward every variable runHtcmockTokenRaw and buildHtcmockClient read
   TOKEN="$(just kc_client_id={{kc_client_id}} kc_client_secret={{kc_client_secret}} kc_user={{kc_user}} kc_password={{kc_password}} kcToken)"
   just tag={{tag}} kc_token="$TOKEN" network="{{network}}" platform="{{platform}}" push={{push}} load={{load}} \
-       partition={{partition}} ntasks={{ntasks}} \
+       partition={{partition}} ntasks={{ntasks}} forged_user="{{forged_user}}" forged_groups="{{forged_groups}}" \
        htcmock_time={{htcmock_time}} htcmock_datasize={{htcmock_datasize}} htcmock_memsize={{htcmock_memsize}} \
        htcmock_levels={{htcmock_levels}} htcmock_fast_compute={{htcmock_fast_compute}} \
        htcmock_low_mem={{htcmock_low_mem}} htcmock_small_output={{htcmock_small_output}} \
@@ -494,6 +503,47 @@ runHtcmockTokenRaw: buildHtcmockClient
     -e GrpcClient__Endpoint=https://ingress_tls:9443 \
     -e GrpcClient__CaCert=/certs/server/ca.crt \
     -e GrpcClient__BearerToken={{kc_token}} \
+    -e GrpcClient__ForgedUser={{forged_user}} \
+    -e GrpcClient__ForgedGroups={{forged_groups}} \
+    {{HTCMOCK_CLIENT_IMAGE}}
+
+# oauth2-proxy validates the token and nginx writes its user and groups, read with the Proxy method
+# Run HtcMock through the proxy ingress with a token fetched from Keycloak
+runHtcmockProxy: buildHtcmockClient
+  #!/usr/bin/env bash
+  set -euo pipefail
+  # A nested just starts from the defaults: forward every variable runHtcmockProxyRaw and buildHtcmockClient read
+  TOKEN="$(just kc_client_id={{kc_client_id}} kc_client_secret={{kc_client_secret}} kc_user={{kc_user}} kc_password={{kc_password}} kcToken)"
+  just tag={{tag}} kc_token="$TOKEN" network="{{network}}" platform="{{platform}}" push={{push}} load={{load}} \
+       partition={{partition}} ntasks={{ntasks}} forged_user="{{forged_user}}" forged_groups="{{forged_groups}}" \
+       htcmock_time={{htcmock_time}} htcmock_datasize={{htcmock_datasize}} htcmock_memsize={{htcmock_memsize}} \
+       htcmock_levels={{htcmock_levels}} htcmock_fast_compute={{htcmock_fast_compute}} \
+       htcmock_low_mem={{htcmock_low_mem}} htcmock_small_output={{htcmock_small_output}} \
+       htcmock_purge_data={{htcmock_purge_data}} htcmock_task_rpc_exception={{htcmock_task_rpc_exception}} \
+       htcmock_task_error={{htcmock_task_error}} runHtcmockProxyRaw
+
+# Run HtcMock through the proxy ingress with the token in kc_token, valid or not
+runHtcmockProxyRaw: buildHtcmockClient
+  docker run {{net_arg}} --rm \
+    --user "$(id -u):$(id -g)" \
+    -v {{justfile_directory()}}/terraform/generated/ingress_proxy:/certs:ro \
+    -e HtcMock__NTasks={{ntasks}} \
+    -e HtcMock__TotalCalculationTime={{htcmock_time}} \
+    -e HtcMock__DataSize={{htcmock_datasize}} \
+    -e HtcMock__MemorySize={{htcmock_memsize}} \
+    -e HtcMock__SubTasksLevels={{htcmock_levels}} \
+    -e HtcMock__EnableFastCompute={{htcmock_fast_compute}} \
+    -e HtcMock__EnableUseLowMem={{htcmock_low_mem}} \
+    -e HtcMock__EnableSmallOutput={{htcmock_small_output}} \
+    -e HtcMock__Partition={{partition}} \
+    -e HtcMock__PurgeData={{htcmock_purge_data}} \
+    -e HtcMock__TaskRpcException={{htcmock_task_rpc_exception}} \
+    -e HtcMock__TaskError={{htcmock_task_error}} \
+    -e GrpcClient__Endpoint=https://ingress_proxy:9443 \
+    -e GrpcClient__CaCert=/certs/server/ca.crt \
+    -e GrpcClient__BearerToken={{kc_token}} \
+    -e GrpcClient__ForgedUser={{forged_user}} \
+    -e GrpcClient__ForgedGroups={{forged_groups}} \
     {{HTCMOCK_CLIENT_IMAGE}}
 
 # A supervisor follows and stops the sessions of others without reading their data. The client certificate creates

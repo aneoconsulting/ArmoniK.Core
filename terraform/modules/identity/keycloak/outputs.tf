@@ -15,3 +15,8 @@ output "realm" {
 output "audience" {
   value = local.client_id
 }
+
+# Claim carrying the client roles of the caller, in access tokens
+output "roles_claim" {
+  value = local.roles_mapper.config["claim.name"]
+}

@@ -81,6 +81,21 @@ internal class Program
       extraHeaders.Add(("X-Forwarded-Client-Cert", $"Cert=\"{Uri.EscapeDataString(File.ReadAllText(forgedCertificate))}\""));
     }
 
+    // Used by negative tests: a user and groups sent as headers must be replaced or dropped by the ingress, which
+    // alone writes the identity of the Proxy method
+    foreach (var (setting, header) in new[]
+                                      {
+                                        ("GrpcClient:ForgedUser", "X-Forwarded-User"),
+                                        ("GrpcClient:ForgedGroups", "X-Forwarded-Groups"),
+                                      })
+    {
+      var forged = configuration[setting];
+      if (!string.IsNullOrEmpty(forged))
+      {
+        extraHeaders.Add((header, forged));
+      }
+    }
+
     if (extraHeaders.Count != 0)
     {
       channel = new ExtraHeaderChannel(channel,

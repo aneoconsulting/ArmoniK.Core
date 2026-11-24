@@ -803,10 +803,12 @@ jobs:
           tools/retry.sh -w 60 -r 2 -- just tag=${VERSION} worker=htcmock build-all
           tools/retry.sh -w 60 -r 2 -- just tag=${VERSION} buildHtcmockClient
 
-      - name: Deploy Core with authorization and Keycloak
+      # Keycloak tokens are validated by the control plane on ingress_tls (Token), and by oauth2-proxy on
+      # ingress_proxy, whose nginx writes their user and groups (Proxy)
+      - name: Deploy Core with authorization, Keycloak and oauth2-proxy
         run: |
           MONITOR_PREFIX="monitor/deploy/" tools/retry.sh -w 30 -- tools/monitor.sh \
-            just tag=${VERSION} database=${{ matrix.database }} worker=htcmock authz=true keycloak=true deploy
+            just tag=${VERSION} database=${{ matrix.database }} worker=htcmock authz=true keycloak=true proxy=true deploy
 
       - name: Run HtcMock with a client certificate
         timeout-minutes: 5
@@ -816,6 +818,16 @@ jobs:
       - name: Run HtcMock with a Keycloak token
         timeout-minutes: 5
         run: MONITOR_PREFIX="monitor/htcmock-token/" tools/monitor.sh just tag=${VERSION} runHtcmockToken
+
+      # The modelling-team role of alice reaches the control plane as a group written by the ingress
+      - name: Run HtcMock as the user of an authenticating proxy
+        timeout-minutes: 5
+        run: MONITOR_PREFIX="monitor/htcmock-proxy/" tools/monitor.sh just tag=${VERSION} runHtcmockProxy
+
+      # The ingress writes the identity: a user and groups sent by the client are dropped, the token alone names alice
+      - name: Drop a user header on the TLS ingress
+        timeout-minutes: 5
+        run: just tag=${VERSION} forged_user=mallory forged_groups=platform-team runHtcmockToken
 
       - name: Let a supervisor cancel a session without downloading its data
         timeout-minutes: 5
@@ -837,6 +849,33 @@ jobs:
       - name: Refuse a certificate header on the plain ingress
         timeout-minutes: 3
         run: tools/expect-refusal.sh Unauthenticated just tag=${VERSION} runHtcmockForgedCert ingress http
+
+      - name: Refuse a user header on the TLS ingress
+        timeout-minutes: 3
+        run: |
+          tools/expect-refusal.sh Unauthenticated \
+            just tag=${VERSION} forged_user=mallory forged_groups=modelling-team runHtcmockTokenRaw
+
+      - name: Refuse a user header on the plain ingress
+        timeout-minutes: 3
+        run: |
+          tools/expect-refusal.sh Unauthenticated \
+            just tag=${VERSION} endpoint=http://ingress:9080 forged_user=mallory forged_groups=modelling-team runHtcmock
+
+      # Answered by nginx, oauth2-proxy refusing the subrequest, before the control plane
+      - name: Refuse a caller of the proxy without token
+        timeout-minutes: 3
+        run: |
+          tools/expect-refusal.sh Unauthenticated \
+            just tag=${VERSION} forged_user=mallory forged_groups=modelling-team runHtcmockProxyRaw
+
+      # The groups come from the token: nobody holds none, whatever the client sends
+      - name: Refuse a user of the proxy holding no grant, despite forged groups
+        timeout-minutes: 3
+        run: |
+          TOKEN="$(just tag=${VERSION} kc_user=nobody kc_password=nobody kcToken)"
+          tools/expect-refusal.sh NotFound \
+            just tag=${VERSION} kc_token="$TOKEN" forged_user=alice forged_groups=modelling-team runHtcmockProxyRaw
 
       - name: Refuse a token for another audience
         timeout-minutes: 3

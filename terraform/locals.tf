@@ -20,7 +20,14 @@ locals {
   partition_env_vars = { for i in local.partitions : "InitServices__Partitioning__Partitions__${i}" => jsonencode(merge(var.partition_data, { PartitionId = "${var.partition_data.PartitionId}${i}" })) }
   # Keycloak issues tokens: they are read whenever requests are authorized, never when authorization is disabled
   authentication_methods = [for method in split(",", replace(var.authorization.authentication, " ", "")) : method if method != "None"]
-  authentication         = join(",", distinct(concat(local.authentication_methods, length(local.authentication_methods) != 0 && var.enable_keycloak ? ["Token"] : [])))
+  # oauth2-proxy writes the user and groups of the callers of ingress_proxy, read with Proxy whenever requests are authorized
+  authentication = join(",", distinct(concat(local.authentication_methods,
+    length(local.authentication_methods) != 0 && var.enable_keycloak ? ["Token"] : [],
+  length(local.authentication_methods) != 0 && var.enable_proxy ? ["Proxy"] : [])))
+  # TLS without client certificate: the token reaches oauth2-proxy, never the control plane
+  ingress_configs = merge(var.ingress.configs, var.enable_proxy ? {
+    ingress_proxy = { port = 5204, tls = true, mtls = false, proxy = true }
+  } : {})
   authorization_env_vars = local.authentication != "" ? merge(
     {
       "Authorization__Authentication" = local.authentication
