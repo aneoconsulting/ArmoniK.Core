@@ -39,19 +39,23 @@ public class PostProcessor : BackgroundService
 {
   private readonly ExceptionManager        exceptionManager_;
   private readonly ILogger<PostProcessor>  logger_;
+  private readonly QueueMessageReleaser    messageReleaser_;
   private readonly PostProcessingTaskQueue postProcessingTaskQueue_;
 
   /// <summary>
   ///   Initializes a new instance of the <see cref="PostProcessor" /> class.
   /// </summary>
   /// <param name="postProcessingTaskQueue">The queue containing tasks that need post-processing.</param>
+  /// <param name="messageReleaser">The service releasing the queue messages, closed when the post processor stops.</param>
   /// <param name="exceptionManager">The manager handling exceptions and cancellation.</param>
   /// <param name="logger">The logger for this class.</param>
   public PostProcessor(PostProcessingTaskQueue postProcessingTaskQueue,
+                       QueueMessageReleaser    messageReleaser,
                        ExceptionManager        exceptionManager,
                        ILogger<PostProcessor>  logger)
   {
     postProcessingTaskQueue_ = postProcessingTaskQueue;
+    messageReleaser_         = messageReleaser;
     logger_                  = logger;
     exceptionManager_        = exceptionManager;
   }
@@ -60,7 +64,10 @@ public class PostProcessor : BackgroundService
   protected override async Task ExecuteAsync(CancellationToken stoppingToken)
   {
     exceptionManager_.Register();
-    await using var closeReader = new Deferrer(postProcessingTaskQueue_.CloseReader);
+    // The post processor is the last stage of the pipeline: once it stops, the queue of the message releaser is closed.
+    // Declared first so that it is disposed last.
+    await using var closeReleaser = new Deferrer(messageReleaser_.CloseWriter);
+    await using var closeReader   = new Deferrer(postProcessingTaskQueue_.CloseReader);
 
     while (!exceptionManager_.LateCancellationToken.IsCancellationRequested)
     {
