@@ -340,8 +340,11 @@ public class ObjectStorage : IObjectStorage
                        FileShare.ReadWrite | FileShare.Delete);
     }
     // If the file creation failed and the path has been split,
-    // we need to create the prefix folder and retry file creation
-    catch (DirectoryNotFoundException)
+    // we need to create the prefix folder and retry file creation.
+    // A missing prefix folder is not always reported as DirectoryNotFoundException: on Unix, .NET maps ENOENT to
+    // FileNotFoundException when the parent folder exists at the time the exception is built, which happens when
+    // another writer creates the folder between the failed open and that check.
+    catch (IOException)
     {
       var dir = Path.GetDirectoryName(filename);
 
