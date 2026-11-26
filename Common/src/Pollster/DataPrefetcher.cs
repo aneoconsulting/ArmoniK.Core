@@ -25,6 +25,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,7 @@ public class DataPrefetcher : IInitializable
   private readonly ActivitySource?         activitySource_;
   private readonly ILogger<DataPrefetcher> logger_;
   private readonly IObjectStorage          objectStorage_;
+  private readonly int                     parallelism_;
 
   private bool isInitialized_;
 
@@ -46,13 +48,16 @@ public class DataPrefetcher : IInitializable
   ///   Create data prefetcher for tasks
   /// </summary>
   /// <param name="objectStorage">Interface to manage data</param>
+  /// <param name="pollsterOptions">Pollster configuration</param>
   /// <param name="activitySource">Activity source for tracing</param>
   /// <param name="logger">Logger used to print logs</param>
-  public DataPrefetcher(IObjectStorage          objectStorage,
-                        ActivitySource?         activitySource,
-                        ILogger<DataPrefetcher> logger)
+  public DataPrefetcher(IObjectStorage             objectStorage,
+                        Injection.Options.Pollster pollsterOptions,
+                        ActivitySource?            activitySource,
+                        ILogger<DataPrefetcher>    logger)
   {
     objectStorage_  = objectStorage;
+    parallelism_    = pollsterOptions.DataPrefetchParallelism;
     logger_         = logger;
     activitySource_ = activitySource;
   }
@@ -75,7 +80,9 @@ public class DataPrefetcher : IInitializable
   }
 
   /// <summary>
-  ///   Method used to prefetch data before executing a task
+  ///   Method used to prefetch data before executing a task.
+  ///   The data are downloaded concurrently, up to <see cref="Injection.Options.Pollster.DataPrefetchParallelism" />
+  ///   downloads at a time.
   /// </summary>
   /// <param name="opaqueIds">Dictionary containing </param>
   /// <param name="folder">Path in which pre-fetched data are stored</param>
@@ -94,18 +101,38 @@ public class DataPrefetcher : IInitializable
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
 
-    foreach (var (resultId, opaqueId) in opaqueIds)
+    // On the first failure, ParallelForEach cancels the token given to the other downloads and waits for them, so
+    // none of them keeps writing into the task folder once the error is handled.
+    await opaqueIds.ParallelForEach(new ParallelTaskOptions
+                                    {
+                                      CancellationToken = cancellationToken,
+                                      ParallelismLimit  = parallelism_,
+                                    },
+                                    (pair,
+                                     token) => DownloadAsync(pair.Value,
+                                                             Path.Combine(folder,
+                                                                          pair.Key),
+                                                             token))
+                   .ConfigureAwait(false);
+  }
+
+  private async Task DownloadAsync(byte[]            opaqueId,
+                                   string            path,
+                                   CancellationToken cancellationToken)
+  {
+    await using var fs = new FileStream(path,
+                                        FileMode.Create,
+                                        FileAccess.Write,
+                                        FileShare.None,
+                                        4096,
+                                        FileOptions.Asynchronous);
+    await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
+                                                              cancellationToken)
+                                              .ConfigureAwait(false))
     {
-      await using var fs = new FileStream(Path.Combine(folder,
-                                                       resultId),
-                                          FileMode.OpenOrCreate);
-      await using var w = new BinaryWriter(fs);
-      await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
-                                                                cancellationToken)
-                                                .ConfigureAwait(false))
-      {
-        w.Write(chunk);
-      }
+      await fs.WriteAsync(chunk,
+                          cancellationToken)
+              .ConfigureAwait(false);
     }
   }
 }

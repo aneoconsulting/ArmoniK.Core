@@ -78,6 +78,13 @@ public class Pollster
   public int MaxPrefetchAttempts { get; set; } = 3;
 
   /// <summary>
+  ///   Maximum number of task inputs (payload and data dependencies) downloaded concurrently from the object storage
+  ///   before the task is executed.
+  ///   Set to `0` to use the number of threads, or to a negative value to remove the limit.
+  /// </summary>
+  public int DataPrefetchParallelism { get; set; }
+
+  /// <summary>
   ///   Delay between consecutive re-reads of a task that is still in Pending status during acquisition,
   ///   to allow the submitter time to complete the transition to Submitted.
   /// </summary>
