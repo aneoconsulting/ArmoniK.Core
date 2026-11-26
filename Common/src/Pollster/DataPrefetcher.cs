@@ -15,9 +15,12 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,6 +42,7 @@ public class DataPrefetcher : IInitializable
   private readonly ActivitySource?         activitySource_;
   private readonly ILogger<DataPrefetcher> logger_;
   private readonly IObjectStorage          objectStorage_;
+  private readonly int                     parallelism_;
 
   private bool isInitialized_;
 
@@ -46,13 +50,16 @@ public class DataPrefetcher : IInitializable
   ///   Create data prefetcher for tasks
   /// </summary>
   /// <param name="objectStorage">Interface to manage data</param>
+  /// <param name="pollsterOptions">Pollster configuration</param>
   /// <param name="activitySource">Activity source for tracing</param>
   /// <param name="logger">Logger used to print logs</param>
-  public DataPrefetcher(IObjectStorage          objectStorage,
-                        ActivitySource?         activitySource,
-                        ILogger<DataPrefetcher> logger)
+  public DataPrefetcher(IObjectStorage             objectStorage,
+                        Injection.Options.Pollster pollsterOptions,
+                        ActivitySource?            activitySource,
+                        ILogger<DataPrefetcher>    logger)
   {
     objectStorage_  = objectStorage;
+    parallelism_    = pollsterOptions.DataPrefetchParallelism;
     logger_         = logger;
     activitySource_ = activitySource;
   }
@@ -75,7 +82,9 @@ public class DataPrefetcher : IInitializable
   }
 
   /// <summary>
-  ///   Method used to prefetch data before executing a task
+  ///   Method used to prefetch data before executing a task.
+  ///   The data are downloaded concurrently, up to <see cref="Injection.Options.Pollster.DataPrefetchParallelism" />
+  ///   downloads at a time.
   /// </summary>
   /// <param name="opaqueIds">Dictionary containing </param>
   /// <param name="folder">Path in which pre-fetched data are stored</param>
@@ -94,18 +103,80 @@ public class DataPrefetcher : IInitializable
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
 
-    foreach (var (resultId, opaqueId) in opaqueIds)
+    // Unlike ParallelForEach, a failure cancels the other downloads and waits for them, so none of them keeps
+    // writing into the task folder once the error is handled.
+    using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    using var throttle = parallelism_ < 0
+                           ? null
+                           : new SemaphoreSlim(parallelism_ == 0
+                                                 ? Environment.ProcessorCount
+                                                 : parallelism_);
+    Exception? failure = null;
+
+    var downloads = opaqueIds.Select(async pair =>
+                                     {
+                                       try
+                                       {
+                                         if (throttle is not null)
+                                         {
+                                           await throttle.WaitAsync(cts.Token)
+                                                         .ConfigureAwait(false);
+                                         }
+
+                                         try
+                                         {
+                                           await DownloadAsync(pair.Value,
+                                                               Path.Combine(folder,
+                                                                            pair.Key),
+                                                               cts.Token)
+                                             .ConfigureAwait(false);
+                                         }
+                                         finally
+                                         {
+                                           throttle?.Release();
+                                         }
+                                       }
+                                       catch (Exception e)
+                                       {
+                                         Interlocked.CompareExchange(ref failure,
+                                                                     e,
+                                                                     null);
+                                         await cts.CancelAsync()
+                                                  .ConfigureAwait(false);
+                                         throw;
+                                       }
+                                     })
+                             .ToList();
+
+    try
     {
-      await using var fs = new FileStream(Path.Combine(folder,
-                                                       resultId),
-                                          FileMode.OpenOrCreate);
-      await using var w = new BinaryWriter(fs);
-      await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
-                                                                cancellationToken)
-                                                .ConfigureAwait(false))
-      {
-        w.Write(chunk);
-      }
+      await Task.WhenAll(downloads)
+                .ConfigureAwait(false);
+    }
+    catch when (failure is not null)
+    {
+      // Rethrow the root cause rather than the cancellation it triggered in another download
+      ExceptionDispatchInfo.Throw(failure);
+    }
+  }
+
+  private async Task DownloadAsync(byte[]            opaqueId,
+                                   string            path,
+                                   CancellationToken cancellationToken)
+  {
+    await using var fs = new FileStream(path,
+                                        FileMode.Create,
+                                        FileAccess.Write,
+                                        FileShare.None,
+                                        4096,
+                                        FileOptions.Asynchronous);
+    await foreach (var chunk in objectStorage_.GetValuesAsync(opaqueId,
+                                                              cancellationToken)
+                                              .ConfigureAwait(false))
+    {
+      await fs.WriteAsync(chunk,
+                          cancellationToken)
+              .ConfigureAwait(false);
     }
   }
 }
