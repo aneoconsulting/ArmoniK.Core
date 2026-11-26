@@ -77,10 +77,6 @@ internal class PostgresDatabaseProvider : IDisposable
                                                   {
                                                     $"{Components.SettingSection}:{nameof(Components.TableStorage)}", "ArmoniK.Adapters.PostgreSQL.TableStorage"
                                                   },
-                                                  {
-                                                    $"{Components.SettingSection}:{nameof(Components.AuthenticationStorage)}",
-                                                    "ArmoniK.Adapters.PostgreSQL.AuthenticationTable"
-                                                  },
                                                 };
 
     // When using an external PostgreSQL (POSTGRES_TEST_CONNECTION_STRING set), sharedPort_ is 0.
@@ -109,7 +105,6 @@ internal class PostgresDatabaseProvider : IDisposable
     var serviceCollection = new ServiceCollection();
     serviceCollection.AddPostgresComponents(configuration,
                                             logger);
-    serviceCollection.AddClientSubmitterAuthenticationStorage(configuration);
     serviceCollection.AddSingleton(ActivitySource);
     serviceCollection.AddInitializedOption<InitServices>(configuration,
                                                          InitServices.SettingSection);

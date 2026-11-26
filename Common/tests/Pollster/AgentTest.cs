@@ -745,6 +745,27 @@ public class AgentTest
   }
 
   [Test]
+  public void SubmitTaskInAPartitionOfAnotherSessionShouldThrow()
+  {
+    using var holder = new AgentHolder();
+
+    Assert.ThrowsAsync<PartitionNotInSessionException>(() => holder.Agent.SubmitTasks(new TaskSubmissionRequest[]
+                                                                                      {
+                                                                                        new("payload",
+                                                                                            new TaskOptions(Options)
+                                                                                            {
+                                                                                              PartitionId = "another-partition",
+                                                                                            }.ToNullableTaskOptions(),
+                                                                                            new List<string>(),
+                                                                                            new List<string>()),
+                                                                                      },
+                                                                                      null,
+                                                                                      holder.Session,
+                                                                                      holder.Token,
+                                                                                      CancellationToken.None));
+  }
+
+  [Test]
   [TestCase(false)]
   [TestCase(true)]
   public async Task SubmitTasksCreateOneRequestShouldSucceed(bool optionsNull)

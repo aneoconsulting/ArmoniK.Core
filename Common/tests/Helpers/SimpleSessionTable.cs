@@ -63,6 +63,8 @@ public class SimpleSessionTable : ISessionTable
 
   public Task<string> SetSessionDataAsync(IEnumerable<string> partitionIds,
                                           TaskOptions         defaultOptions,
+                                          string?             owner,
+                                          IEnumerable<string> createdUnder,
                                           CancellationToken   cancellationToken = default)
     => Task.FromResult(SessionId);
 

@@ -5,6 +5,25 @@ module "fluenbit" {
   windows = var.windows
 }
 
+module "keycloak" {
+  count      = var.enable_keycloak ? 1 : 0
+  source     = "./modules/identity/keycloak"
+  image      = var.keycloak_image
+  network    = local.network
+  log_driver = module.fluenbit.log_driver
+}
+
+module "oauth2_proxy" {
+  count        = var.enable_proxy ? 1 : 0
+  source       = "./modules/identity/oauth2-proxy"
+  image        = var.oauth2_proxy_image
+  network      = local.network
+  issuer       = one(module.keycloak[*].authority)
+  client_id    = one(module.keycloak[*].audience)
+  groups_claim = one(module.keycloak[*].roles_claim)
+  log_driver   = module.fluenbit.log_driver
+}
+
 module "seq" {
   count   = var.enable_seq ? 1 : 0
   source  = "./modules/monitoring/seq"
@@ -197,7 +216,7 @@ module "metrics_exporter" {
 
 module "ingress" {
   source   = "./modules/ingress"
-  for_each = var.ingress.configs
+  for_each = local.ingress_configs
   container = {
     name  = each.key,
     image = var.ingress.image
@@ -205,6 +224,7 @@ module "ingress" {
   }
   tls        = each.value.tls
   mtls       = each.value.mtls
+  proxy      = each.value.proxy ? { url = one(module.oauth2_proxy[*].url) } : null
   port       = each.value.port
   network    = local.network
   submitter  = module.submitter

@@ -23,20 +23,17 @@ using System.Threading.Tasks;
 
 using ArmoniK.Api.gRPC.V1.Applications;
 using ArmoniK.Api.gRPC.V1.SortDirection;
-using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
+using ArmoniK.Core.Common.Enforcement;
 using ArmoniK.Core.Common.Meter;
 using ArmoniK.Core.Common.Storage;
 
 using Grpc.Core;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 
 namespace ArmoniK.Core.Common.gRPC.Services;
 
 /// <inheritdoc cref="Applications" />
-[Authorize(AuthenticationSchemes = Authenticator.SchemeName)]
 public class GrpcApplicationsService : Applications.ApplicationsBase
 {
   private readonly ILogger<GrpcApplicationsService>                  logger_;
@@ -59,15 +56,13 @@ public class GrpcApplicationsService : Applications.ApplicationsBase
   }
 
   /// <inheritdoc />
-  [RequiresPermission(typeof(GrpcApplicationsService),
-                      nameof(ListApplications))]
   public override async Task<ListApplicationsResponse> ListApplications(ListApplicationsRequest request,
                                                                         ServerCallContext       context)
   {
     using var measure = meter_.CountAndTime();
-    var (applications, totalCount) = await taskTable_.Secondary.ListApplicationsAsync(request.Filters is null
-                                                                                        ? data => true
-                                                                                        : request.Filters.ToApplicationFilter(),
+    var (applications, totalCount) = await taskTable_.Secondary.ListApplicationsAsync(context.RestrictListing<TaskData>(request.Filters is null
+                                                                                                                          ? data => true
+                                                                                                                          : request.Filters.ToApplicationFilter()),
                                                                                       request.Sort is null
                                                                                         ? new List<Expression<Func<Application, object?>>>
                                                                                           {

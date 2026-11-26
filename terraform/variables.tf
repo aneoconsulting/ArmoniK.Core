@@ -168,6 +168,32 @@ variable "log_driver_image" {
   default = "fluent/fluent-bit:latest"
 }
 
+variable "keycloak_image" {
+  type    = string
+  default = "quay.io/keycloak/keycloak:26.0"
+}
+
+variable "enable_keycloak" {
+  description = "Deploy a Keycloak identity provider and validate tokens against it"
+  type        = bool
+  default     = false
+}
+
+variable "oauth2_proxy_image" {
+  type    = string
+  default = "quay.io/oauth2-proxy/oauth2-proxy:v7.15.5"
+}
+
+variable "enable_proxy" {
+  description = "Deploy oauth2-proxy validating Keycloak tokens behind the ingress_proxy ingress, which writes the user and groups of the caller for the Proxy method; requires enable_keycloak"
+  type        = bool
+  default     = false
+  validation {
+    condition     = !var.enable_proxy || var.enable_keycloak
+    error_message = "enable_proxy requires enable_keycloak: oauth2-proxy validates the tokens of Keycloak"
+  }
+}
+
 variable "seq_image" {
   type    = string
   default = "datalust/seq:latest"
@@ -242,9 +268,10 @@ variable "ingress" {
     image = optional(string, "nginxinc/nginx-unprivileged"),
     tag   = optional(string, "1.23.3"),
     configs = optional(map(object({
-      port = number,
-      tls  = optional(bool, false),
-      mtls = optional(bool, false),
+      port  = number,
+      tls   = optional(bool, false),
+      mtls  = optional(bool, false),
+      proxy = optional(bool, false),
       })),
       {
         ingress = {
@@ -260,6 +287,16 @@ variable "ingress" {
           mtls = true
       } }
   ) })
+  # Without TLS, nginx has no client certificate to verify and forwards an empty one as if it were present
+  validation {
+    condition     = alltrue([for name, config in var.ingress.configs : config.tls || !config.mtls])
+    error_message = "An ingress config with mtls = true must also set tls = true: ${join(", ", [for name, config in var.ingress.configs : name if config.mtls && !config.tls])}"
+  }
+  # One identity per listener: a caller presents either a certificate or the identity written by the proxy
+  validation {
+    condition     = alltrue([for name, config in var.ingress.configs : !(config.mtls && config.proxy)])
+    error_message = "An ingress config cannot set both mtls and proxy: ${join(", ", [for name, config in var.ingress.configs : name if config.mtls && config.proxy])}"
+  }
   default = {}
 }
 
@@ -295,4 +332,27 @@ variable "container_init" {
 variable "windows" {
   type    = bool
   default = false
+}
+
+variable "authorization" {
+  description = "Authorization of requests: methods callers authenticate with (None, Xfcc, Token or Xfcc,Token; None allows every request), grants and permission sets of the access model"
+  type = object({
+    authentication  = optional(string, "None")
+    config_revision = optional(number, 0)
+    permission_sets = optional(list(object({
+      name        = string
+      permissions = list(string)
+    })), [])
+    grants = optional(list(object({
+      id             = string
+      principal      = string
+      permission_set = string
+      condition      = optional(string)
+    })), [])
+  })
+  validation {
+    condition     = contains(["None", "Xfcc", "Token", "Xfcc,Token", "Token,Xfcc"], replace(var.authorization.authentication, " ", ""))
+    error_message = "authorization.authentication must be None, Xfcc, Token or Xfcc,Token, not '${var.authorization.authentication}'"
+  }
+  default = {}
 }

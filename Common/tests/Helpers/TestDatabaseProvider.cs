@@ -25,7 +25,6 @@ using ArmoniK.Core.Adapters.Memory;
 using ArmoniK.Core.Adapters.MongoDB;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Base;
-using ArmoniK.Core.Common.Auth.Authentication;
 using ArmoniK.Core.Common.gRPC;
 using ArmoniK.Core.Common.Injection;
 using ArmoniK.Core.Common.Injection.Options;
@@ -93,9 +92,6 @@ public class TestDatabaseProvider : IDisposable
                                                     "Components:ObjectStorage", "ArmoniK.Adapters.MongoDB.ObjectStorage"
                                                   },
                                                   {
-                                                    "Components:AuthenticationStorage", "ArmoniK.Adapters.MongoDB.AuthenticationTable"
-                                                  },
-                                                  {
                                                     $"{Adapters.MongoDB.Options.MongoDB.SettingSection}:{nameof(Adapters.MongoDB.Options.MongoDB.DatabaseName)}",
                                                     database_.Name
                                                   },
@@ -127,13 +123,9 @@ public class TestDatabaseProvider : IDisposable
 
     builder.Services.AddMongoStorages(builder.Configuration,
                                       NullLogger.Instance)
-           .AddClientSubmitterAuthenticationStorage(builder.Configuration)
-           .AddClientSubmitterAuthServices(builder.Configuration,
-                                           out _)
            .AddInitializedOption<InitServices>(builder.Configuration,
                                                InitServices.SettingSection)
            .AddSingleton<InitDatabase>()
-           .Configure<AuthenticatorOptions>(o => o.CopyFrom(AuthenticatorOptions.DefaultNoAuth))
            .AddLogging()
            .AddSingleton<IObjectStorage, ObjectStorage>()
            .AddInitializedOption<Injection.Options.Submitter>(builder.Configuration,

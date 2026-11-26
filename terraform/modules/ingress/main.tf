@@ -15,14 +15,15 @@ resource "docker_container" "ingress" {
   log_driver = var.log_driver.name
   log_opts   = var.log_driver.log_opts
 
+  # The web port is the gRPC one plus 10
   ports {
     internal = var.tls ? 8443 : 8080
-    external = var.tls ? (var.mtls ? 5213 : 5212) : 5211
+    external = var.port + 10
   }
 
   ports {
     internal = var.tls ? 9443 : 9080
-    external = var.tls ? (var.mtls ? 5203 : 5202) : 5201
+    external = var.port
   }
 
   dynamic "upload" {

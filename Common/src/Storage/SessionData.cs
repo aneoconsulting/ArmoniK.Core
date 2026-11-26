@@ -90,4 +90,24 @@ public record SessionData(string        SessionId,
                      UpdateDefinition<SessionData> updates)
     : this(original)
     => updates.ApplyTo(this);
+
+  /// <summary>
+  ///   Principal recorded as owner of the session, null when the session was created without authorization
+  /// </summary>
+  public string? Owner { get; init; }
+
+  /// <summary>
+  ///   Principals of the grants that permitted the creation of the session
+  /// </summary>
+  public IList<string> CreatedUnder { get; init; } = Array.Empty<string>();
+
+  /// <summary>
+  ///   Principals the session is shared with
+  /// </summary>
+  public IList<string> SharedWith { get; init; } = Array.Empty<string>();
+
+  /// <summary>
+  ///   Principals the session is delegated to
+  /// </summary>
+  public IList<string> DelegatedTo { get; init; } = Array.Empty<string>();
 }

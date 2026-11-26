@@ -158,9 +158,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                               CancellationToken cancellationToken)
       => Task.FromException(new T());
 
-    public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
-                                                  TaskOptions       defaultTaskOptions,
-                                                  CancellationToken cancellationToken)
+    public Task<CreateSessionReply> CreateSession(IList<string>        partitionIds,
+                                                  TaskOptions          defaultTaskOptions,
+                                                  CancellationToken    cancellationToken,
+                                                  string?              owner        = null,
+                                                  IEnumerable<string>? createdUnder = null)
       => Task.FromException<CreateSessionReply>(new T());
 
     public Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,
@@ -215,9 +217,11 @@ internal class IntegrationGrpcSubmitterServiceTest
                               CancellationToken cancellationToken)
       => throw new T();
 
-    public Task<CreateSessionReply> CreateSession(IList<string>     partitionIds,
-                                                  TaskOptions       defaultTaskOptions,
-                                                  CancellationToken cancellationToken)
+    public Task<CreateSessionReply> CreateSession(IList<string>        partitionIds,
+                                                  TaskOptions          defaultTaskOptions,
+                                                  CancellationToken    cancellationToken,
+                                                  string?              owner        = null,
+                                                  IEnumerable<string>? createdUnder = null)
       => throw new T();
 
     public Task<ICollection<TaskCreationRequest>> CreateTasks(string                        sessionId,

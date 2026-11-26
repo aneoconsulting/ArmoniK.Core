@@ -25,6 +25,14 @@ variable "mtls" {
   type = bool
 }
 
+variable "proxy" {
+  description = "Authentication service consulted through nginx auth_request (oauth2-proxy), whose user and groups nginx writes for the Proxy method; null for none"
+  type = object({
+    url = string
+  })
+  default = null
+}
+
 variable "submitter" {
   type = object({
     url  = string,

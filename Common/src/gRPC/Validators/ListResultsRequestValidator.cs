@@ -42,6 +42,7 @@ public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
     RuleFor(request => request.Filters)
       .NotNull()
       .NotEmpty()
+      .SetValidator(new ResultFiltersValidator())
       .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Filters)}");
     RuleFor(request => request.Sort)
       .NotNull()
@@ -56,6 +57,14 @@ public class ListResultsRequestValidator : AbstractValidator<ListResultsRequest>
                         RuleFor(request => request.Sort.Field)
                           .NotNull()
                           .NotEmpty()
+                          .Must(field => field is null || field.FieldCase != ResultField.FieldOneofCase.None)
+                          .WithMessage("A sort must name the field it sorts on")
+                          .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}.{nameof(ListResultsRequest.Sort.Field)}");
+                        // The order of the opaque ids would reveal them, and with them the data they embed, to callers
+                        // who are not shown them
+                        RuleFor(request => request.Sort.Field)
+                          .Must(field => field?.ResultRawField?.Field != ResultRawEnumField.OpaqueId)
+                          .WithMessage("Results cannot be sorted by their opaque id")
                           .WithName($"{nameof(ListResultsRequest)}.{nameof(ListResultsRequest.Sort)}.{nameof(ListResultsRequest.Sort.Field)}");
                       });
   }

@@ -38,15 +38,15 @@ public static class ListTasksRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that access the field from the object
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<TaskData, object?>> ToField(this ListTasksRequest.Types.Sort sort)
-    => sort.Field.FieldCase switch
-       {
-         TaskField.FieldOneofCase.TaskSummaryField       => sort.Field.TaskSummaryField.Field.ToField(),
-         TaskField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
-         TaskField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
-         _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
-       };
+    => FilterConversion.Convert(() => sort.Field.FieldCase switch
+                                      {
+                                        TaskField.FieldOneofCase.TaskSummaryField       => sort.Field.TaskSummaryField.Field.ToField(),
+                                        TaskField.FieldOneofCase.TaskOptionField        => sort.Field.TaskOptionField.Field.ToField(),
+                                        TaskField.FieldOneofCase.TaskOptionGenericField => sort.Field.TaskOptionGenericField.ToField(),
+                                        _                                               => throw new ArgumentOutOfRangeException(nameof(sort)),
+                                      });
 
   /// <summary>
   ///   Converts gRPC message into the associated <see cref="TaskData" /> field
@@ -73,8 +73,11 @@ public static class ListTasksRequestExt
   /// <returns>
   ///   The <see cref="Expression" /> that represents the filter conditions
   /// </returns>
-  /// <exception cref="ArgumentOutOfRangeException">the given message is not recognized</exception>
+  /// <exception cref="Exceptions.InvalidFilterException">the given message cannot be converted</exception>
   public static Expression<Func<TaskData, bool>> ToTaskDataFilter(this Filters filters)
+    => FilterConversion.Convert(() => BuildTaskDataFilter(filters));
+
+  private static Expression<Func<TaskData, bool>> BuildTaskDataFilter(Filters filters)
   {
     Expression<Func<TaskData, bool>> expr = data => false;
 
