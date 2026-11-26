@@ -15,12 +15,9 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Runtime.ExceptionServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -28,6 +25,7 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
 using ArmoniK.Core.Base.Exceptions;
+using ArmoniK.Utils;
 
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
@@ -103,64 +101,19 @@ public class DataPrefetcher : IInitializable
     activity?.AddEvent(new ActivityEvent("Load payload"));
 
 
-    // Unlike ParallelForEach, a failure cancels the other downloads and waits for them, so none of them keeps
-    // writing into the task folder once the error is handled.
-    using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-    using var throttle = parallelism_ < 0
-                           ? null
-                           : new SemaphoreSlim(parallelism_ == 0
-                                                 ? Environment.ProcessorCount
-                                                 : parallelism_);
-    Exception? failure = null;
-
-    var downloads = opaqueIds.Select(async pair =>
-                                     {
-                                       try
-                                       {
-                                         if (throttle is not null)
-                                         {
-                                           await throttle.WaitAsync(cts.Token)
-                                                         .ConfigureAwait(false);
-                                         }
-
-                                         try
-                                         {
-                                           // A slot released by a cancelled download can be granted before the
-                                           // cancellation reaches this waiter
-                                           cts.Token.ThrowIfCancellationRequested();
-                                           await DownloadAsync(pair.Value,
-                                                               Path.Combine(folder,
-                                                                            pair.Key),
-                                                               cts.Token)
-                                             .ConfigureAwait(false);
-                                         }
-                                         finally
-                                         {
-                                           throttle?.Release();
-                                         }
-                                       }
-                                       catch (Exception e)
-                                       {
-                                         Interlocked.CompareExchange(ref failure,
-                                                                     e,
-                                                                     null);
-                                         await cts.CancelAsync()
-                                                  .ConfigureAwait(false);
-                                         throw;
-                                       }
-                                     })
-                             .ToList();
-
-    try
-    {
-      await Task.WhenAll(downloads)
-                .ConfigureAwait(false);
-    }
-    catch when (failure is not null)
-    {
-      // Rethrow the root cause rather than the cancellation it triggered in another download
-      ExceptionDispatchInfo.Throw(failure);
-    }
+    // On the first failure, ParallelForEach cancels the token given to the other downloads and waits for them, so
+    // none of them keeps writing into the task folder once the error is handled.
+    await opaqueIds.ParallelForEach(new ParallelTaskOptions
+                                    {
+                                      CancellationToken = cancellationToken,
+                                      ParallelismLimit  = parallelism_,
+                                    },
+                                    (pair,
+                                     token) => DownloadAsync(pair.Value,
+                                                             Path.Combine(folder,
+                                                                          pair.Key),
+                                                             token))
+                   .ConfigureAwait(false);
   }
 
   private async Task DownloadAsync(byte[]            opaqueId,
