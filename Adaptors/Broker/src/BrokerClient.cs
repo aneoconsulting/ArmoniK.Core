@@ -1,0 +1,327 @@
+// This file is part of the ArmoniK project
+// 
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
+
+using Microsoft.Extensions.Logging;
+
+namespace ArmoniK.Core.Adapters.Broker;
+
+internal sealed record PulledMessage(string Token,
+                                     string TaskId);
+
+/// <summary>
+///   REST client of the broker (protocol v1). Stateless: each message handler renews its own lease.
+///   Transient failures are retried by <see cref="RetryHandler" />.
+/// </summary>
+internal sealed class BrokerClient : IAsyncDisposable
+{
+  /// <summary>
+  ///   Name of the <see cref="HttpClient" /> registered for the broker.
+  /// </summary>
+  public const string HttpClientName = "ArmoniK.Broker";
+
+  private static readonly JsonSerializerOptions Json = new()
+                                                       {
+                                                         PropertyNamingPolicy   = JsonNamingPolicy.SnakeCaseLower,
+                                                         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+                                                       };
+
+  private readonly CancellationTokenSource disposed_ = new();
+  private readonly IHttpClientFactory      httpClientFactory_;
+  private readonly ILogger                 logger_;
+  private readonly NodeBody?               node_;
+  private readonly Broker                  options_;
+  private readonly Version                 version_;
+  private          long                    epoch_ = -1;
+
+  public BrokerClient(Broker                options,
+                      IHttpClientFactory    httpClientFactory,
+                      ILogger<BrokerClient> logger)
+  {
+    options_           = options;
+    httpClientFactory_ = httpClientFactory;
+    logger_            = logger;
+    version_ = options.Http2
+                 ? HttpVersion.Version20
+                 : HttpVersion.Version11;
+
+    // The node identifier is resolved by the QueueBuilder when affinity is on.
+    node_ = options.Affinity
+              ? new NodeBody(options.NodeId,
+                             options.CacheCapacityBytes)
+              : null;
+  }
+
+  /// <summary>
+  ///   Whether tasks are placed next to their data (<see cref="Broker.Affinity" />).
+  /// </summary>
+  public bool Affinity
+    => options_.Affinity;
+
+  /// <summary>
+  ///   Largest enqueue batch; a batch the server finds too large is split (protocol §6.1).
+  /// </summary>
+  public int MaxBatchItems
+    => Math.Max(1,
+                options_.MaxBatchItems);
+
+  public ValueTask DisposeAsync()
+  {
+    disposed_.Cancel();
+    disposed_.Dispose();
+    return ValueTask.CompletedTask;
+  }
+
+  /// <summary>
+  ///   Posts a request and reads its answer, <c>null</c> when it has none. An error status throws an
+  ///   <see cref="HttpRequestException" /> carrying it.
+  /// </summary>
+  /// <param name="path">Route, relative to the endpoint</param>
+  /// <param name="body">Request body</param>
+  /// <param name="once">Timeout of a request sent once; <c>null</c> to retry it (<see cref="RetryHandler" />)</param>
+  /// <param name="cancellationToken">Token to cancel the request</param>
+  private async Task<T?> PostAsync<T>(string            path,
+                                      object            body,
+                                      TimeSpan?         once,
+                                      CancellationToken cancellationToken)
+    where T : class
+  {
+    using var request = new HttpRequestMessage(HttpMethod.Post,
+                                               path)
+                        {
+                          Version       = version_,
+                          VersionPolicy = HttpVersionPolicy.RequestVersionExact,
+                          Content = JsonContent.Create(body,
+                                                       body.GetType(),
+                                                       options: Json),
+                        };
+    // A linked source only for a request with its own timeout: the others are cancelled by the caller only.
+    using var cts = once is null
+                      ? null
+                      : CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+    if (once is { } timeout)
+    {
+      cts!.CancelAfter(timeout);
+      request.Options.Set(RetryHandler.Disabled,
+                          true);
+    }
+
+    var token = cts?.Token ?? cancellationToken;
+    using var response = await httpClientFactory_.CreateClient(HttpClientName)
+                                                 .SendAsync(request,
+                                                            token)
+                                                 .ConfigureAwait(false);
+    ObserveEpoch(response);
+    response.EnsureSuccessStatusCode();
+    return response.StatusCode == HttpStatusCode.NoContent
+             ? null
+             : await response.Content.ReadFromJsonAsync<T>(Json,
+                                                           token)
+                             .ConfigureAwait(false);
+  }
+
+  private void ObserveEpoch(HttpResponseMessage response)
+  {
+    if (!response.Headers.TryGetValues("x-broker-epoch",
+                                       out var values) || !long.TryParse(values.FirstOrDefault(),
+                                                                         out var epoch))
+    {
+      return;
+    }
+
+    var previous = Interlocked.Exchange(ref epoch_,
+                                        epoch);
+    if (previous >= 0 && previous != epoch)
+    {
+      // The queue content was lost: tasks submitted before this point must be resumed (pause then resume their sessions).
+      logger_.LogWarning("Broker restarted: epoch changed from {PreviousEpoch} to {Epoch}, its queued messages were lost",
+                         previous,
+                         epoch);
+    }
+  }
+
+  /// <summary>
+  ///   Enqueues a batch. The broker tells when it nears its capacity, before it starts to refuse batches.
+  /// </summary>
+  public async Task EnqueueAsync(string                     partition,
+                                 string                     key,
+                                 int                        priority,
+                                 IReadOnlyList<EnqueueItem> items,
+                                 CancellationToken          cancellationToken)
+  {
+    var body = await PostAsync<EnqueueResponse>($"v1/partitions/{Uri.EscapeDataString(partition)}/messages",
+                                                new EnqueueBody(key,
+                                                                priority,
+                                                                items),
+                                                null,
+                                                cancellationToken)
+                 .ConfigureAwait(false);
+    if (body?.Occupancy == "high")
+    {
+      logger_.LogDebug("Broker is near its capacity after enqueueing {Count} messages in partition {PartitionId}",
+                       items.Count,
+                       partition);
+    }
+  }
+
+  /// <summary>
+  ///   Long polls messages, with the duration of their lease. Never throws for a broker failure: it logs,
+  ///   waits and returns nothing, so that a restart of the broker does not stop the Pollster.
+  /// </summary>
+  public async Task<(TimeSpan Lease, IReadOnlyList<PulledMessage> Messages)> PullAsync(string            partition,
+                                                                                       int               max,
+                                                                                       CancellationToken cancellationToken)
+  {
+    try
+    {
+      var body = await PostAsync<PullResponse>($"v1/partitions/{Uri.EscapeDataString(partition)}/pull",
+                                               new PullBody(Math.Max(1,
+                                                                     max),
+                                                            (long)options_.PullWait.TotalMilliseconds,
+                                                            node_),
+                                               options_.PullWait + options_.RequestTimeout,
+                                               cancellationToken)
+                   .ConfigureAwait(false);
+      return body is null
+               ? (TimeSpan.Zero, [])
+               : (TimeSpan.FromMilliseconds(body.LeaseMs), body.Messages);
+    }
+    catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+    {
+      throw;
+    }
+    catch (Exception e)
+    {
+      logger_.LogWarning(e,
+                         "Broker pull failed on partition {PartitionId}, retrying later",
+                         partition);
+      // Jittered, so that the agents do not all come back at once when the broker restarts.
+      await Task.Delay(TimeSpan.FromSeconds(0.5 + Random.Shared.NextDouble()),
+                       cancellationToken)
+                .ConfigureAwait(false);
+      return (TimeSpan.Zero, []);
+    }
+  }
+
+  /// <summary>
+  ///   Renews the lease of a message, sent once with the given timeout.
+  /// </summary>
+  /// <returns>
+  ///   False when the token designates no current distribution any more, so that renewing it is useless
+  /// </returns>
+  public async Task<bool> RenewAsync(string            token,
+                                     TimeSpan          timeout,
+                                     CancellationToken cancellationToken)
+  {
+    var body = await PostAsync<RenewResponse>("v1/renew",
+                                              new RenewBody([token]),
+                                              timeout,
+                                              cancellationToken)
+                 .ConfigureAwait(false);
+    return body?.Unknown is not { Count: > 0 };
+  }
+
+  /// <summary>
+  ///   Acknowledges a message.
+  /// </summary>
+  /// <returns>
+  ///   False when the broker ignored it, the message designating no current distribution any more
+  /// </returns>
+  public async Task<bool> AckAsync(string       token,
+                                   OutputsBody? outputs)
+    => Applied(await PostAsync<SettleResponse>("v1/ack",
+                                               new AckBody([
+                                                             new AckItem(token,
+                                                                         outputs),
+                                                           ]),
+                                               null,
+                                               disposed_.Token)
+                 .ConfigureAwait(false));
+
+  /// <summary>
+  ///   Puts a message back in the queue at once.
+  /// </summary>
+  /// <returns>
+  ///   False when the broker ignored it, the message designating no current distribution any more
+  /// </returns>
+  public async Task<bool> NackAsync(string token)
+    => Applied(await PostAsync<SettleResponse>("v1/nack",
+                                               new NackBody([new NackItem(token, "requeue")]),
+                                               null,
+                                               disposed_.Token)
+                 .ConfigureAwait(false));
+
+  private static bool Applied(SettleResponse? response)
+    => response is not { Ignored: > 0 };
+
+  // ------------------------------------------------------------------ wire types
+
+  internal sealed record EnqueueItem(string        TaskId,
+                                     AffinityBody? Affinity);
+
+  internal sealed record AffinityBody(uint[] Hashes,
+                                      int[]  Sizes,
+                                      ushort DepCount,
+                                      byte   TotalSize);
+
+  internal sealed record OutputsBody(uint[] Hashes,
+                                     int[]  Sizes);
+
+  private sealed record EnqueueBody(string                     Key,
+                                    int                        Priority,
+                                    IReadOnlyList<EnqueueItem> Items);
+
+  private sealed record EnqueueResponse(int    Accepted,
+                                        string Occupancy);
+
+  private sealed record NodeBody(string Id,
+                                 long   CacheCapacityBytes);
+
+  private sealed record PullBody(int       Max,
+                                 long      WaitMs,
+                                 NodeBody? Node);
+
+  private sealed record PullResponse(long                         LeaseMs,
+                                     IReadOnlyList<PulledMessage> Messages);
+
+  private sealed record RenewBody(IReadOnlyList<string> Tokens);
+
+  private sealed record RenewResponse(IReadOnlyList<string> Unknown);
+
+  private sealed record AckItem(string       Token,
+                                OutputsBody? Outputs);
+
+  private sealed record AckBody(IReadOnlyList<AckItem> Items);
+
+  private sealed record NackItem(string Token,
+                                 string Policy);
+
+  private sealed record NackBody(IReadOnlyList<NackItem> Items);
+
+  private sealed record SettleResponse(int Applied,
+                                       int Ignored);
+}

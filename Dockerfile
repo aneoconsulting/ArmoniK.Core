@@ -34,6 +34,7 @@ COPY ["Adaptors/MongoDB/src/ArmoniK.Core.Adapters.MongoDB.csproj", "Adaptors/Mon
 COPY ["Adaptors/QueueCommon/src/ArmoniK.Core.Adapters.QueueCommon.csproj", "Adaptors/QueueCommon/src/"]
 COPY ["Adaptors/PubSub/src/ArmoniK.Core.Adapters.PubSub.csproj", "Adaptors/PubSub/src/"]
 COPY ["Adaptors/Nats/src/ArmoniK.Core.Adapters.Nats.csproj", "Adaptors/Nats/src/"]
+COPY ["Adaptors/Broker/src/ArmoniK.Core.Adapters.Broker.csproj", "Adaptors/Broker/src/"]
 COPY ["Adaptors/Redis/src/ArmoniK.Core.Adapters.Redis.csproj", "Adaptors/Redis/src/"]
 COPY ["Adaptors/S3/src/ArmoniK.Core.Adapters.S3.csproj", "Adaptors/S3/src/"]
 COPY ["Adaptors/Gcs/src/ArmoniK.Core.Adapters.Gcs.csproj", "Adaptors/Gcs/src/"]
@@ -61,6 +62,7 @@ COPY ["Adaptors/MongoDB/src", "Adaptors/MongoDB/src"]
 COPY ["Adaptors/QueueCommon/src", "Adaptors/QueueCommon/src"]
 COPY ["Adaptors/PubSub/src", "Adaptors/PubSub/src"]
 COPY ["Adaptors/Nats/src", "Adaptors/Nats/src"]
+COPY ["Adaptors/Broker/src", "Adaptors/Broker/src"]
 COPY ["Adaptors/Redis/src", "Adaptors/Redis/src"]
 COPY ["Adaptors/S3/src", "Adaptors/S3/src"]
 COPY ["Adaptors/Gcs/src", "Adaptors/Gcs/src"]
@@ -85,6 +87,8 @@ WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/nats
 COPY --from=build /app/publish/nats .
+WORKDIR /adapters/queue/broker
+COPY --from=build /app/publish/broker .
 WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/object/local_storage
@@ -121,6 +125,8 @@ WORKDIR /adapters/queue/pubsub
 COPY --from=build /app/publish/pubsub .
 WORKDIR /adapters/queue/nats
 COPY --from=build /app/publish/nats .
+WORKDIR /adapters/queue/broker
+COPY --from=build /app/publish/broker .
 WORKDIR /adapters/queue/amqp
 COPY --from=build /app/publish/amqp .
 WORKDIR /adapters/object/local_storage

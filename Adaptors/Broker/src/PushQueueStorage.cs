@@ -1,0 +1,149 @@
+// This file is part of the ArmoniK project
+// 
+// Copyright (C) ANEO, 2021-2026. All rights reserved.
+// 
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU Affero General Public License as published
+// by the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+// 
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY, without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU Affero General Public License for more details.
+// 
+// You should have received a copy of the GNU Affero General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
+
+using ArmoniK.Core.Base;
+using ArmoniK.Core.Base.DataStructures;
+
+using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Logging;
+
+namespace ArmoniK.Core.Adapters.Broker;
+
+internal class PushQueueStorage : IPushQueueStorage
+{
+  private readonly BrokerClient           client_;
+  private readonly ILogger<PushQueueStorage> logger_;
+  private readonly Broker                 options_;
+  private          bool                      isInitialized_;
+
+  public PushQueueStorage(BrokerClient           client,
+                          Broker                 options,
+                          ILogger<PushQueueStorage> logger)
+  {
+    client_  = client;
+    options_ = options;
+    logger_  = logger;
+  }
+
+  /// <inheritdoc />
+  public int MaxPriority
+    => Protocol.MaxPriority;
+
+  /// <inheritdoc />
+  public async Task PushMessagesAsync(IEnumerable<MessageData> messages,
+                                      string                   partitionId,
+                                      CancellationToken        cancellationToken = default)
+  {
+    // One request per homogeneous batch: same partition, fairness key and priority (protocol §6.1).
+    foreach (var group in messages.GroupBy(m => (m.FairnessKey, m.Options.Priority)))
+    {
+      foreach (var chunk in group.Chunk(client_.MaxBatchItems))
+      {
+        var items = chunk.Select(m => new BrokerClient.EnqueueItem(m.TaskId,
+                                                                      AffinityOf(m)))
+                         .ToList();
+        await EnqueueAsync(partitionId,
+                           group.Key.FairnessKey,
+                           group.Key.Priority,
+                           items,
+                           cancellationToken)
+          .ConfigureAwait(false);
+      }
+    }
+
+    logger_.LogDebug("Pushed messages to broker partition {PartitionId}",
+                     partitionId);
+  }
+
+  /// <summary>
+  ///   Sends one batch, split in two when the server finds it too large (protocol §6.1): a smaller server limit,
+  ///   or long identifiers exceeding its body size. The server rejects the whole batch in that case, so resending
+  ///   its parts enqueues nothing twice.
+  /// </summary>
+  private async Task EnqueueAsync(string                                  partitionId,
+                                  string                                  fairnessKey,
+                                  int                                     priority,
+                                  IReadOnlyList<BrokerClient.EnqueueItem> items,
+                                  CancellationToken                       cancellationToken)
+  {
+    try
+    {
+      await client_.EnqueueAsync(partitionId,
+                                 fairnessKey,
+                                 priority,
+                                 items,
+                                 cancellationToken)
+                   .ConfigureAwait(false);
+    }
+    catch (HttpRequestException e) when (e.StatusCode == HttpStatusCode.RequestEntityTooLarge && items.Count > 1)
+    {
+      var size = (items.Count + 1) / 2;
+      logger_.LogDebug("Broker batch of {Count} items too large, splitting it in batches of {Size}",
+                       items.Count,
+                       size);
+      foreach (var part in items.Chunk(size))
+      {
+        await EnqueueAsync(partitionId,
+                           fairnessKey,
+                           priority,
+                           part,
+                           cancellationToken)
+          .ConfigureAwait(false);
+      }
+    }
+  }
+
+  private BrokerClient.AffinityBody? AffinityOf(MessageData message)
+  {
+    if (!options_.Affinity || message.Dependencies is not { Count: > 0 } deps)
+    {
+      return null;
+    }
+
+    return Affinity.Select(deps) is { } a
+             ? new BrokerClient.AffinityBody(a.Hashes,
+                                             a.WireSizes(),
+                                             a.DepCount,
+                                             a.TotalSize)
+             : null;
+  }
+
+  /// <inheritdoc />
+  public bool UsesDataDependencies
+    => options_.Affinity;
+
+  /// <inheritdoc />
+  public Task<HealthCheckResult> Check(HealthCheckTag tag)
+    => Task.FromResult(isInitialized_
+                         ? HealthCheckResult.Healthy()
+                         : HealthCheckResult.Unhealthy("Plugin is not yet initialized."));
+
+  /// <inheritdoc />
+  public Task Init(CancellationToken cancellationToken)
+  {
+    isInitialized_ = true;
+    return Task.CompletedTask;
+  }
+}
