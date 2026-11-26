@@ -368,7 +368,7 @@ public class DataPrefetcherTest
 
   [Test]
   [CancelAfter(10000)]
-  public async Task FailureShouldCancelOtherDownloadsAndRethrowRootCause(CancellationToken cancellationToken)
+  public void FailureShouldCancelOtherDownloadsAndRethrowRootCause(CancellationToken cancellationToken)
   {
     const int count     = 4;
     var       opaqueIds = OpaqueIds(count);
@@ -383,13 +383,92 @@ public class DataPrefetcherTest
                                       -1);
     var folder = CreateTempFolder();
 
-    // TaskHandler relies on the exact type to fail the task instead of resubmitting it
-    Assert.ThrowsAsync<ObjectDataNotFoundException>(() => prefetcher.PrefetchDataAsync(opaqueIds,
-                                                                                       folder,
-                                                                                       cancellationToken));
-    // Release is never completed: the other downloads can only have ended through cancellation
+    // The caller token is never cancelled and Release is never completed: only the cancellation triggered by the
+    // failure can end the other downloads, otherwise the wait times out.
+    // TaskHandler relies on the exact type to fail the task instead of resubmitting it.
+    Assert.That(() => prefetcher.PrefetchDataAsync(opaqueIds,
+                                                   folder,
+                                                   CancellationToken.None)
+                                .WaitAsync(TimeSpan.FromSeconds(5),
+                                           cancellationToken),
+                Throws.TypeOf<ObjectDataNotFoundException>());
     Assert.That(storage.InFlight,
                 Is.Zero);
+
+    Directory.Delete(folder,
+                     true);
+  }
+
+  [Test]
+  [CancelAfter(10000)]
+  public void FailureShouldCancelDownloadsWaitingForASlot(CancellationToken cancellationToken)
+  {
+    const int count     = 4;
+    var       opaqueIds = OpaqueIds(count);
+    var storage = new BlockingObjectStorage
+                  {
+                    Target = 1,
+                    // First in enumeration order, so it takes the only slot and the others wait for it
+                    Failing = opaqueIds["result0"],
+                  };
+    var prefetcher = CreatePrefetcher(storage.Mock()
+                                             .Object,
+                                      1);
+    var folder = CreateTempFolder();
+
+    Assert.That(() => prefetcher.PrefetchDataAsync(opaqueIds,
+                                                   folder,
+                                                   CancellationToken.None)
+                                .WaitAsync(TimeSpan.FromSeconds(5),
+                                           cancellationToken),
+                Throws.TypeOf<ObjectDataNotFoundException>());
+    Assert.That(storage.MaxConcurrency,
+                Is.EqualTo(1));
+    // The waiting downloads were cancelled before acquiring the slot, so they never created their file
+    Assert.That(Directory.GetFiles(folder)
+                         .Select(Path.GetFileName),
+                Is.EquivalentTo(new[]
+                                {
+                                  "result0",
+                                }));
+
+    Directory.Delete(folder,
+                     true);
+  }
+
+  [Test]
+  [CancelAfter(10000)]
+  public async Task CallerCancellationShouldStopAllDownloads(CancellationToken cancellationToken)
+  {
+    const int limit = 2;
+    var storage = new BlockingObjectStorage
+                  {
+                    Target = limit,
+                  };
+    var prefetcher = CreatePrefetcher(storage.Mock()
+                                             .Object,
+                                      limit);
+    var folder = CreateTempFolder();
+
+    using var cts = new CancellationTokenSource();
+    var prefetch = prefetcher.PrefetchDataAsync(OpaqueIds(5),
+                                                folder,
+                                                cts.Token);
+
+    await storage.Reached.Task.WaitAsync(cancellationToken)
+                 .ConfigureAwait(false);
+    // Two downloads are in flight and three wait for a slot when the caller cancels
+    await cts.CancelAsync()
+             .ConfigureAwait(false);
+
+    // TaskHandler resubmits the task on any exception other than ObjectDataNotFoundException
+    Assert.That(() => prefetch.WaitAsync(TimeSpan.FromSeconds(5),
+                                         cancellationToken),
+                Throws.InstanceOf<OperationCanceledException>());
+    Assert.That(storage.InFlight,
+                Is.Zero);
+    Assert.That(Directory.GetFiles(folder),
+                Has.Length.EqualTo(limit));
 
     Directory.Delete(folder,
                      true);

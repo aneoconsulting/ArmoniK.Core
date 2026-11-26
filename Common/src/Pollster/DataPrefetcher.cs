@@ -125,6 +125,9 @@ public class DataPrefetcher : IInitializable
 
                                          try
                                          {
+                                           // A slot released by a cancelled download can be granted before the
+                                           // cancellation reaches this waiter
+                                           cts.Token.ThrowIfCancellationRequested();
                                            await DownloadAsync(pair.Value,
                                                                Path.Combine(folder,
                                                                             pair.Key),
