@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Company>ANEO</Company>
+    <Copyright>Copyright (C) ANEO, 2021-2026</Copyright>
+    <PackageLicenseExpression>AGPL-3.0-or-later</PackageLicenseExpression>
+    <GenerateDocumentationFile>True</GenerateDocumentationFile>
+    <IsPackable>false</IsPackable>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="ArmoniK.Utils.Diagnostics" Version="0.7.5">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Grpc.AspNetCore.Web" Version="2.85.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Adaptors\LocalStorage\src\ArmoniK.Core.Adapters.LocalStorage.csproj" />
+    <ProjectReference Include="..\..\Adaptors\Memory\src\ArmoniK.Core.Adapters.Memory.csproj" />
+    <ProjectReference Include="..\..\Common\src\ArmoniK.Core.Common.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="ArmoniK.Core.Standalone.Tests" />
+  </ItemGroup>
+
+</Project>
