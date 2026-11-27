@@ -22,7 +22,6 @@ using ArmoniK.Api.Common.Utils;
 using ArmoniK.Core.Adapters.MongoDB.Common;
 using ArmoniK.Core.Adapters.MongoDB.Options;
 using ArmoniK.Core.Common.Auth.Authentication;
-using ArmoniK.Core.Common.Auth.Authorization;
 using ArmoniK.Core.Common.Injection.Options;
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Storage.Events;
@@ -31,7 +30,6 @@ using ArmoniK.Core.Utils.Uuid;
 
 using JetBrains.Annotations;
 
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -298,31 +296,6 @@ public static class ServiceCollectionExt
       services.AddSingleton<IAuthenticationTable, AuthenticationTable>();
     }
 
-    return services;
-  }
-
-  /// <summary>
-  ///   Add the authentication service to the service collection
-  /// </summary>
-  /// <param name="services">Services</param>
-  /// <param name="configuration">Configuration</param>
-  /// <param name="authCache">Created authentication cache</param>
-  /// <returns>Services</returns>
-  [PublicAPI]
-  public static IServiceCollection AddClientSubmitterAuthServices(this IServiceCollection services,
-                                                                  ConfigurationManager    configuration,
-                                                                  out AuthenticationCache authCache)
-  {
-    authCache = new AuthenticationCache();
-    services.Configure<AuthenticatorOptions>(configuration.GetSection(AuthenticatorOptions.SectionName))
-            .AddSingleton(authCache)
-            .AddAuthentication()
-            .AddScheme<AuthenticatorOptions, Authenticator>(Authenticator.SchemeName,
-                                                            _ =>
-                                                            {
-                                                            });
-    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>()
-            .AddAuthorization();
     return services;
   }
 }
