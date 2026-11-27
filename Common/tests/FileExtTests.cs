@@ -43,62 +43,6 @@ public class FileExtTests
 
   private string folder_ = "";
 
-  [TestCase(true)]
-  [TestCase(false)]
-  public void LinkOrCopyShouldCreateTheDestination(bool hardLink)
-  {
-    var source = Path.Combine(folder_,
-                              "source");
-    var destination = Path.Combine(folder_,
-                                   "destination");
-    File.WriteAllText(source,
-                      "data");
-
-    FileExt.LinkOrCopy(source,
-                       destination,
-                       hardLink);
-
-    // a hard link shares the content of the source, a copy does not
-    File.AppendAllText(source,
-                       "+");
-    var linked = hardLink && !OperatingSystem.IsWindows();
-    Assert.That(File.ReadAllText(destination),
-                Is.EqualTo(linked
-                             ? "data+"
-                             : "data"));
-  }
-
-  [TestCase(true)]
-  [TestCase(false)]
-  public void LinkOrCopyOfMissingSourceShouldThrowFileNotFound(bool hardLink)
-    => Assert.That(() => FileExt.LinkOrCopy(Path.Combine(folder_,
-                                                         "missing"),
-                                            Path.Combine(folder_,
-                                                         "destination"),
-                                            hardLink),
-                   Throws.InstanceOf<FileNotFoundException>());
-
-  [TestCase(true)]
-  [TestCase(false)]
-  public void LinkOrCopyToExistingDestinationShouldThrow(bool hardLink)
-  {
-    var source = Path.Combine(folder_,
-                              "source");
-    var destination = Path.Combine(folder_,
-                                   "destination");
-    File.WriteAllText(source,
-                      "new");
-    File.WriteAllText(destination,
-                      "old");
-
-    Assert.That(() => FileExt.LinkOrCopy(source,
-                                         destination,
-                                         hardLink),
-                Throws.InstanceOf<IOException>());
-    Assert.That(File.ReadAllText(destination),
-                Is.EqualTo("old"));
-  }
-
   [Test]
   public void DriveOfShouldBeTheLongestMountHoldingThePath()
   {

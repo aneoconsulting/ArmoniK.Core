@@ -2016,9 +2016,8 @@ public class TaskHandlerTest
                                      .ConfigureAwait(false), sqmh.Status);
   }
 
-  [TestCase(false)]
-  [TestCase(true)]
-  public async Task ExecuteTaskShouldSucceed(bool hardLinks)
+  [Test]
+  public async Task ExecuteTaskShouldSucceed()
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -2038,9 +2037,6 @@ public class TaskHandlerTest
                  },
                  {
                    $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheEvictionThreshold)}", "0.5"
-                 },
-                 {
-                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheHardLinks)}", hardLinks.ToString()
                  },
                };
     using var testServiceProvider = new TestTaskHandlerProvider(sh,
@@ -2582,9 +2578,8 @@ public class TaskHandlerTest
                 Is.EqualTo(taskId));
   }
 
-  [TestCase(false)]
-  [TestCase(true)]
-  public async Task ExecuteTaskWithResultsShouldSucceed(bool hardLinks)
+  [Test]
+  public async Task ExecuteTaskWithResultsShouldSucceed()
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -2603,9 +2598,6 @@ public class TaskHandlerTest
                  },
                  {
                    $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheEvictionThreshold)}", "0.5"
-                 },
-                 {
-                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheHardLinks)}", hardLinks.ToString()
                  },
                };
     var agentHandler = new SimpleAgentHandler();
@@ -2776,9 +2768,8 @@ public class TaskHandlerTest
                 Is.EqualTo(TaskStatus.Completed));
   }
 
-  [TestCase(false)]
-  [TestCase(true)]
-  public async Task PrefetchShouldBeCalledOnce(bool hardLinks)
+  [Test]
+  public async Task PrefetchShouldBeCalledOnce()
   {
     var sqmh = new SimpleQueueMessageHandler
                {
@@ -2807,9 +2798,6 @@ public class TaskHandlerTest
                {
                  {
                    $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheEvictionThreshold)}", "0.5"
-                 },
-                 {
-                   $"{nameof(Injection.Options.Pollster)}:{nameof(Injection.Options.Pollster.CacheHardLinks)}", hardLinks.ToString()
                  },
                };
     using var testServiceProvider = new TestTaskHandlerProvider(sh,

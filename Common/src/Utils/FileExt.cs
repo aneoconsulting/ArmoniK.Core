@@ -18,7 +18,6 @@
 using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 
 namespace ArmoniK.Core.Common.Utils;
 
@@ -28,45 +27,6 @@ namespace ArmoniK.Core.Common.Utils;
 /// </summary>
 public static class FileExt
 {
-  [DllImport("libc",
-             EntryPoint = "link",
-             SetLastError = true)]
-  private static extern int Link(string existingPath,
-                                 string newPath);
-
-  /// <summary>
-  ///   Create <paramref name="destinationFilename" /> as a hard link to <paramref name="sourceFilename" />, or as a
-  ///   copy of it when a hard link cannot be made (other file system, platform without hard links).
-  /// </summary>
-  /// <param name="sourceFilename">The file to link or copy.</param>
-  /// <param name="destinationFilename">The file to create; it must not exist.</param>
-  /// <param name="hardLink">Whether to try a hard link first.</param>
-  /// <exception cref="IOException">The file could not be linked nor copied.</exception>
-  public static void LinkOrCopy(string sourceFilename,
-                                string destinationFilename,
-                                bool   hardLink)
-  {
-    if (hardLink && !OperatingSystem.IsWindows())
-    {
-      try
-      {
-        if (Link(sourceFilename,
-                 destinationFilename) == 0)
-        {
-          return;
-        }
-      }
-      catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
-      {
-        // No libc link: copy
-      }
-    }
-
-    // Also reports the errors (missing source, existing destination) with the usual exceptions
-    File.Copy(sourceFilename,
-              destinationFilename);
-  }
-
   /// <summary>
   ///   Get the file system holding a path: the mounted drive with the longest root that contains the path.
   /// </summary>

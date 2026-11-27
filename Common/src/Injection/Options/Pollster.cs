@@ -140,12 +140,4 @@ public class Pollster
   ///   capacity.
   /// </remarks>
   public double CacheEvictionThreshold { get; set; } = 0;
-
-  /// <summary>
-  ///   Put the data in and out of the cache as hard links instead of copies, when the cache and the task folders are
-  ///   on the same file system: the data are not copied, which saves the time and space of a copy of every input and
-  ///   output. The worker must then never modify its input files in place, since they share their content with the
-  ///   cache. Copies are used when a hard link cannot be made.
-  /// </summary>
-  public bool CacheHardLinks { get; set; }
 }
