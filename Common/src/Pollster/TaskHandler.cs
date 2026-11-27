@@ -278,11 +278,8 @@ public sealed class TaskHandler : IAsyncDisposable
   }
 
   private bool IsEvictionNeeded()
-  {
-    var drive = new DriveInfo(Path.GetPathRoot(cache_)!);
-    var p     = (double)(drive.TotalSize - drive.AvailableFreeSpace) / drive.TotalSize;
-    return p > cacheEvictionThreshold_;
-  }
+    // null (and so false) when the cache folder cannot be measured, its creation being best effort
+    => FileExt.UsedSpaceFraction(cache_) > cacheEvictionThreshold_;
 
   private void EvictIfNeeded()
   {

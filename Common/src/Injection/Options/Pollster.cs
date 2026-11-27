@@ -130,7 +130,8 @@ public class Pollster
   public bool FailReadinessIfNoTasks { get; set; }
 
   /// <summary>
-  ///   Fraction of disk space used (0–1) above which LRU eviction is triggered.
+  ///   Fraction of the space used (0–1) on the file system holding <see cref="InternalCacheFolder" /> above which LRU
+  ///   eviction is triggered.
   ///   Set to `0` to disable caching entirely.
   /// </summary>
   /// <remarks>
