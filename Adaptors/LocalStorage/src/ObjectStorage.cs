@@ -35,6 +35,7 @@ using ArmoniK.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32.SafeHandles;
 
 namespace ArmoniK.Core.Adapters.LocalStorage;
 
@@ -45,6 +46,7 @@ public class ObjectStorage : IObjectStorage
   /// </summary>
   private static readonly SearchValues<char> ValidKeyChars = SearchValues.Create("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-");
 
+  private readonly int                    chunkParallelism_;
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly int                    parallelism_;
@@ -78,8 +80,9 @@ public class ObjectStorage : IObjectStorage
     splitPathAt_ = options.SplitPathAt <= 0
                      ? int.MaxValue
                      : options.SplitPathAt;
-    parallelism_   = options.DegreeOfParallelism;
-    uuidGenerator_ = uuidGenerator;
+    parallelism_      = options.DegreeOfParallelism;
+    chunkParallelism_ = options.ChunkParallelism;
+    uuidGenerator_    = uuidGenerator;
 
 
     logger_ = logger;
@@ -123,40 +126,46 @@ public class ObjectStorage : IObjectStorage
                                                              IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
                                                              CancellationToken                      cancellationToken = default)
   {
-    long size = 0;
     var key = uuidGenerator_.GenerateUuid()
                             .ToString();
     var filename = GetPath(key);
 
     // Write to temporary file, with deletion in case of error
     await using var fileCleaner = new Deferrer(() => TryDelete(key));
-    await using var file        = OpenForWriting(filename);
 
-    await using var enumerator = valueChunks.GetAsyncEnumerator(cancellationToken);
-
-    // Prepare overlapped read and write
-    var readTask = enumerator.MoveNextAsync()
-                             .ConfigureAwait(false);
-    var writeTask = ValueTask.CompletedTask.ConfigureAwait(false);
-
-    while (await readTask)
+    long size;
+    using (var file = OpenForWriting(filename))
     {
-      var chunk = enumerator.Current;
-      size += chunk.Length;
-
-      readTask = enumerator.MoveNextAsync()
-                           .ConfigureAwait(false);
-      await writeTask;
-      writeTask = file.WriteAsync(chunk,
-                                  cancellationToken)
-                      .ConfigureAwait(false);
+      // Small chunks are merged up to ChunkSize. Each chunk is written at its offset, computed in order, so that
+      // ChunkParallelism chunks can be written concurrently.
+      long offset = 0;
+      size = await valueChunks.Rechunk(chunkSize_,
+                                       int.MaxValue)
+                              .Select(chunk =>
+                                      {
+                                        var at = offset;
+                                        offset += chunk.Length;
+                                        return (chunk, at);
+                                      })
+                              .ParallelSelect(new ParallelTaskOptions
+                                              {
+                                                CancellationToken = cancellationToken,
+                                                ParallelismLimit  = chunkParallelism_,
+                                                Unordered         = true,
+                                              },
+                                              async (c,
+                                                     token) =>
+                                              {
+                                                await RandomAccess.WriteAsync(file,
+                                                                              c.chunk,
+                                                                              c.at,
+                                                                              token)
+                                                                  .ConfigureAwait(false);
+                                                return (long)c.chunk.Length;
+                                              })
+                              .SumAsync(cancellationToken)
+                              .ConfigureAwait(false);
     }
-
-    // Last write must be complete before flushing
-    await writeTask;
-
-    await file.FlushAsync(cancellationToken)
-              .ConfigureAwait(false);
 
     // File has been successfully written, so deletion should be withdrawn.
     fileCleaner.Reset();
@@ -171,35 +180,27 @@ public class ObjectStorage : IObjectStorage
     var key = Encoding.UTF8.GetString(id);
 
     // If opening fails, the exception is wrapped in a ObjectDataNotFoundException
-    await using var file = OpenForReading(key);
+    using var file   = OpenForReading(key);
+    var       length = RandomAccess.GetLength(file);
 
-    // Task is not awaited here in order to overlap reading and yielding
-    var buffer = new byte[chunkSize_];
-    var readTask = file.ReadAsync(buffer,
-                                  cancellationToken)
-                       .ConfigureAwait(false);
-
-    int read;
-
-    // While chunk is not empty
-    while ((read = await readTask) > 0)
+    // ChunkParallelism chunks are read concurrently at their offsets, and returned in order
+    var offsets = Enumerable.Range(0,
+                                   (int)((length + chunkSize_ - 1) / chunkSize_))
+                            .Select(i => (long)i * chunkSize_);
+    await foreach (var chunk in offsets.ParallelSelect(new ParallelTaskOptions
+                                                       {
+                                                         CancellationToken = cancellationToken,
+                                                         ParallelismLimit  = chunkParallelism_,
+                                                       },
+                                                       (offset,
+                                                        token) => ReadChunkAsync(file,
+                                                                                 offset,
+                                                                                 (int)Math.Min(chunkSize_,
+                                                                                               length - offset),
+                                                                                 token))
+                                       .ConfigureAwait(false))
     {
-      var readBuffer = buffer;
-
-      // Start reading new chunk
-      buffer = new byte[chunkSize_];
-      readTask = file.ReadAsync(buffer,
-                                cancellationToken)
-                     .ConfigureAwait(false);
-
-      // Partial chunk requires a resize
-      if (read < chunkSize_)
-      {
-        Array.Resize(ref readBuffer,
-                     read);
-      }
-
-      yield return readBuffer;
+      yield return chunk;
     }
   }
 
@@ -232,6 +233,41 @@ public class ObjectStorage : IObjectStorage
                              cancellationToken)
           .AndThen(static IDictionary<byte[], long?> (dict) => dict)
           .AsTask();
+
+  /// <summary>
+  ///   Read a chunk of a file.
+  /// </summary>
+  /// <param name="file">The file.</param>
+  /// <param name="offset">Offset of the chunk in the file.</param>
+  /// <param name="length">Length of the chunk.</param>
+  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
+  /// <returns>The chunk, shorter if the file ends before.</returns>
+  private static async Task<byte[]> ReadChunkAsync(SafeFileHandle    file,
+                                                   long              offset,
+                                                   int               length,
+                                                   CancellationToken cancellationToken)
+  {
+    var buffer = new byte[length];
+    var read   = 0;
+    while (read < length)
+    {
+      var n = await RandomAccess.ReadAsync(file,
+                                           buffer.AsMemory(read),
+                                           offset + read,
+                                           cancellationToken)
+                                .ConfigureAwait(false);
+      if (n == 0)
+      {
+        Array.Resize(ref buffer,
+                     read);
+        break;
+      }
+
+      read += n;
+    }
+
+    return buffer;
+  }
 
   /// <summary>
   ///   Delete a given object.
@@ -325,19 +361,20 @@ public class ObjectStorage : IObjectStorage
   ///   Create and open a new file for the given key.
   /// </summary>
   /// <param name="filename">Path of the object to write.</param>
-  /// <returns>The Stream of the opened file.</returns>
+  /// <returns>The handle of the opened file.</returns>
   /// <exception cref="ArgumentNullException"><paramref name="filename" /> is null.</exception>
   /// <exception cref="IOException">The file could not be created.</exception>
-  private static FileStream OpenForWriting(string filename)
+  private static SafeFileHandle OpenForWriting(string filename)
   {
     try
     {
       // File is allowed to be shared with others in read/write/delete mode without locking.
       // ArmoniK ensures that those operation can only happen after the file has been closed.
-      return File.Open(filename,
-                       FileMode.Create,
-                       FileAccess.Write,
-                       FileShare.ReadWrite | FileShare.Delete);
+      return File.OpenHandle(filename,
+                             FileMode.Create,
+                             FileAccess.Write,
+                             FileShare.ReadWrite | FileShare.Delete,
+                             FileOptions.Asynchronous);
     }
     // If the file creation failed and the path has been split,
     // we need to create the prefix folder and retry file creation.
@@ -357,10 +394,11 @@ public class ObjectStorage : IObjectStorage
       // The directory can be created by another agent in the meantime.
       Directory.CreateDirectory(dir);
 
-      return File.Open(filename,
-                       FileMode.Create,
-                       FileAccess.Write,
-                       FileShare.ReadWrite | FileShare.Delete);
+      return File.OpenHandle(filename,
+                             FileMode.Create,
+                             FileAccess.Write,
+                             FileShare.ReadWrite | FileShare.Delete,
+                             FileOptions.Asynchronous);
     }
   }
 
@@ -368,9 +406,9 @@ public class ObjectStorage : IObjectStorage
   ///   Open an object.
   /// </summary>
   /// <param name="key">Key of the object to read.</param>
-  /// <returns>The <see cref="FileStream" /> to the object file.</returns>
+  /// <returns>The handle of the object file.</returns>
   /// <exception cref="ObjectDataNotFoundException">The object does not exist.</exception>
-  private FileStream OpenForReading(string key)
+  private SafeFileHandle OpenForReading(string key)
   {
     string filename;
     try
@@ -387,10 +425,11 @@ public class ObjectStorage : IObjectStorage
     {
       // File is allowed to be shared with others in read/write/delete mode without locking.
       // Deleting keep the file alive without a Path and let all the readers to finish their reads.
-      return File.Open(filename,
-                       FileMode.Open,
-                       FileAccess.Read,
-                       FileShare.ReadWrite | FileShare.Delete);
+      return File.OpenHandle(filename,
+                             FileMode.Open,
+                             FileAccess.Read,
+                             FileShare.ReadWrite | FileShare.Delete,
+                             FileOptions.Asynchronous);
     }
     catch (IOException e) when (e is FileNotFoundException or DirectoryNotFoundException)
     {

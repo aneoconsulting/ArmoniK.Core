@@ -59,4 +59,18 @@ public class LocalStorage
   ///   Number of tasks to be used in parallel execution (deletes, metadata lookups).
   /// </summary>
   public int DegreeOfParallelism { get; set; }
+
+  /// <summary>
+  ///   Number of chunks of an object read or written concurrently, at their offsets in its file.
+  ///   On a parallel file system, several streams on one file reach a higher throughput than one, if
+  ///   <see cref="ChunkSize" /> is large enough (a few MiB).
+  ///   1 (the default) reads and writes the chunks one after the other; 0 uses the number of threads, and a negative
+  ///   value removes the limit.
+  /// </summary>
+  public int ChunkParallelism
+  {
+    get;
+    [UsedImplicitly]
+    init;
+  } = 1;
 }
