@@ -130,7 +130,8 @@ public class Pollster
   public bool FailReadinessIfNoTasks { get; set; }
 
   /// <summary>
-  ///   Fraction of disk space used (0–1) above which LRU eviction is triggered.
+  ///   Fraction of the space used (0–1) on the file system holding <see cref="InternalCacheFolder" /> above which LRU
+  ///   eviction is triggered.
   ///   Set to `0` to disable caching entirely.
   /// </summary>
   /// <remarks>
@@ -139,4 +140,12 @@ public class Pollster
   ///   capacity.
   /// </remarks>
   public double CacheEvictionThreshold { get; set; } = 0;
+
+  /// <summary>
+  ///   Put the data in and out of the cache as hard links instead of copies, when the cache and the task folders are
+  ///   on the same file system: the data are not copied, which saves the time and space of a copy of every input and
+  ///   output. The worker must then never modify its input files in place, since they share their content with the
+  ///   cache. Copies are used when a hard link cannot be made.
+  /// </summary>
+  public bool CacheHardLinks { get; set; }
 }

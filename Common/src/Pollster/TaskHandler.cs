@@ -65,6 +65,7 @@ public sealed class TaskHandler : IAsyncDisposable
   private readonly IAgentHandler                         agentHandler_;
   private readonly string                                cache_;
   private readonly double                                cacheEvictionThreshold_;
+  private readonly bool                                  cacheHardLinks_;
   private readonly DataPrefetcher                        dataPrefetcher_;
   private readonly TimeSpan                              delayBeforeAcquisition_;
   private readonly CancellationTokenSource               earlyCts_;
@@ -194,6 +195,7 @@ public sealed class TaskHandler : IAsyncDisposable
 
     cache_                  = pollsterOptions.InternalCacheFolder;
     cacheEvictionThreshold_ = pollsterOptions.CacheEvictionThreshold;
+    cacheHardLinks_         = pollsterOptions.CacheHardLinks;
     if (cacheEvictionThreshold_ is < 0 or > 1)
     {
       throw new ArgumentOutOfRangeException(nameof(pollsterOptions.CacheEvictionThreshold),
@@ -279,7 +281,8 @@ public sealed class TaskHandler : IAsyncDisposable
 
   private bool IsEvictionNeeded()
   {
-    var drive = new DriveInfo(Path.GetPathRoot(cache_)!);
+    // the file system holding the cache, which is not the root one when the cache is a mount point (e.g. /dev/shm)
+    var drive = FileExt.DriveOf(cache_);
     var p     = (double)(drive.TotalSize - drive.AvailableFreeSpace) / drive.TotalSize;
     return p > cacheEvictionThreshold_;
   }
@@ -1050,11 +1053,13 @@ public sealed class TaskHandler : IAsyncDisposable
       {
         try
         {
-          File.Copy(Path.Combine(cache_,
-                                 resultId),
-                    Path.Combine(folder_,
-                                 resultId),
-                    true);
+          var input = Path.Combine(folder_,
+                                   resultId);
+          FileExt.TryDelete(input);
+          FileExt.LinkOrCopy(Path.Combine(cache_,
+                                          resultId),
+                             input,
+                             cacheHardLinks_);
           opaqueIds.Remove(resultId);
         }
         catch (Exception e) when (e is FileNotFoundException or UnauthorizedAccessException)
@@ -1081,9 +1086,10 @@ public sealed class TaskHandler : IAsyncDisposable
                                  $"{resultId}{uuidGenerator_.GenerateUuid().ToString()}.tmp");
           try
           {
-            File.Copy(Path.Combine(folder_,
-                                   resultId),
-                      tmp);
+            FileExt.LinkOrCopy(Path.Combine(folder_,
+                                            resultId),
+                               tmp,
+                               cacheHardLinks_);
             FileExt.MoveOrDelete(tmp,
                                  Path.Combine(cache_,
                                               resultId));
@@ -1320,9 +1326,10 @@ public sealed class TaskHandler : IAsyncDisposable
                                    $"{id}{uuidGenerator_.GenerateUuid().ToString()}.tmp");
             try
             {
-              File.Copy(Path.Combine(folder_,
-                                     id),
-                        tmp);
+              FileExt.LinkOrCopy(Path.Combine(folder_,
+                                              id),
+                                 tmp,
+                                 cacheHardLinks_);
               FileExt.MoveOrDelete(tmp,
                                    Path.Combine(cache_,
                                                 id));

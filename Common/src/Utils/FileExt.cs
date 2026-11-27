@@ -15,7 +15,10 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 
 namespace ArmoniK.Core.Common.Utils;
 
@@ -25,6 +28,72 @@ namespace ArmoniK.Core.Common.Utils;
 /// </summary>
 public static class FileExt
 {
+  [DllImport("libc",
+             EntryPoint = "link",
+             SetLastError = true)]
+  private static extern int Link(string existingPath,
+                                 string newPath);
+
+  /// <summary>
+  ///   Create <paramref name="destinationFilename" /> as a hard link to <paramref name="sourceFilename" />, or as a
+  ///   copy of it when a hard link cannot be made (other file system, platform without hard links).
+  /// </summary>
+  /// <param name="sourceFilename">The file to link or copy.</param>
+  /// <param name="destinationFilename">The file to create; it must not exist.</param>
+  /// <param name="hardLink">Whether to try a hard link first.</param>
+  /// <exception cref="IOException">The file could not be linked nor copied.</exception>
+  public static void LinkOrCopy(string sourceFilename,
+                                string destinationFilename,
+                                bool   hardLink)
+  {
+    if (hardLink && !OperatingSystem.IsWindows())
+    {
+      try
+      {
+        if (Link(sourceFilename,
+                 destinationFilename) == 0)
+        {
+          return;
+        }
+      }
+      catch (Exception e) when (e is DllNotFoundException or EntryPointNotFoundException)
+      {
+        // No libc link: copy
+      }
+    }
+
+    // Also reports the errors (missing source, existing destination) with the usual exceptions
+    File.Copy(sourceFilename,
+              destinationFilename);
+  }
+
+  /// <summary>
+  ///   Get the file system holding a path: the mounted drive with the longest root that contains the path.
+  /// </summary>
+  /// <remarks>
+  ///   On Unix, <see cref="Path.GetPathRoot(string)" /> is always "/", whatever the mount point of the path.
+  /// </remarks>
+  /// <param name="path">Path of a file or folder.</param>
+  /// <returns>The drive holding <paramref name="path" />.</returns>
+  public static DriveInfo DriveOf(string path)
+  {
+    var fullPath = Path.GetFullPath(path);
+    return DriveInfo.GetDrives()
+                    .Where(drive => IsInside(fullPath,
+                                             drive.RootDirectory.FullName))
+                    .MaxBy(drive => drive.RootDirectory.FullName.Length) ?? new DriveInfo(Path.GetPathRoot(fullPath)!);
+  }
+
+  private static bool IsInside(string path,
+                               string root)
+  {
+    var trimmed = root.TrimEnd(Path.DirectorySeparatorChar,
+                               Path.AltDirectorySeparatorChar);
+    return trimmed.Length == 0                                          || path.Equals(trimmed,
+                                                                                       StringComparison.Ordinal) || path.StartsWith(trimmed + Path.DirectorySeparatorChar,
+                                                                                                                                    StringComparison.Ordinal);
+  }
+
   /// <summary>
   ///   Try moving file from source into destination.
   ///   If destination already exists, it will not be overwritten,
