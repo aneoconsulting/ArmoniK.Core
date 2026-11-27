@@ -15,8 +15,6 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System.Collections.Concurrent;
-
 using ArmoniK.Core.Common.Storage;
 using ArmoniK.Core.Common.Testing;
 
@@ -33,9 +31,7 @@ public class TaskTableTests : TaskTableTestBase
   {
     var services = new ServiceCollection();
 
-    services.AddTransient<ITaskTable, TaskTable>();
-    services.AddTransient<ConcurrentDictionary<string, TaskData>>();
-    services.AddTransient<ConcurrentDictionary<string, ConcurrentQueue<string>>>();
+    services.AddMemoryTables();
     services.AddLogging();
 
     var provider = services.BuildServiceProvider(true);

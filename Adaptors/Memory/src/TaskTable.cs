@@ -16,7 +16,6 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -36,40 +35,64 @@ using TaskStatus = ArmoniK.Core.Common.Storage.TaskStatus;
 
 namespace ArmoniK.Core.Adapters.Memory;
 
+/// <summary>
+///   In-memory implementation of <see cref="ITaskTable" />.
+/// </summary>
+/// <remarks>
+///   Every public method runs under a single lock, so that each call is atomic, as a single document operation is in a
+///   database. Stored values are never modified in place: an update replaces the stored value with a new one, so values
+///   returned to callers are not affected by later writes.
+/// </remarks>
 public class TaskTable : ITaskTable
 {
-  private readonly ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskIds_;
-  private readonly ConcurrentDictionary<string, TaskData>                taskId2TaskData_;
+  /// <summary>
+  ///   For each task, the id of the last call to <see cref="RemoveRemainingDataDependenciesAsync{T}" /> that removed one
+  ///   of its dependencies. Used to report a ready task only to the call that removed its last dependency.
+  /// </summary>
+  private readonly Dictionary<string, Guid> lastDependencyUpdater_ = new();
+
+  private readonly Lock                         lock_  = new();
+  private readonly Dictionary<string, TaskData> tasks_ = new();
 
   private bool isInitialized_;
 
-  public TaskTable(ConcurrentDictionary<string, TaskData>                task2TaskData,
-                   ConcurrentDictionary<string, ConcurrentQueue<string>> session2TaskId,
-                   ILogger<TaskTable>                                    logger)
-  {
-    taskId2TaskData_ = task2TaskData;
-    session2TaskIds_ = session2TaskId;
-    Logger           = logger;
-  }
+  /// <summary>
+  ///   Creates an empty task table
+  /// </summary>
+  /// <param name="logger">Logger used to produce logs for this class</param>
+  public TaskTable(ILogger<TaskTable> logger)
+    => Logger = logger;
 
+  /// <inheritdoc />
   public TimeSpan PollingDelayMax { get; set; }
+
+  /// <inheritdoc />
   public TimeSpan PollingDelayMin { get; set; }
 
   /// <inheritdoc />
   public Task CreateTasks(IEnumerable<TaskData> tasks,
                           CancellationToken     cancellationToken = default)
   {
-    foreach (var taskData in tasks)
+    var newTasks = tasks.Select(Copy)
+                        .ToList();
+
+    lock (lock_)
     {
-      if (!taskId2TaskData_.TryAdd(taskData.TaskId,
-                                   taskData))
+      // Validate the whole batch before inserting, so that a duplicate does not leave part of the batch inserted.
+      var ids = new HashSet<string>();
+      foreach (var task in newTasks)
       {
-        throw new TaskAlreadyExistsException($"Tasks '{taskData.TaskId}' already exists");
+        if (tasks_.ContainsKey(task.TaskId) || !ids.Add(task.TaskId))
+        {
+          throw new TaskAlreadyExistsException($"Tasks '{task.TaskId}' already exists");
+        }
       }
 
-      var session = session2TaskIds_.GetOrAdd(taskData.SessionId,
-                                              new ConcurrentQueue<string>());
-      session.Enqueue(taskData.TaskId);
+      foreach (var task in newTasks)
+      {
+        tasks_.Add(task.TaskId,
+                   task);
+      }
     }
 
     return Task.CompletedTask;
@@ -80,71 +103,86 @@ public class TaskTable : ITaskTable
                                   Expression<Func<TaskData, T>> selector,
                                   CancellationToken             cancellationToken = default)
   {
-    if (taskId2TaskData_.TryGetValue(taskId,
-                                     out var value))
+    TaskData? taskData;
+    lock (lock_)
     {
-      return Task.FromResult(selector.Compile()
-                                     .Invoke(value));
+      tasks_.TryGetValue(taskId,
+                         out taskData);
     }
 
-    throw new TaskNotFoundException($"Key '{taskId}' not found");
+    if (taskData is null)
+    {
+      throw new TaskNotFoundException($"Key '{taskId}' not found");
+    }
+
+    return Task.FromResult(selector.Compile()
+                                   .Invoke(taskData));
   }
 
   /// <inheritdoc />
   public Task<int> CountAllTasksAsync(TaskStatus        status,
                                       CancellationToken cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.Count(pair => pair.Value.Status == status));
+  {
+    lock (lock_)
+    {
+      return Task.FromResult(tasks_.Values.Count(data => data.Status == status));
+    }
+  }
 
   /// <inheritdoc />
   public Task<IEnumerable<TaskStatusCount>> CountTasksAsync(Expression<Func<TaskData, bool>> filter,
                                                             CancellationToken                cancellationToken = default)
-    => Task.FromResult(taskId2TaskData_.AsQueryable()
-                                       .Select(pair => pair.Value)
-                                       .Where(filter)
-                                       .GroupBy(taskData => taskData.Status)
-                                       .Select(grouping => new TaskStatusCount(grouping.Key,
-                                                                               grouping.Count()))
-                                       .AsEnumerable());
+    => Task.FromResult<IEnumerable<TaskStatusCount>>(Snapshot(filter)
+                                                     .GroupBy(taskData => taskData.Status)
+                                                     .Select(grouping => new TaskStatusCount(grouping.Key,
+                                                                                             grouping.Count()))
+                                                     .ToList());
 
   /// <inheritdoc />
   public Task<IEnumerable<PartitionTaskStatusCount>> CountPartitionTasksAsync(CancellationToken cancellationToken = default)
-  {
-    var res = taskId2TaskData_.Values.AsQueryable()
-                              .GroupBy(model => new
-                                                {
-                                                  model.Options.PartitionId,
-                                                  model.Status,
-                                                })
-                              .Select(models => new PartitionTaskStatusCount(models.Key.PartitionId,
-                                                                             models.Key.Status,
-                                                                             models.Count()));
-
-    return Task.FromResult(res as IEnumerable<PartitionTaskStatusCount>);
-  }
+    => Task.FromResult<IEnumerable<PartitionTaskStatusCount>>(Snapshot(null)
+                                                              .GroupBy(model => new
+                                                                                {
+                                                                                  model.Options.PartitionId,
+                                                                                  model.Status,
+                                                                                })
+                                                              .Select(models => new PartitionTaskStatusCount(models.Key.PartitionId,
+                                                                                                             models.Key.Status,
+                                                                                                             models.Count()))
+                                                              .ToList());
 
   /// <inheritdoc />
   public Task DeleteTaskAsync(string            id,
                               CancellationToken cancellationToken = default)
   {
-    if (!taskId2TaskData_.ContainsKey(id))
+    lock (lock_)
     {
-      throw new TaskNotFoundException($"Key '{id}' not found");
+      if (!tasks_.Remove(id))
+      {
+        throw new TaskNotFoundException($"Key '{id}' not found");
+      }
+
+      lastDependencyUpdater_.Remove(id);
     }
 
-    return Task.FromResult(taskId2TaskData_.Remove(id,
-                                                   out _));
+    return Task.CompletedTask;
   }
 
+  /// <inheritdoc />
   public Task DeleteTasksAsync(string            sessionId,
                                CancellationToken cancellationToken = default)
   {
-    var ids = taskId2TaskData_.Values.Where(data => data.SessionId == sessionId)
-                              .Select(data => data.TaskId);
-
-    foreach (var id in ids)
+    lock (lock_)
     {
-      taskId2TaskData_.TryRemove(id,
-                                 out _);
+      var ids = tasks_.Values.Where(data => data.SessionId == sessionId)
+                      .Select(data => data.TaskId)
+                      .ToList();
+
+      foreach (var id in ids)
+      {
+        tasks_.Remove(id);
+        lastDependencyUpdater_.Remove(id);
+      }
     }
 
     return Task.CompletedTask;
@@ -154,10 +192,13 @@ public class TaskTable : ITaskTable
   public Task DeleteTasksAsync(ICollection<string> taskIds,
                                CancellationToken   cancellationToken = default)
   {
-    foreach (var id in taskIds)
+    lock (lock_)
     {
-      taskId2TaskData_.TryRemove(id,
-                                 out _);
+      foreach (var id in taskIds)
+      {
+        tasks_.Remove(id);
+        lastDependencyUpdater_.Remove(id);
+      }
     }
 
     return Task.CompletedTask;
@@ -172,28 +213,24 @@ public class TaskTable : ITaskTable
                                                                          int                                 pageSize,
                                                                          CancellationToken                   cancellationToken = default)
   {
-    var queryable = taskId2TaskData_.AsQueryable()
-                                    .Select(pair => pair.Value)
-                                    .Where(filter);
+    var matching = Snapshot(filter);
+    var tasks = matching.OrderByKey(orderField,
+                                    ascOrder)
+                        .Skip(page * pageSize)
+                        .Take(pageSize)
+                        .Select(selector.Compile())
+                        .ToList();
 
-    var ordered = ascOrder
-                    ? queryable.OrderBy(orderField)
-                    : queryable.OrderByDescending(orderField);
-
-    return Task.FromResult<(IEnumerable<T> tasks, long totalCount)>((ordered.Skip(page * pageSize)
-                                                                            .Take(pageSize)
-                                                                            .Select(selector), ordered.Count()));
+    return Task.FromResult<(IEnumerable<T> tasks, long totalCount)>((tasks, matching.Count));
   }
 
   /// <inheritdoc />
   public IAsyncEnumerable<T> FindTasksAsync<T>(Expression<Func<TaskData, bool>> filter,
                                                Expression<Func<TaskData, T>>    selector,
                                                CancellationToken                cancellationToken = default)
-    => taskId2TaskData_.AsQueryable()
-                       .Select(pair => pair.Value)
-                       .Where(filter)
-                       .Select(selector)
-                       .ToAsyncEnumerable();
+    => Snapshot(filter)
+       .Select(selector.Compile())
+       .ToAsyncEnumerable();
 
   /// <inheritdoc />
   public Task<TaskData?> UpdateOneTask(string                            taskId,
@@ -202,26 +239,29 @@ public class TaskTable : ITaskTable
                                        bool                              before,
                                        CancellationToken                 cancellationToken = default)
   {
-    if (!taskId2TaskData_.TryGetValue(taskId,
-                                      out var taskData))
-    {
-      return Task.FromResult<TaskData?>(null);
-    }
+    var compiledFilter = filter?.Compile();
 
-    if (filter is not null)
+    TaskData oldTaskData;
+    TaskData newTaskData;
+
+    lock (lock_)
     {
-      if (!filter.Compile()
-                 .Invoke(taskData))
+      if (!tasks_.TryGetValue(taskId,
+                              out var current) || (compiledFilter is not null && !compiledFilter(current)))
       {
         return Task.FromResult<TaskData?>(null);
       }
+
+      oldTaskData = current;
+      newTaskData = Copy(new TaskData(current,
+                                      updates));
+      tasks_[taskId] = newTaskData;
     }
 
-    var newTaskData = taskId2TaskData_[taskId] = new TaskData(taskData,
-                                                              updates);
     var result = before
-                   ? taskData
+                   ? oldTaskData
                    : newTaskData;
+
     return Task.FromResult<TaskData?>(result with
                                       {
                                         RemainingDataDependencies = new Dictionary<string, bool>(),
@@ -233,20 +273,23 @@ public class TaskTable : ITaskTable
                                     UpdateDefinition<TaskData>       updates,
                                     CancellationToken                cancellationToken = default)
   {
-    long i = 0;
-    foreach (var id in taskId2TaskData_.Values.AsQueryable()
-                                       .Where(filter)
-                                       .Select(data => data.TaskId))
-    {
-      i++;
-      taskId2TaskData_.AddOrUpdate(id,
-                                   _ => throw new TaskNotFoundException("Task not found"),
-                                   (_,
-                                    data) => new TaskData(data,
-                                                          updates));
-    }
+    var compiledFilter = filter.Compile();
 
-    return Task.FromResult(i);
+    lock (lock_)
+    {
+      // The filter is evaluated and the updates are applied under the same lock,
+      // so that a task that no longer matches the filter is not updated.
+      var matching = tasks_.Values.Where(compiledFilter)
+                           .ToList();
+
+      foreach (var current in matching)
+      {
+        tasks_[current.TaskId] = Copy(new TaskData(current,
+                                                   updates));
+      }
+
+      return Task.FromResult<long>(matching.Count);
+    }
   }
 
   /// <inheritdoc />
@@ -257,24 +300,25 @@ public class TaskTable : ITaskTable
                                                                                              int pageSize,
                                                                                              CancellationToken cancellationToken = default)
   {
-    var queryable = taskId2TaskData_.AsQueryable()
-                                    .Select(pair => pair.Value)
-                                    .Where(filter)
-                                    .GroupBy(data => new Application(data.Options.ApplicationName,
-                                                                     data.Options.ApplicationNamespace,
-                                                                     data.Options.ApplicationVersion,
-                                                                     data.Options.ApplicationService))
-                                    .Select(group => group.Key);
+    var queryable = Snapshot(filter)
+                    .AsQueryable()
+                    .GroupBy(data => new Application(data.Options.ApplicationName,
+                                                     data.Options.ApplicationNamespace,
+                                                     data.Options.ApplicationVersion,
+                                                     data.Options.ApplicationService))
+                    .Select(group => group.Key);
 
-    IQueryable<Application> paged = orderFields.Count > 0
-                                      ? queryable.OrderByList(orderFields,
-                                                              ascOrder)
-                                      : queryable;
+    var ordered = orderFields.Count > 0
+                    ? queryable.OrderByList(orderFields,
+                                            ascOrder)
+                    : queryable;
 
-    return Task.FromResult<(IEnumerable<Application> tasks, int totalCount)>((paged.Skip(page * pageSize)
-                                                                                   .Take(pageSize), paged.Count()));
+    return Task.FromResult<(IEnumerable<Application> applications, int totalCount)>((ordered.Skip(page * pageSize)
+                                                                                            .Take(pageSize)
+                                                                                            .ToList(), ordered.Count()));
   }
 
+  /// <inheritdoc />
   public IAsyncEnumerable<T> RemoveRemainingDataDependenciesAsync<T>(ICollection<string>           taskIds,
                                                                      ICollection<string>           dependenciesToRemove,
                                                                      Expression<Func<TaskData, T>> selector,
@@ -283,33 +327,61 @@ public class TaskTable : ITaskTable
   {
     using var _ = Logger.LogFunction();
 
-    foreach (var taskId in taskIds)
+    if (dependenciesToRemove.Count == 0)
     {
-      taskId2TaskData_.AddOrUpdate(taskId,
-                                   _ => throw new TaskNotFoundException("The task does not exist."),
-                                   (_,
-                                    data) =>
-                                   {
-                                     var remainingDep = data.RemainingDataDependencies;
-
-                                     foreach (var dep in dependenciesToRemove)
-                                     {
-                                       remainingDep.Remove(dep);
-                                     }
-
-                                     return data with
-                                            {
-                                              RemainingDataDependencies = remainingDep,
-                                            };
-                                   });
+      return AsyncEnumerable.Empty<T>();
     }
 
-    return taskId2TaskData_.AsQueryable()
-                           .Select(pair => pair.Value)
-                           .Where(data => taskIds.Contains(data.TaskId) && (data.Status == TaskStatus.Creating || data.Status == TaskStatus.Pending) &&
-                                          data.RemainingDataDependencies.Count == 0)
-                           .Select(selector)
-                           .ToAsyncEnumerable();
+    var updater = Guid.NewGuid();
+    var ready   = new List<TaskData>();
+
+    lock (lock_)
+    {
+      foreach (var taskId in taskIds.Distinct())
+      {
+        if (!tasks_.TryGetValue(taskId,
+                                out var current))
+        {
+          continue;
+        }
+
+        // Only tasks that still hold one of the dependencies are updated, so no call can update a task after its last
+        // dependency has been removed: the call that removed it is the last updater of the task.
+        if (dependenciesToRemove.Any(current.RemainingDataDependencies.ContainsKey))
+        {
+          var remaining = new Dictionary<string, bool>(current.RemainingDataDependencies);
+          foreach (var dependency in dependenciesToRemove)
+          {
+            remaining.Remove(dependency);
+          }
+
+          current = current with
+                    {
+                      RemainingDataDependencies = remaining,
+                    };
+          tasks_[taskId]                 = current;
+          lastDependencyUpdater_[taskId] = updater;
+        }
+
+        if (current.Status is not (TaskStatus.Creating or TaskStatus.Pending) || current.RemainingDataDependencies.Count != 0)
+        {
+          continue;
+        }
+
+        // Outside recovery, a ready task is reported only by the call that removed its last dependency.
+        // Tasks created without remaining dependencies (eg: retries) have no updater and are reported by every call.
+        // In recovery, the call that removed the last dependency may have failed before handling the task,
+        // so every ready task is reported.
+        if (recovery                                                             || !lastDependencyUpdater_.TryGetValue(taskId,
+                                                                                                                        out var lastUpdater) || lastUpdater == updater)
+        {
+          ready.Add(current);
+        }
+      }
+    }
+
+    return ready.Select(selector.Compile())
+                .ToAsyncEnumerable();
   }
 
   /// <inheritdoc />
@@ -327,4 +399,36 @@ public class TaskTable : ITaskTable
     => Task.FromResult(isInitialized_
                          ? HealthCheckResult.Healthy()
                          : HealthCheckResult.Unhealthy());
+
+  /// <summary>
+  ///   Copy the tasks matching the filter, under the lock
+  /// </summary>
+  /// <param name="filter">Filter on the tasks, or null for all tasks</param>
+  /// <returns>
+  ///   The matching tasks, at the time of the call
+  /// </returns>
+  private List<TaskData> Snapshot(Expression<Func<TaskData, bool>>? filter)
+  {
+    var compiledFilter = filter?.Compile();
+    lock (lock_)
+    {
+      return compiledFilter is null
+               ? tasks_.Values.ToList()
+               : tasks_.Values.Where(compiledFilter)
+                       .ToList();
+    }
+  }
+
+  /// <summary>
+  ///   Copy the mutable members of a task, so that the stored value does not share them with the caller
+  /// </summary>
+  /// <param name="taskData">Task to copy</param>
+  /// <returns>
+  ///   The copy of the task
+  /// </returns>
+  private static TaskData Copy(TaskData taskData)
+    => taskData with
+       {
+         RemainingDataDependencies = new Dictionary<string, bool>(taskData.RemainingDataDependencies),
+       };
 }
