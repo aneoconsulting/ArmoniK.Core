@@ -278,12 +278,8 @@ public sealed class TaskHandler : IAsyncDisposable
   }
 
   private bool IsEvictionNeeded()
-  {
-    // the file system holding the cache, which is not the root one when the cache is a mount point (e.g. /dev/shm)
-    var drive = FileExt.DriveOf(cache_);
-    var p     = (double)(drive.TotalSize - drive.AvailableFreeSpace) / drive.TotalSize;
-    return p > cacheEvictionThreshold_;
-  }
+    // null (and so false) when the cache folder is missing, its creation being best effort
+    => FileExt.UsedSpaceFraction(cache_) > cacheEvictionThreshold_;
 
   private void EvictIfNeeded()
   {

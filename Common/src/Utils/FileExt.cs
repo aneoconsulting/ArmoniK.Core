@@ -15,9 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-using System;
 using System.IO;
-using System.Linq;
 
 namespace ArmoniK.Core.Common.Utils;
 
@@ -28,30 +26,25 @@ namespace ArmoniK.Core.Common.Utils;
 public static class FileExt
 {
   /// <summary>
-  ///   Get the file system holding a path: the mounted drive with the longest root that contains the path.
+  ///   Fraction of the space used (0-1) on the file system holding a path.
   /// </summary>
   /// <remarks>
-  ///   On Unix, <see cref="Path.GetPathRoot(string)" /> is always "/", whatever the mount point of the path.
+  ///   On Unix, the path itself is measured (statfs), so a folder on its own mount (a tmpfs such as /dev/shm, a volume)
+  ///   reports that mount, not the root file system. On Windows, the drive of the path is measured.
   /// </remarks>
-  /// <param name="path">Path of a file or folder.</param>
-  /// <returns>The drive holding <paramref name="path" />.</returns>
-  public static DriveInfo DriveOf(string path)
+  /// <param name="path">Path of an existing file or folder.</param>
+  /// <returns>The fraction of the space used, or <see langword="null" /> when <paramref name="path" /> does not exist.</returns>
+  public static double? UsedSpaceFraction(string path)
   {
-    var fullPath = Path.GetFullPath(path);
-    return DriveInfo.GetDrives()
-                    .Where(drive => IsInside(fullPath,
-                                             drive.RootDirectory.FullName))
-                    .MaxBy(drive => drive.RootDirectory.FullName.Length) ?? new DriveInfo(Path.GetPathRoot(fullPath)!);
-  }
-
-  private static bool IsInside(string path,
-                               string root)
-  {
-    var trimmed = root.TrimEnd(Path.DirectorySeparatorChar,
-                               Path.AltDirectorySeparatorChar);
-    return trimmed.Length == 0                                          || path.Equals(trimmed,
-                                                                                       StringComparison.Ordinal) || path.StartsWith(trimmed + Path.DirectorySeparatorChar,
-                                                                                                                                    StringComparison.Ordinal);
+    try
+    {
+      var drive = new DriveInfo(path);
+      return (double)(drive.TotalSize - drive.AvailableFreeSpace) / drive.TotalSize;
+    }
+    catch (DriveNotFoundException)
+    {
+      return null;
+    }
   }
 
   /// <summary>

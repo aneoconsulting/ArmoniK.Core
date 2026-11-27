@@ -17,7 +17,6 @@
 
 using System;
 using System.IO;
-using System.Linq;
 
 using ArmoniK.Core.Common.Utils;
 
@@ -28,51 +27,53 @@ namespace ArmoniK.Core.Common.Tests;
 [TestFixture]
 public class FileExtTests
 {
-  [SetUp]
-  public void SetUp()
-  {
-    folder_ = Path.Combine(Path.GetTempPath(),
-                           $"ArmoniK.FileExt.{Guid.NewGuid()}");
-    Directory.CreateDirectory(folder_);
-  }
-
-  [TearDown]
-  public void TearDown()
-    => Directory.Delete(folder_,
-                        true);
-
-  private string folder_ = "";
-
   [Test]
-  public void DriveOfShouldBeTheLongestMountHoldingThePath()
-  {
-    var drive = FileExt.DriveOf(folder_);
-    var root = drive.RootDirectory.FullName.TrimEnd(Path.DirectorySeparatorChar,
-                                                    Path.AltDirectorySeparatorChar);
-
-    Assert.That(Path.GetFullPath(folder_),
-                Does.StartWith(root));
-    // no other mount holding the path has a longer root
-    Assert.That(DriveInfo.GetDrives()
-                         .Select(d => d.RootDirectory.FullName.TrimEnd(Path.DirectorySeparatorChar,
-                                                                       Path.AltDirectorySeparatorChar))
-                         .Where(r => r.Length > root.Length && Path.GetFullPath(folder_)
-                                                                   .StartsWith(r + Path.DirectorySeparatorChar,
-                                                                               StringComparison.Ordinal)),
-                Is.Empty);
-  }
-
-  [Test]
-  public void DriveOfShouldNotMatchAMountPrefixOfAnotherName()
+  public void UsedSpaceFractionShouldBeNullForAMissingPath()
   {
     if (OperatingSystem.IsWindows())
     {
-      Assert.Ignore("Unix mount points");
+      Assert.Ignore("Windows measures the drive of the path, which exists");
     }
 
-    // "/proc" is a mount point on Linux: "/procfoo" must not be attributed to it
-    var drive = FileExt.DriveOf("/procfoo/bar");
-    Assert.That(drive.RootDirectory.FullName.TrimEnd('/'),
-                Is.Not.EqualTo("/proc"));
+    Assert.That(FileExt.UsedSpaceFraction(Path.Combine(Path.GetTempPath(),
+                                                       $"ArmoniK.FileExt.{Guid.NewGuid()}")),
+                Is.Null);
   }
+
+  [Test]
+  public void UsedSpaceFractionShouldMeasureTheFileSystemHoldingThePath()
+  {
+    const string mount = "/dev/shm";
+    if (!OperatingSystem.IsLinux() || !Directory.Exists(mount))
+    {
+      Assert.Ignore($"Needs {mount}");
+    }
+
+    // measured independently of the code under test: DriveInfo of a mount point measures that mount
+    var mountUsage = Usage(new DriveInfo(mount));
+    var rootUsage  = Usage(new DriveInfo("/"));
+    // the test only discriminates when the two file systems differ enough in usage
+    Assume.That(Math.Abs(mountUsage - rootUsage),
+                Is.GreaterThan(0.02),
+                $"{mount} is not a mount distinct from / with a different usage");
+
+    var folder = Path.Combine(mount,
+                              $"ArmoniK.FileExt.{Guid.NewGuid()}",
+                              "cache");
+    Directory.CreateDirectory(folder);
+    try
+    {
+      Assert.That(FileExt.UsedSpaceFraction(folder),
+                  Is.EqualTo(mountUsage)
+                    .Within(0.01));
+    }
+    finally
+    {
+      Directory.Delete(Path.GetDirectoryName(folder)!,
+                       true);
+    }
+  }
+
+  private static double Usage(DriveInfo drive)
+    => (double)(drive.TotalSize - drive.AvailableFreeSpace) / drive.TotalSize;
 }
