@@ -18,7 +18,6 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -36,28 +35,23 @@ using ArmoniK.Utils;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
+using Microsoft.Win32.SafeHandles;
 
 namespace ArmoniK.Core.Adapters.LocalStorage;
 
 public class ObjectStorage : IObjectStorage
 {
   /// <summary>
-  ///   Separates the key of a striped object from its layout: "{uuid}_{count}x{size}"
-  /// </summary>
-  private const char StripeSeparator = '_';
-
-  /// <summary>
   ///   Valid key authorized characters
   /// </summary>
   private static readonly SearchValues<char> ValidKeyChars = SearchValues.Create("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_-");
 
+  private readonly int                    chunkParallelism_;
   private readonly int                    chunkSize_;
   private readonly ILogger<ObjectStorage> logger_;
   private readonly int                    parallelism_;
   private readonly string                 path_;
   private readonly int                    splitPathAt_;
-  private readonly int                    stripeCount_;
-  private readonly int                    stripeSize_;
   private readonly IUuidGenerator         uuidGenerator_;
   private          bool                   isInitialized_;
 
@@ -86,17 +80,9 @@ public class ObjectStorage : IObjectStorage
     splitPathAt_ = options.SplitPathAt <= 0
                      ? int.MaxValue
                      : options.SplitPathAt;
-    parallelism_ = options.DegreeOfParallelism;
-
-    // 1 or less keeps one file per object
-    stripeCount_ = Math.Max(options.StripeCount,
-                            1);
-
-    // 0 or less is replaced by the default
-    stripeSize_ = options.StripeSize <= 0
-                    ? Options.LocalStorage.Default.StripeSize
-                    : options.StripeSize;
-    uuidGenerator_ = uuidGenerator;
+    parallelism_      = options.DegreeOfParallelism;
+    chunkParallelism_ = options.ChunkParallelism;
+    uuidGenerator_    = uuidGenerator;
 
 
     logger_ = logger;
@@ -142,29 +128,44 @@ public class ObjectStorage : IObjectStorage
   {
     var key = uuidGenerator_.GenerateUuid()
                             .ToString();
-
-    // The layout of a striped object is part of its key, so that it is read the same way whatever the settings of
-    // the reader
-    if (stripeCount_ > 1)
-    {
-      key = $"{key}{StripeSeparator}{stripeCount_}x{stripeSize_}";
-    }
-
-    var (paths, stripeSize) = GetLayout(key);
+    var filename = GetPath(key);
 
     // Write to temporary file, with deletion in case of error
     await using var fileCleaner = new Deferrer(() => TryDelete(key));
 
-    var size = paths.Length == 1
-                 ? await WriteFileAsync(paths[0],
-                                        valueChunks,
-                                        cancellationToken)
-                     .ConfigureAwait(false)
-                 : await WriteStripesAsync(paths,
-                                           stripeSize,
-                                           valueChunks,
-                                           cancellationToken)
-                     .ConfigureAwait(false);
+    long size;
+    using (var file = OpenForWriting(filename))
+    {
+      // Small chunks are merged up to ChunkSize. Each chunk is written at its offset, computed in order, so that
+      // ChunkParallelism chunks can be written concurrently.
+      long offset = 0;
+      size = await valueChunks.Rechunk(chunkSize_,
+                                       int.MaxValue)
+                              .Select(chunk =>
+                                      {
+                                        var at = offset;
+                                        offset += chunk.Length;
+                                        return (chunk, at);
+                                      })
+                              .ParallelSelect(new ParallelTaskOptions
+                                              {
+                                                CancellationToken = cancellationToken,
+                                                ParallelismLimit  = chunkParallelism_,
+                                                Unordered         = true,
+                                              },
+                                              async (c,
+                                                     token) =>
+                                              {
+                                                await RandomAccess.WriteAsync(file,
+                                                                              c.chunk,
+                                                                              c.at,
+                                                                              token)
+                                                                  .ConfigureAwait(false);
+                                                return (long)c.chunk.Length;
+                                              })
+                              .SumAsync(cancellationToken)
+                              .ConfigureAwait(false);
+    }
 
     // File has been successfully written, so deletion should be withdrawn.
     fileCleaner.Reset();
@@ -178,63 +179,28 @@ public class ObjectStorage : IObjectStorage
   {
     var key = Encoding.UTF8.GetString(id);
 
-    string[] paths;
-    int      stripeSize;
-    try
-    {
-      (paths, stripeSize) = GetLayout(key);
-    }
-    catch (ArgumentException e)
-    {
-      throw new ObjectDataNotFoundException($"The object {key} has not been found in {path_}",
-                                            e);
-    }
-
-    if (paths.Length > 1)
-    {
-      await foreach (var chunk in ReadStripesAsync(key,
-                                                   paths,
-                                                   stripeSize,
-                                                   cancellationToken)
-                       .ConfigureAwait(false))
-      {
-        yield return chunk;
-      }
-
-      yield break;
-    }
-
     // If opening fails, the exception is wrapped in a ObjectDataNotFoundException
-    await using var file = OpenForReading(key,
-                                          paths[0]);
+    using var file   = OpenForReading(key);
+    var       length = RandomAccess.GetLength(file);
 
-    // Task is not awaited here in order to overlap reading and yielding
-    var buffer = new byte[chunkSize_];
-    var readTask = file.ReadAsync(buffer,
-                                  cancellationToken)
-                       .ConfigureAwait(false);
-
-    int read;
-
-    // While chunk is not empty
-    while ((read = await readTask) > 0)
+    // ChunkParallelism chunks are read concurrently at their offsets, and returned in order
+    var offsets = Enumerable.Range(0,
+                                   (int)((length + chunkSize_ - 1) / chunkSize_))
+                            .Select(i => (long)i * chunkSize_);
+    await foreach (var chunk in offsets.ParallelSelect(new ParallelTaskOptions
+                                                       {
+                                                         CancellationToken = cancellationToken,
+                                                         ParallelismLimit  = chunkParallelism_,
+                                                       },
+                                                       (offset,
+                                                        token) => ReadChunkAsync(file,
+                                                                                 offset,
+                                                                                 (int)Math.Min(chunkSize_,
+                                                                                               length - offset),
+                                                                                 token))
+                                       .ConfigureAwait(false))
     {
-      var readBuffer = buffer;
-
-      // Start reading new chunk
-      buffer = new byte[chunkSize_];
-      readTask = file.ReadAsync(buffer,
-                                cancellationToken)
-                     .ConfigureAwait(false);
-
-      // Partial chunk requires a resize
-      if (read < chunkSize_)
-      {
-        Array.Resize(ref readBuffer,
-                     read);
-      }
-
-      yield return readBuffer;
+      yield return chunk;
     }
   }
 
@@ -269,311 +235,38 @@ public class ObjectStorage : IObjectStorage
           .AsTask();
 
   /// <summary>
-  ///   Write the chunks of an object into one file.
+  ///   Read a chunk of a file.
   /// </summary>
-  /// <param name="filename">Path of the file.</param>
-  /// <param name="valueChunks">Chunks of the object.</param>
+  /// <param name="file">The file.</param>
+  /// <param name="offset">Offset of the chunk in the file.</param>
+  /// <param name="length">Length of the chunk.</param>
   /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>The size of the object.</returns>
-  private static async Task<long> WriteFileAsync(string                                 filename,
-                                                 IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                                 CancellationToken                      cancellationToken)
+  /// <returns>The chunk, shorter if the file ends before.</returns>
+  private static async Task<byte[]> ReadChunkAsync(SafeFileHandle    file,
+                                                   long              offset,
+                                                   int               length,
+                                                   CancellationToken cancellationToken)
   {
-    long            size = 0;
-    await using var file = OpenForWriting(filename);
-
-    await using var enumerator = valueChunks.GetAsyncEnumerator(cancellationToken);
-
-    // Prepare overlapped read and write
-    var readTask = enumerator.MoveNextAsync()
-                             .ConfigureAwait(false);
-    var writeTask = ValueTask.CompletedTask.ConfigureAwait(false);
-
-    while (await readTask)
+    var buffer = new byte[length];
+    var read   = 0;
+    while (read < length)
     {
-      var chunk = enumerator.Current;
-      size += chunk.Length;
-
-      readTask = enumerator.MoveNextAsync()
-                           .ConfigureAwait(false);
-      await writeTask;
-      writeTask = file.WriteAsync(chunk,
-                                  cancellationToken)
-                      .ConfigureAwait(false);
-    }
-
-    // Last write must be complete before flushing
-    await writeTask;
-
-    await file.FlushAsync(cancellationToken)
-              .ConfigureAwait(false);
-
-    return size;
-  }
-
-  /// <summary>
-  ///   Write the chunks of an object as stripes dealt round-robin to several files, which are written concurrently.
-  /// </summary>
-  /// <param name="paths">Paths of the files, stripe i goes to file i modulo their number.</param>
-  /// <param name="stripeSize">Size of the stripes; only the last stripe of the object can be smaller.</param>
-  /// <param name="valueChunks">Chunks of the object.</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>The size of the object.</returns>
-  private static async Task<long> WriteStripesAsync(string[]                               paths,
-                                                    int                                    stripeSize,
-                                                    IAsyncEnumerable<ReadOnlyMemory<byte>> valueChunks,
-                                                    CancellationToken                      cancellationToken)
-  {
-    var files = new FileStream?[paths.Length];
-    // write in flight on each file, and the pooled buffer it writes
-    var writes  = new Task[paths.Length];
-    var buffers = new byte[]?[paths.Length];
-    Array.Fill(writes,
-               Task.CompletedTask);
-
-    long size   = 0;
-    var  stripe = 0;
-    var  filled = 0;
-    var  buffer = ArrayPool<byte>.Shared.Rent(stripeSize);
-
-    // Waits for the previous write of the file of the current stripe, then starts writing the stripe: up to one write
-    // in flight per file
-    async Task WriteStripeAsync()
-    {
-      var file = stripe % paths.Length;
-      await writes[file]
-        .ConfigureAwait(false);
-      var write = files[file]!.WriteAsync(buffer.AsMemory(0,
-                                                          filled),
-                                          cancellationToken)
-                              .AsTask();
-      if (buffers[file] is not null)
+      var n = await RandomAccess.ReadAsync(file,
+                                           buffer.AsMemory(read),
+                                           offset + read,
+                                           cancellationToken)
+                                .ConfigureAwait(false);
+      if (n == 0)
       {
-        ArrayPool<byte>.Shared.Return(buffers[file]!);
-      }
-
-      buffers[file] = buffer;
-      writes[file]  = write;
-      buffer        = ArrayPool<byte>.Shared.Rent(stripeSize);
-      filled        = 0;
-      stripe++;
-    }
-
-    try
-    {
-      for (var i = 0; i < paths.Length; i++)
-      {
-        files[i] = OpenForWriting(paths[i]);
-      }
-
-      await foreach (var chunk in valueChunks.WithCancellation(cancellationToken)
-                                             .ConfigureAwait(false))
-      {
-        size += chunk.Length;
-        var remaining = chunk;
-        while (!remaining.IsEmpty)
-        {
-          var length = Math.Min(remaining.Length,
-                                stripeSize - filled);
-          remaining[..length]
-            .CopyTo(buffer.AsMemory(filled));
-          filled    += length;
-          remaining =  remaining[length..];
-
-          if (filled == stripeSize)
-          {
-            await WriteStripeAsync()
-              .ConfigureAwait(false);
-          }
-        }
-      }
-
-      if (filled > 0)
-      {
-        await WriteStripeAsync()
-          .ConfigureAwait(false);
-      }
-
-      await Task.WhenAll(writes)
-                .ConfigureAwait(false);
-
-      foreach (var file in files)
-      {
-        await file!.FlushAsync(cancellationToken)
-                   .ConfigureAwait(false);
-      }
-
-      return size;
-    }
-    finally
-    {
-      // On failure, the writes still in flight must end before their buffers go back to the pool
-      try
-      {
-        await Task.WhenAll(writes)
-                  .ConfigureAwait(false);
-      }
-      catch
-      {
-        // The error has already been thrown by the main path
-      }
-
-      ArrayPool<byte>.Shared.Return(buffer);
-      foreach (var b in buffers)
-      {
-        if (b is not null)
-        {
-          ArrayPool<byte>.Shared.Return(b);
-        }
-      }
-
-      foreach (var file in files)
-      {
-        if (file is not null)
-        {
-          await file.DisposeAsync()
-                    .ConfigureAwait(false);
-        }
-      }
-    }
-  }
-
-  /// <summary>
-  ///   Read a striped object: the files are read concurrently, one stripe ahead each, and the stripes are returned in
-  ///   order as chunks of at most ChunkSize bytes.
-  /// </summary>
-  /// <param name="key">Key of the object.</param>
-  /// <param name="paths">Paths of the files, stripe i is in file i modulo their number.</param>
-  /// <param name="stripeSize">Size of the stripes.</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>The chunks of the object.</returns>
-  /// <exception cref="ObjectDataNotFoundException">A file of the object does not exist.</exception>
-  private async IAsyncEnumerable<byte[]> ReadStripesAsync(string                                     key,
-                                                          string[]                                   paths,
-                                                          int                                        stripeSize,
-                                                          [EnumeratorCancellation] CancellationToken cancellationToken)
-  {
-    var       files = new FileStream?[paths.Length];
-    var       reads = new Task<List<byte[]>>?[paths.Length];
-    using var cts   = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-
-    try
-    {
-      for (var i = 0; i < paths.Length; i++)
-      {
-        files[i] = OpenForReading(key,
-                                  paths[i]);
-      }
-
-      for (var i = 0; i < paths.Length; i++)
-      {
-        reads[i] = ReadStripeAsync(files[i]!,
-                                   stripeSize,
-                                   chunkSize_,
-                                   cts.Token);
-      }
-
-      // Every stripe but the last one is full: the object ends with the first stripe that is not
-      for (var stripe = 0;; stripe++)
-      {
-        var file   = stripe % paths.Length;
-        var chunks = await reads[file]!.ConfigureAwait(false);
-        var length = chunks.Sum(chunk => (long)chunk.Length);
-
-        reads[file] = length == stripeSize
-                        ? ReadStripeAsync(files[file]!,
-                                          stripeSize,
-                                          chunkSize_,
-                                          cts.Token)
-                        : null;
-
-        foreach (var chunk in chunks)
-        {
-          yield return chunk;
-        }
-
-        if (length < stripeSize)
-        {
-          yield break;
-        }
-      }
-    }
-    finally
-    {
-      // The reads still in flight (the consumer stopped early, or a read failed) must end before closing the files
-      await cts.CancelAsync()
-               .ConfigureAwait(false);
-      foreach (var read in reads)
-      {
-        if (read is null)
-        {
-          continue;
-        }
-
-        try
-        {
-          await read.ConfigureAwait(false);
-        }
-        catch
-        {
-          // Cancelled reads, or an error already thrown by the main path
-        }
-      }
-
-      foreach (var file in files)
-      {
-        if (file is not null)
-        {
-          await file.DisposeAsync()
-                    .ConfigureAwait(false);
-        }
-      }
-    }
-  }
-
-  /// <summary>
-  ///   Read the next stripe of a file.
-  /// </summary>
-  /// <param name="file">File positioned at the start of the stripe.</param>
-  /// <param name="stripeSize">Size of the stripes.</param>
-  /// <param name="chunkSize">Maximum size of the returned chunks.</param>
-  /// <param name="cancellationToken">Token used to cancel the execution of the method</param>
-  /// <returns>The stripe as chunks of at most <paramref name="chunkSize" /> bytes, shorter at the end of the file.</returns>
-  private static async Task<List<byte[]>> ReadStripeAsync(FileStream        file,
-                                                          int               stripeSize,
-                                                          int               chunkSize,
-                                                          CancellationToken cancellationToken)
-  {
-    var chunks    = new List<byte[]>();
-    var remaining = stripeSize;
-    while (remaining > 0)
-    {
-      var buffer = new byte[Math.Min(chunkSize,
-                                     remaining)];
-      var read = await file.ReadAtLeastAsync(buffer,
-                                             buffer.Length,
-                                             false,
-                                             cancellationToken)
-                           .ConfigureAwait(false);
-      if (read == 0)
-      {
-        break;
-      }
-
-      remaining -= read;
-      if (read < buffer.Length)
-      {
-        // End of the file
         Array.Resize(ref buffer,
                      read);
-        chunks.Add(buffer);
         break;
       }
 
-      chunks.Add(buffer);
+      read += n;
     }
 
-    return chunks;
+    return buffer;
   }
 
   /// <summary>
@@ -582,26 +275,23 @@ public class ObjectStorage : IObjectStorage
   /// <param name="key">The key of the object.</param>
   private void TryDelete(string key)
   {
-    string[] paths;
+    string filename;
     try
     {
-      (paths, _) = GetLayout(key);
+      filename = GetPath(key);
     }
     catch (ArgumentException)
     {
       return;
     }
 
-    foreach (var filename in paths)
+    try
     {
-      try
-      {
-        File.Delete(filename);
-      }
-      catch (DirectoryNotFoundException)
-      {
-        // Ignore non-existent parent directory
-      }
+      File.Delete(filename);
+    }
+    catch (DirectoryNotFoundException)
+    {
+      // Ignore non-existent parent directory
     }
   }
 
@@ -609,13 +299,13 @@ public class ObjectStorage : IObjectStorage
   ///   Get the size of the given object.
   /// </summary>
   /// <param name="key">The key of the object.</param>
-  /// <returns>The size of the backing files, or null if one of them does not exist.</returns>
+  /// <returns>The size of the backing file, or null if it does not exist.</returns>
   private long? GetSize(byte[] key)
   {
-    string[] paths;
+    string filename;
     try
     {
-      (paths, _) = GetLayout(Encoding.UTF8.GetString(key));
+      filename = GetPath(Encoding.UTF8.GetString(key));
     }
     catch (ArgumentException)
     {
@@ -624,52 +314,12 @@ public class ObjectStorage : IObjectStorage
 
     try
     {
-      return paths.Sum(filename => new FileInfo(filename).Length);
+      return new FileInfo(filename).Length;
     }
     catch (FileNotFoundException)
     {
       return null;
     }
-  }
-
-  /// <summary>
-  ///   Get the files of the object of the given <paramref name="key" />: one file named after the key, or for a striped
-  ///   object (key suffixed by "_{count}x{size}"), the files "key.0" to "key.{count - 1}".
-  /// </summary>
-  /// <param name="key">Key of the object to access.</param>
-  /// <returns>The paths of the files of the object and the size of its stripes (0 when it is not striped).</returns>
-  /// <exception cref="ArgumentNullException"><paramref name="key" /> is null.</exception>
-  /// <exception cref="ArgumentException"><paramref name="key" /> has invalid characters.</exception>
-  private (string[] paths, int stripeSize) GetLayout(string key)
-  {
-    var path = GetPath(key);
-
-    var separator = key.LastIndexOf(StripeSeparator);
-    if (separator < 0)
-    {
-      return ([path], 0);
-    }
-
-    var layout = key.AsSpan(separator + 1);
-    var times  = layout.IndexOf('x');
-    if (times <= 0 || !int.TryParse(layout[..times],
-                                    NumberStyles.None,
-                                    CultureInfo.InvariantCulture,
-                                    out var count) || !int.TryParse(layout[(times + 1)..],
-                                                                    NumberStyles.None,
-                                                                    CultureInfo.InvariantCulture,
-                                                                    out var stripeSize) || count < 2 || stripeSize < 1)
-    {
-      return ([path], 0);
-    }
-
-    var paths = new string[count];
-    for (var i = 0; i < count; i++)
-    {
-      paths[i] = $"{path}.{i}";
-    }
-
-    return (paths, stripeSize);
   }
 
   /// <summary>
@@ -711,19 +361,20 @@ public class ObjectStorage : IObjectStorage
   ///   Create and open a new file for the given key.
   /// </summary>
   /// <param name="filename">Path of the object to write.</param>
-  /// <returns>The Stream of the opened file.</returns>
+  /// <returns>The handle of the opened file.</returns>
   /// <exception cref="ArgumentNullException"><paramref name="filename" /> is null.</exception>
   /// <exception cref="IOException">The file could not be created.</exception>
-  private static FileStream OpenForWriting(string filename)
+  private static SafeFileHandle OpenForWriting(string filename)
   {
     try
     {
       // File is allowed to be shared with others in read/write/delete mode without locking.
       // ArmoniK ensures that those operation can only happen after the file has been closed.
-      return File.Open(filename,
-                       FileMode.Create,
-                       FileAccess.Write,
-                       FileShare.ReadWrite | FileShare.Delete);
+      return File.OpenHandle(filename,
+                             FileMode.Create,
+                             FileAccess.Write,
+                             FileShare.ReadWrite | FileShare.Delete,
+                             FileOptions.Asynchronous);
     }
     // If the file creation failed and the path has been split,
     // we need to create the prefix folder and retry file creation.
@@ -743,31 +394,42 @@ public class ObjectStorage : IObjectStorage
       // The directory can be created by another agent in the meantime.
       Directory.CreateDirectory(dir);
 
-      return File.Open(filename,
-                       FileMode.Create,
-                       FileAccess.Write,
-                       FileShare.ReadWrite | FileShare.Delete);
+      return File.OpenHandle(filename,
+                             FileMode.Create,
+                             FileAccess.Write,
+                             FileShare.ReadWrite | FileShare.Delete,
+                             FileOptions.Asynchronous);
     }
   }
 
   /// <summary>
-  ///   Open a file of an object.
+  ///   Open an object.
   /// </summary>
   /// <param name="key">Key of the object to read.</param>
-  /// <param name="filename">Path of the file.</param>
-  /// <returns>The <see cref="FileStream" /> to the object file.</returns>
+  /// <returns>The handle of the object file.</returns>
   /// <exception cref="ObjectDataNotFoundException">The object does not exist.</exception>
-  private FileStream OpenForReading(string key,
-                                    string filename)
+  private SafeFileHandle OpenForReading(string key)
   {
+    string filename;
+    try
+    {
+      filename = GetPath(key);
+    }
+    catch (ArgumentException e)
+    {
+      throw new ObjectDataNotFoundException($"The object {key} has not been found in {path_}",
+                                            e);
+    }
+
     try
     {
       // File is allowed to be shared with others in read/write/delete mode without locking.
       // Deleting keep the file alive without a Path and let all the readers to finish their reads.
-      return File.Open(filename,
-                       FileMode.Open,
-                       FileAccess.Read,
-                       FileShare.ReadWrite | FileShare.Delete);
+      return File.OpenHandle(filename,
+                             FileMode.Open,
+                             FileAccess.Read,
+                             FileShare.ReadWrite | FileShare.Delete,
+                             FileOptions.Asynchronous);
     }
     catch (IOException e) when (e is FileNotFoundException or DirectoryNotFoundException)
     {

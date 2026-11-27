@@ -61,29 +61,16 @@ public class LocalStorage
   public int DegreeOfParallelism { get; set; }
 
   /// <summary>
-  ///   Number of files an object is striped over, written and read concurrently.
-  ///   With more than one, the object is cut into stripes of <see cref="StripeSize" /> bytes dealt round-robin to
-  ///   the files "key.0" to "key.{StripeCount - 1}"; on a parallel file system, several streams reach a higher
-  ///   throughput than one. 1 (the default) or less keeps one file per object.
+  ///   Number of chunks of an object read or written concurrently, at their offsets in its file.
+  ///   On a parallel file system, several streams on one file reach a higher throughput than one, if
+  ///   <see cref="ChunkSize" /> is large enough (a few MiB).
+  ///   1 (the default) reads and writes the chunks one after the other; 0 uses the number of threads, and a negative
+  ///   value removes the limit.
   /// </summary>
-  /// <remarks>
-  ///   The layout is part of the key of the object, so objects written with other settings are still read correctly.
-  /// </remarks>
-  public int StripeCount
+  public int ChunkParallelism
   {
     get;
     [UsedImplicitly]
     init;
   } = 1;
-
-  /// <summary>
-  ///   Size in bytes of the stripes of an object when <see cref="StripeCount" /> is larger than 1.
-  ///   0 or less is replaced by the default (4 MiB).
-  /// </summary>
-  public int StripeSize
-  {
-    get;
-    [UsedImplicitly]
-    init;
-  } = 4 * 1024 * 1024;
 }
