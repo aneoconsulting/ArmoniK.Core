@@ -29,7 +29,6 @@ using System.Threading.Tasks;
 
 using Amazon.S3;
 using Amazon.S3.Model;
-using Amazon.S3.Util;
 
 using ArmoniK.Core.Base;
 using ArmoniK.Core.Base.DataStructures;
@@ -84,9 +83,25 @@ public class ObjectStorage : IObjectStorage
   {
     if (!isInitialized_)
     {
-      await AmazonS3Util.DoesS3BucketExistV2Async(s3Client_,
-                                                  options_.BucketName)
-                        .ConfigureAwait(false);
+      // HeadBucket rather than AmazonS3Util.DoesS3BucketExistV2Async, which reads the ACL of the bucket: directory
+      // buckets (S3 Express One Zone) have no ACL and reject it. As with that helper, a missing or forbidden bucket
+      // does not stop the initialization.
+      try
+      {
+        await s3Client_.HeadBucketAsync(new HeadBucketRequest
+                                        {
+                                          BucketName = options_.BucketName,
+                                        },
+                                        cancellationToken)
+                       .ConfigureAwait(false);
+      }
+      catch (AmazonS3Exception e) when (e.StatusCode is HttpStatusCode.NotFound or HttpStatusCode.Forbidden)
+      {
+        logger_.LogWarning(e,
+                           "Bucket {BucketName} could not be checked: {StatusCode}",
+                           options_.BucketName,
+                           e.StatusCode);
+      }
     }
 
     logger_.LogInformation("ObjectStorage has correctly been initialized with options {@Options}",
