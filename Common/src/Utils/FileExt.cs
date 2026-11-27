@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+using System;
 using System.IO;
 
 namespace ArmoniK.Core.Common.Utils;
@@ -32,8 +33,11 @@ public static class FileExt
   ///   On Unix, the path itself is measured (statfs), so a folder on its own mount (a tmpfs such as /dev/shm, a volume)
   ///   reports that mount, not the root file system. On Windows, the drive of the path is measured.
   /// </remarks>
-  /// <param name="path">Path of an existing file or folder.</param>
-  /// <returns>The fraction of the space used, or <see langword="null" /> when <paramref name="path" /> does not exist.</returns>
+  /// <param name="path">Path of a file or folder.</param>
+  /// <returns>
+  ///   The fraction of the space used, or <see langword="null" /> when the file system holding <paramref name="path" />
+  ///   cannot be measured (missing or inaccessible path).
+  /// </returns>
   public static double? UsedSpaceFraction(string path)
   {
     try
@@ -41,7 +45,9 @@ public static class FileExt
       var drive = new DriveInfo(path);
       return (double)(drive.TotalSize - drive.AvailableFreeSpace) / drive.TotalSize;
     }
-    catch (DriveNotFoundException)
+    // DriveNotFoundException for a missing path, DirectoryNotFoundException for a path under a file,
+    // UnauthorizedAccessException for a path that cannot be traversed
+    catch (Exception e) when (e is IOException or UnauthorizedAccessException)
     {
       return null;
     }

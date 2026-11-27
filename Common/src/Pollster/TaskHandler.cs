@@ -278,7 +278,7 @@ public sealed class TaskHandler : IAsyncDisposable
   }
 
   private bool IsEvictionNeeded()
-    // null (and so false) when the cache folder is missing, its creation being best effort
+    // null (and so false) when the cache folder cannot be measured, its creation being best effort
     => FileExt.UsedSpaceFraction(cache_) > cacheEvictionThreshold_;
 
   private void EvictIfNeeded()

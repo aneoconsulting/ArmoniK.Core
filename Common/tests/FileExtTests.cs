@@ -41,6 +41,28 @@ public class FileExtTests
   }
 
   [Test]
+  public void UsedSpaceFractionShouldBeNullForAPathUnderAFile()
+  {
+    if (OperatingSystem.IsWindows())
+    {
+      Assert.Ignore("Windows measures the drive of the path, which exists");
+    }
+
+    // statfs fails with ENOTDIR, which DriveInfo does not map to DriveNotFoundException
+    var file = Path.GetTempFileName();
+    try
+    {
+      Assert.That(FileExt.UsedSpaceFraction(Path.Combine(file,
+                                                         "cache")),
+                  Is.Null);
+    }
+    finally
+    {
+      File.Delete(file);
+    }
+  }
+
+  [Test]
   public void UsedSpaceFractionShouldMeasureTheFileSystemHoldingThePath()
   {
     const string mount = "/dev/shm";
